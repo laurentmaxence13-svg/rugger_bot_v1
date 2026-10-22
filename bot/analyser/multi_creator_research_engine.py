@@ -189,6 +189,9 @@ async def rpc_json(rpc, rpc_url, gate, method, params, max_attempts=8):
                 continue
 
             if isinstance(data, dict) and "result" in data:
+                if method == 'getTransaction' and data['result'] is None:
+                    last_problem = f'{provider} transaction temporairement indisponible'
+                    continue
                 if provider == "SOLANA PUBLIC":
                     print(f"[RPC] secours SOLANA PUBLIC OK ({method})", flush=True)
                 return data["result"]
