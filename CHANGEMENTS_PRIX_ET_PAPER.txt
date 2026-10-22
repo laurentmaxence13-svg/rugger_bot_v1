@@ -1,0 +1,21 @@
+RUGGER BOT — correctif vérifié localement
+
+1. Raydium LaunchLab : correction de la formule du prix de la courbe constant-product.
+   Ancien dénominateur erroné : virtualA + realA.
+   Formule SDK officielle : virtualA - realA.
+2. Prise en charge de la courbe linéaire (curveType=2), calcul Q64 du SDK Raydium.
+3. Lecture des statuts 0/1/2 : statut 0 utilisable sur courbe ; statuts 1/2 redirigés
+   vers le fallback de marché, sans prix inventé.
+4. Diagnostics de prix explicites, limités à un affichage par cause et par mint / 120s.
+5. Test d'intégration déterministe du carnet PAPER : ENTRY -> EXIT TP -> PnL -> capital.
+6. Lancement : 23 tests ciblés, puis session PAPER de 2h.
+
+IMPORTANT : ces tests sont locaux, avec comptes synthétiques et cotations simulées.
+Ils ne prouvent ni une récupération de prix en live ni une position PAPER live.
+La source RPC publique peut toujours répondre 429 ou être indisponible.
+Aucune transaction réelle, aucune signature, aucune clé privée.
+
+INSTALLATION :
+Depuis le répertoire rugger_bot_v1 (conserver .env et data) :
+Expand-Archive "$env:USERPROFILE\Downloads\RUGGER_BOT_PRIX_PAPER_FIX.zip" -DestinationPath "." -Force
+powershell -ExecutionPolicy Bypass -File ".\LANCER_RUGGER.ps1"

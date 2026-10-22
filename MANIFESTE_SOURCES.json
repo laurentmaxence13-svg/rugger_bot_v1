@@ -1,0 +1,17 @@
+{
+  "created_for": "Rugger Bot V1 - Codex VS Code",
+  "date": "2026-10-22",
+  "source_zip": "RUGGER_BOT_CODEX_COMPLET_20261022_190551.zip",
+  "source_zip_sha256": "56f0e779b06bd831d3cbc2a13ebf039af8daaff4ac583426873b57718629dd08",
+  "source_entry_count": 184,
+  "tests": "46 passed, 1 failed, 1 skipped, from isolated copy",
+  "contents": {
+    "AGENTS.md": "50e74cbf4144278cf631cfae5d70246ebc4f741e113e6ce8d8037e622dd8881b",
+    "CODEX_AUDIT_FACTUEL_20261022.md": "872c6f64e9bc9212dbfe44491de216de909cdbfe956166b19205c89923cbc753",
+    "CODEX_PLAN_TECHNIQUE_20261022.md": "088ebdaf3abc35330bc5119cdf6fe172e0f8fd74fc7487e1f09cc9c1118811e3",
+    "GUIDE_VSCODE_ET_CODEX.md": "3c7ecbf049b101857919a1083a767d2142f08814078ebe85de33b62c890352d8",
+    "MEMCOINS_DERNIERS_ECHANGES.md": "eb8168768d44c1705bba46e5d9bb3b1ec0279a315113304d858cd01974321ffb",
+    "MEMCOINS_HISTORIQUE_RECUPERE.md": "ae3c9832ee0dfe76262450c59711c6c6becebe4b7fd12de29d9b7378724c7e92",
+    "PROMPT_DEMARRAGE_CODEX.txt": "8367b808ce216947a960747ecc5931a02274fd73b23080a47fbb6f9bfdb4e423"
+  }
+}

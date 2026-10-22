@@ -1,0 +1,20 @@
+
+Tu es OpenAI Codex, mon ingénieur principal pour le projet Python existant Rugger Bot V1, actuellement ouvert dans VS Code.
+
+PREMIÈRE MISSION, STRICTEMENT EN LECTURE SEULE : lire `AGENTS.md`, `CODEX_AUDIT_FACTUEL_20261022.md`, `CODEX_PLAN_TECHNIQUE_20261022.md`, puis confirmer le véritable contenu du dépôt. Ces fichiers constituent un contexte documenté issu d'un audit d'une copie ZIP datée du 22/10/2026, non la preuve que le dossier a depuis conservé un état identique.
+
+Contexte décisif déjà reproduit : sur la copie ZIP, `python -m pytest -q tests --ignore=tests/tests -p no:cacheprovider` a donné 46 tests réussis, 1 échec, 1 ignoré. L'échec est `tests/test_research_pipeline.py::PipelineTests::test_paper_entry_limits`. Le code actif `bot/analyser/paper_trader.py` utilise déjà `pnl_sol` et `exit_time` pour la limite de perte journalière, mais le test ferme une transaction en ajoutant seulement `status='closed', net_return=-0.11` sans P&L en SOL ni date de clôture. Les anciens calculs de drawdown restent dans `bot/analyser/paper_engine.py`; ce dernier calcule aussi certaines métriques de sessions de façon trompeuse. Une ancienne base affiche un trade +57,7 % sans `pnl_sol` et un portefeuille inchangé à 10 SOL.
+
+À faire sans changer aucun fichier ni lancer de programme qui écrit :
+
+1. Vérifie l'arborescence du dossier réellement ouvert et identifie la branche Python **active**; le dépôt possède une copie `bot/bot` potentiellement ancienne et `tests/tests` avec des tests dupliqués.
+2. Examine précisément les fonctions `entry_allowed`, `ensure_paper_portfolio`, `paper_capital`, `_performance_metrics`, `_session_summary`, `paper_report` ainsi que le test `test_paper_entry_limits`. Donne chemins et lignes.
+3. Explique mathématiquement pourquoi le test échoue, et distingue le bug d'une fixture obsolète. Propose des scénarios de test financièrement corrects, sans supprimer les contrôles de sécurité.
+4. Classe les corrections à prévoir : pertes journalières, date de clôture, données historiques incomplètes, P&L/net vs pourcentage de trade, courbe de capital/drawdown, clôtures intersessions, motifs de rejet et capital par défaut.
+5. Conserve **10 SOL PAPER** tels qu'ils sont dans le code tant que nous n'avons pas défini une migration. Un autre brief parle de 1 000 € fictifs; ce n'est pas la configuration réelle du code.
+6. Vérifie la sécurité sans afficher `.env` ou des secrets; aucun trading réel, aucune connexion à des portefeuilles, aucun ordre on-chain.
+7. Rends un premier rapport : faits confirmés, incertitudes, anomalies hiérarchisées, tests recommandés, diff minimal envisagé et méthode de rollback. Explique chaque point avec des exemples simples.
+
+IMPORTANT : ne modifie NI les fichiers Python NI les tests NI la DB NI la matrice de décision. Ne relance pas encore de session de simulation. Ne lance pas non plus l'intégralité des tests sur le dossier de production avant mon accord, car ils pourraient écrire des caches. Après ton audit, ARRÊTE-TOI et attends mon autorisation pour la première correction P0.
+
+Je veux faire progresser le bot existant vers une simulation fiable et une évaluation scientifique des stratégies, pas refaire le projet de zéro. Ne prétends jamais qu'une rentabilité est démontrée. PAPER ONLY.

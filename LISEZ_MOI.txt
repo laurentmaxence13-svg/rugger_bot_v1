@@ -1,0 +1,25 @@
+RUGGER BOT — CORRECTIF INTÉGRÉ, PAPER ONLY
+
+Installer : extraire le ZIP dans le dossier rugger_bot_v1 (remplacer les fichiers).
+Conserver votre .env et votre base data/rugger_bot.db (non inclus dans le ZIP).
+
+Dans PowerShell, depuis rugger_bot_v1 :
+  .\LANCER_RUGGER.ps1
+Si l'exécution des scripts est bloquée :
+  powershell -ExecutionPolicy Bypass -File .\LANCER_RUGGER.ps1
+
+Corrections :
+- Helius HTTP 429 => repli RPC Solana public (code conservé depuis votre source).
+- WebSocket Helius 429 => repli WS public (code conservé depuis votre source).
+- CA SSL via certifi sans désactiver la validation.
+- SQLite : connexion 30s, WAL initialisé une fois, cache retry.
+- Scanner : instruction LaunchLab create décodée par discriminator Anchor,
+  y compris les instructions internes ; swap ignoré ; compte mint à l'index 6.
+- Tests : vraie transaction SellExactIn rejetée + création simulée reconnue.
+
+LIMITES :
+- Tests locaux réussis ; aucun test live réseau Solana ni P&L live certifié ici.
+- DexScreener peut ne pas indexer les tokens récents : quotes/decisions/positions
+  peuvent rester à 0 sans qu'il y ait une panne du scanner.
+- Aucune rentabilité démontrée. Ne pas activer de transactions réelles.
+- Le scanner ne détecte que les lancements du programme LaunchLab surveillé.

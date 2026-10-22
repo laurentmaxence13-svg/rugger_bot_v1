@@ -1,0 +1,33 @@
+RUGGER BOT — CORRECTIF ENTREE PAPER / SHADOW_FINAL
+
+Ce correctif a ete construit a partir de l'archive RUGGER_BOT_LAUNCHLAB_FIX(2).zip fournie.
+IMPORTANT : il ne contient NI .env NI base de donnees. Ne supprimez pas vos donnees.
+Si le code de votre PC a ete modifie depuis la creation de cette archive,
+sauvegardez les fichiers existants avant remplacement : les deux modules Python
+et les deux tests de ce ZIP sont issus de cette version source.
+
+Depuis C:\Users\maxen\Downloads\rugger_bot_v1_paper (1)\rugger_bot_v1
+(dossier contenant le repertoire bot), dans PowerShell :
+
+  Copy-Item .\bot\analyser\paper_trader.py .\bot\analyser\paper_trader.py.avant_correctif -Force
+  Copy-Item .\bot\analyser\final_decision_engine.py .\bot\analyser\final_decision_engine.py.avant_correctif -Force
+  Expand-Archive "$env:USERPROFILE\Downloads\RUGGER_BOT_PAPER_ENTREE_CORRIGE.zip" -DestinationPath . -Force
+  python -m unittest tests.test_paper_end_to_end tests.test_shadow_final_entry_flow -v
+
+Alternative pour tester tous les modules cibles :
+  python -m unittest tests.test_launchlab_onchain tests.test_launchlab_parser tests.test_paper_pipeline tests.test_research_rpc tests.test_mint_audit tests.test_paper_session tests.test_calibration_v2 tests.test_paper_end_to_end tests.test_shadow_final_entry_flow -q
+
+Corrections :
+ - Le mode shadow_final n'est plus bloque par l'ancienne fenetre d'entree
+   entre 60 et 900 secondes apres le signal.
+ - Il exige maintenant une autorisation explicite du moteur de decision
+   et un score final positif (sans refaire le score legacy du createur).
+ - Les limites PAPER d'entree restent appliquees et la branche validated
+   conserve ses controles historiques.
+ - Tests de bout en bout : decision acceptee a 20 secondes, ouverture PAPER,
+   cloture TP, calcul de PnL et capital; rejet, blocage des limites et compatibilite.
+
+27 tests locaux cibles executes avec succes sous Python 3.13.
+Aucune transaction reelle, aucune cle privee, aucune signature.
+La disponibilite du prix en temps reel et le bon fonctionnement en session
+live restent a verifier. Aucun avantage economique ou profitabilite n'est prouve.
