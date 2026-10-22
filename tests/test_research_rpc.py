@@ -1,6 +1,6 @@
 import asyncio
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 from bot.analyser.multi_creator_research_engine import rpc_json
 
@@ -48,5 +48,32 @@ class ResearchRPCTests(unittest.TestCase):
     def test_rpc_error_can_fallback(self):
         out,post,_=self.run_rpc([Resp(200,{'error':{'code':-32601}}),Resp(200,{'result':'ok'})])
         self.assertEqual(out,'ok'); self.assertEqual(len(post.calls),2)
+
+    def test_null_transaction_tries_other_provider(self):
+        out, post, _ = self.run_rpc([Resp(200, {'result': None}),
+                                    Resp(200, {'result': {'ok': True}})])
+        self.assertEqual(out, {'ok': True})
+        self.assertEqual(len(post.calls), 2)
+
+    def test_null_transaction_retries_next_round(self):
+        with patch('bot.analyser.multi_creator_research_engine.asyncio.sleep', new_callable=AsyncMock) as sleep:
+            out, post, _ = self.run_rpc([Resp(200, {'result': None}), Resp(200, {'result': None}),
+                                        Resp(200, {'result': {'ok': True}})], max_attempts=2)
+        self.assertEqual(out, {'ok': True})
+        self.assertEqual(len(post.calls), 3)
+        sleep.assert_awaited_once_with(2.0)
+
+    def test_null_transaction_exhausts_bounded_budget(self):
+        r = RPC(); r.session = RPC()
+        r.session.post = Post([Resp(200, {'result': None}) for _ in range(4)])
+        with patch('bot.analyser.multi_creator_research_engine.asyncio.sleep', new_callable=AsyncMock), \
+                self.assertRaisesRegex(RuntimeError, '2 tentatives'):
+            asyncio.run(rpc_json(r, 'https://helius.invalid', Gate(), 'getTransaction', [], max_attempts=2))
+        self.assertEqual(len(r.session.post.calls), 4)
+
+    def test_null_for_other_methods_keeps_existing_semantics(self):
+        r = RPC(); r.session = RPC(); r.session.post = Post([Resp(200, {'result': None})])
+        self.assertIsNone(asyncio.run(rpc_json(r, 'https://helius.invalid', Gate(), 'getAccountInfo', [])))
+        self.assertEqual(len(r.session.post.calls), 1)
 
 if __name__=='__main__': unittest.main()
