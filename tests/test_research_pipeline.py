@@ -86,10 +86,19 @@ class PipelineTests(unittest.TestCase):
                      (20000, 1.0, 'pair'), model)
         self.assertFalse(entry_allowed(con, 86460, max_open=1, max_entries_day=1))
 
-        con.execute('''UPDATE paper_trades
-                       SET status='closed', net_return=-0.11, exit_reason='SL'
-                       WHERE mint='one' ''')
-        self.assertFalse(entry_allowed(con, 86460, max_open=3,
+        # Real close: -.09 gross less .02 costs on 1 SOL = -.11 SOL.
+        record_quote(con, 'one', 'creator', 86400, 86461,
+                     (20000, .91, 'pair'), model, force_exit_reason='SL')
+        pnl, exit_time = con.execute(
+            "SELECT pnl_sol,exit_time FROM paper_trades WHERE mint='one'"
+        ).fetchone()
+        self.assertAlmostEqual(pnl, -.11)
+        self.assertEqual(exit_time, 86461)
+        # -1.1% of the 10 SOL portfolio crosses 1%, but not 10%.
+        self.assertFalse(entry_allowed(con, 86461, max_open=3,
+                                       max_entries_day=20,
+                                       max_daily_loss_pct=1))
+        self.assertTrue(entry_allowed(con, 86461, max_open=3,
                                        max_entries_day=20,
                                        max_daily_loss_pct=10))
 
