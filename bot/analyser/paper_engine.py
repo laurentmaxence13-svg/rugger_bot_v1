@@ -266,7 +266,10 @@ def _realized_metrics(con, started_at=None, ended_at=None):
 
     Inclusive session bounds match the existing reporting contract. Unknown
     closure dates invalidate attribution; missing prior PnL invalidates the
-    opening capital. No portfolio is created or repaired by reporting.
+    opening capital. Every closed position must have a finite positive size.
+    A missing trade return does not invalidate known SOL PnL if its implied
+    return is finite and the portfolio reconciles; no trade return is imputed.
+    No portfolio is created or repaired by reporting.
     """
     initial, realized = paper_capital(con)
     rows = con.execute(
@@ -274,6 +277,7 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         "WHERE status='closed' ORDER BY exit_time,mint"
     ).fetchall()
     finite = lambda v: isinstance(v, (int, float)) and math.isfinite(v)
+    invalid_positions = sum(not finite(r[4]) or r[4] <= 0 for r in rows)
     unknown_dates = sum(not finite(r[0]) for r in rows)
     prior = [r for r in rows if finite(r[0]) and started_at is not None and r[0] < started_at]
     closed = [r for r in rows if finite(r[0])
@@ -286,11 +290,17 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         and not math.isclose(r[3], r[4] * r[1], rel_tol=1e-9, abs_tol=1e-12)
         for r in relevant
     )
+    # SOL PnL alone is usable only with a meaningful position denominator.
+    inconsistent += sum(
+        r[1] is None and finite(r[3]) and finite(r[4]) and r[4] > 0
+        and not finite(r[3] / r[4]) for r in relevant
+    )
     reconciled = (finite(initial) and finite(realized)
                   and all(finite(r[3]) for r in rows)
                   and math.isclose(realized, initial + sum(r[3] for r in rows),
                                    rel_tol=1e-9, abs_tol=1e-12))
-    valid = finite(initial) and initial > 0 and not incomplete and not inconsistent and reconciled
+    valid = (finite(initial) and initial > 0 and not incomplete
+             and not inconsistent and not invalid_positions and reconciled)
     opening = initial + sum(r[3] for r in prior) if valid else None
     valid = valid and opening > 0
     equity = peak = opening if valid else None
@@ -322,6 +332,7 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         'capital_reconciled': bool(reconciled),
         'incomplete_closed_trades': incomplete,
         'inconsistent_closed_trades': inconsistent,
+        'invalid_position_closed_trades': invalid_positions,
         'closed_trades': len(closed),
         'wins': sum(p > 0 for p in pnls) if valid else None,
         'losses': sum(p <= 0 for p in pnls) if valid else None,
@@ -463,6 +474,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'capital_reconciled': metrics.get('capital_reconciled', False),
         'incomplete_closed_trades': metrics.get('incomplete_closed_trades', 0),
         'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
+        'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
         'market_data_coverage': _market_data_coverage(con),
         'rejection_reasons': _decision_reason_counts(con),

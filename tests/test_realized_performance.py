@@ -121,6 +121,57 @@ class RealizedPerformanceTests(unittest.TestCase):
         m = _performance_metrics(self.con)
         self.assertAlmostEqual(m['net_return_after_costs'], .01)
         self.assertIsNone(m['average_net_return'])
+        self.assertTrue(m['capital_reconciled'])
+        self.assertTrue(m['performance_data_complete'])
+        self.assertEqual(m['invalid_position_closed_trades'], 0)
+
+    def assert_invalid_position(self, size):
+        for net in (.1, None):
+            with self.subTest(size=size, net=net):
+                self.con.execute('DELETE FROM paper_trades')
+                self.con.execute('UPDATE paper_portfolio SET realized_capital_sol=10')
+                self.closed('invalid-size', 1, 2, size, net, .1)
+                for m in (_performance_metrics(self.con),
+                          _session_summary(self.con, 1, 5),
+                          paper_report(self.con, 5, 0)):
+                    # Capital reconciliation alone cannot validate a position.
+                    self.assertTrue(m['capital_reconciled'])
+                    self.assertFalse(m['performance_data_complete'])
+                    self.assertEqual(m['invalid_position_closed_trades'], 1)
+                    for key in ('pnl_sol', 'net_return_after_costs', 'max_drawdown'):
+                        self.assertIsNone(m[key])
+                    json.dumps(m, allow_nan=False)
+
+    def test_null_position_is_incomplete(self):
+        self.assert_invalid_position(None)
+
+    def test_zero_position_is_incomplete(self):
+        self.assert_invalid_position(0)
+
+    def test_negative_position_is_incomplete(self):
+        self.assert_invalid_position(-1)
+
+    def test_nonfinite_positions_are_incomplete(self):
+        for size in (float('inf'), float('-inf'), float('nan')):
+            # sqlite3 stores NaN as SQL NULL; infinities remain REAL values.
+            self.assert_invalid_position(size)
+
+    def test_nonnumeric_position_is_incomplete(self):
+        self.assert_invalid_position('invalid')
+
+    def test_invalid_position_outside_session_is_still_reported(self):
+        self.closed('old', 1, 2, None, None, .1)
+        self.closed('future', 100, 300, 0, None, .1)
+        m = _session_summary(self.con, 100, 200)
+        self.assertEqual(m['invalid_position_closed_trades'], 2)
+        self.assertFalse(m['performance_data_complete'])
+
+    def test_missing_return_requires_finite_implied_return(self):
+        self.closed('tiny', 1, 2, 1e-320, None, .1)
+        m = _performance_metrics(self.con)
+        self.assertEqual(m['inconsistent_closed_trades'], 1)
+        self.assertFalse(m['performance_data_complete'])
+        self.assertIsNone(m['net_return_after_costs'])
 
     def test_zero_capital_and_no_trades(self):
         m = _performance_metrics(self.con)
