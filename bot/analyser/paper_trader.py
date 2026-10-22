@@ -450,7 +450,7 @@ def _quote_values(quote):
 
 @contextmanager
 def _paper_close_transaction(con):
-    """Own the transaction only in autocommit; preserve a caller's work."""
+    """Serialize PAPER accounting; preserve any caller-owned transaction."""
     nested = con.in_transaction
     savepoint = 'paper_close_' + uuid.uuid4().hex
     con.execute(f'SAVEPOINT {savepoint}' if nested else 'BEGIN IMMEDIATE')
@@ -478,16 +478,35 @@ def record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
                  initial_capital_sol=10.0, position_pct=10.0):
-    # This preliminary read selects transaction handling, not closure state.
-    # The implementation rereads under the write lock before any accounting.
-    opened = con.execute("SELECT 1 FROM paper_trades WHERE mint=? AND status='open'",
-                         (mint,)).fetchone()
+    # Entries must read free capital and reserve it under the same write lock.
+    # Closing and opening positions therefore share one serialization boundary.
     args = (con, mint, creator, signal_time, now, quote, model, hold, cost_bps,
             allow_entry, strategy_mode, force_exit_reason, initial_capital_sol, position_pct)
-    if opened:
-        with _paper_close_transaction(con):
-            return _record_quote(con, *args[1:], _close_locked=True)
-    return _record_quote(con, *args[1:])
+    with _paper_close_transaction(con):
+        return _record_quote(con, *args[1:], _close_locked=True)
+
+
+def _paper_free_capital(con):
+    """Read validated SOL reservations; an open trade itself is the reservation."""
+    initial, capital = con.execute(
+        'SELECT initial_capital_sol,realized_capital_sol FROM paper_portfolio WHERE id=1'
+    ).fetchone()
+    initial = _financial_number(initial, 'initial_capital_sol', positive=True)
+    capital = _financial_number(capital, 'realized_capital_sol')
+    pnls = [_financial_number(row[0], 'historical pnl_sol') for row in
+            con.execute("SELECT pnl_sol FROM paper_trades WHERE status='closed'")]
+    expected = _financial_number(initial + math.fsum(pnls), 'ledger capital')
+    if not math.isclose(capital, expected, rel_tol=1e-9, abs_tol=1e-12):
+        raise ValueError('Unreconciled PAPER portfolio')
+    sizes = []
+    for size, pnl, exit_time, capital_after in con.execute(
+            "SELECT position_sol,pnl_sol,exit_time,capital_after_sol "
+            "FROM paper_trades WHERE status='open'"):
+        sizes.append(_financial_number(size, 'reserved position_sol', positive=True))
+        if any(value is not None for value in (pnl, exit_time, capital_after)):
+            raise ValueError('PAPER open position contains closure accounting')
+    committed = _financial_number(math.fsum(sizes), 'committed capital')
+    return capital, _financial_number(capital - committed, 'free capital')
 
 
 def _record_quote(con, mint, creator, signal_time, now, quote, model,
@@ -621,16 +640,24 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
     hold_s, cost, _tp_pct, _sl_pct, _trailing_pct = model_risk(
         model, hold, cost_bps
     )
-    ensure_paper_portfolio(con, initial_capital_sol, now)
-    _initial, capital = paper_capital(con)
+    if con.execute('SELECT 1 FROM paper_portfolio WHERE id=1').fetchone() is None:
+        if con.execute('SELECT 1 FROM paper_trades LIMIT 1').fetchone() is not None:
+            raise ValueError('Missing PAPER portfolio with existing trades')
+        _financial_number(initial_capital_sol, 'initial_capital_sol', positive=True)
+        ensure_paper_portfolio(con, initial_capital_sol, now)
+    capital, free_capital = _paper_free_capital(con)
+    _financial_number(position_pct, 'position_pct', nonnegative=True)
     position_sol = max(0.0, float(capital or 0.0) * max(0.0, min(100.0, float(position_pct))) / 100.0)
-    if position_sol <= 0:
+    _financial_number(position_sol, 'position_sol', nonnegative=True)
+    if position_sol <= 0 or position_sol > free_capital:
         return None
-    con.execute('''INSERT OR IGNORE INTO paper_trades
+    inserted = con.execute('''INSERT OR IGNORE INTO paper_trades
         (mint,creator,signal_time,entry_time,entry_price,peak_price,last_price,
          last_quote_time,cost_bps,strategy_mode,position_sol,status) VALUES(?,?,?,?,?,?,?,?,?,?,?, 'open')''',
         (mint, creator, signal_time, now, price, price, price, now, cost,
          str(strategy_mode or 'validated'), position_sol))
+    if inserted.rowcount != 1:
+        return None
     score_label = (f'{score:.1f}/100' if strategy_mode == 'shadow_final'
                    else f'{score:+.2%}')
     return (f'ENTRY {mint} simulated price={price:.10g} USD score={score_label} '
