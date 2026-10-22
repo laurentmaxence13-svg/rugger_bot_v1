@@ -5,7 +5,6 @@ from pathlib import Path
 import sqlite3
 import tempfile
 import threading
-from types import SimpleNamespace
 import unittest
 
 from bot.analyser.paper_trader import record_quote, setup, paper_capital
@@ -28,13 +27,9 @@ class ConcurrentConnection(sqlite3.Connection):
     barrier = None
 
     def execute(self, sql, parameters=()):
-        cursor = super().execute(sql, parameters)
-        if self.barrier is not None and sql.startswith('SELECT 1 FROM paper_trades'):
-            row = cursor.fetchone()
-            cursor.close()
+        if self.barrier is not None and sql == 'BEGIN IMMEDIATE':
             self.barrier.wait(timeout=5)
-            return SimpleNamespace(fetchone=lambda: row)
-        return cursor
+        return super().execute(sql, parameters)
 
 
 class AtomicPaperCloseTests(unittest.TestCase):

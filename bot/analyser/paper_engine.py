@@ -732,6 +732,8 @@ async def collect_once(con, session, cached, now, model=None,
             allow_entry=allowed, strategy_mode=strategy_mode,
             force_exit_reason=force_exit_reason,
             initial_capital_sol=initial_capital_sol, position_pct=position_pct,
+            max_open=max_open, max_entries_day=max_entries_day,
+            max_daily_loss_pct=max_daily_loss_pct,
         )
         snapshot = behavior_snapshot(cached, mint, creator, signal_time, now_quote)
         if message and message.startswith('ENTRY '):
