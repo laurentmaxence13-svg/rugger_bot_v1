@@ -1,11 +1,13 @@
 """Prix en direct et carnet simulé. Aucun portefeuille, signature ou envoi d'ordre."""
 import argparse
 import asyncio
+from contextlib import contextmanager
 from dataclasses import dataclass
 import json
 import math
 import sqlite3
 import time
+import uuid
 from pathlib import Path
 
 import aiohttp
@@ -446,10 +448,52 @@ def _quote_values(quote):
     return MarketQuote(float(liquidity), float(price), str(pair))
 
 
+@contextmanager
+def _paper_close_transaction(con):
+    """Own the transaction only in autocommit; preserve a caller's work."""
+    nested = con.in_transaction
+    savepoint = 'paper_close_' + uuid.uuid4().hex
+    con.execute(f'SAVEPOINT {savepoint}' if nested else 'BEGIN IMMEDIATE')
+    try:
+        yield
+        con.execute(f'RELEASE SAVEPOINT {savepoint}' if nested else 'COMMIT')
+    except BaseException:
+        if con.in_transaction:
+            if nested:
+                con.execute(f'ROLLBACK TO SAVEPOINT {savepoint}')
+                con.execute(f'RELEASE SAVEPOINT {savepoint}')
+            else:
+                con.rollback()
+        raise
+
+
+def _financial_number(value, name, positive=False, nonnegative=False):
+    if (not isinstance(value, (int, float)) or not math.isfinite(value)
+            or (positive and value <= 0) or (nonnegative and value < 0)):
+        raise ValueError(f'Invalid PAPER financial field: {name}')
+    return float(value)
+
+
 def record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
                  initial_capital_sol=10.0, position_pct=10.0):
+    # This preliminary read selects transaction handling, not closure state.
+    # The implementation rereads under the write lock before any accounting.
+    opened = con.execute("SELECT 1 FROM paper_trades WHERE mint=? AND status='open'",
+                         (mint,)).fetchone()
+    args = (con, mint, creator, signal_time, now, quote, model, hold, cost_bps,
+            allow_entry, strategy_mode, force_exit_reason, initial_capital_sol, position_pct)
+    if opened:
+        with _paper_close_transaction(con):
+            return _record_quote(con, *args[1:], _close_locked=True)
+    return _record_quote(con, *args[1:])
+
+
+def _record_quote(con, mint, creator, signal_time, now, quote, model,
+                 hold=3600, cost_bps=200, allow_entry=True,
+                 strategy_mode='validated', force_exit_reason=None,
+                 initial_capital_sol=10.0, position_pct=10.0, _close_locked=False):
     market_quote = _quote_values(quote)
     liquidity, price, pair = market_quote
     con.execute(
@@ -474,7 +518,26 @@ def record_quote(con, mint, creator, signal_time, now, quote, model,
     trade = con.execute('''SELECT entry_time,entry_price,status,peak_price
                            FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
     if trade and trade[2] == 'open':
+        if not _close_locked:
+            # Another connection may have inserted this position after the
+            # public wrapper's preliminary read. Still lock and reread it.
+            with _paper_close_transaction(con):
+                return _record_quote(
+                    con, mint, creator, signal_time, now, quote, model,
+                    hold, cost_bps, allow_entry, strategy_mode, force_exit_reason,
+                    initial_capital_sol, position_pct, _close_locked=True,
+                )
         entry_time, entry_price, _status, previous_peak = trade
+        _financial_number(entry_price, 'entry_price', positive=True)
+        _financial_number(price, 'exit_price', nonnegative=True)
+        _financial_number(entry_time, 'entry_time', nonnegative=True)
+        _financial_number(now, 'exit_time', nonnegative=True)
+        if now < entry_time:
+            raise ValueError('PAPER closure cannot precede entry')
+        if previous_peak is not None:
+            _financial_number(previous_peak, 'peak_price', positive=True)
+        _financial_number((model or {}).get('cost_bps', cost_bps),
+                          'cost_bps', nonnegative=True)
         peak = max(float(previous_peak or entry_price), price)
         gross_return = price / entry_price - 1
         hold_s, cost, tp_pct, sl_pct, trailing_pct = model_risk(
@@ -494,19 +557,39 @@ def record_quote(con, mint, creator, signal_time, now, quote, model,
             reason = 'TIMEOUT'
         if reason:
             result = gross_return - cost / 10000
-            ensure_paper_portfolio(con, initial_capital_sol, now)
-            position_row = con.execute('SELECT position_sol FROM paper_trades WHERE mint=?', (mint,)).fetchone()
-            position_sol = float((position_row or [0.0])[0] or 0.0)
-            pnl_sol = position_sol * result
-            _initial, capital_before = paper_capital(con)
-            capital_after = max(0.0, float(capital_before or 0.0) + pnl_sol)
-            con.execute('UPDATE paper_portfolio SET realized_capital_sol=?,updated_at=? WHERE id=1', (capital_after, now))
-            con.execute('''UPDATE paper_trades
+            position_row = con.execute('SELECT position_sol,pnl_sol,exit_time,capital_after_sol '
+                                       'FROM paper_trades WHERE mint=?', (mint,)).fetchone()
+            if any(value is not None for value in position_row[1:]):
+                raise ValueError('PAPER open position contains closure accounting')
+            position_sol = _financial_number(position_row[0], 'position_sol', positive=True)
+            result = _financial_number(result, 'net_return')
+            pnl_sol = _financial_number(position_sol * result, 'pnl_sol')
+            portfolio = con.execute('SELECT initial_capital_sol,realized_capital_sol '
+                                    'FROM paper_portfolio WHERE id=1').fetchone()
+            if portfolio is None:
+                raise ValueError('Missing PAPER portfolio for closure')
+            initial = _financial_number(portfolio[0], 'initial_capital_sol', positive=True)
+            capital_before = _financial_number(portfolio[1], 'realized_capital_sol')
+            closed_pnls = [_financial_number(row[0], 'historical pnl_sol') for row in
+                           con.execute("SELECT pnl_sol FROM paper_trades WHERE status='closed'")]
+            expected = _financial_number(initial + math.fsum(closed_pnls), 'ledger capital')
+            if not math.isclose(capital_before, expected, rel_tol=1e-9, abs_tol=1e-12):
+                raise ValueError('Unreconciled PAPER portfolio')
+            # Keep the full liability, including negative equity after extreme
+            # simulated costs. Never silently clip capital or alter trade PnL.
+            capital_after = _financial_number(capital_before + pnl_sol, 'capital_after_sol')
+            updated = con.execute('''UPDATE paper_trades
                            SET exit_time=?,exit_price=?,net_return=?,exit_reason=?,
                                peak_price=?,last_price=?,last_quote_time=?,pnl_sol=?,
                                capital_after_sol=?,status='closed'
                            WHERE mint=? AND status='open' ''',
                         (now, price, result, reason, peak, price, now, pnl_sol, capital_after, mint))
+            if updated.rowcount != 1:
+                raise RuntimeError('PAPER open-to-closed transition failed')
+            updated = con.execute('UPDATE paper_portfolio SET realized_capital_sol=?,updated_at=? WHERE id=1',
+                                  (capital_after, now))
+            if updated.rowcount != 1:
+                raise RuntimeError('PAPER portfolio update failed')
             return (f'EXIT {mint} reason={reason} simulated net={result:+.2%} '
                     f'PnL={pnl_sol:+.6f} SOL capital={capital_after:.6f} SOL')
         con.execute('''UPDATE paper_trades
