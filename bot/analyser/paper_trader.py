@@ -115,7 +115,7 @@ def _market_quote_from_pair(pair):
     liquidity = _finite_number(((pair.get('liquidity') or {}).get('usd')), 0)
     price = _finite_number(pair.get('priceUsd'), 0)
     pair_address = pair.get('pairAddress')
-    if liquidity is None or price is None or not pair_address:
+    if liquidity is None or price is None or price <= 0 or not pair_address:
         return None
     depth_usd, slippage_bps_est = _constant_product_estimate(pair, price)
     return MarketQuote(
@@ -445,7 +445,8 @@ def _quote_values(quote):
         liquidity, price, pair = quote
     except (TypeError, ValueError):
         raise ValueError('Quote invalide : liquidité, prix et paire requis.')
-    return MarketQuote(float(liquidity), float(price), str(pair))
+    return MarketQuote(float(liquidity),
+                       _financial_number(price, 'price_usd', nonnegative=True), str(pair))
 
 
 @contextmanager
@@ -520,6 +521,13 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                  max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
     market_quote = _quote_values(quote)
     liquidity, price, pair = market_quote
+    # Validate before persisting a quote or creating any bankroll/reservation.
+    # Zero remains valid for an existing position's total-loss observation.
+    _financial_number(price, 'price_usd', nonnegative=True)
+    trade = con.execute('''SELECT entry_time,entry_price,status,peak_price
+                           FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
+    if trade is None:
+        _financial_number(price, 'entry_price', positive=True)
     con.execute(
         '''INSERT OR IGNORE INTO paper_prices(
              mint,timestamp,price_usd,pair_address,liquidity_usd,
@@ -539,8 +547,6 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
             market_quote.slippage_notional_usd,
         ),
     )
-    trade = con.execute('''SELECT entry_time,entry_price,status,peak_price
-                           FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
     if trade and trade[2] == 'open':
         if not _close_locked:
             # Another connection may have inserted this position after the
