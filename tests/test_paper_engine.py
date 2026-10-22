@@ -32,9 +32,14 @@ class PaperEngineTests(unittest.TestCase):
         async def fake_quote(_session, _mint, **_kwargs):
             return MarketQuote(20000.0, 1.0, 'pair'), 0
 
-        with patch.object(paper_engine, 'fetch_quote', side_effect=fake_quote):
+        with patch.object(paper_engine, 'fetch_quote', side_effect=fake_quote), \
+                patch.object(paper_engine, 'record_quote', wraps=record_quote) as recorded:
             messages, cooldown, cache_changed = asyncio.run(paper_engine.collect_once(
-                con, object(), [], now=1060, model=None, max_age=900))
+                con, object(), [], now=1060, model=None, max_age=900,
+                max_open=7, max_entries_day=13, max_daily_loss_pct=4))
+        self.assertEqual(recorded.call_args.kwargs['max_open'], 7)
+        self.assertEqual(recorded.call_args.kwargs['max_entries_day'], 13)
+        self.assertEqual(recorded.call_args.kwargs['max_daily_loss_pct'], 4)
         self.assertEqual(cooldown, 0)
         self.assertFalse(cache_changed)
         self.assertTrue(any('PRIX_OK' in str(m) for m in messages))

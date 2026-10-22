@@ -35,7 +35,8 @@ class PaperCapitalReservationTests(unittest.TestCase):
 
     def enter(self, con, mint, pct=10):
         return record_quote(con, mint, 'c', 100, 160, (10000, 1, 'pair'), MODEL,
-                            position_pct=pct)
+                            position_pct=pct, max_open=100, max_entries_day=100,
+                            max_daily_loss_pct=None)
 
     def close(self, con, mint, price=1):
         return record_quote(con, mint, 'c', 100, 200, (10000, price, 'pair'), MODEL,

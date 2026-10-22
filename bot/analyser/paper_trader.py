@@ -477,13 +477,17 @@ def _financial_number(value, name, positive=False, nonnegative=False):
 def record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
-                 initial_capital_sol=10.0, position_pct=10.0):
+                 initial_capital_sol=10.0, position_pct=10.0, *,
+                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
     # Entries must read free capital and reserve it under the same write lock.
     # Closing and opening positions therefore share one serialization boundary.
     args = (con, mint, creator, signal_time, now, quote, model, hold, cost_bps,
             allow_entry, strategy_mode, force_exit_reason, initial_capital_sol, position_pct)
     with _paper_close_transaction(con):
-        return _record_quote(con, *args[1:], _close_locked=True)
+        return _record_quote(
+            con, *args[1:], _close_locked=True, max_open=max_open,
+            max_entries_day=max_entries_day, max_daily_loss_pct=max_daily_loss_pct,
+        )
 
 
 def _paper_free_capital(con):
@@ -512,7 +516,8 @@ def _paper_free_capital(con):
 def _record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
-                 initial_capital_sol=10.0, position_pct=10.0, _close_locked=False):
+                 initial_capital_sol=10.0, position_pct=10.0, _close_locked=False,
+                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
     market_quote = _quote_values(quote)
     liquidity, price, pair = market_quote
     con.execute(
@@ -545,6 +550,8 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                     con, mint, creator, signal_time, now, quote, model,
                     hold, cost_bps, allow_entry, strategy_mode, force_exit_reason,
                     initial_capital_sol, position_pct, _close_locked=True,
+                    max_open=max_open, max_entries_day=max_entries_day,
+                    max_daily_loss_pct=max_daily_loss_pct,
                 )
         entry_time, entry_price, _status, previous_peak = trade
         _financial_number(entry_price, 'entry_price', positive=True)
@@ -651,6 +658,12 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
     _financial_number(position_sol, 'position_sol', nonnegative=True)
     if position_sol <= 0 or position_sol > free_capital:
         return None
+    # The caller's earlier check is advisory: recheck the configured limits
+    # while holding the same SQLite write transaction as the reservation.
+    if not entry_allowed(con, now, max_open=max_open,
+                         max_entries_day=max_entries_day,
+                         max_daily_loss_pct=max_daily_loss_pct):
+        return None
     inserted = con.execute('''INSERT OR IGNORE INTO paper_trades
         (mint,creator,signal_time,entry_time,entry_price,peak_price,last_price,
          last_quote_time,cost_bps,strategy_mode,position_sol,status) VALUES(?,?,?,?,?,?,?,?,?,?,?, 'open')''',
@@ -703,6 +716,8 @@ async def run(db, model_path=None, poll=15, max_open=3,
                         message = record_quote(
                             con, mint, creator, ts, now, quote, model,
                             allow_entry=allowed,
+                            max_open=max_open, max_entries_day=max_entries_day,
+                            max_daily_loss_pct=max_daily_loss_pct,
                         )
                         con.commit()
                         if message:
