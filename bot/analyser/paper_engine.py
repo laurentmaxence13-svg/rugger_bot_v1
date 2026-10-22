@@ -10,6 +10,7 @@ import argparse
 import asyncio
 import bisect
 import json
+import math
 from dataclasses import asdict
 import sqlite3
 import time
@@ -260,51 +261,96 @@ def _decision_reason_counts(con):
     return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
 
 
+def _realized_metrics(con, started_at=None, ended_at=None):
+    """Realized SOL equity only; never compound position-level returns.
+
+    Inclusive session bounds match the existing reporting contract. Unknown
+    closure dates invalidate attribution; missing prior PnL invalidates the
+    opening capital. Every closed position must have a finite positive size.
+    A missing trade return does not invalidate known SOL PnL if its implied
+    return is finite and the portfolio reconciles; no trade return is imputed.
+    No portfolio is created or repaired by reporting.
+    """
+    initial, realized = paper_capital(con)
+    rows = con.execute(
+        "SELECT exit_time,net_return,cost_bps,pnl_sol,position_sol FROM paper_trades "
+        "WHERE status='closed' ORDER BY exit_time,mint"
+    ).fetchall()
+    finite = lambda v: isinstance(v, (int, float)) and math.isfinite(v)
+    invalid_positions = sum(not finite(r[4]) or r[4] <= 0 for r in rows)
+    unknown_dates = sum(not finite(r[0]) for r in rows)
+    prior = [r for r in rows if finite(r[0]) and started_at is not None and r[0] < started_at]
+    closed = [r for r in rows if finite(r[0])
+              and (started_at is None or r[0] >= started_at)
+              and (ended_at is None or r[0] <= ended_at)]
+    relevant = prior + closed
+    incomplete = sum(not finite(r[3]) for r in relevant) + unknown_dates
+    inconsistent = sum(
+        finite(r[3]) and finite(r[4]) and finite(r[1])
+        and not math.isclose(r[3], r[4] * r[1], rel_tol=1e-9, abs_tol=1e-12)
+        for r in relevant
+    )
+    # SOL PnL alone is usable only with a meaningful position denominator.
+    inconsistent += sum(
+        r[1] is None and finite(r[3]) and finite(r[4]) and r[4] > 0
+        and not finite(r[3] / r[4]) for r in relevant
+    )
+    reconciled = (finite(initial) and finite(realized)
+                  and all(finite(r[3]) for r in rows)
+                  and math.isclose(realized, initial + sum(r[3] for r in rows),
+                                   rel_tol=1e-9, abs_tol=1e-12))
+    valid = (finite(initial) and initial > 0 and not incomplete
+             and not inconsistent and not invalid_positions and reconciled)
+    opening = initial + sum(r[3] for r in prior) if valid else None
+    valid = valid and opening > 0
+    equity = peak = opening if valid else None
+    drawdown = 0.0
+    if valid:
+        for row in closed:
+            equity += row[3]
+            if equity < 0:
+                valid = False
+                break
+            peak = max(peak, equity)
+            drawdown = min(drawdown, equity / peak - 1.0)
+    pnls = [r[3] for r in closed] if valid else []
+    gains = sum(p for p in pnls if p > 0)
+    losses = -sum(p for p in pnls if p < 0)
+    returns = [r[1] for r in closed if finite(r[1])]
+    costs = [r[2] for r in closed]
+    return {
+        'average_net_return': sum(returns) / len(returns) if returns else None,
+        'net_return_after_costs': (equity - opening) / opening if valid else None,
+        'max_drawdown': drawdown if valid else None,
+        'win_rate': sum(p > 0 for p in pnls) / len(pnls) if pnls else None,
+        'assumed_cost_bps_total': sum(costs) if all(finite(c) for c in costs) else None,
+        'pnl_sol': sum(pnls) if valid else None,
+        'profit_factor': gains / losses if losses > 0 else None,
+        'capital_start_sol': opening if valid else None,
+        'capital_end_sol': equity if valid else None,
+        'performance_data_complete': bool(valid),
+        'capital_reconciled': bool(reconciled),
+        'incomplete_closed_trades': incomplete,
+        'inconsistent_closed_trades': inconsistent,
+        'invalid_position_closed_trades': invalid_positions,
+        'closed_trades': len(closed),
+        'wins': sum(p > 0 for p in pnls) if valid else None,
+        'losses': sum(p <= 0 for p in pnls) if valid else None,
+    }
+
+
 def _performance_metrics(con):
     if not _table_exists(con, 'paper_trades'):
         return {
             'average_net_return': None,
-            'net_return_after_costs': 0.0,
-            'max_drawdown': 0.0,
+            'net_return_after_costs': None,
+            'max_drawdown': None,
             'win_rate': None,
             'assumed_cost_bps_total': 0.0,
-            'pnl_sol': 0.0, 'profit_factor': None,
+            'pnl_sol': None, 'profit_factor': None,
+            'performance_data_complete': False, 'capital_reconciled': False,
         }
-    rows = con.execute(
-        '''SELECT exit_time,net_return,cost_bps,pnl_sol
-           FROM paper_trades
-           WHERE status='closed' AND net_return IS NOT NULL
-           ORDER BY exit_time,mint'''
-    ).fetchall()
-    if not rows:
-        return {
-            'average_net_return': None,
-            'net_return_after_costs': 0.0,
-            'max_drawdown': 0.0,
-            'win_rate': None,
-            'assumed_cost_bps_total': 0.0,
-            'pnl_sol': 0.0, 'profit_factor': None,
-        }
-    returns = [float(row[1]) for row in rows]
-    pnl_sol = [float(row[3] or 0.0) for row in rows]
-    gross_profit = sum(v for v in pnl_sol if v > 0)
-    gross_loss = -sum(v for v in pnl_sol if v < 0)
-    profit_factor = (gross_profit / gross_loss) if gross_loss > 0 else (float('inf') if gross_profit > 0 else None)
-    equity = peak = 1.0
-    max_drawdown = 0.0
-    for value in returns:
-        equity *= 1.0 + value
-        peak = max(peak, equity)
-        max_drawdown = min(max_drawdown, equity / peak - 1.0)
-    return {
-        'average_net_return': sum(returns) / len(returns),
-        'net_return_after_costs': equity - 1.0,
-        'max_drawdown': max_drawdown,
-        'win_rate': sum(value > 0 for value in returns) / len(returns),
-        'assumed_cost_bps_total': sum(float(row[2] or 0) for row in rows),
-        'pnl_sol': sum(pnl_sol),
-        'profit_factor': profit_factor,
-    }
+    return _realized_metrics(con)
 
 
 def _market_data_coverage(con):
@@ -424,6 +470,12 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'realized_capital_sol': realized_capital,
         'pnl_sol': metrics.get('pnl_sol', 0.0),
         'profit_factor': metrics.get('profit_factor'),
+        'performance_data_complete': metrics.get('performance_data_complete', False),
+        'capital_reconciled': metrics.get('capital_reconciled', False),
+        'incomplete_closed_trades': metrics.get('incomplete_closed_trades', 0),
+        'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
+        'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
+        'equity_basis': 'realized_sol',
         'market_data_coverage': _market_data_coverage(con),
         'rejection_reasons': _decision_reason_counts(con),
         'validation_status': str(validation_status),
@@ -719,24 +771,16 @@ def _session_summary(con, started_at, ended_at):
         "SELECT mint,enter,reasons_json FROM paper_decisions WHERE decision_time>=? AND decision_time<=?",
         (int(started_at), int(ended_at)),
     ).fetchall()
-    trades = con.execute(
-        "SELECT status,net_return,pnl_sol,cost_bps FROM paper_trades WHERE entry_time>=? AND entry_time<=?",
+    entries = con.execute(
+        "SELECT COUNT(*) FROM paper_trades WHERE entry_time>=? AND entry_time<=?",
         (int(started_at), int(ended_at)),
-    ).fetchall()
-    closed = [r for r in trades if r[0] == 'closed' and r[1] is not None]
-    returns = [float(r[1]) for r in closed]
-    pnls = [float(r[2] or 0.0) for r in closed]
-    wins = sum(v > 0 for v in returns)
-    losses = sum(v <= 0 for v in returns)
-    gp = sum(v for v in pnls if v > 0)
-    gl = -sum(v for v in pnls if v < 0)
-    pf = gp / gl if gl > 0 else None
-    equity = peak = 1.0
-    max_dd = 0.0
-    for v in returns:
-        equity *= 1.0 + v
-        peak = max(peak, equity)
-        max_dd = min(max_dd, equity / peak - 1.0)
+    ).fetchone()[0]
+    open_positions = con.execute(
+        "SELECT COUNT(*) FROM paper_trades WHERE entry_time<=? "
+        "AND (status='open' OR (status='closed' AND exit_time>?))",
+        (int(ended_at), int(ended_at)),
+    ).fetchone()[0]
+    metrics = _realized_metrics(con, int(started_at), int(ended_at))
     reasons = {}
     for _mint, enter, raw in decisions:
         if int(enter):
@@ -755,12 +799,11 @@ def _session_summary(con, started_at, ended_at):
         'rejections': sum(1 for r in decisions if not int(r[1])),
         'accepted_decisions': sum(1 for r in decisions if int(r[1])),
         'accepted_candidates': len({r[0] for r in decisions if int(r[1])}),
-        'entries': len(trades), 'open_positions': sum(r[0]=='open' for r in trades),
-        'closed_trades': len(closed), 'wins': wins, 'losses': losses,
-        'win_rate': wins/len(closed) if closed else None,
-        'pnl_sol': sum(pnls), 'net_return_compounded': equity-1.0 if closed else 0.0,
-        'profit_factor': pf, 'max_drawdown': max_dd,
-        'assumed_cost_bps_total': sum(float(r[3] or 0.0) for r in closed),
+        'entries': entries, 'open_positions': open_positions,
+        **metrics,
+        # Legacy key retained for report consumers; now a portfolio return.
+        'net_return_compounded': metrics['net_return_after_costs'],
+        'equity_basis': 'realized_sol',
         'rejection_reasons': dict(sorted(reasons.items(), key=lambda x:(-x[1],x[0]))),
     }
 
@@ -780,13 +823,16 @@ def _print_session_summary(summary, initial_capital, final_capital):
     print(f"Trades clos / ouverts: {summary['closed_trades']} / {summary['open_positions']}", flush=True)
     print(f"Gagnants / perdants  : {summary['wins']} / {summary['losses']}", flush=True)
     print(f"Winrate              : {pct(summary['win_rate'])}", flush=True)
-    print(f"PnL net              : {summary['pnl_sol']:+.6f} SOL", flush=True)
+    pnl_text = 'N/D' if summary['pnl_sol'] is None else f"{summary['pnl_sol']:+.6f} SOL"
+    print(f"PnL net              : {pnl_text}", flush=True)
     print(f"Profit factor        : {pf_txt}", flush=True)
     print(f"Drawdown max         : {pct(summary['max_drawdown'])}", flush=True)
     print(f"Capital              : {initial_capital:.6f} -> {final_capital:.6f} SOL", flush=True)
     top = list(summary['rejection_reasons'].items())[:5]
     print('Top rejets           : ' + (', '.join(f'{k}={v}' for k,v in top) if top else 'N/D'), flush=True)
-    if summary['closed_trades'] == 0:
+    if not summary.get('performance_data_complete', True):
+        conclusion = 'INSUFFISANT : historique financier incomplet ou incoherent.'
+    elif summary['closed_trades'] == 0:
         conclusion = 'INSUFFISANT : aucun trade PAPER cloture pendant la session.'
     elif summary['closed_trades'] < 5:
         conclusion = 'INSUFFISANT : echantillon de trades trop faible pour conclure.'

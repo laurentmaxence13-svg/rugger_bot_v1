@@ -18,6 +18,8 @@ class PaperSessionTests(unittest.TestCase):
                         ('new','c',1000,1010,1,1020,1.2,.18,200,'shadow_final',1,.18,'closed'))
             con.execute("INSERT INTO paper_decisions(mint,creator,signal_time,decision_time,strategy_mode,enter,entry_allowed,score,reasons_json,risk_flags_json,prior_launches,behavior_known,dev_sales,relay_transfers,bundle_transactions,bundle_wallets,liquidity_usd,price_usd,quote_count,hold_seconds) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                         ('new','c',1000,1005,'shadow_final',1,1,70,'[]','[]',1,1,0,0,0,0,9000,1e-5,1,3600))
+            # Realized capital must include both synthetic closed trades.
+            con.execute('UPDATE paper_portfolio SET realized_capital_sol=10.26')
             con.commit()
             s = _session_summary(con, 1000, 1100)
             self.assertEqual(s['entries'], 1)
