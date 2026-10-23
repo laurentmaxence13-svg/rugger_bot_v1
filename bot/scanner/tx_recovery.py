@@ -45,23 +45,37 @@ class TransactionRecovery:
         return sqlite3.connect(self.path, timeout=1.0, isolation_level=None)
 
     def enqueue(self, event, now):
-        signature, slot, received = event['signature'], event['slot'], event['received_at']
-        if not isinstance(signature, str) or not signature or not isinstance(slot, int) or slot < 0:
-            raise ValueError('Invalid scanner event identity')
-        if not isinstance(received, datetime) or received.tzinfo is None:
-            raise ValueError('Scanner reception time must include timezone')
-        with closing(self.connect()) as con, con:
-            con.execute('BEGIN IMMEDIATE')
+        return bool(self.enqueue_batch([event], now))
+
+    def enqueue_batch(self, events, now, *, con=None):
+        """The backfill cursor may share the exact transaction of this batch."""
+        if con is None:
+            with closing(self.connect()) as owned, owned:
+                owned.execute('BEGIN IMMEDIATE')
+                return self.enqueue_batch(events, now, con=owned)
+        if not con.in_transaction:
+            raise ValueError('Recovery batch requires a transaction')
+        count = con.execute("SELECT COUNT(*) FROM scanner_tx_recovery WHERE state='pending'").fetchone()[0]
+        inserted = 0
+        for event in events:
+            signature, slot, received = event['signature'], event['slot'], event['received_at']
+            if not isinstance(signature, str) or not signature or not isinstance(slot, int) or slot < 0:
+                raise ValueError('Invalid scanner event identity')
+            if not isinstance(received, datetime) or received.tzinfo is None:
+                raise ValueError('Scanner reception time must include timezone')
             if con.execute('SELECT 1 FROM scanner_tx_recovery WHERE signature=?', (signature,)).fetchone():
-                return False
-            count = con.execute("SELECT COUNT(*) FROM scanner_tx_recovery WHERE state='pending'").fetchone()[0]
+                continue
             if count >= self.max_pending:
                 print(f'[TX RECOVERY] QUEUE_FULL {signature[:12]}: '
                       'scanner stopped; pending work retained.', flush=True)
                 raise RecoveryQueueFull('Scanner recovery queue capacity reached')
-            con.execute("INSERT INTO scanner_tx_recovery VALUES(?,?,?,'pending',0,?,NULL,?)",
-                        (signature, slot, received.isoformat(), now, now))
-        return True
+            written = con.execute("INSERT INTO scanner_tx_recovery VALUES(?,?,?,'pending',0,?,NULL,?)",
+                                  (signature, slot, received.isoformat(), now, now))
+            if written.rowcount != 1:
+                raise RuntimeError('Recovery signature was not inserted')
+            count += 1
+            inserted += 1
+        return inserted
 
     def claim_due(self, now):
         with closing(self.connect()) as con, con:

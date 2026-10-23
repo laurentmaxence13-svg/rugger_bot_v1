@@ -10,6 +10,7 @@ from bot.database.db import Database
 from bot.solana.rpc import SolanaRPC
 from bot.solana.websocket import stream_program_logs
 from bot.scanner.tx_recovery import TransactionRecovery, recover_transactions
+from bot.scanner.backfill import ProgramBackfill
 
 
 # Protection du RPC Helius. Une porte adaptative ralentit encore après un 429.
@@ -43,10 +44,30 @@ async def run(rpc_gate=None, db_path=None):
                 max_attempts=1,
             )
 
-        await recover_transactions(
-            stream_program_logs(settings.ws_url, settings.raydium_launchpad_program_id),
-            store, fetch_transaction,
-        )
+        async def fetch_page(program_id, options):
+            # Same Helius gate and fallback as transaction recovery; bounded
+            # to one provider round per page (at most two HTTP requests).
+            return await rpc_json(rpc, settings.rpc_url, gate, 'getSignaturesForAddress',
+                                  [program_id, options], max_attempts=1)
+
+        backfill = ProgramBackfill(store, settings.raydium_launchpad_program_id, fetch_page)
+        tasks = [asyncio.create_task(backfill.run()), asyncio.create_task(recover_transactions(
+            stream_program_logs(settings.ws_url, settings.raydium_launchpad_program_id,
+                                on_state=backfill.on_state), store, fetch_transaction,
+        ))]
+        stop_reason = 'stream_ended'
+        try:
+            done, _pending = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            for task in done:
+                await task
+        except BaseException as error:
+            stop_reason = type(error).__name__
+            raise
+        finally:
+            for task in tasks:
+                task.cancel()
+            await asyncio.gather(*tasks, return_exceptions=True)
+            await backfill.on_state({'state': 'disconnected', 'reason': stop_reason})
 
 
 def main():
