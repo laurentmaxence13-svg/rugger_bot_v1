@@ -9,6 +9,7 @@ Sans modèle hors échantillon validé, il collecte uniquement les cotations.
 import argparse
 import asyncio
 import bisect
+from contextlib import closing
 import json
 import math
 from dataclasses import asdict
@@ -596,7 +597,8 @@ async def collect_once(con, session, cached, now, model=None,
                        max_daily_loss_pct=10.0, max_candidates=10,
                        max_age=7200, live_fetcher=None,
                        min_liquidity=1000, strategy_mode='validated',
-                       initial_capital_sol=10.0, position_pct=10.0):
+                       initial_capital_sol=10.0, position_pct=10.0,
+                       entry_guard=None):
     """Collect one bounded cycle; return messages and cooldown seconds."""
     signals = recent_candidates(con, now, max_age=max_age, limit=max_candidates)
     cache_changed = False
@@ -729,7 +731,7 @@ async def collect_once(con, session, cached, now, model=None,
                 force_exit_reason = 'RELAY_RISK'
         message = record_quote(
             con, mint, creator, signal_time, now_quote, quote, model_for_quote,
-            allow_entry=allowed, strategy_mode=strategy_mode,
+            allow_entry=allowed and (entry_guard is None or entry_guard()), strategy_mode=strategy_mode,
             force_exit_reason=force_exit_reason,
             initial_capital_sol=initial_capital_sol, position_pct=position_pct,
             max_open=max_open, max_entries_day=max_entries_day,
@@ -852,7 +854,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
               live_behavior=True, rpc_interval=2.5, behavior_max_tx=10,
               rpc_gate=None, min_liquidity=1000, shadow_baseline=False,
               shadow_final=False, initial_capital_sol=10.0, position_pct=10.0,
-              session_seconds=0, session_report=None):
+              session_seconds=0, session_report=None, entry_guard=None):
     """Run the paper collector forever; no model means collection only."""
     if shadow_baseline and shadow_final:
         raise ValueError('Choisir un seul mode shadow.')
@@ -923,6 +925,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                         min_liquidity=min_liquidity,
                         strategy_mode=strategy_mode,
                         initial_capital_sol=initial_capital_sol, position_pct=position_pct,
+                        entry_guard=entry_guard,
                     )
                     if cache_changed:
                         cached = load_cached_transactions(db)
@@ -1006,15 +1009,61 @@ async def run_with_scanner(args):
         shadow_baseline=args.shadow_baseline, shadow_final=args.shadow_final,
         initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
         session_seconds=args.session_seconds, session_report=args.session_report,
+        entry_guard=lambda: not scanner_task.done(),
     ))
+    last_scanner_state = None
     try:
-        await engine_task
+        while True:
+            done, _ = await asyncio.wait(
+                (scanner_task, engine_task), timeout=1.0,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+            if scanner_task in done:
+                print('[SCANNER] ECHEC : scanner arrete; entrees PAPER bloquees, arret du moteur.', flush=True)
+                if scanner_task.cancelled():
+                    raise RuntimeError('Scanner annule de facon inattendue')
+                error = scanner_task.exception()
+                if error is not None:
+                    raise RuntimeError('Echec du scanner') from error
+                raise RuntimeError('Scanner termine sans exception de facon inattendue')
+            if engine_task in done:
+                await engine_task
+                return
+            last_scanner_state = _print_scanner_state(args.db, last_scanner_state)
     finally:
-        scanner_task.cancel()
-        try:
-            await scanner_task
-        except asyncio.CancelledError:
-            pass
+        await _stop_supervised_tasks((engine_task, scanner_task))
+
+
+def _print_scanner_state(db, previous=None):
+    """Observe existing SQLite state only; task liveness is not coverage."""
+    try:
+        with closing(sqlite3.connect(Path(db).resolve().as_uri() + '?mode=ro', uri=True,
+                                     timeout=0.1)) as con:
+            rows = con.execute(
+                'SELECT ws_state,history_status FROM scanner_backfill_state'
+            ).fetchall()
+    except sqlite3.Error:
+        rows = []
+    states = ', '.join(f'ws={ws} backfill={history}' for ws, history in rows)
+    if states != previous:
+        print('[SCANNER] ' + (states or 'etat SQLite inconnu') +
+              '; couverture des lancements non garantie.', flush=True)
+    return states
+
+
+async def _stop_supervised_tasks(tasks, timeout=5.0):
+    for task in tasks:
+        if not task.done():
+            task.cancel()
+    done, pending = await asyncio.wait(tasks, timeout=timeout)
+    for task in done:
+        if not task.cancelled():
+            task.exception()  # Retrieve all failures, including simultaneous ones.
+    if pending:
+        for task in pending:
+            task.cancel()
+            task.add_done_callback(lambda t: None if t.cancelled() else t.exception())
+        raise RuntimeError('Nettoyage asyncio incomplet apres delai limite')
 
 
 def main():
