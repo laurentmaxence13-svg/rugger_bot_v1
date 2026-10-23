@@ -48,6 +48,8 @@ from bot.analyser.paper_trader import (
     paper_capital,
     fetch_quote,
     record_quote,
+    skip_recorded_quote,
+    _paper_close_transaction,
     setup,
 )
 from bot.config import BASE_DIR, get_settings
@@ -407,6 +409,9 @@ def _quote_provenance(con):
             {'unknown': total} if total else {})
     funding = con.execute('SELECT COUNT(*) FROM paper_prices WHERE funding_usd IS NOT NULL'
                           ).fetchone()[0] if 'funding_usd' in columns else 0
+    conflicts, rejected = con.execute(
+        'SELECT COUNT(*),COALESCE(SUM(rejected_observations),0) FROM paper_quote_conflicts'
+    ).fetchone() if _table_exists(con, 'paper_quote_conflicts') else (0, 0)
     return {
         'quotes': total,
         'source_counts': sources,
@@ -420,6 +425,10 @@ def _quote_provenance(con):
         'provider_age_measurable_quotes': 0,
         'provider_age_seconds': None,
         'freshness_status': 'unknown_no_provider_quote_timestamp',
+        'conflicting_quote_keys': conflicts,
+        'rejected_conflicting_observations': rejected,
+        'conflict_history_complete': False,
+        'duplicate_policy': 'first_observation_retained_repeats_not_processed',
     }
 
 
@@ -703,93 +712,97 @@ async def collect_once(con, session, cached, now, model=None,
             cache_changed = changed or cache_changed
             if changed:
                 cached = load_cached_transactions(live_fetcher.db_path)
-        existing = con.execute(
-            'SELECT 1 FROM paper_trades WHERE mint=?', (mint,)
-        ).fetchone()
-        allowed = bool(existing) or entry_allowed(
-            con, now_quote, max_open=max_open,
-            max_entries_day=max_entries_day,
-            max_daily_loss_pct=max_daily_loss_pct,
-        )
-        decision = None
-        model_for_quote = model
-        force_exit_reason = None
-        if strategy_mode == 'shadow_final':
-            features = build_features(
-                cached, mint, creator, signal_time, now_quote,
-                price_history(con, mint), quote,
-                prior_launches=prior_creator_launches(con, creator, signal_time),
+        # No await inside: serialize the history check, features, decision and ledger.
+        with _paper_close_transaction(con):
+            if skip_recorded_quote(con, mint, now_quote, quote):
+                continue
+            existing = con.execute(
+                'SELECT 1 FROM paper_trades WHERE mint=?', (mint,)
+            ).fetchone()
+            allowed = bool(existing) or entry_allowed(
+                con, now_quote, max_open=max_open,
+                max_entries_day=max_entries_day,
+                max_daily_loss_pct=max_daily_loss_pct,
             )
-            decision = decide(features, min_liquidity=min_liquidity)
-            record_decision(
-                con, features, decision, strategy_mode=strategy_mode,
-                entry_permission=allowed,
-            )
-            report = audit_mint(con, mint, creator, signal_time, now_quote,
-                'ENTRY_PAPER_AUTORISEE' if decision.enter and allowed else 'REJET',
-                quote=quote, features=features, decision=decision,
-                pool_state=pool_address,
-                reason='score et règles de risque' if decision.enter and allowed
-                    else '; '.join(decision.reasons) or 'risque ou limites PAPER',
-                prior_launches=features.prior_launches,
-                behavior=behavior_snapshot(cached, mint, creator, signal_time, now_quote))
-            if _emit_analysis_once(mint, report, now_quote):
-                messages.append(audit_message(report))
-            outcome = 'DECISION_ENTRY' if decision.enter and allowed else 'REJET'
-            detail = (
-                f'score={decision.score:.1f}; '
-                f"risk={','.join(decision.risk_flags) or 'none'}"
-            )
-            msg = set_signal_status(
-                con, mint, creator, signal_time, now_quote, outcome, detail,
-            )
-            if msg:
-                messages.append(msg)
-            # An existing position must still be managed even if the next
-            # observation becomes a rejection. New positions require entry.
-            if decision.enter or existing:
-                model_for_quote = decision.to_paper_model()
-            else:
-                model_for_quote = None
-            if existing and 'vente_developpeur' in decision.risk_flags:
-                force_exit_reason = 'DEV_SALE_RISK'
-            elif existing and 'transfert_relais' in decision.risk_flags:
-                force_exit_reason = 'RELAY_RISK'
-        message = record_quote(
-            con, mint, creator, signal_time, now_quote, quote, model_for_quote,
-            allow_entry=allowed and (entry_guard is None or entry_guard()), strategy_mode=strategy_mode,
-            force_exit_reason=force_exit_reason,
-            initial_capital_sol=initial_capital_sol, position_pct=position_pct,
-            max_open=max_open, max_entries_day=max_entries_day,
-            max_daily_loss_pct=max_daily_loss_pct,
-        )
-        snapshot = behavior_snapshot(cached, mint, creator, signal_time, now_quote)
-        if message and message.startswith('ENTRY '):
-            status_msg = set_signal_status(
-                con, mint, creator, signal_time, now_quote,
-                'TRADE_PAPER_OUVERT', 'position virtuelle ouverte',
-            )
-            if status_msg:
-                messages.append(status_msg)
-        elif message and message.startswith('EXIT '):
-            status_msg = set_signal_status(
-                con, mint, creator, signal_time, now_quote,
-                'TRADE_PAPER_FERME', message.split(' reason=', 1)[-1][:120],
-            )
-            if status_msg:
-                messages.append(status_msg)
-        if message:
-            if decision:
-                message = (
-                    f"{message} score={decision.score:.1f}/100 "
+            decision = None
+            model_for_quote = model
+            force_exit_reason = None
+            if strategy_mode == 'shadow_final':
+                features = build_features(
+                    cached, mint, creator, signal_time, now_quote,
+                    price_history(con, mint), quote,
+                    prior_launches=prior_creator_launches(con, creator, signal_time),
+                )
+                decision = decide(features, min_liquidity=min_liquidity)
+                record_decision(
+                    con, features, decision, strategy_mode=strategy_mode,
+                    entry_permission=allowed,
+                )
+                report = audit_mint(con, mint, creator, signal_time, now_quote,
+                    'ENTRY_PAPER_AUTORISEE' if decision.enter and allowed else 'REJET',
+                    quote=quote, features=features, decision=decision,
+                    pool_state=pool_address,
+                    reason='score et règles de risque' if decision.enter and allowed
+                        else '; '.join(decision.reasons) or 'risque ou limites PAPER',
+                    prior_launches=features.prior_launches,
+                    behavior=behavior_snapshot(cached, mint, creator, signal_time, now_quote))
+                if _emit_analysis_once(mint, report, now_quote):
+                    messages.append(audit_message(report))
+                outcome = 'DECISION_ENTRY' if decision.enter and allowed else 'REJET'
+                detail = (
+                    f'score={decision.score:.1f}; '
                     f"risk={','.join(decision.risk_flags) or 'none'}"
                 )
-            messages.append(message)
-        if snapshot['dev_sales'] or snapshot['relay_transfers']:
-            messages.append(
-                f"BEHAVIOR {mint[:12]} dev_sales={snapshot['dev_sales']} "
-                f"relay={snapshot['relay_transfers']}"
+                msg = set_signal_status(
+                    con, mint, creator, signal_time, now_quote, outcome, detail,
+                )
+                if msg:
+                    messages.append(msg)
+                # An existing position must still be managed even if the next
+                # observation becomes a rejection. New positions require entry.
+                if decision.enter or existing:
+                    model_for_quote = decision.to_paper_model()
+                else:
+                    model_for_quote = None
+                if existing and 'vente_developpeur' in decision.risk_flags:
+                    force_exit_reason = 'DEV_SALE_RISK'
+                elif existing and 'transfert_relais' in decision.risk_flags:
+                    force_exit_reason = 'RELAY_RISK'
+            message = record_quote(
+                con, mint, creator, signal_time, now_quote, quote, model_for_quote,
+                allow_entry=allowed and (entry_guard is None or entry_guard()), strategy_mode=strategy_mode,
+                force_exit_reason=force_exit_reason,
+                initial_capital_sol=initial_capital_sol, position_pct=position_pct,
+                max_open=max_open, max_entries_day=max_entries_day,
+                max_daily_loss_pct=max_daily_loss_pct,
             )
+            snapshot = behavior_snapshot(cached, mint, creator, signal_time, now_quote)
+            if message and message.startswith('ENTRY '):
+                status_msg = set_signal_status(
+                    con, mint, creator, signal_time, now_quote,
+                    'TRADE_PAPER_OUVERT', 'position virtuelle ouverte',
+                )
+                if status_msg:
+                    messages.append(status_msg)
+            elif message and message.startswith('EXIT '):
+                status_msg = set_signal_status(
+                    con, mint, creator, signal_time, now_quote,
+                    'TRADE_PAPER_FERME', message.split(' reason=', 1)[-1][:120],
+                )
+                if status_msg:
+                    messages.append(status_msg)
+            if message:
+                if decision:
+                    message = (
+                        f"{message} score={decision.score:.1f}/100 "
+                        f"risk={','.join(decision.risk_flags) or 'none'}"
+                    )
+                messages.append(message)
+            if snapshot['dev_sales'] or snapshot['relay_transfers']:
+                messages.append(
+                    f"BEHAVIOR {mint[:12]} dev_sales={snapshot['dev_sales']} "
+                    f"relay={snapshot['relay_transfers']}"
+                )
     con.commit()
     return messages, cooldown, cache_changed
 

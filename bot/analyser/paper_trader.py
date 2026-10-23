@@ -151,6 +151,11 @@ def _market_quote_from_pair(pair):
 
 def setup(con):
     con.executescript('''
+    CREATE TABLE IF NOT EXISTS paper_quote_conflicts (
+      mint TEXT NOT NULL, timestamp INTEGER NOT NULL,
+      rejected_observations INTEGER NOT NULL,
+      differing_fields_json TEXT NOT NULL,
+      PRIMARY KEY(mint,timestamp));
     CREATE TABLE IF NOT EXISTS paper_prices (
       mint TEXT NOT NULL, timestamp INTEGER NOT NULL, price_usd REAL NOT NULL,
       pair_address TEXT NOT NULL, liquidity_usd REAL NOT NULL,
@@ -517,21 +522,17 @@ def _paper_free_capital(con):
     return capital, _financial_number(capital - committed, 'free capital')
 
 
-def _record_quote(con, mint, creator, signal_time, now, quote, model,
-                 hold=3600, cost_bps=200, allow_entry=True,
-                 strategy_mode='validated', force_exit_reason=None,
-                 initial_capital_sol=10.0, position_pct=10.0, _close_locked=False,
-                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
-    market_quote = _quote_values(quote)
-    liquidity, price, pair = market_quote
-    # Validate before persisting a quote or creating any bankroll/reservation.
-    # Zero remains valid for an existing position's total-loss observation.
-    _financial_number(price, 'price_usd', nonnegative=True)
-    trade = con.execute('''SELECT entry_time,entry_price,status,peak_price
-                           FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
-    if trade is None:
-        _financial_number(price, 'entry_price', positive=True)
-    price_values = (
+PRICE_FIELDS = (
+    'price_usd', 'pair_address', 'liquidity_usd', 'volume_5m_usd',
+    'volume_24h_usd', 'price_change_5m_pct', 'price_change_1h_pct',
+    'tx_buys_5m', 'tx_sells_5m', 'market_cap_usd', 'fdv_usd', 'fee_bps',
+    'depth_usd', 'slippage_bps_est', 'slippage_notional_usd',
+    'quote_source', 'funding_usd',
+)
+
+
+def _price_values(mint, now, market_quote):
+    return (
         mint, now, market_quote.price_usd, market_quote.pair_address,
         market_quote.liquidity_usd, market_quote.volume_5m_usd,
         market_quote.volume_24h_usd, market_quote.price_change_5m_pct,
@@ -544,8 +545,61 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
         if isinstance(market_quote.quote_source, str) else None,
         _finite_number(market_quote.funding_usd, 0),
     )
-    inserted_price = con.execute(
-        '''INSERT OR IGNORE INTO paper_prices(
+
+
+def skip_recorded_quote(con, mint, now, quote):
+    """Under the caller's write transaction, reject repeats before decisions.
+
+    First observation wins, including unknown metadata. Never merge NULLs.
+    Identical repeats do nothing; contradictions are counted without revaluation.
+    """
+    incoming = _price_values(mint, now, _quote_values(quote))[2:]
+    stored = con.execute('SELECT ' + ','.join(PRICE_FIELDS) +
+                         ' FROM paper_prices WHERE mint=? AND timestamp=?',
+                         (mint, now)).fetchone()
+    if stored is None:
+        return False
+    differences = [name for name, old, new in zip(PRICE_FIELDS, stored, incoming)
+                   if old != new]
+    if differences:
+        con.execute("""INSERT INTO paper_quote_conflicts VALUES(?,?,1,?)
+            ON CONFLICT(mint,timestamp) DO UPDATE SET
+            rejected_observations=rejected_observations+1,
+            differing_fields_json=excluded.differing_fields_json""",
+            (mint, now, json.dumps(differences)))
+        print('[PAPER PRICES] doublon contradictoire : premiere cotation conservee; '
+              'observation rejetee avant decision et traitement PAPER.', flush=True)
+    return True
+
+
+def _record_quote(con, mint, creator, signal_time, now, quote, model,
+                 hold=3600, cost_bps=200, allow_entry=True,
+                 strategy_mode='validated', force_exit_reason=None,
+                 initial_capital_sol=10.0, position_pct=10.0, _close_locked=False,
+                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
+    if not _close_locked:
+        with _paper_close_transaction(con):
+            return _record_quote(
+                con, mint, creator, signal_time, now, quote, model,
+                hold, cost_bps, allow_entry, strategy_mode, force_exit_reason,
+                initial_capital_sol, position_pct, _close_locked=True,
+                max_open=max_open, max_entries_day=max_entries_day,
+                max_daily_loss_pct=max_daily_loss_pct,
+            )
+    market_quote = _quote_values(quote)
+    liquidity, price, pair = market_quote
+    # Validate before persisting a quote or creating any bankroll/reservation.
+    # Zero remains valid for an existing position's total-loss observation.
+    _financial_number(price, 'price_usd', nonnegative=True)
+    trade = con.execute('''SELECT entry_time,entry_price,status,peak_price
+                           FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
+    if trade is None:
+        _financial_number(price, 'entry_price', positive=True)
+    if skip_recorded_quote(con, mint, now, market_quote):
+        return None
+    price_values = _price_values(mint, now, market_quote)
+    con.execute(
+        '''INSERT INTO paper_prices(
              mint,timestamp,price_usd,pair_address,liquidity_usd,
              volume_5m_usd,volume_24h_usd,price_change_5m_pct,
              price_change_1h_pct,tx_buys_5m,tx_sells_5m,market_cap_usd,
@@ -553,27 +607,7 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
              slippage_notional_usd,quote_source,funding_usd)
            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', price_values,
     )
-    if not inserted_price.rowcount:
-        stored = con.execute('''SELECT mint,timestamp,price_usd,pair_address,liquidity_usd,
-            volume_5m_usd,volume_24h_usd,price_change_5m_pct,price_change_1h_pct,
-            tx_buys_5m,tx_sells_5m,market_cap_usd,fdv_usd,fee_bps,depth_usd,
-            slippage_bps_est,slippage_notional_usd,quote_source,funding_usd
-            FROM paper_prices WHERE mint=? AND timestamp=?''', (mint, now)).fetchone()
-        if stored != price_values:
-            print('[PAPER PRICES] doublon contradictoire : premiere cotation conservee; '
-                  'traitement PAPER historique inchange.', flush=True)
     if trade and trade[2] == 'open':
-        if not _close_locked:
-            # Another connection may have inserted this position after the
-            # public wrapper's preliminary read. Still lock and reread it.
-            with _paper_close_transaction(con):
-                return _record_quote(
-                    con, mint, creator, signal_time, now, quote, model,
-                    hold, cost_bps, allow_entry, strategy_mode, force_exit_reason,
-                    initial_capital_sol, position_pct, _close_locked=True,
-                    max_open=max_open, max_entries_day=max_entries_day,
-                    max_daily_loss_pct=max_daily_loss_pct,
-                )
         entry_time, entry_price, _status, previous_peak = trade
         _financial_number(entry_price, 'entry_price', positive=True)
         _financial_number(price, 'exit_price', nonnegative=True)
