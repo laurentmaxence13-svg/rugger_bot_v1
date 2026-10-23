@@ -398,6 +398,31 @@ def _market_data_coverage(con):
     return result
 
 
+def _quote_provenance(con):
+    """Coverage of stored observations, not a claim of executable prices."""
+    columns = {r[1] for r in con.execute('PRAGMA table_info(paper_prices)')}
+    total = con.execute('SELECT COUNT(*) FROM paper_prices').fetchone()[0]
+    sources = dict(con.execute('''SELECT COALESCE(NULLIF(TRIM(quote_source),''),'unknown'),
+        COUNT(*) FROM paper_prices GROUP BY 1''')) if 'quote_source' in columns else (
+            {'unknown': total} if total else {})
+    funding = con.execute('SELECT COUNT(*) FROM paper_prices WHERE funding_usd IS NOT NULL'
+                          ).fetchone()[0] if 'funding_usd' in columns else 0
+    return {
+        'quotes': total,
+        'source_counts': sources,
+        'unknown_source_quotes': sources.get('unknown', 0),
+        'funding_known_quotes': funding,
+        'funding_unknown_quotes': total - funding,
+        'funding_coverage': funding / total if total else 0.0,
+        'collection_time_field': 'timestamp',
+        'provider_timestamp_known_quotes': 0,
+        'provider_timestamp_unknown_quotes': total,
+        'provider_age_measurable_quotes': 0,
+        'provider_age_seconds': None,
+        'freshness_status': 'unknown_no_provider_quote_timestamp',
+    }
+
+
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
                  validation_status='not_validated'):
     """Write an operational report, explicitly marked PAPER ONLY."""
@@ -478,6 +503,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
         'market_data_coverage': _market_data_coverage(con),
+        'quote_provenance': _quote_provenance(con),
         'rejection_reasons': _decision_reason_counts(con),
         'validation_status': str(validation_status),
     }

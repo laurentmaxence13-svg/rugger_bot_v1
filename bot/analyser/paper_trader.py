@@ -47,7 +47,7 @@ class MarketQuote:
     depth_usd: float | None = None
     slippage_bps_est: float | None = None
     slippage_notional_usd: float | None = None
-    quote_source: str = 'dex_market'
+    quote_source: str | None = None
     funding_usd: float | None = None
 
     def __iter__(self):
@@ -122,6 +122,7 @@ def _market_quote_from_pair(pair):
         liquidity_usd=liquidity,
         price_usd=price,
         pair_address=str(pair_address),
+        quote_source='dex_market',
         volume_5m_usd=_pair_metric(pair, 'volume', 'm5', 0),
         volume_24h_usd=_pair_metric(pair, 'volume', 'h24', 0),
         price_change_5m_pct=_pair_metric(pair, 'priceChange', 'm5'),
@@ -230,6 +231,8 @@ def setup(con):
         ('depth_usd', 'REAL'),
         ('slippage_bps_est', 'REAL'),
         ('slippage_notional_usd', 'REAL'),
+        ('quote_source', 'TEXT'),
+        ('funding_usd', 'REAL'),
     ):
         if name not in price_columns:
             con.execute(f'ALTER TABLE paper_prices ADD COLUMN {name} {definition}')
@@ -528,25 +531,37 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                            FROM paper_trades WHERE mint=?''', (mint,)).fetchone()
     if trade is None:
         _financial_number(price, 'entry_price', positive=True)
-    con.execute(
+    price_values = (
+        mint, now, market_quote.price_usd, market_quote.pair_address,
+        market_quote.liquidity_usd, market_quote.volume_5m_usd,
+        market_quote.volume_24h_usd, market_quote.price_change_5m_pct,
+        market_quote.price_change_1h_pct, market_quote.tx_buys_5m,
+        market_quote.tx_sells_5m, market_quote.market_cap_usd,
+        market_quote.fdv_usd, market_quote.fee_bps,
+        market_quote.depth_usd, market_quote.slippage_bps_est,
+        market_quote.slippage_notional_usd,
+        (market_quote.quote_source.strip() or None)
+        if isinstance(market_quote.quote_source, str) else None,
+        _finite_number(market_quote.funding_usd, 0),
+    )
+    inserted_price = con.execute(
         '''INSERT OR IGNORE INTO paper_prices(
              mint,timestamp,price_usd,pair_address,liquidity_usd,
              volume_5m_usd,volume_24h_usd,price_change_5m_pct,
              price_change_1h_pct,tx_buys_5m,tx_sells_5m,market_cap_usd,
              fdv_usd,fee_bps,depth_usd,slippage_bps_est,
-             slippage_notional_usd)
-           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-        (
-            mint, now, market_quote.price_usd, market_quote.pair_address,
-            market_quote.liquidity_usd, market_quote.volume_5m_usd,
-            market_quote.volume_24h_usd, market_quote.price_change_5m_pct,
-            market_quote.price_change_1h_pct, market_quote.tx_buys_5m,
-            market_quote.tx_sells_5m, market_quote.market_cap_usd,
-            market_quote.fdv_usd, market_quote.fee_bps,
-            market_quote.depth_usd, market_quote.slippage_bps_est,
-            market_quote.slippage_notional_usd,
-        ),
+             slippage_notional_usd,quote_source,funding_usd)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', price_values,
     )
+    if not inserted_price.rowcount:
+        stored = con.execute('''SELECT mint,timestamp,price_usd,pair_address,liquidity_usd,
+            volume_5m_usd,volume_24h_usd,price_change_5m_pct,price_change_1h_pct,
+            tx_buys_5m,tx_sells_5m,market_cap_usd,fdv_usd,fee_bps,depth_usd,
+            slippage_bps_est,slippage_notional_usd,quote_source,funding_usd
+            FROM paper_prices WHERE mint=? AND timestamp=?''', (mint, now)).fetchone()
+        if stored != price_values:
+            print('[PAPER PRICES] doublon contradictoire : premiere cotation conservee; '
+                  'traitement PAPER historique inchange.', flush=True)
     if trade and trade[2] == 'open':
         if not _close_locked:
             # Another connection may have inserted this position after the
