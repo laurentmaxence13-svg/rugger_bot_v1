@@ -33,8 +33,8 @@ class PaperCapitalReservationTests(unittest.TestCase):
         setup(con)
         return con
 
-    def enter(self, con, mint, pct=10):
-        return record_quote(con, mint, 'c', 100, 160, (10000, 1, 'pair'), MODEL,
+    def enter(self, con, mint, pct=10, now=160):
+        return record_quote(con, mint, 'c', 100, now, (10000, 1, 'pair'), MODEL,
                             position_pct=pct, max_open=100, max_entries_day=100,
                             max_daily_loss_pct=None)
 
@@ -52,7 +52,8 @@ class PaperCapitalReservationTests(unittest.TestCase):
         self.assertIsNone(self.enter(con, 'b', 60))
         self.assertEqual(self.committed(con), 6)
         self.assertEqual(paper_capital(con), (10, 10))
-        self.assertIn('ENTRY ', self.enter(con, 'b', 40))
+        # A new allocation attempt needs a new observation, not an identical replay.
+        self.assertIn('ENTRY ', self.enter(con, 'b', 40, now=161))
         self.assertEqual(self.committed(con), 10)
         self.assertIsNone(self.enter(con, 'c'))
 
