@@ -103,3 +103,57 @@ def find_raydium_launch(tx: dict[str, Any]) -> dict[str, str] | None:
             "mint": accounts[6],
         }
     return None
+
+
+class ConflictingLaunchMetadata(ValueError):
+    """The same mint has incompatible creation identities; reject the batch."""
+
+
+def unique_launches(launches: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Keep the first identical identity; never merge contradictory fields."""
+    by_mint = {}
+    for launch in launches:
+        if not isinstance(launch, dict) or not all(
+                isinstance(launch.get(key), str) and launch[key]
+                for key in ('mint', 'creator', 'payer', 'pool_state')):
+            raise ValueError('Incomplete LaunchLab creation identity')
+        identity = {key: launch[key] for key in ('payer', 'creator', 'pool_state', 'mint')}
+        previous = by_mint.get(identity['mint'])
+        if previous is not None and previous != identity:
+            raise ConflictingLaunchMetadata('Contradictory LaunchLab creation metadata')
+        by_mint.setdefault(identity['mint'], identity)
+    return list(by_mint.values())
+
+
+def find_raydium_launches(tx: dict[str, Any]) -> list[dict[str, str]]:
+    """All creations in invocation order, with independent identity metadata.
+
+    Visit each outer instruction then its inner instructions in provider order.
+    Unattached inner groups follow in their supplied order, preserving support
+    for historical inner-only fixtures. The legacy singular API is unchanged.
+    """
+    if not isinstance(tx, dict) or (tx.get('meta') or {}).get('err') is not None:
+        return []
+    outer = ((tx.get('transaction') or {}).get('message') or {}).get('instructions') or []
+    groups = (tx.get('meta') or {}).get('innerInstructions') or []
+    attached = {}
+    unattached = []
+    for group in groups:
+        index = group.get('index')
+        target = attached.setdefault(index, []) if type(index) is int and 0 <= index < len(outer) else unattached
+        target.extend(group.get('instructions') or [])
+    ordered = []
+    for index, instruction in enumerate(outer):
+        ordered.append(instruction)
+        ordered.extend(attached.get(index, []))
+    ordered.extend(unattached)
+    launches = []
+    for ix in ordered:
+        if not _is_launch_instruction(ix):
+            continue
+        accounts = ix.get('accounts') or []
+        if len(accounts) < 7 or not all(isinstance(a, str) and a for a in accounts[:7]):
+            continue
+        launches.append(dict(payer=accounts[0], creator=accounts[1],
+                             pool_state=accounts[5], mint=accounts[6]))
+    return unique_launches(launches)
