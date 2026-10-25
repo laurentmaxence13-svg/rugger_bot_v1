@@ -7,6 +7,9 @@ import sqlite3
 import time
 
 from bot.scanner.launch_detector import parse_launch_candidate
+from bot.scanner.transaction_parser import (
+    ConflictingLaunchMetadata, find_raydium_launches, unique_launches,
+)
 
 
 class RecoveryQueueFull(RuntimeError):
@@ -129,18 +132,43 @@ class TransactionRecovery:
                 VALUES(?,?,1,?) ON CONFLICT(signature) DO UPDATE SET
                 payload=excluded.payload,fetched_ok=1,updated_at=excluded.updated_at''',
                 (signature, json.dumps(tx, separators=(',', ':')), datetime.fromtimestamp(now, timezone.utc).isoformat()))
-            mints = parsed['mints']
-            for mint in mints:
-                candidate_signature = signature if len(mints) == 1 else f'{signature}:{mint}'
-                inserted += con.execute('''INSERT INTO launch_candidates
+            # Reparse legacy results instead of spreading scalar metadata over
+            # multiple mints. The new list is authoritative when present.
+            launches = unique_launches(parsed['launches'] if 'launches' in parsed
+                                      else find_raydium_launches(tx))
+            for launch in launches:
+                mint = launch['mint']
+                candidate_signature = f'{signature}:{mint}'
+                # Existing singleton receipts used the raw transaction signature.
+                # Reuse a matching historical identity; do not create an alias row.
+                existing = con.execute('''SELECT signature,protocol,mint,deployer_candidate,pool_state,slot,block_time,status
+                    FROM launch_candidates WHERE signature=? OR (signature=? AND mint=?)''',
+                    (candidate_signature, signature, mint)).fetchall()
+                expected = ('raydium_launchpad', mint, launch['creator'], launch['pool_state'],
+                            job['slot'], parsed['block_time'], 'creator_identified')
+                if existing:
+                    if len(existing) != 1 or existing[0][1:] != expected:
+                        raise ConflictingLaunchMetadata('Conflicting stored LaunchLab candidate')
+                    continue
+                written = con.execute('''INSERT INTO launch_candidates
                     (protocol,signature,slot,block_time,detected_at,mint,deployer_candidate,
                      detection_latency_ms,status,pool_state) VALUES(?,?,?,?,?,?,?,?,?,?)
-                    ON CONFLICT(signature) DO NOTHING''',
+                    ''',
                     ('raydium_launchpad', candidate_signature, job['slot'], parsed['block_time'],
-                     job['received_at'].isoformat(), mint, parsed['deployer_candidate'],
-                     parsed['detection_latency_ms'], parsed['status'], parsed.get('pool_state'))).rowcount
-            con.execute("UPDATE scanner_tx_recovery SET state='done',last_error=NULL,updated_at=? WHERE signature=?",
-                        (now, signature))
+                     job['received_at'].isoformat(), mint, launch['creator'],
+                     parsed['detection_latency_ms'], 'creator_identified', launch['pool_state']))
+                # An ignored insert or an AFTER trigger must not produce done
+                # without the corresponding durable candidate identity.
+                receipt = con.execute('SELECT protocol,mint,deployer_candidate,pool_state,slot,block_time,status '
+                                      'FROM launch_candidates WHERE signature=?',
+                                      (candidate_signature,)).fetchone()
+                if written.rowcount != 1 or receipt != expected:
+                    raise RuntimeError('LaunchLab candidate was not persisted intact')
+                inserted += 1
+            updated = con.execute("UPDATE scanner_tx_recovery SET state='done',last_error=NULL,updated_at=? WHERE signature=?",
+                                  (now, signature))
+            if updated.rowcount != 1:
+                raise RuntimeError('Recovery completion receipt was not updated')
         print(f'[TX RECOVERY] DONE {signature[:12]} candidates={inserted}', flush=True)
         return inserted
 

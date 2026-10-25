@@ -5,6 +5,7 @@ from bot.scanner.transaction_parser import (
     find_fee_payer,
     find_signers,
     find_raydium_launch,
+    find_raydium_launches,
 )
 
 
@@ -34,6 +35,9 @@ def parse_launch_candidate(
     fee_payer = find_fee_payer(tx)
     signers = find_signers(tx)
 
+    # Authoritative per-creation records. Legacy fields below retain their
+    # singular projection, including the historical external-first ordering.
+    launches = find_raydium_launches(tx)
     # Décodage spécifique du lancement Raydium
     raydium_launch = find_raydium_launch(tx)
 
@@ -52,6 +56,7 @@ def parse_launch_candidate(
         pool_state = None
 
     return {
+        "launches": launches,
         "block_time": block_time,
         "mints": mints,
 
