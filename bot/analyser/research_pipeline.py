@@ -9,7 +9,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import warnings
 from collections import Counter
+from itertools import groupby
 from pathlib import Path
 
 try:
@@ -19,7 +21,7 @@ except ImportError:  # La dépendance reste recommandée pour l'exécution avec 
         return False
 
 from bot.config import BASE_DIR
-from bot.scanner.transaction_parser import find_raydium_launch
+from bot.scanner.transaction_parser import ConflictingLaunchMetadata, find_raydium_launches
 
 
 def fetch_birdeye_history(mint, block_time, api_key, session=None):
@@ -82,7 +84,7 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
 
 
 def verified_launches(db_path):
-    """Lancement = initializeMint correspondant à l'instruction LaunchLab."""
+    """All cached LaunchLab creations; retain the earliest event per mint."""
     con = sqlite3.connect(db_path)
     result = {}
     try:
@@ -92,16 +94,18 @@ def verified_launches(db_path):
         for signature, raw, saved_time in rows:
             try:
                 tx = json.loads(raw)
-                launch = find_raydium_launch(tx)
-                if not launch or not launch.get('creator') or not launch.get('mint'):
-                    continue
+                launches = find_raydium_launches(tx)
                 timestamp = tx.get('blockTime') or saved_time
-                if not isinstance(timestamp, int) or timestamp <= 0:
+                if type(timestamp) is not int or timestamp <= 0:
                     continue
-                mint = launch['mint']
-                event = (timestamp, signature, launch['creator'], mint, launch.get('pool_state'))
-                if mint not in result or event[:2] < result[mint][:2]:
-                    result[mint] = event
+                for launch in launches:
+                    mint = launch['mint']
+                    event = (timestamp, signature, launch['creator'], mint, launch['pool_state'])
+                    if mint not in result or event[:2] < result[mint][:2]:
+                        result[mint] = event
+            except ConflictingLaunchMetadata:
+                warnings.warn(f'LaunchLab metadata conflict; transaction excluded: {signature}',
+                              RuntimeWarning, stacklevel=2)
             except (ValueError, TypeError, AttributeError, KeyError):
                 continue
     finally:
@@ -116,9 +120,12 @@ def export_dataset(db_path, destination):
     with open(destination, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         writer.writerow(['block_time', 'signature', 'creator', 'mint', 'pool_state', 'prior_launches'])
-        for timestamp, signature, creator, mint, pool in events:
-            writer.writerow([timestamp, signature, creator, mint, pool, previous[creator]])
-            previous[creator] += 1
+        for _timestamp, batch in groupby(events, key=lambda event: event[0]):
+            batch = list(batch)
+            for timestamp, signature, creator, mint, pool in batch:
+                writer.writerow([timestamp, signature, creator, mint, pool, previous[creator]])
+            # Same-time creations are not evidence of strictly prior launches.
+            previous.update(event[2] for event in batch)
     return len(events), len(previous)
 
 
@@ -333,21 +340,22 @@ def backtest(db_path, price_csv, train_fraction=.7, min_train=30, min_test=15,
         raise ValueError(f'Corpus insuffisant : {len(events)} lancements ; requis >= {min_train} entraînement et {min_test} test.')
     prices = load_prices(price_csv)
     # Les prix manquants sont exclus, jamais transformés en gain, perte ou zéro.
-    outcomes = {e[1]: outcome(e, prices, hold_seconds=hold_seconds,
+    # verified_launches returns one event per mint, but signatures can repeat.
+    outcomes = {e[3]: outcome(e, prices, hold_seconds=hold_seconds,
                                cost_bps=cost_bps) for e in events}
     missing = sum(v is None for v in outcomes.values())
-    train = [e for e in events[:split] if outcomes[e[1]] is not None]
-    test = [e for e in events[split:] if outcomes[e[1]] is not None]
+    train = [e for e in events[:split] if outcomes[e[3]] is not None]
+    test = [e for e in events[split:] if outcomes[e[3]] is not None]
     if len(train) < min_train or len(test) < min_test:
         raise ValueError(f'Observations complètes insuffisantes : {len(train)} entraînement et '
                          f'{len(test)} test ; {missing} lancements exclus faute de prix.')
     by_creator = {}
     for e in train:
-        by_creator.setdefault(e[2], []).append(outcomes[e[1]])
-    global_mean = sum(outcomes[e[1]] for e in train) / len(train)
+        by_creator.setdefault(e[2], []).append(outcomes[e[3]])
+    global_mean = sum(outcomes[e[3]] for e in train) / len(train)
     # Lissage vers la moyenne d'entraînement pour éviter un score extrême après 1 trade.
     scores = {c: (sum(v) + 5 * global_mean) / (len(v) + 5) for c, v in by_creator.items()}
-    test_scored = [(e, outcomes[e[1]], scores.get(e[2], global_mean)) for e in test]
+    test_scored = [(e, outcomes[e[3]], scores.get(e[2], global_mean)) for e in test]
     ranked = sorted(test_scored, key=lambda item: item[2], reverse=True)
     top_n = max(1, math.ceil(len(ranked) * 0.2))
     top_ranked = ranked[:top_n]
@@ -359,7 +367,7 @@ def backtest(db_path, price_csv, train_fraction=.7, min_train=30, min_test=15,
         'top_20pct_count': len(top_ranked),
         'top_20pct_mean_return': sum(item[1] for item in top_ranked) / len(top_ranked),
     }
-    scored = [(e, outcomes[e[1]]) for e in test if scores.get(e[2], global_mean) > 0]
+    scored = [(e, outcomes[e[3]]) for e in test if scores.get(e[2], global_mean) > 0]
     if not scored:
         return {'status': 'no_signal', 'train': len(train), 'test': len(test),
                 'selected': 0, 'excluded_missing_prices': missing,
