@@ -12,6 +12,7 @@ import bisect
 from contextlib import closing
 import json
 import math
+import os
 from dataclasses import asdict
 import sqlite3
 import time
@@ -55,6 +56,83 @@ from bot.analyser.paper_trader import (
 from bot.config import BASE_DIR, get_settings
 from bot.database.db import Database
 from bot.solana.rpc import SolanaRPC
+from bot.scanner.transaction_parser import RAYDIUM_LAUNCHPAD_PROGRAM_ID
+
+
+class _ScannerEntryGuard:
+    """Fail closed on stale/unknown supervised state; not a coverage proof."""
+    MAX_STATE_AGE = 120.0  # Two default backfill intervals; not a market limit.
+
+    def __init__(self, db, task):
+        self.db, self.task = db, task
+        self.started_at = time.time()
+        self.program_id = os.getenv('RAYDIUM_LAUNCHPAD_PROGRAM_ID',
+                                    RAYDIUM_LAUNCHPAD_PROGRAM_ID).strip()
+        self.initial_checked_at = None
+        self.initial_state_readable = False
+        try:
+            with closing(self._connect()) as con:
+                row = con.execute('SELECT checked_at FROM scanner_backfill_state '
+                                  'WHERE program_id=?', (self.program_id,)).fetchone()
+                if row and isinstance(row[0], (int, float)) and math.isfinite(row[0]):
+                    self.initial_checked_at = row[0]
+                self.initial_state_readable = True
+        except sqlite3.Error:
+            pass  # A subsequent fresh, readable state is still required.
+
+    def _connect(self):
+        return sqlite3.connect(Path(self.db).resolve().as_uri() + '?mode=ro',
+                               uri=True, timeout=0.1)
+
+    def __call__(self):
+        # Preserve the zero-argument guard contract for supervisory observers.
+        try:
+            with closing(self._connect()) as con:
+                return self.allows(con)
+        except sqlite3.Error:
+            return False
+
+    def allows(self, con):
+        # collect_once uses its own locked connection: no separate stale snapshot.
+        if self.task.done() or self.task.cancelling():
+            return False
+        try:
+            row = con.execute('SELECT history_status,reason,ws_state,checked_at,'
+                              'cursor_signature,cursor_slot FROM scanner_backfill_state '
+                              'WHERE program_id=?', (self.program_id,)).fetchone()
+            if not row:
+                return False
+            history, reason, ws, checked, signature, slot = row
+            if not self.initial_state_readable:
+                # If startup inspection failed, establish a reference first.
+                # Even a future-dated old row must be renewed before entry.
+                if isinstance(checked, (int, float)) and math.isfinite(checked):
+                    self.initial_checked_at = checked
+                    self.initial_state_readable = True
+                return False
+            if history != 'caught_up' or reason is not None or ws != 'subscribed':
+                return False
+            if (not isinstance(checked, (int, float)) or not math.isfinite(checked)
+                    or not self.started_at <= checked <= time.time()
+                    or time.time() - checked > self.MAX_STATE_AGE
+                    or (self.initial_checked_at is not None and checked <= self.initial_checked_at)):
+                return False
+            if (not isinstance(signature, str) or not signature
+                    or not isinstance(slot, int) or slot < 0):
+                return False
+            return con.execute('SELECT slot FROM scanner_tx_recovery WHERE signature=?',
+                               (signature,)).fetchone() == (slot,)
+        except sqlite3.Error:
+            return False
+
+
+def _entry_guard_allows(guard, con):
+    if guard is None:  # Explicit standalone mode retains its existing contract.
+        return True
+    try:
+        return bool(guard.allows(con) if isinstance(guard, _ScannerEntryGuard) else guard())
+    except sqlite3.Error:
+        return False
 
 
 class LiveBehaviorFetcher:
@@ -764,11 +842,6 @@ async def collect_once(con, session, cached, now, model=None,
             existing = con.execute(
                 'SELECT 1 FROM paper_trades WHERE mint=?', (mint,)
             ).fetchone()
-            allowed = bool(existing) or entry_allowed(
-                con, now_quote, max_open=max_open,
-                max_entries_day=max_entries_day,
-                max_daily_loss_pct=max_daily_loss_pct,
-            )
             decision = None
             model_for_quote = model
             force_exit_reason = None
@@ -779,6 +852,16 @@ async def collect_once(con, session, cached, now, model=None,
                     prior_launches=prior_creator_launches(con, creator, signal_time),
                 )
                 decision = decide(features, min_liquidity=min_liquidity)
+            # All asynchronous enrichment is finished. The same permission is
+            # recorded and passed to the ledger, under the same SQLite lock.
+            financial_allowed = bool(existing) or entry_allowed(
+                con, now_quote, max_open=max_open,
+                max_entries_day=max_entries_day,
+                max_daily_loss_pct=max_daily_loss_pct,
+            )
+            scanner_allowed = _entry_guard_allows(entry_guard, con)
+            allowed = financial_allowed and scanner_allowed
+            if strategy_mode == 'shadow_final':
                 record_decision(
                     con, features, decision, strategy_mode=strategy_mode,
                     entry_permission=allowed,
@@ -788,6 +871,7 @@ async def collect_once(con, session, cached, now, model=None,
                     quote=quote, features=features, decision=decision,
                     pool_state=pool_address,
                     reason='score et règles de risque' if decision.enter and allowed
+                        else 'scanner: entrees PAPER interdites' if not scanner_allowed
                         else '; '.join(decision.reasons) or 'risque ou limites PAPER',
                     prior_launches=features.prior_launches,
                     behavior=behavior_snapshot(cached, mint, creator, signal_time, now_quote))
@@ -815,7 +899,7 @@ async def collect_once(con, session, cached, now, model=None,
                     force_exit_reason = 'RELAY_RISK'
             message = record_quote(
                 con, mint, creator, signal_time, now_quote, quote, model_for_quote,
-                allow_entry=allowed and (entry_guard is None or entry_guard()), strategy_mode=strategy_mode,
+                allow_entry=allowed, strategy_mode=strategy_mode,
                 force_exit_reason=force_exit_reason,
                 initial_capital_sol=initial_capital_sol, position_pct=position_pct,
                 max_open=max_open, max_entries_day=max_entries_day,
@@ -1062,6 +1146,7 @@ async def run_with_scanner(args):
     rpc_gate = AdaptiveRPCGate(max(1.1, float(args.rpc_interval)))
 
     if args.no_scanner:
+        print('[SCANNER] mode autonome explicite; couverture des lancements non garantie.', flush=True)
         await run(
             args.db, model_path=args.model, poll=args.poll,
             report=args.report, max_open=args.max_open,
@@ -1080,6 +1165,7 @@ async def run_with_scanner(args):
         )
         return
     scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db))
+    entry_guard = _ScannerEntryGuard(args.db, scanner_task)
     engine_task = asyncio.create_task(run(
         args.db, model_path=args.model, poll=args.poll,
         report=args.report, max_open=args.max_open,
@@ -1093,7 +1179,7 @@ async def run_with_scanner(args):
         shadow_baseline=args.shadow_baseline, shadow_final=args.shadow_final,
         initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
         session_seconds=args.session_seconds, session_report=args.session_report,
-        entry_guard=lambda: not scanner_task.done(),
+        entry_guard=entry_guard,
     ))
     last_scanner_state = None
     try:
