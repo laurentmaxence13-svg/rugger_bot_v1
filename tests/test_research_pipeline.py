@@ -70,9 +70,9 @@ class PipelineTests(unittest.TestCase):
         reason = con.execute('select exit_reason from paper_trades where mint=?', ('tp',)).fetchone()[0]
         self.assertEqual(reason, 'TP')
 
-        self.assertIn('ENTRY', record_quote(con, 'sl', 'creator', 1000, 1060,
+        self.assertIn('ENTRY', record_quote(con, 'sl', 'creator', 1000, 1080,
                                             (20000, 1.0, 'pair'), model))
-        self.assertIn('reason=SL', record_quote(con, 'sl', 'creator', 1000, 1070,
+        self.assertIn('reason=SL', record_quote(con, 'sl', 'creator', 1000, 1090,
                                                  (20000, .91, 'pair'), model))
         reason = con.execute('select exit_reason from paper_trades where mint=?', ('sl',)).fetchone()[0]
         self.assertEqual(reason, 'SL')

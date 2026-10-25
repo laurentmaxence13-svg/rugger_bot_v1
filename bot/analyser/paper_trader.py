@@ -326,6 +326,15 @@ def entry_allowed(con, now, max_open=3, max_entries_day=20,
         return False
 
     if max_daily_loss_pct is not None and float(max_daily_loss_pct) > 0:
+        # Validate all closures before filtering by day: an unknown date must
+        # never make a realized loss disappear. Read only; do not repair history.
+        for entry_time, exit_time, pnl_sol in con.execute(
+                "SELECT entry_time,exit_time,pnl_sol FROM paper_trades WHERE status='closed'"):
+            if not all(isinstance(value, (int, float)) and math.isfinite(value)
+                       for value in (entry_time, exit_time, pnl_sol)):
+                return False
+            if not 0 <= entry_time <= exit_time <= int(now):
+                return False
         pnl_today, missing = con.execute(
             """SELECT COALESCE(SUM(pnl_sol), 0),
                       COALESCE(SUM(CASE WHEN pnl_sol IS NULL THEN 1 ELSE 0 END), 0)

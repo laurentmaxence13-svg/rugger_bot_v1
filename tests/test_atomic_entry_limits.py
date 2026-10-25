@@ -57,16 +57,16 @@ class AtomicEntryLimitTests(unittest.TestCase):
         self.assertIsNone(self.enter('day-zero', max_entries_day=0))
 
     def test_daily_entries_include_closed_positions(self):
-        for mint in ('a', 'b'):
-            self.assertIn('ENTRY ', self.enter(mint, max_entries_day=2))
-            self.assertIn('EXIT ', self.close(mint))
-        self.assertIsNone(self.enter('third', max_entries_day=2))
+        for i, mint in enumerate(('a', 'b')):
+            self.assertIn('ENTRY ', self.enter(mint, now=160 + 50*i, max_entries_day=2))
+            self.assertIn('EXIT ', self.close(mint, now=200 + 50*i))
+        self.assertIsNone(self.enter('third', now=251, max_entries_day=2))
 
     def test_default_daily_entry_limit_cannot_be_bypassed(self):
         for i in range(20):
-            self.assertIn('ENTRY ', self.enter(str(i)))
-            self.close(str(i))
-        self.assertIsNone(self.enter('twenty-first'))
+            self.assertIn('ENTRY ', self.enter(str(i), now=160 + 50*i))
+            self.close(str(i), now=200 + 50*i)
+        self.assertIsNone(self.enter('twenty-first', now=1151))
 
     def test_daily_loss_boundary_and_configured_threshold(self):
         self.enter('loss', position_pct=20)
