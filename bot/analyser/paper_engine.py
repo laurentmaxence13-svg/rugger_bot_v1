@@ -115,14 +115,64 @@ class LiveBehaviorFetcher:
 
 def recent_candidates(con, now, max_age=900, limit=10):
     """Return fresh, strictly parsed launches for the observation loop."""
+    bounds = (int(now) - max(1, int(max_age)), int(now))
     return con.execute(
         '''SELECT mint,deployer_candidate,block_time
            FROM launch_candidates
            WHERE status='creator_identified' AND mint IS NOT NULL
              AND block_time BETWEEN ? AND ?
-           ORDER BY block_time DESC LIMIT ?''',
-        (int(now) - max(1, int(max_age)), int(now), max(1, int(limit))),
+           ORDER BY block_time DESC,mint,deployer_candidate'''
+        + (' LIMIT ?' if limit is not None else ''),
+        bounds + ((max(1, int(limit)),) if limit is not None else ()),
     ).fetchall()
+
+
+def _scheduled_candidates(con, now, max_age, limit):
+    """Persistent FIFO within each lane; reserve capacity for both lanes.
+
+    New mints join the tail, so arrivals cannot jump ahead of waiting work.
+    Open positions get all but one slot when both lanes exceed capacity.
+    A one-slot budget alternates lanes using the last durable attempt.
+    Only scheduling metadata is written here; no transaction spans an await.
+    """
+    budget = max(1, int(limit))
+    with _paper_close_transaction(con):
+        con.execute('''CREATE TABLE IF NOT EXISTS paper_collection_schedule (
+            mint TEXT PRIMARY KEY, turn INTEGER NOT NULL,
+            last_lane TEXT CHECK(last_lane IN ('position','candidate')))''')
+        con.execute('CREATE INDEX IF NOT EXISTS idx_paper_collection_turn '
+                    'ON paper_collection_schedule(turn)')
+        active = dict((mint, (creator, signal_time)) for mint, creator, signal_time
+                      in con.execute("SELECT mint,creator,signal_time FROM paper_trades "
+                                     "WHERE status='open' ORDER BY entry_time,mint"))
+        candidates = dict(active)
+        for mint, creator, signal_time in recent_candidates(con, now, max_age=max_age, limit=None):
+            candidates[mint] = (creator, signal_time)
+        tail = con.execute('SELECT COALESCE(MAX(turn),0) FROM paper_collection_schedule').fetchone()[0]
+        for mint in candidates:
+            tail += 1
+            con.execute('INSERT OR IGNORE INTO paper_collection_schedule(mint,turn) VALUES(?,?)',
+                        (mint, tail))
+        order = dict(con.execute('SELECT mint,turn FROM paper_collection_schedule'))
+        positions = sorted(active, key=order.__getitem__)
+        waiting = sorted(candidates.keys() - active.keys(), key=order.__getitem__)
+        if positions and waiting and budget == 1:
+            previous = con.execute('SELECT last_lane FROM paper_collection_schedule '
+                                   'WHERE last_lane IS NOT NULL ORDER BY turn DESC LIMIT 1').fetchone()
+            position_slots = 0 if previous == ('position',) else 1
+        else:
+            position_slots = min(len(positions), budget - int(bool(waiting)))
+        selected = positions[:position_slots] + waiting[:budget - position_slots]
+        return [(mint, *candidates[mint], 'position' if mint in active else 'candidate')
+                for mint in selected]
+
+
+def _mark_collection_attempt(con, mint, lane):
+    """Advance before price I/O, including failures, cooldowns and cancellation."""
+    with _paper_close_transaction(con):
+        con.execute('UPDATE paper_collection_schedule SET turn='
+                    '(SELECT COALESCE(MAX(turn),0)+1 FROM paper_collection_schedule),last_lane=? '
+                    'WHERE mint=?', (lane, mint))
 
 
 def behavior_snapshot(cached, mint, creator, signal_time, now):
@@ -635,17 +685,12 @@ async def collect_once(con, session, cached, now, model=None,
                        initial_capital_sol=10.0, position_pct=10.0,
                        entry_guard=None):
     """Collect one bounded cycle; return messages and cooldown seconds."""
-    signals = recent_candidates(con, now, max_age=max_age, limit=max_candidates)
+    candidates = _scheduled_candidates(con, now, max_age, max_candidates)
     cache_changed = False
-    active = con.execute(
-        "SELECT mint,creator,signal_time FROM paper_trades WHERE status='open'"
-    ).fetchall()
-    candidates = {}
-    for mint, creator, signal_time in active + signals:
-        candidates[mint] = (creator, signal_time)
     messages = []
     cooldown = 0
-    for mint, (creator, signal_time) in list(candidates.items())[:max(1, max_candidates)]:
+    for mint, creator, signal_time, lane in candidates:
+        _mark_collection_attempt(con, mint, lane)
         pool_row = con.execute(
             "SELECT pool_state FROM launch_candidates WHERE mint=? ORDER BY id DESC LIMIT 1",
             (mint,),
