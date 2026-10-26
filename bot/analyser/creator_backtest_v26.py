@@ -5,6 +5,7 @@ import sqlite3
 from pathlib import Path
 
 from bot.config import get_settings
+from bot.analyser.legacy_validation import legacy_validation_metadata
 from bot.solana.rpc import SolanaRPC
 from bot.scanner.transaction_parser import find_raydium_launch
 
@@ -2455,18 +2456,20 @@ def _v25_score(rows, params, cost_side_pct):
 
 def run_v25_decision_engine(results):
     print("\n" + "="*110)
-    print("V25 - MOTEUR DE DECISION + VALIDATION CHRONOLOGIQUE HORS ECHANTILLON")
+    print("V25 - DIAGNOSTIC HERITE NON VALIDE")
     print("="*110)
+    scope = legacy_validation_metadata('creator_backtest_v26.run_v25_decision_engine')
+    print("Exclu des validations P1/P2 et des modèles : groupes temporels, labels et provenance non certifiés.")
     rows=[r for r in results if r.get("launch_time") is not None and r.get("sale_time") is not None and r.get("market_series")]
     rows.sort(key=lambda r:r["launch_time"])
     if len(rows) < 6:
-        print("Pas assez de launches exploitables pour une validation chronologique.")
-        return
+        print("Pas assez de launches exploitables pour ce diagnostic hérité.")
+        return dict(scope, status='insufficient_data', train=0, test=0, selected=0)
 
     split=max(4, int(len(rows)*0.65))
     train, test=rows[:split], rows[split:]
-    print(f"Launches exploitables : {len(rows)} | apprentissage ancien : {len(train)} | test récent jamais utilisé pour choisir : {len(test)}")
-    print("Règle anti-overfit : les paramètres sont choisis UNIQUEMENT sur la partie ancienne.")
+    print(f"Launches exploitables : {len(rows)} | lot ancien : {len(train)} | lot récent : {len(test)}")
+    print("Les paramètres sont choisis sur le lot ancien ; cette coupe positionnelle n'est pas une validation causale.")
 
     # Grille volontairement petite et prédéfinie : évite de fabriquer une stratégie sur 13 tokens.
     candidates=[]
@@ -2485,7 +2488,7 @@ def run_v25_decision_engine(results):
     ranked.sort(key=lambda x:(x[0],x[1]), reverse=True)
     if not ranked:
         print("Aucune configuration n'a assez de trades sur l'échantillon d'apprentissage.")
-        return
+        return dict(scope, status='no_signal', train=len(train), test=len(test), selected=0)
 
     _,_,best,train_sc=ranked[0]
     test_sc=_v25_score(test,best,cost)
@@ -2512,14 +2515,12 @@ def run_v25_decision_engine(results):
         else:
             print(f"  {c:.1f}%/côté -> aucun trade")
 
-    print("\nINTERPRETATION V25")
-    if not test_sc or test_sc["trades"] < 3:
-        print("Échantillon test trop petit : aucune conclusion de rentabilité autorisée.")
-    elif test_sc["avg"] <= 0:
-        print("La logique testée ne démontre PAS d'avantage net hors échantillon. Le bot doit rester en simulation.")
-    else:
-        print("Signal positif hors échantillon, mais échantillon encore trop petit : validation paper trading temps réel obligatoire avant argent réel.")
+    print("\nINTERPRETATION V25 : diagnostic exploratoire exclu, sans validation hors échantillon ni modèle éligible.")
     print("Aucun ordre réel n'est envoyé par V25.")
+    return dict(scope, status='excluded_legacy_temporal_integrity',
+                train=len(train), test=len(test),
+                selected=test_sc['trades'] if test_sc else 0,
+                mean_return=test_sc['avg'] / 100 if test_sc else None)
 
 
 # ============================== V26 ==========================================
@@ -2658,13 +2659,16 @@ def _v26_rule_name(r):
 
 def run_v26_launch_selector(results):
     print("\n" + "="*110)
-    print("V26 - SELECTEUR DE LAUNCHES + VALIDATION HORS ECHANTILLON")
+    print("V26 - DIAGNOSTIC HERITE NON VALIDE")
     print("="*110)
+    scope = legacy_validation_metadata('creator_backtest_v26.run_v26_launch_selector')
+    print("Exclu des validations P1/P2 et des modèles : groupes temporels, labels et provenance non certifiés.")
     rows=[r for r in results if r.get("launch_time") is not None and r.get("sale_time") is not None and r.get("market_series")]
     rows.sort(key=lambda r:r["launch_time"])
     if len(rows) < 8:
         print("Pas assez de launches exploitables pour V26.")
         return {
+            **scope,
             "schema": "behavior-v26-report",
             "status": "insufficient_data",
             "train": 0,
@@ -2676,8 +2680,8 @@ def run_v26_launch_selector(results):
     split=max(5, int(len(rows)*0.65))
     train_idx=list(range(split))
     test_idx=list(range(split,len(rows)))
-    print(f"Launches exploitables : {len(rows)} | anciens pour sélection : {len(train_idx)} | récents intouchés : {len(test_idx)}")
-    print("ANTI-FUITE : relay, momentum et historique creator sont calculés uniquement avec les informations disponibles AVANT l'entrée.")
+    print(f"Launches exploitables : {len(rows)} | lot ancien : {len(train_idx)} | lot récent : {len(test_idx)}")
+    print("La coupe positionnelle et la disponibilité historique des données ne sont pas certifiées causales.")
 
     # Petite grille fixée à l'avance. Le but est de tester des familles de signaux,
     # pas de chercher des centaines de combinaisons jusqu'à obtenir artificiellement du vert.
@@ -2711,6 +2715,7 @@ def run_v26_launch_selector(results):
         print("Aucun sélecteur prédéfini ne produit au moins 3 trades sur l'apprentissage.")
         print("Conclusion : pas de signal de sélection exploitable démontré avec les données actuelles.")
         return {
+            **scope,
             "schema": "behavior-v26-report",
             "status": "no_signal",
             "train": len(train_idx),
@@ -2729,7 +2734,7 @@ def run_v26_launch_selector(results):
     print(f"  sortie : TP={best['tp_pct']}% | SL={best['sl_pct']}% | timeout={best['timeout_s']}s | latence={latency}s | coût/slippage={cost:.1f}%/côté")
     print(f"  TRAIN : {train_sc['trades']} trades | {train_sc['wins']} gagnants | P&L moyen net={train_sc['avg']:+.2f}%")
 
-    print("\nTEST RECENT JAMAIS UTILISE POUR CHOISIR LE SELECTEUR")
+    print("\nDIAGNOSTIC DU LOT RECENT, SANS VALIDATION INDEPENDANTE")
     if test_sc["trades"]:
         print(f"  TEST : {test_sc['trades']} trades | {test_sc['wins']} gagnants | P&L moyen net={test_sc['avg']:+.2f}% | rejetés={test_sc['rejected']}")
         for idx,f,sim in test_sc["details"]:
@@ -2752,26 +2757,15 @@ def run_v26_launch_selector(results):
         else:
             print(f"  {c:.1f}%/côté -> aucun trade accepté")
 
-    print("\nCONTROLE ANTI-OVERFIT")
+    print("\nLIMITE DU DIAGNOSTIC HERITE")
     print(f"  Règles candidates réellement évaluées sur TRAIN : {len(candidates)}")
-    print("  Les résultats TEST n'ont jamais servi au choix de la règle.")
-    if test_sc["trades"] < 3:
-        print("  VERDICT : test trop petit -> aucun avantage statistique démontré. Continuer en simulation et collecter de nouveaux launches.")
-    elif test_sc["avg"] is not None and test_sc["avg"] > 0 and test_sc["wins"] >= 2:
-        print("  VERDICT : signal hors échantillon positif à surveiller, mais échantillon encore insuffisant pour argent réel.")
-    else:
-        print("  VERDICT : ce sélecteur ne démontre pas encore d'avantage net hors échantillon.")
+    print("  VERDICT : exclu du protocole P2 ; aucun avantage hors échantillon ni modèle éligible ne sont validés.")
     print("Aucun ordre réel n'est envoyé par V26.")
     test_average = test_sc["avg"] if test_sc.get("avg") is not None else None
-    validated = bool(
-        test_sc.get("trades", 0) >= 5
-        and test_average is not None
-        and test_average > 0
-        and test_sc.get("wins", 0) >= 2
-    )
     return {
+        **scope,
         "schema": "behavior-v26-report",
-        "status": "paper_candidate" if validated else "no_signal",
+        "status": "excluded_legacy_temporal_integrity",
         "train": len(train_idx),
         "test": len(test_idx),
         "selected": test_sc.get("trades", 0),
@@ -2785,11 +2779,7 @@ def run_v26_launch_selector(results):
         "sl_pct": best["sl_pct"],
         "hold_seconds": best["timeout_s"],
         "latency_seconds": best["latency_s"],
-        "message": (
-            "Candidat paper à surveiller ; validation multi-créateur encore requise."
-            if validated else
-            "Aucun avantage net hors échantillon suffisamment robuste."
-        ),
+        "message": "Diagnostic hérité exclu : séparation temporelle, labels et provenance non certifiés.",
     }
 
 
@@ -3351,6 +3341,7 @@ async def main(output=None, requested_creator=None):
         output = Path(output)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps({
+            **legacy_validation_metadata('creator_backtest_v26.main'),
             "schema": "behavior-v26-results-v1",
             "creator": creator,
             "summary": summary,

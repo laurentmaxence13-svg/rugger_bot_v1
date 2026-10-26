@@ -1,0 +1,46 @@
+{
+  "schema": "rugger-synthetic-experiment-manifest-v1",
+  "source_commit": "f1a1345f3a7c1871ef497c9d2ec1eb219c652a8a",
+  "protocol_commit_before_experiments": "8530f2b982e657fe7cb3fe82c3d0ad5028edeffd",
+  "protocol": "rugger_synthetic_sol_v1",
+  "data_kind": "synthetic",
+  "seed": 20261026,
+  "mints_per_world": 300,
+  "registered_worlds": 3,
+  "development_candidates_total": 9,
+  "final_cost_slippage_evaluations": 27,
+  "identical_replays": 3,
+  "runtime": "Python 3.12.14 / Linux x86_64",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "validation_positive_in_any_world": false,
+  "model_activated": false,
+  "records": [
+    {
+      "regime": "null",
+      "file": "null.json",
+      "file_sha256": "72c79097c354fd41cc038453fbad490f9a19a6a48cb807051f092fd953adf8c1",
+      "report_sha256": "18ae8f35b3306110a3f95fdc78c54e5b54f0eb0545b2d49ce9fcde70b2b76e85",
+      "dataset_sha256": "12601845fcd2c9e577542cd421dd670d242063de0ee54860e1cab78137cb07dd",
+      "selection_input_sha256": "032c15defe4d4bec6c4d2aa5b7e03453d6ffa2bc00f549b81041b4ecd3a3875f",
+      "replayed_identically": true
+    },
+    {
+      "regime": "momentum_linked",
+      "file": "momentum_linked.json",
+      "file_sha256": "b579331577b8664471028e7c4e7524e582fcfc18f0a1c606c9333d282ed7c91a",
+      "report_sha256": "dd3a0358e23091cd307e040a24670e58243495bf5bc419c21b191d05c05ad827",
+      "dataset_sha256": "831f590d42cac32f75d50def022bf79914a373f3a2f6f1c680c528840bfa63a4",
+      "selection_input_sha256": "f76eb28fc0c48218532a1e99864186312bf807cc6609b913e5a8518be74237af",
+      "replayed_identically": true
+    },
+    {
+      "regime": "adverse",
+      "file": "adverse.json",
+      "file_sha256": "c2d0fdefc8c44bb3b289740351670e415158d1d3bbb8298aefa58b6592d589be",
+      "report_sha256": "02787bb336892749cdda4bc8aea30e388697458d2e480bd84edceb90a2871845",
+      "dataset_sha256": "695cab807e30779848dda69b85cc5a57cd2fc57c2bd927759e73ac46040cb067",
+      "selection_input_sha256": "46dcbe45c37d801698ae5daa69fb7a4929d01985f8701f4953cfd840c9cce317",
+      "replayed_identically": true
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "published_base": "56294b4795390db14b1bc46205ab382eb4ac0f5d",
+  "frozen_protocol_commit": "8530f2b982e657fe7cb3fe82c3d0ad5028edeffd",
+  "runtime": "Python3.12.14/Linux",
+  "tests": {
+    "passed": 699,
+    "skipped": 1,
+    "subtests_passed": 242,
+    "exit_code": 0,
+    "warnings_as_errors": true,
+    "stderr_empty": true
+  },
+  "suite_stdout_sha256": "c434ee0c57a2198b90fac85341acfa2c3bd427b10912c4abcfdb27afae298359",
+  "source_manifest_sha256": "0b302c71dd37150bc559e062ec223a4946ffa36d63c5facd2159d4a55028fc90",
+  "paper_comparison": {
+    "base": "56294b4795390db14b1bc46205ab382eb4ac0f5d",
+    "scenarios": [
+      "empty",
+      "guard_blocked",
+      "reject",
+      "sl",
+      "tp",
+      "undated"
+    ],
+    "equal_tables_schemas_finances_decisions_csv": true,
+    "declared_json_differences": [
+      "valuation_scope added to periodic and session reports",
+      "session rejection reasons use risk_flags_json, excluding positive scoring reasons"
+    ],
+    "rejection_reasons_before_after": {
+      "empty": {
+        "baseline": {},
+        "current": {}
+      },
+      "guard_blocked": {
+        "baseline": {},
+        "current": {}
+      },
+      "reject": {
+        "baseline": {
+          "synthetic": 2
+        },
+        "current": {}
+      },
+      "sl": {
+        "baseline": {},
+        "current": {}
+      },
+      "tp": {
+        "baseline": {},
+        "current": {}
+      },
+      "undated": {
+        "baseline": {},
+        "current": {}
+      }
+    },
+    "console_difference": "Only Top rejets changes to match corrected risk-flag counts",
+    "normalized_sha256": "a8143f62948a4c30752d32e41ed21c27f95e7209fb7612330fb4f1626dc890d5"
+  },
+  "p1_synthetic_support": "GO_SCOPED",
+  "p1_all_legacy_and_market_routes": "NOT_CERTIFIED",
+  "p2_real_data": "NO_GO",
+  "economic_verdict": "INSUFFICIENT DATA"
+}

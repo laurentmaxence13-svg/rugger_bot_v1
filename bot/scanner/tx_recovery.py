@@ -7,6 +7,9 @@ import sqlite3
 import time
 
 from bot.scanner.launch_detector import parse_launch_candidate
+from bot.scanner.supervision import (
+    _raise_paper_failures, _await_paper_cleanup, _stop_supervised_tasks,
+)
 from bot.scanner.transaction_parser import (
     ConflictingLaunchMetadata, find_raydium_launches, unique_launches,
 )
@@ -174,7 +177,7 @@ class TransactionRecovery:
 
 
 async def recover_transactions(events, store, fetch_transaction, *, clock=time.time,
-                               idle_seconds=.5, attempt_timeout=60.0):
+                               idle_seconds=.5, attempt_timeout=60.0, health=None):
     """Receive independently of retries; a quiet WebSocket cannot stall recovery.
 
     A caller-owned live stream runs indefinitely; a finite stream drains pending
@@ -212,10 +215,19 @@ async def recover_transactions(events, store, fetch_transaction, *, clock=time.t
             except Exception as error:
                 store.fail(job, error, clock())
 
-    tasks = [asyncio.create_task(receive()), asyncio.create_task(work())]
+    tasks, failures = [], []
     try:
+        for coroutine, name in ((receive(), 'scanner-receiver'), (work(), 'scanner-worker')):
+            task = (health.start_task(coroutine, name) if health is not None
+                    else asyncio.create_task(coroutine, name=name))
+            tasks.append(task)
         await asyncio.gather(*tasks)
+    except BaseException as error:
+        failures.append(('transaction recovery', error))
+        if health is not None:
+            health.fail('transaction recovery', error)
     finally:
-        for task in tasks:
-            task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
+        async def cleanup():
+            await _stop_supervised_tasks(tasks, observed=[e for _, e in failures])
+        await _await_paper_cleanup(cleanup(), failures)
+    _raise_paper_failures(failures)

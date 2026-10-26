@@ -13,6 +13,7 @@ from pathlib import Path
 import aiohttp
 
 from bot.config import BASE_DIR
+from bot.scanner.supervision import _await_paper_cleanup, _raise_paper_failures
 
 # DexScreener exposes both endpoints below.  The token-pairs endpoint is
 # generally faster, while the latest/dex endpoint is a useful fallback for a
@@ -745,16 +746,23 @@ async def run(db, model_path=None, poll=15, max_open=3,
               max_entries_day=20, max_candidates=10,
               max_daily_loss_pct=10.0):
     model = eligible_model(model_path)
-    con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
-    con.execute('PRAGMA busy_timeout=30000')
-    setup(con)
-    print('PAPER ONLY : prix observés ; aucun ordre réel. Modèle :',
-          'validé' if model else 'absent, collecte seule')
-    print(f'Limites paper : {max_open} positions ouvertes, '
-          f'{max_entries_day} entrées/jour, perte journalière maximale '
-          f'{max_daily_loss_pct:.2f}%, {max_candidates} candidats/cycle')
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as session:
+    con = session = None
+    failures = []
+    stage = 'database initialization'
+    try:
+        con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
+        con.execute('PRAGMA busy_timeout=30000')
+        setup(con)
+        print('PAPER ONLY : prix observés ; aucun ordre réel. Modèle :',
+              'validé' if model else 'absent, collecte seule')
+        print(f'Limites paper : {max_open} positions ouvertes, '
+              f'{max_entries_day} entrées/jour, perte journalière maximale '
+              f'{max_daily_loss_pct:.2f}%, {max_candidates} candidats/cycle')
+        stage = 'HTTP initialization'
+        session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12))
+        await session.__aenter__()
         while True:
+            stage = 'collection'
             now = int(time.time())
             signals = recent_signals(con, now)
             active = con.execute("SELECT mint,creator,signal_time FROM paper_trades WHERE status='open'").fetchall()
@@ -788,7 +796,27 @@ async def run(db, model_path=None, poll=15, max_open=3,
                             print(message, flush=True)
                 except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
                     print(f'Prix indisponible pour {mint[:8]} : {type(exc).__name__}', flush=True)
+            stage = 'poll wait'
             await asyncio.sleep(max(poll, cooldown))
+    except BaseException as exc:
+        failures.append((stage, exc))
+    finally:
+        async def cleanup():
+            # Keep every acquired handle, including one whose __aenter__ failed.
+            # Independent attempts preserve the primary collection error and
+            # still release SQLite when HTTP cleanup itself raises or cancels.
+            if session is not None:
+                try:
+                    await session.close()
+                except BaseException as exc:
+                    failures.append(('HTTP close', exc))
+            if con is not None:
+                try:
+                    con.close()
+                except BaseException as exc:
+                    failures.append(('SQLite close', exc))
+        await _await_paper_cleanup(cleanup(), failures)
+    _raise_paper_failures(failures)
 
 
 def main():

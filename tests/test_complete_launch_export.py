@@ -134,9 +134,9 @@ class CompleteLaunchExportTests(unittest.TestCase):
                 self.cache('undated',payload([('mint','creator','pool')],value))
                 self.assertEqual(research.verified_launches(self.path),[])
 
-    def test_known_saved_transaction_date_fallback_is_preserved(self):
+    def test_saved_transaction_date_does_not_replace_missing_raw_block_time(self):
         self.cache('known-date',payload([('a','creator-a','pool-a'),('b','creator-b','pool-b')],None),saved_time=500)
-        self.assertEqual(research.verified_launches(self.path),[(500,'known-date','creator-a','a','pool-a'),(500,'known-date','creator-b','b','pool-b')])
+        self.assertEqual(research.verified_launches(self.path),[])
         self.cache('primary-date',payload([('c','creator-c','pool-c')],700),saved_time=123)
         self.assertIn((700,'primary-date','creator-c','c','pool-c'),research.verified_launches(self.path))
 
@@ -182,11 +182,11 @@ class CompleteLaunchExportTests(unittest.TestCase):
         events,path=self.corpus(50)
         self.assertEqual(research.verified_launches(self.path),events)
         result=research.backtest(self.path,path)
-        train=[Decimal('.18') if i%2==0 else Decimal('.38') for i in range(35)]
-        test=[Decimal('.18') if i%2==0 else Decimal('.38') for i in range(35,50)]
-        self.assertEqual((result['train'],result['test'],result['selected']),(35,15,15))
-        self.assertAlmostEqual(result['diagnostics']['train_mean_return'],float(sum(train)/35))
-        self.assertAlmostEqual(result['mean_return'],float(sum(test)/15))
+        train=[Decimal('.18') if i%2==0 else Decimal('.38') for i in range(34)]
+        test=[Decimal('.18') if i%2==0 else Decimal('.38') for i in range(34,50)]
+        self.assertEqual((result['train'],result['test'],result['selected']),(34,16,16))
+        self.assertAlmostEqual(result['diagnostics']['train_mean_return'],float(sum(train)/34))
+        self.assertAlmostEqual(result['mean_return'],float(sum(test)/16))
 
     def test_missing_price_for_one_mint_does_not_remove_its_sibling(self):
         _,path=self.corpus(52,missing_last=True)

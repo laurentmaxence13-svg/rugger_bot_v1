@@ -12,6 +12,7 @@ from itertools import combinations
 import json
 import math
 import sqlite3
+from bot.analyser.temporal_split import temporal_partition
 
 from bot.analyser.research_pipeline import (
     _quote_at_or_after,
@@ -254,7 +255,8 @@ def behavior_observation(event, prices, cached, prior_launches=0,
     _, reference_price = reference
     entry_time, entry_price = entry
     exit_time, exit_price = exit_quote
-    if min(reference_price, entry_price, exit_price) <= 0:
+    if (min(reference_price, entry_price, exit_price) <= 0
+            or not reference[0] <= entry_time <= exit_time):
         return None
 
     timestamps, rows = _cache_index(cached)
@@ -313,17 +315,19 @@ RULES = ('known_creator', 'no_dev_sell', 'no_relay',
          'clean_behavior', 'known_clean_behavior', 'clean_positive_momentum')
 
 
+def _causal_creator_mean(observations, creator, entry_time):
+    known = [o['gross_return'] for o in observations
+             if o['creator'] == creator and o['exit_time'] < entry_time]
+    return sum(known) / len(known) if known else None
+
+
 def behavior_backtest(db_path, price_csv, exit_delay=900, costs=(200, 500, 1000),
                       train_fraction=.7, min_train=30, min_test=15):
     events = verified_launches(db_path)
-    split = int(len(events) * train_fraction)
     prices = load_prices(price_csv)
     cached = load_cached_transactions(db_path)
-    prior_returns = defaultdict(list)
     observations = []
-    for event in events:
-        prior_mean = (sum(prior_returns[event[2]]) / len(prior_returns[event[2]])
-                      if prior_returns[event[2]] else None)
+    for event in sorted(events):
         observation = behavior_observation(
             event, prices, cached,
             prior_launches=sum(1 for previous in events
@@ -331,17 +335,18 @@ def behavior_backtest(db_path, price_csv, exit_delay=900, costs=(200, 500, 1000)
             exit_delay=exit_delay,
         )
         if observation is not None:
-            observation['creator_prior_mean_return'] = prior_mean
+            observation['creator_prior_mean_return'] = _causal_creator_mean(
+                observations, event[2], observation['entry_time'])
             observations.append(observation)
-            prior_returns[event[2]].append(observation['gross_return'])
     by_mint = {item['mint']: item for item in observations}
-    complete_ids = set(by_mint)
-    train = [by_mint[e[3]] for e in events[:split] if e[3] in complete_ids]
-    test = [by_mint[e[3]] for e in events[split:] if e[3] in complete_ids]
+    train_events, test_events, partition = temporal_partition(
+        events, {o['mint']: o['exit_time'] for o in observations}, train_fraction)
+    train = [by_mint[e[3]] for e in train_events]
+    test = [by_mint[e[3]] for e in test_events]
     if len(train) < min_train or len(test) < min_test:
         return {
             'status': 'insufficient_data', 'exit_delay': exit_delay,
-            'train': len(train), 'test': len(test),
+            'train': len(train), 'temporal_split': partition, 'test': len(test),
             'complete': len(observations),
             'missing': len(events) - len(observations),
             'cache_transactions': len(cached),
@@ -360,7 +365,7 @@ def behavior_backtest(db_path, price_csv, exit_delay=900, costs=(200, 500, 1000)
     if not candidates:
         return {
             'status': 'no_signal', 'exit_delay': exit_delay,
-            'train': len(train), 'test': len(test), 'complete': len(observations),
+            'train': len(train), 'temporal_split': partition, 'test': len(test), 'complete': len(observations),
             'missing': len(events) - len(observations), 'cache_transactions': len(cached),
             'message': 'Aucune règle comportementale avec au moins 5 observations.',
         }
@@ -374,7 +379,7 @@ def behavior_backtest(db_path, price_csv, exit_delay=900, costs=(200, 500, 1000)
             'exit_delay': exit_delay,
             'rule': rule,
             'assumed_cost_bps': cost,
-            'train': len(train), 'test': len(test), 'selected': len(returns),
+            'train': len(train), 'temporal_split': partition, 'test': len(test), 'selected': len(returns),
             'train_mean_return': train_mean,
             'mean_return': sum(returns) / len(returns) if returns else None,
             'win_rate': sum(value > 0 for value in returns) / len(returns) if returns else None,
@@ -386,7 +391,7 @@ def behavior_backtest(db_path, price_csv, exit_delay=900, costs=(200, 500, 1000)
     return {
         'status': 'validated_behavior' if eligible else 'no_signal',
         'exit_delay': exit_delay, 'rule': rule,
-        'train': len(train), 'test': len(test), 'complete': len(observations),
+        'train': len(train), 'temporal_split': partition, 'test': len(test), 'complete': len(observations),
         'missing': len(events) - len(observations),
         'cache_transactions': len(cached),
         'behavior_known': sum(item['behavior_known'] for item in observations),

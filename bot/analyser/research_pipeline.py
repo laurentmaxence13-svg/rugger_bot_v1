@@ -5,14 +5,18 @@ import json
 import math
 import os
 import sqlite3
+from bot.analyser.temporal_split import temporal_partition
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
 import warnings
 from collections import Counter
+from contextlib import closing
 from itertools import groupby
 from pathlib import Path
+
+from bot.analyser.artifacts import atomic_text_writer, atomic_write_json
 
 try:
     from dotenv import load_dotenv
@@ -56,7 +60,6 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
     if not api_key:
         raise ValueError('BIRDEYE_API_KEY absente du fichier .env.')
     events = verified_launches(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
     rows, missing = [], 0
     for index, (timestamp, _signature, _creator, mint, _pool) in enumerate(events, 1):
         try:
@@ -76,7 +79,7 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
                 missing += 1
         if delay > 0 and index < len(events):
             time.sleep(delay)
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
+    with atomic_text_writer(destination, newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['mint', 'timestamp', 'price_usd'])
         writer.writerows(rows)
@@ -84,19 +87,24 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
 
 
 def verified_launches(db_path):
-    """All cached LaunchLab creations; retain the earliest event per mint."""
+    """Dated cached creations, using only a valid raw transaction blockTime.
+
+    Joined research dates are historical metadata, not evidence of transaction
+    time. Missing, invalid and future raw dates remain unknown and are excluded
+    from dated exports/backtests without rewriting their cached payloads.
+    """
     con = sqlite3.connect(db_path)
     result = {}
+    now = time.time()
     try:
-        rows = con.execute('''SELECT c.signature,c.payload,l.block_time
-        FROM research_tx_cache c LEFT JOIN research_launches l ON l.signature=c.signature
-        WHERE c.fetched_ok=1 AND c.payload IS NOT NULL''')
-        for signature, raw, saved_time in rows:
+        rows = con.execute('''SELECT signature,payload FROM research_tx_cache
+        WHERE fetched_ok=1 AND payload IS NOT NULL''')
+        for signature, raw in rows:
             try:
                 tx = json.loads(raw)
                 launches = find_raydium_launches(tx)
-                timestamp = tx.get('blockTime') or saved_time
-                if type(timestamp) is not int or timestamp <= 0:
+                timestamp = tx.get('blockTime')
+                if type(timestamp) is not int or not 0 < timestamp <= now:
                     continue
                 for launch in launches:
                     mint = launch['mint']
@@ -114,10 +122,10 @@ def verified_launches(db_path):
 
 
 def export_dataset(db_path, destination):
+    """Export only raw-blockTime-dated launches; unknown dates are not repaired."""
     events = verified_launches(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
     previous = Counter()
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
+    with atomic_text_writer(destination, newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['block_time', 'signature', 'creator', 'mint', 'pool_state', 'prior_launches'])
         for _timestamp, batch in groupby(events, key=lambda event: event[0]):
@@ -130,13 +138,11 @@ def export_dataset(db_path, destination):
 
 
 def export_prices(db_path, destination):
-    con = sqlite3.connect(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(['mint', 'timestamp', 'price_usd'])
-        writer.writerows(con.execute('SELECT mint,timestamp,price_usd FROM paper_prices ORDER BY mint,timestamp'))
-    con.close()
+    with closing(sqlite3.connect(db_path)) as con:
+        with atomic_text_writer(destination, newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['mint', 'timestamp', 'price_usd'])
+            writer.writerows(con.execute('SELECT mint,timestamp,price_usd FROM paper_prices ORDER BY mint,timestamp'))
 
 
 def load_prices(path):
@@ -181,7 +187,8 @@ def momentum_observation(event, prices, entry_delay=300, exit_delay=900,
     reference_time, reference_price = reference
     entry_time, entry_price = entry
     exit_time, exit_price = exit_quote
-    if entry_price <= 0 or exit_price <= 0:
+    if (entry_price <= 0 or exit_price <= 0
+            or not reference_time <= entry_time <= exit_time):
         return None
     momentum = entry_price / reference_price - 1.0
     net_return = (exit_price / entry_price - 1.0) - cost_bps / 10000
@@ -208,15 +215,13 @@ def momentum_backtest(db_path, price_csv, exit_delay=900,
     accepted by the paper trader automatically.
     """
     events = verified_launches(db_path)
-    split = int(len(events) * train_fraction)
     prices = load_prices(price_csv)
     observations = [momentum_observation(e, prices, exit_delay=exit_delay,
                                          cost_bps=0)
                     for e in events]
     complete = [o for o in observations if o is not None]
-    complete_ids = {o['mint'] for o in complete}
-    train_events = [e for e in events[:split] if e[3] in complete_ids]
-    test_events = [e for e in events[split:] if e[3] in complete_ids]
+    train_events, test_events, partition = temporal_partition(
+        events, {o['mint']: o['exit_time'] for o in complete}, train_fraction)
     by_mint = {o['mint']: o for o in complete}
     if len(train_events) < min_train or len(test_events) < min_test:
         raise ValueError(
@@ -240,7 +245,7 @@ def momentum_backtest(db_path, price_csv, exit_delay=900,
             'status': 'no_signal',
             'exit_delay': exit_delay,
             'entry_delay': 300,
-            'train': len(train_events),
+            'train': len(train_events), 'temporal_split': partition,
             'test': len(test_events),
             'complete': len(complete),
             'missing': len(events) - len(complete),
@@ -263,7 +268,7 @@ def momentum_backtest(db_path, price_csv, exit_delay=900,
             'entry_delay': 300,
             'threshold': threshold,
             'assumed_cost_bps': cost,
-            'train': len(train_events),
+            'train': len(train_events), 'temporal_split': partition,
             'test': len(test_events),
             'selected': len(returns),
             'missing': len(events) - len(complete),
@@ -280,7 +285,7 @@ def momentum_backtest(db_path, price_csv, exit_delay=900,
         'exit_delay': exit_delay,
         'entry_delay': 300,
         'threshold': threshold,
-        'train': len(train_events),
+        'train': len(train_events), 'temporal_split': partition,
         'test': len(test_events),
         'complete': len(complete),
         'missing': len(events) - len(complete),
@@ -321,34 +326,44 @@ def momentum_grid(db_path, price_csv, exit_delays=(900, 3660),
     }
 
 
-def outcome(event, prices, entry_delay=60, hold_seconds=3600, max_gap=120, cost_bps=200):
+def _outcome_observation(event, prices, entry_delay=60, hold_seconds=3600, max_gap=120, cost_bps=200):
     timestamp, _, _, mint, _ = event
     series = prices.get(mint, [])
     entry_target, exit_target = timestamp + entry_delay, timestamp + entry_delay + hold_seconds
     entry = next(((t, p) for t, p in series if entry_target <= t <= entry_target + max_gap), None)
     exit_price = next(((t, p) for t, p in series if exit_target <= t <= exit_target + max_gap), None)
-    if entry is None or exit_price is None:
+    if entry is None or exit_price is None or exit_price[0] < entry[0]:
         return None  # Aucune extrapolation sur une cotation manquante.
-    return (exit_price[1] / entry[1] - 1) - cost_bps / 10000
+    return {'entry_time': entry[0], 'exit_time': exit_price[0],
+            'net_return': (exit_price[1] / entry[1] - 1) - cost_bps / 10000}
+
+
+
+def outcome(event, prices, entry_delay=60, hold_seconds=3600, max_gap=120, cost_bps=200):
+    observation = _outcome_observation(event, prices, entry_delay, hold_seconds, max_gap, cost_bps)
+    return observation['net_return'] if observation is not None else None
 
 
 def backtest(db_path, price_csv, train_fraction=.7, min_train=30, min_test=15,
              hold_seconds=3600, cost_bps=200):
     events = verified_launches(db_path)
-    split = int(len(events) * train_fraction)
-    if split < min_train or len(events) - split < min_test:
+    if len(events) < min_train + min_test:
         raise ValueError(f'Corpus insuffisant : {len(events)} lancements ; requis >= {min_train} entraînement et {min_test} test.')
     prices = load_prices(price_csv)
     # Les prix manquants sont exclus, jamais transformés en gain, perte ou zéro.
     # verified_launches returns one event per mint, but signatures can repeat.
-    outcomes = {e[3]: outcome(e, prices, hold_seconds=hold_seconds,
-                               cost_bps=cost_bps) for e in events}
+    observations = {e[3]: _outcome_observation(e, prices, hold_seconds=hold_seconds,
+                                             cost_bps=cost_bps) for e in events}
+    outcomes = {mint: o['net_return'] if o is not None else None
+                for mint, o in observations.items()}
     missing = sum(v is None for v in outcomes.values())
-    train = [e for e in events[:split] if outcomes[e[3]] is not None]
-    test = [e for e in events[split:] if outcomes[e[3]] is not None]
+    train, test, partition = temporal_partition(
+        events, {mint: o['exit_time'] for mint, o in observations.items() if o is not None},
+        train_fraction)
     if len(train) < min_train or len(test) < min_test:
         raise ValueError(f'Observations complètes insuffisantes : {len(train)} entraînement et '
-                         f'{len(test)} test ; {missing} lancements exclus faute de prix.')
+                         f'{len(test)} test ; {missing} lancements exclus faute de prix ; '
+                         f"{partition['purged_train_observations']} purges temporelles.")
     by_creator = {}
     for e in train:
         by_creator.setdefault(e[2], []).append(outcomes[e[3]])
@@ -369,7 +384,7 @@ def backtest(db_path, price_csv, train_fraction=.7, min_train=30, min_test=15,
     }
     scored = [(e, outcomes[e[3]]) for e in test if scores.get(e[2], global_mean) > 0]
     if not scored:
-        return {'status': 'no_signal', 'train': len(train), 'test': len(test),
+        return {'status': 'no_signal', 'temporal_split': partition, 'train': len(train), 'test': len(test),
                 'selected': 0, 'excluded_missing_prices': missing,
                 'train_end': train[-1][0], 'test_start': test[0][0],
                 'mean_return': None, 'win_rate': None,
@@ -386,7 +401,7 @@ def backtest(db_path, price_csv, train_fraction=.7, min_train=30, min_test=15,
         max_drawdown = min(max_drawdown, equity / peak - 1.0)
     diagnostics['selected_max_drawdown'] = max_drawdown
     diagnostics['selected_equity_multiple'] = equity
-    return {'train': len(train), 'test': len(test), 'selected': len(scored),
+    return {'temporal_split': partition, 'train': len(train), 'test': len(test), 'selected': len(scored),
             'excluded_missing_prices': missing,
             'train_end': train[-1][0], 'test_start': test[0][0],
             'mean_return': sum(p for _, p in scored) / len(scored),
@@ -465,30 +480,26 @@ def main():
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = backtest(args.db, args.prices, hold_seconds=args.hold_seconds,
                           cost_bps=args.cost_bps)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     elif args.command == 'backtest-grid':
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = backtest_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     elif args.command == 'momentum-grid':
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = momentum_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     else:
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         from bot.analyser.behavior_pipeline import behavior_grid
         result = behavior_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
 
 

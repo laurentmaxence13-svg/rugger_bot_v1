@@ -56,6 +56,9 @@ from bot.analyser.paper_trader import (
     setup,
 )
 from bot.config import BASE_DIR, get_settings
+from bot.scanner.supervision import (
+    ScannerHealth, _raise_paper_failures, _await_paper_cleanup, _stop_supervised_tasks,
+)
 from bot.database.db import Database
 from bot.solana.rpc import SolanaRPC
 from bot.scanner.transaction_parser import RAYDIUM_LAUNCHPAD_PROGRAM_ID, find_raydium_launches
@@ -65,8 +68,8 @@ class _ScannerEntryGuard:
     """Fail closed on stale/unknown supervised state; not a coverage proof."""
     MAX_STATE_AGE = 120.0  # Two default backfill intervals; not a market limit.
 
-    def __init__(self, db, task):
-        self.db, self.task = db, task
+    def __init__(self, db, task, health=None):
+        self.db, self.task, self.health = db, task, health
         self.started_at = time.time()
         self.program_id = os.getenv('RAYDIUM_LAUNCHPAD_PROGRAM_ID',
                                     RAYDIUM_LAUNCHPAD_PROGRAM_ID).strip()
@@ -96,7 +99,9 @@ class _ScannerEntryGuard:
 
     def allows(self, con):
         # collect_once uses its own locked connection: no separate stale snapshot.
-        if self.task.done() or self.task.cancelling():
+        health = self.health or getattr(self.task, 'scanner_health', None)
+        if (health is None or not health.permits_entries()
+                or self.task.done() or self.task.cancelling()):
             return False
         try:
             row = con.execute('SELECT history_status,reason,ws_state,checked_at,'
@@ -658,52 +663,6 @@ def _quote_provenance(con):
     }
 
 
-def _raise_paper_failures(failures):
-    """Keep the original exception (and cancellation) with staged diagnostics.
-
-    Python 3.10 is supported: ExceptionGroup/add_note are not required.
-    """
-    if not failures:
-        return
-    primary = next((exc for _, exc in failures
-                    if isinstance(exc, asyncio.CancelledError)), failures[0][1])
-    diagnostics = list(failures)
-    for _, error in failures:
-        for stage, nested in getattr(error, 'paper_failures', ()):
-            if not any(stage == s and nested is e for s, e in diagnostics):
-                diagnostics.append((stage, nested))
-    primary.paper_failures = tuple(diagnostics)
-    if hasattr(primary, 'add_note'):
-        for stage, exc in diagnostics:
-            note = f'PAPER {stage}: {type(exc).__name__}: {exc}'
-            if note not in getattr(primary, '__notes__', ()):
-                primary.add_note(note)
-    elif any(error is not primary for _, error in diagnostics):
-        # Python 3.10: expose secondary failures in the native traceback too.
-        detail = RuntimeError('; '.join(
-            f'PAPER {stage}: {type(error).__name__}: {error}'
-            for stage, error in diagnostics if error is not primary))
-        detail.__cause__ = primary.__cause__
-        raise primary from detail
-    raise primary
-
-
-async def _await_paper_cleanup(cleanup, failures):
-    """Finish owned cleanup despite repeated cancellation of the caller."""
-    task = asyncio.create_task(cleanup, name='paper-resource-cleanup')
-    while not task.done():
-        try:
-            await asyncio.shield(task)
-        except asyncio.CancelledError as exc:
-            failures.append(('cleanup cancellation', exc))
-        except BaseException:
-            break  # Retrieve the cleanup error below, without losing the caller's.
-    try:
-        task.result()
-    except BaseException as exc:
-        failures.append(('cleanup', exc))
-
-
 def _write_json_report(output, report, *, allow_nan=True):
     """Publish a complete JSON file in one same-directory replacement."""
     path = Path(output)
@@ -728,6 +687,18 @@ def _write_json_report(output, report, *, allow_nan=True):
             except BaseException as exc:
                 failures.append(('report temporary cleanup', exc))
     _raise_paper_failures(failures)
+
+
+def _valuation_scope():
+    """Separate ledger reconciliation from an observed economic SOL return."""
+    return {
+        'account_currency': 'SOL',
+        'observed_price_currency': 'USD',
+        'return_conversion_assumption': 'constant_SOL_USD',
+        'fx_observed_at_entry_and_exit': False,
+        'economic_pnl_verified': False,
+        'execution_prices_verified': False,
+    }
 
 
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
@@ -813,6 +784,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
         'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
+        'valuation_scope': _valuation_scope(),
         'market_data_coverage': _market_data_coverage(con),
         'quote_provenance': _quote_provenance(con),
         'rejection_reasons': _decision_reason_counts(con),
@@ -1225,7 +1197,7 @@ async def collect_once(con, session, cached, now, model=None,
 def _session_summary(con, started_at, ended_at):
     """Metrics limited to one PAPER validation session."""
     decisions = con.execute(
-        "SELECT mint,enter,reasons_json FROM paper_decisions WHERE decision_time>=? AND decision_time<=?",
+        "SELECT mint,enter,risk_flags_json FROM paper_decisions WHERE decision_time>=? AND decision_time<=?",
         (int(started_at), int(ended_at)),
     ).fetchall()
     entries = con.execute(
@@ -1261,6 +1233,7 @@ def _session_summary(con, started_at, ended_at):
         # Legacy key retained for report consumers; now a portfolio return.
         'net_return_compounded': metrics['net_return_after_costs'],
         'equity_basis': 'realized_sol',
+        'valuation_scope': _valuation_scope(),
         'rejection_reasons': dict(sorted(reasons.items(), key=lambda x:(-x[1],x[0]))),
     }
 
@@ -1501,9 +1474,10 @@ async def run_with_scanner(args):
     tasks = []
     failures = []
     try:
-        scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db))
+        health = ScannerHealth()
+        scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db, health=health))
         tasks.append(scanner_task)
-        entry_guard = _ScannerEntryGuard(args.db, scanner_task)
+        entry_guard = _ScannerEntryGuard(args.db, scanner_task, health=health)
         engine_task = asyncio.create_task(run(
             args.db, model_path=args.model, poll=args.poll,
             report=args.report, max_open=args.max_open,
@@ -1567,49 +1541,6 @@ def _print_scanner_state(db, previous=None):
     return states
 
 
-async def _stop_supervised_tasks(tasks, timeout=5.0, *, observed=()):
-    if not tasks:
-        return
-    for task in tasks:
-        if not task.done():
-            task.cancel()
-    done, pending = await asyncio.wait(tasks, timeout=timeout)
-    failures = []
-    for task in tasks:  # Deterministic acquisition order, not set iteration order.
-        if task not in done:
-            continue
-        try:
-            task.result()
-        except asyncio.CancelledError as exc:
-            # A requested cancellation is normal; its cleanup errors are not.
-            failures.extend((stage, error) for stage, error in getattr(exc, 'paper_failures', ())
-                            if not isinstance(error, asyncio.CancelledError))
-        except BaseException as exc:
-            if exc not in observed:
-                failures.append((f'supervised task {task.get_name()}', exc))
-    if pending:
-        def diagnose_late_failure(task):
-            try:
-                task.result()
-            except asyncio.CancelledError as exc:
-                for stage, error in getattr(exc, 'paper_failures', ()):
-                    if not isinstance(error, asyncio.CancelledError):
-                        task.get_loop().call_exception_handler({
-                            'message': f'PAPER late supervised cleanup failure: {stage}',
-                            'exception': error, 'task': task,
-                        })
-            except BaseException as exc:
-                task.get_loop().call_exception_handler({
-                    'message': 'PAPER supervised task failed after cleanup timeout',
-                    'exception': exc, 'task': task,
-                })
-        for task in pending:
-            task.cancel()
-            task.add_done_callback(diagnose_late_failure)
-        failures.append(('supervised timeout', RuntimeError(
-            'Nettoyage asyncio incomplet apres delai limite: ' +
-            ', '.join(sorted(task.get_name() for task in pending)))))
-    _raise_paper_failures(failures)
 
 
 def main():
