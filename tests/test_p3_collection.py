@@ -4,6 +4,9 @@ import copy
 import hashlib
 import json
 import sys
+from types import SimpleNamespace
+
+import aiohttp
 
 import pytest
 
@@ -211,6 +214,94 @@ def test_readonly_policy_refuses_financial_methods_redirect_auth_and_budget_befo
     with pytest.raises(collect.ReadOnlyPolicyError):
         session.get(collect.FX_URL)
     assert len(transport.calls) == 1 and session.requests_used == 1
+
+
+def test_capture_transport_preserves_env_proxy_without_netrc_cookies_or_hidden_retry(tmp_path, monkeypatch):
+    netrc = tmp_path / 'synthetic-netrc'
+    netrc.write_text('machine api.dexscreener.com login synthetic-user password synthetic-password\n')
+    netrc.chmod(0o600)
+    monkeypatch.setenv('NETRC', str(netrc))
+    for name in ('http_proxy', 'HTTP_PROXY', 'https_proxy', 'HTTPS_PROXY',
+                 'all_proxy', 'ALL_PROXY', 'no_proxy', 'NO_PROXY'):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv('HTTPS_PROXY', 'http://synthetic-proxy.invalid:8080')
+    calls = []
+    async def intercept(request, handler):
+        calls.append(request)
+        raise aiohttp.ServerDisconnectedError('synthetic dropped response')
+    original_session = aiohttp.ClientSession
+    def make_transport(**kwargs):
+        transport = original_session(middlewares=(intercept,), **kwargs)
+        # Even an earlier public response must not create authenticated cookies.
+        transport.cookie_jar.update_cookies({'synthetic_cookie': 'synthetic-value'})
+        return transport
+    monkeypatch.setattr(collect.aiohttp, 'ClientSession', make_transport)
+    async def snapshot(store, session, **kwargs):
+        def append(kind, **record):
+            return store.append(kind, provenance='synthetic', **record)
+        await collect.capture_fx(session, append)
+        return dict(requests_used=session.requests_used)
+    monkeypatch.setattr(collect, 'collect_snapshot', snapshot)
+    args = SimpleNamespace(db=tmp_path/'capture.sqlite', max_requests=1,
+        signature_limit=1, max_transactions=0, quote_mint=None,
+        input_lamports=1, slippage_bps=100)
+    report = asyncio.run(collect._capture(args))
+    assert report['requests_used'] == 1 and len(calls) == 1
+    assert 'Authorization' not in calls[0].headers and 'Cookie' not in calls[0].headers
+    assert str(calls[0].proxy) == 'http://synthetic-proxy.invalid:8080'
+
+
+def test_environment_proxy_respects_no_proxy(monkeypatch):
+    monkeypatch.setattr(collect, 'getproxies', lambda: {'https': 'http://synthetic-proxy.invalid:8080'})
+    monkeypatch.setattr(collect, 'proxy_bypass', lambda host: host == 'api.dexscreener.com')
+    assert collect._environment_proxy(collect.FX_URL) is None
+    assert collect._environment_proxy(collect.RPC_URL) == 'http://synthetic-proxy.invalid:8080'
+
+
+def test_capture_refuses_transport_without_a_no_retry_switch(tmp_path, monkeypatch):
+    class UnsupportedTransport:
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, *args):
+            pass
+    monkeypatch.setattr(collect.aiohttp, 'ClientSession', lambda **kwargs: UnsupportedTransport())
+    async def must_not_collect(*args, **kwargs):
+        raise AssertionError('Unsupported transport must not perform requests')
+    monkeypatch.setattr(collect, 'collect_snapshot', must_not_collect)
+    args = SimpleNamespace(db=tmp_path/'capture.sqlite', max_requests=1)
+    report = asyncio.run(collect._capture(args))
+    assert report['requests_used'] == 0 and report['open_gap_count'] == 1
+    assert report['real_orders_enabled'] is False
+
+
+def test_unsafe_quote_route_retains_failure_receipt_and_does_not_request_a_sell(tmp_path):
+    buy = quote_payload()
+    buy['data']['routePlan'][0]['api_key'] = 'synthetic-not-a-real-credential'
+    transport = Transport(posts=[rpc(100), rpc([])], gets=[Response([]), Response(buy)])
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        report = asyncio.run(collect.collect_snapshot(store, collect.ReadOnlySession(transport),
+            quote_mint=collect.USDC_MINT, provenance='synthetic'))
+        quotes = store.events(kind='quote_attempt')
+        assert len(quotes) == 2 and quotes[0]['outcome'] == 'error'
+        assert quotes[0]['reason'] == 'unsafe_or_invalid_quote_payload'
+        assert len(quotes[0]['payload']['sanitized_response_sha256']) == 64
+        assert quotes[1]['outcome'] == 'not_attempted'
+        assert len(transport.calls) == 4 and report['unavailable_quotes'] == 2
+        assert store.events(kind='checkpoint')
+        assert 'synthetic-not-a-real-credential' not in json.dumps(store.events())
+
+
+def test_unsafe_fx_identity_retains_failure_receipt_instead_of_aborting(tmp_path):
+    pairs = [dict(baseToken={'address':collect.SOL_MINT}, priceUsd='120',
+                  pairAddress='https://example.invalid/pair?display=x', liquidity={'usd':'100000'})]
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        def append(kind, **record):
+            return store.append(kind, provenance='synthetic', **record)
+        asyncio.run(collect.capture_fx(collect.ReadOnlySession(Transport(gets=[Response(pairs)])), append))
+        event = store.events(kind='fx')[0]
+        assert event['outcome'] == 'unavailable' and event['reason'] == 'unsafe_or_invalid_fx_payload'
+        assert event['payload']['display_observation'] is None
+        assert len(event['payload']['response_representation_sha256']) == 64
 
 
 def test_cli_requires_network_opt_in_before_opening_journal(tmp_path, monkeypatch):

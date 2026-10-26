@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 import time
 import uuid
+from urllib.parse import urlsplit
+from urllib.request import getproxies, proxy_bypass
 
 import aiohttp
 
@@ -25,16 +27,25 @@ def now_ms():
     return time.time_ns() // 1_000_000
 
 
+def _environment_proxy(url):
+    """Honor configured routing without aiohttp's implicit netrc lookup."""
+    destination = urlsplit(url)
+    if proxy_bypass(destination.hostname):
+        return None
+    return getproxies().get(destination.scheme)
+
+
 class ReadOnlyPolicyError(ValueError):
     pass
 
 
 class ReadOnlySession:
     """Restrict both destinations and operations; count attempts before transport."""
-    def __init__(self, session, max_requests=8):
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
         if type(max_requests) is not int or not 1 <= max_requests <= 20:
             raise ValueError('Request budget must be between 1 and 20')
         self.session, self.max_requests, self.requests_used = session, max_requests, 0
+        self.proxy_resolver = proxy_resolver
 
     def _take(self):
         if self.requests_used >= self.max_requests:
@@ -53,6 +64,8 @@ class ReadOnlySession:
             raise ReadOnlyPolicyError('Unexpected quote query parameters')
         self._take()
         kwargs['allow_redirects'] = False
+        if self.proxy_resolver is not None:
+            kwargs['proxy'] = self.proxy_resolver(url)
         return self.session.get(url, **kwargs)
 
     def post(self, url, *, json=None, **kwargs):
@@ -63,6 +76,8 @@ class ReadOnlySession:
             raise ReadOnlyPolicyError('Authenticated market requests are not configured')
         self._take()
         kwargs['allow_redirects'] = False
+        if self.proxy_resolver is not None:
+            kwargs['proxy'] = self.proxy_resolver(url)
         return self.session.post(url, json=json, **kwargs)
 
 
@@ -168,6 +183,7 @@ def capture_transaction(append, tx, *, signature, slot, received_at_ms, request_
 async def capture_fx(session, append):
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, value = 'unavailable', None, None
+    pairs = None
     try:
         async with session.get(FX_URL, timeout=aiohttp.ClientTimeout(total=8)) as response:
             if response.status != 200:
@@ -202,11 +218,18 @@ async def capture_fx(session, append):
     except (ValueError, TypeError):
         reason = 'invalid_or_disallowed_response'
     received = now_ms()
-    append('fx', received_at_ms=received, outcome=outcome, reason=reason,
-           payload={'provider': 'dexscreener', 'requested_at_ms': started,
-                    'latency_ms': (time.monotonic_ns()-mono)/1_000_000,
-                    'display_observation': value, 'provider_source_time_known': False,
-                    'eligible_for_strict_fx_conversion': False})
+    payload = {'provider': 'dexscreener', 'requested_at_ms': started,
+               'latency_ms': (time.monotonic_ns()-mono)/1_000_000,
+               'display_observation': value, 'provider_source_time_known': False,
+               'eligible_for_strict_fx_conversion': False}
+    try:
+        append('fx', received_at_ms=received, outcome=outcome, reason=reason, payload=payload)
+    except ValueError:
+        payload['display_observation'] = None
+        payload['response_representation_sha256'] = hashlib.sha256(
+            json.dumps(pairs, sort_keys=True).encode()).hexdigest()
+        append('fx', received_at_ms=received, outcome='unavailable',
+               reason='unsafe_or_invalid_fx_payload', payload=payload)
 
 
 def _record_quote(append, quote, side, request_id):
@@ -216,11 +239,25 @@ def _record_quote(append, quote, side, request_id):
     raw = json.dumps(quote.get('raw_payload'), sort_keys=True, allow_nan=False)
     payload['sanitized_response_sha256'] = hashlib.sha256(raw.encode()).hexdigest()
     payload['quote_side'] = side
-    append('quote_attempt', received_at_ms=quote['received_at_ms'],
-           source_time_ms=quote['source_time_ms'], source_slot=quote['source_slot'],
-           mint=quote['output_mint'] if side == 'buy' else quote['input_mint'],
-           outcome=quote['outcome'], reason=quote['reason'],
-           request_id=request_id, payload=payload)
+    envelope = dict(received_at_ms=quote['received_at_ms'],
+                    source_time_ms=quote['source_time_ms'], source_slot=quote['source_slot'],
+                    mint=quote['output_mint'] if side == 'buy' else quote['input_mint'],
+                    request_id=request_id)
+    try:
+        append('quote_attempt', **envelope, outcome=quote['outcome'],
+               reason=quote['reason'], payload=payload)
+    except ValueError:
+        # Sanitized extensions can still violate the journal policy (including
+        # redacted credential keys). Retain a receipt without those extensions.
+        append('quote_attempt', **envelope, outcome='error',
+               reason='unsafe_or_invalid_quote_payload',
+               payload={'quote_side': side,
+                        'sanitized_response_sha256': payload['sanitized_response_sha256'],
+                        'input_mint': quote['input_mint'], 'output_mint': quote['output_mint'],
+                        'input_amount_atomic': quote['input_amount_atomic'],
+                        'execution_guaranteed': False, 'executable_confirmed': False})
+        return False
+    return True
 
 
 async def collect_snapshot(store, session, *, signature_limit=5, max_transactions=2,
@@ -289,8 +326,8 @@ async def collect_snapshot(store, session, *, signature_limit=5, max_transaction
     if quote_mint is not None:
         client, quote_request = RaydiumQuoteClient(session), str(uuid.uuid4())
         buy = await client.quote(SOL_MINT, quote_mint, amount, slippage_bps)
-        _record_quote(append, buy, 'buy', quote_request)
-        if buy['outcome'] == 'quoted':
+        buy_recorded = _record_quote(append, buy, 'buy', quote_request)
+        if buy['outcome'] == 'quoted' and buy_recorded:
             sell = await client.quote(quote_mint, SOL_MINT, buy['output_amount_atomic'], slippage_bps)
             _record_quote(append, sell, 'sell', quote_request)
         else:
@@ -311,9 +348,15 @@ async def collect_snapshot(store, session, *, signature_limit=5, max_transaction
 
 async def _capture(args):
     with CaptureStore(args.db) as store:
-        async with aiohttp.ClientSession(trust_env=True) as transport:
-            session = ReadOnlySession(transport, args.max_requests)
+        async with aiohttp.ClientSession(trust_env=False, cookie_jar=aiohttp.DummyCookieJar()) as transport:
+            session = ReadOnlySession(transport, args.max_requests, proxy_resolver=_environment_proxy)
             try:
+                # aiohttp has no public no-retry option. Its internal GET retry
+                # would otherwise bypass the attempt budget. Fail closed if the
+                # supported transport no longer exposes this switch.
+                if type(getattr(transport, '_retry_connection', None)) is not bool:
+                    raise ReadOnlyPolicyError('Unsupported transport retry policy')
+                transport._retry_connection = False
                 return await asyncio.wait_for(collect_snapshot(
                     store, session, signature_limit=args.signature_limit,
                     max_transactions=args.max_transactions, quote_mint=args.quote_mint,
