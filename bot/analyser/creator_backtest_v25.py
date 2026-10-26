@@ -2,6 +2,7 @@ import asyncio
 import sqlite3
 
 from bot.config import get_settings
+from bot.analyser.legacy_validation import legacy_validation_metadata
 from bot.solana.rpc import SolanaRPC
 from bot.scanner.transaction_parser import find_raydium_launch
 
@@ -2450,18 +2451,20 @@ def _v25_score(rows, params, cost_side_pct):
 
 def run_v25_decision_engine(results):
     print("\n" + "="*110)
-    print("V25 - MOTEUR DE DECISION + VALIDATION CHRONOLOGIQUE HORS ECHANTILLON")
+    print("V25 - DIAGNOSTIC HERITE NON VALIDE")
     print("="*110)
+    scope = legacy_validation_metadata('creator_backtest_v25.run_v25_decision_engine')
+    print("Exclu des validations P1/P2 et des modèles : groupes temporels, labels et provenance non certifiés.")
     rows=[r for r in results if r.get("launch_time") is not None and r.get("sale_time") is not None and r.get("market_series")]
     rows.sort(key=lambda r:r["launch_time"])
     if len(rows) < 6:
-        print("Pas assez de launches exploitables pour une validation chronologique.")
-        return
+        print("Pas assez de launches exploitables pour ce diagnostic hérité.")
+        return dict(scope, status='insufficient_data', train=0, test=0, selected=0)
 
     split=max(4, int(len(rows)*0.65))
     train, test=rows[:split], rows[split:]
-    print(f"Launches exploitables : {len(rows)} | apprentissage ancien : {len(train)} | test récent jamais utilisé pour choisir : {len(test)}")
-    print("Règle anti-overfit : les paramètres sont choisis UNIQUEMENT sur la partie ancienne.")
+    print(f"Launches exploitables : {len(rows)} | lot ancien : {len(train)} | lot récent : {len(test)}")
+    print("Les paramètres sont choisis sur le lot ancien ; cette coupe positionnelle n'est pas une validation causale.")
 
     # Grille volontairement petite et prédéfinie : évite de fabriquer une stratégie sur 13 tokens.
     candidates=[]
@@ -2480,7 +2483,7 @@ def run_v25_decision_engine(results):
     ranked.sort(key=lambda x:(x[0],x[1]), reverse=True)
     if not ranked:
         print("Aucune configuration n'a assez de trades sur l'échantillon d'apprentissage.")
-        return
+        return dict(scope, status='no_signal', train=len(train), test=len(test), selected=0)
 
     _,_,best,train_sc=ranked[0]
     test_sc=_v25_score(test,best,cost)
@@ -2507,14 +2510,12 @@ def run_v25_decision_engine(results):
         else:
             print(f"  {c:.1f}%/côté -> aucun trade")
 
-    print("\nINTERPRETATION V25")
-    if not test_sc or test_sc["trades"] < 3:
-        print("Échantillon test trop petit : aucune conclusion de rentabilité autorisée.")
-    elif test_sc["avg"] <= 0:
-        print("La logique testée ne démontre PAS d'avantage net hors échantillon. Le bot doit rester en simulation.")
-    else:
-        print("Signal positif hors échantillon, mais échantillon encore trop petit : validation paper trading temps réel obligatoire avant argent réel.")
+    print("\nINTERPRETATION V25 : diagnostic exploratoire exclu, sans validation hors échantillon ni modèle éligible.")
     print("Aucun ordre réel n'est envoyé par V25.")
+    return dict(scope, status='excluded_legacy_temporal_integrity',
+                train=len(train), test=len(test),
+                selected=test_sc['trades'] if test_sc else 0,
+                mean_return=test_sc['avg'] / 100 if test_sc else None)
 
 
 async def main():

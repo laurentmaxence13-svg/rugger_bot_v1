@@ -134,9 +134,9 @@ class CompleteLaunchExportTests(unittest.TestCase):
                 self.cache('undated',payload([('mint','creator','pool')],value))
                 self.assertEqual(research.verified_launches(self.path),[])
 
-    def test_known_saved_transaction_date_fallback_is_preserved(self):
+    def test_saved_transaction_date_does_not_replace_missing_raw_block_time(self):
         self.cache('known-date',payload([('a','creator-a','pool-a'),('b','creator-b','pool-b')],None),saved_time=500)
-        self.assertEqual(research.verified_launches(self.path),[(500,'known-date','creator-a','a','pool-a'),(500,'known-date','creator-b','b','pool-b')])
+        self.assertEqual(research.verified_launches(self.path),[])
         self.cache('primary-date',payload([('c','creator-c','pool-c')],700),saved_time=123)
         self.assertIn((700,'primary-date','creator-c','c','pool-c'),research.verified_launches(self.path))
 

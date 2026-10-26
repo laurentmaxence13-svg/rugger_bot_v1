@@ -689,6 +689,18 @@ def _write_json_report(output, report, *, allow_nan=True):
     _raise_paper_failures(failures)
 
 
+def _valuation_scope():
+    """Separate ledger reconciliation from an observed economic SOL return."""
+    return {
+        'account_currency': 'SOL',
+        'observed_price_currency': 'USD',
+        'return_conversion_assumption': 'constant_SOL_USD',
+        'fx_observed_at_entry_and_exit': False,
+        'economic_pnl_verified': False,
+        'execution_prices_verified': False,
+    }
+
+
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
                  validation_status='not_validated'):
     """Write an operational report, explicitly marked PAPER ONLY."""
@@ -772,6 +784,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
         'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
+        'valuation_scope': _valuation_scope(),
         'market_data_coverage': _market_data_coverage(con),
         'quote_provenance': _quote_provenance(con),
         'rejection_reasons': _decision_reason_counts(con),
@@ -1184,7 +1197,7 @@ async def collect_once(con, session, cached, now, model=None,
 def _session_summary(con, started_at, ended_at):
     """Metrics limited to one PAPER validation session."""
     decisions = con.execute(
-        "SELECT mint,enter,reasons_json FROM paper_decisions WHERE decision_time>=? AND decision_time<=?",
+        "SELECT mint,enter,risk_flags_json FROM paper_decisions WHERE decision_time>=? AND decision_time<=?",
         (int(started_at), int(ended_at)),
     ).fetchall()
     entries = con.execute(
@@ -1220,6 +1233,7 @@ def _session_summary(con, started_at, ended_at):
         # Legacy key retained for report consumers; now a portfolio return.
         'net_return_compounded': metrics['net_return_after_costs'],
         'equity_basis': 'realized_sol',
+        'valuation_scope': _valuation_scope(),
         'rejection_reasons': dict(sorted(reasons.items(), key=lambda x:(-x[1],x[0]))),
     }
 

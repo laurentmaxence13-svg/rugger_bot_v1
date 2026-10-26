@@ -12,8 +12,11 @@ import urllib.parse
 import urllib.request
 import warnings
 from collections import Counter
+from contextlib import closing
 from itertools import groupby
 from pathlib import Path
+
+from bot.analyser.artifacts import atomic_text_writer, atomic_write_json
 
 try:
     from dotenv import load_dotenv
@@ -57,7 +60,6 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
     if not api_key:
         raise ValueError('BIRDEYE_API_KEY absente du fichier .env.')
     events = verified_launches(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
     rows, missing = [], 0
     for index, (timestamp, _signature, _creator, mint, _pool) in enumerate(events, 1):
         try:
@@ -77,7 +79,7 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
                 missing += 1
         if delay > 0 and index < len(events):
             time.sleep(delay)
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
+    with atomic_text_writer(destination, newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['mint', 'timestamp', 'price_usd'])
         writer.writerows(rows)
@@ -85,19 +87,24 @@ def backfill_historical_prices(db_path, destination, delay=1.1, api_key=None,
 
 
 def verified_launches(db_path):
-    """All cached LaunchLab creations; retain the earliest event per mint."""
+    """Dated cached creations, using only a valid raw transaction blockTime.
+
+    Joined research dates are historical metadata, not evidence of transaction
+    time. Missing, invalid and future raw dates remain unknown and are excluded
+    from dated exports/backtests without rewriting their cached payloads.
+    """
     con = sqlite3.connect(db_path)
     result = {}
+    now = time.time()
     try:
-        rows = con.execute('''SELECT c.signature,c.payload,l.block_time
-        FROM research_tx_cache c LEFT JOIN research_launches l ON l.signature=c.signature
-        WHERE c.fetched_ok=1 AND c.payload IS NOT NULL''')
-        for signature, raw, saved_time in rows:
+        rows = con.execute('''SELECT signature,payload FROM research_tx_cache
+        WHERE fetched_ok=1 AND payload IS NOT NULL''')
+        for signature, raw in rows:
             try:
                 tx = json.loads(raw)
                 launches = find_raydium_launches(tx)
-                timestamp = tx.get('blockTime') or saved_time
-                if type(timestamp) is not int or timestamp <= 0:
+                timestamp = tx.get('blockTime')
+                if type(timestamp) is not int or not 0 < timestamp <= now:
                     continue
                 for launch in launches:
                     mint = launch['mint']
@@ -115,10 +122,10 @@ def verified_launches(db_path):
 
 
 def export_dataset(db_path, destination):
+    """Export only raw-blockTime-dated launches; unknown dates are not repaired."""
     events = verified_launches(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
     previous = Counter()
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
+    with atomic_text_writer(destination, newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['block_time', 'signature', 'creator', 'mint', 'pool_state', 'prior_launches'])
         for _timestamp, batch in groupby(events, key=lambda event: event[0]):
@@ -131,13 +138,11 @@ def export_dataset(db_path, destination):
 
 
 def export_prices(db_path, destination):
-    con = sqlite3.connect(db_path)
-    Path(destination).parent.mkdir(parents=True, exist_ok=True)
-    with open(destination, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        writer.writerow(['mint', 'timestamp', 'price_usd'])
-        writer.writerows(con.execute('SELECT mint,timestamp,price_usd FROM paper_prices ORDER BY mint,timestamp'))
-    con.close()
+    with closing(sqlite3.connect(db_path)) as con:
+        with atomic_text_writer(destination, newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['mint', 'timestamp', 'price_usd'])
+            writer.writerows(con.execute('SELECT mint,timestamp,price_usd FROM paper_prices ORDER BY mint,timestamp'))
 
 
 def load_prices(path):
@@ -475,30 +480,26 @@ def main():
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = backtest(args.db, args.prices, hold_seconds=args.hold_seconds,
                           cost_bps=args.cost_bps)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     elif args.command == 'backtest-grid':
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = backtest_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     elif args.command == 'momentum-grid':
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         result = momentum_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
     else:
         if not args.prices:
             p.error('--prices requis : historique horodaté, pas de backtest sur les prix actuels')
         from bot.analyser.behavior_pipeline import behavior_grid
         result = behavior_grid(args.db, args.prices)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        args.output.write_text(json.dumps(result, indent=2), encoding='utf-8')
+        atomic_write_json(args.output, result)
         print(json.dumps(result, indent=2))
 
 

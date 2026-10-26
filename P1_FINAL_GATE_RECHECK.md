@@ -187,3 +187,27 @@ les deux nouveaux tests et les deux rapports. Aucun git clean, remplacement de
 dossier, suppression de base, changement d'ACL ou commit.
 
 Arrêt après correctifs, tests et rapports. Aucun GO global P1/P2 n'est accordé.
+
+
+## Mise à jour cloud — 26 octobre 2026
+
+Le commit publié `56294b4795390db14b1bc46205ab382eb4ac0f5d` a été récupéré ;
+ses **604 passed / 1 skipped / 242 subtests passed** ont été reproduits.
+Le réexamen complémentaire, les preuves avant/après et les exclusions exécutables
+sont dans [P1_CLOUD_VALIDATION.md](P1_CLOUD_VALIDATION.md).
+
+La suite corrigée passe à **699 passed / 1 skipped / 242 subtests passed**,
+warnings en erreur. Les voies v25/v26 sont explicitement inéligibles ; B05/B08/B09
+du périmètre retenu et les pertes de diagnostics de fermeture ont été corrigés.
+La validation économique SOL reste limitée par l'absence de FX à chaque fill,
+désormais explicitée dans les rapports. Les motifs de refus de session utilisent
+les risk flags et non les bonus de score.
+
+**GO limité** pour le support technique nécessaire au protocole
+[P2 synthétique v1](P2_SYNTHETIC_PROTOCOL.md), figé au commit 8530f2b avant expérience.
+Ce GO n'est pas une certification globale de tous les anciens CLI, des données
+réelles ou des stratégies. Les grilles historiques, standalone et variantes
+héritées ne sont pas des évaluateurs économiques P2 v1.
+Backtests économiques réels/P3 restent NO-GO ; avantage économique :
+INSUFFICIENT DATA. Les verdicts historiques ci-dessus restent les preuves de leur
+état de référence, sans être réécrits rétroactivement.

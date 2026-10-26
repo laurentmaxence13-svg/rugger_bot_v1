@@ -71,8 +71,13 @@ def _raise_paper_failures(failures):
     """
     if not failures:
         return
-    primary = next((exc for _, exc in failures
-                    if isinstance(exc, asyncio.CancelledError)), failures[0][1])
+    primary = failures[0][1]
+    if not isinstance(primary, asyncio.CancelledError):
+        # Only an actual cancellation of the caller supersedes its operation
+        # error. A resource may itself raise CancelledError while closing.
+        primary = next((exc for stage, exc in failures
+                        if stage == 'cleanup cancellation'
+                        and isinstance(exc, asyncio.CancelledError)), primary)
     diagnostics = list(failures)
     for _, error in failures:
         for stage, nested in getattr(error, 'paper_failures', ()):
@@ -96,12 +101,21 @@ def _raise_paper_failures(failures):
 
 async def _await_paper_cleanup(cleanup, failures):
     """Finish owned cleanup despite repeated cancellation of the caller."""
+    caller = asyncio.current_task()
+    cancellation_count = caller.cancelling()
     task = asyncio.create_task(cleanup, name='paper-resource-cleanup')
     while not task.done():
         try:
             await asyncio.shield(task)
         except asyncio.CancelledError as exc:
-            failures.append(('cleanup cancellation', exc))
+            current_count = caller.cancelling()
+            if current_count > cancellation_count:
+                failures.append(('cleanup cancellation', exc))
+            elif task.cancelled():
+                break  # Retrieve the child's own cancellation below.
+            else:
+                failures.append(('cleanup wait', exc))
+            cancellation_count = current_count
         except BaseException:
             break  # Retrieve the cleanup error below, without losing the caller's.
     try:

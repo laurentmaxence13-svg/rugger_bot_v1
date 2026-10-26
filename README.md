@@ -2,6 +2,14 @@
 
 Cette V1 ne peut ni acheter ni vendre. Elle ne contient aucun code de signature de transaction.
 
+## Portée des validations
+
+Le développement cloud et les vérifications P1 utilisent des copies de sources et des données synthétiques, sans réseau de marché. Les garanties et exclusions courantes sont décrites dans `P1_FINAL_GATE_RECHECK.md`. Le protocole expérimental séparé est décrit dans `P2_SYNTHETIC_PROTOCOL.md` ; il n'active aucun modèle du bot.
+
+Les montants du ledger restent exprimés en SOL, mais le calcul existant applique des rendements de prix USD sans cours SOL/USD à chaque entrée/sortie. Il suppose donc implicitement un change constant. Ce sont des unités de simulation, pas un P&L économique en SOL vérifié ; voir `ECONOMIC_VIABILITY_AUDIT.md`.
+
+La voie `paper_trader` autonome ne partage pas la garde mémoire du scanner intégré. Elle reste hors du périmètre P2 supervisé, même lorsque sa fermeture de ressources est testée. Les variantes historiques de recherche ne deviennent pas des évaluateurs validés par leur seule présence dans le dépôt.
+
 ## Ce qu'elle fait
 - se connecte à Solana via Helius ;
 - écoute en WebSocket les transactions qui mentionnent le programme Raydium Launchpad ;
@@ -47,7 +55,7 @@ Le paper trader conserve maintenant le dernier prix et le pic observé d'une pos
 
 Les garde-fous sont configurables avec `--max-open 3 --max-entries-day 20 --max-daily-loss 10 --max-candidates 10`. Le mode `--poll 1` est disponible pour le paper, mais il peut provoquer un ralentissement/429 chez le fournisseur de prix ; le code respecte alors le délai de refroidissement retourné par l'API.
 
-Le moteur `bot/analyser/creator_backtest_v26.py` est un parcours de recherche séparé et plus riche : relais/wallets, ventes observées, séries de prix avant la vente, règles TP/SL et sélection chronologique anti-fuite. Il n'est pas activé automatiquement par le paper trader tant qu'un modèle multi-créateur validé n'est pas exporté. Cette séparation évite de transformer une exploration prometteuse en signal réel par erreur.
+Les moteurs `bot/analyser/creator_backtest_v25.py` et `creator_backtest_v26.py` conservent des diagnostics historiques sur les relais/wallets, ventes et règles TP/SL. Leurs partitions et la disponibilité historique des données ne sont pas certifiées causales : leurs sorties sont explicitement exclues de la validation P2 et de l'éligibilité des modèles, même si un rendement simulé est positif. Ils ne fournissent pas une preuve hors échantillon.
 
 Un diagnostic complémentaire teste un signal de momentum pré-entrée : la variation
 entre +60 s et +300 s est observée avant une entrée simulée à +300 s, puis évaluée

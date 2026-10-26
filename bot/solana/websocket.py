@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 
 import websockets
 
+from bot.scanner.supervision import _await_paper_cleanup, _raise_paper_failures
+
 
 PUBLIC_SOLANA_WS = "wss://api.mainnet-beta.solana.com"
 
@@ -25,17 +27,35 @@ def _is_rate_limit(exc):
 
 @asynccontextmanager
 async def _observed_connection(url, on_failure, **options):
-    async with websockets.connect(url, **options) as ws:
-        try:
-            yield ws
-        except BaseException as error:
-            # The failure is visible before the transport's asynchronous close.
-            if on_failure is not None:
-                try:
-                    on_failure(error)
-                except BaseException as notification_error:
-                    raise error from notification_error
-            raise
+    connection = websockets.connect(url, **options)
+    ws = await connection.__aenter__()
+    failures = []
+    exit_args = (None, None, None)
+
+    def notify(error):
+        if on_failure is not None:
+            try:
+                on_failure(error)
+            except BaseException as notification_error:
+                failures.append(('WebSocket failure notification', notification_error))
+
+    try:
+        yield ws
+    except BaseException as error:
+        failures.append(('WebSocket operation', error))
+        exit_args = (type(error), error, error.__traceback__)
+        notify(error)  # Synchronous: entry refusal precedes transport cleanup.
+    finally:
+        async def cleanup():
+            try:
+                await connection.__aexit__(*exit_args)
+            except BaseException as error:
+                failures.append(('WebSocket close', error))
+                notify(error)
+        # A close error must not replace the payload error or cancellation, and
+        # another cancel must not interrupt the transport's owned close attempt.
+        await _await_paper_cleanup(cleanup(), failures)
+    _raise_paper_failures(failures)
 
 
 async def stream_program_logs(ws_url: str, program_id: str, *, on_state=None, on_failure=None):
@@ -142,6 +162,14 @@ async def stream_program_logs(ws_url: str, program_id: str, *, on_state=None, on
                     }
 
         except asyncio.CancelledError:
+            raise
+        except GeneratorExit as error:
+            # aclose() consumes GeneratorExit. Surface any real close/notification
+            # failure instead, outside the reconnect handler below.
+            failures = [(stage, failure)
+                        for stage, failure in getattr(error, 'paper_failures', ())
+                        if not isinstance(failure, GeneratorExit)]
+            _raise_paper_failures(failures)
             raise
         except Exception as exc:
             await report('disconnected', type(exc).__name__)

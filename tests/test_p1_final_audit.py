@@ -1,6 +1,6 @@
-"""P1 scanner/temporal safety regressions and remaining legacy-date characterization.
+"""P1 scanner/temporal safety and raw transaction-date provenance regressions.
 
-Corrected properties are asserted positively; the saved-date legacy case remains documented.
+Corrected properties are asserted positively, including refusal of saved-date fallback.
 Only synthetic databases, prices, settings and scanner child tasks are used.
 """
 import asyncio
@@ -88,7 +88,7 @@ def test_creator_prior_return_is_causal(research_db):
     assert len(seen) == 50 and all(value is None for value in seen)
 
 
-def test_audit_confirms_saved_date_fallback_diverges_from_entry_provenance(research_db):
+def test_saved_date_fallback_cannot_override_missing_entry_provenance(research_db):
     db, con, tmp = research_db
     tx = payload([('a', 'creator', 'pool')], None)
     con.execute('INSERT INTO research_tx_cache VALUES(?,?,1,?)', ('legacy-sig', json.dumps(tx), 'synthetic'))
@@ -98,7 +98,7 @@ def test_audit_confirms_saved_date_fallback_diverges_from_entry_provenance(resea
                 'mint,deployer_candidate,status,pool_state) VALUES(?,?,?,?,?,?,?,?,?)',
                 ('ray', 'legacy-sig:a', 1, 980, '1970-01-01T00:16:30+00:00',
                  'a', 'creator', 'creator_identified', 'pool'))
-    assert research.verified_launches(db)[0][0] == 980
+    assert research.verified_launches(db) == []
     assert pe.recent_candidates(con, 1100) == []
     report = pe.paper_report(con, 1100, 0)
     assert report['launch_time_diagnostics']['undated_mints'] == 1
