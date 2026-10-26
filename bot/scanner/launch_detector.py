@@ -17,19 +17,19 @@ def parse_launch_candidate(
     block_time = tx.get("blockTime")
     latency_ms = None
 
-    if block_time is not None:
-        block_dt = datetime.fromtimestamp(
-            block_time,
-            tz=timezone.utc,
-        )
+    # An unusable date must not discard a structurally valid creation. Keep
+    # the raw provider value in the transaction cache, never substitute reception.
+    if (type(block_time) is not int or block_time <= 0
+            or received_at.tzinfo is None or received_at.utcoffset() is None
+            or block_time > received_at.timestamp()):
+        block_time = None
 
-        latency_ms = max(
-            0,
-            int(
-                (received_at - block_dt).total_seconds()
-                * 1000
-            ),
-        )
+    if block_time is not None:
+        try:
+            block_dt = datetime.fromtimestamp(block_time, tz=timezone.utc)
+            latency_ms = max(0, int((received_at - block_dt).total_seconds() * 1000))
+        except (OverflowError, OSError, ValueError):
+            block_time = None
 
     # Informations générales de la transaction
     fee_payer = find_fee_payer(tx)
