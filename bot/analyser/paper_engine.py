@@ -16,6 +16,7 @@ import os
 from dataclasses import asdict
 from datetime import datetime
 import sqlite3
+import tempfile
 import time
 from pathlib import Path
 
@@ -657,6 +658,78 @@ def _quote_provenance(con):
     }
 
 
+def _raise_paper_failures(failures):
+    """Keep the original exception (and cancellation) with staged diagnostics.
+
+    Python 3.10 is supported: ExceptionGroup/add_note are not required.
+    """
+    if not failures:
+        return
+    primary = next((exc for _, exc in failures
+                    if isinstance(exc, asyncio.CancelledError)), failures[0][1])
+    diagnostics = list(failures)
+    for _, error in failures:
+        for stage, nested in getattr(error, 'paper_failures', ()):
+            if not any(stage == s and nested is e for s, e in diagnostics):
+                diagnostics.append((stage, nested))
+    primary.paper_failures = tuple(diagnostics)
+    if hasattr(primary, 'add_note'):
+        for stage, exc in diagnostics:
+            note = f'PAPER {stage}: {type(exc).__name__}: {exc}'
+            if note not in getattr(primary, '__notes__', ()):
+                primary.add_note(note)
+    elif any(error is not primary for _, error in diagnostics):
+        # Python 3.10: expose secondary failures in the native traceback too.
+        detail = RuntimeError('; '.join(
+            f'PAPER {stage}: {type(error).__name__}: {error}'
+            for stage, error in diagnostics if error is not primary))
+        detail.__cause__ = primary.__cause__
+        raise primary from detail
+    raise primary
+
+
+async def _await_paper_cleanup(cleanup, failures):
+    """Finish owned cleanup despite repeated cancellation of the caller."""
+    task = asyncio.create_task(cleanup, name='paper-resource-cleanup')
+    while not task.done():
+        try:
+            await asyncio.shield(task)
+        except asyncio.CancelledError as exc:
+            failures.append(('cleanup cancellation', exc))
+        except BaseException:
+            break  # Retrieve the cleanup error below, without losing the caller's.
+    try:
+        task.result()
+    except BaseException as exc:
+        failures.append(('cleanup', exc))
+
+
+def _write_json_report(output, report, *, allow_nan=True):
+    """Publish a complete JSON file in one same-directory replacement."""
+    path = Path(output)
+    temporary = None
+    failures = []
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(report, indent=2, allow_nan=allow_nan)
+        # Close the handle before replacement, including on Windows.
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix='.' + path.name + '.',
+                                         suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+        temporary.write_text(payload, encoding='utf-8')
+        os.replace(temporary, path)
+        temporary = None
+    except BaseException as exc:
+        failures.append(('report write', exc))
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except BaseException as exc:
+                failures.append(('report temporary cleanup', exc))
+    _raise_paper_failures(failures)
+
+
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
                  validation_status='not_validated'):
     """Write an operational report, explicitly marked PAPER ONLY."""
@@ -766,9 +839,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'undated_mints_without_audit': len(undated)-sum(diagnostic_states.values()),
     }
     if output:
-        path = Path(output)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(report, indent=2), encoding='utf-8')
+        _write_json_report(output, report)
     return report
 
 
@@ -1247,105 +1318,154 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         model = shadow_baseline_model()
     else:
         model = eligible_model(model_path) if model_path else None
-    Database(db)
-    ensure_schema(db)
-    con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
-    con.execute('PRAGMA busy_timeout=30000')
-    setup(con)
-    ensure_signal_status_schema(con)
-    ensure_audit_schema(con)
-    ensure_paper_portfolio(con, initial_capital_sol)
-    session_started = int(time.time())
-    session_initial_capital = float(paper_capital(con)[1] or initial_capital_sol)
-    if session_seconds:
-        print(f'[SESSION] validation PAPER limitee a {int(session_seconds)} secondes.', flush=True)
-    cached = []
-    refreshed_at = 0
-    live_fetcher = None
-    if live_behavior:
-        try:
-            live_fetcher = await LiveBehaviorFetcher(
-                db, interval=rpc_interval, max_tx=behavior_max_tx,
-                refresh_seconds=cache_refresh,
-                gate=rpc_gate,
-            ).start()
-            print(
-                f'Comportements Helius : actif, cadence minimale {live_fetcher.interval:.2f}s, '
-                f'{live_fetcher.max_tx} transactions/créateur.', flush=True,
-            )
-        except Exception as exc:
-            print(f'[BEHAVIOR] désactivé : {type(exc).__name__}', flush=True)
-    print('PAPER ONLY : aucun ordre réel, aucune clé privée, aucune signature.', flush=True)
-    if shadow_final:
-        mode_message = 'PAPER final diagnostic (comportements + wallets + marché)'
-    elif shadow_baseline:
-        mode_message = 'PAPER diagnostic shadow (TP 10% / SL 10% / 1h)'
-    else:
-        mode_message = 'modèle validé simulé' if model else 'collecte prix/comportements seulement'
-    print('Mode : ' + mode_message, flush=True)
-    timeout = aiohttp.ClientTimeout(total=12)
+    con = session = live_fetcher = None
+    session_ready = False
+    failures = []
+    stage = 'database initialization'
     try:
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            while True:
-                now = int(time.time())
-                if session_seconds and now - session_started >= int(session_seconds):
-                    break
-                if now - refreshed_at >= max(1, int(cache_refresh)):
+        Database(db)
+        ensure_schema(db)
+        con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
+        con.execute('PRAGMA busy_timeout=30000')
+        setup(con)
+        ensure_signal_status_schema(con)
+        ensure_audit_schema(con)
+        ensure_paper_portfolio(con, initial_capital_sol)
+        session_started = int(time.time())
+        session_initial_capital = float(paper_capital(con)[1] or initial_capital_sol)
+        session_ready = True
+        if session_seconds:
+            print(f'[SESSION] validation PAPER limitee a {int(session_seconds)} secondes.', flush=True)
+        cached = []
+        refreshed_at = 0
+        if live_behavior:
+            stage = 'behavior initialization'
+            try:
+                live_fetcher = LiveBehaviorFetcher(
+                    db, interval=rpc_interval, max_tx=behavior_max_tx,
+                    refresh_seconds=cache_refresh, gate=rpc_gate,
+                )
+            except Exception as exc:
+                # Keep the existing optional behavior when settings are absent.
+                # The constructor acquires no session; start() does.
+                print(f'[BEHAVIOR] désactivé : {type(exc).__name__}', flush=True)
+            if live_fetcher is not None:
+                await live_fetcher.start()
+                print(
+                    f'Comportements Helius : actif, cadence minimale {live_fetcher.interval:.2f}s, '
+                    f'{live_fetcher.max_tx} transactions/créateur.', flush=True,
+                )
+        print('PAPER ONLY : aucun ordre réel, aucune clé privée, aucune signature.', flush=True)
+        if shadow_final:
+            mode_message = 'PAPER final diagnostic (comportements + wallets + marché)'
+        elif shadow_baseline:
+            mode_message = 'PAPER diagnostic shadow (TP 10% / SL 10% / 1h)'
+        else:
+            mode_message = 'modèle validé simulé' if model else 'collecte prix/comportements seulement'
+        print('Mode : ' + mode_message, flush=True)
+        stage = 'HTTP initialization'
+        timeout = aiohttp.ClientTimeout(total=12)
+        session = aiohttp.ClientSession(timeout=timeout)
+        await session.__aenter__()
+        while True:
+            now = int(time.time())
+            if session_seconds and now - session_started >= int(session_seconds):
+                break
+            stage = 'cache refresh'
+            if now - refreshed_at >= max(1, int(cache_refresh)):
+                cached = load_cached_transactions(db)
+                refreshed_at = now
+            stage = 'collection'
+            try:
+                messages, cooldown, cache_changed = await collect_once(
+                    con, session, cached, now, model=model,
+                    max_open=max_open, max_entries_day=max_entries_day,
+                    max_daily_loss_pct=max_daily_loss_pct,
+                    max_candidates=max_candidates, max_age=max_age,
+                    live_fetcher=live_fetcher,
+                    min_liquidity=min_liquidity,
+                    strategy_mode=strategy_mode,
+                    initial_capital_sol=initial_capital_sol, position_pct=position_pct,
+                    entry_guard=entry_guard,
+                )
+                if cache_changed:
                     cached = load_cached_transactions(db)
                     refreshed_at = now
-                try:
-                    messages, cooldown, cache_changed = await collect_once(
-                        con, session, cached, now, model=model,
-                        max_open=max_open, max_entries_day=max_entries_day,
-                        max_daily_loss_pct=max_daily_loss_pct,
-                        max_candidates=max_candidates, max_age=max_age,
-                        live_fetcher=live_fetcher,
-                        min_liquidity=min_liquidity,
-                        strategy_mode=strategy_mode,
-                        initial_capital_sol=initial_capital_sol, position_pct=position_pct,
-                        entry_guard=entry_guard,
-                    )
-                    if cache_changed:
-                        cached = load_cached_transactions(db)
-                        refreshed_at = now
-                    state = paper_report(
-                        con, now, len(cached), output=report,
-                        strategy_mode=strategy_mode,
-                        validation_status=(
-                            'diagnostic_not_validated'
-                            if strategy_mode.startswith('shadow_')
-                            else 'oos_guard_passed' if model
-                            else 'not_validated'
-                        ),
-                    )
-                    print(
-                        f"[PAPER] quotes={state['quotes_recorded']} "
-                        f"open={state['open_paper_positions']} "
-                        f"cache_tx={state['cached_helius_transactions']}",
-                        flush=True,
-                    )
-                    for message in messages:
-                        print(message, flush=True)
-                except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
-                    print('[PAPER] source prix temporairement lente; nouvelle tentative automatique.', flush=True)
-                    cooldown = 3
-                await asyncio.sleep(max(1, int(poll), int(cooldown)))
+            except (aiohttp.ClientError, asyncio.TimeoutError) as exc:
+                print('[PAPER] source prix temporairement lente; nouvelle tentative automatique.', flush=True)
+                cooldown = 3
+            else:
+                stage = 'periodic report'
+                state = paper_report(
+                    con, now, len(cached), output=report,
+                    strategy_mode=strategy_mode,
+                    validation_status=(
+                        'diagnostic_not_validated'
+                        if strategy_mode.startswith('shadow_')
+                        else 'oos_guard_passed' if model
+                        else 'not_validated'
+                    ),
+                )
+                print(
+                    f"[PAPER] quotes={state['quotes_recorded']} "
+                    f"open={state['open_paper_positions']} "
+                    f"cache_tx={state['cached_helius_transactions']}",
+                    flush=True,
+                )
+                for message in messages:
+                    print(message, flush=True)
+
+            await asyncio.sleep(max(1, int(poll), int(cooldown)))
+    except BaseException as exc:
+        failures.append((stage, exc))
     finally:
-        if session_seconds:
-            ended = int(time.time())
-            summary = _session_summary(con, session_started, ended)
-            _initial, final_capital = paper_capital(con)
-            conclusion = _print_session_summary(summary, session_initial_capital, float(final_capital or 0.0))
-            summary['capital_start_sol'] = session_initial_capital
-            summary['capital_end_sol'] = float(final_capital or 0.0)
-            summary['conclusion'] = conclusion
-            out = Path(session_report or (BASE_DIR / 'data' / 'paper_session_report.json'))
-            out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps(summary, indent=2, allow_nan=False), encoding='utf-8')
-            print(f'[SESSION] rapport: {out}', flush=True)
-        if live_fetcher:
-            await live_fetcher.close()
-        con.close()
+        async def cleanup():
+            # Every acquired handle gets one independent close attempt.
+            if session is not None:
+                try:
+                    await session.close()
+                except BaseException as exc:
+                    failures.append(('HTTP close', exc))
+            if live_fetcher is not None:
+                try:
+                    await live_fetcher.close()
+                except BaseException as exc:
+                    failures.append(('behavior close', exc))
+            summary = None
+            if session_seconds and session_ready:
+                try:
+                    ended = int(time.time())
+                    summary = _session_summary(con, session_started, ended)
+                    _initial, final_capital = paper_capital(con)
+                    final_capital = float(final_capital or 0.0)
+                    summary['capital_start_sol'] = session_initial_capital
+                    summary['capital_end_sol'] = final_capital
+                except BaseException as exc:
+                    summary = None
+                    failures.append(('session summary', exc))
+            if con is not None:
+                try:
+                    con.close()
+                except BaseException as exc:
+                    failures.append(('SQLite close', exc))
+            # Publish only after the close attempts. Never label a failed run positive.
+            if summary is not None:
+                try:
+                    if failures:
+                        cancelled = any(isinstance(e, asyncio.CancelledError) for _, e in failures)
+                        conclusion = ('ANNULEE' if cancelled else 'ECHEC') + ': session PAPER interrompue.'
+                        print('[SESSION] ' + conclusion, flush=True)
+                    else:
+                        conclusion = _print_session_summary(summary, session_initial_capital, final_capital)
+                    summary['conclusion'] = conclusion
+                    out = Path(session_report or (BASE_DIR / 'data' / 'paper_session_report.json'))
+                    print(f'[SESSION] rapport: {out}', flush=True)
+                    _write_json_report(out, summary, allow_nan=False)
+                except BaseException as exc:
+                    failures.append(('session report', exc))
+
+        await _await_paper_cleanup(cleanup(), failures)
+    _raise_paper_failures(failures)
 
 
 async def run_with_scanner(args):
@@ -1374,25 +1494,29 @@ async def run_with_scanner(args):
             session_report=args.session_report,
         )
         return
-    scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db))
-    entry_guard = _ScannerEntryGuard(args.db, scanner_task)
-    engine_task = asyncio.create_task(run(
-        args.db, model_path=args.model, poll=args.poll,
-        report=args.report, max_open=args.max_open,
-        max_entries_day=args.max_entries_day,
-        max_daily_loss_pct=args.max_daily_loss,
-        max_candidates=args.max_candidates, max_age=args.max_age,
-        cache_refresh=args.cache_refresh,
-        live_behavior=not args.no_live_behavior,
-        rpc_interval=args.rpc_interval, behavior_max_tx=args.behavior_max_tx,
-        rpc_gate=rpc_gate, min_liquidity=args.min_liquidity,
-        shadow_baseline=args.shadow_baseline, shadow_final=args.shadow_final,
-        initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
-        session_seconds=args.session_seconds, session_report=args.session_report,
-        entry_guard=entry_guard,
-    ))
-    last_scanner_state = None
+    tasks = []
+    failures = []
     try:
+        scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db))
+        tasks.append(scanner_task)
+        entry_guard = _ScannerEntryGuard(args.db, scanner_task)
+        engine_task = asyncio.create_task(run(
+            args.db, model_path=args.model, poll=args.poll,
+            report=args.report, max_open=args.max_open,
+            max_entries_day=args.max_entries_day,
+            max_daily_loss_pct=args.max_daily_loss,
+            max_candidates=args.max_candidates, max_age=args.max_age,
+            cache_refresh=args.cache_refresh,
+            live_behavior=not args.no_live_behavior,
+            rpc_interval=args.rpc_interval, behavior_max_tx=args.behavior_max_tx,
+            rpc_gate=rpc_gate, min_liquidity=args.min_liquidity,
+            shadow_baseline=args.shadow_baseline, shadow_final=args.shadow_final,
+            initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
+            session_seconds=args.session_seconds, session_report=args.session_report,
+            entry_guard=entry_guard,
+        ))
+        tasks.append(engine_task)
+        last_scanner_state = None
         while True:
             done, _ = await asyncio.wait(
                 (scanner_task, engine_task), timeout=1.0,
@@ -1408,10 +1532,18 @@ async def run_with_scanner(args):
                 raise RuntimeError('Scanner termine sans exception de facon inattendue')
             if engine_task in done:
                 await engine_task
-                return
+                break
             last_scanner_state = _print_scanner_state(args.db, last_scanner_state)
+    except BaseException as exc:
+        failures.append(('supervision', exc))
     finally:
-        await _stop_supervised_tasks((engine_task, scanner_task))
+        observed = []
+        for _, error in failures:
+            while error is not None and error not in observed:
+                observed.append(error)
+                error = error.__cause__
+        await _await_paper_cleanup(_stop_supervised_tasks(tasks, observed=observed), failures)
+    _raise_paper_failures(failures)
 
 
 def _print_scanner_state(db, previous=None):
@@ -1431,19 +1563,49 @@ def _print_scanner_state(db, previous=None):
     return states
 
 
-async def _stop_supervised_tasks(tasks, timeout=5.0):
+async def _stop_supervised_tasks(tasks, timeout=5.0, *, observed=()):
+    if not tasks:
+        return
     for task in tasks:
         if not task.done():
             task.cancel()
     done, pending = await asyncio.wait(tasks, timeout=timeout)
-    for task in done:
-        if not task.cancelled():
-            task.exception()  # Retrieve all failures, including simultaneous ones.
+    failures = []
+    for task in tasks:  # Deterministic acquisition order, not set iteration order.
+        if task not in done:
+            continue
+        try:
+            task.result()
+        except asyncio.CancelledError as exc:
+            # A requested cancellation is normal; its cleanup errors are not.
+            failures.extend((stage, error) for stage, error in getattr(exc, 'paper_failures', ())
+                            if not isinstance(error, asyncio.CancelledError))
+        except BaseException as exc:
+            if exc not in observed:
+                failures.append((f'supervised task {task.get_name()}', exc))
     if pending:
+        def diagnose_late_failure(task):
+            try:
+                task.result()
+            except asyncio.CancelledError as exc:
+                for stage, error in getattr(exc, 'paper_failures', ()):
+                    if not isinstance(error, asyncio.CancelledError):
+                        task.get_loop().call_exception_handler({
+                            'message': f'PAPER late supervised cleanup failure: {stage}',
+                            'exception': error, 'task': task,
+                        })
+            except BaseException as exc:
+                task.get_loop().call_exception_handler({
+                    'message': 'PAPER supervised task failed after cleanup timeout',
+                    'exception': exc, 'task': task,
+                })
         for task in pending:
             task.cancel()
-            task.add_done_callback(lambda t: None if t.cancelled() else t.exception())
-        raise RuntimeError('Nettoyage asyncio incomplet apres delai limite')
+            task.add_done_callback(diagnose_late_failure)
+        failures.append(('supervised timeout', RuntimeError(
+            'Nettoyage asyncio incomplet apres delai limite: ' +
+            ', '.join(sorted(task.get_name() for task in pending)))))
+    _raise_paper_failures(failures)
 
 
 def main():

@@ -23,15 +23,27 @@ def db_connect(path):
     # Ne pas changer journal_mode à chaque lecture/écriture: ce PRAGMA
     # exige parfois un verrou exclusif et bloquait le scanner concurrent.
     con = sqlite3.connect(path, timeout=30.0, isolation_level=None)
-    con.execute('PRAGMA busy_timeout=30000')
+    try:
+        con.execute('PRAGMA busy_timeout=30000')
+    except BaseException as error:
+        _close_after_initialization_error(con, error)
+        raise
     return con
+
+
+def _close_after_initialization_error(con, error):
+    try:
+        con.close()
+    except BaseException as cleanup_error:
+        raise error from cleanup_error
 
 
 def ensure_schema(path):
     con = db_connect(path)
-    con.execute('PRAGMA journal_mode=WAL')
-    con.execute('PRAGMA synchronous=NORMAL')
-    con.executescript('''
+    try:
+        con.execute('PRAGMA journal_mode=WAL')
+        con.execute('PRAGMA synchronous=NORMAL')
+        con.executescript('''
     CREATE TABLE IF NOT EXISTS research_creators (
         creator TEXT PRIMARY KEY,
         launches_found INTEGER NOT NULL DEFAULT 0,
@@ -59,9 +71,13 @@ def ensure_schema(path):
         ON research_launches(creator, block_time);
     CREATE INDEX IF NOT EXISTS idx_research_launches_mint
         ON research_launches(mint);
-    ''')
-    con.commit()
-    con.close()
+        ''')
+        con.commit()
+    except BaseException as error:
+        _close_after_initialization_error(con, error)
+        raise
+    else:
+        con.close()
 
 
 def seed_creators(path, limit):
