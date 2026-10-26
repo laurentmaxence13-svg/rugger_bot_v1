@@ -2,6 +2,7 @@ import asyncio
 import json
 import time
 from datetime import datetime, timezone
+from contextlib import asynccontextmanager
 
 import websockets
 
@@ -22,7 +23,22 @@ def _is_rate_limit(exc):
     return status == 429 or "429" in str(exc)
 
 
-async def stream_program_logs(ws_url: str, program_id: str, *, on_state=None):
+@asynccontextmanager
+async def _observed_connection(url, on_failure, **options):
+    async with websockets.connect(url, **options) as ws:
+        try:
+            yield ws
+        except BaseException as error:
+            # The failure is visible before the transport's asynchronous close.
+            if on_failure is not None:
+                try:
+                    on_failure(error)
+                except BaseException as notification_error:
+                    raise error from notification_error
+            raise
+
+
+async def stream_program_logs(ws_url: str, program_id: str, *, on_state=None, on_failure=None):
     """Stream LaunchLab logs without depending exclusively on Helius WebSocket.
 
     Helius HTTP RPC remains the source used by the scanner to fetch and parse
@@ -50,8 +66,8 @@ async def stream_program_logs(ws_url: str, program_id: str, *, on_state=None):
     while True:
         try:
             await report('subscribing')
-            async with websockets.connect(
-                current_url,
+            async with _observed_connection(
+                current_url, on_failure,
                 ping_interval=20,
                 ping_timeout=20,
                 close_timeout=5,

@@ -95,6 +95,9 @@ def guarded(tmp_path):
         task = SimpleNamespace(stopped=False, cancelling_now=False)
         task.done = lambda: task.stopped
         task.cancelling = lambda: int(task.cancelling_now)
+        task.get_name = lambda: 'synthetic-child'
+        task.scanner_health = pe.ScannerHealth()
+        task.scanner_health.tasks.append(task)  # Test double for a healthy monitored child.
         with patch.object(pe.time, 'time', return_value=NOW-1):
             guard = pe._ScannerEntryGuard(db, task)
         state(con)
@@ -412,6 +415,7 @@ def test_healthy_supervised_wiring_uses_current_state(tmp_path):
     db = tmp_path/'synthetic.db'
     with closing(database(db)) as con:
         async def scanner(**kwargs):
+            kwargs['health'].tasks.append(asyncio.current_task())
             state(con)
             await asyncio.Event().wait()
         async def engine(*a, **kwargs):

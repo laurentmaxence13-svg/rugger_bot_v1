@@ -294,7 +294,7 @@ class BackfillTests(unittest.IsolatedAsyncioTestCase):
             if method == 'getSignaturesForAddress':
                 return [row('live', 3)]
             return {'blockTime': 1, 'meta': {'err': None}, 'transaction': {'message': {'instructions': []}}}
-        async def stream(*_args, on_state):
+        async def stream(*_args, on_state, on_failure=None):
             await on_state({'state': 'subscribed'})
             yield event('live', 3)
             await asyncio.sleep(.02)
@@ -313,7 +313,7 @@ class BackfillTests(unittest.IsolatedAsyncioTestCase):
         settings = SimpleNamespace(db_path=self.path, rpc_url='https://synthetic.invalid',
                                    ws_url='wss://synthetic.invalid', raydium_launchpad_program_id='program')
         limited = TransactionRecovery(self.path, max_pending=1)
-        async def stream(*_args, on_state):
+        async def stream(*_args, on_state, on_failure=None):
             await on_state({'state': 'subscribed'})
             yield event('one', 1)
             yield event('two', 2)
