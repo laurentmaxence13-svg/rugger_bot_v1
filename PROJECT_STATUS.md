@@ -4,6 +4,8 @@
 
 - Branche : `feat/p3-point-in-time-data` ; base main fusionnée
   `9e4b5a788bf955e0afb9ab96818f17042c448b66`.
+- Sources P3 testées : `da99644413ec68593d1f97a6727513fb9246ef69`.
+  PR vérifiable ouverte : [#19](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/19).
 - Préparation livrée dans `bot/p3/` : journal séparé append-only/as-of,
   capture publique bornée, devis exact-size et conversions SOL/USD strictes.
 - **875 tests réussis, 1 ignoré, 242 sous-tests réussis**, warnings en erreur ;
