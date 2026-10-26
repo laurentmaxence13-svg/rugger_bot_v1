@@ -14,6 +14,7 @@ import json
 import math
 import os
 from dataclasses import asdict
+from datetime import datetime
 import sqlite3
 import time
 from pathlib import Path
@@ -56,7 +57,7 @@ from bot.analyser.paper_trader import (
 from bot.config import BASE_DIR, get_settings
 from bot.database.db import Database
 from bot.solana.rpc import SolanaRPC
-from bot.scanner.transaction_parser import RAYDIUM_LAUNCHPAD_PROGRAM_ID
+from bot.scanner.transaction_parser import RAYDIUM_LAUNCHPAD_PROGRAM_ID, find_raydium_launches
 
 
 class _ScannerEntryGuard:
@@ -191,21 +192,114 @@ class LiveBehaviorFetcher:
             return False
 
 
-def recent_candidates(con, now, max_age=900, limit=10):
+def _reception_time(value, now):
+    """Observation time only; never a substitute for a blockchain time."""
+    try:
+        date = datetime.fromisoformat(value) if isinstance(value, str) else None
+        if date is None or date.tzinfo is None or date.utcoffset() is None:
+            return None
+        timestamp = date.timestamp()
+        return timestamp if 0 < timestamp <= now else None
+    except (ValueError, OverflowError, OSError):
+        return None
+
+
+def _verified_launch_time(con, record, now, has_cache):
+    value = record['block_time']
+    if type(value) is not int or not 0 < value <= now:
+        return None
+    received = _reception_time(record.get('detected_at'), now)
+    if received is not None and value > received:
+        return None
+    signature = record.get('signature')
+    if signature and has_cache:
+        suffix = ':' + record['mint']
+        raw_signature = signature[:-len(suffix)] if signature.endswith(suffix) else signature
+        cached = con.execute('SELECT payload,fetched_ok FROM research_tx_cache WHERE signature=?',
+                             (raw_signature,)).fetchone()
+        if cached:
+            try:
+                tx = json.loads(cached[0])
+                raw_time = tx.get('blockTime')
+                # SQLite INTEGER affinity can hide bool/float/string provenance.
+                if cached[1] != 1 or type(raw_time) is not int or raw_time != value:
+                    return None
+                matching = [launch for launch in find_raydium_launches(tx)
+                            if launch['mint'] == record['mint']
+                            and launch['creator'] == record['deployer_candidate']
+                            and (record.get('pool_state') is None
+                                 or launch['pool_state'] == record['pool_state'])]
+                if not matching:
+                    return None
+            except (ValueError, TypeError, AttributeError, KeyError):
+                return None
+    return value
+
+
+def _launch_records(con, now, mint=None):
+    columns = {r[1] for r in con.execute('PRAGMA table_info(launch_candidates)')}
+    names = ('mint', 'deployer_candidate', 'block_time', 'detected_at', 'signature', 'pool_state')
+    projection = ','.join(name if name in columns else 'NULL AS ' + name for name in names)
+    has_cache = _table_exists(con, 'research_tx_cache')
+    records = []
+    for values in con.execute('SELECT ' + projection + " FROM launch_candidates "
+                              "WHERE status='creator_identified' AND mint IS NOT NULL"
+                              + (' AND mint=?' if mint is not None else '') + ' ORDER BY rowid',
+                              (mint,) if mint is not None else ()):
+        record = dict(zip(names, values))
+        record['verified_time'] = _verified_launch_time(con, record, now, has_cache)
+        records.append(record)
+    return records
+
+
+def _undated_candidates(con, now, max_age, records):
+    """One FIFO item per mint; inactive diagnostics are processed only once."""
+    groups = {}
+    for record in records:
+        if record['verified_time'] is None:
+            groups.setdefault(record['mint'], []).append(record)
+    audits = dict(con.execute('SELECT mint,report_json FROM paper_mint_audit')) \
+        if _table_exists(con, 'paper_mint_audit') else {}
+    result = {}
+    for mint, group in groups.items():
+        # Earliest valid reception is stable and cannot extend the observation
+        # window on replay. Conflicting identities are diagnostic-only.
+        receptions = [_reception_time(r['detected_at'], now) for r in group]
+        received = min((t for t in receptions if t is not None), default=None)
+        conflict = len({(r['deployer_candidate'], r['pool_state']) for r in group}) != 1
+        queue_state = ('metadata_conflict' if conflict else 'reception_invalid' if received is None
+                       else 'reception_expired' if now-received > max(1, int(max_age)) else 'observable')
+        record = dict(group[0])
+        record.update(received_at=received, queue_state=queue_state,
+                      reception_signature=next((r['signature'] for r, t in zip(group, receptions)
+                                                if t is not None and t == received), None),
+                      identities=[{key: r[key] for key in ('signature', 'mint', 'deployer_candidate',
+                                                         'pool_state', 'block_time', 'detected_at')}
+                                  for r in group])
+        if conflict:
+            record.update(deployer_candidate=None, pool_state=None)
+        fingerprint = json.dumps((queue_state, record['identities']), sort_keys=True, default=str)
+        record['fingerprint'] = fingerprint
+        try:
+            previous = json.loads(audits.get(mint, '{}')).get('launch_observation', {})
+        except (ValueError, TypeError, AttributeError):
+            previous = {}
+        if queue_state == 'observable' or previous.get('fingerprint') != fingerprint:
+            result[mint] = record
+    return result
+
+
+def recent_candidates(con, now, max_age=900, limit=10, *, records=None):
     """Return fresh, strictly parsed launches for the observation loop."""
-    bounds = (int(now) - max(1, int(max_age)), int(now))
-    return con.execute(
-        '''SELECT mint,deployer_candidate,block_time
-           FROM launch_candidates
-           WHERE status='creator_identified' AND mint IS NOT NULL
-             AND block_time BETWEEN ? AND ?
-           ORDER BY block_time DESC,mint,deployer_candidate'''
-        + (' LIMIT ?' if limit is not None else ''),
-        bounds + ((max(1, int(limit)),) if limit is not None else ()),
-    ).fetchall()
+    records = _launch_records(con, now) if records is None else records
+    fresh = [(r['mint'], r['deployer_candidate'], r['verified_time']) for r in records
+             if r['verified_time'] is not None
+             and int(now)-max(1, int(max_age)) <= r['verified_time'] <= int(now)]
+    fresh.sort(key=lambda row: (-row[2], row[0], row[1] or ''))
+    return fresh if limit is None else fresh[:max(1, int(limit))]
 
 
-def _scheduled_candidates(con, now, max_age, limit):
+def _scheduled_candidates(con, now, max_age, limit, *, records=None, undated=None):
     """Persistent FIFO within each lane; reserve capacity for both lanes.
 
     New mints join the tail, so arrivals cannot jump ahead of waiting work.
@@ -214,6 +308,8 @@ def _scheduled_candidates(con, now, max_age, limit):
     Only scheduling metadata is written here; no transaction spans an await.
     """
     budget = max(1, int(limit))
+    records = _launch_records(con, now) if records is None else records
+    undated = _undated_candidates(con, now, max_age, records) if undated is None else undated
     with _paper_close_transaction(con):
         con.execute('''CREATE TABLE IF NOT EXISTS paper_collection_schedule (
             mint TEXT PRIMARY KEY, turn INTEGER NOT NULL,
@@ -224,8 +320,12 @@ def _scheduled_candidates(con, now, max_age, limit):
                       in con.execute("SELECT mint,creator,signal_time FROM paper_trades "
                                      "WHERE status='open' ORDER BY entry_time,mint"))
         candidates = dict(active)
-        for mint, creator, signal_time in recent_candidates(con, now, max_age=max_age, limit=None):
+        for mint, creator, signal_time in recent_candidates(con, now, max_age=max_age,
+                                                          limit=None, records=records):
             candidates[mint] = (creator, signal_time)
+        for mint, record in undated.items():
+            if mint not in candidates:
+                candidates[mint] = (record['deployer_candidate'], None)
         tail = con.execute('SELECT COALESCE(MAX(turn),0) FROM paper_collection_schedule').fetchone()[0]
         for mint in candidates:
             tail += 1
@@ -284,15 +384,13 @@ def prior_creator_launches(con, creator, signal_time):
     multi-creator research writes ``research_launches``.  Both are valid
     sources for creator history, but a launch present in both must count once.
     """
+    if signal_time is None:
+        return None
     if not creator:
         return 0
-    sources = [
-        '''SELECT mint FROM launch_candidates
-           WHERE deployer_candidate=? AND status='creator_identified'
-             AND mint IS NOT NULL AND block_time IS NOT NULL
-             AND block_time < ?''',
-    ]
-    params = [creator, int(signal_time)]
+    mints = {r['mint'] for r in _launch_records(con, signal_time)
+             if r['deployer_candidate'] == creator and r['verified_time'] is not None
+             and r['verified_time'] < signal_time}
     # ``collect_once`` is also unit-testable with a minimal in-memory schema;
     # tolerate that schema while the production path creates this table via
     # ensure_schema().
@@ -300,17 +398,16 @@ def prior_creator_launches(con, creator, signal_time):
         "SELECT 1 FROM sqlite_master WHERE type='table' AND name='research_launches'"
     ).fetchone()
     if has_research:
-        sources.append(
-            '''SELECT mint FROM research_launches
-               WHERE creator=? AND mint IS NOT NULL AND block_time IS NOT NULL
-                 AND block_time < ?'''
-        )
-        params.extend([creator, int(signal_time)])
-    row = con.execute(
-        'SELECT COUNT(*) FROM (' + ' UNION '.join(sources) + ')',
-        params,
-    ).fetchone()
-    return int(row[0] if row else 0)
+        for mint, signature, block_time, pool in con.execute(
+                'SELECT mint,signature,block_time,pool_state FROM research_launches '
+                'WHERE creator=? AND mint IS NOT NULL', (creator,)):
+            record = dict(mint=mint, signature=signature, block_time=block_time,
+                          pool_state=pool, deployer_candidate=creator)
+            verified = _verified_launch_time(con, record, signal_time,
+                                            _table_exists(con, 'research_tx_cache'))
+            if verified is not None and verified < signal_time:
+                mints.add(mint)
+    return len(mints)
 
 
 def price_history(con, mint):
@@ -644,6 +741,30 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'rejection_reasons': _decision_reason_counts(con),
         'validation_status': str(validation_status),
     }
+    records = _launch_records(con, now) if _table_exists(con, 'launch_candidates') else []
+    dated = {r['mint'] for r in records if r['verified_time'] is not None}
+    undated = {r['mint'] for r in records if r['verified_time'] is None}
+    observed = {r[0] for r in con.execute('SELECT DISTINCT mint FROM paper_prices')}
+    diagnostic_states = {}
+    if _table_exists(con, 'paper_mint_audit'):
+        for mint, raw in con.execute('SELECT mint,report_json FROM paper_mint_audit'):
+            if mint in undated:
+                try:
+                    state = json.loads(raw).get('launch_observation', {}).get('status', 'pending')
+                except (ValueError, TypeError, AttributeError):
+                    state = 'unreadable_audit'
+                diagnostic_states[state] = diagnostic_states.get(state, 0) + 1
+    report['launch_time_diagnostics'] = {
+        'dated_mints': len(dated), 'undated_mints': len(undated),
+        'dated_candidate_rows': sum(r['verified_time'] is not None for r in records),
+        'undated_candidate_rows': sum(r['verified_time'] is None for r in records),
+        'undated_only_mints': len(undated-dated),
+        'undated_mints_with_quotes': len(undated & observed),
+        'undated_mints_excluded_from_new_entries': len(undated-dated),
+        'undated_candidate_rows_excluded_from_new_entries': sum(r['verified_time'] is None for r in records),
+        'undated_status_counts': diagnostic_states,
+        'undated_mints_without_audit': len(undated)-sum(diagnostic_states.values()),
+    }
     if output:
         path = Path(output)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -709,13 +830,15 @@ def ensure_audit_schema(con):
 
 def audit_mint(con, mint, creator, signal_time, now, outcome, *, quote=None,
                features=None, decision=None, pool_state=None, reason=None,
-               prior_launches=None, behavior=None):
+               prior_launches=None, behavior=None, launch_observation=None,
+               undated_identities=None):
     """An explicit decision record; missing measurements stay null, never zero."""
     ensure_audit_schema(con)
     report = {
         'mint': mint, 'creator_candidate': creator,
-        'signal_time': int(signal_time), 'observed_at': int(now),
-        'age_seconds': max(0, int(now) - int(signal_time)),
+        'signal_time': int(signal_time) if signal_time is not None else None,
+        'observed_at': int(now),
+        'age_seconds': max(0, int(now) - int(signal_time)) if signal_time is not None else None,
         'pool_state': pool_state, 'decision_finale': outcome,
         'raison': reason, 'prix_usd': getattr(quote, 'price_usd', None),
         'liquidite_usd': getattr(quote, 'liquidity_usd', None),
@@ -733,6 +856,10 @@ def audit_mint(con, mint, creator, signal_time, now, outcome, *, quote=None,
         'tp_pct': decision.tp_pct if decision is not None and decision.enter else None,
         'sl_pct': decision.sl_pct if decision is not None and decision.enter else None,
     }
+    if launch_observation is not None:
+        report['launch_observation'] = launch_observation
+    if undated_identities is not None:
+        report['undated_identities'] = undated_identities
     con.execute("""INSERT INTO paper_mint_audit(mint,observed_at,outcome,report_json)
         VALUES(?,?,?,?) ON CONFLICT(mint) DO UPDATE SET
         observed_at=excluded.observed_at, outcome=excluded.outcome,
@@ -755,6 +882,52 @@ def audit_message(report):
             f"| raison={show(report['raison'])}")
 
 
+async def _observe_undated(con, session, record, max_age):
+    """Price observations only: no features, decision, fake signal or bankroll."""
+    mint, creator = record['mint'], record['deployer_candidate']
+    quote, wait = None, 0
+    if record['queue_state'] == 'observable':
+        if record['pool_state']:
+            try:
+                quote = await fetch_onchain_quote(session, mint, record['pool_state'])
+            except Exception as exc:
+                print(f'[ONCHAIN] lecture indisponible : {type(exc).__name__}', flush=True)
+        if quote is None:
+            quote, wait = await fetch_quote(session, mint, min_liquidity=0, include_metrics=True)
+    now = int(time.time())
+    received = record['received_at']
+    state = record['queue_state']
+    if state == 'observable' and received is not None:
+        if now < received:
+            state, quote = 'reception_invalid', None
+        elif now-received > max(1, int(max_age)):
+            state, quote = 'reception_expired', None
+    status = ('NON_DATE_PRIX_EN_ATTENTE' if wait else 'NON_DATE_PRIX_OBSERVE' if quote
+              else 'NON_DATE_PRIX_ABSENT' if state == 'observable' else 'NON_DATE_' + state.upper())
+    with _paper_close_transaction(con):
+        # Another collector may have opened a position during price I/O. Its
+        # original signal/model must remain managed by the position lane.
+        active = con.execute("SELECT 1 FROM paper_trades WHERE mint=? AND status='open'", (mint,)).fetchone()
+        if active:
+            return [], wait
+        if quote and not wait:
+            if skip_recorded_quote(con, mint, now, quote):
+                return [], wait
+            record_quote(con, mint, creator, None, now, quote, None, allow_entry=False)
+        observation = dict(status=status, launch_time_verified=False,
+                           entry_allowed=False, reception_timestamp=received,
+                           reception_source='launch_candidates.detected_at',
+                           reception_signature=record['reception_signature'],
+                           queue_age_seconds=now-received if received is not None and now >= received else None,
+                           quote_timestamp=now if quote and not wait else None,
+                           fingerprint=record['fingerprint'], identities=record['identities'])
+        report = audit_mint(con, mint, creator, None, now, 'OBSERVATION_NON_DATEE',
+                            quote=quote if not wait else None, pool_state=record['pool_state'],
+                            reason='block_time non verifie; nouvelle entree PAPER interdite; ' + status,
+                            launch_observation=observation)
+    return [audit_message(report)], wait
+
+
 async def collect_once(con, session, cached, now, model=None,
                        max_open=3, max_entries_day=20,
                        max_daily_loss_pct=10.0, max_candidates=10,
@@ -763,17 +936,30 @@ async def collect_once(con, session, cached, now, model=None,
                        initial_capital_sol=10.0, position_pct=10.0,
                        entry_guard=None):
     """Collect one bounded cycle; return messages and cooldown seconds."""
-    candidates = _scheduled_candidates(con, now, max_age, max_candidates)
+    records = _launch_records(con, now)
+    undated = _undated_candidates(con, now, max_age, records)
+    candidates = _scheduled_candidates(con, now, max_age, max_candidates,
+                                       records=records, undated=undated)
     cache_changed = False
     messages = []
     cooldown = 0
     for mint, creator, signal_time, lane in candidates:
         _mark_collection_attempt(con, mint, lane)
+        if signal_time is None:
+            observed_messages, wait = await _observe_undated(con, session, undated[mint], max_age)
+            messages.extend(observed_messages)
+            cooldown = max(cooldown, wait)
+            continue
+        undated_identities = undated[mint]['identities'] if mint in undated else None
+        matching_launches = [r for r in records if r['mint'] == mint
+                            and r['deployer_candidate'] == creator
+                            and r['verified_time'] == signal_time]
         pool_row = con.execute(
             "SELECT pool_state FROM launch_candidates WHERE mint=? ORDER BY id DESC LIMIT 1",
             (mint,),
         ).fetchone() if "pool_state" in {r[1] for r in con.execute("PRAGMA table_info(launch_candidates)")} else None
-        pool_address = pool_row[0] if pool_row else None
+        pool_address = (matching_launches[-1]['pool_state'] if matching_launches
+                        else pool_row[0] if pool_row else None)
         quote = None
         if pool_address:
             try:
@@ -799,7 +985,8 @@ async def collect_once(con, session, cached, now, model=None,
                 'REJET_PROVISOIRE', pool_state=pool_address,
                 reason=f'prix indisponible; cooldown={int(wait_seconds)}s',
                 prior_launches=prior_creator_launches(con, creator, signal_time),
-                behavior=behavior_snapshot(cached, mint, creator, signal_time, status_now))
+                behavior=behavior_snapshot(cached, mint, creator, signal_time, status_now),
+                undated_identities=undated_identities)
             if msg:
                 messages.append(audit_message(report))
             continue
@@ -816,7 +1003,8 @@ async def collect_once(con, session, cached, now, model=None,
                 'REJET_PROVISOIRE', pool_state=pool_address,
                 reason='aucun prix vérifié; entrée PAPER interdite',
                 prior_launches=prior_creator_launches(con, creator, signal_time),
-                behavior=behavior_snapshot(cached, mint, creator, signal_time, status_now))
+                behavior=behavior_snapshot(cached, mint, creator, signal_time, status_now),
+                undated_identities=undated_identities)
             if msg:
                 messages.append(audit_message(report))
             continue
@@ -840,8 +1028,22 @@ async def collect_once(con, session, cached, now, model=None,
             if skip_recorded_quote(con, mint, now_quote, quote):
                 continue
             existing = con.execute(
-                'SELECT 1 FROM paper_trades WHERE mint=?', (mint,)
+                'SELECT status FROM paper_trades WHERE mint=?', (mint,)
             ).fetchone()
+            current_records = _launch_records(con, now_quote, mint=mint)
+            if not (existing and existing[0] == 'open') and not any(
+                    r['verified_time'] == signal_time and r['deployer_candidate'] == creator
+                    and r['pool_state'] == pool_address for r in current_records):
+                # Source/identity may have changed during quote/enrichment I/O.
+                # Refuse before features or strategy; do not reuse a stale date.
+                report = audit_mint(con, mint, creator, None, now_quote,
+                    'OBSERVATION_NON_DATEE', pool_state=pool_address,
+                    reason='identite ou date devenue non verifiee; nouvelle entree PAPER interdite',
+                    launch_observation=dict(status='NON_DATE_IDENTITE_OU_DATE_MODIFIEE',
+                                            launch_time_verified=False, entry_allowed=False,
+                                            quote_timestamp=None))
+                messages.append(audit_message(report))
+                continue
             decision = None
             model_for_quote = model
             force_exit_reason = None
@@ -874,7 +1076,8 @@ async def collect_once(con, session, cached, now, model=None,
                         else 'scanner: entrees PAPER interdites' if not scanner_allowed
                         else '; '.join(decision.reasons) or 'risque ou limites PAPER',
                     prior_launches=features.prior_launches,
-                    behavior=behavior_snapshot(cached, mint, creator, signal_time, now_quote))
+                    behavior=behavior_snapshot(cached, mint, creator, signal_time, now_quote),
+                    undated_identities=undated_identities)
                 if _emit_analysis_once(mint, report, now_quote):
                     messages.append(audit_message(report))
                 outcome = 'DECISION_ENTRY' if decision.enter and allowed else 'REJET'
@@ -905,6 +1108,13 @@ async def collect_once(con, session, cached, now, model=None,
                 max_open=max_open, max_entries_day=max_entries_day,
                 max_daily_loss_pct=max_daily_loss_pct,
             )
+            if undated_identities and strategy_mode != 'shadow_final':
+                report = audit_mint(con, mint, creator, signal_time, now_quote,
+                    'OBSERVATION_DATEE_AVEC_IDENTITES_NON_DATEES', quote=quote,
+                    pool_state=pool_address,
+                    reason='seule l identite datee fournit le signal; autres creations non datees',
+                    undated_identities=undated_identities)
+                messages.append(audit_message(report))
             snapshot = behavior_snapshot(cached, mint, creator, signal_time, now_quote)
             if message and message.startswith('ENTRY '):
                 status_msg = set_signal_status(
