@@ -9,8 +9,11 @@
   exclusions v25/v26 validés. Aucun critère de stratégie active modifié.
 - Support P1 du périmètre synthétique : GO. P1 global tous CLI/données réelles :
   non certifié. Détails dans P1_CLOUD_VALIDATION.md.
-- P2 synthétique : protocole gelé et logiciel testé ; trois expériences à exécuter
-  après ce GO, sans changer les règles selon le test final.
+- Sources validées et exécutées : `f1a1345f3a7c1871ef497c9d2ec1eb219c652a8a`.
+- P2 synthétique : trois mondes exécutés, neuf candidats de développement et
+  27 sensibilités finales ; trois relectures identiques. Aucun candidat positif
+  en validation au stress fixé ; aucun modèle activé. Voir QUANT_VALIDATION_REPORT.md
+  et benchmarks/p2_synthetic_v1/manifest.json.
 - Avantage économique : **INSUFFICIENT DATA**. Aucun corpus réellement exécutable
   ni change entrée/sortie vérifié ; limites dans ECONOMIC_VIABILITY_AUDIT.md.
 - Comparaison memecoins/BTC–SOL : INSUFFICIENT DATA pour les deux ; aucun second
@@ -19,7 +22,7 @@
   RPC/WS marché, portefeuille, clé privée ou nouvelle dépense.
 - Trading réel : **interdit sans autorisation financière explicite**, aucune
   activation ni transaction effectuée.
-- Prochain objectif mesurable : journaliser les trois mondes synthétiques,
-  les neuf sensibilités coûts/slippage et leurs hashes ; conserver les résultats
-  négatifs et le témoin sans trading. P3 attend des données/provenances/FX/quotes
-  exécutables et les autorisations correspondantes.
+- Prochain objectif mesurable : définir la devise et un corpus point-in-time
+  avec rejets/absences, FX et quotes exécutables à taille effective. P3 attend
+  ces données et les autorisations correspondantes ; aucune conclusion économique
+  ni réorientation BTC/SOL n’est justifiée par les fixtures.

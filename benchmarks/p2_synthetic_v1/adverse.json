@@ -1,0 +1,2988 @@
+{
+  "assumptions": {
+    "capital_sol": 10.0,
+    "cost_convention": "Roundtrip costs/slippage deducted from exit proceeds, floored at zero; maximum loss is the all-in position budget.",
+    "drawdown": "Realized SOL equity aggregated by exit timestamp; no mark-to-market or executable intratrade drawdown.",
+    "exit_availability": "Guaranteed only by the synthetic generator; complete labels required, never a market-data claim.",
+    "failed_submission_cost_sol": 0,
+    "fixed_all_in_position_sol": 1.0,
+    "max_open_positions": 3,
+    "minimum_observed_liquidity_sol": 20.0,
+    "quote_delay_limit_seconds": 120,
+    "same_timestamp_order": "Aggregate all exits before deterministic mint-ordered entries; a synthetic convention, not a network guarantee.",
+    "signal_to_entry_seconds": 300,
+    "signal_to_exit_seconds": 900
+  },
+  "candidate_trials": 3,
+  "data_kind": "synthetic",
+  "dataset_sha256": "695cab807e30779848dda69b85cc5a57cd2fc57c2bd927759e73ac46040cb067",
+  "development": [
+    {
+      "eligible": true,
+      "policy": "all_eligible",
+      "train": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.22916393319872025,
+        "capital_return": -0.9166557327948809,
+        "closed_trades": [
+          {
+            "exit_time": 2080,
+            "mint": "synthetic-mint-000002",
+            "pnl_sol": -0.25313810650461466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000001"
+          },
+          {
+            "exit_time": 2080,
+            "mint": "synthetic-mint-000003",
+            "pnl_sol": -0.18116412122556158,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000001"
+          },
+          {
+            "exit_time": 2260,
+            "mint": "synthetic-mint-000005",
+            "pnl_sol": -0.09506880954541497,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000002"
+          },
+          {
+            "exit_time": 2800,
+            "mint": "synthetic-mint-000010",
+            "pnl_sol": -0.09773779306798025,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000005"
+          },
+          {
+            "exit_time": 2800,
+            "mint": "synthetic-mint-000011",
+            "pnl_sol": -0.08141783842034223,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000005"
+          },
+          {
+            "exit_time": 2980,
+            "mint": "synthetic-mint-000013",
+            "pnl_sol": -0.09818918453206005,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000006"
+          },
+          {
+            "exit_time": 3400,
+            "mint": "synthetic-mint-000017",
+            "pnl_sol": -0.22076450486133659,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000008"
+          },
+          {
+            "exit_time": 3520,
+            "mint": "synthetic-mint-000018",
+            "pnl_sol": -0.19753283955732537,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000009"
+          },
+          {
+            "exit_time": 3700,
+            "mint": "synthetic-mint-000020",
+            "pnl_sol": -0.17939389722227828,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000010"
+          },
+          {
+            "exit_time": 4120,
+            "mint": "synthetic-mint-000024",
+            "pnl_sol": -0.14463752198246294,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000012"
+          },
+          {
+            "exit_time": 4120,
+            "mint": "synthetic-mint-000025",
+            "pnl_sol": -0.16788327090452326,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000012"
+          },
+          {
+            "exit_time": 4600,
+            "mint": "synthetic-mint-000030",
+            "pnl_sol": -0.0859604462811242,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000015"
+          },
+          {
+            "exit_time": 4780,
+            "mint": "synthetic-mint-000033",
+            "pnl_sol": -0.2657759625301156,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000016"
+          },
+          {
+            "exit_time": 5200,
+            "mint": "synthetic-mint-000036",
+            "pnl_sol": -0.21226975800361791,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000018"
+          },
+          {
+            "exit_time": 5200,
+            "mint": "synthetic-mint-000037",
+            "pnl_sol": -0.21733646016664077,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000018"
+          },
+          {
+            "exit_time": 5500,
+            "mint": "synthetic-mint-000040",
+            "pnl_sol": -0.09649363330881455,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000020"
+          },
+          {
+            "exit_time": 5860,
+            "mint": "synthetic-mint-000044",
+            "pnl_sol": -0.22845280573784355,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000022"
+          },
+          {
+            "exit_time": 6220,
+            "mint": "synthetic-mint-000049",
+            "pnl_sol": -0.14206183462751998,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000024"
+          },
+          {
+            "exit_time": 6280,
+            "mint": "synthetic-mint-000048",
+            "pnl_sol": -0.1439238721569086,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000024"
+          },
+          {
+            "exit_time": 6580,
+            "mint": "synthetic-mint-000052",
+            "pnl_sol": -0.3283923959448314,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000026"
+          },
+          {
+            "exit_time": 6940,
+            "mint": "synthetic-mint-000057",
+            "pnl_sol": -0.0018581521634547515,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000028"
+          },
+          {
+            "exit_time": 7000,
+            "mint": "synthetic-mint-000056",
+            "pnl_sol": -0.03517299809901264,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000028"
+          },
+          {
+            "exit_time": 7300,
+            "mint": "synthetic-mint-000060",
+            "pnl_sol": -0.19637965373994004,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000030"
+          },
+          {
+            "exit_time": 7840,
+            "mint": "synthetic-mint-000067",
+            "pnl_sol": -0.05165245531501206,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000033"
+          },
+          {
+            "exit_time": 8020,
+            "mint": "synthetic-mint-000069",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000034"
+          },
+          {
+            "exit_time": 8080,
+            "mint": "synthetic-mint-000068",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000034"
+          },
+          {
+            "exit_time": 8440,
+            "mint": "synthetic-mint-000072",
+            "pnl_sol": -0.3487620905927006,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000036"
+          },
+          {
+            "exit_time": 8620,
+            "mint": "synthetic-mint-000074",
+            "pnl_sol": -0.18029666241629028,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000037"
+          },
+          {
+            "exit_time": 8740,
+            "mint": "synthetic-mint-000077",
+            "pnl_sol": -0.17056658964094662,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000038"
+          },
+          {
+            "exit_time": 9100,
+            "mint": "synthetic-mint-000080",
+            "pnl_sol": -0.09867878063725277,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000040"
+          },
+          {
+            "exit_time": 9280,
+            "mint": "synthetic-mint-000083",
+            "pnl_sol": -0.17704202754362575,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000041"
+          },
+          {
+            "exit_time": 9460,
+            "mint": "synthetic-mint-000084",
+            "pnl_sol": -0.33966635509577736,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000042"
+          },
+          {
+            "exit_time": 9700,
+            "mint": "synthetic-mint-000087",
+            "pnl_sol": -0.18068946262658903,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000043"
+          },
+          {
+            "exit_time": 9880,
+            "mint": "synthetic-mint-000088",
+            "pnl_sol": -0.13937378869138173,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000044"
+          },
+          {
+            "exit_time": 10360,
+            "mint": "synthetic-mint-000094",
+            "pnl_sol": -0.19376479333481222,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000047"
+          },
+          {
+            "exit_time": 10540,
+            "mint": "synthetic-mint-000096",
+            "pnl_sol": -0.074855592221159,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000048"
+          },
+          {
+            "exit_time": 10960,
+            "mint": "synthetic-mint-000100",
+            "pnl_sol": -0.12844879574035473,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000050"
+          },
+          {
+            "exit_time": 11140,
+            "mint": "synthetic-mint-000102",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000051"
+          },
+          {
+            "exit_time": 11620,
+            "mint": "synthetic-mint-000108",
+            "pnl_sol": -0.23745026277829528,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000054"
+          },
+          {
+            "exit_time": 12340,
+            "mint": "synthetic-mint-000116",
+            "pnl_sol": -0.17430381073088785,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000058"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.9526627218934911,
+        "execution_fraction": 0.23668639053254437,
+        "final_capital_sol": 0.8334426720511907,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.9166557327948809,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.22916393319872025,
+        "minimum_available_cash_sol": 0.007746482782077235,
+        "net_pnl_sol": -9.166557327948809,
+        "opportunities": 169,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 46,
+          "exposure": 24,
+          "liquidity": 21,
+          "missing_entry_quote": 8,
+          "policy": 0,
+          "stale_quote": 30
+        },
+        "slippage_bps": 300,
+        "trades": 40,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -1.0
+      },
+      "validation": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.24250017932919413,
+        "capital_return": -0.43650032279254947,
+        "closed_trades": [
+          {
+            "exit_time": 18280,
+            "mint": "synthetic-mint-000183",
+            "pnl_sol": -0.28270093860459145,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000091"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000186",
+            "pnl_sol": -0.2231838002172466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000187",
+            "pnl_sol": -0.2139258653295345,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18880,
+            "mint": "synthetic-mint-000188",
+            "pnl_sol": -0.1989383047899771,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000094"
+          },
+          {
+            "exit_time": 19420,
+            "mint": "synthetic-mint-000194",
+            "pnl_sol": -0.2530161751157801,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000097"
+          },
+          {
+            "exit_time": 19540,
+            "mint": "synthetic-mint-000197",
+            "pnl_sol": -0.12429156280723752,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000098"
+          },
+          {
+            "exit_time": 19780,
+            "mint": "synthetic-mint-000198",
+            "pnl_sol": -0.051708537458380666,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000099"
+          },
+          {
+            "exit_time": 20080,
+            "mint": "synthetic-mint-000203",
+            "pnl_sol": -0.08686703403804563,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000101"
+          },
+          {
+            "exit_time": 20260,
+            "mint": "synthetic-mint-000204",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000102"
+          },
+          {
+            "exit_time": 20440,
+            "mint": "synthetic-mint-000207",
+            "pnl_sol": -0.12608007623087636,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000103"
+          },
+          {
+            "exit_time": 20860,
+            "mint": "synthetic-mint-000210",
+            "pnl_sol": -0.2501132819684636,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000105"
+          },
+          {
+            "exit_time": 20980,
+            "mint": "synthetic-mint-000212",
+            "pnl_sol": -0.040076052093684145,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000106"
+          },
+          {
+            "exit_time": 21160,
+            "mint": "synthetic-mint-000214",
+            "pnl_sol": -0.21052240108067855,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000107"
+          },
+          {
+            "exit_time": 21520,
+            "mint": "synthetic-mint-000218",
+            "pnl_sol": -0.28960349285140063,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000109"
+          },
+          {
+            "exit_time": 21580,
+            "mint": "synthetic-mint-000219",
+            "pnl_sol": -0.23605174543084873,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000109"
+          },
+          {
+            "exit_time": 21880,
+            "mint": "synthetic-mint-000222",
+            "pnl_sol": -0.25679235846766524,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000111"
+          },
+          {
+            "exit_time": 22240,
+            "mint": "synthetic-mint-000226",
+            "pnl_sol": -0.27970337622713126,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000113"
+          },
+          {
+            "exit_time": 22420,
+            "mint": "synthetic-mint-000229",
+            "pnl_sol": -0.24142822521395224,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000114"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.94,
+        "execution_fraction": 0.36,
+        "final_capital_sol": 5.634996772074506,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.4365003227925494,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.24250017932919413,
+        "minimum_available_cash_sol": 3.412920731983255,
+        "net_pnl_sol": -4.365003227925494,
+        "opportunities": 50,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 0,
+          "exposure": 14,
+          "liquidity": 6,
+          "missing_entry_quote": 3,
+          "policy": 0,
+          "stale_quote": 9
+        },
+        "slippage_bps": 300,
+        "trades": 18,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -1.0
+      }
+    },
+    {
+      "eligible": true,
+      "policy": "positive_momentum",
+      "train": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.20482724659472523,
+        "capital_return": -0.8807571603573183,
+        "closed_trades": [
+          {
+            "exit_time": 2080,
+            "mint": "synthetic-mint-000002",
+            "pnl_sol": -0.25313810650461466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000001"
+          },
+          {
+            "exit_time": 3040,
+            "mint": "synthetic-mint-000012",
+            "pnl_sol": -0.08244646275813972,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000006"
+          },
+          {
+            "exit_time": 3160,
+            "mint": "synthetic-mint-000015",
+            "pnl_sol": -0.21565549427485642,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000007"
+          },
+          {
+            "exit_time": 3400,
+            "mint": "synthetic-mint-000017",
+            "pnl_sol": -0.22076450486133659,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000008"
+          },
+          {
+            "exit_time": 3700,
+            "mint": "synthetic-mint-000020",
+            "pnl_sol": -0.17939389722227828,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000010"
+          },
+          {
+            "exit_time": 3880,
+            "mint": "synthetic-mint-000023",
+            "pnl_sol": -0.20133736434189253,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000011"
+          },
+          {
+            "exit_time": 4120,
+            "mint": "synthetic-mint-000025",
+            "pnl_sol": -0.16788327090452326,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000012"
+          },
+          {
+            "exit_time": 4600,
+            "mint": "synthetic-mint-000030",
+            "pnl_sol": -0.0859604462811242,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000015"
+          },
+          {
+            "exit_time": 4600,
+            "mint": "synthetic-mint-000031",
+            "pnl_sol": -0.09489450581086001,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000015"
+          },
+          {
+            "exit_time": 4780,
+            "mint": "synthetic-mint-000033",
+            "pnl_sol": -0.2657759625301156,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000016"
+          },
+          {
+            "exit_time": 5200,
+            "mint": "synthetic-mint-000036",
+            "pnl_sol": -0.21226975800361791,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000018"
+          },
+          {
+            "exit_time": 5320,
+            "mint": "synthetic-mint-000039",
+            "pnl_sol": -0.2604480692373615,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000019"
+          },
+          {
+            "exit_time": 5680,
+            "mint": "synthetic-mint-000042",
+            "pnl_sol": -0.16347208607667119,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000021"
+          },
+          {
+            "exit_time": 5860,
+            "mint": "synthetic-mint-000044",
+            "pnl_sol": -0.22845280573784355,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000022"
+          },
+          {
+            "exit_time": 6220,
+            "mint": "synthetic-mint-000049",
+            "pnl_sol": -0.14206183462751998,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000024"
+          },
+          {
+            "exit_time": 6940,
+            "mint": "synthetic-mint-000057",
+            "pnl_sol": -0.0018581521634547515,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000028"
+          },
+          {
+            "exit_time": 7120,
+            "mint": "synthetic-mint-000058",
+            "pnl_sol": -0.21035246081170156,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000029"
+          },
+          {
+            "exit_time": 7300,
+            "mint": "synthetic-mint-000060",
+            "pnl_sol": -0.19637965373994004,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000030"
+          },
+          {
+            "exit_time": 7840,
+            "mint": "synthetic-mint-000067",
+            "pnl_sol": -0.05165245531501206,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000033"
+          },
+          {
+            "exit_time": 8200,
+            "mint": "synthetic-mint-000070",
+            "pnl_sol": -0.1749603814541043,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000035"
+          },
+          {
+            "exit_time": 8440,
+            "mint": "synthetic-mint-000073",
+            "pnl_sol": -0.32881781847363245,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000036"
+          },
+          {
+            "exit_time": 8560,
+            "mint": "synthetic-mint-000075",
+            "pnl_sol": -0.19827803933651922,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000037"
+          },
+          {
+            "exit_time": 8800,
+            "mint": "synthetic-mint-000076",
+            "pnl_sol": -0.16658683560975185,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000038"
+          },
+          {
+            "exit_time": 9280,
+            "mint": "synthetic-mint-000083",
+            "pnl_sol": -0.17704202754362575,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000041"
+          },
+          {
+            "exit_time": 9460,
+            "mint": "synthetic-mint-000084",
+            "pnl_sol": -0.33966635509577736,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000042"
+          },
+          {
+            "exit_time": 9460,
+            "mint": "synthetic-mint-000085",
+            "pnl_sol": -0.3474702121570665,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000042"
+          },
+          {
+            "exit_time": 10360,
+            "mint": "synthetic-mint-000094",
+            "pnl_sol": -0.19376479333481222,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000047"
+          },
+          {
+            "exit_time": 10540,
+            "mint": "synthetic-mint-000096",
+            "pnl_sol": -0.074855592221159,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000048"
+          },
+          {
+            "exit_time": 10540,
+            "mint": "synthetic-mint-000097",
+            "pnl_sol": -0.16491056220410238,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000048"
+          },
+          {
+            "exit_time": 10960,
+            "mint": "synthetic-mint-000100",
+            "pnl_sol": -0.12844879574035473,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000050"
+          },
+          {
+            "exit_time": 11140,
+            "mint": "synthetic-mint-000102",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000051"
+          },
+          {
+            "exit_time": 11260,
+            "mint": "synthetic-mint-000104",
+            "pnl_sol": -0.07867749072686936,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000052"
+          },
+          {
+            "exit_time": 12040,
+            "mint": "synthetic-mint-000113",
+            "pnl_sol": -0.2350246618894235,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000056"
+          },
+          {
+            "exit_time": 12160,
+            "mint": "synthetic-mint-000115",
+            "pnl_sol": -0.1393779575964158,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000057"
+          },
+          {
+            "exit_time": 12340,
+            "mint": "synthetic-mint-000116",
+            "pnl_sol": -0.17430381073088785,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000058"
+          },
+          {
+            "exit_time": 12700,
+            "mint": "synthetic-mint-000121",
+            "pnl_sol": -0.1950612245857677,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000060"
+          },
+          {
+            "exit_time": 12880,
+            "mint": "synthetic-mint-000122",
+            "pnl_sol": -0.1340503926704084,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000061"
+          },
+          {
+            "exit_time": 13420,
+            "mint": "synthetic-mint-000129",
+            "pnl_sol": -0.30081581026349513,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000064"
+          },
+          {
+            "exit_time": 13780,
+            "mint": "synthetic-mint-000133",
+            "pnl_sol": -0.1746114212326303,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000066"
+          },
+          {
+            "exit_time": 14020,
+            "mint": "synthetic-mint-000135",
+            "pnl_sol": -0.2624582624455395,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000067"
+          },
+          {
+            "exit_time": 14740,
+            "mint": "synthetic-mint-000142",
+            "pnl_sol": -0.08197021260135451,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000071"
+          },
+          {
+            "exit_time": 15580,
+            "mint": "synthetic-mint-000152",
+            "pnl_sol": -0.22406762601883723,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000076"
+          },
+          {
+            "exit_time": 16480,
+            "mint": "synthetic-mint-000162",
+            "pnl_sol": -0.2781540284377859,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000081"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.9526627218934911,
+        "execution_fraction": 0.25443786982248523,
+        "final_capital_sol": 1.1924283964268168,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.8807571603573183,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.20482724659472523,
+        "minimum_available_cash_sol": 0.017921185413521057,
+        "net_pnl_sol": -8.807571603573184,
+        "opportunities": 169,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 11,
+          "exposure": 8,
+          "liquidity": 16,
+          "missing_entry_quote": 3,
+          "policy": 73,
+          "stale_quote": 15
+        },
+        "slippage_bps": 300,
+        "trades": 43,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -1.0
+      },
+      "validation": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.2176971881615759,
+        "capital_return": -0.26123662579389106,
+        "closed_trades": [
+          {
+            "exit_time": 18280,
+            "mint": "synthetic-mint-000183",
+            "pnl_sol": -0.28270093860459145,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000091"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000186",
+            "pnl_sol": -0.2231838002172466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000187",
+            "pnl_sol": -0.2139258653295345,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18880,
+            "mint": "synthetic-mint-000188",
+            "pnl_sol": -0.1989383047899771,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000094"
+          },
+          {
+            "exit_time": 19780,
+            "mint": "synthetic-mint-000198",
+            "pnl_sol": -0.051708537458380666,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000099"
+          },
+          {
+            "exit_time": 20080,
+            "mint": "synthetic-mint-000203",
+            "pnl_sol": -0.08686703403804563,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000101"
+          },
+          {
+            "exit_time": 20500,
+            "mint": "synthetic-mint-000206",
+            "pnl_sol": -0.12014491690561602,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000103"
+          },
+          {
+            "exit_time": 20860,
+            "mint": "synthetic-mint-000210",
+            "pnl_sol": -0.2501132819684636,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000105"
+          },
+          {
+            "exit_time": 21400,
+            "mint": "synthetic-mint-000216",
+            "pnl_sol": -0.3794249641176747,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000108"
+          },
+          {
+            "exit_time": 21520,
+            "mint": "synthetic-mint-000218",
+            "pnl_sol": -0.28960349285140063,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000109"
+          },
+          {
+            "exit_time": 21580,
+            "mint": "synthetic-mint-000219",
+            "pnl_sol": -0.23605174543084873,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000109"
+          },
+          {
+            "exit_time": 22240,
+            "mint": "synthetic-mint-000226",
+            "pnl_sol": -0.27970337622713126,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000113"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.94,
+        "execution_fraction": 0.24,
+        "final_capital_sol": 7.387633742061089,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.26123662579389106,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.2176971881615759,
+        "minimum_available_cash_sol": 5.572417320688143,
+        "net_pnl_sol": -2.612366257938911,
+        "opportunities": 50,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 0,
+          "exposure": 5,
+          "liquidity": 5,
+          "missing_entry_quote": 1,
+          "policy": 24,
+          "stale_quote": 3
+        },
+        "slippage_bps": 300,
+        "trades": 12,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -0.3794249641176747
+      }
+    },
+    {
+      "eligible": true,
+      "policy": "cautious_momentum",
+      "train": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.22656832101496455,
+        "capital_return": -0.8383027877553688,
+        "closed_trades": [
+          {
+            "exit_time": 2080,
+            "mint": "synthetic-mint-000002",
+            "pnl_sol": -0.25313810650461466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000001"
+          },
+          {
+            "exit_time": 3400,
+            "mint": "synthetic-mint-000017",
+            "pnl_sol": -0.22076450486133659,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000008"
+          },
+          {
+            "exit_time": 3520,
+            "mint": "synthetic-mint-000018",
+            "pnl_sol": -0.19753283955732537,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000009"
+          },
+          {
+            "exit_time": 3880,
+            "mint": "synthetic-mint-000023",
+            "pnl_sol": -0.20133736434189253,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000011"
+          },
+          {
+            "exit_time": 4120,
+            "mint": "synthetic-mint-000025",
+            "pnl_sol": -0.16788327090452326,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000012"
+          },
+          {
+            "exit_time": 4600,
+            "mint": "synthetic-mint-000030",
+            "pnl_sol": -0.0859604462811242,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000015"
+          },
+          {
+            "exit_time": 4780,
+            "mint": "synthetic-mint-000033",
+            "pnl_sol": -0.2657759625301156,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000016"
+          },
+          {
+            "exit_time": 5200,
+            "mint": "synthetic-mint-000036",
+            "pnl_sol": -0.21226975800361791,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000018"
+          },
+          {
+            "exit_time": 5320,
+            "mint": "synthetic-mint-000039",
+            "pnl_sol": -0.2604480692373615,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000019"
+          },
+          {
+            "exit_time": 5680,
+            "mint": "synthetic-mint-000042",
+            "pnl_sol": -0.16347208607667119,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000021"
+          },
+          {
+            "exit_time": 5860,
+            "mint": "synthetic-mint-000044",
+            "pnl_sol": -0.22845280573784355,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000022"
+          },
+          {
+            "exit_time": 6940,
+            "mint": "synthetic-mint-000057",
+            "pnl_sol": -0.0018581521634547515,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000028"
+          },
+          {
+            "exit_time": 7300,
+            "mint": "synthetic-mint-000060",
+            "pnl_sol": -0.19637965373994004,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000030"
+          },
+          {
+            "exit_time": 7480,
+            "mint": "synthetic-mint-000062",
+            "pnl_sol": -0.32497160919504575,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000031"
+          },
+          {
+            "exit_time": 8440,
+            "mint": "synthetic-mint-000073",
+            "pnl_sol": -0.32881781847363245,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000036"
+          },
+          {
+            "exit_time": 8560,
+            "mint": "synthetic-mint-000075",
+            "pnl_sol": -0.19827803933651922,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000037"
+          },
+          {
+            "exit_time": 8740,
+            "mint": "synthetic-mint-000077",
+            "pnl_sol": -0.17056658964094662,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000038"
+          },
+          {
+            "exit_time": 9460,
+            "mint": "synthetic-mint-000084",
+            "pnl_sol": -0.33966635509577736,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000042"
+          },
+          {
+            "exit_time": 9460,
+            "mint": "synthetic-mint-000085",
+            "pnl_sol": -0.3474702121570665,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000042"
+          },
+          {
+            "exit_time": 9700,
+            "mint": "synthetic-mint-000087",
+            "pnl_sol": -0.18068946262658903,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000043"
+          },
+          {
+            "exit_time": 10360,
+            "mint": "synthetic-mint-000094",
+            "pnl_sol": -0.19376479333481222,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000047"
+          },
+          {
+            "exit_time": 10540,
+            "mint": "synthetic-mint-000096",
+            "pnl_sol": -0.074855592221159,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000048"
+          },
+          {
+            "exit_time": 10540,
+            "mint": "synthetic-mint-000097",
+            "pnl_sol": -0.16491056220410238,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000048"
+          },
+          {
+            "exit_time": 11140,
+            "mint": "synthetic-mint-000102",
+            "pnl_sol": -1.0,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000051"
+          },
+          {
+            "exit_time": 11260,
+            "mint": "synthetic-mint-000104",
+            "pnl_sol": -0.07867749072686936,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000052"
+          },
+          {
+            "exit_time": 12040,
+            "mint": "synthetic-mint-000113",
+            "pnl_sol": -0.2350246618894235,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000056"
+          },
+          {
+            "exit_time": 12160,
+            "mint": "synthetic-mint-000115",
+            "pnl_sol": -0.1393779575964158,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000057"
+          },
+          {
+            "exit_time": 12340,
+            "mint": "synthetic-mint-000116",
+            "pnl_sol": -0.17430381073088785,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000058"
+          },
+          {
+            "exit_time": 12880,
+            "mint": "synthetic-mint-000122",
+            "pnl_sol": -0.1340503926704084,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000061"
+          },
+          {
+            "exit_time": 13420,
+            "mint": "synthetic-mint-000129",
+            "pnl_sol": -0.30081581026349513,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000064"
+          },
+          {
+            "exit_time": 13780,
+            "mint": "synthetic-mint-000133",
+            "pnl_sol": -0.1746114212326303,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000066"
+          },
+          {
+            "exit_time": 13960,
+            "mint": "synthetic-mint-000134",
+            "pnl_sol": -0.24470253598400238,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000067"
+          },
+          {
+            "exit_time": 14020,
+            "mint": "synthetic-mint-000135",
+            "pnl_sol": -0.2624582624455395,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000067"
+          },
+          {
+            "exit_time": 15580,
+            "mint": "synthetic-mint-000152",
+            "pnl_sol": -0.22406762601883723,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000076"
+          },
+          {
+            "exit_time": 15760,
+            "mint": "synthetic-mint-000154",
+            "pnl_sol": -0.19405780325525357,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000077"
+          },
+          {
+            "exit_time": 16480,
+            "mint": "synthetic-mint-000162",
+            "pnl_sol": -0.2781540284377859,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000081"
+          },
+          {
+            "exit_time": 16840,
+            "mint": "synthetic-mint-000166",
+            "pnl_sol": -0.1634620220766677,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000083"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.9526627218934911,
+        "execution_fraction": 0.21893491124260356,
+        "final_capital_sol": 1.6169721224463123,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.8383027877553687,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.22656832101496455,
+        "minimum_available_cash_sol": 0.05858817296076513,
+        "net_pnl_sol": -8.383027877553687,
+        "opportunities": 169,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 3,
+          "exposure": 2,
+          "liquidity": 0,
+          "missing_entry_quote": 2,
+          "policy": 117,
+          "stale_quote": 8
+        },
+        "slippage_bps": 300,
+        "trades": 37,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -1.0
+      },
+      "validation": {
+        "average_gain_sol": null,
+        "average_loss_sol": -0.23246059750496814,
+        "capital_return": -0.23246059750496806,
+        "closed_trades": [
+          {
+            "exit_time": 18280,
+            "mint": "synthetic-mint-000183",
+            "pnl_sol": -0.28270093860459145,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000091"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000186",
+            "pnl_sol": -0.2231838002172466,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18640,
+            "mint": "synthetic-mint-000187",
+            "pnl_sol": -0.2139258653295345,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000093"
+          },
+          {
+            "exit_time": 18880,
+            "mint": "synthetic-mint-000188",
+            "pnl_sol": -0.1989383047899771,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000094"
+          },
+          {
+            "exit_time": 20080,
+            "mint": "synthetic-mint-000203",
+            "pnl_sol": -0.08686703403804563,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000101"
+          },
+          {
+            "exit_time": 20500,
+            "mint": "synthetic-mint-000206",
+            "pnl_sol": -0.12014491690561602,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000103"
+          },
+          {
+            "exit_time": 20860,
+            "mint": "synthetic-mint-000210",
+            "pnl_sol": -0.2501132819684636,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000105"
+          },
+          {
+            "exit_time": 21400,
+            "mint": "synthetic-mint-000216",
+            "pnl_sol": -0.3794249641176747,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000108"
+          },
+          {
+            "exit_time": 21520,
+            "mint": "synthetic-mint-000218",
+            "pnl_sol": -0.28960349285140063,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000109"
+          },
+          {
+            "exit_time": 22240,
+            "mint": "synthetic-mint-000226",
+            "pnl_sol": -0.27970337622713126,
+            "position_sol": 1.0,
+            "signature": "synthetic-tx-000113"
+          }
+        ],
+        "cost_bps": 1000,
+        "entry_quote_coverage": 0.94,
+        "execution_fraction": 0.2,
+        "final_capital_sol": 7.67539402495032,
+        "initial_capital_sol": 10.0,
+        "max_drawdown_realized": 0.232460597504968,
+        "max_open_positions": 3,
+        "max_reserved_sol": 3.0,
+        "mean_trade_pnl_sol": -0.23246059750496814,
+        "minimum_available_cash_sol": 6.624125858146525,
+        "net_pnl_sol": -2.32460597504968,
+        "opportunities": 50,
+        "profit_factor": 0.0,
+        "profit_factor_status": "finite",
+        "rejections": {
+          "balance": 0,
+          "exposure": 2,
+          "liquidity": 0,
+          "missing_entry_quote": 0,
+          "policy": 37,
+          "stale_quote": 1
+        },
+        "slippage_bps": 300,
+        "trades": 10,
+        "win_rate": 0.0,
+        "worst_trade_pnl_sol": -0.3794249641176747
+      }
+    }
+  ],
+  "economic_verdict": "INSUFFICIENT DATA",
+  "final_policy": "cautious_momentum",
+  "final_test": [
+    {
+      "average_gain_sol": 0.020300106437365406,
+      "average_loss_sol": -0.0868133628641548,
+      "capital_return": -0.11341866543487067,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.19630080313039033,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": 0.04898650435547269,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.03632653512934936,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.08082028600322888,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": 0.013490617025290419,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.10896636220223255,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.0019659431888285894,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.08870786785366636,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.1098111000013634,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.06009272011532796,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.07772026048254188,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.13409480007946883,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.13034073445587158,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.01870939734524324,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": 0.018205814203857473,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.027998756958914517,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.14353151315173962,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": 0.000517490164841039,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 200,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 8.865813345651294,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.11347041445135471,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.0630103696860392,
+      "minimum_available_cash_sol": 6.01862031139325,
+      "net_pnl_sol": -1.1341866543487065,
+      "opportunities": 60,
+      "profit_factor": 0.06681034139584818,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 0,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.08165384674477322,
+          -0.047618017780636755
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.2222222222222222,
+      "worst_trade_pnl_sol": -0.19630080313039033
+    },
+    {
+      "average_gain_sol": 0.016894311861540185,
+      "average_loss_sol": -0.09099130599555508,
+      "capital_return": -0.13141866543487057,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.20630080313039034,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": 0.038986504355472684,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.04632653512934937,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.09082028600322889,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": 0.00349061702529041,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.11896636220223256,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.011965943188828598,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.09870786785366636,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.11981110000136341,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.07009272011532797,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.08772026048254189,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.14409480007946884,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.14034073445587159,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.02870939734524325,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": 0.008205814203857464,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.037998756958914526,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.15353151315173963,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.00948250983515897,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 200,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 8.685813345651294,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.13141866543487063,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.0730103696860392,
+      "minimum_available_cash_sol": 5.8786203113932505,
+      "net_pnl_sol": -1.3141866543487062,
+      "opportunities": 60,
+      "profit_factor": 0.03713390345746982,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 100,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.09165384674477323,
+          -0.057618017780636764
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.16666666666666666,
+      "worst_trade_pnl_sol": -0.20630080313039034
+    },
+    {
+      "average_gain_sol": 0.018986504355472666,
+      "average_loss_sol": -0.0995984211002458,
+      "capital_return": -0.1674186654348706,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.22630080313039036,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": 0.018986504355472666,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.06632653512934938,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.11082028600322891,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.016509382974709608,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.13896636220223257,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.031965943188828616,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.11870786785366638,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.13981110000136343,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.09009272011532798,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.10772026048254191,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.16409480007946886,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.1603407344558716,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.048709397345243266,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.011794185796142553,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.057998756958914544,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.17353151315173965,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.029482509835158988,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 200,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 8.325813345651294,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.16741866543487055,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.09301036968603922,
+      "minimum_available_cash_sol": 5.598620311393251,
+      "net_pnl_sol": -1.6741866543487056,
+      "opportunities": 60,
+      "profit_factor": 0.01121356327784185,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 300,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.11165384674477324,
+          -0.07761801778063679
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.05555555555555555,
+      "worst_trade_pnl_sol": -0.22630080313039036
+    },
+    {
+      "average_gain_sol": 0.018986504355472666,
+      "average_loss_sol": -0.0995984211002458,
+      "capital_return": -0.1674186654348706,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.22630080313039036,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": 0.018986504355472666,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.06632653512934938,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.11082028600322891,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.016509382974709608,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.13896636220223257,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.031965943188828616,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.11870786785366638,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.13981110000136343,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.09009272011532798,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.10772026048254191,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.16409480007946886,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.1603407344558716,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.048709397345243266,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.011794185796142553,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.057998756958914544,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.17353151315173965,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.029482509835158988,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 500,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 8.325813345651294,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.16741866543487055,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.09301036968603922,
+      "minimum_available_cash_sol": 5.598620311393251,
+      "net_pnl_sol": -1.6741866543487056,
+      "opportunities": 60,
+      "profit_factor": 0.01121356327784185,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 0,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.11165384674477324,
+          -0.07761801778063679
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.05555555555555555,
+      "worst_trade_pnl_sol": -0.22630080313039036
+    },
+    {
+      "average_gain_sol": 0.008986504355472658,
+      "average_loss_sol": -0.10959842110024577,
+      "capital_return": -0.1854186654348705,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.23630080313039037,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": 0.008986504355472658,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.0763265351293494,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.1208202860032288,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.026509382974709617,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.14896636220223258,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.041965943188828625,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.1287078678536664,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.14981110000136333,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.10009272011532788,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.1177202604825418,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.17409480007946887,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.1703407344558716,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.058709397345243275,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.021794185796142562,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.06799875695891444,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.18353151315173966,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.039482509835158996,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 500,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 8.145813345651295,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.18541866543487054,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.1030103696860392,
+      "minimum_available_cash_sol": 5.458620311393249,
+      "net_pnl_sol": -1.8541866543487053,
+      "opportunities": 60,
+      "profit_factor": 0.004823225535152459,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 100,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.12165384674477323,
+          -0.08761801778063677
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.05555555555555555,
+      "worst_trade_pnl_sol": -0.23630080313039037
+    },
+    {
+      "average_gain_sol": null,
+      "average_loss_sol": -0.12301036968603914,
+      "capital_return": -0.22141866543487043,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.2563008031303903,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": -0.01101349564452725,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.0963265351293493,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.14082028600322882,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.04650938297470952,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.1689663622022325,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.06196594318882853,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.1487078678536663,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.16981110000136335,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.1200927201153279,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.13772026048254182,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.19409480007946878,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.19034073445587152,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.07870939734524318,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.04179418579614247,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.08799875695891446,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.20353151315173956,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.0594825098351589,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 500,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 7.785813345651296,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.22141866543487038,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.12301036968603914,
+      "minimum_available_cash_sol": 5.178620311393252,
+      "net_pnl_sol": -2.214186654348704,
+      "opportunities": 60,
+      "profit_factor": 0.0,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 300,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.14165384674477316,
+          -0.1076180177806367
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.0,
+      "worst_trade_pnl_sol": -0.2563008031303903
+    },
+    {
+      "average_gain_sol": null,
+      "average_loss_sol": -0.14301036968603914,
+      "capital_return": -0.25741866543487046,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.2763008031303903,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": -0.031013495644527267,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.11632653512934932,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.16082028600322884,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.06650938297470954,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.1889663622022325,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.08196594318882855,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.16870786785366632,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.18981110000136336,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.14009272011532792,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.15772026048254184,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.2140948000794688,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.21034073445587154,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.0987093973452432,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.06179418579614249,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.10799875695891448,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.22353151315173958,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.07948250983515892,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 1000,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 7.425813345651295,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.2574186654348705,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.14301036968603914,
+      "minimum_available_cash_sol": 4.898620311393248,
+      "net_pnl_sol": -2.574186654348705,
+      "opportunities": 60,
+      "profit_factor": 0.0,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 0,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.16165384674477318,
+          -0.12761801778063672
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.0,
+      "worst_trade_pnl_sol": -0.2763008031303903
+    },
+    {
+      "average_gain_sol": null,
+      "average_loss_sol": -0.15301036968603915,
+      "capital_return": -0.2754186654348706,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.2863008031303903,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": -0.041013495644527276,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.12632653512934933,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.17082028600322885,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.07650938297470955,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.19896636220223252,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.09196594318882856,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.17870786785366632,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.19981110000136337,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.15009272011532793,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.16772026048254185,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.2240948000794688,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.22034073445587155,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.10870939734524321,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.0717941857961425,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.11799875695891449,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.2335315131517396,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.08948250983515893,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 1000,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 7.245813345651294,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.2754186654348706,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.15301036968603915,
+      "minimum_available_cash_sol": 4.758620311393251,
+      "net_pnl_sol": -2.7541866543487057,
+      "opportunities": 60,
+      "profit_factor": 0.0,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 100,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.1716538467447732,
+          -0.13761801778063673
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.0,
+      "worst_trade_pnl_sol": -0.2863008031303903
+    },
+    {
+      "average_gain_sol": null,
+      "average_loss_sol": -0.17301036968603917,
+      "capital_return": -0.3114186654348705,
+      "closed_trades": [
+        {
+          "exit_time": 23500,
+          "mint": "synthetic-mint-000241",
+          "pnl_sol": -0.3063008031303903,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000120"
+        },
+        {
+          "exit_time": 23680,
+          "mint": "synthetic-mint-000242",
+          "pnl_sol": -0.061013495644527294,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000121"
+        },
+        {
+          "exit_time": 24040,
+          "mint": "synthetic-mint-000246",
+          "pnl_sol": -0.14632653512934934,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000123"
+        },
+        {
+          "exit_time": 24460,
+          "mint": "synthetic-mint-000251",
+          "pnl_sol": -0.19082028600322887,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000125"
+        },
+        {
+          "exit_time": 24580,
+          "mint": "synthetic-mint-000252",
+          "pnl_sol": -0.09650938297470957,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000126"
+        },
+        {
+          "exit_time": 24760,
+          "mint": "synthetic-mint-000254",
+          "pnl_sol": -0.21896636220223253,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000127"
+        },
+        {
+          "exit_time": 25300,
+          "mint": "synthetic-mint-000260",
+          "pnl_sol": -0.11196594318882858,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000130"
+        },
+        {
+          "exit_time": 26080,
+          "mint": "synthetic-mint-000269",
+          "pnl_sol": -0.19870786785366634,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000134"
+        },
+        {
+          "exit_time": 26200,
+          "mint": "synthetic-mint-000270",
+          "pnl_sol": -0.2198111000013634,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000135"
+        },
+        {
+          "exit_time": 26560,
+          "mint": "synthetic-mint-000275",
+          "pnl_sol": -0.17009272011532794,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000137"
+        },
+        {
+          "exit_time": 26740,
+          "mint": "synthetic-mint-000277",
+          "pnl_sol": -0.18772026048254187,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000138"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000282",
+          "pnl_sol": -0.24409480007946882,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27280,
+          "mint": "synthetic-mint-000283",
+          "pnl_sol": -0.24034073445587156,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000141"
+        },
+        {
+          "exit_time": 27460,
+          "mint": "synthetic-mint-000284",
+          "pnl_sol": -0.12870939734524323,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000142"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000290",
+          "pnl_sol": -0.09179418579614251,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28000,
+          "mint": "synthetic-mint-000291",
+          "pnl_sol": -0.1379987569589145,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000145"
+        },
+        {
+          "exit_time": 28360,
+          "mint": "synthetic-mint-000294",
+          "pnl_sol": -0.2535315131517396,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000147"
+        },
+        {
+          "exit_time": 28720,
+          "mint": "synthetic-mint-000298",
+          "pnl_sol": -0.10948250983515895,
+          "position_sol": 1.0,
+          "signature": "synthetic-tx-000149"
+        }
+      ],
+      "cost_bps": 1000,
+      "entry_quote_coverage": 0.9333333333333333,
+      "execution_fraction": 0.3,
+      "final_capital_sol": 6.885813345651295,
+      "initial_capital_sol": 10.0,
+      "max_drawdown_realized": 0.3114186654348705,
+      "max_open_positions": 3,
+      "max_reserved_sol": 3.0,
+      "mean_trade_pnl_sol": -0.17301036968603917,
+      "minimum_available_cash_sol": 4.478620311393251,
+      "net_pnl_sol": -3.114186654348705,
+      "opportunities": 60,
+      "profit_factor": 0.0,
+      "profit_factor_status": "finite",
+      "rejections": {
+        "balance": 0,
+        "exposure": 3,
+        "liquidity": 0,
+        "missing_entry_quote": 1,
+        "policy": 33,
+        "stale_quote": 5
+      },
+      "slippage_bps": 300,
+      "trades": 18,
+      "uncertainty": {
+        "block_length_groups": 5,
+        "groups": 16,
+        "interval_quantiles": [
+          0.025,
+          0.975
+        ],
+        "limitation": "Conditions on executed cohorts; not a confidence interval for market profitability, drawdown or ruin.",
+        "mean_trade_pnl_sol_interval": [
+          -0.1916538467447732,
+          -0.15761801778063675
+        ],
+        "resamples": 200,
+        "status": "conditional_descriptive"
+      },
+      "win_rate": 0.0,
+      "worst_trade_pnl_sol": -0.3063008031303903
+    }
+  ],
+  "fx_assumption": "No USD data: every generated return and capital amount is denominated in SOL.",
+  "model_eligible": false,
+  "no_trade_control": {
+    "capital_return": 0.0,
+    "final_capital_sol": 10.0,
+    "initial_capital_sol": 10.0,
+    "max_drawdown_realized": 0.0,
+    "net_pnl_sol": 0.0,
+    "trades": 0
+  },
+  "paper_eligible": false,
+  "partition": {
+    "development_before_final": {
+      "boundary_available": true,
+      "boundary_train_events": 240,
+      "max_train_label_time": 22480,
+      "policy": "signature_timestamp_groups_label_purge_v1",
+      "purged_train_observations": 10,
+      "target_train_events": 240,
+      "test_period_started_at": 22600,
+      "train_label_available_before": 22600
+    },
+    "final_test_started_at": 22600,
+    "min_sizes": {
+      "final_test": 15,
+      "train": 30,
+      "validation": 15
+    },
+    "purged_validation_observations": 10,
+    "raw_target_fractions": [
+      0.6,
+      0.2,
+      0.2
+    ],
+    "sizes_after_purge": {
+      "final_test": 60,
+      "train": 169,
+      "validation": 50
+    },
+    "train": {
+      "boundary_available": true,
+      "boundary_train_events": 180,
+      "max_train_label_time": 17020,
+      "policy": "signature_timestamp_groups_label_purge_v1",
+      "purged_train_observations": 11,
+      "target_train_events": 180,
+      "test_period_started_at": 17200,
+      "train_label_available_before": 17200
+    },
+    "validation_started_at": 17200
+  },
+  "policies_registered": [
+    "all_eligible",
+    "positive_momentum",
+    "cautious_momentum"
+  ],
+  "protocol": "rugger_synthetic_sol_v1",
+  "real_orders_enabled": false,
+  "regime": "adverse",
+  "report_sha256": "02787bb336892749cdda4bc8aea30e388697458d2e480bd84edceb90a2871845",
+  "seed": 20261026,
+  "selection_input_sha256": "46dcbe45c37d801698ae5daa69fb7a4929d01985f8701f4953cfd840c9cce317",
+  "selection_outcome": "no_positive_validation_candidate",
+  "selection_rule": "Highest validation net SOL PnL at 1000bps cost + 300bps slippage; fixed policy-order tie break; minimum 5 executions in train and validation.",
+  "synthetic_return_field": "gross_return_sol",
+  "unit": "SOL",
+  "validation_positive": false
+}
