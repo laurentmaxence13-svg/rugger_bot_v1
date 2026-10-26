@@ -2,6 +2,17 @@
 
 Cette V1 ne peut ni acheter ni vendre. Elle ne contient aucun code de signature de transaction.
 
+## Préparation des données P3
+
+Le journal et les composants de préparation sont séparés dans `bot/p3/`.
+La collecte publique est bornée et exige `--network` ; importer le module ou
+lancer les tests ne démarre aucun accès marché. Un ledger historique passé
+comme base de capture est refusé. Les cotations à taille donnée restent des
+estimations, avec coûts et fraîcheur inconnus explicitement conservés.
+Voir [le protocole](P3_CAPTURE_PROTOCOL.md), [le rapport de disponibilité](P3_DATA_READINESS_REPORT.md)
+et [les accès/droits des sources](P3_DATA_SOURCES.md). Le GO économique P3 n'est
+pas acquis par ces vérifications logicielles.
+
 ## Portée des validations
 
 Le développement cloud et les vérifications P1 utilisent des copies de sources et des données synthétiques, sans réseau de marché. Les garanties et exclusions courantes sont décrites dans `P1_FINAL_GATE_RECHECK.md`. Le protocole expérimental séparé est décrit dans `P2_SYNTHETIC_PROTOCOL.md` ; il n'active aucun modèle du bot.

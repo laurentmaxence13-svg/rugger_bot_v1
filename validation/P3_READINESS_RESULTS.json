@@ -1,0 +1,161 @@
+{
+  "schema": "p3-preparation-validation-v1",
+  "base_commit": "9e4b5a788bf955e0afb9ab96818f17042c448b66",
+  "scope": "prepared components and bounded read-only public-data smoke; not economic P3 GO",
+  "tests": {
+    "passed": 875,
+    "skipped": 1,
+    "subtests_passed": 242,
+    "warnings_as_errors": true,
+    "stderr_empty": true,
+    "exit_code": 0
+  },
+  "suite_stdout_sha256": "fe18c03485f5c0388456038fb5cf7061067c4ceaf1a7b88002b4f9fc596f58a4",
+  "access_probes": [
+    {
+      "name": "solana_get_slot",
+      "method": "POST getSlot",
+      "started_at_ms": 1793055331810,
+      "credential_used": false,
+      "http_status": 200,
+      "response_sha256": "4ba64845bfc22c37f08007fc70b4c9ddfaedfe46fa42cedd3c8cc64575ca4a06",
+      "slot": 461841129,
+      "rpc_error_code": null,
+      "received_at_ms": 1793055332226,
+      "latency_ms": 415.98812
+    },
+    {
+      "name": "raydium_buy_quote",
+      "method": "GET",
+      "started_at_ms": 1793055331810,
+      "credential_used": false,
+      "http_status": 200,
+      "response_sha256": "a2d62aaa12a04936f02703f0ac61624777bb9fd9a1577eeacad0f45b94714b1c",
+      "success": true,
+      "received_at_ms": 1793055332720,
+      "latency_ms": 909.253537
+    },
+    {
+      "name": "dexscreener_sol_usd",
+      "method": "GET",
+      "started_at_ms": 1793055331811,
+      "credential_used": false,
+      "http_status": 200,
+      "response_sha256": "33bd9f7fd252f8a374c3aee7439df3186f9f284f3b7c42f82f8527e5c1f58b28",
+      "pair_count": 30,
+      "sol_base_pairs_with_usd_quote": 30,
+      "provider_price_timestamp_known": false,
+      "received_at_ms": 1793055332053,
+      "latency_ms": 242.239477
+    }
+  ],
+  "smoke": {
+    "source_base": "9e4b5a788bf955e0afb9ab96818f17042c448b66",
+    "data_kind": "live_readonly_preparation_smoke",
+    "sampling_policy": "5 recent LaunchLab program signatures; up to2transactions; fixedUSDCquote target for transport, not LaunchLab execution evidence",
+    "records": 14,
+    "kinds": {
+      "gap": 1,
+      "request": 3,
+      "transaction": 5,
+      "candidate_decision": 1,
+      "fx": 1,
+      "quote_attempt": 2,
+      "checkpoint": 1
+    },
+    "source_provenance": "all live; no historical-ledger import",
+    "observed_launch_creations": 0,
+    "sampled_transactions": 5,
+    "chain_failed_transactions": 4,
+    "buy_and_sell_quote_available": true,
+    "quoted_input_lamports": "1000000000",
+    "sell_matches_expected_buy_output": true,
+    "quoted_position_acquired": false,
+    "quote_source_time_known": false,
+    "quote_context_slot_known": false,
+    "executable_liquidity_known": false,
+    "execution_costs_known": false,
+    "fx_source_time_known": false,
+    "strict_fx_conversion_blocked": true,
+    "net_accounting_with_unknown_costs_blocked": true,
+    "journal_file_sha256": "250d060e4a2f964d4fadd0fc600fdc46d879f1e313952a544f11e4c26e4148e7",
+    "journal_tail_hash": "8b58554decb33663ec9310db9d32cc9e070a36107f80b73db6020538e3edeac5",
+    "journal_retained_locally_only": true,
+    "global_market_coverage": null,
+    "p3_economic_go": false,
+    "economic_verdict": "INSUFFICIENT DATA"
+  },
+  "capture_quality": {
+    "as_of_ms": null,
+    "collector": "bounded_rpc_snapshot_not_a_live_universe",
+    "economic_validation": "INSUFFICIENT DATA",
+    "fx_without_source_time": 1,
+    "input_lamports": "1000000000",
+    "integrity": "verified_hash_chain_not_authenticated",
+    "kind_counts": {
+      "candidate_decision": 1,
+      "checkpoint": 1,
+      "fx": 1,
+      "gap": 1,
+      "quote_attempt": 2,
+      "request": 3,
+      "transaction": 5
+    },
+    "market_detection_coverage": null,
+    "max_requests": 8,
+    "missing_transactions": 0,
+    "open_gap_count": 1,
+    "open_gap_ids": [
+      "58e6fe49-e5db-4f78-a59d-92b9d67f3c62"
+    ],
+    "outcome_counts": {
+      "bounded_sample_complete": 1,
+      "chain_failed": 4,
+      "indicative": 1,
+      "observed": 4,
+      "open": 1,
+      "quoted": 2,
+      "rejected": 1
+    },
+    "p3_go": false,
+    "provenance_counts": {
+      "live": 14
+    },
+    "quality_flag_counts": {
+      "source_time_unknown": 8
+    },
+    "quote_target": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "quotes_without_source_time": 2,
+    "real_orders_enabled": false,
+    "records": 14,
+    "rejected_candidates": 1,
+    "requests_used": 6,
+    "run_id": "58e6fe49-e5db-4f78-a59d-92b9d67f3c62",
+    "schema": "p3-capture-quality-v1",
+    "unavailable_quotes": 0,
+    "unmatched_gap_closures": 0
+  },
+  "historical_ledger_changed": false,
+  "paid_access_activated": false,
+  "financial_transaction_submitted": false,
+  "additional_fx_discovery": {
+    "name": "pyth_sol_feed",
+    "received_at_ms": 1793056672412,
+    "credential_used": false,
+    "http_status": 200
+  },
+  "timestamped_fx_access_check": {
+    "provider": "Pyth Hermes",
+    "operation": "GET /v2/updates/price/latest for metadata-discovered SOL/USD feed",
+    "http_status": 401,
+    "outcome": "timestamped_price_not_obtained",
+    "checked_at_ms": 1793056749801,
+    "credential_presence": {
+      "PYTH_API_KEY": false,
+      "HERMES_API_KEY": false
+    },
+    "authenticated_retry_performed": false,
+    "account_created": false,
+    "paid_access_activated": false
+  }
+}
