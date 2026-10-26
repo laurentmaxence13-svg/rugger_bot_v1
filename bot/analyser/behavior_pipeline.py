@@ -210,12 +210,20 @@ def wallet_graph_snapshot(cached, mint, signal_time, observed_at):
 def load_cached_transactions(db_path):
     """Load valid cached Helius transactions ordered by block time."""
     con = sqlite3.connect(db_path, timeout=30.0, isolation_level=None)
-    con.execute('PRAGMA busy_timeout=30000')
-    rows = con.execute(
-        '''SELECT signature,payload FROM research_tx_cache
+    try:
+        con.execute('PRAGMA busy_timeout=30000')
+        rows = con.execute(
+            '''SELECT signature,payload FROM research_tx_cache
            WHERE fetched_ok=1 AND payload IS NOT NULL'''
-    ).fetchall()
-    con.close()
+        ).fetchall()
+    except BaseException as error:
+        try:
+            con.close()
+        except BaseException as cleanup_error:
+            raise error from cleanup_error
+        raise
+    else:
+        con.close()
     result = []
     for signature, raw in rows:
         try:
