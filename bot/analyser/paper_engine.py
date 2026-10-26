@@ -748,22 +748,22 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         "SELECT COUNT(*) FROM paper_trades "
         "WHERE status='closed' AND strategy_mode='shadow_baseline'"
     ).fetchone()[0]
-    launches = 0
+    # One identity universe for both sides of the coverage fraction.
+    launch_mints = set()
     if _table_exists(con, 'launch_candidates'):
-        launches += con.execute(
-            "SELECT COUNT(DISTINCT mint) FROM launch_candidates "
+        launch_mints.update(row[0] for row in con.execute(
+            "SELECT DISTINCT mint FROM launch_candidates "
             "WHERE mint IS NOT NULL AND status='creator_identified'"
-        ).fetchone()[0]
+        ))
     if _table_exists(con, 'research_launches'):
-        launches += con.execute(
-            "SELECT COUNT(DISTINCT mint) FROM research_launches "
-            "WHERE mint IS NOT NULL AND mint NOT IN "
-            "(SELECT mint FROM launch_candidates "
-            "WHERE mint IS NOT NULL AND status='creator_identified')"
-        ).fetchone()[0]
-    quoted_mints = con.execute(
-        'SELECT COUNT(DISTINCT mint) FROM paper_prices'
-    ).fetchone()[0]
+        launch_mints.update(row[0] for row in con.execute(
+            'SELECT DISTINCT mint FROM research_launches WHERE mint IS NOT NULL'
+        ))
+    quoted_mints = {row[0] for row in con.execute(
+        'SELECT DISTINCT mint FROM paper_prices WHERE mint IS NOT NULL'
+    )}
+    quoted_launches = launch_mints & quoted_mints
+    orphan_quoted_mints = quoted_mints - launch_mints
     decisions = con.execute(
         'SELECT COUNT(*) FROM paper_decisions'
     ).fetchone()[0]
@@ -779,10 +779,14 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'private_keys_used': False,
         'timestamp': int(now),
         'cached_helius_transactions': int(cached_count),
-        'launches_observed': int(launches),
+        'launches_observed': len(launch_mints),
         'quotes_recorded': int(quotes),
-        'launches_with_quotes': int(quoted_mints),
-        'quote_coverage': (quoted_mints / launches if launches else None),
+        'launches_with_quotes': len(quoted_launches),
+        'quote_coverage': (len(quoted_launches) / len(launch_mints) if launch_mints else None),
+        'quoted_mints_total': len(quoted_mints),
+        'quoted_mints_without_identified_launch': len(orphan_quoted_mints),
+        'quote_coverage_scope': 'identified_launch_mints',
+        'market_detection_coverage': None,
         'decision_count': int(decisions),
         'rejected_decisions': int(rejected),
         'accepted_decisions': int(decisions - rejected),
