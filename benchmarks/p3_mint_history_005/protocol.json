@@ -1,0 +1,61 @@
+{
+  "evidence_pins": [
+    {
+      "path": "/workspace/work/history-control-004/evidence",
+      "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2"
+    },
+    {
+      "path": "/workspace/rugger_bot_v1/evidence/p3/launchlab_002",
+      "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790"
+    }
+  ],
+  "imported_module_sha256": {
+    "bot/p3/campaign.py": "f1fd6e42613ad232cef4daa03bea9c6e0643bc5d2e5eecc180fccfca960d2883",
+    "bot/p3/collect.py": "8b6ad27bedb1538957c15408b0cc2f6601aba85ee3c6692f91ea290f10853a7b",
+    "bot/p3/evidence.py": "9e3da01797d87a53ecdd4a69a50e59caaf18d4d9593eec9d1d41e27f6575e139",
+    "bot/p3/store.py": "80a6fb05a053b8106d8c8f10fc756544a4107bf02f3762c5de1fbb486ff33e05"
+  },
+  "max_elapsed_ms": 20000,
+  "max_requests": 5,
+  "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+  "new_page_requests": 0,
+  "no_follow_on_network_budget_in_this_session": true,
+  "plan_id": "mint-history-005",
+  "quote_requests": 0,
+  "registered_at_ms": 1793114443982,
+  "reused_script_sha256": "1d02a18f67dd114e3d4860d1f1df7e64422b5bf99910d1f9e18f177165ffd4f6",
+  "rpc_methods": [
+    "getTransaction"
+  ],
+  "schema": "p3-fixed-historical-transactions-plan-v1",
+  "script_sha256": "c542f7e746b6d9b923211dc9b4255878cf5c8cb131334ef89dd79eca31cd3a6f",
+  "selection": "exact_five_signatures_absent_from_prior_received_pool_page_fixed_before_reads_no_claim_of_burn",
+  "selection_qualification_path": "/workspace/work/history-control-004/qualification.json",
+  "selection_qualification_sha256": "5ac8652065e4a0a3bd20a94253aa80c580acc0bedae9df87de49d62dc073484c",
+  "source_revision": "b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2",
+  "stop_on_first_source_or_evidence_error": true,
+  "target_supply_deficit_atomic": "979542505800",
+  "transactions": [
+    {
+      "signature": "fbxQ6AsyrGgycRyUKJMrCayXWtTdXLwvx58u49XGUui5PGFq9KwBqcfXt4TfcBjfhy5DzQ44ajcApRyMmiGqjJx",
+      "slot": 461979636
+    },
+    {
+      "signature": "2QF4wdfGcNAQd9zvHpUBgyj2TVi6giic6eTvNFHN83wom6ZgUuWMxwRiN4krkxSdJ5w6WMmBiuaT86hDYy4sprZG",
+      "slot": 461979675
+    },
+    {
+      "signature": "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+      "slot": 461979692
+    },
+    {
+      "signature": "2kdoaC56sNjedKa4S6SW11hfzcd4L6y8hYgXrp4RXuBRszbfswe8kboKZFxtgvtwrpk72aabknGDRatyhzEfMbZZ",
+      "slot": 461980644
+    },
+    {
+      "signature": "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA",
+      "slot": 461981360
+    }
+  ],
+  "wire_retries": 0
+}
