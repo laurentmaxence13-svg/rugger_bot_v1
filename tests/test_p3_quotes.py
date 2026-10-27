@@ -319,3 +319,23 @@ def test_missing_sell_keeps_its_failure_without_inventing_a_zero_loss():
     assert result['quoted_round_trip_delta_lamports'] is None
     assert result['buy']['outcome'] == 'quoted'
     assert result['sell']['reason'] == 'http_429'
+
+
+@pytest.mark.parametrize('alter', ['actual_input_above_budget', 'wall_clock_invalid'])
+def test_rejected_quote_never_exposes_partially_parsed_amounts_or_fees(alter):
+    payload = quote_payload()
+    session = Session(Response(payload))
+    quote_client = client(session)
+    if alter == 'actual_input_above_budget':
+        payload['data']['actualInputAmount'] = '1000000001'
+    else:
+        times = iter([1000, 999])
+        quote_client.clock_ms = lambda: next(times)
+    result = asyncio.run(quote_client.quote(SOL_MINT, USDC, '1000000000'))
+    assert result['outcome'] == 'error'
+    assert result['output_amount_atomic'] is None
+    assert result['min_output_amount_atomic'] is None
+    assert result['actual_input_amount_atomic'] is None
+    assert result['route'] == []
+    assert result['fee_details']['route_fees'] == []
+    assert result['raw_payload'] == payload  # evidence retained for diagnosis

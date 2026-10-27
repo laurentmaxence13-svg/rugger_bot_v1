@@ -16,7 +16,8 @@ import aiohttp
 
 from bot.analyser.artifacts import atomic_write_json
 from bot.p3.collect import (RPC_URL, ReadOnlySession, ReadOnlyPolicyError, _rpc,
-                            _environment_proxy, now_ms, capture_transaction, _record_quote)
+                            _environment_proxy, now_ms, capture_transaction, _record_quote,
+                            _quote_with_cancellation_receipt)
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot, SnapshotEvidenceError
 from bot.p3.quotes import SOL_MINT, RAYDIUM_QUOTE_URL, RaydiumQuoteClient, _mint
 from bot.p3.readiness import evaluate_readiness
@@ -215,22 +216,6 @@ async def _discover(session, append):
     if cancelled is not None:
         raise cancelled
     return payload, received
-
-
-async def _quote_with_cancellation_receipt(client, append, input_mint, output_mint,
-                                         amount, side, request_id):
-    requested = now_ms()
-    try:
-        return await client.quote(input_mint, output_mint, amount, 100)
-    except asyncio.CancelledError:
-        append('quote_attempt', received_at_ms=now_ms(),
-               mint=output_mint if side == 'buy' else input_mint,
-               outcome='cancelled', reason='capture_cancelled', request_id=request_id,
-               payload={'provider': 'raydium_trade_api', 'quote_side': side,
-                        'input_mint': input_mint, 'output_mint': output_mint,
-                        'input_amount_atomic': str(amount), 'requested_at_ms': requested,
-                        'position_acquired': False, 'execution_verified': False})
-        raise
 
 
 def _gap(append, reason, *, mint=None):

@@ -191,3 +191,21 @@ charge locales restent plus conservatrices que les plafonds documentaires.
 collecte/redistribution à compléter ; rentabilité INSUFFICIENT DATA.** Aucun
 ordre, construction/signature de transaction, portefeuille ou paiement n'a été
 utilisé par cette revue documentaire.
+
+## Recontrôle documentaire du 27 octobre 2026
+
+Les pages officielles [REST API surface](https://docs.raydium.io/sdk-api/rest-api)
+et [Trade API](https://docs.raydium.io/sdk-api/trade-api) ont été relues via
+l’outil Web, sans appel de marché. Trade API documente le GET de devis, les refus
+logiques HTTP 200/success=false et 120 devis/minute/IP avec Retry-After sur 429.
+REST confirme l’accès anonyme hors Forum et les limites progressives par IP.
+Ces indications ne garantissent pas la disponibilité ou un quota réservé.
+La page Trade API décrit CPMM/CLMM/AMM v4 ; elle ne constitue pas une preuve
+de support de tout pool LaunchLab avant migration. La cause des deux refus
+historiques reste inconnue faute de corps conservés ; aucune augmentation de
+slippage ni réduction de montant n’a été effectuée pour obtenir une réponse positive.
+
+Ces pages consultées n’établissent pas des conditions complètes de conservation
+des nouvelles réponses. La prochaine collecte attend un contrôle des conditions
+applicables, de la gratuité/quota disponible et du transport courant. Aucun accès
+API marché, abonnement, compte ou droit supplémentaire activé par ce recontrôle.

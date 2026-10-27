@@ -186,6 +186,15 @@ class RaydiumQuoteClient:
         if envelope['source_slot'] is None:
             envelope['quality_flags'].append('provider_context_slot_unknown')
         envelope['quality_flags'].append('additional_execution_costs_unknown')
+        if envelope['outcome'] != 'quoted':
+            # Parsing and final clock checks may reject a response after some
+            # fields have been decoded. Keep its evidence, but expose no usable
+            # quote amounts or fees from a response that did not validate.
+            for field in ('actual_input_amount_atomic', 'output_amount_atomic',
+                          'min_output_amount_atomic', 'price_impact_pct'):
+                envelope[field] = None
+            envelope['route'] = []
+            envelope['fee_details']['route_fees'] = []
         return envelope
 
     @staticmethod

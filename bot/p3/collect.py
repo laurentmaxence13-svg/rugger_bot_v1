@@ -244,6 +244,7 @@ def _record_quote(append, quote, side, request_id):
     # Preserve the sanitized public body needed to replay normalization. The
     # store still rejects forbidden fields and retains an explicit error receipt.
     payload['retained_sanitized_response'] = quote.get('raw_payload')
+    payload['sanitized_response_retained'] = quote.get('raw_payload') is not None
     raw = json.dumps(quote.get('raw_payload'), sort_keys=True, allow_nan=False)
     payload['sanitized_response_sha256'] = hashlib.sha256(raw.encode()).hexdigest()
     payload['quote_side'] = side
@@ -261,11 +262,42 @@ def _record_quote(append, quote, side, request_id):
                reason='unsafe_or_invalid_quote_payload',
                payload={'quote_side': side,
                         'sanitized_response_sha256': payload['sanitized_response_sha256'],
+                        'retained_sanitized_response': None,
+                        'sanitized_response_retained': False,
+                        'original_quote_outcome': quote['outcome'],
+                        'requested_at_ms': quote['requested_at_ms'],
+                        'received_at_ms': quote['received_at_ms'],
+                        'latency_ms': quote['latency_ms'], 'http_status': quote['http_status'],
+                        'slippage_bps': quote['slippage_bps'],
                         'input_mint': quote['input_mint'], 'output_mint': quote['output_mint'],
                         'input_amount_atomic': quote['input_amount_atomic'],
                         'execution_guaranteed': False, 'executable_confirmed': False})
         return False
     return True
+
+
+async def _quote_with_cancellation_receipt(client, append, input_mint, output_mint,
+                                         amount, side, request_id, slippage_bps=100):
+    """Retain an interrupted attempt before propagating cancellation.
+
+    A cancelled request has no observed output, even if the provider may have
+    received it. Keep the side, exact requested size and local timing only.
+    """
+    requested, monotonic = now_ms(), time.monotonic_ns()
+    try:
+        return await client.quote(input_mint, output_mint, amount, slippage_bps)
+    except asyncio.CancelledError:
+        received = now_ms()
+        append('quote_attempt', received_at_ms=received,
+               mint=output_mint if side == 'buy' else input_mint,
+               outcome='cancelled', reason='capture_cancelled', request_id=request_id,
+               payload={'provider': 'raydium_trade_api', 'quote_side': side,
+                        'input_mint': input_mint, 'output_mint': output_mint,
+                        'input_amount_atomic': str(amount), 'requested_at_ms': requested,
+                        'received_at_ms': received, 'slippage_bps': slippage_bps,
+                        'latency_ms': (time.monotonic_ns()-monotonic)/1_000_000,
+                        'position_acquired': False, 'execution_verified': False})
+        raise
 
 
 async def collect_snapshot(store, session, *, signature_limit=5, max_transactions=2,
@@ -333,10 +365,13 @@ async def collect_snapshot(store, session, *, signature_limit=5, max_transaction
     await capture_fx(session, append)
     if quote_mint is not None:
         client, quote_request = RaydiumQuoteClient(session), str(uuid.uuid4())
-        buy = await client.quote(SOL_MINT, quote_mint, amount, slippage_bps)
+        buy = await _quote_with_cancellation_receipt(
+            client, append, SOL_MINT, quote_mint, amount, 'buy', quote_request, slippage_bps)
         buy_recorded = _record_quote(append, buy, 'buy', quote_request)
         if buy['outcome'] == 'quoted' and buy_recorded:
-            sell = await client.quote(quote_mint, SOL_MINT, buy['output_amount_atomic'], slippage_bps)
+            sell = await _quote_with_cancellation_receipt(
+                client, append, quote_mint, SOL_MINT, buy['output_amount_atomic'],
+                'sell', quote_request, slippage_bps)
             _record_quote(append, sell, 'sell', quote_request)
         else:
             append('quote_attempt', received_at_ms=now_ms(), mint=quote_mint,
