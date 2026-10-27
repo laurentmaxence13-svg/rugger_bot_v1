@@ -1,6 +1,29 @@
 # État du projet — préparation P3
 
-## Mission courante — v2 exécutée et preuves archivées
+## Mission courante — reprise autonome et PR #22 ouverte
+
+27 octobre 2026. Lire [CODEX_CONTINUATION.md](CODEX_CONTINUATION.md) pour reprendre
+sans l’ancienne conversation. Dernier main vérifié : fusion #21 `7ddddb9`.
+[PR #22](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/22) **non fusionnée**,
+branche `fix/p3-exit-evidence-continuation`, code publié `4f0fec8`, arbre testé
+`539f716e04666c126ee0c30b628d22417625951a`.
+
+- Corrigé : montants de devis rejetés encore exposés, tentatives annulées absentes,
+  timing perdu lors d’un refus de corps dangereux, faits supply masqués par rejet.
+- Validation actuelle : **1 348 passed, 1 skipped, 242 subtests passed**, warnings
+  en erreur, stderr vide ; six cas causaux échouent sur l’ancienne version.
+- Replay : **5 archives / 397 événements**, quatre analyses v2 identiques ; dix
+  anciens corps quote restent absents. Oracle indépendant : 1 000 cas synthétiques.
+- Outils réutilisables et rapport : `tools/`, `P3_CONTINUATION_VALIDATION.md`,
+  `validation/P3_CONTINUATION_TESTS.json`. Instructions AGENTS actualisées.
+- Ancienne session et modifications non publiées **non récupérées**.
+- **NO-GO économique / INSUFFICIENT DATA**. Plateforme UNKNOWN et divergence supply
+  non réconciliée ; aucune vente qualifiée ni nouveau résultat économique.
+- Prochaine dépendance : droits/quota gratuit et transport, puis contrôle court
+  préenregistré de conservation réelle. Aucune collecte marché ni boucle PAPER
+  exécutée ici ; aucun ledger utilisateur, seuil, portefeuille ou dépense modifié.
+
+## Référence historique — v2 exécutée et preuves archivées
 
 - [PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20)
   **fusionnée** : main `8167264931af3a22dcce32e9d1a821d275b51307`.
@@ -15,7 +38,7 @@
   Aucun SQLite, ledger ou .env publié. Les anciens corps jamais conservés
   restent manquants, explicitement déclarés dans les manifestes.
 - Branche : `fix/p3-data-certification-and-durable-replay`, base main fusionné.
-  [PR #21 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
+  [PR #21 fusionnée](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
   Code testé : `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`.
   Suite finale : **1 342 réussis, 1 ignoré, 242 sous-tests**, warnings en erreur,
   stderr vide ; aucun réseau dans les tests, aucune dépendance ajoutée.
