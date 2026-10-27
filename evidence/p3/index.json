@@ -87,6 +87,17 @@
       "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce",
       "uncompressed_bytes": 32636,
       "uncompressed_sha256": "894c52fc9cd5a0e3debc50352444f4bd88cda096ef3dfa27bd23a70da04899bc"
+    },
+    {
+      "compressed_bytes": 27426,
+      "compressed_sha256": "c2ed72f75c345f145bdd2ad70bb775e39b3fddb5b53cfceab4cbd16dac28e7a7",
+      "plan_sha256": "ad170961e06d9199119da1b3a6ae1d7abc3c5c35cc71b10469d101475a70c0a8",
+      "records": 25,
+      "run_id": "mint_history_006",
+      "source_revision": "43fb90ee9dec2721bada12ed7c50b9745a41da24",
+      "tail_hash": "7a62d2a496d274bb1dcaa099ae8115a2223a5abcfef2509b30c875d09f7fe7bb",
+      "uncompressed_bytes": 225183,
+      "uncompressed_sha256": "ce7976d4b8618f03a4802d766a0d6184692a12667a98379d5bea4de0beb64a92"
     }
   ],
   "cloud_storage_is_not_durable_backup": true,

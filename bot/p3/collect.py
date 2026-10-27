@@ -2,9 +2,12 @@
 import argparse
 import asyncio
 from decimal import Decimal, InvalidOperation
+from datetime import timezone
+from email.utils import parsedate_to_datetime
 import hashlib
 import json
 from pathlib import Path
+import re
 import time
 import uuid
 from urllib.parse import urlsplit
@@ -104,11 +107,63 @@ class ReadOnlySession:
         return self.session.post(url, json=json, **kwargs)
 
 
+def _http_date(value):
+    if (type(value) is not str or not 1 <= len(value) <= 128
+            or any(not 32 <= ord(character) <= 126 for character in value)):
+        raise ValueError('Invalid HTTP date')
+    # IMF-fixdate / obsolete RFC850 both end in GMT. The other HTTP-date
+    # representation is asctime, whose timezone is implicitly GMT.
+    asctime = re.fullmatch(r'[A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9][0-9] '
+                          r'[0-9]{2}:[0-9]{2}:[0-9]{2} [0-9]{4}', value)
+    if not value.endswith(' GMT') and not asctime:
+        raise ValueError('HTTP date requires GMT')
+    parsed = parsedate_to_datetime(value)
+    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+
+
+def _retry_after_receipt(headers):
+    """Retain parsed cooldown evidence only, never arbitrary response headers.
+
+    HTTP delay-seconds are exact nonnegative integers. HTTP-date is relative
+    to the server's Date header; a missing reference remains unknown rather
+    than using a possibly skewed client clock. This does not schedule a retry.
+    """
+    result = {'retry_after_seconds': None, 'retry_after_status': 'missing',
+              'retry_after_date_utc': None, 'retry_after_reference_date_utc': None}
+    value = headers.get('Retry-After')
+    if value is None:
+        return result
+    result['retry_after_status'] = 'invalid'
+    if type(value) is not str or len(value) > 128:
+        return result
+    value = value.strip()
+    if re.fullmatch(r'[0-9]{1,64}', value):
+        result.update(retry_after_seconds=int(value), retry_after_status='delay_seconds')
+        return result
+    try:
+        target = _http_date(value)
+    except (ValueError, TypeError, OverflowError):
+        return result
+    result.update(retry_after_date_utc=target.isoformat(),
+                  retry_after_status='http_date_reference_unknown')
+    try:
+        reference = _http_date(headers.get('Date'))
+    except (ValueError, TypeError, OverflowError):
+        return result
+    delay = target-reference
+    result.update(retry_after_seconds=max(0, delay.days*86400+delay.seconds),
+                  retry_after_reference_date_utc=reference.isoformat(),
+                  retry_after_status='http_date')
+    return result
+
+
 async def _rpc(session, append, method, params, *, rpc_url=None):
     request_id = str(uuid.uuid4())
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, result, status = 'error', None, None, None
     error_code, cancelled = None, None
+    retry = {'retry_after_seconds': None, 'retry_after_status': 'not_received',
+             'retry_after_date_utc': None, 'retry_after_reference_date_utc': None}
     selected_url = getattr(session, 'rpc_url', RPC_URL)
     target_url = selected_url if rpc_url is None else rpc_url
     try:
@@ -120,6 +175,7 @@ async def _rpc(session, append, method, params, *, rpc_url=None):
                 'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params},
                 timeout=aiohttp.ClientTimeout(total=8)) as response:
             status = response.status
+            retry = _retry_after_receipt(response.headers)
             if status != 200:
                 reason = 'http_' + str(status)
             else:
@@ -151,7 +207,7 @@ async def _rpc(session, append, method, params, *, rpc_url=None):
                'endpoint_kind': _rpc_endpoint_kind(target_url),
                'requested_at_ms': started, 'received_at_ms': received,
                'latency_ms': (time.monotonic_ns() - mono) / 1_000_000,
-               'http_status': status, 'rpc_error_code': error_code})
+               'http_status': status, 'rpc_error_code': error_code, **retry})
     if cancelled is not None:
         raise cancelled
     return result, received, request_id, outcome
