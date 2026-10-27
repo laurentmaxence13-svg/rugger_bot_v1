@@ -2,8 +2,8 @@
 
 ## Mission courante — conservation réelle vérifiée, #22 non fusionnée
 
-27 octobre 2026. Code validé `455defd`, arbre `294289227071b849133e476446152c5772bbec5b`.
-**1 366 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
+27 octobre 2026. Code final validé `e2e2008`, arbre `fbcd7ff26d09734e5e8eec558ffcf554c418757c`.
+**1 379 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
 PR #22 et branche de reprise inchangées ; aucune fusion autorisée/effectuée.
 
 - Contrôle v3 préenregistré dans GitHub avant départ : **19 tentatives / 26,034 s**,
@@ -12,7 +12,8 @@ PR #22 et branche de reprise inchangées ; aucune fusion autorisée/effectuée.
 - Deux burns historiques prouvés : 29386275175 unités ; reste 950156230625 non
   réconcilié, garde supply maintenu. Contrôles 004/005 clos, preuves conservées.
 - **Contenu partagé de Configurer rugger_bot_v1 retrouvé** : 10 tours, copie exacte
-  et transcription sous `history/`. Derniers diffs P3_PR21_REVIEW/collect récupérés.
+  et transcription sous `history/`. Derniers diffs P3_PR21_REVIEW/collect récupérés ; sélection RPC canonique
+  complétée et testée, sans fallback ni modification des protocoles historiques.
   Cela ne désarchive pas la tâche ni ne restaure la VM. Orientation agressive
   documentée dans `AGGRESSIVE_STRATEGY_CONTEXT.md`, aucun seuil modifié.
 - Export de 152 événements puis restauration effective depuis GitHub, sans DB
