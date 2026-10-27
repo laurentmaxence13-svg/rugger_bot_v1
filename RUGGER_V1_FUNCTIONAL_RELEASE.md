@@ -1,5 +1,8 @@
 # Rugger Bot V1 — Functional Release Candidate PAPER
 
+Suite livrée : [inventaire atomique et sorties partielles P3](P3_ATOMIC_INVENTORY_RELEASE.md).
+Ce document conserve la première validation fonctionnelle comme référence.
+
 Livraison exécutée le 27 octobre 2026 sur la branche de la PR #22, laissée
 ouverte. Le programme intégré fonctionne en simulation reproductible. La
 rentabilité de marché et la liquidation d'un inventaire réellement acquis

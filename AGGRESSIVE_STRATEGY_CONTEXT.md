@@ -1,5 +1,10 @@
 # Reprise stratégique ciblée — sources réellement présentes
 
+Suite économique : les hypothèses de précocité/confirmation sont préparées dans
+`P4_ATOMIC_COMPARISON_PROTOCOL.md`. Les inventaires sont désormais reliés aux
+jambes du portefeuille, mais les preuves007 ne qualifient pas un aller-retour
+complet. Aucun seuil, score ou TP/SL modifié ; P4 n'est pas validé par la démo.
+
 Actualisation fonctionnelle du 27 octobre : aucune règle ou pondération modifiée.
 Le moteur shadow_final est désormais exécuté intégralement par la démo CLI.
 Le contrôle 007 a testé la comparaison premier état/confirmation à q fixe sur une

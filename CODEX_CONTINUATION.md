@@ -4,7 +4,57 @@
 `PROJECT_STATUS.md`. Continuer les objectifs accessibles sans relance ; ne jamais
 présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
-## Reprise courante — candidat fonctionnel PAPER exécuté
+## Reprise courante — inventaire atomique intégré
+
+Mandat économique appliqué, sans refaire l'ancienne démo ni contrôle réseau.
+Lire `P3_ATOMIC_INVENTORY_RELEASE.md` et
+`validation/P3_ATOMIC_INVENTORY_VALIDATION.json`.
+
+- Code distant `82ce606ef0952154efb0d964e8cfea7befc20c37`, arbre validé
+  `49d9ca058dce7a6b953b96d997cf20a7bb187735`, équivalent local `2edcd43`.
+  **1 535 passed, 1 skipped, 242 subtests**, 5,88 s, warnings en erreur, stderr vide.
+- Tables natives dans la même base PAPER et un seul portefeuille. Quantités,
+  basis et jambes en entiers TEXT ; capital historique SOL rapproché des jambes.
+  Réalisation partielle créditée une fois, perte journalière et drawdown inclus,
+  coût restant réservé, agrégat final exclu du second crédit. Historiques UNKNOWN
+  non reconstruits. Frais inconnus bloquent le cash libre et les nouvelles entrées.
+- `economic-demo` exécute le vrai `collect_once/record_quote` : full TP,
+  partiel 40 %/reconnexion/doublon ignoré / 60 %, refus de liquidité, SL. Nets simulés
+  respectifs +0,199985 / +0,049975 / 0 réalisé avec position ouverte / −0,300015 SOL.
+  Fixtures indépendantes, pas des statistiques de stratégie. Frais synthétiques
+  explicites, pas des coûts mesurés. À coût identique 200 bps, ancien/nouveau
+  calcul donnent tous deux +0,18 SOL : aucune amélioration de rentabilité déduite.
+- Bridge P3 étendu pour conserver les lots projetés et qualifier les jambes.
+  Replay désormais synchrone, utilisable dans la boucle async. Version, q exacte,
+  actualInput, source, chronologie et disponibilité contrôlés. Ancien devis,
+  survente, double crédit, annulation, savepoint et uint64 testés.
+- Lecteur `NativeInventoryQuoteProvider` branché à `paper --inventory-quotes`
+  avec journal neuf et session 1..60 s, plafond propre 20 quotes / 60 s et arrêt premier
+  refus/erreur. Aucun appel réel exécuté dans cette session. Ne pas l'activer
+  sans nouveau protocole d'observation borné ; les autres flux scanner/prix ont
+  leurs propres ressources. Heures/frais/décimales absents ne sont pas inventés.
+- Évaluation007 existant : Q projeté 34076309234009, q indicatif 18765447579,
+  deux petites quotes disponibles ; aucune demande pour Q entier, disponibilité
+  complète inconnue, source et frais inconnus, zéro règlement et zéro cycle qualifié.
+  Aucun ancien contrôle répété, aucune donnée/fill/performance reconstituée.
+
+Commandes nouvelles hors réseau :
+
+```sh
+python -B -m bot economic-demo --output work/atomic-demo-next
+python -B tools/compare_native_inventory_costs.py
+python -B tools/evaluate_atomic_market.py
+```
+
+**Prochaine étape utile** : protocole prospectif borné à quantité complète,
+preuve d'horloge/slot source et de frais additionnels, effet propre de l'entrée
+séparé des banques réellement observées. Ne pas coder des frais zéro pour faire
+passer une sortie. Les contrôles 006/007 sont terminés ; ne pas les relancer.
+P3 reste ouvert. `P4_ATOMIC_COMPARISON_PROTOCOL.md` prépare premier signal /
+confirmation, sans tuning ni nouvelle collecte. PR #22 ouverte, non fusionnée.
+Les paragraphes suivants sont les références précédentes.
+
+## Référence précédente — candidat fonctionnel PAPER exécuté
 
 Mandat de finalisation appliqué. Ne pas recommencer la récupération de session,
 les anciens burns ou la baseline. Livraison : `RUGGER_V1_FUNCTIONAL_RELEASE.md`.

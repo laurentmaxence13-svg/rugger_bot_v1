@@ -3,6 +3,16 @@
 Entrées, suivi, sorties et portefeuille sont intégrés en **PAPER ONLY**. Aucun
 ordre réel ni code de signature de transaction. La rentabilité n'est pas démontrée.
 
+L'inventaire atomique et les sorties complètes/partielles/refusées sont maintenant
+reliés au portefeuille. Démonstration économique synthétique sans réseau :
+
+```sh
+python -B -m bot economic-demo --output work/atomic-demo-next
+```
+
+Voir [l'intégration économique P3](P3_ATOMIC_INVENTORY_RELEASE.md) pour les
+quantités, frais, résultats, reprise et conditions encore manquantes sur marché.
+
 Lancer une démonstration complète sans réseau ni `.env` (dossier neuf) :
 
 ```sh

@@ -1,0 +1,97 @@
+{
+  "additional_execution_costs_lamports": null,
+  "attempts": [
+    {
+      "phase": "initial",
+      "quantity_atomic": "18765447579",
+      "quoted_proceeds_lamports": "519914",
+      "reasons": [
+        "buy_source_time_unknown"
+      ],
+      "sell_observation_id": 1021,
+      "strict_exit_accepted": false
+    },
+    {
+      "phase": "followup",
+      "quantity_atomic": "18765447579",
+      "quoted_proceeds_lamports": "519914",
+      "reasons": [
+        "buy_source_time_unknown"
+      ],
+      "sell_observation_id": 1029,
+      "strict_exit_accepted": false
+    }
+  ],
+  "data_kind": "market_observation",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "entry_budget_lamports": "1000000000",
+  "exit_impossibility_frequency": null,
+  "freshness_status": "UNKNOWN",
+  "full_projected_quantity_quote_availability_rate": null,
+  "full_projected_quantity_sell_requests": 0,
+  "hypothetical_entry_impact_applied": false,
+  "indicative_sell_coverage_percent": "0.05506889684012967834450891087646300761945",
+  "indicative_sell_quantity_atomic": "18765447579",
+  "indicative_sell_quotes_attempted": 2,
+  "indicative_sell_quotes_available": 2,
+  "inventory_acquisition_executed": false,
+  "inventory_timing_limits": [
+    "buy_source_time_unknown",
+    "buy_source_slot_unknown"
+  ],
+  "ledger_mutated": false,
+  "minimum_buy_output_atomic": "33735546141668",
+  "mint": "BdYsVstg6EZ3oSXgb6pXeqDa2KTikyVtehFcqzGRponk",
+  "new_network_requests": 0,
+  "pnl_gross_sol": null,
+  "pnl_net_sol": null,
+  "projected_entry_inventory_atomic": "34076309234009",
+  "projected_inventory_accepted": true,
+  "projected_remaining_after_one_indicative_sale_atomic": "34057543786430",
+  "qualified_economic_cycles": 0,
+  "schema": "rugger-atomic-market-evaluation-v1",
+  "scope": "projected_buy_inventory_and_indicative_partial_quote_evidence; no_cashflow_settlement_or_full_exit_inference",
+  "settled_legs": 0,
+  "source_evidence": {
+    "bundle": "evidence/p3/active_exit_007",
+    "plan_sha256": "6639407545df5accb89f80d48fdfa91a7dcd651ab54c154138743c6c57f680e9",
+    "previous_analysis": "validation/P3_ACTIVE_EXIT_007_ANALYSIS.json",
+    "records": 1030,
+    "result": "validation/P3_ACTIVE_EXIT_007.json",
+    "result_sha256": "342aea51deb38d9f5d10de4122676cdc43ecb7bd555d3bb417aabf7dc7661b18",
+    "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+    "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b"
+  },
+  "strict_qualified_partial_exit_observations": 0,
+  "tableau": [
+    {
+      "effectif": 1,
+      "indicateur": "Inventaire projet\u00e9 pour 1 SOL",
+      "limite": "Quantit\u00e9 attendue, acquisition non ex\u00e9cut\u00e9e",
+      "source": "007 achat initial 1020",
+      "valeur": "34076309234009"
+    },
+    {
+      "effectif": 2,
+      "indicateur": "Cotations de vente indicatives disponibles",
+      "limite": "Quantit\u00e9 diagnostique 18765447579, pas toute la position",
+      "source": "007 ventes initiale et ult\u00e9rieure",
+      "valeur": "2/2"
+    },
+    {
+      "effectif": 0,
+      "indicateur": "Demandes de vente de toute la quantit\u00e9 achet\u00e9e",
+      "limite": "Aucune demande compl\u00e8te : disponibilit\u00e9 compl\u00e8te inconnue",
+      "source": "007 param\u00e8tres des demandes",
+      "valeur": 0
+    },
+    {
+      "effectif": 1,
+      "indicateur": "Cycles \u00e9conomiques complets qualifi\u00e9s",
+      "limite": "Horloges fournisseur et frais additionnels inconnus",
+      "source": "Qualification stricte du sc\u00e9nario projet\u00e9",
+      "valeur": 0
+    }
+  ],
+  "token_decimals": 6
+}

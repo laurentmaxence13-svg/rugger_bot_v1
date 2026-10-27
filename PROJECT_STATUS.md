@@ -1,6 +1,36 @@
 # État du projet — candidat fonctionnel PAPER
 
-## Livraison courante — 27 octobre 2026
+## Livraison courante — inventaire économique, 27 octobre 2026
+
+Code `82ce606`, arbre `49d9ca058dce7a6b953b96d997cf20a7bb187735`, local `2edcd43`.
+**1 535 tests et 242 sous-tests réussis, 1 ignoré**, warnings en erreur, stderr vide.
+Configuration agressive conservée, un seul portefeuille PAPER, aucune dépense.
+
+Inventaire atomique projeté attaché aux positions, jambes partielles entières,
+reliquats et frais conservés, pertes partielles incluses dans les contrôles.
+Clôture native par simple ratio de prix interdite ; aucun deuxième crédit à la fin.
+Reconnexion/doublons/annulation/triggers ignorés/version/survente testés. L'ancien
+historique garde ses quantités UNKNOWN. Le reporting distingue P&L SOL natif,
+ancien modèle USD/SOL constant et métriques impossibles faute de données.
+
+Nouvelle démo `python -B -m bot economic-demo --output work/atomic-demo-next` :
+full +0,199985 SOL ; partiel 40 %/60% après reprise +0,049975 ; refus ouvert sans
+réalisation ; SL −0,300015. Ce sont quatre fixtures distinctes, pas un rendement
+de stratégie. Comparaison à coûts identiques : ancien/nouveau +0,18 SOL, sans
+gain artificiel lié au changement d'hypothèse de frais.
+
+Lecteur de nouvelles quotes connecté au moteur, tailles entières exactes,
+plafond propre 20 / 60 s, sans retry/fallback, journal neuf et arrêt premier refus.
+Seulement testé hors réseau ; aucune nouvelle collecte ni contrôle répété.
+007 déjà conservé fournit Q projeté et deux petites sorties indicatives, mais
+aucune demande pour Q entier, aucune horloge/frais complets, zéro cycle qualifié.
+
+Rapport `P3_ATOMIC_INVENTORY_RELEASE.md`, preuves `validation/P3_ATOMIC_*`,
+comparaison `validation/P3_MATCHED_INVENTORY_COSTS.json`. P3 non terminé ; prochaine
+étape : observation prospective complète avec quantités, source et coûts prouvés.
+Préparation P4 documentée, aucune stratégie promue. PR #22 ouverte, non fusionnée.
+
+## Référence précédente — première livraison fonctionnelle
 
 `python -B -m bot demo --output work/demo-001` exécute maintenant le cycle réel
 des composants sur une fixture synthétique : recovery/parseur/cache → garde
@@ -49,7 +79,7 @@ PR #22 ouverte, non fusionnée. Orientation agressive et paramètres conservés.
   était perdu par l'ancien code ; correctif testé, aucun délai inventé pour006.
 - Bridge d'inventaire et de frais qualifie les couples de devis ; les sept couples
   archivés restent non qualifiés, aucun P&L ou fill revendiqué.
-- Nouveau contrôle007 prêt : banques actives, q observé fixe, deux horizons, stock/
+- Nouveau contrôle 007 prêt : banques actives, q observé fixe, deux horizons, stock/
   liquidité vérifiés. Non exécuté suitequota, aucun changement du moteur de stratégie.
 - 9 archives/605 événements,006 restauré depuis GitHub et qualification identique.
 - Reprise/commandes : CODEX_CONTINUATION.md ; preuves et limites :
