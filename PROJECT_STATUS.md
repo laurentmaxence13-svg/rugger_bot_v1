@@ -1,6 +1,24 @@
 # État du projet — préparation P3
 
-## Mission courante — conservation réelle vérifiée, #22 non fusionnée
+## Mission courante — sorties à inventaire fixe et historique006
+
+Code `fb8584d`, arbre `b049d1ef153287bd9d9cd78c52e583e79e3bcf54`.
+**1 415 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
+PR #22 ouverte, non fusionnée. Orientation agressive et paramètres conservés.
+
+- Dix nouveaux corps historiques, autre transaction du slot de création résolue.
+  Trois burns total513119481705 ; résiduel466423024095, 12 corps manquants.
+- Arrêt réel HTTP429 au11eappel/6,216s ; aucune requête de marché après. Retry-After
+  était perdu par l'ancien code ; correctif testé, aucun délai inventé pour006.
+- Bridge d'inventaire et de frais qualifie les couples de devis ; les sept couples
+  archivés restent non qualifiés, aucun P&L ou fill revendiqué.
+- Nouveau contrôle007 prêt : banques actives, q observé fixe, deux horizons, stock/
+  liquidité vérifiés. Non exécuté suitequota, aucun changement du moteur de stratégie.
+- 9 archives/605 événements,006 restauré depuis GitHub et qualification identique.
+- Reprise/commandes : CODEX_CONTINUATION.md ; preuves et limites :
+  P3_CONTINUATION_006_RESULTS.md, P3_MINT_HISTORY_006_RESULTS.md.
+
+## Référence précédente — conservation réelle vérifiée, #22 non fusionnée
 
 27 octobre 2026. Code final validé `e2e2008`, arbre `fbcd7ff26d09734e5e8eec558ffcf554c418757c`.
 **1 379 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.

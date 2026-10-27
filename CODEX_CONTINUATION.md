@@ -4,6 +4,46 @@
 `PROJECT_STATUS.md`. Continuer les objectifs accessibles sans relance ; ne jamais
 présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
+## Continuation active après PR #22 — état le plus récent
+
+Reprise depuis la branche existante, sans répéter récupération ou baseline.
+Code publié `fb8584dcf4c0fbbcd7c936169b4f7d7301821098`, arbre testé
+`b049d1ef153287bd9d9cd78c52e583e79e3bcf54`, équivalent local `d87e8e8`.
+**1 415 passed, 1 skipped, 242 subtests passed**, warnings en erreur et stderr vide.
+Rapport actuel : `P3_CONTINUATION_006_RESULTS.md` et
+`validation/PR22_CONTINUATION_006_VALIDATION.json`.
+
+- Contrôle006 préenregistré distant `57eef76`, exécuté une fois : 11 tentatives,
+  6,216s, dix nouveaux corps. Dernier appel HTTP429, arrêt avant second sous-lot.
+- Trois burns prouvés totalisent **513119481705** unités ; résiduel réduit à
+  **466423024095**. Autre transaction au slot création récupérée (index91>50),
+  bilan nul. **23 corps sur35, 12 manquants**, liste exacte conservée.
+- 25 événements006 exportés puis fichiers récupérés effectivement depuis GitHub
+  dans un répertoire neuf ; qualification reproduite sans DB source. Total
+  **9 bundles / 605 événements**, anciennes ancres conservées.
+- Correction causale RPC : Retry-After retenu exactement (entier ou date HTTP),
+  référence inconnue explicite. Aucun sommeil/retry/fallback automatique. Le reçu
+  réel006 ne contenait pas ces champs : son délai ne peut pas être reconstitué.
+- Nouveau bridge `bot/p3/exit_qualification.py` : taille attendue/minimale, quantité
+  effectivement annoncée par la quote, chronologie, corps/provenance et frais.
+  Pas de clôture totale sur quantité partielle ou ajustée, pas de scaling fictif.
+- Nouveau `bot/p3/active_exit_campaign.py` et plan007 versionné : screening groupé,
+  q=floor(real_a/100) fixé avant quotes et indépendant du buy1SOL, vérification de
+  vente observée avant chaque quote, suivi à slot strictement supérieur. Aucune
+  admission si identité incomplète. Ce protocole est **TESTÉ SYNTHÉTIQUEMENT et
+  NON EXÉCUTÉ** après le429 ; il ne change pas la stratégie active.
+- Sept couples historiques passés au bridge : cinq corps manquants, deux heures
+  source inconnues. Zéro clôture vérifiée et P&L inconnu, sans réécriture du ledger.
+
+**Prochaine action** : après rétablissement établi du quota, re-préenregistrer les
+12 signatures restantes depuis P3_MINT_HISTORY_006_REMAINING.json, sans répéter
+les corps déjà conservés, avec cadence historique préfixée plus basse (par exemple
+5 getTransaction au plus par10s, sans supposer un quota réservé), puis contrôle007 depuis son code/plan figés et nouveaux
+chemins. Le plan007 n'est pas une preuve d'exécution. Ne pas alterner d'endpoint
+pour esquiver le429 ni engager de dépense. Plateforme, frais complets, fraîcheur
+fournisseur et corpus indépendant restent non certifiés ; NO-GO économique.
+Les anciens paragraphes ci-dessous sont des références datées, non l'état actuel.
+
 ## Autorisations et protections
 
 Corrections, recherches techniques, tests isolés, replays, simulations PAPER,
@@ -114,6 +154,8 @@ python -B tools/verify_p3_evidence.py
 python -B tools/analyze_p3_retention_exits.py
 python -B tools/verify_p3_accounting.py
 python -B tools/verify_p3_historical_burns.py
+python -B tools/verify_p3_history_006.py
+python -B tools/qualify_p3_quote_pairs.py
 ```
 
 Ici : `/workspace/.cloud-env/rugger_bot_v1/venv/bin/python`.

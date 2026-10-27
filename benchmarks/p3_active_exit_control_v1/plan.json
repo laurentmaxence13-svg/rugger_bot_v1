@@ -1,0 +1,20 @@
+{
+  "evidence_profile": "published_metadata_v1",
+  "followup_delay_ms": 15000,
+  "graph_limit": 3,
+  "index_sort": "new",
+  "input_lamports": 1000000000,
+  "inventory_basis": "one_percent_observed_outstanding_not_acquired_inventory",
+  "max_elapsed_ms": 60000,
+  "max_requests": 20,
+  "observed_inventory_divisor": 100,
+  "plan_id": "active-exit-007",
+  "registered_at_ms": 1793131117975,
+  "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+  "sample_size": 1,
+  "schema": "p3-active-exit-control-v1",
+  "screen_pool_limit": 20,
+  "selection": "first_arithmetic_safe_active_bank_in_first_three_active_pools",
+  "slippage_bps": 100,
+  "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098"
+}
