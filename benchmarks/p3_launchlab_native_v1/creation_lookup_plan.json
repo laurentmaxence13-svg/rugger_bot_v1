@@ -1,0 +1,15 @@
+{
+  "financial_methods": [],
+  "justification": "separate_version_diagnostic_explicit_RPC_advice_and_two_successful_version_1_reads",
+  "max_elapsed_ms": 20000,
+  "max_requests": 4,
+  "max_supported_transaction_version": 1,
+  "primary_plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+  "primary_results_unchanged": true,
+  "purpose": "verify_index_mint_pool_creation_links_after_bounded_page_and_version_limitations",
+  "registered_at_ms": 1793081624082,
+  "schema": "p3-creation-lookup-diagnostic-v1",
+  "selection": "same_two_selected_pools_from_primary_discovery_in_order_no_replacement",
+  "signature_limit": 1000,
+  "transaction_selection": "oldest_successful_signature_in_one_received_page_per_pool"
+}
