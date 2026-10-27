@@ -137,7 +137,8 @@ def main():
             or any(p.exists() or p.is_symlink() for p in (args.db, args.output))
             or args.output.suffix != '.json'):
         parser.error('Use a separate new capture database and new JSON report')
-    if args.plan.is_symlink() or args.plan.stat().st_size > 65536:
+    if (args.plan.suffix != '.json' or args.plan.name.startswith('.env')
+            or args.plan.is_symlink() or args.plan.stat().st_size > 65536):
         parser.error('Unsupported preregistered plan file')
     plan = json.loads(args.plan.read_text())
     validate_plan(plan)

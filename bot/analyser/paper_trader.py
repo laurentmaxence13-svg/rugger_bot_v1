@@ -669,12 +669,16 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
             # Keep the full liability, including negative equity after extreme
             # simulated costs. Never silently clip capital or alter trade PnL.
             capital_after = _financial_number(capital_before + pnl_sol, 'capital_after_sol')
+            # The active decision recalculates the cost assumption on every
+            # quote. Persist the exact assumption charged here, rather than the
+            # entry estimate, so a restarted reporter can reconcile gross/net.
+            # It remains a PAPER assumption, never an observed execution fee.
             updated = con.execute('''UPDATE paper_trades
                            SET exit_time=?,exit_price=?,net_return=?,exit_reason=?,
                                peak_price=?,last_price=?,last_quote_time=?,pnl_sol=?,
-                               capital_after_sol=?,status='closed'
+                               capital_after_sol=?,cost_bps=?,status='closed'
                            WHERE mint=? AND status='open' ''',
-                        (now, price, result, reason, peak, price, now, pnl_sol, capital_after, mint))
+                        (now, price, result, reason, peak, price, now, pnl_sol, capital_after, cost, mint))
             if updated.rowcount != 1:
                 raise RuntimeError('PAPER open-to-closed transition failed')
             updated = con.execute('UPDATE paper_portfolio SET realized_capital_sol=?,updated_at=? WHERE id=1',

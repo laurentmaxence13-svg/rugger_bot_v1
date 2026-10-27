@@ -68,9 +68,10 @@ class _ScannerEntryGuard:
     """Fail closed on stale/unknown supervised state; not a coverage proof."""
     MAX_STATE_AGE = 120.0  # Two default backfill intervals; not a market limit.
 
-    def __init__(self, db, task, health=None):
+    def __init__(self, db, task, health=None, *, clock=None):
         self.db, self.task, self.health = db, task, health
-        self.started_at = time.time()
+        self.clock = clock or (lambda: time.time())
+        self.started_at = self.clock()
         self.program_id = os.getenv('RAYDIUM_LAUNCHPAD_PROGRAM_ID',
                                     RAYDIUM_LAUNCHPAD_PROGRAM_ID).strip()
         self.initial_checked_at = None
@@ -119,9 +120,10 @@ class _ScannerEntryGuard:
                 return False
             if history != 'caught_up' or reason is not None or ws != 'subscribed':
                 return False
+            now = self.clock()
             if (not isinstance(checked, (int, float)) or not math.isfinite(checked)
-                    or not self.started_at <= checked <= time.time()
-                    or time.time() - checked > self.MAX_STATE_AGE
+                    or not self.started_at <= checked <= now
+                    or now - checked > self.MAX_STATE_AGE
                     or (self.initial_checked_at is not None and checked <= self.initial_checked_at)):
                 return False
             if (not isinstance(signature, str) or not signature
@@ -702,7 +704,8 @@ def _valuation_scope():
 
 
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
-                 validation_status='not_validated'):
+                 validation_status='not_validated', *, data_kind='unknown',
+                 latency_samples_ms=None):
     """Write an operational report, explicitly marked PAPER ONLY."""
     open_count = con.execute(
         "SELECT COUNT(*) FROM paper_trades WHERE status='open'"
@@ -814,6 +817,9 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'undated_status_counts': diagnostic_states,
         'undated_mints_without_audit': len(undated)-sum(diagnostic_states.values()),
     }
+    from bot.analyser.functional_report import build_functional_report
+    report['functional_dashboard'] = build_functional_report(
+        con, data_kind=data_kind, latency_samples_ms=latency_samples_ms)
     if output:
         _write_json_report(output, report)
     return report
@@ -975,14 +981,30 @@ async def _observe_undated(con, session, record, max_age):
     return [audit_message(report)], wait
 
 
+def _record_runtime_latency(samples, stage, started_ns):
+    """Bounded in-memory rolling sample, measured with a monotonic clock."""
+    if samples is not None:
+        values = samples.setdefault(stage, [])
+        values.append((time.perf_counter_ns() - started_ns) / 1_000_000)
+        del values[:-1024]
+
+
 async def collect_once(con, session, cached, now, model=None,
                        max_open=3, max_entries_day=20,
                        max_daily_loss_pct=10.0, max_candidates=10,
                        max_age=7200, live_fetcher=None,
                        min_liquidity=1000, strategy_mode='validated',
                        initial_capital_sol=10.0, position_pct=10.0,
-                       entry_guard=None):
-    """Collect one bounded cycle; return messages and cooldown seconds."""
+                       entry_guard=None, *, quote_provider=None,
+                       onchain_quote_provider=None, clock=None, latency_samples_ms=None):
+    """Collect one bounded cycle; providers default to the production readers.
+
+    Explicit providers and a clock allow deterministic integration without HTTP.
+    Selection, risk guards, persistence and accounting follow the same path.
+    """
+    quote_reader = quote_provider or fetch_quote
+    onchain_reader = onchain_quote_provider or fetch_onchain_quote
+    read_clock = clock or (lambda: time.time())
     records = _launch_records(con, now)
     undated = _undated_candidates(con, now, max_age, records)
     candidates = _scheduled_candidates(con, now, max_age, max_candidates,
@@ -1007,19 +1029,21 @@ async def collect_once(con, session, cached, now, model=None,
         ).fetchone() if "pool_state" in {r[1] for r in con.execute("PRAGMA table_info(launch_candidates)")} else None
         pool_address = (matching_launches[-1]['pool_state'] if matching_launches
                         else pool_row[0] if pool_row else None)
+        acquisition_started = time.perf_counter_ns()
         quote = None
         if pool_address:
             try:
-                quote = await fetch_onchain_quote(session, mint, pool_address)
+                quote = await onchain_reader(session, mint, pool_address)
             except Exception as exc:
                 print(f"[ONCHAIN] lecture indisponible : {type(exc).__name__}", flush=True)
         wait_seconds = 0
         if quote is None:
-            quote, wait_seconds = await fetch_quote(
+            quote, wait_seconds = await quote_reader(
             session, mint, min_liquidity=min_liquidity, include_metrics=True,
         )
+        _record_runtime_latency(latency_samples_ms, 'quote_acquisition', acquisition_started)
         cooldown = max(cooldown, wait_seconds)
-        status_now = int(time.time())
+        status_now = int(read_clock())
         if wait_seconds:
             msg = set_signal_status(
                 con, mint, creator, signal_time, status_now,
@@ -1314,6 +1338,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         if session_seconds:
             print(f'[SESSION] validation PAPER limitee a {int(session_seconds)} secondes.', flush=True)
         cached = []
+        latency_samples = {}
         refreshed_at = 0
         if live_behavior:
             stage = 'behavior initialization'
@@ -1353,6 +1378,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                 cached = load_cached_transactions(db)
                 refreshed_at = now
             stage = 'collection'
+            cycle_started = time.perf_counter_ns()
             try:
                 messages, cooldown, cache_changed = await collect_once(
                     con, session, cached, now, model=model,
@@ -1363,7 +1389,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     min_liquidity=min_liquidity,
                     strategy_mode=strategy_mode,
                     initial_capital_sol=initial_capital_sol, position_pct=position_pct,
-                    entry_guard=entry_guard,
+                    entry_guard=entry_guard, latency_samples_ms=latency_samples,
                 )
                 if cache_changed:
                     cached = load_cached_transactions(db)
@@ -1372,10 +1398,12 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                 print('[PAPER] source prix temporairement lente; nouvelle tentative automatique.', flush=True)
                 cooldown = 3
             else:
+                _record_runtime_latency(latency_samples, 'collection_cycle', cycle_started)
                 stage = 'periodic report'
                 state = paper_report(
                     con, now, len(cached), output=report,
                     strategy_mode=strategy_mode,
+                    latency_samples_ms=latency_samples,
                     validation_status=(
                         'diagnostic_not_validated'
                         if strategy_mode.startswith('shadow_')
@@ -1543,7 +1571,7 @@ def _print_scanner_state(db, previous=None):
 
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db', type=Path, default=BASE_DIR / 'data' / 'rugger_bot.db')
     parser.add_argument('--model', type=Path, help='JSON d’un modèle déjà validé hors échantillon')
@@ -1579,7 +1607,7 @@ def main():
                         help='ne pas lancer le scanner Helius dans ce processus')
     parser.add_argument('--no-live-behavior', action='store_true',
                         help='utiliser seulement le cache Helius déjà présent')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
         asyncio.run(run_with_scanner(args))
     except KeyboardInterrupt:
