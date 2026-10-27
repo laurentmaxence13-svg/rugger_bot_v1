@@ -1,0 +1,49 @@
+{
+  "blocker_counts": {
+    "buy_quote_body_missing": 5,
+    "buy_source_time_unknown": 2
+  },
+  "data_kind": "market_observation",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "economically_qualified_cycles": 0,
+  "execution_verified": false,
+  "launchlab_quote_pairs": 6,
+  "ledger_mutated": false,
+  "max_source_age_policy_ms": 5000,
+  "metric_reliability": {
+    "counts": "recorded_offline_quote_classifications",
+    "economic_metrics": "unknown_no_qualified_full_position_cycle"
+  },
+  "missing_cost_evidence": "unknown_not_zero",
+  "network_requests": 0,
+  "observed_execution_costs_sol": null,
+  "other_pair_observations": 0,
+  "pair_qualification_counts": {
+    "UNQUALIFIED": 7
+  },
+  "paper_only": true,
+  "pnl_gross_sol": null,
+  "pnl_net_sol": null,
+  "positions_acquired": false,
+  "profit_factor": null,
+  "quote_pairs_checked": 7,
+  "realized_slippage_sol": null,
+  "reference_access_smoke_pairs": 1,
+  "schema": "rugger-functional-market-evaluation-v1",
+  "scope": "quote_observations_include_reference_probe; not_trades_or_independent_market_sample",
+  "source_evidence": {
+    "quote_admission_code": "bot/p3/exit_qualification.py",
+    "quote_pair_admission_path": "validation/P3_QUOTE_PAIR_ADMISSION.json",
+    "quote_pair_admission_sha256": "c9907413e778c6854e9055795ff47c41f90cdb2e0cdc86ecb326d463f5b30e7a",
+    "reproduce_qualification": "python -B tools/qualify_p3_quote_pairs.py",
+    "source_archives_index": "evidence/p3/index.json"
+  },
+  "source_runs": [
+    "launchlab_001",
+    "launchlab_002",
+    "pr19_access_smoke",
+    "retention_003"
+  ],
+  "unique_quote_mints": 7,
+  "win_rate": null
+}

@@ -98,6 +98,28 @@
       "tail_hash": "7a62d2a496d274bb1dcaa099ae8115a2223a5abcfef2509b30c875d09f7fe7bb",
       "uncompressed_bytes": 225183,
       "uncompressed_sha256": "ce7976d4b8618f03a4802d766a0d6184692a12667a98379d5bea4de0beb64a92"
+    },
+    {
+      "compressed_bytes": 1467,
+      "compressed_sha256": "c9be649182e0e7afb263cc6cdec0beb93daeaa620a8fae52ecb810da0addde2c",
+      "plan_sha256": "13932ba576d11f488d95e546590de18e9b134455c1279e498e269daaefb10e45",
+      "records": 4,
+      "run_id": "rpc_health_before007",
+      "source_revision": "ce70a4bbf190bf6360d5cce031fe89b0f5be2e0e",
+      "tail_hash": "e4aa64e19c7e526b5512286054e239263adc6adf423aba7e075a1296785e2b8b",
+      "uncompressed_bytes": 4162,
+      "uncompressed_sha256": "946820ce9e26c26158213f1fb095615858ce06aec67bfa28eb6886af9c3d9c37"
+    },
+    {
+      "compressed_bytes": 354041,
+      "compressed_sha256": "ff4429972bf4ef0c763d5ca7b9a4629b52b04251d0ebcb7dbd370f5be03ff7fe",
+      "plan_sha256": "6639407545df5accb89f80d48fdfa91a7dcd651ab54c154138743c6c57f680e9",
+      "records": 1030,
+      "run_id": "active_exit_007",
+      "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+      "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b",
+      "uncompressed_bytes": 1340165,
+      "uncompressed_sha256": "363a712b9d8a596b928b2b1b0f948f7718d1585bc3f556d1d349a5ac586e5503"
     }
   ],
   "cloud_storage_is_not_durable_backup": true,
