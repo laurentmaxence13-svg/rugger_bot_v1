@@ -1,0 +1,527 @@
+{
+  "discovery_received_rows": 100,
+  "discovery_retained_rows": 100,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "manifest": {
+    "candidates": [
+      {
+        "account_discriminators_certified": false,
+        "all_account_links_verified": false,
+        "coherent_snapshot_count": 2,
+        "creation_verified": true,
+        "exit_liquidity_checked": false,
+        "exit_observation_available": false,
+        "fees_complete": false,
+        "mint": "E55EcueRm4iTPfZsnsdHiz9eyoW6g7wNX76qPkXmoA4N",
+        "native_sol": true,
+        "network_fee_bound_known": false,
+        "pit_decision_order_verified": true,
+        "snapshot_source_age_ms": 876,
+        "snapshots": [
+          {
+            "analysis_at_ms": 1793113797122,
+            "available_at_ms": 1793113796878,
+            "coherent": true,
+            "context_slot": 462116108,
+            "received_at_ms": 1793113796876,
+            "source_time_ms": 1793113796000
+          },
+          {
+            "analysis_at_ms": 1793113819931,
+            "available_at_ms": 1793113819516,
+            "coherent": true,
+            "context_slot": 462116213,
+            "received_at_ms": 1793113819514,
+            "source_time_ms": 1793113819000
+          }
+        ],
+        "source_clock_bound_known": false,
+        "token_transfer_restrictions_known": false
+      },
+      {
+        "account_discriminators_certified": false,
+        "all_account_links_verified": false,
+        "coherent_snapshot_count": 2,
+        "creation_verified": true,
+        "exit_liquidity_checked": false,
+        "exit_observation_available": false,
+        "fees_complete": false,
+        "mint": "D4BSGwDF6rZ4ZwjgGwy4tXm5ZSv58Zgh42Li4UBNtm1M",
+        "native_sol": true,
+        "network_fee_bound_known": false,
+        "pit_decision_order_verified": true,
+        "snapshot_source_age_ms": 1399,
+        "snapshots": [
+          {
+            "analysis_at_ms": 1793113803627,
+            "available_at_ms": 1793113803400,
+            "coherent": true,
+            "context_slot": 462116138,
+            "received_at_ms": 1793113803399,
+            "source_time_ms": 1793113802000
+          },
+          {
+            "analysis_at_ms": 1793113820547,
+            "available_at_ms": 1793113820226,
+            "coherent": true,
+            "context_slot": 462116216,
+            "received_at_ms": 1793113820224,
+            "source_time_ms": 1793113819000
+          }
+        ],
+        "source_clock_bound_known": false,
+        "token_transfer_restrictions_known": false
+      }
+    ],
+    "data_kind": "live",
+    "plan": {
+      "commitment": "confirmed",
+      "evidence_profile": "published_metadata_v1",
+      "followup_delay_ms": 15000,
+      "index_sort": "new",
+      "input_lamports": 1000000000,
+      "max_elapsed_ms": 60000,
+      "max_index_rows": 100,
+      "max_requests": 20,
+      "max_supported_transaction_version": 1,
+      "plan_id": "launchlab-retention-sol-003",
+      "plan_sha256": "6a1fcd9fda45c7bafa38c1367703e81797d6dceaca77c7225f5eaea612fa8d28",
+      "registered_at_ms": 1793113749454,
+      "sample_size": 2,
+      "schema": "p3-launchlab-campaign-v3",
+      "selection": "first_two_valid_unique_SOL_rows_in_response_order",
+      "share_fee_rate_ppm": 0,
+      "signature_limit": 1000,
+      "slippage_bps": 100,
+      "source_main": "7ddddb9f73339242fbcb5b9bf10fa329c82fa700",
+      "source_revision": "455defdbe6ec388e245e188476716452b82a47c6",
+      "started_at_ms": 1793113794545,
+      "stop_on_source_error": true,
+      "transaction_selection": "oldest_successful_signature_in_received_page",
+      "transactions_per_pool": 1
+    },
+    "policy": {
+      "max_snapshot_age_ms": 5000
+    },
+    "run": {
+      "anonymous_transport": true,
+      "elapsed_ms": 26034,
+      "financial_methods_used": [],
+      "independent_reference_complete": false,
+      "integrity_verified": true,
+      "open_gaps": 1,
+      "requests_used": 19,
+      "selected_count": 2,
+      "tail_anchor_verified": true,
+      "wire_retry_disabled": true
+    }
+  },
+  "market_detection_coverage": null,
+  "position_acquired": false,
+  "quality": {
+    "as_of_ms": null,
+    "economic_validation": "INSUFFICIENT DATA",
+    "fx_without_source_time": 0,
+    "integrity": "verified_hash_chain_not_authenticated",
+    "kind_counts": {
+      "candidate_decision": 106,
+      "checkpoint": 6,
+      "discovery": 1,
+      "gap": 1,
+      "launch": 2,
+      "pool_snapshot": 6,
+      "quote_attempt": 12,
+      "request": 15,
+      "transaction": 3
+    },
+    "market_detection_coverage": null,
+    "missing_transactions": 0,
+    "open_gap_count": 1,
+    "open_gap_ids": [
+      "d69d6b5d-c25e-443d-a3bc-4187d08f8798"
+    ],
+    "outcome_counts": {
+      "address_discovery": 2,
+      "bounded_campaign_complete": 1,
+      "conditional": 8,
+      "creation_matched": 2,
+      "not_admitted": 4,
+      "not_evaluated": 2,
+      "not_fetched": 1,
+      "observed": 24,
+      "open": 1,
+      "pool_signature_page": 2,
+      "quoted": 2,
+      "registered_plan": 1,
+      "rejected_from_capture_sample": 98,
+      "selected": 2,
+      "unavailable": 2
+    },
+    "p3_go": false,
+    "provenance_counts": {
+      "live": 152
+    },
+    "quality_flag_counts": {
+      "source_time_unknown": 146
+    },
+    "quotes_without_source_time": 12,
+    "records": 152,
+    "rejected_candidates": 0,
+    "schema": "p3-capture-quality-v1",
+    "unavailable_quotes": 10,
+    "unmatched_gap_closures": 0
+  },
+  "readiness": {
+    "collection_readiness": "GO",
+    "criteria": [
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "live_data",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "registered_plan_identity",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 3,
+        "known_count": 3,
+        "name": "preregistration",
+        "reasons": [],
+        "required_count": 3,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 3,
+        "known_count": 3,
+        "name": "request_budget",
+        "reasons": [],
+        "required_count": 3,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 3,
+        "known_count": 3,
+        "name": "duration_budget",
+        "reasons": [],
+        "required_count": 3,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "anonymous_transport",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "wire_retry_disabled",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "integrity_verified",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "tail_anchor_verified",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "no_financial_methods",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 5,
+        "known_count": 5,
+        "name": "selected_rows_accounted",
+        "reasons": [],
+        "required_count": 5,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "selected_mint_identity",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "collection",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 1,
+        "name": "independent_reference_complete",
+        "reasons": [
+          "independent_reference_complete: requirement not met"
+        ],
+        "required_count": 1,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 1,
+        "name": "no_open_gaps",
+        "reasons": [
+          "open_gaps must be zero: requirement not met"
+        ],
+        "required_count": 1,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 1,
+        "known_count": 1,
+        "name": "declared_snapshot_age_bound",
+        "reasons": [],
+        "required_count": 1,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "declared_followup_delay",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "creation_verified",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "all_account_links_verified",
+        "reasons": [
+          "candidate[0].all_account_links_verified: requirement not met",
+          "candidate[1].all_account_links_verified: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "account_discriminators_certified",
+        "reasons": [
+          "candidate[0].account_discriminators_certified: requirement not met",
+          "candidate[1].account_discriminators_certified: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "native_sol",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "token_transfer_restrictions_known",
+        "reasons": [
+          "candidate[0].token_transfer_restrictions_known: requirement not met",
+          "candidate[1].token_transfer_restrictions_known: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "exit_liquidity_checked",
+        "reasons": [
+          "candidate[0].exit_liquidity_checked: requirement not met",
+          "candidate[1].exit_liquidity_checked: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "fees_complete",
+        "reasons": [
+          "candidate[0].fees_complete: requirement not met",
+          "candidate[1].fees_complete: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "network_fee_bound_known",
+        "reasons": [
+          "candidate[0].network_fee_bound_known: requirement not met",
+          "candidate[1].network_fee_bound_known: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "source_clock_bound_known",
+        "reasons": [
+          "candidate[0].source_clock_bound_known: requirement not met",
+          "candidate[1].source_clock_bound_known: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 2,
+        "known_count": 2,
+        "name": "pit_decision_order_verified",
+        "reasons": [],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 0,
+        "known_count": 2,
+        "name": "exit_observation_available",
+        "reasons": [
+          "candidate[0].exit_observation_available: requirement not met",
+          "candidate[1].exit_observation_available: requirement not met"
+        ],
+        "required_count": 2,
+        "scope": "economic",
+        "status": "FAIL"
+      },
+      {
+        "evidence_count": 4,
+        "known_count": 4,
+        "name": "coherent_snapshot_periods",
+        "reasons": [],
+        "required_count": 4,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 38,
+        "known_count": 38,
+        "name": "snapshot_temporal_evidence",
+        "reasons": [],
+        "required_count": 38,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 8,
+        "known_count": 8,
+        "name": "snapshot_source_time_evidence",
+        "reasons": [],
+        "required_count": 8,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 8,
+        "known_count": 8,
+        "name": "snapshot_source_freshness",
+        "reasons": [],
+        "required_count": 8,
+        "scope": "economic",
+        "status": "PASS"
+      },
+      {
+        "evidence_count": 4,
+        "known_count": 4,
+        "name": "snapshot_decision_freshness",
+        "reasons": [],
+        "required_count": 4,
+        "scope": "economic",
+        "status": "PASS"
+      }
+    ],
+    "economic_readiness": "NO-GO",
+    "economic_verdict": "INSUFFICIENT DATA",
+    "evidence_basis": "manifest attestations requiring retained underlying evidence",
+    "max_snapshot_age_cap_ms": 5000,
+    "p3_go": false,
+    "reasons": [
+      "independent_reference_complete: requirement not met",
+      "open_gaps must be zero: requirement not met",
+      "candidate[0].all_account_links_verified: requirement not met",
+      "candidate[1].all_account_links_verified: requirement not met",
+      "candidate[0].account_discriminators_certified: requirement not met",
+      "candidate[1].account_discriminators_certified: requirement not met",
+      "candidate[0].token_transfer_restrictions_known: requirement not met",
+      "candidate[1].token_transfer_restrictions_known: requirement not met",
+      "candidate[0].exit_liquidity_checked: requirement not met",
+      "candidate[1].exit_liquidity_checked: requirement not met",
+      "candidate[0].fees_complete: requirement not met",
+      "candidate[1].fees_complete: requirement not met",
+      "candidate[0].network_fee_bound_known: requirement not met",
+      "candidate[1].network_fee_bound_known: requirement not met",
+      "candidate[0].source_clock_bound_known: requirement not met",
+      "candidate[1].source_clock_bound_known: requirement not met",
+      "candidate[0].exit_observation_available: requirement not met",
+      "candidate[1].exit_observation_available: requirement not met"
+    ],
+    "schema": "p3-readiness-v1",
+    "scope": "prospective PAPER data admission; no profitability validation"
+  },
+  "real_orders_enabled": false,
+  "schema": "p3-launchlab-campaign-report-v1",
+  "selected_count": 2,
+  "tail_hash": "914901e885fa97c87e7e81f0bd2750d0092a4cfb7a12f709c5402c993ed75fce",
+  "verified_creations": 2
+}
