@@ -20,7 +20,7 @@ from bot.p3.collect import (RPC_URL, ReadOnlySession, ReadOnlyPolicyError, _rpc,
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot, SnapshotEvidenceError
 from bot.p3.quotes import SOL_MINT, RAYDIUM_QUOTE_URL, RaydiumQuoteClient, _mint
 from bot.p3.readiness import evaluate_readiness
-from bot.p3.store import CaptureStore
+from bot.p3.store import CaptureStore, _safe_json
 
 INDEX_URL = 'https://launch-mint-v1.raydium.io/get/list'
 _METHODS = frozenset(('getMultipleAccounts', 'getBlockTime',
@@ -309,9 +309,17 @@ async def _creation(session, append, row, *, signature_limit=20, max_supported_t
     if type(page) is not list:
         _gap(append, 'pool_signature_page_unavailable', mint=row['mint'])
         return False
+    page_evidence = {'received_row_count': len(page), 'page_representation_sha256': digest(page),
+                     'retention_limit': signature_limit}
+    try:
+        _safe_json(page[:signature_limit])
+    except ValueError:
+        page_evidence['raw_page_retained'] = False
+        _gap(append, 'signature_page_body_rejected_by_evidence_policy', mint=row['mint'])
+    else:
+        page_evidence.update(raw_page_retained=True, raw_signature_page=page[:signature_limit])
     append('checkpoint', received_at_ms=received, mint=row['mint'], outcome='pool_signature_page',
-           payload={'received_row_count': len(page), 'page_representation_sha256': digest(page),
-                    'retention_limit': signature_limit})
+           payload=page_evidence)
     if len(page) > signature_limit:
         _gap(append, 'signature_page_exceeds_retention_cap', mint=row['mint'])
     page = page[:signature_limit]
@@ -392,10 +400,30 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
         except ValueError:
             _gap(append, 'discovery_unavailable_or_invalid')
             return
-        append('discovery', received_at_ms=received, outcome='observed',
-               payload={'rows': retained, 'received_row_count': total_rows,
-                        'response_representation_sha256': digest(payload),
-                        'index_is_creation_proof': False, 'pagination_verified': False})
+        # Retain the exact inputs USED by selection, including malformed rows,
+        # without collecting irrelevant social/image URLs or following them.
+        inputs = []
+        for raw in payload['data']['rows'][:100]:
+            if type(raw) is not dict:
+                inputs.append(raw)
+                continue
+            record = {key: raw[key] for key in ('mint', 'poolId', 'configId', 'creator', 'createAt')
+                      if key in raw}
+            quote = raw.get('mintB')
+            record['mintB'] = {'address': quote.get('address')} if type(quote) is dict else quote
+            inputs.append(record)
+        discovery_evidence = {'rows': retained, 'received_row_count': total_rows,
+            'response_representation_sha256': digest(payload), 'index_is_creation_proof': False,
+            'pagination_verified': False, 'irrelevant_metadata_omitted': True}
+        replay_input = {'success': True, 'data': {'rows': inputs}}
+        try:
+            _safe_json(replay_input)
+        except ValueError:
+            discovery_evidence['selection_input_retained'] = False
+            _gap(append, 'selection_input_rejected_by_evidence_policy')
+        else:
+            discovery_evidence.update(selection_input_retained=True, replay_selection_input=replay_input)
+        append('discovery', received_at_ms=received, outcome='observed', payload=discovery_evidence)
         if total_rows > 100:
             _gap(append, 'index_exceeds_retention_cap')
         for row in retained:

@@ -11,6 +11,8 @@ import hashlib
 import struct
 
 from bot.p3.quotes import SOL_MINT, _mint
+from bot.p3.token2022 import decode_mint, decode_vault, TokenEvidenceError
+from bot.p3.certification import certify_snapshot, DISCRIMINATORS
 
 LAUNCHLAB_PROGRAM = 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'
 TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -118,8 +120,13 @@ def _platform(account):
             'creator_fee_rate_ppm': _u64(data,720)}, data
 
 
-def _mint_state(account, kind):
+def _mint_state(account, kind, *, metadata_only=False, expected_address=None):
     if isinstance(account,dict) and account.get('owner') == TOKEN_2022_PROGRAM:
+        if metadata_only:
+            try:
+                return decode_mint(account, expected_address)
+            except TokenEvidenceError as error:
+                raise SnapshotEvidenceError(kind + '_' + str(error)) from None
         raise SnapshotEvidenceError(kind + '_token2022_extensions_not_certified')
     raw = _account(account, TOKEN_PROGRAM, 82, kind)
     mint_option = struct.unpack_from('<I', raw, 0)[0]
@@ -133,7 +140,12 @@ def _mint_state(account, kind):
             'freeze_authority': _key(raw,50) if freeze_option else None}, raw
 
 
-def _vault(account, kind):
+def _vault(account, kind, *, metadata_only=False):
+    if metadata_only and isinstance(account, dict) and account.get('owner') == TOKEN_2022_PROGRAM:
+        try:
+            return decode_vault(account)
+        except TokenEvidenceError as error:
+            raise SnapshotEvidenceError(kind + '_' + str(error)) from None
     raw = _account(account, TOKEN_PROGRAM, 165, kind)
     delegate = struct.unpack_from('<I',raw,72)[0]
     native = struct.unpack_from('<I',raw,109)[0]
@@ -241,7 +253,7 @@ def constant_product_projection(pool, *, input_lamports, fee_rates_ppm, base_vau
 
 def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
                      input_lamports=1_000_000_000, share_fee_rate_ppm=0,
-                     discriminator_pins=None):
+                     discriminator_pins=None, evidence_profile='legacy'):
     """Interpret one caller-supplied getMultipleAccounts bank snapshot.
 
     accounts maps public address to the RPC account value. All seven accounts
@@ -249,6 +261,9 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
     and timestamps; this function neither fetches nor proves that acquisition.
     Pins must originate in an independent audited account schema, not sampled
     from the very accounts being validated.
+    The opt-in published_metadata_v1 profile applies independent IDL/PDA checks
+    and the audited metadata-only Token-2022 subset. Legacy campaign replays keep
+    their original interpretation by default; new analyses never rewrite them.
     """
     report = {
         'schema':'p3-launchlab-native-snapshot-v1',
@@ -264,6 +279,9 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         'real_orders_enabled':False,
     }
     try:
+        if evidence_profile not in ('legacy', 'published_metadata_v1'):
+            raise SnapshotEvidenceError('unsupported_evidence_profile')
+        qualified = evidence_profile == 'published_metadata_v1'
         _uint(context_slot,'context_slot')
         _uint(input_lamports,'input_lamports',positive=True)
         _uint(share_fee_rate_ppm,'share_fee_rate')
@@ -285,12 +303,32 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
             'account_context_basis':'caller_supplied_single_getMultipleAccounts_response',
             'program_derived_addresses_verified':False,
         }
+        if qualified:
+            identity = certify_snapshot(accounts, addresses)
+            report['evidence_profile'] = evidence_profile
+            report['facts']['identity_certification'] = identity
+            report['facts']['program_derived_addresses_verified'] = identity['program_derived_addresses_verified']
+            report['blocking_reasons'].extend(identity['blocking_reasons'])
+            authority_checked = any(check['name'] == 'authority_pda' and check['status'] == 'PASS'
+                                    for check in identity['checks'])
+            if authority_checked:
+                report['blocking_reasons'].remove('vault_authority_PDA_not_certified')
+            if any(check['status'] == 'FAIL' for check in identity['checks']):
+                raise SnapshotEvidenceError('published_identity_check_failed')
+            if discriminator_pins is None:
+                discriminator_pins = DISCRIMINATORS
         if pool['mint_b'] != SOL_MINT or config['quote_mint'] != SOL_MINT:
             raise SnapshotEvidenceError('quote_currency_is_not_native_SOL')
-        base, base_raw = _mint_state(accounts.get(addresses['mint_a']),'base_mint')
-        quote, quote_raw = _mint_state(accounts.get(addresses['mint_b']),'quote_mint')
-        vault_a, vault_a_raw = _vault(accounts.get(addresses['vault_a']),'base_vault')
-        vault_b, vault_b_raw = _vault(accounts.get(addresses['vault_b']),'quote_vault')
+        if qualified:
+            quote_account = accounts.get(addresses['mint_b'])
+            if type(quote_account) is not dict or quote_account.get('owner') != TOKEN_PROGRAM:
+                raise SnapshotEvidenceError('native_SOL_quote_program_mismatch')
+        base, base_raw = _mint_state(accounts.get(addresses['mint_a']),'base_mint',
+            metadata_only=qualified, expected_address=addresses['mint_a'])
+        quote, quote_raw = _mint_state(accounts.get(addresses['mint_b']),'quote_mint',
+            metadata_only=qualified, expected_address=addresses['mint_b'])
+        vault_a, vault_a_raw = _vault(accounts.get(addresses['vault_a']),'base_vault', metadata_only=qualified)
+        vault_b, vault_b_raw = _vault(accounts.get(addresses['vault_b']),'quote_vault', metadata_only=qualified)
         if (pool['decimals_a'] != base['decimals'] or pool['decimals_b'] != 9
                 or quote['decimals'] != 9 or pool['decimals_a'] > 18
                 or base['supply_atomic'] != pool['supply']):
@@ -322,7 +360,8 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
             flags.append('pool_not_in_active_launch_curve')
         if config['curve_type'] != 0:
             flags.append('unsupported_curve_type')
-        if pool['mint_program_flag'] != 0:
+        expected_program_flag = (1 if accounts[addresses['mint_a']].get('owner') == TOKEN_2022_PROGRAM else 0) if qualified else 0
+        if pool['mint_program_flag'] != expected_program_flag:
             flags.append('unsupported_mint_program_flag')
         if base['mint_authority_present']:
             flags.append('base_mint_authority_present')
@@ -358,3 +397,49 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         report['risk_flags'].append(reason)
         report['conditional_projection']=None
     return report
+
+
+def observed_sell_projection(pool, *, input_token_atomic, fee_rates_ppm,
+                             quote_vault_lamports, curve_type, share_fee_rate_ppm=0):
+    """Estimate selling a FIXED quantity against an observed native-SOL state.
+
+    Unlike constant_product_projection, this never inserts our hypothetical buy
+    into the supplied reserves. A caller must retain the earlier quantity and
+    the later bank context. A refusal here does not prove a position would have
+    been unsellable after a real buy, which would have changed those reserves.
+    No network/priority/account costs, acquired inventory, execution or P&L.
+    """
+    amount = _uint(input_token_atomic, 'input_token_atomic', positive=True)
+    if type(pool) is not dict:
+        raise SnapshotEvidenceError('pool_facts_required')
+    if (type(curve_type) is not int or curve_type != 0
+            or type(pool.get('status')) is not int or pool['status'] != 0
+            or pool.get('mint_b') != SOL_MINT):
+        raise SnapshotEvidenceError('active_constant_product_native_SOL_required')
+    required = ('virtual_a', 'virtual_b', 'real_a', 'real_b',
+                'protocol_fee_accrued', 'platform_fee_accrued')
+    values = {key: _uint(pool.get(key), key) for key in required}
+    vault = _uint(quote_vault_lamports, 'quote_vault_lamports')
+    if type(fee_rates_ppm) not in (tuple, list) or len(fee_rates_ppm) != 3:
+        raise SnapshotEvidenceError('three_explicit_fee_rates_required')
+    rate = sum(_uint(value, 'fee_rate') for value in fee_rates_ppm) + _uint(share_fee_rate_ppm, 'share_fee_rate')
+    if rate >= FEE_DENOMINATOR:
+        raise SnapshotEvidenceError('fee_rate_not_below_denominator')
+    x, y = values['virtual_a']-values['real_a'], values['virtual_b']+values['real_b']
+    if x <= 0 or y <= 0 or y > _U64_MAX:
+        raise SnapshotEvidenceError('invalid_curve_reserves')
+    if amount > values['real_a']:
+        raise SnapshotEvidenceError('sell_exceeds_observed_outstanding_curve_tokens')
+    gross = amount*y//(x+amount)
+    spendable = vault-values['protocol_fee_accrued']-values['platform_fee_accrued']
+    if gross > values['real_b'] or gross > spendable:
+        raise SnapshotEvidenceError('observed_exit_liquidity_insufficient')
+    fee = (gross*rate + FEE_DENOMINATOR-1)//FEE_DENOMINATOR
+    if gross-fee <= 0:
+        raise SnapshotEvidenceError('sell_output_rounds_to_zero')
+    return {'kind': 'observed_state_conditional_sell_estimate',
+            'input_token_atomic': str(amount), 'gross_output_lamports': str(gross),
+            'curve_fee_lamports': str(fee), 'output_lamports': str(gross-fee),
+            'fee_rate_total_ppm': str(rate), 'spendable_quote_vault_lamports': str(spendable),
+            'hypothetical_entry_impact_applied': False, 'additional_execution_costs_known': False,
+            'position_acquired': False, 'execution_verified': False, 'net_economic_pnl_sol': None}
