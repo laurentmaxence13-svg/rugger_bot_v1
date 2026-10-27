@@ -35,6 +35,9 @@ natif (52), admission temporelle (268) et campagne/transport/replay (104).
 Les résultats détaillés figurent dans PROJECT_STATUS.md et result.json.
 Le test ignoré historique concerne uniquement la base utilisateur absente.
 Python 3.12.14, aiohttp 3.14.5. Aucune dépendance ajoutée.
+Référence code de livraison : `612ed2cdb5331506200412dbbc34a22c65e67a95` ;
+[PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20) ouverte.
+La mise à jour de ces références ne change aucun fichier Python testé.
 
 ## Collecte primaire, fixée avant observation
 

@@ -14,6 +14,8 @@
   Journal et calculs financiers revus indépendamment ; voir
   [P3_PR19_REVIEW.md](P3_PR19_REVIEW.md).
 - Branche suivante : `feat/p3-native-launchlab-campaign`, issue de ce main.
+  [PR #20 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20).
+  Référence code de livraison testée : `612ed2cdb5331506200412dbbc34a22c65e67a95`.
   Priorité à l'API officielle Raydium `get/list`, `sort=new`, avec vérification
   RPC des créations et lecture cohérente des comptes, calculs natifs en SOL.
 - Validation des composants avant collecte : **1 263 tests réussis, 1 ignoré,

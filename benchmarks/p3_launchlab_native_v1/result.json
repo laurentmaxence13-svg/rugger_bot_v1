@@ -1454,6 +1454,7 @@
   ],
   "software_validation": {
     "campaign_tests": 104,
+    "code_revision": "612ed2cdb5331506200412dbbc34a22c65e67a95",
     "main_tests_passed": 880,
     "main_tests_skipped": 1,
     "market_access_in_tests": false,
