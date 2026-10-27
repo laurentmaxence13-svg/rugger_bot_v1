@@ -1,0 +1,1524 @@
+{
+  "creation_lookup_diagnostic": {
+    "plan": {
+      "financial_methods": [],
+      "justification": "separate_version_diagnostic_explicit_RPC_advice_and_two_successful_version_1_reads",
+      "max_elapsed_ms": 20000,
+      "max_requests": 4,
+      "max_supported_transaction_version": 1,
+      "primary_plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+      "primary_results_unchanged": true,
+      "purpose": "verify_index_mint_pool_creation_links_after_bounded_page_and_version_limitations",
+      "registered_at_ms": 1793081624082,
+      "schema": "p3-creation-lookup-diagnostic-v1",
+      "selection": "same_two_selected_pools_from_primary_discovery_in_order_no_replacement",
+      "signature_limit": 1000,
+      "transaction_selection": "oldest_successful_signature_in_one_received_page_per_pool"
+    },
+    "primary_results_unchanged": true,
+    "real_orders_enabled": false,
+    "records": 8,
+    "requests_used": 3,
+    "rows": [
+      {
+        "creation_block_time_ms": 1793081275000,
+        "failed_signature_count": 649,
+        "index_creation_time_claim_ms": 1793081275000,
+        "matched_launches": [
+          {
+            "creator": "6KyfUHkfytBjh8ejhTvfrtRYiyWJKRv2QWQnkdtHpdFQ",
+            "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+            "payer": "QdY68Lsf4RsBpeaqr2cYANUnbAshHPt3hZQFF78bnFZ",
+            "pool_state": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM"
+          }
+        ],
+        "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+        "observed_creation_fee_lamports": 170000,
+        "page_at_capacity": false,
+        "page_count": 753,
+        "pool": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+        "signature": "mCVKa7XRGCpDfAL3zF19LXpHehbTtyC2th6oh1Hi1wmXAxhJdfLofXaUnUo5cR1ACp8nmMkTKgvZb2WBD1qbPGz",
+        "slot": 461963207,
+        "transaction_version": 0,
+        "verified_creation": true
+      },
+      {
+        "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+        "page_unavailable": true,
+        "pool": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214"
+      }
+    ],
+    "tail_hash": "96b4603c6746e2fb7500a08b1e1c2626b36d428378a5b28bb3cb26034b4a28ec"
+  },
+  "discovery": {
+    "received_at_ms": 1793081346329,
+    "received_rows": 100,
+    "response_representation_sha256": "096005479617747ffb496023e5acf8bb3bc4a149eb7147f9b93bf59f48b574a7",
+    "retained_rows": 100,
+    "selected": [
+      {
+        "config_claim": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "creation_time_claim_ms": 1793081275000,
+        "creator_claim": "6KyfUHkfytBjh8ejhTvfrtRYiyWJKRv2QWQnkdtHpdFQ",
+        "index": 0,
+        "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+        "pool": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+        "quote_mint_claim": "So11111111111111111111111111111111111111112",
+        "row_representation_sha256": "f6d61810f609a37591ef58982971d121ed56a95aec460bff579585193e1f8199",
+        "selection_reason": "selected_for_observation_only"
+      },
+      {
+        "config_claim": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "creation_time_claim_ms": 1793080831000,
+        "creator_claim": "643soDQmXHj3tHC5ubPbYDzjAzm3EyqyrLPuByxHUX2q",
+        "index": 2,
+        "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+        "pool": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+        "quote_mint_claim": "So11111111111111111111111111111111111111112",
+        "row_representation_sha256": "dd495d588e78fd60f4644ddd3203c10770262d7d89004f89ebdfcc7b1ace46b3",
+        "selection_reason": "selected_for_observation_only"
+      }
+    ],
+    "selection_reason_counts": {
+      "outside_native_SOL_scope": 58,
+      "outside_preregistered_sample": 40,
+      "selected_for_observation_only": 2
+    }
+  },
+  "economic_verdict": "INSUFFICIENT DATA",
+  "future_protocol": {
+    "does_not_replace_primary_results": true,
+    "executed": false,
+    "plan_path": "next_plan.json",
+    "plan_sha256": "49498f4b0f9326840b085f84cb14039648de860836e51a0dde8fd4f314425090"
+  },
+  "gaps": [
+    {
+      "gap_id": "b25d8c5c-030f-4d3c-81e2-c03611d9d19d",
+      "mint": null,
+      "reason": "universe_bootstrap_no_independent_creation_reference"
+    },
+    {
+      "gap_id": "ea03ca02-b894-4bac-83dc-de4c60fbbaed",
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "reason": "creation_not_found_in_bounded_page"
+    },
+    {
+      "gap_id": "5d782f60-6f0c-41e3-a215-9013551a4867",
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "reason": "creation_not_found_in_bounded_page"
+    }
+  ],
+  "historical_ledger_changed": false,
+  "observational_only": true,
+  "p3_go": false,
+  "primary_code_revision": "13026092ea9621e537259b76b217f0bfcf2607d0",
+  "primary_report": {
+    "discovery_received_rows": 100,
+    "discovery_retained_rows": 100,
+    "economic_verdict": "INSUFFICIENT DATA",
+    "manifest": {
+      "candidates": [
+        {
+          "account_discriminators_certified": false,
+          "all_account_links_verified": false,
+          "coherent_snapshot_count": 2,
+          "creation_verified": false,
+          "exit_liquidity_checked": false,
+          "exit_observation_available": false,
+          "fees_complete": false,
+          "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+          "native_sol": true,
+          "network_fee_bound_known": false,
+          "pit_decision_order_verified": true,
+          "snapshot_source_age_ms": 1240,
+          "snapshots": [
+            {
+              "analysis_at_ms": 1793081347363,
+              "available_at_ms": 1793081347243,
+              "coherent": true,
+              "context_slot": 461963543,
+              "received_at_ms": 1793081347240,
+              "source_time_ms": 1793081346000
+            },
+            {
+              "analysis_at_ms": 1793081364335,
+              "available_at_ms": 1793081364203,
+              "coherent": true,
+              "context_slot": 461963625,
+              "received_at_ms": 1793081364201,
+              "source_time_ms": 1793081363000
+            }
+          ],
+          "source_clock_bound_known": false,
+          "token_transfer_restrictions_known": false
+        },
+        {
+          "account_discriminators_certified": false,
+          "all_account_links_verified": false,
+          "coherent_snapshot_count": 2,
+          "creation_verified": false,
+          "exit_liquidity_checked": false,
+          "exit_observation_available": false,
+          "fees_complete": false,
+          "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+          "native_sol": true,
+          "network_fee_bound_known": false,
+          "pit_decision_order_verified": true,
+          "snapshot_source_age_ms": 1432,
+          "snapshots": [
+            {
+              "analysis_at_ms": 1793081349011,
+              "available_at_ms": 1793081348923,
+              "coherent": true,
+              "context_slot": 461963553,
+              "received_at_ms": 1793081348921,
+              "source_time_ms": 1793081348000
+            },
+            {
+              "analysis_at_ms": 1793081364549,
+              "available_at_ms": 1793081364437,
+              "coherent": true,
+              "context_slot": 461963626,
+              "received_at_ms": 1793081364432,
+              "source_time_ms": 1793081363000
+            }
+          ],
+          "source_clock_bound_known": false,
+          "token_transfer_restrictions_known": false
+        }
+      ],
+      "data_kind": "live",
+      "plan": {
+        "commitment": "confirmed",
+        "followup_delay_ms": 15000,
+        "index_sort": "new",
+        "input_lamports": 1000000000,
+        "max_elapsed_ms": 60000,
+        "max_index_rows": 100,
+        "max_requests": 20,
+        "plan_id": "launchlab-native-sol-001",
+        "plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+        "registered_at_ms": 1793081163068,
+        "sample_size": 2,
+        "schema": "p3-launchlab-campaign-v1",
+        "selection": "first_two_valid_unique_SOL_rows_in_response_order",
+        "share_fee_rate_ppm": 0,
+        "signature_limit": 20,
+        "slippage_bps": 100,
+        "source_main": "966076c1a8b9a5d83bea74fe53fdad1056ade6dc",
+        "started_at_ms": 1793081345724,
+        "transaction_selection": "oldest_successful_signature_in_received_page",
+        "transactions_per_pool": 1
+      },
+      "policy": {
+        "max_snapshot_age_ms": 5000
+      },
+      "run": {
+        "anonymous_transport": true,
+        "elapsed_ms": 18869,
+        "financial_methods_used": [],
+        "independent_reference_complete": false,
+        "integrity_verified": true,
+        "open_gaps": 3,
+        "requests_used": 19,
+        "selected_count": 2,
+        "tail_anchor_verified": true,
+        "wire_retry_disabled": true
+      }
+    },
+    "market_detection_coverage": null,
+    "position_acquired": false,
+    "quality": {
+      "as_of_ms": null,
+      "economic_validation": "INSUFFICIENT DATA",
+      "fx_without_source_time": 0,
+      "integrity": "verified_hash_chain_not_authenticated",
+      "kind_counts": {
+        "candidate_decision": 104,
+        "checkpoint": 4,
+        "discovery": 1,
+        "gap": 3,
+        "pool_snapshot": 6,
+        "quote_attempt": 12,
+        "request": 15,
+        "transaction": 40
+      },
+      "market_detection_coverage": null,
+      "missing_transactions": 2,
+      "open_gap_count": 3,
+      "open_gap_ids": [
+        "5d782f60-6f0c-41e3-a215-9013551a4867",
+        "b25d8c5c-030f-4d3c-81e2-c03611d9d19d",
+        "ea03ca02-b894-4bac-83dc-de4c60fbbaed"
+      ],
+      "outcome_counts": {
+        "address_discovery": 2,
+        "bounded_campaign_complete": 1,
+        "chain_failed": 25,
+        "error": 2,
+        "missing": 2,
+        "not_admitted": 4,
+        "not_fetched": 13,
+        "observed": 18,
+        "open": 3,
+        "pool_signature_page": 2,
+        "quoted": 3,
+        "registered_plan": 1,
+        "rejected_from_capture_sample": 98,
+        "selected": 2,
+        "unavailable": 9
+      },
+      "p3_go": false,
+      "provenance_counts": {
+        "live": 185
+      },
+      "quality_flag_counts": {
+        "source_time_unknown": 185
+      },
+      "quotes_without_source_time": 12,
+      "records": 185,
+      "rejected_candidates": 0,
+      "schema": "p3-capture-quality-v1",
+      "unavailable_quotes": 9,
+      "unmatched_gap_closures": 0
+    },
+    "readiness": {
+      "collection_readiness": "GO",
+      "criteria": [
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "live_data",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "registered_plan_identity",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "preregistration",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "request_budget",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "duration_budget",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "anonymous_transport",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "wire_retry_disabled",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "integrity_verified",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "tail_anchor_verified",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "no_financial_methods",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 5,
+          "known_count": 5,
+          "name": "selected_rows_accounted",
+          "reasons": [],
+          "required_count": 5,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "selected_mint_identity",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 1,
+          "name": "independent_reference_complete",
+          "reasons": [
+            "independent_reference_complete: requirement not met"
+          ],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 1,
+          "name": "no_open_gaps",
+          "reasons": [
+            "open_gaps must be zero: requirement not met"
+          ],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "declared_snapshot_age_bound",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "declared_followup_delay",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "creation_verified",
+          "reasons": [
+            "candidate[0].creation_verified: requirement not met",
+            "candidate[1].creation_verified: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "all_account_links_verified",
+          "reasons": [
+            "candidate[0].all_account_links_verified: requirement not met",
+            "candidate[1].all_account_links_verified: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "account_discriminators_certified",
+          "reasons": [
+            "candidate[0].account_discriminators_certified: requirement not met",
+            "candidate[1].account_discriminators_certified: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "native_sol",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "token_transfer_restrictions_known",
+          "reasons": [
+            "candidate[0].token_transfer_restrictions_known: requirement not met",
+            "candidate[1].token_transfer_restrictions_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "exit_liquidity_checked",
+          "reasons": [
+            "candidate[0].exit_liquidity_checked: requirement not met",
+            "candidate[1].exit_liquidity_checked: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "fees_complete",
+          "reasons": [
+            "candidate[0].fees_complete: requirement not met",
+            "candidate[1].fees_complete: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "network_fee_bound_known",
+          "reasons": [
+            "candidate[0].network_fee_bound_known: requirement not met",
+            "candidate[1].network_fee_bound_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "source_clock_bound_known",
+          "reasons": [
+            "candidate[0].source_clock_bound_known: requirement not met",
+            "candidate[1].source_clock_bound_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "pit_decision_order_verified",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "exit_observation_available",
+          "reasons": [
+            "candidate[0].exit_observation_available: requirement not met",
+            "candidate[1].exit_observation_available: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 4,
+          "known_count": 4,
+          "name": "coherent_snapshot_periods",
+          "reasons": [],
+          "required_count": 4,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 38,
+          "known_count": 38,
+          "name": "snapshot_temporal_evidence",
+          "reasons": [],
+          "required_count": 38,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 8,
+          "known_count": 8,
+          "name": "snapshot_source_time_evidence",
+          "reasons": [],
+          "required_count": 8,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 8,
+          "known_count": 8,
+          "name": "snapshot_source_freshness",
+          "reasons": [],
+          "required_count": 8,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 4,
+          "known_count": 4,
+          "name": "snapshot_decision_freshness",
+          "reasons": [],
+          "required_count": 4,
+          "scope": "economic",
+          "status": "PASS"
+        }
+      ],
+      "economic_readiness": "NO-GO",
+      "economic_verdict": "INSUFFICIENT DATA",
+      "evidence_basis": "manifest attestations requiring retained underlying evidence",
+      "max_snapshot_age_cap_ms": 5000,
+      "p3_go": false,
+      "reasons": [
+        "independent_reference_complete: requirement not met",
+        "open_gaps must be zero: requirement not met",
+        "candidate[0].creation_verified: requirement not met",
+        "candidate[1].creation_verified: requirement not met",
+        "candidate[0].all_account_links_verified: requirement not met",
+        "candidate[1].all_account_links_verified: requirement not met",
+        "candidate[0].account_discriminators_certified: requirement not met",
+        "candidate[1].account_discriminators_certified: requirement not met",
+        "candidate[0].token_transfer_restrictions_known: requirement not met",
+        "candidate[1].token_transfer_restrictions_known: requirement not met",
+        "candidate[0].exit_liquidity_checked: requirement not met",
+        "candidate[1].exit_liquidity_checked: requirement not met",
+        "candidate[0].fees_complete: requirement not met",
+        "candidate[1].fees_complete: requirement not met",
+        "candidate[0].network_fee_bound_known: requirement not met",
+        "candidate[1].network_fee_bound_known: requirement not met",
+        "candidate[0].source_clock_bound_known: requirement not met",
+        "candidate[1].source_clock_bound_known: requirement not met",
+        "candidate[0].exit_observation_available: requirement not met",
+        "candidate[1].exit_observation_available: requirement not met"
+      ],
+      "schema": "p3-readiness-v1",
+      "scope": "prospective PAPER data admission; no profitability validation"
+    },
+    "real_orders_enabled": false,
+    "schema": "p3-launchlab-campaign-report-v1",
+    "selected_count": 2,
+    "tail_hash": "fd63fa7df085160ad0977bf4bbe580abdd3967e3426c1b056eb9ecd6a2809873",
+    "verified_creations": 0
+  },
+  "provider_quote_observations": [
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [
+          {
+            "fee_amount_atomic": "12500000",
+            "fee_mint": "So11111111111111111111111111111111111111112",
+            "fee_rate_raw": "125",
+            "fee_rate_unit": "provider_unit_not_converted_to_bps"
+          }
+        ],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "input_mint": "So11111111111111111111111111111111111111112",
+      "latency_ms": 687.290892,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": "20456047748316",
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "outcome": "quoted",
+      "output_amount_atomic": "20662674493249",
+      "output_mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "price_impact_pct": "3.84",
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793081348374,
+      "requested_at_ms": 1793081347687,
+      "retry_after_seconds": null,
+      "route": [
+        {
+          "feeAmount": "12500000",
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeRate": 125,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+          "poolId": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+          "remainingAccounts": []
+        }
+      ],
+      "sanitized_response_sha256": "f681e8cbb17a895e52b57b814cc33f0b39b56cac8cbe424b37d8006ee20c30a2",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "20662674493249",
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [
+          {
+            "fee_amount_atomic": "11744877",
+            "fee_mint": "So11111111111111111111111111111111111111112",
+            "fee_rate_raw": "125",
+            "fee_rate_unit": "provider_unit_not_converted_to_bps"
+          }
+        ],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "20662674493249",
+      "input_mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "latency_ms": 336.040238,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": "918566776",
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "outcome": "quoted",
+      "output_amount_atomic": "927845229",
+      "output_mint": "So11111111111111111111111111111111111111112",
+      "price_impact_pct": "3.78",
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "sell",
+      "reason": null,
+      "received_at_ms": 1793081348713,
+      "requested_at_ms": 1793081348377,
+      "retry_after_seconds": null,
+      "route": [
+        {
+          "feeAmount": "11744877",
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeRate": 125,
+          "inputMint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+          "outputMint": "So11111111111111111111111111111111111111112",
+          "poolId": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+          "remainingAccounts": []
+        }
+      ],
+      "sanitized_response_sha256": "e1f4e896ef7555c8dc4399a91e3f4594c14a6db58e30ae38ecc17f6989cb372c",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [
+          {
+            "fee_amount_atomic": "12500000",
+            "fee_mint": "So11111111111111111111111111111111111111112",
+            "fee_rate_raw": "125",
+            "fee_rate_unit": "provider_unit_not_converted_to_bps"
+          }
+        ],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "input_mint": "So11111111111111111111111111111111111111112",
+      "latency_ms": 212.58102,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": "33851965585135",
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "outcome": "quoted",
+      "output_amount_atomic": "34193904631450",
+      "output_mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "price_impact_pct": "4.59",
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793081349488,
+      "requested_at_ms": 1793081349276,
+      "retry_after_seconds": null,
+      "route": [
+        {
+          "feeAmount": "12500000",
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeRate": 125,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+          "poolId": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+          "remainingAccounts": []
+        }
+      ],
+      "sanitized_response_sha256": "e8d742bdbe422329ddad1ad1609e0e6483af96491abbecc38134a514b68ede58",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": null,
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "34193904631450",
+      "input_mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "latency_ms": 204.989627,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": null,
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "outcome": "unavailable",
+      "output_amount_atomic": null,
+      "output_mint": "So11111111111111111111111111111111111111112",
+      "price_impact_pct": null,
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "sell",
+      "reason": "provider_rejected",
+      "received_at_ms": 1793081349696,
+      "requested_at_ms": 1793081349491,
+      "retry_after_seconds": null,
+      "route": [],
+      "sanitized_response_sha256": "d337cd5a802e7d1bfa22c8eff67161ae772ef3e810d7fb3bc5f6eb4a477ebc97",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    }
+  ],
+  "real_orders_enabled": false,
+  "request_receipts": [
+    {
+      "http_status": 200,
+      "latency_ms": 590.295658,
+      "outcome": "observed",
+      "provider": "raydium_launch_mint_index",
+      "reason": null,
+      "received_at_ms": 1793081346329,
+      "request_id": null,
+      "requested_at_ms": 1793081345739,
+      "sort": "new"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 328.929552,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081346904,
+      "request_id": "49045a3b-6718-4476-aff3-cd492eded7ae",
+      "requested_at_ms": 1793081346575,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 331.364425,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081347240,
+      "request_id": "9b56300c-728c-47f2-b554-9df2dae6240b",
+      "requested_at_ms": 1793081346909,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 106.245112,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081347361,
+      "request_id": "d56438fb-f00b-47fb-b939-984d102e55b8",
+      "requested_at_ms": 1793081347254,
+      "rpc_error_code": null,
+      "rpc_method": "getBlockTime"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 152.609882,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081347520,
+      "request_id": "4497cc0a-d4db-4e1f-8951-0c7267af4fa2",
+      "requested_at_ms": 1793081347368,
+      "rpc_error_code": null,
+      "rpc_method": "getSignaturesForAddress"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 102.72677,
+      "outcome": "error",
+      "provider": "solana_public_mainnet",
+      "reason": "rpc_error",
+      "received_at_ms": 1793081347678,
+      "request_id": "d7160783-f0c7-4b51-9ef0-68763903dfbe",
+      "requested_at_ms": 1793081347575,
+      "rpc_error_code": -32015,
+      "rpc_method": "getTransaction"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 114.39911,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081348830,
+      "request_id": "bd7b1195-baee-4b87-afff-1128ac302091",
+      "requested_at_ms": 1793081348716,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 80.511895,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081348921,
+      "request_id": "5c5aee92-2d8c-426c-984e-7e3f5c358281",
+      "requested_at_ms": 1793081348840,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 74.740056,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081349009,
+      "request_id": "aabb8ec8-0aad-4942-9013-f4f11e220c83",
+      "requested_at_ms": 1793081348935,
+      "rpc_error_code": null,
+      "rpc_method": "getBlockTime"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 110.056694,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081349127,
+      "request_id": "08b2cecd-0387-4fe4-93c0-fcb3e663ec0e",
+      "requested_at_ms": 1793081349017,
+      "rpc_error_code": null,
+      "rpc_method": "getSignaturesForAddress"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 108.97257,
+      "outcome": "error",
+      "provider": "solana_public_mainnet",
+      "reason": "rpc_error",
+      "received_at_ms": 1793081349250,
+      "request_id": "42bdf1ec-89f6-413b-97a7-6ad590fbbd42",
+      "requested_at_ms": 1793081349141,
+      "rpc_error_code": -32015,
+      "rpc_method": "getTransaction"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 277.10571,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081364201,
+      "request_id": "fafcb406-2fa6-4fea-921a-428112897aa0",
+      "requested_at_ms": 1793081363923,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 112.70625,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081364332,
+      "request_id": "d2a995f9-d4f3-43a6-91da-980500e0577b",
+      "requested_at_ms": 1793081364220,
+      "rpc_error_code": null,
+      "rpc_method": "getBlockTime"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 90.996563,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081364432,
+      "request_id": "d5c732ec-2e2f-4bdc-8fbb-e7133c183170",
+      "requested_at_ms": 1793081364341,
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    {
+      "http_status": 200,
+      "latency_ms": 94.358313,
+      "outcome": "observed",
+      "provider": "solana_public_mainnet",
+      "reason": null,
+      "received_at_ms": 1793081364546,
+      "request_id": "2ba118e9-0f55-4c51-b21f-456c78e7215d",
+      "requested_at_ms": 1793081364452,
+      "rpc_error_code": null,
+      "rpc_method": "getBlockTime"
+    }
+  ],
+  "schema": "p3-launchlab-evidence-summary-v1",
+  "snapshot_analyses": [
+    {
+      "analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "vault_authority_PDA_not_certified",
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461963543,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "59ca055242b85f51a96a9193b10938682d33abcdd9e6e5659d0abac1520cac8f"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+            "vault_a": "EGEqzQoatCu3vBQoX5U2PAeqXNri9J4wHsdRA1ye3aaG",
+            "vault_b": "Bu1BH8X5m17XhZ9fcJERNcFf25ZZMZ1yrjnjQiWRUZW2"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "6KyfUHkfytBjh8ejhTvfrtRYiyWJKRv2QWQnkdtHpdFQ",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "58224921",
+            "real_a": "241906330721052",
+            "real_b": "8732075506",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "EGEqzQoatCu3vBQoX5U2PAeqXNri9J4wHsdRA1ye3aaG",
+            "vault_b": "Bu1BH8X5m17XhZ9fcJERNcFf25ZZMZ1yrjnjQiWRUZW2",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false
+        },
+        "identity_status": "unverified",
+        "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+        "pool_address": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "analysis_at_ms": 1793081347363,
+      "block_time_estimate_ms": 1793081346000,
+      "decision_received_at_ms": 1793081347363,
+      "entry_permitted": false,
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "slot": 461963543,
+      "snapshot_available_at_ms": 1793081347243,
+      "snapshot_observation_id": 108,
+      "snapshot_received_at_ms": 1793081347240
+    },
+    {
+      "analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "vault_authority_PDA_not_certified",
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461963553,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "b5cbf078c018737e5fc45d7e63673a87575be92313f7a0e30d50295aa4e770a6"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+            "vault_a": "6c4Vc8cPyoZRoRHx8nNhe1P9jF52WH6taakc1yzZ85zb",
+            "vault_b": "3bViPZi2P2GKWsQF8jMecbtDtt1VJUpCs67XJUccMyLG"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "643soDQmXHj3tHC5ubPbYDzjAzm3EyqyrLPuByxHUX2q",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "20868750",
+            "real_a": "0",
+            "real_b": "1",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "6c4Vc8cPyoZRoRHx8nNhe1P9jF52WH6taakc1yzZ85zb",
+            "vault_b": "3bViPZi2P2GKWsQF8jMecbtDtt1VJUpCs67XJUccMyLG",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false
+        },
+        "identity_status": "unverified",
+        "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+        "pool_address": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "analysis_at_ms": 1793081349011,
+      "block_time_estimate_ms": 1793081348000,
+      "decision_received_at_ms": 1793081349011,
+      "entry_permitted": false,
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "slot": 461963553,
+      "snapshot_available_at_ms": 1793081348923,
+      "snapshot_observation_id": 142,
+      "snapshot_received_at_ms": 1793081348921
+    },
+    {
+      "analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "vault_authority_PDA_not_certified",
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461963625,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "784fe5f865aeb3700ef860007d701b66b9be16742156cccd13b663838a57b669"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+            "vault_a": "EGEqzQoatCu3vBQoX5U2PAeqXNri9J4wHsdRA1ye3aaG",
+            "vault_b": "Bu1BH8X5m17XhZ9fcJERNcFf25ZZMZ1yrjnjQiWRUZW2"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "6KyfUHkfytBjh8ejhTvfrtRYiyWJKRv2QWQnkdtHpdFQ",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "73718910",
+            "real_a": "97886288724298",
+            "real_b": "3011541136",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "EGEqzQoatCu3vBQoX5U2PAeqXNri9J4wHsdRA1ye3aaG",
+            "vault_b": "Bu1BH8X5m17XhZ9fcJERNcFf25ZZMZ1yrjnjQiWRUZW2",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false
+        },
+        "identity_status": "unverified",
+        "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+        "pool_address": "G3jmqVEjXGWBgKqGfnLTHJjNMz4kgjmQVXF9JupAyyVM",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "analysis_at_ms": 1793081364335,
+      "block_time_estimate_ms": 1793081363000,
+      "decision_received_at_ms": 1793081364335,
+      "entry_permitted": false,
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "slot": 461963625,
+      "snapshot_available_at_ms": 1793081364203,
+      "snapshot_observation_id": 174,
+      "snapshot_received_at_ms": 1793081364201
+    },
+    {
+      "analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "vault_authority_PDA_not_certified",
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461963626,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "b5cbf078c018737e5fc45d7e63673a87575be92313f7a0e30d50295aa4e770a6"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+            "vault_a": "6c4Vc8cPyoZRoRHx8nNhe1P9jF52WH6taakc1yzZ85zb",
+            "vault_b": "3bViPZi2P2GKWsQF8jMecbtDtt1VJUpCs67XJUccMyLG"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "643soDQmXHj3tHC5ubPbYDzjAzm3EyqyrLPuByxHUX2q",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "20868750",
+            "real_a": "0",
+            "real_b": "1",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "6c4Vc8cPyoZRoRHx8nNhe1P9jF52WH6taakc1yzZ85zb",
+            "vault_b": "3bViPZi2P2GKWsQF8jMecbtDtt1VJUpCs67XJUccMyLG",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false
+        },
+        "identity_status": "unverified",
+        "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+        "pool_address": "Bi6Bfkrz8jgN5RaebFmTn8aHgrTP84pmMhMyT9JHq214",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "base_mint_token2022_extensions_not_certified"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "analysis_at_ms": 1793081364549,
+      "block_time_estimate_ms": 1793081363000,
+      "decision_received_at_ms": 1793081364549,
+      "entry_permitted": false,
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "slot": 461963626,
+      "snapshot_available_at_ms": 1793081364437,
+      "snapshot_observation_id": 180,
+      "snapshot_received_at_ms": 1793081364432
+    }
+  ],
+  "software_validation": {
+    "campaign_tests": 104,
+    "code_revision": "612ed2cdb5331506200412dbbc34a22c65e67a95",
+    "main_tests_passed": 880,
+    "main_tests_skipped": 1,
+    "market_access_in_tests": false,
+    "native_tests": 52,
+    "readiness_tests": 268,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "tests_passed": 1304,
+    "tests_skipped": 1,
+    "warnings_as_errors": true
+  },
+  "source_main": "966076c1a8b9a5d83bea74fe53fdad1056ade6dc",
+  "transaction_outcome_counts": {
+    "chain_failed": 25,
+    "missing": 2,
+    "not_fetched": 13
+  },
+  "version_diagnostic": {
+    "plan": {
+      "financial_methods": [],
+      "max_elapsed_ms": 20000,
+      "max_requests": 3,
+      "primary_plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+      "protocol": "repeat_first_getTransaction_with_maxSupportedTransactionVersion_0_once; only_if_error_explicitly_advises_version_0_or_1_read_both_same_signatures_with_that_version; no_new_discovery_or_backfill",
+      "purpose": "explain_RPC_-32015_without_changing_primary_results",
+      "registered_at_ms": 1793081478583,
+      "schema": "p3-post-campaign-diagnostic-v1",
+      "selection": "same_two_unavailable_transaction_signatures_from_primary_journal_in_order"
+    },
+    "primary_results_unchanged": true,
+    "real_orders_enabled": false,
+    "records": 8,
+    "requests_used": 3,
+    "rows": [
+      {
+        "error": {
+          "code": -32015,
+          "message": "Transaction version (1) is not supported by the requesting client. Please try the request again with the following configuration parameter: \"maxSupportedTransactionVersion\": 1"
+        },
+        "http_status": 200,
+        "matched_launches": [],
+        "max_supported_version": 0,
+        "signature": "3hbuZWfDzEVxFSpmnhRuGc6cJBjV4bKaXei1Rwdg2xmYY6nDKJLfSbcGoKtSjRfe9moPRL4xeZxgjP9SGAopASpA",
+        "transaction_available": false
+      },
+      {
+        "error": null,
+        "http_status": 200,
+        "matched_launches": [],
+        "max_supported_version": 1,
+        "returned_version": 1,
+        "signature": "3hbuZWfDzEVxFSpmnhRuGc6cJBjV4bKaXei1Rwdg2xmYY6nDKJLfSbcGoKtSjRfe9moPRL4xeZxgjP9SGAopASpA",
+        "transaction_available": true
+      },
+      {
+        "error": null,
+        "http_status": 200,
+        "matched_launches": [],
+        "max_supported_version": 1,
+        "returned_version": 1,
+        "signature": "5HzXz24tCDZqm3BrmH9YgYzpAA8ahMgR2YaWyoSkSArWUgJjvwuM4czd2kGbKbKV8ira9UqTn2DrK93W6cGxkAc9",
+        "transaction_available": true
+      }
+    ],
+    "tail_hash": "9d0cb59c6d51b936d1fe646e0a2a7c39c91282689e1a3c37f96e9a0e97fff5f2"
+  }
+}

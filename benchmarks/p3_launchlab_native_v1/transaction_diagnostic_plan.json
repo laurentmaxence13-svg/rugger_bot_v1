@@ -1,0 +1,11 @@
+{
+  "financial_methods": [],
+  "max_elapsed_ms": 20000,
+  "max_requests": 3,
+  "primary_plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+  "protocol": "repeat_first_getTransaction_with_maxSupportedTransactionVersion_0_once; only_if_error_explicitly_advises_version_0_or_1_read_both_same_signatures_with_that_version; no_new_discovery_or_backfill",
+  "purpose": "explain_RPC_-32015_without_changing_primary_results",
+  "registered_at_ms": 1793081478583,
+  "schema": "p3-post-campaign-diagnostic-v1",
+  "selection": "same_two_unavailable_transaction_signatures_from_primary_journal_in_order"
+}

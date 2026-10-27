@@ -2,7 +2,8 @@
 
 A route quote is an estimate, never an executed fill or a promise of a future
 exit. This module has no transaction construction, signing or submission path.
-The caller owns its aiohttp session (use trust_env=True for supported proxies).
+The caller owns its anonymous aiohttp session. The collectors route configured
+proxies explicitly, with trust_env=False, no cookies/netrc and no hidden retries.
 """
 import asyncio
 from decimal import Decimal, InvalidOperation

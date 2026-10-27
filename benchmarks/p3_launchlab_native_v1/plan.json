@@ -1,0 +1,20 @@
+{
+  "commitment": "confirmed",
+  "followup_delay_ms": 15000,
+  "index_sort": "new",
+  "input_lamports": 1000000000,
+  "max_elapsed_ms": 60000,
+  "max_index_rows": 100,
+  "max_requests": 20,
+  "plan_id": "launchlab-native-sol-001",
+  "registered_at_ms": 1793081163068,
+  "sample_size": 2,
+  "schema": "p3-launchlab-campaign-v1",
+  "selection": "first_two_valid_unique_SOL_rows_in_response_order",
+  "share_fee_rate_ppm": 0,
+  "signature_limit": 20,
+  "slippage_bps": 100,
+  "source_main": "966076c1a8b9a5d83bea74fe53fdad1056ade6dc",
+  "transaction_selection": "oldest_successful_signature_in_received_page",
+  "transactions_per_pool": 1
+}
