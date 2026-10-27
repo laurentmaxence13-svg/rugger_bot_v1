@@ -10,6 +10,7 @@ Ce contrôle d'instrumentation ne constitue pas une expérience de rentabilité.
 Plan : [plan.json](benchmarks/p3_launchlab_native_v1/plan.json).
 Un seul passage, aucun remplacement opportuniste d'un candidat échoué.
 Lectures anonymes gratuites, TLS normal, aucun compte ou portefeuille utilisé.
+Ce plan v1 est figé au commit `1302609` ; ses résultats ne sont pas réétiquetés.
 
 - Découverte : une requête officielle Raydium `get/list`, `sort=new`.
   Conserver dans l'ordre les 100 premières lignes, leurs identités/claims
@@ -119,6 +120,18 @@ journal existant ou non vide. Les réponses RPC brutes et la base restent locale
 seuls plan, résumé assaini et ancre/digests sont versionnés. L'ancre détecte aussi
 une troncature relative au suffixe retenu ; elle n'est pas une signature externe.
 Une réexécution future nécessite un nouveau plan/version enregistré avant lecture.
+
+## Évolution explicite après contrôle de source
+
+Le [rapport](P3_LAUNCHLAB_VALIDATION.md) distingue le primaire de ses diagnostics
+préenregistrés ultérieurs : une création réelle retrouvée hors page initiale,
+transactions version 1 observées, et un second pool indisponible par timeout.
+Le [plan v2](benchmarks/p3_launchlab_native_v1/next_plan.json) est préparé mais
+**non exécuté** : mêmes limites 2 candidats / 20 tentatives / 60 s / 15 s de suivi,
+page de 1 000 signatures maximum et maxSupportedTransactionVersion=1 explicite.
+Le chemin nominal reste au plus 19 requêtes ; aucune extension cachée ni retry.
+Les paramètres v1 (20 signatures/version0) restent interprétés comme à l'origine.
+Les futurs snapshots enregistrent l'ordre `requested_addresses` pour le replay.
 
 Les comparaisons de sources/coûts/droits sont dans
 [P3_SOURCE_ALTERNATIVES.md](P3_SOURCE_ALTERNATIVES.md). L'accès public ne garantit

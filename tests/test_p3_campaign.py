@@ -32,6 +32,11 @@ def plan():
     }
 
 
+def plan_v2():
+    return dict(plan(), schema='p3-launchlab-campaign-v2', plan_id='launchlab-native-sol-002',
+                signature_limit=1000, max_supported_transaction_version=1)
+
+
 def indexed(mint=None, pool=None, **extra):
     _, addresses = fixture()
     return dict(mint=mint or addresses['mint_a'], poolId=pool or addresses['pool'],
@@ -70,6 +75,41 @@ def test_plan_hash_is_canonical_and_only_exact_registered_protocol_is_allowed():
             cp.validate_plan(invalid)
     with pytest.raises(ValueError):
         cp.validate_plan(dict(declared, arbitrary_destination='example.invalid'))
+
+
+def test_version_two_is_an_explicit_new_plan_and_does_not_rewrite_v1():
+    original = plan()
+    original_hash = hashlib.sha256(cp.canonical(original)).hexdigest()
+    revised = plan_v2()
+    assert cp.validate_plan(revised) == hashlib.sha256(cp.canonical(revised)).hexdigest()
+    assert cp.validate_plan(original) == original_hash
+    assert cp.validate_plan(revised) != original_hash
+    assert original['signature_limit'] == 20
+    assert 'max_supported_transaction_version' not in original
+
+
+@pytest.mark.parametrize('key,value', [
+    ('schema', 'p3-launchlab-campaign-v1'), ('schema', 'p3-launchlab-campaign-v3'),
+    ('plan_id', 'launchlab-native-sol-001'), ('signature_limit', 20),
+    ('signature_limit', 999), ('signature_limit', 1000.0), ('signature_limit', '1000'),
+    ('max_supported_transaction_version', 0), ('max_supported_transaction_version', 2),
+    ('max_supported_transaction_version', True), ('max_supported_transaction_version', 1.0),
+    ('max_supported_transaction_version', '1'), ('max_supported_transaction_version', None),
+    ('max_requests', 21),
+])
+def test_version_two_requires_exact_registered_identity_limit_and_transaction_version(key, value):
+    invalid = dict(plan_v2(), **{key: value})
+    with pytest.raises(ValueError):
+        cp.validate_plan(invalid)
+
+
+def test_transaction_version_field_is_required_only_by_the_new_plan_schema():
+    revised = plan_v2()
+    del revised['max_supported_transaction_version']
+    with pytest.raises(ValueError):
+        cp.validate_plan(revised)
+    with pytest.raises(ValueError):
+        cp.validate_plan(dict(plan(), max_supported_transaction_version=1))
 
 
 @pytest.mark.parametrize('invalid', [None, [], {}, {'success': 1, 'data': {'rows': []}},
@@ -215,6 +255,35 @@ def test_snapshot_is_committed_before_analysis_and_retains_one_bank_context(tmp_
         assert all(q['payload']['position_acquired'] is q['payload']['execution_verified'] is False for q in quotes)
 
 
+def test_snapshot_replay_preserves_rpc_address_order_across_canonical_json_sorting(tmp_path):
+    accounts, addresses = fixture()
+    requested = list(addresses.values())
+    row = cp.select_rows(payload(indexed()))[1][0]
+    transport = Transport(posts=[rpc(bank(accounts, addresses, 1234)), rpc(100)])
+    database = tmp_path/'p3.sqlite'
+    with CaptureStore(database) as store:
+        original = asyncio.run(cp._snapshot(store, cp.CampaignSession(transport, 20),
+            append_for(store), row, addresses, 1200, 'initial'))
+    with CaptureStore(database, readonly=True) as reopened:
+        evidence = reopened.events(kind='pool_snapshot')[0]['payload']
+        assert evidence['requested_addresses'] == requested
+        assert evidence['requested_addresses'] == transport.calls[0][2]['json']['params'][0]
+        # Object-key order changes during canonical serialization. RPC values
+        # remain ordered by the request array, never by those sorted role keys.
+        assert list(evidence['addresses'].values()) != requested
+        values = evidence['raw_rpc_result']['value']
+        replayed_accounts = dict(zip(evidence['requested_addresses'], values))
+        assert replayed_accounts == accounts
+        assert dict(zip(evidence['addresses'].values(), values)) != accounts
+        discovered = cp.addresses_from_pool(replayed_accounts[row['pool']], row['mint'], row['pool'])
+        assert discovered == addresses
+        replayed = cp.analyze_snapshot(replayed_accounts,
+            context_slot=evidence['raw_rpc_result']['context']['slot'],
+            expected_mint=row['mint'], pool_address=row['pool'], input_lamports=10**9)
+        assert replayed == original['analysis']
+        assert replayed['conditional_projection'] is not None
+
+
 @pytest.mark.parametrize('result', [None, {}, {'context': {'slot': True}, 'value': []},
                                    {'context': {'slot': 1234}, 'value': []},
                                    {'context': {'slot': 1000}, 'value': [None]*7}])
@@ -272,6 +341,39 @@ def test_creation_requires_matching_discriminator_pool_mint_and_requested_signat
         assert matched['payload']['fee_scope'] == 'observed_creation_transaction_not_our_trade'
 
 
+@pytest.mark.parametrize('signature_limit', [20, 1000])
+@pytest.mark.parametrize('maximum_version', [0, 1])
+def test_creation_propagates_registered_page_limit_and_supported_transaction_version(tmp_path, signature_limit, maximum_version):
+    row, page, tx = creation_fixture()
+    tx['version'] = maximum_version
+    transport = Transport(posts=[rpc(page), rpc(tx)])
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        assert asyncio.run(cp._creation(cp.CampaignSession(transport, 20), append_for(store), row,
+                                       signature_limit=signature_limit,
+                                       max_supported_transaction_version=maximum_version)) is True
+        assert transport.calls[0][2]['json']['params'][1]['limit'] == signature_limit
+        assert transport.calls[1][2]['json']['params'][1]['maxSupportedTransactionVersion'] == maximum_version
+        measured = next(e for e in store.events(kind='checkpoint') if e['outcome'] == 'pool_signature_page')
+        assert measured['payload']['retention_limit'] == signature_limit
+        assert len(store.events(kind='launch')) == 1
+
+
+@pytest.mark.parametrize('kwargs', [
+    {'signature_limit': value} for value in (None, True, False, 0, 19, 21, 999, 1001, 20.0, '1000')
+] + [
+    {'max_supported_transaction_version': value} for value in (None, True, False, -1, 2, 1.0, '1')
+])
+def test_creation_rejects_invalid_limit_or_transaction_version_before_any_request(tmp_path, kwargs):
+    row, _, _ = creation_fixture()
+    transport = Transport()
+    session = cp.CampaignSession(transport, 20)
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        with pytest.raises(ValueError):
+            asyncio.run(cp._creation(session, append_for(store), row, **kwargs))
+        assert store.events() == []
+        assert session.requests_used == 0 and transport.calls == []
+
+
 @pytest.mark.parametrize('alteration', ['signature', 'pool', 'mint', 'failed', 'missing', 'swap'])
 def test_creation_mismatch_failure_or_missing_does_not_verify_creation(tmp_path, alteration):
     row, page, tx = creation_fixture()
@@ -312,6 +414,27 @@ def test_oversized_signature_page_is_measured_capped_and_never_fetches_outside_p
         assert len(store.events(kind='transaction')) == 20
         assert store.quality_report()['open_gap_count'] == 2
         assert session.requests_used == len(transport.calls) == 1
+
+
+def test_version_two_page_is_retained_up_to_1000_with_explicit_gap_beyond_cap():
+    row, _, _ = creation_fixture()
+    page = [dict(signature='2'*88, slot=2000-index, err={'InstructionError': [0, 'failed']})
+            for index in range(1000)]
+    page.append(dict(signature='9'*88, slot=999, err=None))
+    session = cp.CampaignSession(Transport(posts=[rpc(page)]), 20)
+    receipts = []
+    def append(kind, **event):
+        receipts.append(dict(kind=kind, **event))
+        return len(receipts)
+    assert asyncio.run(cp._creation(session, append, row, signature_limit=1000,
+                                   max_supported_transaction_version=1)) is False
+    measured = next(e for e in receipts if e['kind'] == 'checkpoint')
+    assert measured['payload']['received_row_count'] == 1001
+    assert measured['payload']['retention_limit'] == 1000
+    assert measured['payload']['page_representation_sha256'] == cp.digest(page)
+    assert sum(e['kind'] == 'transaction' for e in receipts) == 1000
+    assert sum(e['kind'] == 'gap' for e in receipts) == 2
+    assert session.requests_used == 1
 
 
 def test_campaign_integrates_creation_snapshots_rejects_and_quotes_without_a_fill(tmp_path, monkeypatch):
@@ -404,6 +527,22 @@ def test_rpc_429_and_failed_buy_preserve_missing_state_and_absent_sell(tmp_path)
         assert [quote['outcome'] for quote in quotes] == ['unavailable', 'not_attempted']
         assert quotes[0]['reason'] == 'http_429'
         assert quotes[1]['reason'] == 'buy_quote_unavailable'
+
+
+@pytest.mark.parametrize('declared,expected_limit,expected_version', [(plan(), 20, 0), (plan_v2(), 1000, 1)])
+def test_campaign_passes_the_declared_lookup_protocol_to_creation(tmp_path, monkeypatch, declared, expected_limit, expected_version):
+    lookup_arguments = []
+    async def lookup(_session, _append, _row, *, signature_limit, max_supported_transaction_version):
+        lookup_arguments.append((signature_limit, max_supported_transaction_version))
+        return False
+    monkeypatch.setattr(cp, '_creation', lookup)
+    transport = Transport(posts=[rpc(None)], gets=[Response(payload(indexed())), Response(status=429)])
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        report = asyncio.run(cp.collect_campaign(store, cp.CampaignSession(transport, 20), declared, provenance='synthetic'))
+        assert lookup_arguments == [(expected_limit, expected_version)]
+        assert report['manifest']['plan']['schema'] == declared['schema']
+        assert report['manifest']['plan']['signature_limit'] == expected_limit
+        assert report['verified_creations'] == 0
 
 
 def test_unsafe_address_discovery_receipt_survives_with_digest_and_no_body_leak(tmp_path):

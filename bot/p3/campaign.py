@@ -49,6 +49,11 @@ def validate_plan(plan):
         'transaction_selection': 'oldest_successful_signature_in_received_page',
         'source_main': '966076c1a8b9a5d83bea74fe53fdad1056ade6dc',
     }
+    if type(plan) is dict and plan.get('plan_id') == 'launchlab-native-sol-002':
+        # Explicit new protocol after observed v1 transactions and a creation
+        # outside the first 20 signatures. Never mutate/relabel the original run.
+        required.update(schema='p3-launchlab-campaign-v2', plan_id='launchlab-native-sol-002',
+                        signature_limit=1000, max_supported_transaction_version=1)
     if type(plan) is not dict or set(plan) != set(required) | {'registered_at_ms'}:
         raise ValueError('Unexpected preregistered plan schema')
     if any(type(plan[key]) is not type(value) or plan[key] != value
@@ -185,8 +190,9 @@ def _bank(result, count):
 
 
 async def _snapshot(store, session, append, row, addresses, minimum_slot, period):
+    requested_addresses = list(addresses.values())
     result, received, request, _ = await _rpc(session, append, 'getMultipleAccounts',
-        [list(addresses.values()), {'encoding': 'base64', 'commitment': 'confirmed',
+        [requested_addresses, {'encoding': 'base64', 'commitment': 'confirmed',
                                    'minContextSlot': minimum_slot}])
     slot, values = _bank(result, len(addresses))
     if slot is not None and slot < minimum_slot:
@@ -194,7 +200,8 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
     try:
         identity = append('pool_snapshot', received_at_ms=received, source_slot=slot,
             mint=row['mint'], request_id=request, outcome='observed' if values is not None else 'missing',
-            payload={'period': period, 'addresses': addresses, 'raw_rpc_result': result,
+            payload={'period': period, 'addresses': addresses, 'requested_addresses': requested_addresses,
+                     'raw_rpc_result': result,
                      'minimum_context_slot': minimum_slot})
     except ValueError:
         append('pool_snapshot', received_at_ms=received, mint=row['mint'], outcome='error',
@@ -211,7 +218,7 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
     source_seconds, _, _, _ = await _rpc(session, append, 'getBlockTime', [slot])
     source = source_seconds * 1000 if type(source_seconds) is int and source_seconds > 0 else None
     analysis_at = now_ms()
-    analysis = analyze_snapshot(dict(zip(addresses.values(), values)), context_slot=slot,
+    analysis = analyze_snapshot(dict(zip(requested_addresses, values)), context_slot=slot,
         expected_mint=row['mint'], pool_address=row['pool'], input_lamports=1_000_000_000)
     append('candidate_decision', received_at_ms=analysis_at, source_slot=slot, mint=row['mint'],
            outcome='not_admitted', reason='research_observation_only',
@@ -233,18 +240,22 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
             'snapshot_observation_id': identity}
 
 
-async def _creation(session, append, row):
+async def _creation(session, append, row, *, signature_limit=20, max_supported_transaction_version=0):
+    if (type(signature_limit) is not int or signature_limit not in (20, 1000)
+            or type(max_supported_transaction_version) is not int
+            or max_supported_transaction_version not in (0, 1)):
+        raise ValueError('Unsupported explicit creation evidence protocol')
     page, received, request, _ = await _rpc(session, append, 'getSignaturesForAddress',
-        [row['pool'], {'limit': 20, 'commitment': 'confirmed'}])
+        [row['pool'], {'limit': signature_limit, 'commitment': 'confirmed'}])
     if type(page) is not list:
         _gap(append, 'pool_signature_page_unavailable', mint=row['mint'])
         return False
     append('checkpoint', received_at_ms=received, mint=row['mint'], outcome='pool_signature_page',
            payload={'received_row_count': len(page), 'page_representation_sha256': digest(page),
-                    'retention_limit': 20})
-    if len(page) > 20:
+                    'retention_limit': signature_limit})
+    if len(page) > signature_limit:
         _gap(append, 'signature_page_exceeds_retention_cap', mint=row['mint'])
-    page = page[:20]
+    page = page[:signature_limit]
     valid = [item for item in page if type(item) is dict
              and type(item.get('signature')) is str and 64 <= len(item['signature']) <= 90
              and set(item['signature']) <= set('123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz')
@@ -266,7 +277,7 @@ async def _creation(session, append, row):
         else:
             tx, tx_received, tx_request, _ = await _rpc(session, append, 'getTransaction',
                 [item['signature'], {'encoding': 'jsonParsed', 'commitment': 'confirmed',
-                                     'maxSupportedTransactionVersion': 0}])
+                                     'maxSupportedTransactionVersion': max_supported_transaction_version}])
             transaction = tx.get('transaction') if type(tx) is dict else None
             signatures = transaction.get('signatures') if type(transaction) is dict else None
             if tx is not None and (type(signatures) is not list or not signatures
@@ -362,7 +373,9 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
                     first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial')
                     if first is not None:
                         snapshots.setdefault(mint, []).append(first)
-            candidate['creation_verified'] = await _creation(session, append, row)
+            candidate['creation_verified'] = await _creation(session, append, row,
+                signature_limit=plan['signature_limit'],
+                max_supported_transaction_version=plan.get('max_supported_transaction_version', 0))
             client, quote_request = RaydiumQuoteClient(session), str(uuid.uuid4())
             buy = await client.quote(SOL_MINT, mint, 1_000_000_000, 100)
             if _record_quote(append, buy, 'buy', quote_request) and buy['outcome'] == 'quoted':

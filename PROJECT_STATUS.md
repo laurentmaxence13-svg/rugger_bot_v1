@@ -17,8 +17,9 @@
   Priorité à l'API officielle Raydium `get/list`, `sort=new`, avec vérification
   RPC des créations et lecture cohérente des comptes, calculs natifs en SOL.
 - Validation des composants avant collecte : **1 263 tests réussis, 1 ignoré,
-  242 sous-tests réussis**, warnings en erreur, stderr vide ; 383 nouveaux cas
-  natifs, temporels et de campagne, dont persistance avant analyse et refus réseau.
+  242 sous-tests réussis**, warnings en erreur, stderr vide. Après diagnostics,
+  compatibilité v2 et ordre de replay : **1 304 réussis, 1 ignoré, 242 sous-tests** ;
+  424 nouveaux cas natifs, temporels et de campagne depuis main.
 - Protocole fixé avant collecte :
   [P3_LAUNCHLAB_CAMPAIGN.md](P3_LAUNCHLAB_CAMPAIGN.md), deux candidats au plus,
   20 requêtes / 60 secondes, exclusions/échecs/gaps conservés. Les nouveaux
@@ -27,6 +28,17 @@
   piste de découverte, les devis/projections ne sont pas des transactions.
   Couverture indépendante, fraîcheur vérifiable, identités/permissions complètes,
   coûts et sortie prospective restent nécessaires.
+- Résultats : primaire 19 requêtes / 185 événements / 100 lignes / 2 candidats /
+  4 états cohérents / 3 devis serveur disponibles sur 4 / 0 création vérifiée.
+  Diagnostics séparés : 6 lectures supplémentaires, **une création vérifiée**
+  mint/pool/créateur/heure concordants ; second pool indisponible par timeout.
+  Aucun résultat primaire ni historique n'est recalculé.
+- Blocages observés : Token-2022/extensions non certifiées, absence de timestamp/slot
+  fournisseur des devis, frais d'exécution incomplets, couverture indépendante et
+  sorties futures inconnues. Le plan v2 prépare les pages de 1 000 signatures et
+  la lecture version 1, sans exécution revendiquée ni activation de stratégie.
+- Rapport : [P3_LAUNCHLAB_VALIDATION.md](P3_LAUNCHLAB_VALIDATION.md) ; résumé/ancrages
+  dans [result.json](benchmarks/p3_launchlab_native_v1/result.json).
 - Comparaison accès gratuits/déjà accessibles et coûts éventuels :
   [P3_SOURCE_ALTERNATIVES.md](P3_SOURCE_ALTERNATIVES.md).
   Aucun abonnement, dépense, clé ou portefeuille activé.
