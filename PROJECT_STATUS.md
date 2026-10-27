@@ -1,52 +1,46 @@
 # État du projet — préparation P3
 
-## Mission courante
+## Mission courante — v2 exécutée et preuves archivées
 
-- Dernier main récupéré : `966076c1a8b9a5d83bea74fe53fdad1056ade6dc`.
-  [PR #19](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/19)
-  **fusionnée**, après revue indépendante et correctif
-  `a4b6685520862cbf8dd84949d872e08cd6715a56`.
-- Référence main reproduite sur ses seuls fichiers suivis : **880 tests réussis,
-  1 ignoré, 242 sous-tests réussis**, warnings en erreur, code 0, stderr vide.
-  La précédente référence 875 appartient à la PR avant correctif de revue.
-- Dernières corrections : suppression de l'authentification netrc implicite et
-  des retries GET cachés ; reçus/digests pour les preuves quote/FX rejetées.
-  Journal et calculs financiers revus indépendamment ; voir
-  [P3_PR19_REVIEW.md](P3_PR19_REVIEW.md).
-- Branche suivante : `feat/p3-native-launchlab-campaign`, issue de ce main.
-  [PR #20 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20).
-  Référence code de livraison testée : `612ed2cdb5331506200412dbbc34a22c65e67a95`.
-  Priorité à l'API officielle Raydium `get/list`, `sort=new`, avec vérification
-  RPC des créations et lecture cohérente des comptes, calculs natifs en SOL.
-- Validation des composants avant collecte : **1 263 tests réussis, 1 ignoré,
-  242 sous-tests réussis**, warnings en erreur, stderr vide. Après diagnostics,
-  compatibilité v2 et ordre de replay : **1 304 réussis, 1 ignoré, 242 sous-tests** ;
-  424 nouveaux cas natifs, temporels et de campagne depuis main.
-- Protocole fixé avant collecte :
-  [P3_LAUNCHLAB_CAMPAIGN.md](P3_LAUNCHLAB_CAMPAIGN.md), deux candidats au plus,
-  20 requêtes / 60 secondes, exclusions/échecs/gaps conservés. Les nouveaux
-  composants sont isolés dans `bot/p3/` ; aucun seuil de stratégie n'est changé.
-- **Évaluation économique P3 : NO-GO / INSUFFICIENT DATA.** L'index est une
-  piste de découverte, les devis/projections ne sont pas des transactions.
-  Couverture indépendante, fraîcheur vérifiable, identités/permissions complètes,
-  coûts et sortie prospective restent nécessaires.
-- Résultats : primaire 19 requêtes / 185 événements / 100 lignes / 2 candidats /
-  4 états cohérents / 3 devis serveur disponibles sur 4 / 0 création vérifiée.
-  Diagnostics séparés : 6 lectures supplémentaires, **une création vérifiée**
-  mint/pool/créateur/heure concordants ; second pool indisponible par timeout.
-  Aucun résultat primaire ni historique n'est recalculé.
-- Blocages observés : Token-2022/extensions non certifiées, absence de timestamp/slot
-  fournisseur des devis, frais d'exécution incomplets, couverture indépendante et
-  sorties futures inconnues. Le plan v2 prépare les pages de 1 000 signatures et
-  la lecture version 1, sans exécution revendiquée ni activation de stratégie.
-- Rapport : [P3_LAUNCHLAB_VALIDATION.md](P3_LAUNCHLAB_VALIDATION.md) ; résumé/ancrages
-  dans [result.json](benchmarks/p3_launchlab_native_v1/result.json).
-- Comparaison accès gratuits/déjà accessibles et coûts éventuels :
-  [P3_SOURCE_ALTERNATIVES.md](P3_SOURCE_ALTERNATIVES.md).
-  Aucun abonnement, dépense, clé ou portefeuille activé.
-- Ledger, historique de performance et protections P1/P2 conservés. Les bases
-  de capture et réponses brutes restent locales ; résumés et ancrages seulement
-  sont destinés à la PR.
+- [PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20)
+  **fusionnée** : main `8167264931af3a22dcce32e9d1a821d275b51307`.
+  Référence **1 304 / 1 / 242** reproduite ; deadline, annulations et enveloppe
+  RPC corrigées après revue indépendante : **1 309 / 1 / 242** avant fusion.
+  Voir [P3_PR20_REVIEW.md](P3_PR20_REVIEW.md).
+- V2 existant exécuté depuis ce main, plan inchangé : **19/20 requêtes,
+  25,909/60 s, 100 lignes, 2 candidats, 2 créations vérifiées, 4 snapshots,
+  2 devis d'achat, 0 ventes disponibles**, 1 gap d'univers, 182 événements.
+- Durabilité : **5 archives privées / 397 événements / 199 105 octets gzip**,
+  restaurées via blobs GitHub sans DB locale ; hashes/ancrages vérifiés.
+  Aucun SQLite, ledger ou .env publié. Les anciens corps jamais conservés
+  restent manquants, explicitement déclarés dans les manifestes.
+- Branche : `fix/p3-data-certification-and-durable-replay`, base main fusionné.
+  Code testé : `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`.
+  Suite finale : **1 342 réussis, 1 ignoré, 242 sous-tests**, warnings en erreur,
+  stderr vide ; aucun réseau dans les tests, aucune dépendance ajoutée.
+- Corrections ciblées : Token-2022 metadata-only 18/19, pins IDL indépendants/PDA
+  publiques, contrôle de vente sur état ultérieur, entrées de replay et export
+  portable. Profil historique conservé ; aucun seuil ou ledger modifié.
+- Diagnostic postérieur : premier candidat lisible mais plateforme UNKNOWN ;
+  second PDA complète mais supply mint/pool différente, contrôle conservé.
+  Aucune estimation de sortie ultérieure qualifiée ; aucun résultat réétiqueté.
+- **P3 économique : NO-GO / INSUFFICIENT DATA.** Couverture indépendante,
+  temps source des devis, frais complets, réconciliation et sorties manquent.
+- Rapport : [P3_V2_FINAL_VALIDATION.md](P3_V2_FINAL_VALIDATION.md).
+  [Résultats v2](validation/P3_V2_DATA_RESULTS.json),
+  [archives](evidence/p3/index.json),
+  [restauration](validation/P3_EVIDENCE_RESTORE.json).
+- Aucun ordre réel, dépense, souscription ou portefeuille activé. Pas de campagne
+  prolongée ; droits/quotas et replay brut complet restent des préconditions.
+
+## Résultats P3 antérieurs conservés
+
+- Après PR #19 : main `966076c`, 880/1/242 reproduits ; P3_PR19_REVIEW.md.
+- Primaire v1 : 19 requêtes, 185 événements, 0/2 créations ; diagnostics séparés :
+  6 lectures, une création confirmée, second pool indisponible par timeout.
+  Aucun réétiquetage des résultats primaires ou des performances historiques.
+- Rapports historiques : P3_LAUNCHLAB_VALIDATION.md, P3_LAUNCHLAB_CAMPAIGN.md,
+  P3_SOURCE_ALTERNATIVES.md ; preuves disponibles désormais archivées séparément.
 
 ## Livraison P1/P2 précédente
 

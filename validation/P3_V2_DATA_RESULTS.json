@@ -1,0 +1,2032 @@
+{
+  "creation_evidence": [
+    {
+      "creation_block_time_ms": 1793085356000,
+      "creator": "8f3kwYM78AnRq6zoHSqHC98SpctX32XrYurXtAg53K9P",
+      "fee_scope": "observed_creation_transaction_not_our_trade",
+      "index_creator_matches": true,
+      "meta_fee_lamports": 40000,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "pool": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+      "signature": "5BtkmsmPdLbxc9niVyoiQBgjx9bRiE7k28ZLVfYk8SUJCehDira8PEjzLNEFPh9gV7fohzD8yuk9HSDryZNV5XwR"
+    },
+    {
+      "creation_block_time_ms": 1793084719000,
+      "creator": "26H5Js9rJRQvg9wWoPZHzs8tbk1XdwfQUrGZ2Rxsk9RY",
+      "fee_scope": "observed_creation_transaction_not_our_trade",
+      "index_creator_matches": true,
+      "meta_fee_lamports": 40000,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "pool": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+      "signature": "3umbNJxM9hFM6GAebVd6pj86q7Hj5ete5ygjVE6BcPpr73XWQQPQ5Ron5Nv9tw94XJdmoBBirs1d8fNFwVU4mADa"
+    }
+  ],
+  "diagnostic_analysis_code_revision": "de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5",
+  "durable_evidence_bundle": "evidence/p3/launchlab_002",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "executed_code_revision": "8167264931af3a22dcce32e9d1a821d275b51307",
+  "later_exit_checks": [
+    {
+      "buy_received_at_ms": 1793085479757,
+      "earlier_buy_observation_id": 122,
+      "execution_verified": false,
+      "followup_context_slot": 461983012,
+      "followup_received_at_ms": 1793085495245,
+      "followup_snapshot_id": 171,
+      "hypothetical_entry_impact_applied": false,
+      "input_token_atomic": "33724510353232",
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "net_pnl_sol": null,
+      "outcome": "unavailable",
+      "quantity_fixed_before_followup": true,
+      "quantity_is_estimated_not_acquired": true,
+      "reason": "sell_exceeds_observed_outstanding_curve_tokens"
+    },
+    {
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        "mint_supply_or_decimals_mismatch"
+      ],
+      "buy_received_at_ms": 1793085489121,
+      "earlier_buy_observation_id": 168,
+      "execution_verified": false,
+      "followup_context_slot": 461983014,
+      "followup_received_at_ms": 1793085495489,
+      "followup_snapshot_id": 177,
+      "hypothetical_entry_impact_applied": false,
+      "input_token_atomic": "34132320657829",
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "net_pnl_sol": null,
+      "outcome": "unavailable",
+      "quantity_fixed_before_followup": true,
+      "quantity_is_estimated_not_acquired": true,
+      "reason": "followup_state_not_qualified"
+    }
+  ],
+  "legacy_v2_analyses_reproduced_from_remote_archive": 4,
+  "observational_reanalyses": [
+    {
+      "base_freeze_authority_present": false,
+      "base_mint_authority_present": false,
+      "base_supply_atomic": "1000000000000000",
+      "diagnostic_reanalysis_at_ms": 1793086761116,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "not_a_historical_decision": true,
+      "original_analysis_unchanged": true,
+      "period": "initial",
+      "pool_declared_supply_atomic": "1000000000000000",
+      "qualified_analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "original_platform_admin_seed_not_retained"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": {
+          "additional_execution_costs_known": false,
+          "buy_curve_fee_lamports": "12500000",
+          "buy_effective_input_lamports": "987500000",
+          "buy_input_lamports": "1000000000",
+          "buy_output_atomic": "33724510353232",
+          "buy_output_shortfall_vs_spot_without_fees": {
+            "denominator": "129453424069566796875",
+            "numerator": "4097312250718723382"
+          },
+          "execution_verified": false,
+          "fee_denominator": "1000000",
+          "fee_rate_total_ppm": "12500",
+          "kind": "conditional_constant_product_projection",
+          "net_economic_pnl_sol": null,
+          "observed_future_exit_quote": false,
+          "observed_vault_base_atomic": "992490780061784",
+          "observed_vault_quote_lamports": "212959839",
+          "position_acquired": false,
+          "post_buy_counterfactual_quote_vault_min_lamports": "1200459839",
+          "post_buy_counterfactual_real_a": "41233730291448",
+          "post_buy_counterfactual_real_b": "1198930821",
+          "rounding": "ceil_curve_fee_floor_output",
+          "sell_curve_fee_lamports": "12343750",
+          "sell_gross_output_lamports": "987499999",
+          "sell_input_atomic": "33724510353232",
+          "sell_output_lamports": "975156249",
+          "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+          "spot_sol_per_whole_token": {
+            "denominator": "266379096414541500",
+            "numerator": "7553070943"
+          }
+        },
+        "context_slot": 461982896,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "evidence_profile": "published_metadata_v1",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "mint_a": "2b9cfa2823117dc8dfeb0131512ad42f4f76c8965573f804d708402ac5435efb",
+            "mint_b": "b0f919425a529f4971ef8dabd535aec34947d5c8c4885df80dae91635b98c5f3",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "40c629fd8ac63d915d02c338faa7d82563bdd5e39c91803e0fc1e83231a1f0a6",
+            "vault_a": "c117bcf1b7465c1934fcde94e415866e75d0860e629974421859b1c7091183e1",
+            "vault_b": "7a49c5ccd4b3c1f3bb88d34cde5dab04bed7825880a0dd05770bbba483ca0d4c"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+            "vault_a": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+            "vault_b": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq"
+          },
+          "base_mint": {
+            "decimals": "6",
+            "extension_data_sha256": {
+              "18": "c03b7375037525ae778a9a4437ae1df9eed7c7f6a887def17e479353746e75f9",
+              "19": "5a9796120ce58511e7467d939a03f5ac5cd897b7c961b43a8739c52e64daeff2"
+            },
+            "extension_types": [
+              "18",
+              "19"
+            ],
+            "extensions_transfer_neutral": true,
+            "freeze_authority": null,
+            "freeze_authority_present": false,
+            "initialized": true,
+            "metadata": {
+              "additional_pairs_count": "0",
+              "mint_matches_expected": true,
+              "update_authority_present": true
+            },
+            "metadata_pointer": {
+              "address_matches_mint": true,
+              "address_present": true,
+              "authority_present": false
+            },
+            "mint_authority": null,
+            "mint_authority_present": false,
+            "source_sha256": {
+              "token2022_interface_extension_mod.rs": "d273a87617b06f4a813a2c3c3bbab8180a0a4c657d836a95475259eca9e40f5a",
+              "token2022_metadata_pointer_mod.rs": "db4f962e95f2a652b8faf06c8821cb2c7e6ecd31e90cc27d46df0ca143768633",
+              "token_metadata_state.rs": "865edf6b1d21d913403308e4bd6347d7210e02489c46c243ecd5210995f791de"
+            },
+            "supply_atomic": "1000000000000000",
+            "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          },
+          "base_vault": {
+            "account_lamports": "1488440",
+            "amount_atomic": "992490780061784",
+            "authority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+            "close_authority_present": false,
+            "delegate_present": false,
+            "extension_types": [],
+            "extensions_transfer_neutral": true,
+            "is_native": false,
+            "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "native_rent_reserve_lamports": null,
+            "source_sha256": {
+              "token2022_interface_extension_mod.rs": "d273a87617b06f4a813a2c3c3bbab8180a0a4c657d836a95475259eca9e40f5a",
+              "token2022_metadata_pointer_mod.rs": "db4f962e95f2a652b8faf06c8821cb2c7e6ecd31e90cc27d46df0ca143768633",
+              "token_metadata_state.rs": "865edf6b1d21d913403308e4bd6347d7210e02489c46c243ecd5210995f791de"
+            },
+            "state": "1",
+            "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "identity_certification": {
+            "account_discriminators_verified": true,
+            "blocking_reasons": [
+              "original_platform_admin_seed_not_retained"
+            ],
+            "checks": [
+              {
+                "name": "input_graph",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "config_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "config_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_empty_curve_params",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_config",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_platform",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_b",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_b",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_a_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_b_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_mint_link",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_mint_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+                "name": "pool_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+                "name": "vault_a_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq",
+                "name": "vault_b_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 250,
+                "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+                "name": "authority_pda",
+                "status": "PASS"
+              },
+              {
+                "name": "config_quote_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+                "name": "config_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 252,
+                "candidate_assumed_to_be_admin": false,
+                "candidate_hash_matched": false,
+                "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+                "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+                "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+                "name": "platform_pda",
+                "reason": "original_platform_admin_seed_not_retained",
+                "status": "UNKNOWN",
+                "verification_basis": "canonical_PDA_hash_equality_only"
+              }
+            ],
+            "execution_verified": false,
+            "program_derived_addresses_partially_verified": true,
+            "program_derived_addresses_verified": false,
+            "schema": "p3-launchlab-identity-certification-v1",
+            "scope": "pinned account identity only; no transfer, execution or binary certification",
+            "source_pins": {
+              "commit": "e7e0c96fe77bcf6a020b84a44c47a722aac8e359",
+              "git_blob": "70186e3f02c2bead7e5a9a92453104df853683ed",
+              "path": "raydium_launchpad/raydium_launchpad.json",
+              "repository": "https://github.com/raydium-io/raydium-idl",
+              "sha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb"
+            }
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "8f3kwYM78AnRq6zoHSqHC98SpctX32XrYurXtAg53K9P",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "1529018",
+            "real_a": "7509219938216",
+            "real_b": "211430821",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+            "vault_b": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false,
+          "quote_mint": {
+            "decimals": "9",
+            "freeze_authority": null,
+            "freeze_authority_present": false,
+            "initialized": true,
+            "mint_authority": null,
+            "mint_authority_present": false,
+            "supply_atomic": "0"
+          },
+          "quote_vault": {
+            "account_lamports": "214448279",
+            "amount_atomic": "212959839",
+            "authority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+            "close_authority_present": false,
+            "delegate_present": false,
+            "is_native": true,
+            "mint": "So11111111111111111111111111111111111111112",
+            "native_rent_reserve_lamports": "1488440",
+            "state": "1"
+          },
+          "share_fee_assumption_ppm": "0"
+        },
+        "identity_status": "owner_layout_relations_and_supplied_pins_checked",
+        "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+        "pool_address": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+        "real_orders_enabled": false,
+        "risk_flags": [],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "snapshot_available_at_ms": 1793085471165,
+      "snapshot_id": 108,
+      "snapshot_received_at_ms": 1793085471162,
+      "source_slot": 461982896
+    },
+    {
+      "base_freeze_authority_present": false,
+      "base_mint_authority_present": false,
+      "base_supply_atomic": "999020457494200",
+      "diagnostic_reanalysis_at_ms": 1793086761116,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "not_a_historical_decision": true,
+      "original_analysis_unchanged": true,
+      "period": "initial",
+      "pool_declared_supply_atomic": "1000000000000000",
+      "qualified_analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "mint_supply_or_decimals_mismatch"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461982938,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "evidence_profile": "published_metadata_v1",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "13e4d4aa587d6adabe5ce6daeedcec4d53bbb4ba94fd19cfd2fed0b17013ced2",
+            "pool": "318a0e32f64824cff6f905bab8f04d9ba32882c2f3a4c4e44a73f407d1bbebd0"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+            "pool": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+            "vault_a": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+            "vault_b": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "identity_certification": {
+            "account_discriminators_verified": true,
+            "blocking_reasons": [],
+            "checks": [
+              {
+                "name": "input_graph",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "config_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "config_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_empty_curve_params",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_config",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_platform",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_b",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_b",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_a_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_b_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_mint_link",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_mint_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+                "name": "pool_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+                "name": "vault_a_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9",
+                "name": "vault_b_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 250,
+                "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+                "name": "authority_pda",
+                "status": "PASS"
+              },
+              {
+                "name": "config_quote_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+                "name": "config_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 253,
+                "candidate_assumed_to_be_admin": false,
+                "candidate_hash_matched": true,
+                "candidate_public_key": "8Uvc5sffYGqcfqYQXmM3U1gFtNKzRLCV9g38AZ2Joub8",
+                "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+                "derived_address": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+                "name": "platform_pda",
+                "status": "PASS",
+                "verification_basis": "canonical_PDA_hash_equality_only"
+              }
+            ],
+            "execution_verified": false,
+            "program_derived_addresses_partially_verified": true,
+            "program_derived_addresses_verified": true,
+            "schema": "p3-launchlab-identity-certification-v1",
+            "scope": "pinned account identity only; no transfer, execution or binary certification",
+            "source_pins": {
+              "commit": "e7e0c96fe77bcf6a020b84a44c47a722aac8e359",
+              "git_blob": "70186e3f02c2bead7e5a9a92453104df853683ed",
+              "path": "raydium_launchpad/raydium_launchpad.json",
+              "repository": "https://github.com/raydium-io/raydium-idl",
+              "sha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb"
+            }
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "26H5Js9rJRQvg9wWoPZHzs8tbk1XdwfQUrGZ2Rxsk9RY",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "0",
+            "platform": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "17567559",
+            "real_a": "982344823380",
+            "real_b": "27490672",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+            "vault_b": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": true
+        },
+        "identity_status": "unverified",
+        "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+        "pool_address": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "mint_supply_or_decimals_mismatch"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "snapshot_available_at_ms": 1793085480152,
+      "snapshot_id": 127,
+      "snapshot_received_at_ms": 1793085480149,
+      "source_slot": 461982938
+    },
+    {
+      "base_freeze_authority_present": false,
+      "base_mint_authority_present": false,
+      "base_supply_atomic": "1000000000000000",
+      "diagnostic_reanalysis_at_ms": 1793086761116,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "not_a_historical_decision": true,
+      "original_analysis_unchanged": true,
+      "period": "followup",
+      "pool_declared_supply_atomic": "1000000000000000",
+      "qualified_analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "original_platform_admin_seed_not_retained"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": {
+          "additional_execution_costs_known": false,
+          "buy_curve_fee_lamports": "12500000",
+          "buy_effective_input_lamports": "987500000",
+          "buy_input_lamports": "1000000000",
+          "buy_output_atomic": "33724510353232",
+          "buy_output_shortfall_vs_spot_without_fees": {
+            "denominator": "129453424069566796875",
+            "numerator": "4097312250718723382"
+          },
+          "execution_verified": false,
+          "fee_denominator": "1000000",
+          "fee_rate_total_ppm": "12500",
+          "kind": "conditional_constant_product_projection",
+          "net_economic_pnl_sol": null,
+          "observed_future_exit_quote": false,
+          "observed_vault_base_atomic": "992490780061784",
+          "observed_vault_quote_lamports": "212959839",
+          "position_acquired": false,
+          "post_buy_counterfactual_quote_vault_min_lamports": "1200459839",
+          "post_buy_counterfactual_real_a": "41233730291448",
+          "post_buy_counterfactual_real_b": "1198930821",
+          "rounding": "ceil_curve_fee_floor_output",
+          "sell_curve_fee_lamports": "12343750",
+          "sell_gross_output_lamports": "987499999",
+          "sell_input_atomic": "33724510353232",
+          "sell_output_lamports": "975156249",
+          "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+          "spot_sol_per_whole_token": {
+            "denominator": "266379096414541500",
+            "numerator": "7553070943"
+          }
+        },
+        "context_slot": 461983012,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "evidence_profile": "published_metadata_v1",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "mint_a": "2b9cfa2823117dc8dfeb0131512ad42f4f76c8965573f804d708402ac5435efb",
+            "mint_b": "b0f919425a529f4971ef8dabd535aec34947d5c8c4885df80dae91635b98c5f3",
+            "platform": "41a54d5f9a8dff644cc4aaea078770de3aa38848795fd18673c380766656df6b",
+            "pool": "40c629fd8ac63d915d02c338faa7d82563bdd5e39c91803e0fc1e83231a1f0a6",
+            "vault_a": "c117bcf1b7465c1934fcde94e415866e75d0860e629974421859b1c7091183e1",
+            "vault_b": "7a49c5ccd4b3c1f3bb88d34cde5dab04bed7825880a0dd05770bbba483ca0d4c"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "pool": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+            "vault_a": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+            "vault_b": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq"
+          },
+          "base_mint": {
+            "decimals": "6",
+            "extension_data_sha256": {
+              "18": "c03b7375037525ae778a9a4437ae1df9eed7c7f6a887def17e479353746e75f9",
+              "19": "5a9796120ce58511e7467d939a03f5ac5cd897b7c961b43a8739c52e64daeff2"
+            },
+            "extension_types": [
+              "18",
+              "19"
+            ],
+            "extensions_transfer_neutral": true,
+            "freeze_authority": null,
+            "freeze_authority_present": false,
+            "initialized": true,
+            "metadata": {
+              "additional_pairs_count": "0",
+              "mint_matches_expected": true,
+              "update_authority_present": true
+            },
+            "metadata_pointer": {
+              "address_matches_mint": true,
+              "address_present": true,
+              "authority_present": false
+            },
+            "mint_authority": null,
+            "mint_authority_present": false,
+            "source_sha256": {
+              "token2022_interface_extension_mod.rs": "d273a87617b06f4a813a2c3c3bbab8180a0a4c657d836a95475259eca9e40f5a",
+              "token2022_metadata_pointer_mod.rs": "db4f962e95f2a652b8faf06c8821cb2c7e6ecd31e90cc27d46df0ca143768633",
+              "token_metadata_state.rs": "865edf6b1d21d913403308e4bd6347d7210e02489c46c243ecd5210995f791de"
+            },
+            "supply_atomic": "1000000000000000",
+            "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          },
+          "base_vault": {
+            "account_lamports": "1488440",
+            "amount_atomic": "992490780061784",
+            "authority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+            "close_authority_present": false,
+            "delegate_present": false,
+            "extension_types": [],
+            "extensions_transfer_neutral": true,
+            "is_native": false,
+            "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "native_rent_reserve_lamports": null,
+            "source_sha256": {
+              "token2022_interface_extension_mod.rs": "d273a87617b06f4a813a2c3c3bbab8180a0a4c657d836a95475259eca9e40f5a",
+              "token2022_metadata_pointer_mod.rs": "db4f962e95f2a652b8faf06c8821cb2c7e6ecd31e90cc27d46df0ca143768633",
+              "token_metadata_state.rs": "865edf6b1d21d913403308e4bd6347d7210e02489c46c243ecd5210995f791de"
+            },
+            "state": "1",
+            "token_program": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "identity_certification": {
+            "account_discriminators_verified": true,
+            "blocking_reasons": [
+              "original_platform_admin_seed_not_retained"
+            ],
+            "checks": [
+              {
+                "name": "input_graph",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "config_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "config_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_empty_curve_params",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_config",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_platform",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_b",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_b",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_a_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_b_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_mint_link",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_mint_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+                "name": "pool_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+                "name": "vault_a_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq",
+                "name": "vault_b_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 250,
+                "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+                "name": "authority_pda",
+                "status": "PASS"
+              },
+              {
+                "name": "config_quote_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+                "name": "config_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 252,
+                "candidate_assumed_to_be_admin": false,
+                "candidate_hash_matched": false,
+                "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+                "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+                "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+                "name": "platform_pda",
+                "reason": "original_platform_admin_seed_not_retained",
+                "status": "UNKNOWN",
+                "verification_basis": "canonical_PDA_hash_equality_only"
+              }
+            ],
+            "execution_verified": false,
+            "program_derived_addresses_partially_verified": true,
+            "program_derived_addresses_verified": false,
+            "schema": "p3-launchlab-identity-certification-v1",
+            "scope": "pinned account identity only; no transfer, execution or binary certification",
+            "source_pins": {
+              "commit": "e7e0c96fe77bcf6a020b84a44c47a722aac8e359",
+              "git_blob": "70186e3f02c2bead7e5a9a92453104df853683ed",
+              "path": "raydium_launchpad/raydium_launchpad.json",
+              "repository": "https://github.com/raydium-io/raydium-idl",
+              "sha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb"
+            }
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "8f3kwYM78AnRq6zoHSqHC98SpctX32XrYurXtAg53K9P",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "1",
+            "platform": "4E876qZTE9FJMrBzgVtBrSrzz2TLivB5Y5QXPjB4gZL7",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "1529018",
+            "real_a": "7509219938216",
+            "real_b": "211430821",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "FXZ4og4ye5BvehoUx7UcbBKHrcyx76uae6YRK7hFyg2r",
+            "vault_b": "7R1Dg7JJocUz7KEDKKpNatz675DBcDyMZT8cbeU4hCoq",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": false,
+          "quote_mint": {
+            "decimals": "9",
+            "freeze_authority": null,
+            "freeze_authority_present": false,
+            "initialized": true,
+            "mint_authority": null,
+            "mint_authority_present": false,
+            "supply_atomic": "0"
+          },
+          "quote_vault": {
+            "account_lamports": "214448279",
+            "amount_atomic": "212959839",
+            "authority": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+            "close_authority_present": false,
+            "delegate_present": false,
+            "is_native": true,
+            "mint": "So11111111111111111111111111111111111111112",
+            "native_rent_reserve_lamports": "1488440",
+            "state": "1"
+          },
+          "share_fee_assumption_ppm": "0"
+        },
+        "identity_status": "owner_layout_relations_and_supplied_pins_checked",
+        "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+        "pool_address": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+        "real_orders_enabled": false,
+        "risk_flags": [],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "snapshot_available_at_ms": 1793085495248,
+      "snapshot_id": 171,
+      "snapshot_received_at_ms": 1793085495245,
+      "source_slot": 461983012
+    },
+    {
+      "base_freeze_authority_present": false,
+      "base_mint_authority_present": false,
+      "base_supply_atomic": "999020457494200",
+      "diagnostic_reanalysis_at_ms": 1793086761116,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "not_a_historical_decision": true,
+      "original_analysis_unchanged": true,
+      "period": "followup",
+      "pool_declared_supply_atomic": "1000000000000000",
+      "qualified_analysis": {
+        "blocking_reasons": [
+          "execution_not_verified",
+          "additional_execution_costs_unknown",
+          "creation_transaction_not_verified_by_snapshot",
+          "mint_supply_or_decimals_mismatch"
+        ],
+        "candidate_eligible": false,
+        "conditional_projection": null,
+        "context_slot": 461983014,
+        "creation_transaction_verified": false,
+        "economic_verdict": "INSUFFICIENT DATA",
+        "evidence_profile": "published_metadata_v1",
+        "facts": {
+          "account_context_basis": "caller_supplied_single_getMultipleAccounts_response",
+          "account_data_sha256": {
+            "config": "9d79abb574362644124765ec8a29928d34e43384633aecc4241c6cb28c2f4661",
+            "platform": "13e4d4aa587d6adabe5ce6daeedcec4d53bbb4ba94fd19cfd2fed0b17013ced2",
+            "pool": "318a0e32f64824cff6f905bab8f04d9ba32882c2f3a4c4e44a73f407d1bbebd0"
+          },
+          "addresses": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "mint_a": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "platform": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+            "pool": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+            "vault_a": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+            "vault_b": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9"
+          },
+          "config": {
+            "curve_type": "0",
+            "discriminator_hex": "95089ccaa0fcb0d9",
+            "max_share_fee_rate_ppm": "10000",
+            "quote_mint": "So11111111111111111111111111111111111111112",
+            "trade_fee_rate_ppm": "2500"
+          },
+          "identity_certification": {
+            "account_discriminators_verified": true,
+            "blocking_reasons": [],
+            "checks": [
+              {
+                "name": "input_graph",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "config_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "config_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_discriminator",
+                "status": "PASS"
+              },
+              {
+                "name": "platform_empty_curve_params",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_config",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_platform",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_mint_b",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_a",
+                "status": "PASS"
+              },
+              {
+                "name": "pool_link_vault_b",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_a_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "mint_b_program_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_a_mint_link",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_layout_owner",
+                "status": "PASS"
+              },
+              {
+                "name": "vault_b_mint_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+                "name": "pool_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+                "name": "vault_a_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 255,
+                "derived_address": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9",
+                "name": "vault_b_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 250,
+                "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+                "name": "authority_pda",
+                "status": "PASS"
+              },
+              {
+                "name": "config_quote_link",
+                "status": "PASS"
+              },
+              {
+                "bump": 254,
+                "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+                "name": "config_pda",
+                "status": "PASS"
+              },
+              {
+                "bump": 253,
+                "candidate_assumed_to_be_admin": false,
+                "candidate_hash_matched": true,
+                "candidate_public_key": "8Uvc5sffYGqcfqYQXmM3U1gFtNKzRLCV9g38AZ2Joub8",
+                "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+                "derived_address": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+                "name": "platform_pda",
+                "status": "PASS",
+                "verification_basis": "canonical_PDA_hash_equality_only"
+              }
+            ],
+            "execution_verified": false,
+            "program_derived_addresses_partially_verified": true,
+            "program_derived_addresses_verified": true,
+            "schema": "p3-launchlab-identity-certification-v1",
+            "scope": "pinned account identity only; no transfer, execution or binary certification",
+            "source_pins": {
+              "commit": "e7e0c96fe77bcf6a020b84a44c47a722aac8e359",
+              "git_blob": "70186e3f02c2bead7e5a9a92453104df853683ed",
+              "path": "raydium_launchpad/raydium_launchpad.json",
+              "repository": "https://github.com/raydium-io/raydium-idl",
+              "sha256": "963189409945069409f32e345d4adf2892e0b3ca1be504372577fe34a23c6cdb"
+            }
+          },
+          "platform": {
+            "creator_fee_rate_ppm": "0",
+            "discriminator_hex": "a04e8000f853e6a0",
+            "platform_fee_rate_ppm": "10000"
+          },
+          "pool": {
+            "config": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+            "cpmm_creator_fee_on": "0",
+            "creator": "26H5Js9rJRQvg9wWoPZHzs8tbk1XdwfQUrGZ2Rxsk9RY",
+            "decimals_a": "6",
+            "decimals_b": "9",
+            "discriminator_hex": "f7ede3f5d7c3de46",
+            "locked_base_amount": "0",
+            "migrate_fee": "0",
+            "migrate_type": "1",
+            "mint_a": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+            "mint_b": "So11111111111111111111111111111111111111112",
+            "mint_program_flag": "0",
+            "platform": "BDTgTEvMyGXjJSDHnCdVG4zRgBufvREVrfAksYgTNjHW",
+            "platform_fee_accrued": "0",
+            "protocol_fee_accrued": "17567559",
+            "real_a": "982344823380",
+            "real_b": "27490672",
+            "status": "0",
+            "supply": "1000000000000000",
+            "total_fundraising_b": "85000000000",
+            "total_sell_a": "793100000000000",
+            "vault_a": "C9DgmubdPFsUyjzoH2x99htwtDwt1pN1EQEiZ6ckCsiv",
+            "vault_b": "7YjxyyUmdu324Tr1N3CkAzdsv7dJFUYLQvVzj4HgCwD9",
+            "virtual_a": "1073025605596382",
+            "virtual_b": "30000852951"
+          },
+          "program_derived_addresses_verified": true
+        },
+        "identity_status": "unverified",
+        "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+        "pool_address": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+        "real_orders_enabled": false,
+        "risk_flags": [
+          "mint_supply_or_decimals_mismatch"
+        ],
+        "schema": "p3-launchlab-native-snapshot-v1",
+        "source_repository": "https://github.com/raydium-io/raydium-sdk-V2",
+        "source_sha256": {
+          "common/bignumber.ts": "a879be4768e747cff2465a85262136bfb9cb046eab4f32893bc571bf31705f11",
+          "common/fee.ts": "a4ee15c1375f8470824b81418c19c1656f52ce9db1c9116076018159efab6551",
+          "curve/constantProductCurve.ts": "d8004455490cf3742472889a1c981e9f3faeda03c74f27bdc789b88e2831dc66",
+          "curve/curve.ts": "2b5019678a8a4970f0f11645e2c15ea2d969b3b17f94d136191a952ea3ee2dfa",
+          "layout.ts": "a422af7572b3b0f567ff7ad39f4b099eaf8a551257a77f89a61a3fe603ec2256"
+        }
+      },
+      "snapshot_available_at_ms": 1793085495493,
+      "snapshot_id": 177,
+      "snapshot_received_at_ms": 1793085495489,
+      "source_slot": 461983014
+    }
+  ],
+  "p3_go": false,
+  "pr20_baseline_tests_passed": 1304,
+  "pr20_reviewed_tests_passed": 1309,
+  "primary_report": {
+    "discovery_received_rows": 100,
+    "discovery_retained_rows": 100,
+    "economic_verdict": "INSUFFICIENT DATA",
+    "manifest": {
+      "candidates": [
+        {
+          "account_discriminators_certified": false,
+          "all_account_links_verified": false,
+          "coherent_snapshot_count": 2,
+          "creation_verified": true,
+          "exit_liquidity_checked": false,
+          "exit_observation_available": false,
+          "fees_complete": false,
+          "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+          "native_sol": true,
+          "network_fee_bound_known": false,
+          "pit_decision_order_verified": true,
+          "snapshot_source_age_ms": 1245,
+          "snapshots": [
+            {
+              "analysis_at_ms": 1793085471363,
+              "available_at_ms": 1793085471165,
+              "coherent": true,
+              "context_slot": 461982896,
+              "received_at_ms": 1793085471162,
+              "source_time_ms": 1793085470000
+            },
+            {
+              "analysis_at_ms": 1793085495381,
+              "available_at_ms": 1793085495248,
+              "coherent": true,
+              "context_slot": 461983012,
+              "received_at_ms": 1793085495245,
+              "source_time_ms": 1793085494000
+            }
+          ],
+          "source_clock_bound_known": false,
+          "token_transfer_restrictions_known": false
+        },
+        {
+          "account_discriminators_certified": false,
+          "all_account_links_verified": false,
+          "coherent_snapshot_count": 2,
+          "creation_verified": true,
+          "exit_liquidity_checked": false,
+          "exit_observation_available": false,
+          "fees_complete": false,
+          "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+          "native_sol": true,
+          "network_fee_bound_known": false,
+          "pit_decision_order_verified": true,
+          "snapshot_source_age_ms": 1149,
+          "snapshots": [
+            {
+              "analysis_at_ms": 1793085480303,
+              "available_at_ms": 1793085480152,
+              "coherent": true,
+              "context_slot": 461982938,
+              "received_at_ms": 1793085480149,
+              "source_time_ms": 1793085479000
+            },
+            {
+              "analysis_at_ms": 1793085495631,
+              "available_at_ms": 1793085495493,
+              "coherent": true,
+              "context_slot": 461983014,
+              "received_at_ms": 1793085495489,
+              "source_time_ms": 1793085495000
+            }
+          ],
+          "source_clock_bound_known": false,
+          "token_transfer_restrictions_known": false
+        }
+      ],
+      "data_kind": "live",
+      "plan": {
+        "commitment": "confirmed",
+        "followup_delay_ms": 15000,
+        "index_sort": "new",
+        "input_lamports": 1000000000,
+        "max_elapsed_ms": 60000,
+        "max_index_rows": 100,
+        "max_requests": 20,
+        "max_supported_transaction_version": 1,
+        "plan_id": "launchlab-native-sol-002",
+        "plan_sha256": "49498f4b0f9326840b085f84cb14039648de860836e51a0dde8fd4f314425090",
+        "registered_at_ms": 1793081732610,
+        "sample_size": 2,
+        "schema": "p3-launchlab-campaign-v2",
+        "selection": "first_two_valid_unique_SOL_rows_in_response_order",
+        "share_fee_rate_ppm": 0,
+        "signature_limit": 1000,
+        "slippage_bps": 100,
+        "source_main": "966076c1a8b9a5d83bea74fe53fdad1056ade6dc",
+        "started_at_ms": 1793085469768,
+        "transaction_selection": "oldest_successful_signature_in_received_page",
+        "transactions_per_pool": 1
+      },
+      "policy": {
+        "max_snapshot_age_ms": 5000
+      },
+      "run": {
+        "anonymous_transport": true,
+        "elapsed_ms": 25909,
+        "financial_methods_used": [],
+        "independent_reference_complete": false,
+        "integrity_verified": true,
+        "open_gaps": 1,
+        "requests_used": 19,
+        "selected_count": 2,
+        "tail_anchor_verified": true,
+        "wire_retry_disabled": true
+      }
+    },
+    "market_detection_coverage": null,
+    "position_acquired": false,
+    "quality": {
+      "as_of_ms": null,
+      "economic_validation": "INSUFFICIENT DATA",
+      "fx_without_source_time": 0,
+      "integrity": "verified_hash_chain_not_authenticated",
+      "kind_counts": {
+        "candidate_decision": 106,
+        "checkpoint": 6,
+        "discovery": 1,
+        "gap": 1,
+        "launch": 2,
+        "pool_snapshot": 6,
+        "quote_attempt": 12,
+        "request": 15,
+        "transaction": 33
+      },
+      "market_detection_coverage": null,
+      "missing_transactions": 0,
+      "open_gap_count": 1,
+      "open_gap_ids": [
+        "bfebeec6-ac48-4bfd-9a6d-25553fc6a811"
+      ],
+      "outcome_counts": {
+        "address_discovery": 2,
+        "bounded_campaign_complete": 1,
+        "creation_matched": 2,
+        "not_admitted": 4,
+        "not_evaluated": 2,
+        "not_fetched": 31,
+        "observed": 24,
+        "open": 1,
+        "pool_signature_page": 2,
+        "quoted": 2,
+        "registered_plan": 1,
+        "rejected_from_capture_sample": 98,
+        "selected": 2,
+        "unavailable": 10
+      },
+      "p3_go": false,
+      "provenance_counts": {
+        "live": 182
+      },
+      "quality_flag_counts": {
+        "source_time_unknown": 176
+      },
+      "quotes_without_source_time": 12,
+      "records": 182,
+      "rejected_candidates": 0,
+      "schema": "p3-capture-quality-v1",
+      "unavailable_quotes": 10,
+      "unmatched_gap_closures": 0
+    },
+    "readiness": {
+      "collection_readiness": "GO",
+      "criteria": [
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "live_data",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "registered_plan_identity",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "preregistration",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "request_budget",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 3,
+          "known_count": 3,
+          "name": "duration_budget",
+          "reasons": [],
+          "required_count": 3,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "anonymous_transport",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "wire_retry_disabled",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "integrity_verified",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "tail_anchor_verified",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "no_financial_methods",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 5,
+          "known_count": 5,
+          "name": "selected_rows_accounted",
+          "reasons": [],
+          "required_count": 5,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "selected_mint_identity",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "collection",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 1,
+          "name": "independent_reference_complete",
+          "reasons": [
+            "independent_reference_complete: requirement not met"
+          ],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 1,
+          "name": "no_open_gaps",
+          "reasons": [
+            "open_gaps must be zero: requirement not met"
+          ],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 1,
+          "known_count": 1,
+          "name": "declared_snapshot_age_bound",
+          "reasons": [],
+          "required_count": 1,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "declared_followup_delay",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "creation_verified",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "all_account_links_verified",
+          "reasons": [
+            "candidate[0].all_account_links_verified: requirement not met",
+            "candidate[1].all_account_links_verified: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "account_discriminators_certified",
+          "reasons": [
+            "candidate[0].account_discriminators_certified: requirement not met",
+            "candidate[1].account_discriminators_certified: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "native_sol",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "token_transfer_restrictions_known",
+          "reasons": [
+            "candidate[0].token_transfer_restrictions_known: requirement not met",
+            "candidate[1].token_transfer_restrictions_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "exit_liquidity_checked",
+          "reasons": [
+            "candidate[0].exit_liquidity_checked: requirement not met",
+            "candidate[1].exit_liquidity_checked: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "fees_complete",
+          "reasons": [
+            "candidate[0].fees_complete: requirement not met",
+            "candidate[1].fees_complete: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "network_fee_bound_known",
+          "reasons": [
+            "candidate[0].network_fee_bound_known: requirement not met",
+            "candidate[1].network_fee_bound_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "source_clock_bound_known",
+          "reasons": [
+            "candidate[0].source_clock_bound_known: requirement not met",
+            "candidate[1].source_clock_bound_known: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 2,
+          "known_count": 2,
+          "name": "pit_decision_order_verified",
+          "reasons": [],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 0,
+          "known_count": 2,
+          "name": "exit_observation_available",
+          "reasons": [
+            "candidate[0].exit_observation_available: requirement not met",
+            "candidate[1].exit_observation_available: requirement not met"
+          ],
+          "required_count": 2,
+          "scope": "economic",
+          "status": "FAIL"
+        },
+        {
+          "evidence_count": 4,
+          "known_count": 4,
+          "name": "coherent_snapshot_periods",
+          "reasons": [],
+          "required_count": 4,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 38,
+          "known_count": 38,
+          "name": "snapshot_temporal_evidence",
+          "reasons": [],
+          "required_count": 38,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 8,
+          "known_count": 8,
+          "name": "snapshot_source_time_evidence",
+          "reasons": [],
+          "required_count": 8,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 8,
+          "known_count": 8,
+          "name": "snapshot_source_freshness",
+          "reasons": [],
+          "required_count": 8,
+          "scope": "economic",
+          "status": "PASS"
+        },
+        {
+          "evidence_count": 4,
+          "known_count": 4,
+          "name": "snapshot_decision_freshness",
+          "reasons": [],
+          "required_count": 4,
+          "scope": "economic",
+          "status": "PASS"
+        }
+      ],
+      "economic_readiness": "NO-GO",
+      "economic_verdict": "INSUFFICIENT DATA",
+      "evidence_basis": "manifest attestations requiring retained underlying evidence",
+      "max_snapshot_age_cap_ms": 5000,
+      "p3_go": false,
+      "reasons": [
+        "independent_reference_complete: requirement not met",
+        "open_gaps must be zero: requirement not met",
+        "candidate[0].all_account_links_verified: requirement not met",
+        "candidate[1].all_account_links_verified: requirement not met",
+        "candidate[0].account_discriminators_certified: requirement not met",
+        "candidate[1].account_discriminators_certified: requirement not met",
+        "candidate[0].token_transfer_restrictions_known: requirement not met",
+        "candidate[1].token_transfer_restrictions_known: requirement not met",
+        "candidate[0].exit_liquidity_checked: requirement not met",
+        "candidate[1].exit_liquidity_checked: requirement not met",
+        "candidate[0].fees_complete: requirement not met",
+        "candidate[1].fees_complete: requirement not met",
+        "candidate[0].network_fee_bound_known: requirement not met",
+        "candidate[1].network_fee_bound_known: requirement not met",
+        "candidate[0].source_clock_bound_known: requirement not met",
+        "candidate[1].source_clock_bound_known: requirement not met",
+        "candidate[0].exit_observation_available: requirement not met",
+        "candidate[1].exit_observation_available: requirement not met"
+      ],
+      "schema": "p3-readiness-v1",
+      "scope": "prospective PAPER data admission; no profitability validation"
+    },
+    "real_orders_enabled": false,
+    "schema": "p3-launchlab-campaign-report-v1",
+    "selected_count": 2,
+    "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790",
+    "verified_creations": 2
+  },
+  "primary_results_unchanged": true,
+  "provider_quote_observations": [
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [
+          {
+            "fee_amount_atomic": "12500000",
+            "fee_mint": "So11111111111111111111111111111111111111112",
+            "fee_rate_raw": "125",
+            "fee_rate_unit": "provider_unit_not_converted_to_bps"
+          }
+        ],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "input_mint": "So11111111111111111111111111111111111111112",
+      "latency_ms": 915.131926,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": "33387265249699",
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "observation_id": 122,
+      "outcome": "quoted",
+      "output_amount_atomic": "33724510353232",
+      "output_mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "price_impact_pct": "4.57",
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793085479757,
+      "requested_at_ms": 1793085478842,
+      "retry_after_seconds": null,
+      "route": [
+        {
+          "feeAmount": "12500000",
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeRate": 125,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+          "poolId": "128ShrqRBWLp3bVZFRT5f4RpdfpjPgZRyM9XvQHSktnf",
+          "remainingAccounts": []
+        }
+      ],
+      "sanitized_response_sha256": "867e5c9e67a14f77fc10dae645a79780f0d8ba8ad9f05500c51c2ac726906217",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": null,
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "33724510353232",
+      "input_mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "latency_ms": 209.071311,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": null,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "observation_id": 123,
+      "outcome": "unavailable",
+      "output_amount_atomic": null,
+      "output_mint": "So11111111111111111111111111111111111111112",
+      "price_impact_pct": null,
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "sell",
+      "reason": "provider_rejected",
+      "received_at_ms": 1793085479969,
+      "requested_at_ms": 1793085479760,
+      "retry_after_seconds": null,
+      "route": [],
+      "sanitized_response_sha256": "6ab109c45293ddc62f9c0d3e1e2cb0afc89afc08387658f716cfb3126f9f429f",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [
+          {
+            "fee_amount_atomic": "12500000",
+            "fee_mint": "So11111111111111111111111111111111111111112",
+            "fee_rate_raw": "125",
+            "fee_rate_unit": "provider_unit_not_converted_to_bps"
+          }
+        ],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "input_mint": "So11111111111111111111111111111111111111112",
+      "latency_ms": 1478.686094,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": "33790997451250",
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "observation_id": 168,
+      "outcome": "quoted",
+      "output_amount_atomic": "34132320657829",
+      "output_mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "price_impact_pct": "4.59",
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793085489121,
+      "requested_at_ms": 1793085487643,
+      "retry_after_seconds": null,
+      "route": [
+        {
+          "feeAmount": "12500000",
+          "feeMint": "So11111111111111111111111111111111111111112",
+          "feeRate": 125,
+          "inputMint": "So11111111111111111111111111111111111111112",
+          "outputMint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+          "poolId": "2t8Qz4NxSHdDxcLsiyWUycqrf8vSzXZfRzkuyyMgfkzj",
+          "remainingAccounts": []
+        }
+      ],
+      "sanitized_response_sha256": "c6c5d67bf3343ef87d92e0c87872c0eb55138df593ee9ae9bfc4b0460f416f1a",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": null,
+      "executable_confirmed": false,
+      "execution_guaranteed": false,
+      "fee_details": {
+        "account_creation_lamports": null,
+        "additional_costs_must_not_duplicate_route_fees": true,
+        "network_fee_lamports": null,
+        "priority_fee_lamports": null,
+        "route_fees": [],
+        "total_cost_known": false
+      },
+      "http_status": 200,
+      "input_amount_atomic": "34132320657829",
+      "input_mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "latency_ms": 325.968558,
+      "liquidity_snapshot": {
+        "basis": "not_provided_by_route_quote",
+        "executable_depth_for_requested_size": null,
+        "reserves": null
+      },
+      "min_output_amount_atomic": null,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "observation_id": 169,
+      "outcome": "unavailable",
+      "output_amount_atomic": null,
+      "output_mint": "So11111111111111111111111111111111111111112",
+      "price_impact_pct": null,
+      "provider": "raydium_trade_api",
+      "quality_flags": [
+        "provider_source_time_unknown",
+        "provider_context_slot_unknown",
+        "additional_execution_costs_unknown"
+      ],
+      "quote_kind": "size_specific_route_estimate",
+      "quote_side": "sell",
+      "reason": "provider_rejected",
+      "received_at_ms": 1793085489450,
+      "requested_at_ms": 1793085489124,
+      "retry_after_seconds": null,
+      "route": [],
+      "sanitized_response_sha256": "253c00ddc8716519af0a8a80be537c6b80812db20241f9fd304047b988a7f5d1",
+      "slippage_bps": 100,
+      "source_slot": null,
+      "source_time_ms": null
+    }
+  ],
+  "real_orders_enabled": false,
+  "retention_complete_raw_corpus": false,
+  "schema": "p3-v2-validation-v1",
+  "software_validation": {
+    "market_network_in_tests": false,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "tests_passed": 1342,
+    "tests_skipped": 1,
+    "warnings_as_errors": true
+  },
+  "source_certification_scope": "published_IDL_and_metadata_only_subset; platform_admin_not_universally_known; no_deployed_binary_certification"
+}
