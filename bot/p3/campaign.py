@@ -66,6 +66,39 @@ def validate_plan(plan):
 
 class CampaignSession(ReadOnlySession):
     """Adds only discovery and two account-reading methods to the P3 policy."""
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
+        super().__init__(session, max_requests, proxy_resolver=proxy_resolver)
+        self._deadline_ns = None
+
+    def check_deadline(self):
+        if self._deadline_ns is not None and time.monotonic_ns() >= self._deadline_ns:
+            raise ReadOnlyPolicyError('campaign_deadline_exhausted')
+
+    def _take(self):
+        # asyncio timers cannot interrupt SQLite/JSON synchronous work. Check
+        # the monotonic deadline again immediately before dispatching a request.
+        self.check_deadline()
+        super()._take()
+
+    def _limit_timeout(self, kwargs):
+        if self._deadline_ns is None:
+            return
+        self.check_deadline()
+        remaining = (self._deadline_ns-time.monotonic_ns())/1_000_000_000
+        if remaining <= 0:
+            raise ReadOnlyPolicyError('campaign_deadline_exhausted')
+        timeout = kwargs.get('timeout')
+        if timeout is not None and not isinstance(timeout, aiohttp.ClientTimeout):
+            raise ReadOnlyPolicyError('Unexpected campaign timeout configuration')
+        total = timeout.total if timeout is not None else None
+        kwargs['timeout'] = aiohttp.ClientTimeout(
+            total=min(remaining, total) if total is not None and total > 0 else remaining,
+            connect=timeout.connect if timeout is not None else None,
+            sock_read=timeout.sock_read if timeout is not None else None,
+            sock_connect=timeout.sock_connect if timeout is not None else None,
+            # aiohttp otherwise rounds timeouts >=5 s to the next second.
+            ceil_threshold=float('inf'))
+
     @staticmethod
     def _anonymous_options(kwargs):
         if set(kwargs) - {'timeout'}:
@@ -79,15 +112,20 @@ class CampaignSession(ReadOnlySession):
             redirects = kwargs.pop('allow_redirects', False)
             if redirects is not False or set(kwargs) - {'params', 'timeout'}:
                 raise ReadOnlyPolicyError('Unexpected transport options')
-            return super().get(url, **kwargs)
-        params = kwargs.pop('params', None)
-        self._anonymous_options(kwargs)
-        if params != {'sort': 'new'}:
-            raise ReadOnlyPolicyError('Unexpected discovery query')
-        self._take()
-        kwargs.update(params=params, allow_redirects=False)
+            params = kwargs.get('params') or {}
+            if set(params) != {'inputMint', 'outputMint', 'amount', 'slippageBps', 'txVersion'}:
+                raise ReadOnlyPolicyError('Unexpected quote query parameters')
+        else:
+            params = kwargs.pop('params', None)
+            self._anonymous_options(kwargs)
+            if params != {'sort': 'new'}:
+                raise ReadOnlyPolicyError('Unexpected discovery query')
+            kwargs['params'] = params
+        kwargs['allow_redirects'] = False
         if self.proxy_resolver is not None:
             kwargs['proxy'] = self.proxy_resolver(url)
+        self._limit_timeout(kwargs)
+        self._take()
         return self.session.get(url, **kwargs)
 
     def post(self, url, *, json=None, **kwargs):
@@ -98,10 +136,11 @@ class CampaignSession(ReadOnlySession):
                 or json['id'] != 1 or json.get('method') not in _METHODS
                 or type(json.get('params')) is not list):
             raise ReadOnlyPolicyError('RPC method is outside the campaign policy')
-        self._take()
         kwargs['allow_redirects'] = False
         if self.proxy_resolver is not None:
             kwargs['proxy'] = self.proxy_resolver(url)
+        self._limit_timeout(kwargs)
+        self._take()
         return self.session.post(url, json=json, **kwargs)
 
 
@@ -153,7 +192,7 @@ def select_rows(payload):
 
 async def _discover(session, append):
     started, mono = now_ms(), time.monotonic_ns()
-    payload, status, reason = None, None, None
+    payload, status, reason, cancelled = None, None, None, None
     try:
         async with session.get(INDEX_URL, params={'sort': 'new'},
                                timeout=aiohttp.ClientTimeout(total=8)) as response:
@@ -166,12 +205,32 @@ async def _discover(session, append):
         reason = 'transport_or_timeout'
     except (ValueError, TypeError, ReadOnlyPolicyError):
         reason = 'invalid_response_or_policy'
+    except asyncio.CancelledError as error:
+        reason, cancelled = 'capture_cancelled', error
     received = now_ms()
     append('request', received_at_ms=received, outcome='observed' if payload is not None else 'error',
            reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': 'new',
                                   'requested_at_ms': started, 'http_status': status,
                                   'latency_ms': (time.monotonic_ns()-mono)/1_000_000})
+    if cancelled is not None:
+        raise cancelled
     return payload, received
+
+
+async def _quote_with_cancellation_receipt(client, append, input_mint, output_mint,
+                                         amount, side, request_id):
+    requested = now_ms()
+    try:
+        return await client.quote(input_mint, output_mint, amount, 100)
+    except asyncio.CancelledError:
+        append('quote_attempt', received_at_ms=now_ms(),
+               mint=output_mint if side == 'buy' else input_mint,
+               outcome='cancelled', reason='capture_cancelled', request_id=request_id,
+               payload={'provider': 'raydium_trade_api', 'quote_side': side,
+                        'input_mint': input_mint, 'output_mint': output_mint,
+                        'input_amount_atomic': str(amount), 'requested_at_ms': requested,
+                        'position_acquired': False, 'execution_verified': False})
+        raise
 
 
 def _gap(append, reason, *, mint=None):
@@ -315,6 +374,7 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
     if session.max_requests != plan['max_requests'] or session.requests_used != 0:
         raise ValueError('Fresh session must match the registered request budget')
     started, mono = now_ms(), time.monotonic_ns()
+    session._deadline_ns = mono + plan['max_elapsed_ms']*1_000_000
     selected, retained, total_rows, candidates, snapshots, addresses = [], [], None, [], {}, {}
 
     def append(kind, **event):
@@ -343,6 +403,7 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
                    outcome='selected' if row in selected else 'rejected_from_capture_sample',
                    reason=row['selection_reason'], payload={'index': row['index'], 'entry_permitted': False})
         for row in selected:
+            session.check_deadline()
             mint = row['mint']
             candidate = {'mint': mint, 'creation_verified': False, 'snapshots': [],
                 'all_account_links_verified': False, 'account_discriminators_certified': False,
@@ -373,13 +434,18 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
                     first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial')
                     if first is not None:
                         snapshots.setdefault(mint, []).append(first)
+            session.check_deadline()
             candidate['creation_verified'] = await _creation(session, append, row,
                 signature_limit=plan['signature_limit'],
                 max_supported_transaction_version=plan.get('max_supported_transaction_version', 0))
             client, quote_request = RaydiumQuoteClient(session), str(uuid.uuid4())
-            buy = await client.quote(SOL_MINT, mint, 1_000_000_000, 100)
+            session.check_deadline()
+            buy = await _quote_with_cancellation_receipt(
+                client, append, SOL_MINT, mint, 1_000_000_000, 'buy', quote_request)
             if _record_quote(append, buy, 'buy', quote_request) and buy['outcome'] == 'quoted':
-                sell = await client.quote(mint, SOL_MINT, buy['output_amount_atomic'], 100)
+                session.check_deadline()
+                sell = await _quote_with_cancellation_receipt(
+                    client, append, mint, SOL_MINT, buy['output_amount_atomic'], 'sell', quote_request)
                 _record_quote(append, sell, 'sell', quote_request)
             else:
                 append('quote_attempt', received_at_ms=now_ms(), mint=mint, outcome='not_attempted',
@@ -391,6 +457,7 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
             delay = max(0, plan['followup_delay_ms'] - (now_ms()-last_received))
             await asyncio.sleep(delay/1000)
         for row in selected:
+            session.check_deadline()
             previous = snapshots.get(row['mint'], [])
             if previous:
                 following = await _snapshot(store, session, append, row, addresses[row['mint']],

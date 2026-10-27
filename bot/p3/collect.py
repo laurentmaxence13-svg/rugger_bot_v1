@@ -85,7 +85,7 @@ async def _rpc(session, append, method, params):
     request_id = str(uuid.uuid4())
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, result, status = 'error', None, None, None
-    error_code = None
+    error_code, cancelled = None, None
     try:
         async with session.post(RPC_URL, json={
                 'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params},
@@ -95,7 +95,8 @@ async def _rpc(session, append, method, params):
                 reason = 'http_' + str(status)
             else:
                 payload = await response.json(content_type=None)
-                if not isinstance(payload, dict) or payload.get('id') != 1:
+                if (not isinstance(payload, dict) or payload.get('jsonrpc') != '2.0'
+                        or type(payload.get('id')) is not int or payload['id'] != 1):
                     reason = 'invalid_rpc_envelope'
                 elif payload.get('error') is not None:
                     reason = 'rpc_error'
@@ -112,6 +113,8 @@ async def _rpc(session, append, method, params):
         reason = 'request_budget_or_policy_rejection'
     except (ValueError, TypeError):
         reason = 'invalid_or_disallowed_response'
+    except asyncio.CancelledError as error:
+        reason, cancelled = 'capture_cancelled', error
     received = now_ms()
     append('request', received_at_ms=received, outcome=outcome, reason=reason,
            request_id=request_id, payload={
@@ -119,6 +122,8 @@ async def _rpc(session, append, method, params):
                'requested_at_ms': started, 'received_at_ms': received,
                'latency_ms': (time.monotonic_ns() - mono) / 1_000_000,
                'http_status': status, 'rpc_error_code': error_code})
+    if cancelled is not None:
+        raise cancelled
     return result, received, request_id, outcome
 
 
