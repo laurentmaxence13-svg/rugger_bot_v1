@@ -166,3 +166,5 @@ Validation finale : **1 342 passed, 1 skipped, 242 subtests passed**, warnings e
 erreur, stderr vide, code 0 ; 33 cas ciblés de plus que le main revu. Code testé :
 `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`. Aucune dépendance ajoutée, aucun
 module de stratégie ou ledger modifié.
+Livraison : [PR #21](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21)
+ouverte pour revue ; cette mise à jour de suivi ne change aucun code testé.

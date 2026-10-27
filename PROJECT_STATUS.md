@@ -15,6 +15,7 @@
   Aucun SQLite, ledger ou .env publié. Les anciens corps jamais conservés
   restent manquants, explicitement déclarés dans les manifestes.
 - Branche : `fix/p3-data-certification-and-durable-replay`, base main fusionné.
+  [PR #21 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
   Code testé : `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`.
   Suite finale : **1 342 réussis, 1 ignoré, 242 sous-tests**, warnings en erreur,
   stderr vide ; aucun réseau dans les tests, aucune dépendance ajoutée.
