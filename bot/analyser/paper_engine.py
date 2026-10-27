@@ -535,15 +535,32 @@ def _realized_metrics(con, started_at=None, ended_at=None):
                   and all(finite(r[3]) for r in rows)
                   and math.isclose(realized, initial + sum(r[3] for r in rows),
                                    rel_tol=1e-9, abs_tol=1e-12))
+    from bot.analyser.paper_trader import _inventory_exists, _paper_realization_events
+    native = _inventory_exists(con)
+    events = []
+    if native:
+        try:
+            events = _paper_realization_events(con)
+            reconciled = (finite(initial) and finite(realized) and math.isclose(
+                realized,initial+math.fsum(event['pnl_sol'] for event in events),
+                rel_tol=0,abs_tol=1e-12))
+        except (TypeError,ValueError,OverflowError):
+            incomplete += 1
+            reconciled = False
+    prior_events = [event for event in events if started_at is not None and event['time'] < started_at]
+    current_events = [event for event in events
+                      if (started_at is None or event['time'] >= started_at)
+                      and (ended_at is None or event['time'] <= ended_at)]
     valid = (finite(initial) and initial > 0 and not incomplete
              and not inconsistent and not invalid_positions and reconciled)
-    opening = initial + sum(r[3] for r in prior) if valid else None
+    opening = initial + (math.fsum(e['pnl_sol'] for e in prior_events) if native else sum(r[3] for r in prior)) if valid else None
     valid = valid and opening > 0
     equity = peak = opening if valid else None
     drawdown = 0.0
     if valid:
-        for row in closed:
-            equity += row[3]
+        cashflows = [e['pnl_sol'] for e in current_events] if native else [r[3] for r in closed]
+        for pnl in cashflows:
+            equity += pnl
             if equity < 0:
                 valid = False
                 break
@@ -560,7 +577,7 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         'max_drawdown': drawdown if valid else None,
         'win_rate': sum(p > 0 for p in pnls) / len(pnls) if pnls else None,
         'assumed_cost_bps_total': sum(costs) if all(finite(c) for c in costs) else None,
-        'pnl_sol': sum(pnls) if valid else None,
+        'pnl_sol': (math.fsum(e['pnl_sol'] for e in current_events) if native else sum(pnls)) if valid else None,
         'profit_factor': gains / losses if losses > 0 else None,
         'capital_start_sol': opening if valid else None,
         'capital_end_sol': equity if valid else None,
@@ -572,6 +589,9 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         'closed_trades': len(closed),
         'wins': sum(p > 0 for p in pnls) if valid else None,
         'losses': sum(p <= 0 for p in pnls) if valid else None,
+        **({'realization_events':len(current_events),
+            'realization_basis':'legacy_closed_positions_plus_native_legs_without_aggregate_double_count',
+            'trade_statistics_scope':'fully_closed_positions; native_partial_legs_are_not_independent_trades'} if native else {}),
     }
 
 
@@ -691,9 +711,9 @@ def _write_json_report(output, report, *, allow_nan=True):
     _raise_paper_failures(failures)
 
 
-def _valuation_scope():
+def _valuation_scope(con=None):
     """Separate ledger reconciliation from an observed economic SOL return."""
-    return {
+    scope = {
         'account_currency': 'SOL',
         'observed_price_currency': 'USD',
         'return_conversion_assumption': 'constant_SOL_USD',
@@ -701,6 +721,18 @@ def _valuation_scope():
         'economic_pnl_verified': False,
         'execution_prices_verified': False,
     }
+    if con is not None and _table_exists(con,'paper_token_inventory'):
+        native = con.execute('SELECT COUNT(*) FROM paper_token_inventory').fetchone()[0]
+        total = con.execute('SELECT COUNT(*) FROM paper_trades').fetchone()[0]
+        if native:
+            scope.update(native_inventory_positions=native,legacy_positions_without_atomic_inventory=total-native,
+                         native_inventory_acquired=False,native_net_basis='SOL_quote_proceeds_minus_exact_allocated_basis_and_extra_fees')
+            if native == total:
+                scope.update(return_conversion_assumption='native_SOL_quote_amounts',fx_required_for_sol_pnl=False,
+                             usd_marks_scope='exit_triggers_only; not_native_PnL_conversion')
+            else:
+                scope['return_conversion_assumption']='mixed_native_SOL_quotes_and_legacy_constant_SOL_USD'
+    return scope
 
 
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
@@ -787,7 +819,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
         'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
-        'valuation_scope': _valuation_scope(),
+        'valuation_scope': _valuation_scope(con),
         'market_data_coverage': _market_data_coverage(con),
         'quote_provenance': _quote_provenance(con),
         'rejection_reasons': _decision_reason_counts(con),
@@ -996,7 +1028,8 @@ async def collect_once(con, session, cached, now, model=None,
                        min_liquidity=1000, strategy_mode='validated',
                        initial_capital_sol=10.0, position_pct=10.0,
                        entry_guard=None, *, quote_provider=None,
-                       onchain_quote_provider=None, clock=None, latency_samples_ms=None):
+                       onchain_quote_provider=None, clock=None, latency_samples_ms=None,
+                       inventory_provider=None):
     """Collect one bounded cycle; providers default to the production readers.
 
     Explicit providers and a clock allow deterministic integration without HTTP.
@@ -1094,6 +1127,32 @@ async def collect_once(con, session, cached, now, model=None,
             cache_changed = changed or cache_changed
             if changed:
                 cached = load_cached_transactions(live_fetcher.db_path)
+        inventory_context = None
+        if inventory_provider is not None:
+            from bot.analyser.token_inventory import inventory_state, _lamports
+            from bot.analyser.paper_trader import _paper_free_capital
+            state_before = inventory_state(con, mint)
+            amount = state_before['remaining_atomic'] if state_before else None
+            if state_before is None:
+                try:
+                    if con.execute('SELECT 1 FROM paper_portfolio WHERE id=1').fetchone():
+                        capital, free = _paper_free_capital(con)
+                    else:
+                        capital = free = float(initial_capital_sol)
+                    amount = str(_lamports(min(free, capital*float(position_pct)/100)))
+                except ValueError:
+                    pass  # Unknown liabilities must not invent a buy budget.
+            if amount is not None and int(amount) > 0:
+                # Providers receive the exact size BEFORE their request. They may
+                # explicitly preselect a partial size, never scale a response.
+                inventory_context = await inventory_provider(session, mint,
+                    side='sell' if state_before else 'buy', amount_atomic=amount,
+                    inventory=state_before, decision_at_ms=int(read_clock()*1000))
+                if inventory_context is not None:
+                    inventory_context = dict(inventory_context)
+                    inventory_context['inventory_version'] = state_before['version'] if state_before else 0
+                    inventory_context['decision_at_ms'] = int(read_clock()*1000)
+            now_quote = int(read_clock())
         # No await inside: serialize the history check, features, decision and ledger.
         with _paper_close_transaction(con):
             if skip_recorded_quote(con, mint, now_quote, quote):
@@ -1178,6 +1237,8 @@ async def collect_once(con, session, cached, now, model=None,
                 initial_capital_sol=initial_capital_sol, position_pct=position_pct,
                 max_open=max_open, max_entries_day=max_entries_day,
                 max_daily_loss_pct=max_daily_loss_pct,
+                inventory_context=inventory_context,
+                require_inventory=inventory_provider is not None,
             )
             if undated_identities and strategy_mode != 'shadow_final':
                 report = audit_mint(con, mint, creator, signal_time, now_quote,
@@ -1304,7 +1365,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
               live_behavior=True, rpc_interval=2.5, behavior_max_tx=10,
               rpc_gate=None, min_liquidity=1000, shadow_baseline=False,
               shadow_final=False, initial_capital_sol=10.0, position_pct=10.0,
-              session_seconds=0, session_report=None, entry_guard=None):
+              session_seconds=0, session_report=None, entry_guard=None, inventory_journal=None):
     """Run the paper collector forever; no model means collection only."""
     if shadow_baseline and shadow_final:
         raise ValueError('Choisir un seul mode shadow.')
@@ -1319,7 +1380,16 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         model = shadow_baseline_model()
     else:
         model = eligible_model(model_path) if model_path else None
-    con = session = live_fetcher = None
+    if inventory_journal is not None:
+        journal_path = Path(inventory_journal)
+        if (journal_path.exists() or journal_path.is_symlink()
+                or journal_path.suffix not in ('.sqlite','.db') or journal_path.name.startswith('.env')
+                or not 1 <= session_seconds <= 60
+                or journal_path.resolve() in {Path(db).resolve(), Path(report or db).resolve(),
+                                              Path(session_report or db).resolve()}):
+            raise ValueError('Native quotes require a new separate journal and a 1..60 second session')
+    con = session = live_fetcher = native_capture = None
+    native_provider = None
     session_ready = False
     failures = []
     stage = 'database initialization'
@@ -1367,8 +1437,17 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         print('Mode : ' + mode_message, flush=True)
         stage = 'HTTP initialization'
         timeout = aiohttp.ClientTimeout(total=12)
-        session = aiohttp.ClientSession(timeout=timeout)
+        options = {'trust_env':False,'cookie_jar':aiohttp.DummyCookieJar()} if inventory_journal is not None else {}
+        session = aiohttp.ClientSession(timeout=timeout,**options)
         await session.__aenter__()
+        if inventory_journal is not None:
+            from bot.p3.store import CaptureStore
+            from bot.p3.inventory_provider import NativeInventoryQuoteProvider
+            if type(getattr(session,'_retry_connection',None)) is not bool:
+                raise ValueError('Unsupported native quote transport retry policy')
+            session._retry_connection = False
+            native_capture = CaptureStore(inventory_journal)
+            native_provider = NativeInventoryQuoteProvider(session,native_capture,max_requests=20)
         while True:
             now = int(time.time())
             if session_seconds and now - session_started >= int(session_seconds):
@@ -1390,6 +1469,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     strategy_mode=strategy_mode,
                     initial_capital_sol=initial_capital_sol, position_pct=position_pct,
                     entry_guard=entry_guard, latency_samples_ms=latency_samples,
+                    inventory_provider=native_provider,
                 )
                 if cache_changed:
                     cached = load_cached_transactions(db)
@@ -1431,6 +1511,11 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     await session.close()
                 except BaseException as exc:
                     failures.append(('HTTP close', exc))
+            if native_capture is not None:
+                try:
+                    native_capture.close()
+                except BaseException as exc:
+                    failures.append(('native journal close', exc))
             if live_fetcher is not None:
                 try:
                     await live_fetcher.close()
@@ -1497,6 +1582,7 @@ async def run_with_scanner(args):
             shadow_final=args.shadow_final, initial_capital_sol=args.capital_sol,
             position_pct=args.position_pct, session_seconds=args.session_seconds,
             session_report=args.session_report,
+            inventory_journal=getattr(args, 'inventory_journal', None),
         )
         return
     tasks = []
@@ -1520,6 +1606,7 @@ async def run_with_scanner(args):
             initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
             session_seconds=args.session_seconds, session_report=args.session_report,
             entry_guard=entry_guard,
+            inventory_journal=getattr(args, 'inventory_journal', None),
         ))
         tasks.append(engine_task)
         last_scanner_state = None
@@ -1607,7 +1694,15 @@ def main(argv=None):
                         help='ne pas lancer le scanner Helius dans ce processus')
     parser.add_argument('--no-live-behavior', action='store_true',
                         help='utiliser seulement le cache Helius déjà présent')
+    parser.add_argument('--inventory-quotes', action='store_true',
+                        help='P3 native SOL inventory quotes, maximum 20 attempts/60 s; never orders')
+    parser.add_argument('--inventory-journal', type=Path,
+                        help='New dedicated P3 quote journal, separate from the PAPER ledger')
     args = parser.parse_args(argv)
+    if bool(args.inventory_quotes) != bool(args.inventory_journal):
+        parser.error('--inventory-quotes and a new --inventory-journal are required together')
+    if args.inventory_quotes and not 1 <= args.session_seconds <= 60:
+        parser.error('Native inventory quotes require --session-seconds between 1 and 60')
     try:
         asyncio.run(run_with_scanner(args))
     except KeyboardInterrupt:

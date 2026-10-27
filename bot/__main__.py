@@ -22,6 +22,8 @@ def main(argv=None):
     sub = parser.add_subparsers(dest='command', required=True)
     demo = sub.add_parser('demo', help='Complete synthetic cycle, no network or secrets')
     demo.add_argument('--output', type=Path, required=True, help='New dedicated directory')
+    economic = sub.add_parser('economic-demo', help='Atomic inventory and full/partial/refused simulated exits, offline')
+    economic.add_argument('--output', type=Path, required=True, help='New dedicated directory')
     report = sub.add_parser('report', help='Read an existing PAPER database without migration')
     report.add_argument('--db', type=Path, required=True)
     report.add_argument('--output', type=Path, required=True, help='New JSON report file')
@@ -43,6 +45,11 @@ def main(argv=None):
         parser.error('Unexpected arguments: ' + ' '.join(extra))
     os.environ['RUGGER_NO_DOTENV'] = '1'
     sys.addaudithook(_offline_policy)
+    if args.command == 'economic-demo':
+        from bot.economic_demo import run_economic_demo
+        result = asyncio.run(run_economic_demo(args.output))
+        print(json.dumps(result, indent=2, sort_keys=True, allow_nan=False))
+        return
     if args.command == 'demo':
         from bot.functional_demo import run_demo
         result = asyncio.run(run_demo(args.output))

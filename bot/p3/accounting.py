@@ -225,3 +225,50 @@ def accounting_json_safe(value, *, _atomic=False):
     if isinstance(value, (list, tuple)):
         return [accounting_json_safe(item, _atomic=_atomic) for item in value]
     return value
+
+
+def native_sol_inventory_totals(*, entry_spent_lamports, acquired_token_atomic,
+                                token_mint, entry_extra_lamports, legs):
+    """Sum exact partial-sale cash flows without asserting a funding scenario.
+
+    The active ledger validates each leg's unique identity, chronology and cash
+    available BEFORE its proceeds. This pure arithmetic check deliberately has
+    no initial/final capital parameter: it cannot certify those funding checks.
+    Pool fees must already be reflected in quoted proceeds; extras exclude them.
+    Incomplete inventory does not emit a full-position net P&L.
+    """
+    from bot.p3.quotes import _mint
+    try:
+        mint = _mint(token_mint)
+    except (ValueError, TypeError):
+        raise InsufficientAccountingData('Token mint public identity is invalid') from None
+    spent = _integer(entry_spent_lamports, 'entry_spent_lamports', positive=True)
+    acquired = _integer(acquired_token_atomic, 'acquired_token_atomic', positive=True)
+    entry_fee = _integer(entry_extra_lamports, 'entry_extra_lamports')
+    if type(legs) not in (list, tuple):
+        raise InsufficientAccountingData('Explicit inventory realization legs are required')
+    sold = proceeds = exit_fees = 0
+    for leg in legs:
+        if type(leg) is not dict or set(leg) != {'quantity_atomic', 'proceeds_lamports', 'extra_fee_lamports'}:
+            raise InsufficientAccountingData('Unexpected inventory realization leg schema')
+        sold += _integer(leg['quantity_atomic'], 'leg quantity_atomic', positive=True)
+        proceeds += _integer(leg['proceeds_lamports'], 'leg proceeds_lamports')
+        exit_fees += _integer(leg['extra_fee_lamports'], 'leg extra_fee_lamports')
+        if sold > acquired:
+            raise InsufficientAccountingData('Inventory realization legs exceed acquired scenario quantity')
+    complete = sold == acquired
+    return {
+        'schema': 'p3-native-inventory-totals-v1', 'unit': 'SOL', 'token_mint': mint,
+        'entry_spent_lamports': spent, 'entry_extra_lamports': entry_fee,
+        'acquired_token_atomic': acquired, 'sold_token_atomic': sold,
+        'remaining_token_atomic': acquired-sold,
+        'total_proceeds_lamports': proceeds, 'total_exit_extra_lamports': exit_fees,
+        'total_extra_fee_lamports': entry_fee+exit_fees,
+        'position_fully_disposed': complete,
+        'net_pnl_lamports': proceeds-spent-entry_fee-exit_fees if complete else None,
+        'funding_verified': False, 'execution_verified': False,
+        'inventory_acquired': False, 'historical_ledger_mutated': False,
+        'fee_basis': 'additional_costs_outside_pool_fees_already_in_proceeds',
+        'economic_verdict': 'INSUFFICIENT DATA',
+        'scope': 'arithmetic_of_caller_supplied_projected_inventory_legs; no_funding_or_fill_claim',
+    }
