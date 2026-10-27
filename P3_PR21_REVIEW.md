@@ -1,6 +1,16 @@
-> Document historique récupéré le 27 octobre 2026 depuis le partage du propriétaire.
-> Les validations ci-dessous appartiennent à l’ancienne session ; elles ne sont pas de nouveaux tests.
-> Source et empreinte : `history/RECOVERY_MANIFEST.json`.
+> **Document historique récupéré le 27 octobre 2026.** Le texte ci-dessous provient
+> du dernier tour visible du partage « Configurer rugger_bot_v1 », élément
+> `fileChange` déclaré `completed` (tour 9, élément 4). Il était absent du dépôt
+> courant. Ses chiffres et conclusions décrivent la revue ancienne ; ils ne
+> constituent pas de nouveaux tests exécutés lors de la récupération.
+> Aucun état VM ni log Cloud n'a été restauré par cette extraction.
+>
+> SHA256 du snapshot source :
+> `a990b4466e772762af1fecd0b220659997812a0e78f835d721b49221c5f95f56`.
+> SHA256 du corps reconstitué sans annotation :
+> `842b4d93bbf3ba30ead7264eec4d93bac24bd8a8c38e65c2b31b683788ef931f`.
+
+---
 
 # Revue indépendante avant fusion de la PR #21
 

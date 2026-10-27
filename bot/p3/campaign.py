@@ -77,8 +77,8 @@ def validate_plan(plan):
 
 class CampaignSession(ReadOnlySession):
     """Adds only discovery and two account-reading methods to the P3 policy."""
-    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
-        super().__init__(session, max_requests, proxy_resolver=proxy_resolver)
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL):
+        super().__init__(session, max_requests, proxy_resolver=proxy_resolver, rpc_url=rpc_url)
         self._deadline_ns = None
 
     def check_deadline(self):
@@ -141,7 +141,7 @@ class CampaignSession(ReadOnlySession):
 
     def post(self, url, *, json=None, **kwargs):
         self._anonymous_options(kwargs)
-        if (url != RPC_URL or type(json) is not dict
+        if (url != self.rpc_url or type(json) is not dict
                 or set(json) != {'jsonrpc', 'id', 'method', 'params'}
                 or json.get('jsonrpc') != '2.0' or type(json.get('id')) is not int
                 or json['id'] != 1 or json.get('method') not in _METHODS

@@ -18,6 +18,8 @@ from bot.p3.store import CaptureStore
 from bot.scanner.transaction_parser import find_raydium_launches, RAYDIUM_LAUNCHPAD_PROGRAM_ID
 
 RPC_URL = 'https://api.mainnet-beta.solana.com'
+CANONICAL_RPC_URL = 'https://api.mainnet.solana.com'
+_PUBLIC_RPC_URLS = frozenset((RPC_URL, CANONICAL_RPC_URL))
 FX_URL = 'https://api.dexscreener.com/token-pairs/v1/solana/' + SOL_MINT
 USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 _RPC_METHODS = frozenset(('getSlot', 'getSignaturesForAddress', 'getTransaction'))
@@ -39,13 +41,34 @@ class ReadOnlyPolicyError(ValueError):
     pass
 
 
+def _registered_rpc_url(value):
+    # Exact public URLs only: no credentials, query parameters or redirects.
+    if type(value) is not str or value not in _PUBLIC_RPC_URLS:
+        raise ReadOnlyPolicyError('Unregistered public RPC endpoint')
+    return value
+
+
+def _rpc_endpoint_kind(value):
+    if value == CANONICAL_RPC_URL:
+        return 'canonical'
+    return 'historical_alias' if value == RPC_URL else 'unregistered'
+
+
 class ReadOnlySession:
     """Restrict both destinations and operations; count attempts before transport."""
-    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL):
         if type(max_requests) is not int or not 1 <= max_requests <= 20:
             raise ValueError('Request budget must be between 1 and 20')
         self.session, self.max_requests, self.requests_used = session, max_requests, 0
         self.proxy_resolver = proxy_resolver
+        # Selection is explicit and must be registered by the caller before
+        # capture. Failures never switch endpoints or consume a hidden retry.
+        self._rpc_url = _registered_rpc_url(rpc_url)
+
+    @property
+    def rpc_url(self):
+        """The endpoint selected before capture; changing it requires a new session."""
+        return self._rpc_url
 
     def _take(self):
         if self.requests_used >= self.max_requests:
@@ -69,7 +92,7 @@ class ReadOnlySession:
         return self.session.get(url, **kwargs)
 
     def post(self, url, *, json=None, **kwargs):
-        if (url != RPC_URL or not isinstance(json, dict)
+        if (url != self.rpc_url or not isinstance(json, dict)
                 or json.get('method') not in _RPC_METHODS):
             raise ReadOnlyPolicyError('RPC method is outside the read-only capture policy')
         if kwargs.get('headers') or kwargs.get('auth') or kwargs.get('cookies'):
@@ -81,13 +104,19 @@ class ReadOnlySession:
         return self.session.post(url, json=json, **kwargs)
 
 
-async def _rpc(session, append, method, params):
+async def _rpc(session, append, method, params, *, rpc_url=None):
     request_id = str(uuid.uuid4())
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, result, status = 'error', None, None, None
     error_code, cancelled = None, None
+    selected_url = getattr(session, 'rpc_url', RPC_URL)
+    target_url = selected_url if rpc_url is None else rpc_url
     try:
-        async with session.post(RPC_URL, json={
+        _registered_rpc_url(selected_url)
+        _registered_rpc_url(target_url)
+        if target_url != selected_url:
+            raise ReadOnlyPolicyError('RPC endpoint differs from explicit session selection')
+        async with session.post(target_url, json={
                 'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params},
                 timeout=aiohttp.ClientTimeout(total=8)) as response:
             status = response.status
@@ -119,6 +148,7 @@ async def _rpc(session, append, method, params):
     append('request', received_at_ms=received, outcome=outcome, reason=reason,
            request_id=request_id, payload={
                'provider': 'solana_public_mainnet', 'rpc_method': method,
+               'endpoint_kind': _rpc_endpoint_kind(target_url),
                'requested_at_ms': started, 'received_at_ms': received,
                'latency_ms': (time.monotonic_ns() - mono) / 1_000_000,
                'http_status': status, 'rpc_error_code': error_code})
