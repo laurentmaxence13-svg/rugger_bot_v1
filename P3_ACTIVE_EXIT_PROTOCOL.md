@@ -1,4 +1,14 @@
-# Contrôle de sortie active 007 — prêt, non exécuté
+# Contrôle de sortie active 007 — protocole puis résultat exécuté
+
+Exécuté le 27 octobre 2026 après une lecture de disponibilité RPC préenregistrée
+et positive :12 requêtes / 19,871 s, quatre devis dont deux petites ventes indicatives.
+Le protocole ci-dessous n'a pas été changé après lecture des résultats.
+Preuves `validation/P3_ACTIVE_EXIT_007.json`, analyse et oracles indépendants
+`validation/P3_ACTIVE_EXIT_007_ANALYSIS.json`, bundle `evidence/p3/active_exit_007`.
+Quantité fixe ne couvrant que 0,05507 % du devis d'achat de 1 SOL : aucune liquidation
+complète, acquisition ou performance certifiée. Rapport de livraison :
+`RUGGER_V1_FUNCTIONAL_RELEASE.md`. Les mentions de non-exécution ci-dessous
+documentent l'état antérieur, après le HTTP429 de 006.
 
 Objectif expérimental : observer une vente indicative sur une banque possédant
 réellement du stock net vendu et des réserves, puis comparer le premier état et

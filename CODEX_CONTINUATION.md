@@ -4,7 +4,57 @@
 `PROJECT_STATUS.md`. Continuer les objectifs accessibles sans relance ; ne jamais
 présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
-## Continuation active après PR #22 — état le plus récent
+## Reprise courante — candidat fonctionnel PAPER exécuté
+
+Mandat de finalisation appliqué. Ne pas recommencer la récupération de session,
+les anciens burns ou la baseline. Livraison : `RUGGER_V1_FUNCTIONAL_RELEASE.md`.
+
+- Code distant `f50d226b9f437e9d0e3bccb171671f450fb7bd23`, arbre testé
+  `c343ad51f418c04e2d18e8d050877996e585a0f4`, équivalent local `4da94d3`.
+  **1 435 passed / 1 skipped / 242 subtests**, 5,31 s, warnings en erreur, stderr vide.
+- Point d'entrée unique `python -B -m bot` : `demo`, `report`, `paper`.
+  Démo exécutée dans un dossier neuf sans `.env`/réseau. Le vrai parseur,
+  recovery/backfill, garde scanner, scoring et ledger réalisent entry/follow/TP.
+  Reconnexion SQLite et reçu persisté vérifiés ; capital modèle10 → 10,18 SOL.
+  Aucun inventaire atomique ni rendement de marché revendiqué.
+- Coût de clôture persisté atomiquement avec le P&L, au lieu du coût d'entrée
+  périmé. Régression200 → 1 000 bps : coût0,02 → 0,10 SOL correctement rapporté,
+  brut reconstruit0,12 → 0,20 ; net0,10 SOL inchangé. Rollback/reconnexion testés.
+- Dashboard branché au moteur ; reporter autonome en lecture seule, provenance,
+  fiabilité, coûts pondérés, réservations, manques et latences bornées.
+- Contrôle RPC public préenregistré `ce70a4b`,1 lecture / 1 087 ms / HTTP200 ; contrôle 007
+  ensuite exécuté selon son plan source fb8584d,12 lectures / 19 871 ms. Deux cotations
+  de vente q=18 765 447 579 à 519 914 lamports ; quatre corps rejoués, deux snapshots
+  aux slots 462210629 / 462210706. Supply et PDA complètes pour ce nouveau cas.
+  Q ne couvre que 0,05507 % de l'achat indépendant de 1 SOL. Création non trouvée,
+  frais additionnels et heures source absents, aucun cycle économique qualifié.
+- Preuves publiées `8aeb6c83ac10d73ba4901b287bf776bd729d879a` :11 bundles,
+  1 639 événements. Deux bundles retéléchargés effectivement du GitHub privé,
+  1 034 événements vérifiés et analyse identique sans DB/réseau pendant replay.
+  Aucun SQLite utilisateur exporté, aucun ordre, signature ou dépense.
+- Lire les JSON `validation/RUGGER_FUNCTIONAL_*` et `P3_ACTIVE_EXIT_007*`.
+  Les sept anciennes paires restent inchangées : six LaunchLab + une référence,
+  zéro cycle qualifié. Ne pas en faire sept trades indépendants.
+
+Commandes hors réseau (nouveau dossier pour la démo) :
+
+```sh
+python -B -m bot demo --output work/demo-next
+python -B -m bot report --db work/demo-next/paper.sqlite --output work/demo-next/dashboard.json --data-kind synthetic
+python -B tools/analyze_p3_active_exit_007.py
+python -B tools/evaluate_functional_market.py
+```
+
+**Prochaine action technique** : relier une entrée simulée à une quantité token
+atomique persistée, puis brancher le bridge de qualification sur la même quantité
+de sortie. Séparer état observé et effet contrefactuel de notre entrée. Ne pas
+relâcher les gardes source/quantité/chronologie/frais ni changer les paramètres
+sur cette fixture. Les 12 signatures anciennes restent listées sans priorité
+sur ce travail d'intégration. Ne pas répéter les contrôles live terminés ; nouveau
+protocole borné et chemins neufs avant toute autre collecte. PR #22 non fusionnée.
+Les paragraphes suivants décrivent les phases antérieures.
+
+## Référence antérieure après contrôle006
 
 Reprise depuis la branche existante, sans répéter récupération ou baseline.
 Code publié `fb8584dcf4c0fbbcd7c936169b4f7d7301821098`, arbre testé
@@ -38,7 +88,7 @@ Rapport actuel : `P3_CONTINUATION_006_RESULTS.md` et
 **Prochaine action** : après rétablissement établi du quota, re-préenregistrer les
 12 signatures restantes depuis P3_MINT_HISTORY_006_REMAINING.json, sans répéter
 les corps déjà conservés, avec cadence historique préfixée plus basse (par exemple
-5 getTransaction au plus par10s, sans supposer un quota réservé), puis contrôle007 depuis son code/plan figés et nouveaux
+5 getTransaction au plus par10s, sans supposer un quota réservé), puis contrôle 007 depuis son code/plan figés et nouveaux
 chemins. Le plan007 n'est pas une preuve d'exécution. Ne pas alterner d'endpoint
 pour esquiver le429 ni engager de dépense. Plateforme, frais complets, fraîcheur
 fournisseur et corpus indépendant restent non certifiés ; NO-GO économique.

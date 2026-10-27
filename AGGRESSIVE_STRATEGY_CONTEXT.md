@@ -1,5 +1,14 @@
 # Reprise stratégique ciblée — sources réellement présentes
 
+Actualisation fonctionnelle du 27 octobre : aucune règle ou pondération modifiée.
+Le moteur shadow_final est désormais exécuté intégralement par la démo CLI.
+Le contrôle 007 a testé la comparaison premier état/confirmation à q fixe sur une
+banque active : deux devis de vente disponibles et slots croissants, sans gain
+économique démontré. La quantité ne ferme pas l'achat de 1 SOL indépendant ; ce cas ne
+justifie aucun réglage de score/TP/SL ni choix d'une stratégie. Voir la livraison
+`RUGGER_V1_FUNCTIONAL_RELEASE.md` et l'analyse `validation/P3_ACTIVE_EXIT_007_ANALYSIS.json`.
+Les paragraphes suivants conservent l'état de recherche antérieur.
+
 27 octobre 2026. Lecture ciblée du dépôt courant, sans marché ni secret. Aucun
 paramètre ou moteur modifié : aucune correction supplémentaire du scoring n'a
 été démontrée dans le chemin de production inspecté.

@@ -1,6 +1,43 @@
-# État du projet — préparation P3
+# État du projet — candidat fonctionnel PAPER
 
-## Mission courante — sorties à inventaire fixe et historique006
+## Livraison courante — 27 octobre 2026
+
+`python -B -m bot demo --output work/demo-001` exécute maintenant le cycle réel
+des composants sur une fixture synthétique : recovery/parseur/cache → garde
+scanner/backfill → features/scoring → entrée → suivi → TP → frais → portefeuille
+→ tableau de bord. Reconnexion SQLite après l'entrée et déduplication vérifiées.
+Modèle : 1 SOL engagé, brut 0,20 / coût supposé 0,02 / net 0,18 SOL, capital 10 → 10,18 SOL.
+Ce résultat synthétique ne démontre ni inventaire acquis ni rentabilité de marché.
+
+Correction causale : le coût réellement appliqué à la clôture est persisté
+atomiquement, ce qui permet de rapprocher le rapport après redémarrage. Aucun
+changement de seuil ou de TP/SL. Rapports en lecture seule et latences mesurées
+avec horloge monotone, provenance et inconnus explicites.
+
+Code distant `f50d226`, arbre testé `c343ad51f418c04e2d18e8d050877996e585a0f4`,
+équivalent local `4da94d3`. **1 435 passed, 1 skipped, 242 subtests passed**,
+warnings en erreur, stderr vide, 5,31 s. Preuves `8aeb6c8`, PR #22 ouverte.
+
+RPC contrôlé par une lecture préenregistrée HTTP200 (1 requête / 1,087 s), puis 007
+exécuté une fois (12 requêtes / 19,871 s). Deux petites ventes indicatives obtenues
+aux deux horizons ; supply et PDA du nouveau cas cohérentes. Quantité seulement
+0,05507 % du devis d’achat de 1 SOL indépendant, pas de sortie complète ni P&L certifié. Heure/slot
+source fournisseur inconnus, création absente du préfixe borné. Pas de contournement
+de quota, retry, ordre ou dépense. Les 12 transactions de l'ancien mint restent
+un travail borné distinct, non bloquant pour l'intégration du moteur.
+
+11 bundles / 1 639 événements conservés ; les deux nouveaux bundles ont été restaurés
+effectivement depuis GitHub, quatre quotes et deux snapshots reproduits sans DB
+ni réseau pendant replay. Lire `RUGGER_V1_FUNCTIONAL_RELEASE.md`,
+`validation/RUGGER_FUNCTIONAL_RELEASE_VALIDATION.json` et
+`validation/RUGGER_FUNCTIONAL_REMOTE_RESTORE.json`.
+
+Prochaine intégration : inventaire atomique lié à l'entrée puis qualification
+d'une sortie à cette même quantité, avec impact d'entrée, frais et chronologie.
+Configuration agressive conservée ; comparaison de stratégies seulement sur
+cycles interprétables. Les sections suivantes sont des références antérieures.
+
+## Référence antérieure — sorties à inventaire fixe et historique006
 
 Code `fb8584d`, arbre `b049d1ef153287bd9d9cd78c52e583e79e3bcf54`.
 **1 415 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
