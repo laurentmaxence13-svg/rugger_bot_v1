@@ -1,0 +1,63 @@
+{
+  "bundles": [
+    {
+      "compressed_bytes": 7210,
+      "compressed_sha256": "dbc92a2841f0c75da5944c6bd35e6293e9f67422e96dab7b50d750a97b01b77c",
+      "plan_sha256": null,
+      "records": 14,
+      "run_id": "pr19_access_smoke",
+      "source_revision": "da99644413ec68593d1f97a6727513fb9246ef69",
+      "tail_hash": "8b58554decb33663ec9310db9d32cc9e070a36107f80b73db6020538e3edeac5",
+      "uncompressed_bytes": 31821,
+      "uncompressed_sha256": "1387e6f036cac845b601fc140b9e68884c4973d23d7fc1d264d51feacd4295dc"
+    },
+    {
+      "compressed_bytes": 59744,
+      "compressed_sha256": "33c1e2daf9ec432c43c736031447c8ab50070a894926eef1e0a9261fa88836d6",
+      "plan_sha256": "89796f78c57f603954e052f142263c52c9dbdb7dae0af5c59897d414b3e09c02",
+      "records": 185,
+      "run_id": "launchlab_001",
+      "source_revision": "13026092ea9621e537259b76b217f0bfcf2607d0",
+      "tail_hash": "fd63fa7df085160ad0977bf4bbe580abdd3967e3426c1b056eb9ecd6a2809873",
+      "uncompressed_bytes": 237597,
+      "uncompressed_sha256": "3635eefcb168c0a5ea7a840488033f161311a19b9b9447fb9da05f05cc45202d"
+    },
+    {
+      "compressed_bytes": 8002,
+      "compressed_sha256": "1798055f721ffb434542452c2b44e444b44253c2bd5560cdf244995599dc6def",
+      "plan_sha256": "423026b5133b9577995b95e230637588c90b26c6240470e9c9a3070afc59c470",
+      "records": 8,
+      "run_id": "version_diagnostic",
+      "source_revision": "6e0ceeb92afe33ee4ea341acf70d1ff70cc70ab7",
+      "tail_hash": "9d0cb59c6d51b936d1fe646e0a2a7c39c91282689e1a3c37f96e9a0e97fff5f2",
+      "uncompressed_bytes": 68898,
+      "uncompressed_sha256": "e1cc67405304edef56869a2ff9dfe10d9c506c36cf082280bbca7ebae801bd26"
+    },
+    {
+      "compressed_bytes": 58973,
+      "compressed_sha256": "999fc519e4ac4504208e66cf575ac47c6a7211fb28d2fe1e9fda9f2440e38dfb",
+      "plan_sha256": "33bb320b720276f5815859e65af3ff3c6c179fc5f6f12ada44dccaa833b1cebb",
+      "records": 8,
+      "run_id": "creation_diagnostic",
+      "source_revision": "379ed3638cdd1cd6e16b7b1251092ee308abe1dd",
+      "tail_hash": "96b4603c6746e2fb7500a08b1e1c2626b36d428378a5b28bb3cb26034b4a28ec",
+      "uncompressed_bytes": 203563,
+      "uncompressed_sha256": "59e97fbf6a87a13529cee9b299f071a5e5e8b413440ffae6a9e5be2040f15dcf"
+    },
+    {
+      "compressed_bytes": 65176,
+      "compressed_sha256": "2fd41206484f5eaec8c6d12657f267648d607b7ed40d4d0719fb16d7dc329f97",
+      "plan_sha256": "49498f4b0f9326840b085f84cb14039648de860836e51a0dde8fd4f314425090",
+      "records": 182,
+      "run_id": "launchlab_002",
+      "source_revision": "8167264931af3a22dcce32e9d1a821d275b51307",
+      "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790",
+      "uncompressed_bytes": 276017,
+      "uncompressed_sha256": "9f0a2213a155f650425ceb062dbefe351bbdbf224a00a03b82d8720ccc64bdd7"
+    }
+  ],
+  "cloud_storage_is_not_durable_backup": true,
+  "repository_visibility_verified": "private",
+  "schema": "p3-private-evidence-index-v1",
+  "sqlite_uploaded": false
+}
