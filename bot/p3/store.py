@@ -22,7 +22,7 @@ _TABLE = 'p3_capture_events'
 _GENESIS = '0' * 64
 _MAX_INTEGER = 2**63 - 1
 _KINDS = frozenset(('transaction', 'launch', 'candidate_decision', 'quote_attempt',
-                    'fx', 'gap', 'checkpoint', 'request'))
+                    'fx', 'gap', 'checkpoint', 'request', 'discovery', 'pool_snapshot'))
 _PROVENANCES = frozenset(('live', 'synthetic', 'historical_replay'))
 _URL = re.compile(r'(?:https?|wss?)://[^\s<>"\']+', re.IGNORECASE)
 _AUTH_TEXT = re.compile(

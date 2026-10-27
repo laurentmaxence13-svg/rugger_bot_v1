@@ -2,31 +2,37 @@
 
 ## Mission courante
 
-- Branche : `feat/p3-point-in-time-data` ; base main fusionnée
-  `9e4b5a788bf955e0afb9ab96818f17042c448b66`.
-- Sources P3 testées : `da99644413ec68593d1f97a6727513fb9246ef69`.
-  PR vérifiable ouverte : [#19](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/19).
-- Préparation livrée dans `bot/p3/` : journal séparé append-only/as-of,
-  capture publique bornée, devis exact-size et conversions SOL/USD strictes.
-- **875 tests réussis, 1 ignoré, 242 sous-tests réussis**, warnings en erreur ;
-  176 nouveaux cas P3. Ledger et tests historiques conservés sans modification.
-- Contrôle live borné : 6 requêtes / 14 observations ; 5 signatures dont
-  4 échecs chaîne, aucune création vérifiée ; deux quotes USDC pour tester
-  le transport à 1 SOL, pas une stratégie LaunchLab ni une position acquise.
-- Réseau utilisé sur cette mission : documentation publique et lectures anonymes
-  Solana/Raydium/DexScreener. Discovery FX Hermes HTTP200, latest-price HTTP401,
-  sans retry authentifié. Aucun abonnement, paiement, clé ou portefeuille utilisé.
-- Préparation logicielle : testée. **Évaluation économique P3 : NO-GO /
-  INSUFFICIENT DATA** ; prix source/fraîcheur, frais complets, exécutabilité,
-  univers indépendant et corpus réel suffisants restent à établir.
-- Rapport : [P3_DATA_READINESS_REPORT.md](P3_DATA_READINESS_REPORT.md).
-  Protocole : [P3_CAPTURE_PROTOCOL.md](P3_CAPTURE_PROTOCOL.md).
-  Sources/droits : [P3_DATA_SOURCES.md](P3_DATA_SOURCES.md).
-- La base de capture et les réponses brutes restent locales ; seuls le résumé
-  qualité et les ancrages sont versionnés. Aucune performance passée n'est recalculée.
-- Prochaine étape : obtenir une source utilisable de FX horodaté et d'états de pool,
-  devis et frais à taille effective, définir une campagne limitée avec accès/droits
-  et budget validés, puis mesurer sa couverture avant toute conclusion économique.
+- Dernier main récupéré : `966076c1a8b9a5d83bea74fe53fdad1056ade6dc`.
+  [PR #19](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/19)
+  **fusionnée**, après revue indépendante et correctif
+  `a4b6685520862cbf8dd84949d872e08cd6715a56`.
+- Référence main reproduite sur ses seuls fichiers suivis : **880 tests réussis,
+  1 ignoré, 242 sous-tests réussis**, warnings en erreur, code 0, stderr vide.
+  La précédente référence 875 appartient à la PR avant correctif de revue.
+- Dernières corrections : suppression de l'authentification netrc implicite et
+  des retries GET cachés ; reçus/digests pour les preuves quote/FX rejetées.
+  Journal et calculs financiers revus indépendamment ; voir
+  [P3_PR19_REVIEW.md](P3_PR19_REVIEW.md).
+- Branche suivante : `feat/p3-native-launchlab-campaign`, issue de ce main.
+  Priorité à l'API officielle Raydium `get/list`, `sort=new`, avec vérification
+  RPC des créations et lecture cohérente des comptes, calculs natifs en SOL.
+- Validation des composants avant collecte : **1 263 tests réussis, 1 ignoré,
+  242 sous-tests réussis**, warnings en erreur, stderr vide ; 383 nouveaux cas
+  natifs, temporels et de campagne, dont persistance avant analyse et refus réseau.
+- Protocole fixé avant collecte :
+  [P3_LAUNCHLAB_CAMPAIGN.md](P3_LAUNCHLAB_CAMPAIGN.md), deux candidats au plus,
+  20 requêtes / 60 secondes, exclusions/échecs/gaps conservés. Les nouveaux
+  composants sont isolés dans `bot/p3/` ; aucun seuil de stratégie n'est changé.
+- **Évaluation économique P3 : NO-GO / INSUFFICIENT DATA.** L'index est une
+  piste de découverte, les devis/projections ne sont pas des transactions.
+  Couverture indépendante, fraîcheur vérifiable, identités/permissions complètes,
+  coûts et sortie prospective restent nécessaires.
+- Comparaison accès gratuits/déjà accessibles et coûts éventuels :
+  [P3_SOURCE_ALTERNATIVES.md](P3_SOURCE_ALTERNATIVES.md).
+  Aucun abonnement, dépense, clé ou portefeuille activé.
+- Ledger, historique de performance et protections P1/P2 conservés. Les bases
+  de capture et réponses brutes restent locales ; résumés et ancrages seulement
+  sont destinés à la PR.
 
 ## Livraison P1/P2 précédente
 
