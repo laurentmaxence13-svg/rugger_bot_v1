@@ -1,0 +1,166 @@
+{
+  "attempted_signatures": [
+    "2GEMdc5J7WRcZ7ecNpvcy4cSdQ2M6DQ7BYWtXjRBCHRmGuDieDLMRYHrX1uaM4N711Mot414coMjdYaoXJjGCmjp",
+    "57oHAYDWFk1uY7J1oksUr6dCdT9h8DrErz17Xe22MDqiDDCUN69bugsYF7nJ1yHTpTvBTpKvrvAY9nF6zYX1mSp1",
+    "2CS5UJTU2b1F7J3ug9R2imgGqe8JbWzhpixj5HvLUyukX2Pz75nPrFyWdUaZ5L3LKGor2DgGLeriT1bP2NFyGhqj",
+    "2a8PD1UmZEYSxs4jBfmU6yqndgEccVci4TDMcTa5SmrtUQZBKNJiqyE6kTnndEtTcuregVVcACeLY1B7bEbPpdty",
+    "2wP9T6opT4BBDQjuStwk5m9S5AZAqK8Qc7NN5AiFG89PkiTDNEyE7VpXUhD67BqjsStF6icZGMeYHMwFUEKpj8aE",
+    "3NcRfzoQyJVtqLe23gteYkEDiJx5JkZvBGbETAwHLNP4aZjVojHLdyYURkamGhXWiNRUkMkTrx3prhGpQjJnjz5R",
+    "3jB38nLaAhR9RaCgC1CEZccApHSFDuC8gzGgfGGbDMHP8Ky3m3z55EYCJ7ihZ4izNbLULWse93CRJTyv9FYgPvSj"
+  ],
+  "closed_journal_export_and_restore_verified": true,
+  "complete_history_claimed": false,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_ms": 4695,
+  "matching_parsed_burns": [],
+  "not_fetched_within_interval": [
+    {
+      "signature": "4okgNWsnPdjNuALYEBckn2g2uz2VdHWQBthNvbNYmKb1Z9ahfZV3eLPBCq3vS8SJWqk1992Nf8irnorjHw1cnTRu",
+      "slot": 461979398
+    },
+    {
+      "signature": "5YJe66ukKXxZ373PXqJqEmanQ6vggcewTjtWRMGRbFZamGnTXB8fAAyFPuW2Mw5qSwik5srQJvn3z3KHZe2ExTqz",
+      "slot": 461979398
+    },
+    {
+      "signature": "5eb7FA5K6fykJL1Q91USD1dbq3tT8Ye7x2NXhknp8ThWdeWrdxW95gz5m8X7osB7ZZkz5H3zXynPsDo8LfFSDv2q",
+      "slot": 461979398
+    },
+    {
+      "signature": "4GXXGbWFPSPEY7HLwhsqx4ccUXvDKURWPjNBXwagYTE6rzhpPXFojtTy6F2ceo2ZvEwRSzuKvsGZq1gKzM5XUxPw",
+      "slot": 461979498
+    },
+    {
+      "signature": "fbxQ6AsyrGgycRyUKJMrCayXWtTdXLwvx58u49XGUui5PGFq9KwBqcfXt4TfcBjfhy5DzQ44ajcApRyMmiGqjJx",
+      "slot": 461979636
+    },
+    {
+      "signature": "jzJBesvA28pG9ThP1R7p1Rg6ba8xWB4CRCDgJ7zsHDLbcsgsosS2JTsZeTRgmW9kpzwFGZt9AJN6f5wmE4KrfSc",
+      "slot": 461979669
+    },
+    {
+      "signature": "2QF4wdfGcNAQd9zvHpUBgyj2TVi6giic6eTvNFHN83wom6ZgUuWMxwRiN4krkxSdJ5w6WMmBiuaT86hDYy4sprZG",
+      "slot": 461979675
+    },
+    {
+      "signature": "2RqoQg7RLKND91yZy3igvu9pgfrv4uw75ELgyc44WGfEMNiM3RPmK9MtQSdoecF4ASrGqL1oEKpb7xekqfzQZJ1H",
+      "slot": 461979685
+    },
+    {
+      "signature": "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+      "slot": 461979692
+    },
+    {
+      "signature": "nxSwbtbhBJtsiVgEJXRoUSQ3GxYHMcBe737AqEorLkvwuBSw2imohjVvbYf8RDyVhgNKbZGicuXsagmcmFSirbq",
+      "slot": 461979747
+    },
+    {
+      "signature": "662CF4WenipRBHKwvSxXgd83FSzRNL9FFoTZGbDZbucXiSvr93G3tz2xETaXFRoLXDhZuwrbuk1g69XJfiNUjtKh",
+      "slot": 461980132
+    },
+    {
+      "signature": "3LaSZ3kLEG3sHaNPF6w82aobyaJvca5g8uKhX8rTtKJkwaX95wLPoLi5Z8CR55mS5Nkc2WXoU5Rtj55WhJoZBiS8",
+      "slot": 461980615
+    },
+    {
+      "signature": "2rGAnwufZWsB2HoiXVFJqs9PwCcJzT6uFmSyGcPZsot7xFJAvdbdLsEzhKeAT9w8HTSHgmtdKaaJMGWpgF2nk9SF",
+      "slot": 461980619
+    },
+    {
+      "signature": "3SqFigS7L6AZXXU1oeR69cLcg8Z6Q4f6HxCcZovwTpL2vSi8PWuPedseSzvh9DCueQcPnxt6MyCUPij1uKyyApqk",
+      "slot": 461980619
+    },
+    {
+      "signature": "5PJeBEWiTzUnsnZjau8UWh6KmeiDDqVqyDTNpFTzUQ4iDQ4gfj1CafR9pJiazwoNLQWwgXATqTMK8K6bfAxhG5PB",
+      "slot": 461980619
+    },
+    {
+      "signature": "5qnchHEwu9sQW4rnzEJaAiHizQPZes6SShwyjUR6C14D9kVuWAAy6xBjYK5nSQrhMg9xqTDqdGnKaFb8oPaLUiSR",
+      "slot": 461980619
+    },
+    {
+      "signature": "67UpQjSXmSW7Bd8obN9zoEiJA6H5N473jKBvdnckp6sByGMNL6TePcRAmwpeu3q3TFhy24Ez43bzsb5iphwM8uve",
+      "slot": 461980619
+    },
+    {
+      "signature": "6HgvM5sGzfE8xqNKfkdGLcAN4AE6yYHi3PkQ6kDoNNKiMhe7gmatCYQ1xmx1p6a7JNTZaGQ1iRmNMkQQy7Gzy1F",
+      "slot": 461980619
+    },
+    {
+      "signature": "aiKTAGPjwyrMi5PgPc3BEwsu5byymALuzGHQTsgtHdEndyFhBhBRmutoJcEGYVfjZU9uNcdEyoCKUsXSZMzM1ZN",
+      "slot": 461980619
+    },
+    {
+      "signature": "xnQobsKRhk2Nw7BAB9PuomC5iLVXe31ZbEGQe3xiiwjL3faqYBmBvuehzPbPCM5cNZUo5bxxLG1Ykq4SZodEvTm",
+      "slot": 461980619
+    },
+    {
+      "signature": "3E2ovu37XUPjz8PmAt9Hbv19aMnYsSi9pv89FXyfhSUF7ykVwsGLhUw55HPynLMCwG7LYgeWzNEWSfmxZA8saPTd",
+      "slot": 461980620
+    },
+    {
+      "signature": "2kdoaC56sNjedKa4S6SW11hfzcd4L6y8hYgXrp4RXuBRszbfswe8kboKZFxtgvtwrpk72aabknGDRatyhzEfMbZZ",
+      "slot": 461980644
+    },
+    {
+      "signature": "3M2UqhCQkBeqWnkmc5TgcHWnaohe2ijdcQXn6ApCHxR49UzLW2is2SDZzVKgBEzQYy1n6quSrU3futDvndcjMbPV",
+      "slot": 461980651
+    },
+    {
+      "signature": "2R9rzmswQa5wSGu2Z4eLbXq3CvsvYBqjKKHTCGekdZL39zTW3q1q8aurWDA7hCHvvuBwziPKp82wMVAKZAAuSZVk",
+      "slot": 461981346
+    },
+    {
+      "signature": "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA",
+      "slot": 461981360
+    },
+    {
+      "signature": "2ivNY9iX3cuG7SmjnrsAgxTCsCTeGFVpU8qcnnUgzNoqJ6cFuMrL5ojPpRYc5VDG2g7F3YBJs4yyw1gqCTzn245U",
+      "slot": 461982193
+    }
+  ],
+  "observed_burn_sum_atomic": "0",
+  "observed_burn_sum_equals_target": false,
+  "page_signature_count": 37,
+  "plan_sha256": "576793f828c0f772e0cbd4aebcfdce0b97d2d285db095ca4270fd2d8f89ce5da",
+  "preregistered_commit": "d7474cf9fc26706752bbd3d1a7b56763c4e7559b",
+  "raw_instructions_without_parser_not_assumed_absent": true,
+  "real_orders_enabled": false,
+  "reconciliation_certified": false,
+  "records": 19,
+  "requests_used": 8,
+  "schema": "p3-historical-mint-control-v1",
+  "selected": [
+    {
+      "signature": "2GEMdc5J7WRcZ7ecNpvcy4cSdQ2M6DQ7BYWtXjRBCHRmGuDieDLMRYHrX1uaM4N711Mot414coMjdYaoXJjGCmjp",
+      "slot": 461979375
+    },
+    {
+      "signature": "57oHAYDWFk1uY7J1oksUr6dCdT9h8DrErz17Xe22MDqiDDCUN69bugsYF7nJ1yHTpTvBTpKvrvAY9nF6zYX1mSp1",
+      "slot": 461979381
+    },
+    {
+      "signature": "2CS5UJTU2b1F7J3ug9R2imgGqe8JbWzhpixj5HvLUyukX2Pz75nPrFyWdUaZ5L3LKGor2DgGLeriT1bP2NFyGhqj",
+      "slot": 461979398
+    },
+    {
+      "signature": "2a8PD1UmZEYSxs4jBfmU6yqndgEccVci4TDMcTa5SmrtUQZBKNJiqyE6kTnndEtTcuregVVcACeLY1B7bEbPpdty",
+      "slot": 461979398
+    },
+    {
+      "signature": "2wP9T6opT4BBDQjuStwk5m9S5AZAqK8Qc7NN5AiFG89PkiTDNEyE7VpXUhD67BqjsStF6icZGMeYHMwFUEKpj8aE",
+      "slot": 461979398
+    },
+    {
+      "signature": "3NcRfzoQyJVtqLe23gteYkEDiJx5JkZvBGbETAwHLNP4aZjVojHLdyYURkamGhXWiNRUkMkTrx3prhGpQjJnjz5R",
+      "slot": 461979398
+    },
+    {
+      "signature": "3jB38nLaAhR9RaCgC1CEZccApHSFDuC8gzGgfGGbDMHP8Ky3m3z55EYCJ7ihZ4izNbLULWse93CRJTyv9FYgPvSj",
+      "slot": 461979398
+    }
+  ],
+  "status": "complete_bounded_sample",
+  "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2",
+  "target_supply_deficit_atomic": "979542505800"
+}
