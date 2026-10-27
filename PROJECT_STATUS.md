@@ -1,6 +1,32 @@
 # État du projet — préparation P3
 
-## Mission courante — reprise autonome et PR #22 ouverte
+## Mission courante — conservation réelle vérifiée, #22 non fusionnée
+
+27 octobre 2026. Code validé `455defd`, arbre `294289227071b849133e476446152c5772bbec5b`.
+**1 366 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
+PR #22 et branche de reprise inchangées ; aucune fusion autorisée/effectuée.
+
+- Contrôle v3 préenregistré dans GitHub avant départ : **19 tentatives / 26,034 s**,
+  deux créations, quatre snapshots et quatre corps de devis conservés.
+- Deux refus de vente réels **INSUFFICIENT_LIQUIDITY**, aucune cotation positive forcée.
+- Deux burns historiques prouvés : 29386275175 unités ; reste 950156230625 non
+  réconcilié, garde supply maintenu. Contrôles 004/005 clos, preuves conservées.
+- **Contenu partagé de Configurer rugger_bot_v1 retrouvé** : 10 tours, copie exacte
+  et transcription sous `history/`. Derniers diffs P3_PR21_REVIEW/collect récupérés.
+  Cela ne désarchive pas la tâche ni ne restaure la VM. Orientation agressive
+  documentée dans `AGGRESSIVE_STRATEGY_CONTEXT.md`, aucun seuil modifié.
+- Export de 152 événements puis restauration effective depuis GitHub, sans DB
+  source : quatre analyses et quatre normalisations reproduites.
+- Total conservé : **8 bundles / 580 événements** ; anciens corps absents inchangés.
+- Code : diagnostics HTTP bornés, statut conservé à annulation, replay sémantique,
+  plan successeur/profil enregistré/arrêts sur erreurs et délai monotone.
+- **Conservation instrumentale validée sur ce contrôle ; NO-GO économique.**
+  Banque de vente observée vide, achat hypothétique absent, identité plateforme et
+  données de frais/horodatages/validation indépendante encore incomplètes.
+- Sources et preuves : `CODEX_CONTINUATION.md`, `P3_RETENTION_EXIT_RESULTS.md`,
+  `P3_SHORT_CONTROL_ACCESS.md`, `validation/P3_RETENTION_REMOTE_RESTORE.json`.
+
+## Livraison initiale de reprise #22 — historique
 
 27 octobre 2026. Lire [CODEX_CONTINUATION.md](CODEX_CONTINUATION.md) pour reprendre
 sans l’ancienne conversation. Dernier main vérifié : fusion #21 `7ddddb9`.

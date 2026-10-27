@@ -1,0 +1,53 @@
+{
+  "attempted": [
+    "fbxQ6AsyrGgycRyUKJMrCayXWtTdXLwvx58u49XGUui5PGFq9KwBqcfXt4TfcBjfhy5DzQ44ajcApRyMmiGqjJx",
+    "2QF4wdfGcNAQd9zvHpUBgyj2TVi6giic6eTvNFHN83wom6ZgUuWMxwRiN4krkxSdJ5w6WMmBiuaT86hDYy4sprZG",
+    "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+    "2kdoaC56sNjedKa4S6SW11hfzcd4L6y8hYgXrp4RXuBRszbfswe8kboKZFxtgvtwrpk72aabknGDRatyhzEfMbZZ",
+    "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA"
+  ],
+  "closed_journal_export_and_restore_verified": true,
+  "complete_history_claimed": false,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_ms": 3852,
+  "matching_parsed_burns": [
+    {
+      "amount_atomic": "14960820821",
+      "instruction_index": 2,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "signature": "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+      "slot": 461979692,
+      "source_token_account": "6nVJPVvgu211GhegKTw3gHXD6NMziyY7QTowJcW959eL",
+      "type": "burnChecked"
+    },
+    {
+      "amount_atomic": "14425454354",
+      "instruction_index": 2,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "signature": "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA",
+      "slot": 461981360,
+      "source_token_account": "6nVJPVvgu211GhegKTw3gHXD6NMziyY7QTowJcW959eL",
+      "type": "burnChecked"
+    }
+  ],
+  "not_received": [],
+  "observed_burn_sum_atomic": "29386275175",
+  "observed_burn_sum_equals_target": false,
+  "plan_sha256": "229e6f5b795dc2f8022079cdb9d8adba63b7abeb7de4d4501607945e66881684",
+  "preregistered_commit": "b993823c36b67c3fe298709758b7b61d49b9a943",
+  "real_orders_enabled": false,
+  "received_transactions": [
+    "fbxQ6AsyrGgycRyUKJMrCayXWtTdXLwvx58u49XGUui5PGFq9KwBqcfXt4TfcBjfhy5DzQ44ajcApRyMmiGqjJx",
+    "2QF4wdfGcNAQd9zvHpUBgyj2TVi6giic6eTvNFHN83wom6ZgUuWMxwRiN4krkxSdJ5w6WMmBiuaT86hDYy4sprZG",
+    "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+    "2kdoaC56sNjedKa4S6SW11hfzcd4L6y8hYgXrp4RXuBRszbfswe8kboKZFxtgvtwrpk72aabknGDRatyhzEfMbZZ",
+    "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA"
+  ],
+  "reconciliation_certified": false,
+  "records": 12,
+  "requests_used": 5,
+  "schema": "p3-fixed-historical-transactions-control-v1",
+  "status": "complete_fixed_five_transactions",
+  "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce",
+  "target_supply_deficit_atomic": "979542505800"
+}

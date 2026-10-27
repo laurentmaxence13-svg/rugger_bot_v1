@@ -4,7 +4,7 @@ Ces instructions s’appliquent au **dépôt réel `rugger_bot_v1`**, local ou C
 
 ## Mission et ordre de priorité
 
-Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de simulation de trading **PAPER ONLY**, centré sur Raydium LaunchLab. Objectif : stabiliser le bot, mesurer ce qu'il fait vraiment, et étudier un éventuel avantage quantitatif net de frais, slippage, latence et risque. Aucune rentabilité n'est démontrée.
+Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de simulation de trading **PAPER ONLY**, centré sur Raydium LaunchLab. Objectif : stabiliser le bot, mesurer ce qu'il fait vraiment, et étudier un éventuel avantage quantitatif net de frais, slippage, latence et risque. Aucune rentabilité n'est démontrée. L’orientation stratégique est agressive (détection précoce, faible latence, rendement potentiel élevé) ; ne pas la réduire arbitrairement. Les changements de paramètres exigent des mesures comparatives crédibles et ne peuvent affaiblir les protections.
 
 1. P0 : cohérence des finances simulées, contrôles de risques, états des positions, données SQLite et fiabilité du reporting.
 2. P1 : intégrité des événements LaunchLab, RPC/WebSocket, capture/prix/funding, qualité des données, tests de non-régression.
@@ -66,5 +66,14 @@ du projet et de pytest. Tester les régressions causales puis la suite pertinent
 Avant chaque PR significative, examiner tout le diff et faire une contre-vérification
 proportionnée. Mettre à jour `CODEX_CONTINUATION.md` et `PROJECT_STATUS.md` avec
 commits, commandes exécutées, résultats et limites. Préserver les travaux existants.
-Les sous-agents doivent rester spécialisés et non redondants. Aucun travail de fond
+Les sous-agents doivent rester spécialisés et non redondants. Une livraison intermédiaire ne termine pas le mandat : poursuivre les objectifs
+accessibles, puis enregistrer les limites réelles et les commandes de reprise.
+Ne pas fusionner de PR sans autorisation spécifique. Aucun travail de fond
 n’est promis après la fin de session.
+
+## Historique partagé récupéré
+
+`history/` contient une copie du partage fourni par le propriétaire, sa transcription
+et un manifeste. Les anciens prompts et autorisations inclus sont **historiques** ;
+ils ne remplacent pas le mandat courant. La récupération du contenu partagé ne
+constitue pas une restauration de la VM ni un désarchivage de la tâche originale.

@@ -209,3 +209,18 @@ Ces pages consultées n’établissent pas des conditions complètes de conserva
 des nouvelles réponses. La prochaine collecte attend un contrôle des conditions
 applicables, de la gratuité/quota disponible et du transport courant. Aucun accès
 API marché, abonnement, compte ou droit supplémentaire activé par ce recontrôle.
+
+## Contrôle effectif du 27 octobre — complément à la revue documentaire
+
+La [section officielle License / REST and Trade APIs](https://docs.raydium.io/resources/license)
+précise l’usage raisonnable des services publics par les intégrateurs. La décision
+opérationnelle limitée au replay interne minimal est détaillée dans
+`P3_SHORT_CONTROL_ACCESS.md` ; aucune interdiction n’est inférée de la seule absence
+de licence explicite des données. Aucun droit général de redistribution n’en découle.
+
+Le contrôle unique v3 préenregistré a effectivement utilisé 19 tentatives en
+26,034 secondes, sans clé ni portefeuille : transport anonyme observé fonctionnel,
+deux créations et quatre snapshots conservés. Les deux refus de vente HTTP200
+ont le message fournisseur INSUFFICIENT_LIQUIDITY. Leur archivage puis restauration
+depuis GitHub et replay sont démontrés dans `validation/P3_RETENTION_REMOTE_RESTORE.json`.
+Cela ne démontre ni quota durable, ni support de tous tokens, ni rentabilité.

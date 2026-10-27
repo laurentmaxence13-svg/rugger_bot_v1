@@ -1,127 +1,141 @@
 # Rugger Bot V1 — reprise autonome depuis Git
 
-État du 27 octobre 2026 (Europe/Paris). Lire ce document et `AGENTS.md` avant
-`PROJECT_STATUS.md`, puis uniquement les sources utiles à la priorité courante.
-L’historique de discussion n’est pas nécessaire à cette reprise.
+État du 27 octobre 2026, Europe/Paris. Lire `AGENTS.md`, ce fichier puis
+`PROJECT_STATUS.md`. Continuer les objectifs accessibles sans relance ; ne jamais
+présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
-## Objectif et périmètre autorisé
+## Autorisations et protections
 
-Qualifier un éventuel avantage économique net en SOL à partir de données réelles,
-prospectives et reproductibles, exclusivement PAPER. Corrections, tests isolés,
-branches, commits et PR sont autorisés sans relance après chaque étape. Corriger
-les défauts reproduits et poursuivre les dépendances accessibles. Ne pas optimiser
-sur la validation ni changer les seuils pour obtenir un résultat positif.
+Corrections, recherches techniques, tests isolés, replays, simulations PAPER,
+branches/commits/PR et contrôles courts gratuits préenregistrés sont autorisés.
+Aucun ordre, signature/envoi blockchain, portefeuille financé, passage au réel,
+dépense, secret `.env`, export de DB privée ou modification du ledger utilisateur.
+Aucune campagne prolongée, souscription ou augmentation payante. Capital configuré
+conservé (historiquement 10 SOL). Aucun changement de seuil pour rendre un résultat
+positif. Données de validation indépendantes ; inconnus jamais remplacés par zéro.
 
-Aucun ordre, signature, transaction blockchain, portefeuille financé, passage au
-réel ou dépense. Aucune lecture de secrets `.env`, export de base privée, migration
-du ledger utilisateur, nouveau service payant ou collecte prolongée. Une courte
-collecte exige droits, gratuité, quota disponible, protocole préalable et limites
-vérifiés. L’accès technique à une clé ou un endpoint ne suffit pas. Conserver le
-capital configuré (historiquement 10 SOL) ; aucune remise à zéro ni conversion EUR.
+## Git et références validées
 
-## Références et livraison non fusionnée
-
-- Dernière PR fusionnée vérifiée : #21, `7ddddb9f73339242fbcb5b9bf10fa329c82fa700`.
-- Branche de reprise : `fix/p3-exit-evidence-continuation`.
+- Dernier main fusionné vérifié : #21 `7ddddb9f73339242fbcb5b9bf10fa329c82fa700`.
 - [PR #22](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/22) ouverte,
-  **non fusionnée**. Les nouvelles capacités ne sont pas encore dans `main`.
-- Code publié : `4f0fec80f7c62ae74778a04ae8b564a0104091e4`.
-  Arbre Git testé : `539f716e04666c126ee0c30b628d22417625951a`.
-- Commit local de validation : `e69b175faaa8cf864e2a29c14fc956511f57bae2`,
-  même arbre que le code publié. Les commits diffèrent car publication via API
-  GitHub ; le transport Git direct a échoué. Le suivi documentaire vient ensuite.
-- Reprise locale initialement propre, un worktree, aucun stash ni objet orphelin
-  signalé ; aucune PR ouverte trouvée avant #22. La référence locale origin/main
-  était ancienne ; `main` distant a été vérifié via GitHub au commit de #21.
-- `P3_PR21_REVIEW.md` absent du dépôt local et du `main` distant ; aucune variante
-  locale récupérée de `bot/p3/collect.py`. **Ancienne session et état non publié
-  non récupérés**. La reprise porte sur le code et les preuves conservés dans Git.
+  non fusionnée, branche `fix/p3-exit-evidence-continuation`.
+- Code du contrôle réel : `455defdbe6ec388e245e188476716452b82a47c6`, arbre testé
+  `294289227071b849133e476446152c5772bbec5b`. Commit local équivalent `06a7755`.
+- Préenregistrement distant **avant appel** : `4436f04315f1c9ab130c0a0c8617fb6c76a1a8e5`,
+  plan `benchmarks/p3_retention_control_v3/plan.json`, SHA256 canonique
+  `6a1fcd9fda45c7bafa38c1367703e81797d6dceaca77c7225f5eaea612fa8d28`.
+- Preuves réelles publiées : `b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2`.
+  Les documents de résultat/reprise suivent ce commit. Ne pas rejouer le plan live.
+- Publication via connecteur GitHub : commits locaux/distants différents mais
+  arbres comparés identiques. L'ancienne référence locale origin/main est périmée.
+- Nouveau lien propriétaire : https://chatgpt.com/s/cx_6ae0e7ea3e348191b141166aafd561d9.
+  Contenu partagé récupéré effectivement : **Configurer rugger_bot_v1**, 10 tours,
+  8 messages propriétaire, 48 messages agent et 51 événements fileChange.
+  Copie exacte 239430 octets : `history/CONFIGURER_RUGGER_BOT_V1_SHARED_SNAPSHOT.json`,
+  manifeste SHA256 `history/RECOVERY_MANIFEST.json`, transcription Markdown à côté.
+  Derniers diffs non publiés retrouvés : P3_PR21_REVIEW.md et collect.py.
+  VM Cloud non restaurée, tâche originale non désarchivée ; exhaustivité du partage
+  par rapport à toute la session originale inconnue. Ne pas confondre ces états.
 
-## Progrès vérifiés et fichiers
+## Capacités et validation
 
-- `bot/p3/quotes.py` : rejet tardif => montants/route/frais inutilisables effacés,
-  corps assaini conservé pour diagnostic.
-- `bot/p3/collect.py`, `campaign.py` : reçu d’annulation achat/vente avant propagation ;
-  refus de corps dangereux => métadonnées temporelles/statut conservés sans ce corps.
-- `bot/p3/launchlab.py` : profil opt-in `published_metadata_v1` conserve les faits
-  mint/vault et l’écart supply avant rejet. Le profil historique `legacy` garde
-  ses résultats ; aucun garde de supply ou d’identité affaibli.
-- `tools/offline_check.py` rend le lanceur isolé indépendant du chemin de cette VM.
-- `tools/verify_p3_evidence.py`, `tools/diagnose_p3_archived_exits.py` et
-  `tools/verify_p3_accounting.py` fournissent replay, diagnostic et oracle indépendant.
-- `P3_CONTINUATION_VALIDATION.md` : causes, validation, limites et prochaine étape.
+Corrections initiales #22 : quote rejetée sans montants utilisables ; annulation
+achat/vente persistée ; métadonnées des corps refusés conservées ; diagnostic
+supply visible avant blocage. Compléments : corps JSON d'erreurs HTTP bornés à
+65 536 octets, statut HTTP conservé même si lecture annulée, replay sémantique des
+devis, profil de snapshot enregistré, successeur v3 avec arrêt après erreur et
+délai monotone. Aucun garde d'identité/supply/finances relâché.
 
-## Validation exécutée dans cette session
+Validation réellement exécutée sur copie isolée : **1 366 passed, 1 skipped,
+242 subtests passed**, warnings en erreur, stderr vide, Python 3.12.14/pytest 9.1.1.
+Le skip concerne la base utilisateur volontairement absente. Baseline précédente
+1 348/1/242 historique distincte. Revues ciblées indépendantes effectuées ; un
+arrêt manquant après erreur quote détecté et corrigé avant le contrôle réel.
+Oracle comptable précédent 1 000 cas synthétiques ; oracle nouveau de quatre
+projections réelles par invariant rationnel indépendant (aucune exécution).
 
-Python 3.12.14, pytest 9.1.1. Référence #21 sur copie Git isolée :
-**1 342 passed, 1 skipped, 242 subtests passed**. Ancien code + six régressions :
-**6 failed**, comme attendu avant correction. Après correction :
-**1 348 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
-Le skip correspond à une base utilisateur volontairement absente.
-Revue croisée ciblée des changements et des invariants : aucun bloquant identifié.
+## Observation réelle de conservation v3 — terminée
 
-| Périmètre | Qualification actuelle |
-| --- | --- |
-| Corrections quote/annulation/rejet et conservation future | TESTÉ SYNTHÉTIQUEMENT |
-| 5 archives, 397 événements, intégrité vs ancres Git | VALIDÉ SUR REPLAY |
-| 4 analyses historiques v2 | VALIDÉ SUR REPLAY, résultats identiques |
-| Calculs comptables : 1 000 cas + 1 009 rejets et frontière sous-lamport | TESTÉ SYNTHÉTIQUEMENT |
-| Nouvelle collecte réelle, nouvelles sorties, fonctionnement continu | NON VALIDÉ dans cette session |
+**19 tentatives / 26,034 s**, 100 lignes reçues, 2 candidats, 2 créations vérifiées,
+4 snapshots cohérents. Deux achats indicatifs à 1 SOL et deux refus de vente
+**HTTP200 / INSUFFICIENT_LIQUIDITY**, corps conservés. Aucun montant/slippage
+adapté à la réponse. 152 événements nouveaux, export fermé sans SQLite.
 
-Artefacts : `validation/P3_OFFLINE_REPLAY.json`, `P3_ACCOUNTING_ORACLE.json`,
-`P3_ARCHIVED_EXIT_DIAGNOSTICS.json` et `P3_CONTINUATION_TESTS.json`.
-Le replay local ne renouvelle pas la preuve historique de restauration distante.
+Bundle `evidence/p3/retention_003`, ancre
+`914901e885fa97c87e7e81f0bd2750d0092a4cfb7a12f709c5402c993ed75fce`.
+Récupération effective des deux blobs depuis GitHub dans un répertoire neuf :
+152 événements, quatre analyses et quatre normalisations quote reproduits, avec
+accès DB et réseau interdits pendant replay. Total après investigations historiques : **8 archives / 580 événements**,
+8 analyses de snapshots reproduites ; dix anciens corps restent manquants.
 
-## Résultats économiques et inconnues
+Qualification : conservation instrumentale **OBSERVÉE EN RÉEL puis VALIDÉE SUR REPLAY**.
+Gardes HTTP/annulation **TESTÉES SYNTHÉTIQUEMENT** ; fonctionnement PAPER continu,
+inventaire acquis, fills, frais complets et rentabilité **NON VALIDÉS**.
 
-**NO-GO / INSUFFICIENT DATA**. Aucun profit net ni fill certifié. Dix corps de devis
-historiques fournisseur manquent ; les deux refus de vente v2 sont HTTP 200 /
-provider_rejected mais leur cause précise est inconnue. Ne pas inventer une route
-absente, un rejet Token-2022 ou un défaut fournisseur à partir du digest.
+## Conclusion économique et investigations
 
-- `21PBT…Adpk` : plateforme UNKNOWN ; sa quantité de sortie issue du devis dépasse
-  l’inventaire outstanding de l’état ultérieur sans notre achat. Ce refus de calcul
-  ne démontre pas une impossibilité après un véritable achat.
-- `BNbNt…iTFm` : supply mint `999020457494200` contre pool `1000000000000000`,
-  écart `-979542505800` aux deux slots `461982938` et `461983014` de réponses
-  cohérentes. Cause burn ou autre mécanisme non établie ; pricing reste bloqué.
-- Temps/slot fournisseur des devis, frais réseau/ATA/priorité/échecs, couverture
-  indépendante et sorties ultérieures qualifiées restent manquants.
-- Les frais déjà inclus dans une quote ne sont pas soustraits une seconde fois.
-  Coûts inconnus et sorties absentes ne deviennent pas zéro ; USD exige FX causal.
+**NO-GO / INSUFFICIENT DATA.** Les banques observées ont real_a=0 et seulement
+0 ou 1 lamport disponible après retrait des frais accumulés. Un refus de vente
+contre ces banques ne démontre pas l'impossibilité après notre achat hypothétique.
+Après sa propre entrée de 1 SOL, le modèle conditionnel sans autre activité donne
+975156249 lamports, soit un écart de 24843751 avant coûts additionnels. Ce n'est
+ni un devis futur ni un P&L réalisé. Timestamp/slot fournisseur inconnus ; égalité
+du calcul d'achat et du devis ne prouve pas l'identité des banques source.
 
-## Commandes de reprise
+Ancien BNbNt : mintTo 1e15 puis autorité mint révoquée prouvés à la création ;
+différence ultérieure -979542505800. Contrôle 004 : page mint de 37 signatures,
+7 transactions fixées, 8 requêtes / 4,695 s. Contrôle 005 : 5 références mint seules
+fixées avant lecture, 5 requêtes / 3,852 s. Deux burns réels confirmés aussi par
+les soldes de comptes : 14960820821 + 14425454354 = 29386275175 unités.
+**Reste 950156230625 non expliqué**, 21 autres corps éligibles et une transaction
+au slot de création manquent encore. Garde strict maintenu. Les trois contrôles
+sont terminés ; aucun budget de marché supplémentaire dans cette session. Ancienne plateforme StonkFun : aucune seed admin
+prouvée dans les 542 adresses archivées ; UNKNOWN maintenu, aucun garde contourné.
+Détails : `P3_IDENTITY_SUPPLY_INVESTIGATION.md`, `P3_RETENTION_EXIT_RESULTS.md`,
+`P3_MINT_HISTORY_004_RESULTS.md` et `P3_MINT_HISTORY_005_RESULTS.md`.
 
-Après récupération de la branche #22 dans un environnement Python avec les
-`requirements.txt` et pytest installés (aucun accès marché requis) :
+## Commandes de reprise hors réseau
+
+Utiliser un Python avec requirements.txt et pytest ; aucun secret nécessaire.
 
 ```sh
 git status --short
-git log -3 --oneline
+git log -4 --oneline
 python -B tools/offline_check.py
 python -B tools/verify_p3_evidence.py
-python -B tools/diagnose_p3_archived_exits.py
+python -B tools/analyze_p3_retention_exits.py
 python -B tools/verify_p3_accounting.py
+python -B tools/verify_p3_historical_burns.py
 ```
 
-Le lanceur copie les seules sources/tests/fixtures suivis ou nouveaux non ignorés,
-sans `.git`, `.env` ni DB ; il bloque le réseau et les lectures dotenv. Pour cibler :
-`python -B tools/offline_check.py -q tests/test_p3_collection.py -p no:cacheprovider -W error`.
-Interpréteur utilisé ici : `/workspace/.cloud-env/rugger_bot_v1/venv/bin/python`.
+Ici : `/workspace/.cloud-env/rugger_bot_v1/venv/bin/python`.
+Résultats : `validation/P3_RETENTION_CONTROL_RESULT.json`,
+`P3_RETENTION_REMOTE_RESTORE.json`, `P3_RETENTION_ALL_REPLAY.json`,
+`P3_RETENTION_EXIT_ANALYSIS.json`, `P3_V3_TESTS.json`,
+`P3_MINT_HISTORY_004.json`, `P3_MINT_HISTORY_005_QUALIFICATION.json`.
+Les rapports de la première livraison sont conservés comme historiques.
 
-## Priorité suivante et limites externes
+## Orientation stratégique actuelle
 
-1. Vérifier les conditions applicables de conservation des nouveaux corps, quotas
-   gratuits et transport anonyme ; les pages officielles relues ne suffisent pas
-   à établir toutes ces conditions. Transport Git direct : erreur proxy puis HTTP
-   503 ; connecteur GitHub utilisable pour cette livraison. Aucun appel marché fait.
-2. Préenregistrer le contrôle court décrit dans `P3_CONTINUATION_VALIDATION.md`,
-   avec identité/horodatage/empreinte propres ; ne pas modifier les anciens plans.
-3. Vérifier corps réels, refus et replay après fermeture/export avant corpus accru.
-4. En fonction des preuves : identité plateforme et supply, effet d’entrée/sortie
-   contrefactuelle, coûts complets. Recherche économique seulement après admission.
+Le nouveau mandat conserve une orientation **agressive**, précoce et rapide.
+Ne pas réduire arbitrairement l'agressivité ni retoucher les seuils sans comparaison
+crédible. Les protections, coûts et sorties doivent rester qualifiés. Paramètres
+historiques effectifs et hypothèses récupérés : `AGGRESSIVE_STRATEGY_CONTEXT.md`.
+FomoIsBack n'est qu'une piste citée ; aucune stratégie privée/performance démontrée
+retrouvée. Le meilleur résultat P2 synthétique négatif ne justifie aucun changement
+de configuration active. Le capital réel reste interdit sans autorisation distincte.
 
-Ne pas fusionner automatiquement #22. Préserver les commits de branche ; avant
-fusion le rollback consiste à conserver `main` #21, après fusion utiliser une PR de
-revert explicite. Mettre ce document et `PROJECT_STATUS.md` à jour à chaque livraison.
-Aucune collecte ou tâche de fond ne continue après la fin de cette session.
+## Suite et limites
+
+Les conditions API publiques et le transport ont été vérifiés pour le contrôle
+court, voir `P3_SHORT_CONTROL_ACCESS.md` ; ne plus présenter l'absence d'une licence
+explicite comme une interdiction démontrée de replay interne minimal. Aucun droit
+de redistribution générale ou de collecte prolongée n'en est déduit.
+
+Ne pas répéter une découverte de banques vides pour gonfler le corpus. Expériences
+utiles : historique borné du mint ancien pour un burn exact ; preuve admin par
+création de plateforme ; pool aux identités qualifiées et net vendu/réserves
+positifs pour vente indicative à quantité préenregistrée. Pas de nouvelle stratégie
+ou optimisation avant données économiquement interprétables. Les règles complètes,
+coûts et couverture indépendante restent à établir. Mettre la reprise à jour après
+chaque livraison. Aucune tâche de fond ne continue après la fin de session.

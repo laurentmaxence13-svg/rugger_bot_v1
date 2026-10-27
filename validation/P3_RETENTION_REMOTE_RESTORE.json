@@ -1,0 +1,44 @@
+{
+  "compressed_sha256": "60a4458fc9bc4f1700642193f585d816697e41b3d939641b51287776353a45d8",
+  "database_access_prohibited": true,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "execution_verified": false,
+  "network_during_replay_prohibited": true,
+  "quote_replays": [
+    {
+      "execution_verified": false,
+      "http_status": 200,
+      "outcome": "quoted",
+      "reason": null,
+      "status": "REPLAYED"
+    },
+    {
+      "execution_verified": false,
+      "http_status": 200,
+      "outcome": "unavailable",
+      "reason": "provider_rejected",
+      "status": "REPLAYED"
+    },
+    {
+      "execution_verified": false,
+      "http_status": 200,
+      "outcome": "quoted",
+      "reason": null,
+      "status": "REPLAYED"
+    },
+    {
+      "execution_verified": false,
+      "http_status": 200,
+      "outcome": "unavailable",
+      "reason": "provider_rejected",
+      "status": "REPLAYED"
+    }
+  ],
+  "records": 152,
+  "remote_commit": "b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2",
+  "restored_from": "GitHub file API base64; not original DB or local git blobs",
+  "schema": "p3-retention-control-remote-restore-v1",
+  "snapshot_analyses_reproduced": 4,
+  "source_journal_used": false,
+  "tail_hash": "914901e885fa97c87e7e81f0bd2750d0092a4cfb7a12f709c5402c993ed75fce"
+}
