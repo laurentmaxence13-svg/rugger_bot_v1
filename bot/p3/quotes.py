@@ -7,6 +7,8 @@ proxies explicitly, with trust_env=False, no cookies/netrc and no hidden retries
 """
 import asyncio
 from decimal import Decimal, InvalidOperation
+import hashlib
+import json
 import math
 import re
 import time
@@ -19,6 +21,7 @@ SOL_MINT = 'So11111111111111111111111111111111111111112'
 RAYDIUM_QUOTE_URL = 'https://transaction-v1.raydium.io/compute/swap-base-in'
 _BASE58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 _UINT64_MAX = (1 << 64) - 1
+_MAX_ERROR_BODY_BYTES = 65_536
 _SENSITIVE_KEYS = {
     'apikey', 'authorization', 'proxyauthorization', 'password', 'secret',
     'privatekey', 'secretkey', 'clientsecret', 'seed', 'mnemonic',
@@ -86,6 +89,41 @@ def _sanitized(value):
     return value
 
 
+async def _retain_error_body(response, envelope):
+    """Bound error-body retention without treating HTTP errors as quotes.
+
+    The digest covers the complete HTTP body after transport decompression,
+    before JSON sanitization. Oversize bodies have no complete-body digest.
+    Text that cannot be parsed as JSON is never written to the journal.
+    """
+    raw = bytearray()
+    try:
+        while len(raw) <= _MAX_ERROR_BODY_BYTES:
+            chunk = await response.content.read(min(8192, _MAX_ERROR_BODY_BYTES+1-len(raw)))
+            if not chunk:
+                break
+            raw.extend(chunk)
+        envelope['response_body_bytes_observed'] = len(raw)
+        if len(raw) > _MAX_ERROR_BODY_BYTES:
+            envelope['response_body_status'] = 'over_limit'
+            return
+        envelope['response_body_sha256'] = hashlib.sha256(raw).hexdigest()
+        try:
+            envelope['raw_payload'] = _sanitized(json.loads(raw))
+        except (ValueError, TypeError, UnicodeError, RecursionError):
+            envelope['response_body_status'] = 'non_json'
+        else:
+            envelope['response_body_status'] = 'json_retained'
+    except (aiohttp.ClientError, OSError, asyncio.TimeoutError, ValueError, TypeError):
+        # Preserve the already observed status; do not retry or echo an exception.
+        envelope['response_body_status'] = 'read_failed'
+        envelope['response_body_bytes_observed'] = len(raw)
+    except asyncio.CancelledError:
+        envelope['response_body_status'] = 'read_cancelled'
+        envelope['response_body_bytes_observed'] = len(raw)
+        raise
+
+
 class RaydiumQuoteClient:
     def __init__(self, session, *, clock_ms=None, monotonic_ns=None, timeout_seconds=8):
         if (type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds)
@@ -137,6 +175,9 @@ class RaydiumQuoteClient:
                 'basis': 'not_provided_by_route_quote',
             },
             'raw_payload': None,
+            'response_body_status': 'not_read',
+            'response_body_sha256': None,
+            'response_body_bytes_observed': None,
             'http_status': None,
             'retry_after_seconds': None,
             'quality_flags': [],
@@ -159,10 +200,26 @@ class RaydiumQuoteClient:
                     retry = _decimal_text(response.headers.get('Retry-After'))
                     seconds = float(retry) if retry is not None else None
                     envelope['retry_after_seconds'] = seconds if seconds is not None and math.isfinite(seconds) else None
+                    await _retain_error_body(response, envelope)
                 else:
                     payload = await response.json(content_type=None)
                     envelope['raw_payload'] = _sanitized(payload)
+                    envelope['response_body_status'] = 'json_retained'
                     self._parse(payload, envelope)
+        except asyncio.CancelledError as error:
+            # The caller persists this whitelist before re-raising. Never attach
+            # response bodies, exception text, headers or partially parsed routes.
+            status = envelope['http_status']
+            error.capture_quote_metadata = {
+                'http_status': status if type(status) is int and 100 <= status <= 599 else None,
+                'retry_after_seconds': envelope['retry_after_seconds'],
+                'response_body_status': envelope['response_body_status'],
+                'response_body_sha256': envelope['response_body_sha256'],
+                'response_body_bytes_observed': envelope['response_body_bytes_observed'],
+            }
+            if type(requested) is int and requested >= 0:
+                error.capture_quote_metadata['requested_at_ms'] = requested
+            raise
         except asyncio.TimeoutError:
             envelope['outcome'], envelope['reason'] = 'unavailable', 'timeout'
         except (aiohttp.ClientError, OSError):

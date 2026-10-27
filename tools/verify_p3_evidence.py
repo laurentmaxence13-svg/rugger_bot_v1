@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from bot.p3.evidence import verify_bundle
 from bot.p3.launchlab import analyze_snapshot
+from bot.p3.replay import replay_quote_observation
 
 
 def verify(evidence_root):
@@ -58,7 +59,8 @@ def verify(evidence_root):
                 raise ValueError('Retained snapshot account order is incomplete')
             replay = analyze_snapshot(dict(zip(addresses, result['value'])),
                 context_slot=result['context']['slot'], expected_mint=event['mint'],
-                pool_address=evidence['addresses']['pool'], input_lamports=1_000_000_000)
+                pool_address=evidence['addresses']['pool'], input_lamports=1_000_000_000,
+                evidence_profile=evidence.get('evidence_profile', 'legacy'))
             if replay != payload['analysis']:
                 raise ValueError('Legacy snapshot analysis replay differs from retained result')
             replayed += 1
@@ -71,6 +73,10 @@ def verify(evidence_root):
                         'provider_quote_bodies_retained': body_count,
                         'provider_quote_bodies_missing': len(provider_quotes)-body_count,
                         'complete_raw_replay_declared': bundle['completeness'].get('complete_raw_replay')})
+        # Preserve deterministic historical report shape when no quote body exists.
+        if body_count:
+            reports[-1]['quote_semantic_replays'] = dict(Counter(
+                replay_quote_observation(event)['status'] for event in provider_quotes))
     return {'schema': 'p3-offline-evidence-verification-v1', 'network_used': False,
             'sqlite_used': False, 'integrity_vs_git_index': 'PASS',
             'provider_authenticity_certified': False, 'economic_validation': 'INSUFFICIENT DATA',

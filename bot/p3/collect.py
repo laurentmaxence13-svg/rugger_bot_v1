@@ -260,11 +260,15 @@ def _record_quote(append, quote, side, request_id):
         # redacted credential keys). Retain a receipt without those extensions.
         append('quote_attempt', **envelope, outcome='error',
                reason='unsafe_or_invalid_quote_payload',
-               payload={'quote_side': side,
+               payload={'provider': 'raydium_trade_api', 'quote_side': side,
                         'sanitized_response_sha256': payload['sanitized_response_sha256'],
                         'retained_sanitized_response': None,
                         'sanitized_response_retained': False,
                         'original_quote_outcome': quote['outcome'],
+                        'original_quote_reason': quote['reason'],
+                        'response_body_status': 'rejected_by_journal_policy',
+                        'response_body_sha256': quote.get('response_body_sha256'),
+                        'response_body_bytes_observed': quote.get('response_body_bytes_observed'),
                         'requested_at_ms': quote['requested_at_ms'],
                         'received_at_ms': quote['received_at_ms'],
                         'latency_ms': quote['latency_ms'], 'http_status': quote['http_status'],
@@ -286,8 +290,16 @@ async def _quote_with_cancellation_receipt(client, append, input_mint, output_mi
     requested, monotonic = now_ms(), time.monotonic_ns()
     try:
         return await client.quote(input_mint, output_mint, amount, slippage_bps)
-    except asyncio.CancelledError:
+    except asyncio.CancelledError as error:
         received = now_ms()
+        metadata = getattr(error, 'capture_quote_metadata', {})
+        # Only our client's explicit receipt whitelist crosses this boundary.
+        # Cancellation remains cancellation, including a known HTTP error whose
+        # body was interrupted by the campaign deadline.
+        retained = {key: metadata[key] for key in (
+            'http_status', 'retry_after_seconds', 'response_body_status',
+            'response_body_sha256', 'response_body_bytes_observed', 'requested_at_ms')
+            if isinstance(metadata, dict) and key in metadata}
         append('quote_attempt', received_at_ms=received,
                mint=output_mint if side == 'buy' else input_mint,
                outcome='cancelled', reason='capture_cancelled', request_id=request_id,
@@ -296,7 +308,7 @@ async def _quote_with_cancellation_receipt(client, append, input_mint, output_mi
                         'input_amount_atomic': str(amount), 'requested_at_ms': requested,
                         'received_at_ms': received, 'slippage_bps': slippage_bps,
                         'latency_ms': (time.monotonic_ns()-monotonic)/1_000_000,
-                        'position_acquired': False, 'execution_verified': False})
+                        'position_acquired': False, 'execution_verified': False, **retained})
         raise
 
 

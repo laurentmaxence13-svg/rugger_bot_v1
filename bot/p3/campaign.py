@@ -8,6 +8,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import re
 from pathlib import Path
 import time
 import uuid
@@ -55,6 +56,15 @@ def validate_plan(plan):
         # outside the first 20 signatures. Never mutate/relabel the original run.
         required.update(schema='p3-launchlab-campaign-v2', plan_id='launchlab-native-sol-002',
                         signature_limit=1000, max_supported_transaction_version=1)
+    if type(plan) is dict and plan.get('plan_id') == 'launchlab-retention-sol-003':
+        required.update(schema='p3-launchlab-campaign-v3', plan_id='launchlab-retention-sol-003',
+                        signature_limit=1000, max_supported_transaction_version=1,
+                        evidence_profile='published_metadata_v1', stop_on_source_error=True,
+                        source_main='7ddddb9f73339242fbcb5b9bf10fa329c82fa700')
+        revision = plan.get('source_revision')
+        if type(revision) is not str or re.fullmatch(r'[0-9a-f]{40}', revision) is None:
+            raise ValueError('New retention plan requires an exact source revision')
+        required['source_revision'] = revision
     if type(plan) is not dict or set(plan) != set(required) | {'registered_at_ms'}:
         raise ValueError('Unexpected preregistered plan schema')
     if any(type(plan[key]) is not type(value) or plan[key] != value
@@ -233,7 +243,8 @@ def _bank(result, count):
     return slot, values
 
 
-async def _snapshot(store, session, append, row, addresses, minimum_slot, period):
+async def _snapshot(store, session, append, row, addresses, minimum_slot, period,
+                    *, evidence_profile='legacy'):
     requested_addresses = list(addresses.values())
     result, received, request, _ = await _rpc(session, append, 'getMultipleAccounts',
         [requested_addresses, {'encoding': 'base64', 'commitment': 'confirmed',
@@ -246,7 +257,7 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
             mint=row['mint'], request_id=request, outcome='observed' if values is not None else 'missing',
             payload={'period': period, 'addresses': addresses, 'requested_addresses': requested_addresses,
                      'raw_rpc_result': result,
-                     'minimum_context_slot': minimum_slot})
+                     'minimum_context_slot': minimum_slot, 'evidence_profile': evidence_profile})
     except ValueError:
         append('pool_snapshot', received_at_ms=received, mint=row['mint'], outcome='error',
                reason='unsafe_or_invalid_snapshot', payload={'period': period,
@@ -263,7 +274,8 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
     source = source_seconds * 1000 if type(source_seconds) is int and source_seconds > 0 else None
     analysis_at = now_ms()
     analysis = analyze_snapshot(dict(zip(requested_addresses, values)), context_slot=slot,
-        expected_mint=row['mint'], pool_address=row['pool'], input_lamports=1_000_000_000)
+        expected_mint=row['mint'], pool_address=row['pool'], input_lamports=1_000_000_000,
+        evidence_profile=evidence_profile)
     append('candidate_decision', received_at_ms=analysis_at, source_slot=slot, mint=row['mint'],
            outcome='not_admitted', reason='research_observation_only',
            payload={'snapshot_observation_id': identity, 'analysis_at_ms': analysis_at,
@@ -359,6 +371,10 @@ async def _creation(session, append, row, *, signature_limit=20, max_supported_t
     return verified
 
 
+class CampaignSourceStopped(RuntimeError):
+    """Stop a new instrumental run after recording a failed source receipt."""
+
+
 async def collect_campaign(store, session, plan, *, provenance='live'):
     """Execute exactly one fixed campaign; dependency injection is for offline tests."""
     plan_hash = validate_plan(plan)
@@ -369,9 +385,20 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
     started, mono = now_ms(), time.monotonic_ns()
     session._deadline_ns = mono + plan['max_elapsed_ms']*1_000_000
     selected, retained, total_rows, candidates, snapshots, addresses = [], [], None, [], {}, {}
+    initial_completed_ns = []
 
     def append(kind, **event):
-        return store.append(kind, provenance=provenance, **event)
+        identity = store.append(kind, provenance=provenance, **event)
+        if plan.get('stop_on_source_error') is True:
+            status = event.get('payload', {}).get('http_status')
+            reason = event.get('reason') or ''
+            # Logical HTTP-200 quote refusal is data, not a transport failure.
+            if ((type(status) is int and not 200 <= status < 300)
+                    or (kind in ('request', 'quote_attempt') and event.get('outcome') == 'error')
+                    or reason in ('timeout', 'transport_error')
+                    or reason.startswith('unsafe_or_invalid')):
+                raise CampaignSourceStopped('source_error_after_persisted_receipt')
+        return identity
 
     append('checkpoint', received_at_ms=started, outcome='registered_plan',
            payload={'plan': plan, 'plan_sha256': plan_hash})
@@ -444,9 +471,11 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
                 except (ValueError, TypeError):
                     _gap(append, 'pool_address_graph_unavailable', mint=mint)
                 else:
-                    first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial')
+                    first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial',
+                        evidence_profile=plan.get('evidence_profile', 'legacy'))
                     if first is not None:
                         snapshots.setdefault(mint, []).append(first)
+                        initial_completed_ns.append(time.monotonic_ns())
             session.check_deadline()
             candidate['creation_verified'] = await _creation(session, append, row,
                 signature_limit=plan['signature_limit'],
@@ -466,20 +495,29 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
         if snapshots:
             # Wait from the latest initial receipt; subsequent periods cannot
             # silently be relabelled duplicate readings from the same instant.
-            last_received = max(values[0]['received_at_ms'] for values in snapshots.values())
-            delay = max(0, plan['followup_delay_ms'] - (now_ms()-last_received))
+            if plan.get('stop_on_source_error') is True:
+                # Delay conservatively after initial snapshot analysis/persistence,
+                # on a monotonic clock unaffected by UTC corrections.
+                since = (time.monotonic_ns()-max(initial_completed_ns))/1_000_000
+                delay = max(0, plan['followup_delay_ms']-since)
+            else:
+                last_received = max(values[0]['received_at_ms'] for values in snapshots.values())
+                delay = max(0, plan['followup_delay_ms'] - (now_ms()-last_received))
             await asyncio.sleep(delay/1000)
         for row in selected:
             session.check_deadline()
             previous = snapshots.get(row['mint'], [])
             if previous:
                 following = await _snapshot(store, session, append, row, addresses[row['mint']],
-                                            previous[0]['context_slot'], 'followup')
+                                            previous[0]['context_slot'], 'followup',
+                                            evidence_profile=plan.get('evidence_profile', 'legacy'))
                 if following is not None:
                     previous.append(following)
 
     try:
         await asyncio.wait_for(run(), timeout=plan['max_elapsed_ms']/1000)
+    except CampaignSourceStopped:
+        _gap(append, 'campaign_stopped_on_source_error')
     except (asyncio.TimeoutError, ReadOnlyPolicyError):
         _gap(append, 'campaign_budget_or_deadline_exhausted')
     # Every selected identity survives interruption, including ones not reached.
