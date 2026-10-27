@@ -241,6 +241,9 @@ def _record_quote(append, quote, side, request_id):
     # Retain normalized evidence and a hash of the sanitized raw response.
     # Raw untrusted response extensions cannot inject credentials into the journal.
     payload = {key: value for key, value in quote.items() if key != 'raw_payload'}
+    # Preserve the sanitized public body needed to replay normalization. The
+    # store still rejects forbidden fields and retains an explicit error receipt.
+    payload['retained_sanitized_response'] = quote.get('raw_payload')
     raw = json.dumps(quote.get('raw_payload'), sort_keys=True, allow_nan=False)
     payload['sanitized_response_sha256'] = hashlib.sha256(raw.encode()).hexdigest()
     payload['quote_side'] = side
