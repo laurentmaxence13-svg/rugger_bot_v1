@@ -119,6 +119,12 @@ bloquent les réalisations et, si le coût de l'entrée est inconnu, les entrée
 
 ## Validation et conditions restantes pour P3
 
+Preuves publiées `f29d39ee9612422f5695c9ae35fda255bbdebc3d`, puis trois fichiers
+retéléchargés effectivement depuis cette référence GitHub dans un dossier neuf.
+Neuf corps de quote et quatre jambes sur quatre cas rapprochés sans réseau ni
+accès SQLite pendant replay. Aucun DB source nécessaire ou téléversé. Reçu :
+`validation/P3_ATOMIC_INVENTORY_REMOTE_RESTORE.json`.
+
 **1 535 tests, 242 sous-tests réussis, 1 ignoré**, 5,88 s, warnings en erreur,
 stderr vide, sur copie jetable sans réseau/secrets ; 100 tests de plus que la
 livraison fonctionnelle. Régressions causales : appel `asyncio.run` dans une

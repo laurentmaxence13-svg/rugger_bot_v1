@@ -10,6 +10,11 @@ Mandat économique appliqué, sans refaire l'ancienne démo ni contrôle réseau
 Lire `P3_ATOMIC_INVENTORY_RELEASE.md` et
 `validation/P3_ATOMIC_INVENTORY_VALIDATION.json`.
 
+Preuves et reprise publiées `f29d39ee9612422f5695c9ae35fda255bbdebc3d` ; trois
+artefacts retéléchargés depuis cette référence puis neuf quotes/quatre jambes/
+quatre cas rapprochés sans DB ni réseau pendant replay. Reçu conservé dans
+`validation/P3_ATOMIC_INVENTORY_REMOTE_RESTORE.json`.
+
 - Code distant `82ce606ef0952154efb0d964e8cfea7befc20c37`, arbre validé
   `49d9ca058dce7a6b953b96d997cf20a7bb187735`, équivalent local `2edcd43`.
   **1 535 passed, 1 skipped, 242 subtests**, 5,88 s, warnings en erreur, stderr vide.

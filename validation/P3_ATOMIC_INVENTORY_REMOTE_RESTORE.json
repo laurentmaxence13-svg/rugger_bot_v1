@@ -1,0 +1,15 @@
+{
+  "cases_reconciled": 4,
+  "data_kind": "synthetic",
+  "database_access_prohibited": true,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "files_restored": 3,
+  "network_during_replay_prohibited": true,
+  "quote_bodies_replayed": 9,
+  "remote_commit": "f29d39ee9612422f5695c9ae35fda255bbdebc3d",
+  "restored_from": "GitHub file API base64 in a new directory",
+  "schema": "p3-atomic-inventory-remote-restore-v1",
+  "simulation_legs_reconciled": 4,
+  "source_database_used": false,
+  "sqlite_uploaded": false
+}
