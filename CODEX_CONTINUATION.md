@@ -8,7 +8,9 @@ présenter une PR ou un test comme validation économique. Aucune fusion automat
 
 Code distant `249c7b6637d7c0cdf980b029474e4b0a576f237c`, arbre testé
 `a5a4ccb99119ee38a6604f3f96cb0ba00c40f3ba`, local `6ce9906`.
-Premier checkpoint `446d2623`. **1724 passed,1 skipped,242 subtests**,7,56s,
+Premier checkpoint `446d2623`. Preuves publiées `12e164fb`, quatre artefacts
+retéléchargés puis rapport558754octets/32lignesCSV reproduits à l’identique.
+Reçu `validation/POSITION_SIZE_REMOTE_RESTORE.json`. **1724 passed,1 skipped,242 subtests**,7,56s,
 warnings en erreur, stderr0. Lire `POST008_POSITION_SIZES_RESULTS.md`.
 Aucune collecte nouvelle, aucun ancien contrôle relancé, PR22 ouverte non fusionnée.
 

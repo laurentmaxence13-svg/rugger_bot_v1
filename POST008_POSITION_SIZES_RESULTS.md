@@ -154,3 +154,9 @@ n'est nécessaire pour rejouer cette livraison :
 python -B tools/compare_position_sizes.py --output work/position-sizes-new.json
 python -B -m bot.offline_endurance --output work/endurance-new --cycles 1000
 ```
+
+Conservation vérifiée: les quatre artefacts de l'étude ont été réellement
+retéléchargés depuis `12e164fb783621d7fbc4284be7b9e1c7e51f54db` dans un répertoire
+neuf. Archive/manifest/CSV/résumé rapprochés; les558754octets du rapport complet
+sont identiques au recalcul hors réseau depuis les banks ancrés,32lignesCSV
+vérifiées. Reçu: `validation/POSITION_SIZE_REMOTE_RESTORE.json`.
