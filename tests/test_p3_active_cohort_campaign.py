@@ -236,7 +236,7 @@ def test_watchdog_child_resolves_the_package_when_parent_is_outside_repository(t
     assert receipt['child_exit_code']==0 and receipt['process_deadline_exceeded'] is False
 
 
-@pytest.mark.parametrize('deadline',[True,0,-1,61,float('inf'),float('nan')])
+@pytest.mark.parametrize('deadline',[True,0,-1,59,60,61,float('inf'),float('nan')])
 def test_watchdog_rejects_unbounded_deadlines_before_spawning(deadline,monkeypatch):
     monkeypatch.setattr(active.subprocess,'Popen',lambda *a,**k:pytest.fail('invalid watchdog spawned a process'))
     with pytest.raises(ValueError):active.run_process_watchdog(['unused'],timeout_seconds=deadline)

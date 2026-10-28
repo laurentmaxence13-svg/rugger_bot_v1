@@ -77,8 +77,12 @@ def validate_plan(plan):
 
 class CampaignSession(ReadOnlySession):
     """Adds only discovery and two account-reading methods to the P3 policy."""
-    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL):
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL,
+                 bounded_phases=False):
         super().__init__(session, max_requests, proxy_resolver=proxy_resolver, rpc_url=rpc_url)
+        if type(bounded_phases) is not bool:
+            raise ValueError('Explicit transport phase policy required')
+        self.bounded_phases = bounded_phases
         self._deadline_ns = None
 
     def check_deadline(self):
@@ -92,6 +96,12 @@ class CampaignSession(ReadOnlySession):
         super()._take()
 
     def _limit_timeout(self, kwargs):
+        if self.bounded_phases:
+            from bot.p3.transport import phase_timeout
+            original = kwargs.get('timeout')
+            if original is not None and not isinstance(original, aiohttp.ClientTimeout):
+                raise ReadOnlyPolicyError('Unexpected campaign timeout configuration')
+            kwargs['timeout'] = phase_timeout(original)
         if self._deadline_ns is None:
             return
         self.check_deadline()

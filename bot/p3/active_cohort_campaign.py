@@ -14,6 +14,7 @@ from pathlib import Path
 import signal
 import subprocess
 import time
+from urllib.parse import urlsplit
 
 import aiohttp
 
@@ -46,8 +47,26 @@ def make_plan(*,registered_at_ms,source_revision):
         market_collection_executed=False,real_orders_enabled=False)
 
 
+def make_plan_010(*,registered_at_ms,source_revision):
+    from bot.p3.transport import PHASE_TIMEOUTS
+    plan=make_plan(registered_at_ms=registered_at_ms,source_revision=source_revision)
+    plan.update(schema='p3-active-cohort-execution-plan-v2',control_id='P3-010',
+        previous_control_policy='009_closed_never_resumed; independent_new_acquisition',
+        transport=dict(phase_timeouts_seconds=dict(PHASE_TIMEOUTS),
+            recorder='safe_phase_checkpoints_in_capture_chain',
+            dns='system_threaded_resolver_AF_UNSPEC_via_configured_proxy',
+            tls='default_CA_and_hostname_verification_required',
+            process_watchdog_seconds=58,termination_grace_seconds=2),
+        comparison=dict(research_input_lamports='100000000',
+            initial_reference_input_lamports='1000000000',
+            resizing_provider_quotes=False,
+            admissibility='no_equal_size_AB_claim_without_separate_exact_quotes_and_causal_inputs'))
+    return plan
+
+
 def validate_plan(plan,*,first_observation_at_ms=None):
-    if type(plan) is not dict or plan!=make_plan(
+    factory=make_plan_010 if type(plan) is dict and plan.get('schema')=='p3-active-cohort-execution-plan-v2' else make_plan
+    if type(plan) is not dict or plan!=factory(
             registered_at_ms=plan.get('registered_at_ms'),source_revision=plan.get('source_revision')):
         raise ValueError('Exact active-cohort execution plan required')
     validate_acquisition_plan(plan['acquisition'],first_observation_at_ms=first_observation_at_ms)
@@ -266,8 +285,8 @@ def run_process_watchdog(command,*,timeout_seconds=58,working_directory=None):
     """Bound one child process, including executor cleanup; never restart it."""
     if (type(command) is not list or not command or any(type(x) is not str for x in command)
             or type(timeout_seconds) not in (int,float) or not math.isfinite(timeout_seconds)
-            or not 0<timeout_seconds<=60):
-        raise ValueError('One explicit child command and a deadline within60 seconds required')
+            or not 0<timeout_seconds<=58):
+        raise ValueError('One child and deadline within58 seconds plus2-second termination reserve required')
     start=time.monotonic();expired=False
     child=subprocess.Popen(command,start_new_session=True,cwd=working_directory)
     try:child.wait(timeout=timeout_seconds)
@@ -280,20 +299,50 @@ def run_process_watchdog(command,*,timeout_seconds=58,working_directory=None):
             try:os.killpg(child.pid,signal.SIGKILL)
             except ProcessLookupError:pass
             child.wait(timeout=1)
+        # The direct child may exit on TERM while another member of its own
+        # process group ignores it. Never leave those descendants running.
+        try:os.killpg(child.pid,signal.SIGKILL)
+        except ProcessLookupError:pass
     return dict(child_exit_code=child.returncode,process_deadline_exceeded=expired,
         deadline_ms=timeout_seconds*1000,elapsed_ms=(time.monotonic()-start)*1000,
-        child_execution_count=1,retry_performed=False)
+        termination_reserve_ms=2000,child_execution_count=1,retry_performed=False)
 
 
 async def _capture(plan,database,*,output=None):
+    phased=plan.get('control_id')=='P3-010'
+    routes=None
+    if phased:
+        from bot.p3.transport import managed_proxy_routes
+        # Check every source before creating a journal/connector. NO_PROXY is
+        # respected as a configuration refusal, never as permission to go direct.
+        routes=managed_proxy_routes((cp.INDEX_URL,plan['effective_rpc_endpoint'],
+            CRITERIA['sources']['quotes']))
     with CaptureStore(database) as store:
-        async with aiohttp.ClientSession(trust_env=False,cookie_jar=aiohttp.DummyCookieJar()) as transport:
+        options=dict(trust_env=False,cookie_jar=aiohttp.DummyCookieJar())
+        recording=True
+        if phased:
+            from bot.p3.transport import PhaseRecorder,connector
+            def retained_phase(event):
+                if recording:
+                    store.append('checkpoint',provenance='live',received_at_ms=now_ms(),
+                        outcome='transport_phase',payload=event)
+            recorder=PhaseRecorder(retained_phase)
+            proxy=routes[cp.INDEX_URL]
+            options.update(connector=connector(recorder,proxy_host=urlsplit(proxy).hostname if proxy else None),
+                trace_configs=[recorder.trace_config()])
+        async with aiohttp.ClientSession(**options) as transport:
             if type(getattr(transport,'_retry_connection',None)) is not bool:
                 raise ReadOnlyPolicyError('Unsupported transport retry switch')
             transport._retry_connection=False
-            session=cp.CampaignSession(transport,20,proxy_resolver=_environment_proxy,
-                rpc_url=plan['effective_rpc_endpoint'])
-            report=await collect_active_cohort(store,session,plan)
+            session=cp.CampaignSession(transport,20,
+                proxy_resolver=routes.__getitem__ if routes is not None else _environment_proxy,
+                rpc_url=plan['effective_rpc_endpoint'],bounded_phases=phased)
+            try:
+                report=await collect_active_cohort(store,session,plan)
+            finally:
+                # The close event is the journal anchor. Late resolver/task
+                # cancellation belongs to process cleanup, never after it.
+                recording=False
             # Publish before HTTP/DNS/executor cleanup, which can stall after
             # the capture itself has already stopped and committed its receipt.
             if output is not None:atomic_write_json(output,report,indent=2,sort_keys=True,allow_nan=False)

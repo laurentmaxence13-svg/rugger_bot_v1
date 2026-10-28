@@ -1,5 +1,18 @@
 # État du projet — candidat fonctionnel PAPER
 
+## P3-010 — transport préparé, avant diagnostic, 28 octobre 2026
+
+Base distante298f305, arbre local/distant5ea18477 vérifié; arbre propre au départ.
+Contrat LaunchLab confirmé par documentation officielle. Traces DNS du proxy et
+phases HTTP ajoutées, délais par phase, proxy obligatoire pour010, watchdog58+2s.
+Nettoyage bloqué par DNS synthétique reproduit hors réseau; cause historique009
+reste inconnue. Plan de diagnostic distinct : une résolution/proxyTCP et au plus
+3HEAD racines,23+2s, sans corps, marché, retry ou fallback. Aucun diagnostic actif
+ni acquisition010 encore exécuté à ce checkpoint. Lire P3_TRANSPORT_010.md et
+validation/p3_transport_010/. Une collecte010 exige son propre plan publié et
+un accès nécessaire établi; ne jamais relancer009 ou l'endurance.
+
+
 
 
 
