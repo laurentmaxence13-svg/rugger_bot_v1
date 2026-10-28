@@ -301,6 +301,22 @@ def test_missing_strategy_features_stay_unknown_despite_available_curve_state():
     assert result['strict_economic_cycles']==0
 
 
+def test_downside_uses_preexisting_circulation_and_does_not_manufacture_it():
+    frame=cost_frame()
+    report=p4.assess_curve_costs(frame)
+    for row in report['sizes']:
+        base=int(row['same_state_own_entry_model']['sell_output_lamports'])
+        downside=row['hypothetical_downside_sensitivity']
+        assert len(downside)==2
+        assert all(int(r['model']['sell_output_lamports'])<base for r in downside)
+    frame['bank_state']['pool_state']['real_a']=0
+    report=p4.assess_curve_costs(frame)
+    assert all(s['model'] is None and s['scenario_state']=='no_preexisting_inventory_to_sell'
+        for row in report['sizes'] for s in row['hypothetical_downside_sensitivity'])
+    frame['bank_state']['pool_state']['real_a']='0'
+    assert p4.assess_curve_costs(frame)['bank_unavailable_reason']=='bank_circulation_amount_invalid'
+
+
 def test_size_crossing_fundraising_boundary_is_not_dropped_or_scaled_down():
     frame=cost_frame();bank=frame['bank_state'];bank['pool_state']['total_fundraising_b']=bank['pool_state']['real_b']+200000000
     result=p4.assess_curve_costs(frame)

@@ -90,6 +90,7 @@ def _compact(model):
     names=('admissible','reason','buy_input_lamports','buy_output_atomic','buy_curve_fee_lamports',
         'buy_effective_input_lamports','sell_gross_output_lamports','sell_curve_fee_lamports',
         'sell_output_lamports','curve_pnl_lamports','round_trip_friction_lamports',
+        'round_trip_friction_basis','curve_cash_drag_after_sensitivity_lamports',
         'modeled_additional_costs_lamports','modeled_net_pnl_lamports',
         'break_even_extra_proceeds_lamports','break_even_required_net_proceeds_lamports',
         'break_even_required_gross_proceeds_lamports','break_even_required_gross_growth_ratio',
@@ -125,6 +126,11 @@ def build_size_study(frames):
                     model=_compact(r['model'])) for r in row['hypothetical_additional_costs']],
                 hypothetical_reserve_sensitivity=[dict(external_buy_lamports=r['external_buy_lamports'],
                     model=_compact(r['model'])) for r in row['hypothetical_reserve_sensitivity']],
+                hypothetical_downside_sensitivity=[dict(
+                    preexisting_circulation_fraction_bps=r['preexisting_circulation_fraction_bps'],
+                    external_sell_token_atomic=r['external_sell_token_atomic'],scenario_state=r['scenario_state'],
+                    model=None if r['model'] is None else _compact(r['model']))
+                    for r in row['hypothetical_downside_sensitivity']],
                 break_even_external_buy_search=searches))
         cases.append(dict(frame_id=frame['id'],run_id=frame['run_id'],phase=frame['phase'],
             mint=frame['mint'],pool=frame['pool'],source_bank=assessment['source_bank'],

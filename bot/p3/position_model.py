@@ -75,7 +75,8 @@ def _buy(pool, base, quote, amount, rates, share):
 
 def evaluate_position(pool, *, input_lamports, fee_rates_ppm, base_vault_atomic,
                       quote_vault_lamports, curve_type=0, share_fee_rate_ppm=0,
-                      additional_costs_lamports=None, external_buy_lamports=0):
+                      additional_costs_lamports=None, external_buy_lamports=0,
+                      external_sell_token_atomic=0):
     """Project one full lot through own buy, optional outside buy, own sell.
 
     Amounts are uint64 lamports/token atoms and return as exact decimal strings.
@@ -84,10 +85,10 @@ def evaluate_position(pool, *, input_lamports, fee_rates_ppm, base_vault_atomic,
     cost. Curve fees already in sell output are not subtracted a second time.
     The external buy is a conditional reserve sensitivity, not future evidence.
     """
-    result = dict(schema='p3-conditional-position-model-v1', admissible=False,
+    result = dict(schema='p3-conditional-position-model-v2', admissible=False,
         reason=None, **dict.fromkeys(_AMOUNTS), observed_state=None,
         counterfactual_post_buy_state=None, counterfactual_pre_sell_state=None,
-        counterfactual_post_sell_state=None, external_buy=None,
+        counterfactual_post_sell_state=None, external_buy=None, external_sell=None,
         cost_basis='unknown' if additional_costs_lamports is None else 'caller_hypothetical_scenario',
         additional_costs_observed=False, model_basis='single_observed_bank_then_hypothetical_flows',
         observation_kind='MODEL_SNAPSHOT_CONDITIONAL', external_service_quote=False,
@@ -96,9 +97,14 @@ def evaluate_position(pool, *, input_lamports, fee_rates_ppm, base_vault_atomic,
     try:
         amount = _uint(input_lamports,'input_lamports',positive=True)
         external = _uint(external_buy_lamports,'external_buy_lamports')
+        outside_sell = _uint(external_sell_token_atomic,'external_sell_token_atomic')
+        if external and outside_sell:
+            raise SnapshotEvidenceError('one_explicit_external_flow_scenario_required')
         costs = (None if additional_costs_lamports is None else
                  _uint(additional_costs_lamports,'additional_costs_lamports'))
         observed, base, quote = _bank(pool,base_vault_atomic,quote_vault_lamports,curve_type)
+        if outside_sell > observed['real_a']:
+            raise SnapshotEvidenceError('external_sell_exceeds_preexisting_circulation')
         result['observed_state'] = _state(observed,base,quote)
         own, post, post_base, post_quote = _buy(observed,base,quote,amount,fee_rates_ppm,share_fee_rate_ppm)
         result['counterfactual_post_buy_state'] = _state(post,post_base,post_quote)
@@ -109,6 +115,20 @@ def evaluate_position(pool, *, input_lamports, fee_rates_ppm, base_vault_atomic,
                 output_atomic=other['buy_output_atomic'],curve_fee_lamports=other['buy_curve_fee_lamports'],
                 effective_input_lamports=other['buy_effective_input_lamports'],
                 basis='hypothetical_third_party_buy_after_our_entry_not_a_forecast')
+        if outside_sell:
+            other = observed_sell_projection(post,input_token_atomic=outside_sell,
+                fee_rates_ppm=fee_rates_ppm,quote_vault_lamports=post_quote,
+                curve_type=curve_type,share_fee_rate_ppm=share_fee_rate_ppm)
+            other_gross=int(other['gross_output_lamports'])
+            post['real_a']-=outside_sell
+            post['real_b']-=other_gross
+            post_base+=outside_sell
+            post_quote-=other_gross
+            result['external_sell']=dict(input_atomic=str(outside_sell),
+                gross_output_lamports=other['gross_output_lamports'],
+                output_lamports=other['output_lamports'],
+                curve_fee_lamports=other['curve_fee_lamports'],
+                basis='hypothetical_sale_of_preexisting_circulation_excluding_our_lot')
         result['counterfactual_pre_sell_state'] = _state(post,post_base,post_quote)
         quantity = int(own['buy_output_atomic'])
         sell = observed_sell_projection(post,input_token_atomic=quantity,
@@ -127,6 +147,7 @@ def evaluate_position(pool, *, input_lamports, fee_rates_ppm, base_vault_atomic,
             sell_gross_output_lamports=str(gross),sell_curve_fee_lamports=sell['curve_fee_lamports'],
             sell_output_lamports=str(received),curve_pnl_lamports=str(received-amount),
             round_trip_friction_lamports=str(amount-int(own['sell_output_lamports'])),
+            round_trip_friction_basis='same_bank_immediate_reversal_without_external_flow',
             curve_cash_drag_after_sensitivity_lamports=str(amount-received),
             own_curve_fees_lamports=str(int(own['buy_curve_fee_lamports'])+int(sell['curve_fee_lamports'])),
             modeled_additional_costs_lamports=None if costs is None else str(costs),

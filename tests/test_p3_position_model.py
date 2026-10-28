@@ -99,6 +99,34 @@ def test_external_buy_is_a_separate_counterfactual_and_net_proceeds_increase_mon
     assert tiny['admissible'] is False and tiny['reason']=='input_consumed_by_fee'
 
 
+def test_other_sellers_use_only_preexisting_tokens_and_cannot_borrow_our_lot():
+    values=bank();before=deepcopy(values)
+    baseline=evaluate_position(input_lamports=1000000000,**values)
+    previous=int(baseline['sell_output_lamports'])
+    for quantity in (values['pool']['real_a']//2,values['pool']['real_a']):
+        result=evaluate_position(input_lamports=1000000000,external_sell_token_atomic=quantity,**values)
+        assert result['admissible'] is True
+        assert int(result['sell_output_lamports'])<previous
+        previous=int(result['sell_output_lamports'])
+        assert result['buy_output_atomic']==baseline['buy_output_atomic']
+        assert result['counterfactual_post_sell_state']['pool']['real_a']==str(values['pool']['real_a']-quantity)
+        assert result['remaining_inventory_atomic']=='0'
+    assert values==before
+    invalid=evaluate_position(input_lamports=1000000000,
+        external_sell_token_atomic=values['pool']['real_a']+1,**values)
+    assert invalid['admissible'] is False
+    assert invalid['reason']=='external_sell_exceeds_preexisting_circulation'
+    empty=evaluate_position(input_lamports=1000000000,external_sell_token_atomic=1,**bank(empty=True))
+    assert empty['reason']=='external_sell_exceeds_preexisting_circulation'
+
+
+def test_two_external_sides_require_a_separately_defined_scenario():
+    result=evaluate_position(input_lamports=1000000000,external_buy_lamports=100,
+        external_sell_token_atomic=1,**bank())
+    assert result['admissible'] is False
+    assert result['reason']=='one_explicit_external_flow_scenario_required'
+
+
 def test_exact_minimum_outside_buy_break_even_and_one_lamport_less_fails():
     values=bank(empty=True)
     answer=minimum_external_buy_for_break_even(input_lamports=1_000_000_000,

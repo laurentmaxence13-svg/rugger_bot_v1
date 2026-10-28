@@ -14,10 +14,16 @@ prix, devis, horodatages, heartbeats et coûts sont **synthétiques**. Une seule
 position projetée de 1 SOL est répartie en N ventes partielles exactes. Chaque devis
 déjà réglé est rejoué à une décision ultérieure, sans nouvelle réalisation.
 
+La version2 emploie directement les callbacks de `ScannerHealth`, un transport
+factice surveillé et le même garde opérationnel. Chaque pas avance de5min
+virtuelles, sans attente réelle. Les750 refus comprennent un vrai âge de source
+dépassant120s, une déconnexion ou une urgence. Après chaque reprise, la nouvelle
+durée de vie sans preuve source est refusée avant toute nouvelle observation.
+
 Quatre phases alternent: sources saines, RPC périmé, urgence, WebSocket déconnecté.
 Le garde bloque les nouvelles permissions dans les trois dernières; la gestion
-de la position existante reste opérationnelle. Le parent teste séparément les
-callbacks internes réels et le refus effectif de nouveaux candidats.
+de la position existante reste opérationnelle. Les tests du scanner vérifient aussi les wrappers réels et le refus effectif
+de nouveaux candidats, sans ajouter de requête réseau.
 
 Dix sauvegardes online committed-only sont vérifiées puis **rouvertes comme
 prochain livre actif**. Cela simule le choix manuel d'une copie de reprise: ces
@@ -25,9 +31,12 @@ fichiers de fixture deviennent donc modifiables après restauration, ce ne sont
 pas dix archives immuables. Quantité restante, version, jambes et capital doivent
 être identiques avant et après chaque reconnexion. Aucune base utilisateur lue.
 
+Temps virtuel total:83h20min plus1s;751 reçus RPC et1001 callbacks WebSocket
+simulés,10 refus supplémentaires de préflight sans preuve après redémarrage.
+
 Exécution conservée dans `validation/P5_OFFLINE_ENDURANCE.json`:1000 cycles,
 1000 jambes,1000 replays sans double crédit,750 refus d'admission,10 sauvegardes et
-10 reprises,4011 contrôles d'invariants, reliquat 0. Produits de fixture 1,05 SOL,
+10 reprises,4021 contrôles d'invariants, reliquat 0. Produits de fixture 1,05 SOL,
 frais explicites 0,010005 SOL, P&L synthétique 0,039995 SOL et capital 10,039995 SOL.
 Les montants vérifient uniquement les opérations du logiciel: ils ne mesurent
 ni une espérance de stratégie ni un résultat de marché.

@@ -1,0 +1,10 @@
+{
+  "byte_identical_to_prior_report": true,
+  "comparison_runs": 24,
+  "economic_profitability_verified": false,
+  "fixture_sha256": "2be11e3b53c164331a48ad2fc5e909e0e1792e3de7cd099b7cf1a03fe75e7f98",
+  "full_report_sha256": "42b99d7eadf9614ed2418bb4e62fb85f6a9be7bf43a23df8c8ec2205e3972272",
+  "network_requests": 0,
+  "old_remote_ref": "747e4e4c7a82f58f7d2d6764665abcba3b4b1a64",
+  "schema": "p4-supplement-baseline-preserved-v1"
+}

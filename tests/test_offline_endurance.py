@@ -18,6 +18,9 @@ def test_endurance_conserves_quantities_fees_capital_and_dedup_after_backup_rest
     assert all(report['health_phase_counts'][name]>0 for name in ('healthy','stale','emergency','disconnected'))
     assert report['fixture_net_pnl_lamports']==str(50_000_000-5000-10000*cycles)
     assert report['network_requests']==0 and report['economic_profitability_verified'] is False
+    assert report['internal_scanner_health_exercised'] is True
+    assert report['restart_preflight_refusals']==report['restarts_verified']
+    assert report['virtual_elapsed_ms']==cycles*report['virtual_step_ms']+1000
     assert report==json.loads((destination/'report.json').read_text())
     with sqlite3.connect(destination/report['final_database']) as con:
         assert con.execute('SELECT COUNT(*) FROM paper_token_legs').fetchone()==(cycles,)

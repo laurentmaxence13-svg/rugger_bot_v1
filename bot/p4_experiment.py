@@ -30,10 +30,11 @@ POLICY = {
 
 # A separately hashed research supplement: never changes POLICY or active sizing.
 CURVE_COST_POLICY = {
-    'schema':'p4-causal-curve-cost-comparison-v1',
+    'schema':'p4-causal-curve-cost-comparison-v2',
     'position_lamports':[50000000,100000000,250000000,1000000000],
     'hypothetical_additional_cost_lamports':[0,15000,1000000],
     'hypothetical_external_buy_lamports':[0,100000000,500000000,1000000000],
+    'hypothetical_external_sell_fraction_bps':[5000,10000],
     'bank_max_availability_age_ms':5000,
     'selection':'NONE; descriptive same-state counterfactuals only',
 }
@@ -201,6 +202,8 @@ def _bank_for_costs(frame,at):
     pool=bank['pool_state']
     if pool.get('mint_a')!=frame['mint']:
         return None,'bank_pool_mint_mismatch'
+    if type(pool.get('real_a')) is not int or not 0<=pool['real_a']<2**64:
+        return None,'bank_circulation_amount_invalid'
     required=('fee_rates_ppm','base_vault_atomic','quote_vault_lamports','curve_type','share_fee_rate_ppm')
     if any(name not in bank for name in required):return None,'bank_cost_inputs_missing'
     for name in ('identity_qualified','creation_verified','supply_verified'):
@@ -324,10 +327,19 @@ def assess_curve_costs(frame,history=(),*,decision_at_ms=None,api=None):
             flow_basis='hypothetical_external_buy_after_our_entry_not_observed_future',
             model=evaluate_position(input_lamports=size,external_buy_lamports=flow,**kwargs))
             for flow in CURVE_COST_POLICY['hypothetical_external_buy_lamports']]
+        downside=[]
+        for fraction in CURVE_COST_POLICY['hypothetical_external_sell_fraction_bps']:
+            quantity=bank['pool_state']['real_a']*fraction//10000
+            downside.append(dict(preexisting_circulation_fraction_bps=fraction,
+                external_sell_token_atomic=str(quantity),
+                scenario_state='no_preexisting_inventory_to_sell' if quantity==0 else 'conditional',
+                model=None if quantity==0 else evaluate_position(input_lamports=size,
+                    external_sell_token_atomic=quantity,**kwargs)))
         result['sizes'].append(dict(input_lamports=str(size),same_state_own_entry_model=model,
             observed_state_sell_estimate=observed,observed_state_sell_refusal=refusal,
             observed_state_does_not_contain_own_entry=True,hypothetical_additional_costs=costs,
             hypothetical_reserve_sensitivity=reserve,provider_quotes=_asof_provider_quality(frame,size,at)))
+        result['sizes'][-1]['hypothetical_downside_sensitivity']=downside
     return result
 
 

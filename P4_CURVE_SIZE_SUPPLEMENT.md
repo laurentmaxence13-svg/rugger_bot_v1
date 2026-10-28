@@ -53,3 +53,11 @@ absence de scaling/double comptage et ledger inchangé. Les expériences sur les
 banks008 sont des modèles conditionnels issus de données réelles conservées;
 les observations indépendantes et les cycles économiques strictement qualifiés
 ne sont pas augmentés par ces lignes de modèle.
+
+La version2 ajoute les ventes tierces de50%/100% des tokens initialement en
+circulation. Ces vendeurs ne peuvent pas utiliser notre lot hypothétique. Sans
+circulation initiale, le scénario est non applicable, pas une vente inventée.
+Les sensibilités haussières et baissières restent distinctes des banks observés.
+Le seuil de demande tierce est recherché avec les arrondis exacts et les limites
+de migration, jusqu'à10SOL hypothétiques; un lamport de moins doit échouer au
+seuil retenu. Ce seuil n'est ni une prévision de flux ni une règle active.

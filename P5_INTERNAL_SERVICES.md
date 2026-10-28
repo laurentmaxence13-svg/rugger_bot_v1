@@ -37,8 +37,11 @@ avec exactement les deux appels RPC simulés prévus. Deux fixtures historiques
 de source saine ont été complétées pour inclure ces callbacks.
 
 Endurance reproductible et résultats: `P5_ENDURANCE_METHOD.md`,
-`validation/P5_OFFLINE_ENDURANCE.json`.1000cycles virtuels,1000jambes et1000replays
-ignorés,10sauvegardes/reprises,4011invariants,750refus d'admission et reliquat0.
+`validation/P5_OFFLINE_ENDURANCE.json`.1000cycles virtuels sur83h20min,1000jambes et1000replays
+ignorés,10sauvegardes/reprises,4021invariants,750refus d'admission et reliquat0.
 Ces résultats vérifient uniquement le logiciel avec frais et produits synthétiques.
 Aucun réseau de marché, serveur permanent, base utilisateur ni déploiement exécuté.
 L'endurance en conditions réelles24h/24 reste ouverte.
+
+La version2 de l’endurance utilise ces callbacks internes avec transports factices;
+les reçus ne sont plus produits par un dictionnaire de heartbeats utilisateur.

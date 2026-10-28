@@ -34,6 +34,8 @@ def run_offline_endurance(output, *, cycles=100):
     output.mkdir(parents=True)
     from bot.economic_demo import _load_api, _public_address, _quote_observation
     from bot.operations import OperationalEntryGuard, backup_paper_database
+    from bot.scanner.supervision import ScannerHealth
+    from types import SimpleNamespace
     api = _load_api()
     from bot.analyser.paper_trader import record_quote, _paper_free_capital
     from bot.analyser.token_inventory import inventory_state
@@ -45,16 +47,17 @@ def run_offline_endurance(output, *, cycles=100):
     epoch_ms = 1_700_000_000_000
     clock = [epoch_ms]
     emergency = [False]
-    source_damage = [None]
-    def observations():
-        value = {name: {'state': state, 'observed_at_ms': clock[0]}
-                 for name, state in (('scanner', 'ready'), ('rpc', 'healthy'),
-                                     ('websocket', 'subscribed'))}
-        if source_damage[0] == 'stale':
-            value['rpc']['observed_at_ms'] -= 30001
-        elif source_damage[0] == 'disconnected':
-            value['websocket']['state'] = 'disconnected'
+    virtual_step_ms=300000
+    def new_health():
+        value=ScannerHealth(require_observations=True,clock_ms=lambda:clock[0],
+            monotonic_ms=lambda:clock[0]-epoch_ms)
+        value.tasks.append(SimpleNamespace(done=lambda:False,cancelling=lambda:0,
+            get_name=lambda:'synthetic_monitored_transport'))
         return value
+    health=new_health()
+    health.observe_rpc(True);health.observe_websocket('subscribed')
+    rpc_receipts=websocket_callbacks=1
+    restart_preflight_refusals=0
 
     database = output/'initial.sqlite'
     con = sqlite3.connect(database, isolation_level=None)
@@ -79,12 +82,18 @@ def run_offline_endurance(output, *, cycles=100):
         _require(message.startswith('ENTRY '), 'Fixture entry did not attach native inventory')
 
         for index in range(1, cycles+1):
-            clock[0] = epoch_ms+index*2000
+            clock[0] = epoch_ms+index*virtual_step_ms
             phase = ('healthy','stale','emergency','disconnected')[index % 4]
-            source_damage[0] = phase if phase in ('stale','disconnected') else None
+            if phase=='stale':
+                health.observe_websocket('notification')
+            else:
+                health.observe_rpc(True);rpc_receipts+=1
+                health.observe_websocket('disconnected' if phase=='disconnected' else 'subscribed')
+            websocket_callbacks+=1
             emergency[0] = phase == 'emergency'
-            guard = OperationalEntryGuard(con,observations,
-                emergency_stop_provider=lambda: emergency[0],clock_ms=lambda:clock[0])
+            guard = OperationalEntryGuard(con,health.operational_observations,
+                emergency_stop_provider=lambda: emergency[0],clock_ms=lambda:clock[0],
+                max_age_ms=120000,scanner_guard=health.permits_entries)
             allowed = guard()
             _require(allowed is (phase == 'healthy'), 'Health/emergency permission mismatch')
             reason_counts[phase] += 1
@@ -146,6 +155,11 @@ def run_offline_endurance(output, *, cycles=100):
                          and _paper_free_capital(con)[0] == old_capital,
                          'Restored committed backup changed the book')
                 restarts += 1;checks += 1
+                health=new_health()
+                restart_guard=OperationalEntryGuard(con,health.operational_observations,
+                    clock_ms=lambda:clock[0],max_age_ms=120000,scanner_guard=health.permits_entries)
+                _require(not restart_guard(),'Restart manufactured fresh source observations')
+                restart_preflight_refusals+=1;checks+=1
                 snapshots.append(dict(after_cycle=index,remaining_atomic=after['remaining_atomic'],
                     native_version=after['version'],legs=index,backup_quick_check=receipt['quick_check']))
 
@@ -156,8 +170,12 @@ def run_offline_endurance(output, *, cycles=100):
                  and con.execute('SELECT status FROM paper_trades').fetchone()==('closed',)
                  and int(final['realized_pnl_lamports'])==net
                  and capital==free,'Final position did not reconcile after restart')
-        report = dict(schema='rugger-offline-endurance-v1',data_kind='synthetic',
-            virtual_cycles=cycles,virtual_elapsed_ms=cycles*2000+1000,
+        report = dict(schema='rugger-offline-endurance-v2',data_kind='synthetic',
+            virtual_cycles=cycles,virtual_step_ms=virtual_step_ms,
+            virtual_elapsed_ms=cycles*virtual_step_ms+1000,
+            internal_scanner_health_exercised=True,source_max_age_ms=120000,
+            simulated_rpc_receipts=rpc_receipts,simulated_websocket_callbacks=websocket_callbacks,
+            restart_preflight_refusals=restart_preflight_refusals,
             settled_legs=cycles,replayed_quotes_ignored=duplicates,
             health_phase_counts=reason_counts,admission_refusals=unhealthy,
             backups_verified=backups,restarts_verified=restarts,
