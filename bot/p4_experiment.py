@@ -71,7 +71,7 @@ def _validate(corpus,protocol):
     registered=_integer(protocol['registered_at_ms'],'registration',True)
     if registered>=cutoff:raise ValueError('Protocol must predate validation')
     if (type(corpus) is not dict or set(corpus)!={'data_kind','frames'}
-            or corpus['data_kind'] not in ('synthetic','market_observations')
+            or corpus['data_kind'] not in ('synthetic','market_observation','market_observations')
             or type(corpus['frames']) is not list):
         raise ValueError('Explicit corpus provenance required')
     try:json.dumps(corpus,allow_nan=False)
@@ -368,7 +368,8 @@ def _position_pct(api,capital,target=None):
 
 
 def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_ms,development_end_ms,api,
-             curve_assessments=None,research_overrides=None,research_exit_horizon_ms=None):
+             curve_assessments=None,research_overrides=None,research_exit_horizon_ms=None,
+             decision_adapter=None):
     # Research candidates adapt this same replay path. They never mutate POLICY,
     # the live decision function or hard capital/admission limits.
     overrides={} if research_overrides is None else dict(research_overrides)
@@ -404,6 +405,7 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
     con=sqlite3.connect(':memory:',isolation_level=None)
     try:
         api['setup'](con);api['ensure_paper_portfolio'](con,10.0,0)
+        if decision_adapter is not None:decision_adapter.setup(con,api)
         histories={};models={};trace=[];candidate_mints={mint for mint,group in assignments.items() if group==split}
         for frame in corpus['frames']:
             mint=frame['mint']
@@ -421,13 +423,21 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                 if at-first<overrides['confirmation_delay_ms']:
                     decision=dict(decision,enter=False,reason='awaiting_research_confirmation')
             state=api['inventory_state'](con,mint)
+            adapted=None
+            if decision_adapter is not None:
+                adapted=decision_adapter.evaluate(con,frame,history,at,api,state,models.get(mint))
+                decision=adapted['decision']
+            effective_budget=budget if adapted is None else adapted.get('position_lamports',budget)
             entry=state is None and decision['enter']
             f,_=_features(frame,api,at)
             message=None
             if f is not None:
                 quote=api['MarketQuote'](f.liquidity_usd,f.price_usd,frame['pool'],quote_source='offline_retained_features')
                 context=None
-                if state is None:
+                if adapted is not None:
+                    context=_scaled_context(adapted.get('inventory_context'),fee_multiplier)
+                    if state is not None:context['inventory_version']=state['version']
+                elif state is None:
                     selected=frame.get('buy_context')
                     if research_overrides is not None:
                         alternatives=frame.get('size_contexts',{})
@@ -445,23 +455,27 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                     context=_scaled_context(matching[0] if matching else None,fee_multiplier)
                     context['inventory_version']=state['version']
                 context['decision_at_ms']=at
-                model=models.get(mint,decision['model'])
+                model=(decision['model'] if adapted is not None else models.get(mint,decision['model']))
                 try:
                     capital=api['_paper_reconciled_capital'](con)
-                    pct=_position_pct(api,capital,budget) if capital>0 else 0
+                    pct=_position_pct(api,capital,effective_budget) if capital>0 else 0
                     message=api['record_quote'](con,mint,frame['creator'],frame['detected_at_ms']//1000,
                         at//1000,quote,model,allow_entry=entry,strategy_mode='shadow_final',
-                        force_exit_reason=('RESEARCH_HORIZON' if state and at-state['entry_decision_ms']>=horizon else None),
+                        force_exit_reason=((adapted or {}).get('force_exit_reason') or
+                            ('RESEARCH_HORIZON' if state and at-state['entry_decision_ms']>=horizon else None)),
                         initial_capital_sol=10.0,position_pct=pct,max_open=POLICY['max_open'],
                         max_entries_day=POLICY['max_entries_day'],max_daily_loss_pct=POLICY['max_daily_loss_pct'],
                         inventory_context=context,require_inventory=True)
                 except (ValueError,TypeError) as error:
                     message='RESEARCH_REFUSED '+type(error).__name__+': '+str(error)
                 if state is None and api['inventory_state'](con,mint) is not None:models[mint]=decision['model']
+            if decision_adapter is not None:
+                decision_adapter.after_step(con,frame,at,api,message)
             trace.append({'frame_id':frame['id'],'mint':mint,'decision_at_ms':at,'enter_intent':entry,
                           'decision_reason':decision['reason'],'decision_score':decision['score'],'message':message})
             if curve_assessments is not None and (frame['id'],at) in curve_assessments:
                 trace[-1]['curve_cost_assessment_sha256']=_hash(curve_assessments[(frame['id'],at)])
+            if adapted is not None:trace[-1]['decision_snapshot']=adapted['snapshot']
             history.append(frame)
         states=[]
         for row in con.execute('SELECT mint,acquired_atomic,remaining_atomic,cost_basis_remaining_lamports,realized_pnl_lamports,entry_extra_lamports FROM paper_token_inventory ORDER BY mint'):
@@ -480,7 +494,7 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
             equity+=event['pnl_sol'];peak=max(peak,equity);drawdown=min(drawdown,equity/peak-1)
         legs=[{'quantity_atomic':q,'proceeds_lamports':received,'extra_fee_lamports':fee,'pnl_lamports':pnl}
             for q,received,fee,pnl in con.execute('SELECT quantity_atomic,proceeds_lamports,extra_fee_lamports,pnl_lamports FROM paper_token_legs ORDER BY decision_ms,id')]
-        return {'strategy':strategy,'split':split,'candidate_count':len(candidate_mints),
+        result={'strategy':strategy,'split':split,'candidate_count':len(candidate_mints),
             'entered_positions':len(states),'closed_positions':len(closed),'unentered_candidates':len(candidate_mints)-len(states),
             'positions':states,'legs':legs,'trace':trace,'realized_capital_sol':capital,
             'realized_pnl_sol':sum(e['pnl_sol'] for e in events),
@@ -497,6 +511,8 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
             'known_modeled_extra_costs_lamports':str(sum(int(leg['extra_fee_lamports']) for leg in legs)+sum(int(row[0]) for row in con.execute('SELECT entry_extra_lamports FROM paper_token_inventory') if row[0] is not None)),
             'full_extra_costs_lamports':(str(sum(int(leg['extra_fee_lamports']) for leg in legs)+sum(int(row[0]) for row in con.execute('SELECT entry_extra_lamports FROM paper_token_inventory'))) if complete else None),
             'economic_profitability_verified':False,'execution_verified':False}
+        if decision_adapter is not None:result['shadow_comparison_audit']=decision_adapter.report(con)
+        return result
     finally:con.close()
 
 

@@ -62,7 +62,7 @@ def cli(root, *args):
 
 @pytest.mark.parametrize('args', [('--help',), ('paper', '--help'),
     ('operations', '--help'), ('operations', 'serve', '--help'), ('experiment', '--help'),
-    ('policy-research', '--help'), ('master-endurance', '--help')])
+    ('policy-research', '--help'), ('master-endurance', '--help'), ('master-compare','--help')])
 def test_public_help_does_not_load_dotenv_open_network_or_create_database(cli_tree, args):
     result = cli(cli_tree, *args)
     assert result.returncode == 0, result.stderr
@@ -132,6 +132,22 @@ def test_master_endurance_cli_runs_restart_checks_with_network_and_dotenv_tripwi
     retained=(directory/'report.json').read_bytes()
     again=cli(cli_tree,'master-endurance','--output',directory,'--events',40,'--restarts',3)
     assert again.returncode!=0 and (directory/'report.json').read_bytes()==retained
+
+
+def test_master_comparison_cli_retains_both_arms_and_refuses_overwrite_without_network(cli_tree):
+    from test_master_comparison import available_corpus,plan
+    source=cli_tree/'paired.json';output=cli_tree/'paired-result.json'
+    source.write_text(json.dumps(dict(corpus=available_corpus(),plan=plan())))
+    result=cli(cli_tree,'master-compare','--input',source,'--output',output)
+    assert result.returncode==0 and result.stderr=='',result.stderr
+    report=json.loads(output.read_text())
+    assert len(report['pairs'])==2 and report['network_requests']==0
+    assert report['pairs'][0]['master']['entered_positions']==0
+    assert report['pairs'][0]['reference']['closed_positions']==1
+    assert report['promotion_allowed'] is False
+    retained=output.read_bytes()
+    again=cli(cli_tree,'master-compare','--input',source,'--output',output)
+    assert again.returncode!=0 and output.read_bytes()==retained
 
 
 def test_paper_requires_network_optin_before_importing_config(cli_tree):

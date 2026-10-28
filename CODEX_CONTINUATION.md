@@ -6,6 +6,41 @@ présenter une PR ou un test comme validation économique. Aucune fusion automat
 
 
 
+
+## Mandat V2 — comparaison mesurable, 28 octobre2026
+
+Base distante vérifiée `b680b90ae7f42c2eaf238f9773be34062cf42ac5`, arbre local
+`b18a76230c7adee09dd97c69686f9e2f5da63646`, sources/validation1831tests concordants.
+Nouvelle suite : **1910passed,1skipped,242subtests**,12,20s,-Werror,stderr0.
+
+`bot/master_comparison.py`/CLI `master-compare` compare moteur final actuel et
+Master sur la même bande d'observations, deux livres isolés et une implémentation
+comptable native unique. Décisions figées avant le pas de règlement simulé,
+quantités/devis propres, mêmes10SOL et contraintes. Référence10%du capital
+réconcilié, Master tailles admissibles; aucun scaling de devis. Les frais stressés
+sont présents AVANT les deux décisions. Holdout séparé par créateur et par première
+disponibilité; une identité future ne change jamais l'admission d'un candidat passé.
+
+Journalruntime shadow : snapshot12champs référence/Master avant résultat,
+désaccords etlatenceslocales. Ne crédite jamais le portefeuille actif.
+ClassificationCore :9situations explicables/UNKNOWN, descriptive, sanschanger
+politiqueactive nihashduclassement. P4 optinpaired_validation :24hypothèses,
+αfamille0,05/24,4conditionsfrais/délai; appariement puisclustercréateur, aucun
+pvalue/intervalle ni promotion sanspreuves indépendantes. P3 prépare acquisition
+bornée+producteurfeatures+adaptateurCaptureStore vérifié; pas decollecteactivée.
+
+Tests économiques : l'abstentionMaster peut manquer0,199985SOL surfixture;
+REDUCE puisreliquat donne0,149975SOL contre0,199985 référence avecdevis distincts
+et10000lamports de frais de sortie supplémentaires. Les ventes refusées gardent
+reliquat et résultat total UNKNOWN. Ni vainqueur ni bénéfice de marché.
+
+Lire `MASTER_V2_COMPARISON_RESULTS.md`, `MASTER_P3_ACQUISITION.md` et méthodes.
+**P3ouvert,0cyclemarchéstrict,0nouvelleobservationréseau.** P4/P5partiellementvalidés
+logiciellement, paséconomiquement. PR22ouverte, sansfusion/ordre/signature/dépense.
+Suite immédiate : publierpreuves reproductibles, mesurerendurance murale et
+optimiserles lecturesdiagnostiquesrépétées; acquisitionréellefutureseulementsous
+protocole préenregistré et limitesexistantes, sansrefaire006/007/008.
+
 ## Master Trader — intégration et endurance validées, 28 octobre 2026
 
 Premier checkpoint réellement publié/relu : `2c5e18cd17dd15e77deda7e796886c921cff0b46`,

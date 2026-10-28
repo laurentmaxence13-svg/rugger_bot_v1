@@ -6,6 +6,7 @@ commit, rollback, capital change or execution is hidden in an event writer.
 import hashlib
 import json
 import sqlite3
+import time
 
 
 def _json(value):
@@ -34,6 +35,13 @@ def setup_master_schema(con):
           mode TEXT NOT NULL CHECK(mode='shadow'));
         CREATE INDEX IF NOT EXISTS idx_master_mint_time
           ON paper_master_decisions(mint,decision_ms,id);
+        CREATE TABLE IF NOT EXISTS paper_master_comparisons (
+          event_key TEXT PRIMARY KEY, decision_ms INTEGER NOT NULL,
+          reference_sha256 TEXT NOT NULL, snapshot_sha256 TEXT NOT NULL,
+          reference_json TEXT NOT NULL, snapshot_json TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS paper_master_latencies (
+          event_key TEXT NOT NULL, stage TEXT NOT NULL, elapsed_ns INTEGER NOT NULL,
+          PRIMARY KEY(event_key,stage));
     ''')
 
 
@@ -114,6 +122,150 @@ def complete_master_reference(con,key,outcome):
     if written.rowcount!=1:raise ValueError('Master reference outcome did not persist')
 
 
+def _normalized_action(value):
+    return 'BUY' if value=='ENTER' else value
+
+
+def comparison_snapshot(frame,decision,reference):
+    """Freeze both available intentions and twelve fields before any outcome.
+
+    The reference is an intent reported by the existing engine, not proof of
+    admission, execution or profitability. Missing fields remain explicit nulls.
+    """
+    at=frame.get('available_at_ms')
+    observed=(reference.get('observed_at_ms',reference.get('available_at_ms'))
+              if type(reference) is dict else None)
+    valid_actions=('BUY','ENTER','WAIT','NO_TRADE','HOLD','REDUCE','TAKE_PROFIT',
+                   'EXIT','EMERGENCY_EXIT','WAIT_FOR_DATA')
+    if (type(at) is not int or type(observed) is not int or not 0<=observed<=at
+            or decision.get('decision_at_ms',at)!=at
+            or decision.get('frame_id',frame.get('id'))!=frame.get('id')
+            or reference.get('action') not in valid_actions
+            or reference.get('intent_only') is not True
+            or reference.get('execution_verified',False) is not False
+            or reference.get('promotion_allowed',False) is not False):
+        raise ValueError('A causal conditional reference intent is required')
+    # Validate JSON/finiteness and take independent copies of caller inputs.
+    frame=json.loads(_json(frame));decision=json.loads(_json(decision))
+    reference=json.loads(_json(reference))
+    questions={q.get('number'):q.get('metrics',{}) for q in decision.get('questions',[])
+               if type(q) is dict}
+    ref_action=_normalized_action(reference['action'])
+    master_action=_normalized_action(decision.get('action'))
+    if master_action not in valid_actions:
+        raise ValueError('Explicit conditional master action required')
+    action_disagrees=ref_action!=master_action
+    both_buy=ref_action==master_action=='BUY'
+    ref_strategy=reference.get('selected_strategy')
+    strategy_disagrees=(ref_strategy!=decision.get('selected_strategy')
+        if both_buy and ref_strategy is not None and decision.get('selected_strategy') is not None else None)
+    ref_size=reference.get('input_lamports');master_size=decision.get('input_lamports')
+    size_disagrees=(str(ref_size)!=str(master_size)
+        if both_buy and ref_size is not None and master_size is not None else None)
+    reasons=[]
+    if action_disagrees:reasons.append('different_conditional_action')
+    if strategy_disagrees:reasons.append('different_admissible_strategy')
+    if size_disagrees:reasons.append('different_exact_position_budget')
+    if reasons:
+        reasons.extend('master:'+str(reason) for reason in decision.get('reasons',[]))
+        reasons.extend('reference:'+str(reason) for reason in reference.get('reasons',[]))
+    context=frame.get('inventory_context',frame.get('buy_context'))
+    fee=context.get('fees') if type(context) is dict else None
+    fields=dict(
+        available_observations=frame,
+        token_score=dict(reference=reference.get('score'),master=questions.get(2,{}).get('score')),
+        detected_risks=dict(reference=reference.get('risks'),master=questions.get(2,{}).get('risk_flags')),
+        admissible_strategies=decision.get('alternatives'),
+        selected_strategy=dict(reference=ref_strategy,master=decision.get('selected_strategy')),
+        conditional_action=dict(reference=ref_action,master=master_action),
+        contemplated_position=dict(reference_input_lamports=ref_size,master_input_lamports=master_size,
+            reference_quantity_atomic=reference.get('quantity_atomic'),master_quantity_atomic=decision.get('quantity_atomic')),
+        costs_known_and_unknown=dict(retained_fee_context=fee,reference=reference.get('costs'),
+            master_size_assessments=decision.get('size_assessments'),missing_costs_are_not_zero=True),
+        exit_conditions=dict(reference=reference.get('exit_conditions'),
+            frozen_entry_plan=frame.get('entry_plan'),master=decision.get('position_plan')),
+        reference_decision=reference,
+        master_decision=decision,
+        admissible_future_results=dict(status='PENDING',source='separate_later_outcome_record',
+            execution_verified=False))
+    return dict(schema='rugger-master-reference-snapshot-v1',decision_at_ms=at,
+        fields=fields,field_count=12,action_disagreement=action_disagrees,
+        strategy_disagreement=strategy_disagrees,size_disagreement=size_disagrees,
+        disagreement=bool(action_disagrees or strategy_disagrees or size_disagrees),
+        disagreement_reasons=reasons,intent_only=True,proposal_applied=False,
+        promotion_allowed=False,scope='same_available_observations_before_future_outcomes')
+
+
+def record_master_comparison(con,key,frame,decision,reference):
+    """Write immutable paired intentions before the separately linked outcome."""
+    snapshot=comparison_snapshot(frame,decision,reference)
+    body=_json(snapshot);ref=_json(reference)
+    fingerprint=_hash(snapshot);ref_hash=_hash(reference)
+    previous=con.execute('SELECT snapshot_sha256 FROM paper_master_comparisons WHERE event_key=?',(key,)).fetchone()
+    if previous is not None:
+        if previous!=(fingerprint,):raise ValueError('Paired intentions conflict with retained evidence')
+        return snapshot
+    retained=con.execute('SELECT frame_json,decision_json,reference_outcome_json FROM paper_master_decisions WHERE event_key=?',(key,)).fetchone()
+    if retained is None or retained[:2]!=(_json(frame),_json(decision)):
+        raise ValueError('Paired intentions require the same retained master decision and frame')
+    if retained[2] is not None:
+        raise ValueError('Cannot first register paired intentions after their reference outcome')
+    written=con.execute('''INSERT INTO paper_master_comparisons
+        (event_key,decision_ms,reference_sha256,snapshot_sha256,reference_json,snapshot_json)
+        VALUES(?,?,?,?,?,?)''',(key,frame['available_at_ms'],ref_hash,fingerprint,ref,body))
+    if written.rowcount!=1:raise ValueError('Paired intentions were not retained exactly once')
+    return snapshot
+
+
+def record_master_latency(con,key,stage,elapsed_ns):
+    """Retain the first measured local sample; a replay cannot rewrite it."""
+    if (stage not in ('history_read_and_master_evaluation','decision_audit_write')
+            or type(elapsed_ns) is not int or not 0<=elapsed_ns<2**63):
+        raise ValueError('A bounded measured monotonic latency is required')
+    if not con.execute('SELECT 1 FROM paper_master_decisions WHERE event_key=?',(key,)).fetchone():
+        raise ValueError('Latency requires its retained decision')
+    con.execute('INSERT INTO paper_master_latencies(event_key,stage,elapsed_ns) VALUES(?,?,?) '
+        'ON CONFLICT(event_key,stage) DO NOTHING',(key,stage,elapsed_ns))
+    if not con.execute('SELECT 1 FROM paper_master_latencies WHERE event_key=? AND stage=?',(key,stage)).fetchone():
+        raise ValueError('Measured latency was not retained')
+
+
+def _comparison_report(con):
+    if not con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='paper_master_comparisons'").fetchone():
+        return None
+    rows=con.execute('SELECT snapshot_json,snapshot_sha256,reference_json,reference_sha256 '
+        'FROM paper_master_comparisons ORDER BY decision_ms DESC,event_key LIMIT 1000').fetchall()
+    if not rows:return None
+    snapshots=[json.loads(row[0]) for row in rows]
+    for stored,snapshot in zip(rows,snapshots):
+        ref=json.loads(stored[2])
+        if (_hash(snapshot)!=stored[1] or _hash(ref)!=stored[3]
+                or type(snapshot.get('fields')) is not dict or len(snapshot['fields'])!=12
+                or snapshot['fields'].get('reference_decision')!=ref):
+            raise ValueError('Paired-decision evidence fingerprint mismatch')
+    if any(type(row) is not dict or row.get('schema')!='rugger-master-reference-snapshot-v1'
+            or type(row.get('disagreement')) is not bool for row in snapshots):
+        raise ValueError('Unreadable paired-decision audit')
+    total=con.execute('SELECT COUNT(*) FROM paper_master_comparisons').fetchone()[0]
+    timings={}
+    for stage in ('history_read_and_master_evaluation','decision_audit_write'):
+        values=[row[0] for row in con.execute('SELECT elapsed_ns FROM paper_master_latencies WHERE stage=? '
+            'ORDER BY rowid DESC LIMIT 1000',(stage,))]
+        if any(type(v) is not int or v<0 for v in values):raise ValueError('Unreadable measured latency')
+        values.sort()
+        def quantile(numerator):
+            return values[max(0,(len(values)*numerator+99)//100-1)]/1e6 if values else None
+        timings[stage]=dict(samples=len(values),p50_ms=quantile(50),p95_ms=quantile(95),p99_ms=quantile(99),
+            scope='first_measured_local_sample_per_event; last_1000_samples; excludes_network_and_execution_latency')
+    return dict(paired_decisions=total,sample=len(rows),scope='last_1000_paired_decisions',
+        disagreements=sum(row['disagreement'] for row in snapshots),
+        action_disagreements=sum(row['action_disagreement'] for row in snapshots),
+        strategy_disagreements=sum(row['strategy_disagreement'] is True for row in snapshots),
+        size_disagreements=sum(row['size_disagreement'] is True for row in snapshots),
+        outcome_quality='not_inferred_from_disagreement',economic_winner=None,
+        evaluation_latency=timings)
+
+
 def master_report(con):
     """Read-only aggregates; missing schema adds no fields to older reports."""
     if not _exists(con):return None
@@ -149,11 +301,14 @@ def _master_report(con):
         if strategy is not None and strategy not in ('early_sniping','confirmed_momentum','adaptive_hybrid'):
             raise ValueError('Unreadable shadow strategy')
         if strategy is not None:strategies[strategy]=strategies.get(strategy,0)+1
-    return dict(schema='rugger-master-shadow-report-v1',mode='shadow',status='available',decisions=total,
+    result=dict(schema='rugger-master-shadow-report-v1',mode='shadow',status='available',decisions=total,
         actions=actions,proposed_strategies=strategies,pending_reference_outcomes=pending or 0,
         action_counts_scope='last_1000_decisions',action_counts_sample=len(rows),
         proposal_applied=False,promotion_allowed=False,economic_profitability_verified=False,
         strict_economic_cycles=0,scope='shadow_proposals_and_existing_reference_engine_outcomes')
+    comparison=_comparison_report(con)
+    if comparison is not None:result['master_reference_comparison']=comparison
+    return result
 
 
 class MasterShadow:
@@ -164,11 +319,19 @@ class MasterShadow:
             orchestrator=MasterDecisionOrchestrator()
         self.orchestrator=orchestrator
 
-    def evaluate(self,con,frame,*,inventory=None,health=None,capital=None):
+    def evaluate(self,con,frame,*,inventory=None,health=None,capital=None,reference=None,measure_latency=False):
+        if type(measure_latency) is not bool:raise ValueError('Explicit latency measurement flag required')
+        start=time.perf_counter_ns() if measure_latency else None
         # A retry must see the same strict prefix, never its retained proposal.
         history=master_history(con,frame['mint'],as_of_ms=frame['available_at_ms']-1)
         decision=self.orchestrator.evaluate(frame,history,inventory=inventory,health=health,capital=capital)
+        evaluated=time.perf_counter_ns() if measure_latency else None
         key=record_master_decision(con,frame,decision,inputs=dict(inventory=inventory,health=health,capital=capital))
+        if reference is not None:record_master_comparison(con,key,frame,decision,reference)
+        written=time.perf_counter_ns() if measure_latency else None
+        if measure_latency:
+            record_master_latency(con,key,'history_read_and_master_evaluation',evaluated-start)
+            record_master_latency(con,key,'decision_audit_write',written-evaluated)
         return key,decision
 
 

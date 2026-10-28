@@ -35,6 +35,52 @@ des devis indicatifs conservés, de quantité exacte; aucune règle de trois ne
 produit un devis de taille différente. Les inconnues restent explicites. La
 comparaison précoce contre attente demeure `UNKNOWN` sans preuve causale.
 
+## Régimes explicables et données de comparaison
+
+La décision expose désormais `regime_assessment`, séparé du champ historique
+`regime` et de sa priorité figée. Neuf situations peuvent coexister : activité
+indépendante croissante sur lancement précoce, confirmation de momentum,
+sur-extension, liquidité insuffisante, volatilité élevée, manipulation possible,
+perte de momentum, coûts économiquement défavorables et données insuffisantes.
+Chacune conserve `OBSERVED`, `NOT_OBSERVED` ou `UNKNOWN`, ses motifs, métriques,
+identifiants source et date de disponibilité. `OBSERVED` veut dire que la
+condition descriptive publiée est satisfaite; il ne confirme ni manipulation,
+retournement, sortie future ou avantage économique.
+
+`classification_policy_sha256` identifie les seuils descriptifs versionnés,
+distincts de la politique de sélection. `classification_controls_entry` reste
+false : cette extension ne modifie ni les priorités, ni les paramètres actifs,
+ni l'identité des preuves de recherche de la politique. Les seuils sont des
+hypothèses expérimentales à comparer sur des données indépendantes.
+
+L'activité précoce demande deux observations causales, un lancement âgé au plus
+120s, une augmentation du nombre déclaré d'acheteurs indépendants et du momentum
+positif. Un nombre de transactions d'achat ne remplace jamais ce nombre de
+participants indépendants. La confirmation réutilise l'adaptateur P4 existant.
+La sur-extension reprend le seuil de momentum60s supérieur à30%; la volatilité
+décrit une variation absolue adjacente supérieure à20%, pas un estimateur
+statistique calibré. L'absence d'indicateur de coordination n'est décrite comme
+non observée que si des données comportementales, de holders et de graphe
+existent; elle ne prouve jamais une absence de manipulation.
+
+La liquidité reste la capacité conditionnelle du modèle de courbe ou un veto
+explicite du scorer. Une bank indisponible ne devient pas une preuve d'absence
+de liquidité. Le caractère économiquement défavorable exige des frais connus et
+une référence passée qualifiée : la comparaison de coûts seule ne fabrique pas
+un rendement futur. Toutes les inconnues et les situations simultanées restent
+consultables, même lorsqu'un régime principal est affiché.
+
+`decision_evidence` fournit score, risques, stratégies admissibles, priorité
+figée, frais inconnus, conditions TP/SL/trailing/durée du scorer et motifs
+d'admission. `reference_score_intent` est explicitement l'intention du scorer,
+avant contrôles opérationnels et ledger, pas l'ordre ou la décision complète du
+moteur de référence. Les positions conservent leur plan d'entrée séparé et figé.
+
+Les features futures ou invalides du frame courant ne peuvent plus influencer
+la mesure de volatilité. Leur prix est exclu, comme les préfixes futurs ou
+d'identité différente. Le hash du contexte fourni demeure une empreinte de
+l'entrée, pas une attestation de validité de chaque donnée reçue.
+
 ## Positions
 
 `evaluate_position_plan(frame, inventory, health=None)` réutilise l'inventaire

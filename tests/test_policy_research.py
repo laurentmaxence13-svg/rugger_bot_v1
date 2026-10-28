@@ -333,3 +333,140 @@ def test_research_horizon_is_bounded_and_isolated_from_original_replay(horizon):
     with pytest.raises(ValueError,match='research-only'):
         p4._run_arm(corpus(),{},'early_sniping','development',fee_multiplier=1,
             decision_delay_ms=0,development_end_ms=200000,api=p4._api(),research_exit_horizon_ms=3600000)
+
+
+def paired_plan(**changes):
+    return research.make_plan(registered_at_ms=1,development_end_ms=200000,
+        holdout_end_ms=500000,paired_validation=True,**changes)
+
+
+def test_paired_validation_is_preregistered_without_changing_default_design_or_active_policy():
+    assert 'paired_validation' not in plan()
+    p=paired_plan();design=p['paired_validation']
+    assert design['hypothesis_family_size']==24
+    assert design['familywise_alpha']=={'numerator':1,'denominator':20}
+    assert design['per_hypothesis_alpha']=={'numerator':1,'denominator':480}
+    original=deepcopy(p4.POLICY)
+    result=research.evaluate_research(corpus(),p)
+    measured=result['paired_validation']
+    assert len(measured['scenarios'])==12  # Three frozen comparisons, four registered stresses.
+    assert measured['selection_uses_sensitivities'] is False
+    assert measured['development_frozen_candidate_ids']==result['frozen_candidate_ids']
+    assert measured['market_winner'] is None and measured['promotion_allowed'] is False
+    assert p4.POLICY==original
+    broken=deepcopy(p);broken['paired_validation']['hypothesis_family_size']=3
+    with pytest.raises(ValueError,match='frozen candidate design'):
+        research.evaluate_research(corpus(),broken)
+
+
+def test_paired_stresses_use_same_lots_fixed_costs_and_exact_creator_deltas():
+    result=research.evaluate_research(corpus(),paired_plan())
+    for scenario in result['paired_validation']['scenarios']:
+        measurement=scenario['paired']
+        assert scenario['initial_capital_lamports']=='10000000000'
+        assert measurement['complete_creator_groups']==1
+        assert measurement['total_conditional_delta_lamports']=='0'
+        assert measurement['p_value'] is measurement['confidence_interval'] is None
+        assert scenario['familywise_claim_allowed'] is False
+        assert 'synthetic_outcomes_only' in scenario['inference_blockers']
+        expected='15000' if scenario['fee_multiplier']==1 else '30000'
+        assert scenario['reference_summary']['full_extra_costs_lamports']==expected
+        assert scenario['candidate_summary']['full_extra_costs_lamports']==expected
+        row=measurement['opportunity_pairs'][0]
+        pnl='199985000' if scenario['fee_multiplier']==1 else '199970000'
+        assert row['candidate']['net_pnl_lamports']==row['reference']['net_pnl_lamports']==pnl
+        assert row['candidate']['remaining_atomic']=='0'
+
+
+def test_frozen_nonbaseline_candidate_has_exact_paired_delta_through_native_ledger():
+    data=long_corpus(((0,1.,None),(60000,1.08,1080000000),
+        (120000,1.04,1040000000),(180000,1.02,1020000000)))
+    result=research.evaluate_research(data,extended_plan(paired_validation=True))
+    scenarios=[s for s in result['paired_validation']['scenarios']
+        if s['reference_id']=='early_sniping:baseline']
+    assert len(scenarios)==4
+    assert all(s['candidate_id']=='early_sniping:tp7-sl5' for s in scenarios)
+    assert all(s['paired']['total_conditional_delta_lamports']=='60000000' for s in scenarios)
+    assert all(s['paired']['complete_creator_groups']==1 for s in scenarios)
+    assert all(s['familywise_claim_allowed'] is False for s in scenarios)
+    assert result['paired_validation']['market_winner'] is None
+
+
+def test_sensitivity_results_cannot_change_frozen_candidates_and_delay_cannot_cross_holdout_cutoff():
+    data=corpus();p=paired_plan();p['holdout_end_ms']=330100
+    # A fresh plan must be constructed, rather than mutating its registered design.
+    p=research.make_plan(registered_at_ms=1,development_end_ms=200000,
+        holdout_end_ms=330100,paired_validation=True)
+    result=research.evaluate_research(data,p)
+    plain=research.evaluate_research(data,research.make_plan(registered_at_ms=1,
+        development_end_ms=200000,holdout_end_ms=330100))
+    assert result['development']==plain['development']
+    assert result['frozen_candidate_ids']==plain['frozen_candidate_ids']
+    scenarios=result['paired_validation']['scenarios']
+    now=[s for s in scenarios if s['decision_delay_ms']==0]
+    delayed=[s for s in scenarios if s['decision_delay_ms']==250]
+    assert all(s['paired']['total_conditional_delta_lamports']=='0' for s in now)
+    assert all(s['paired']['total_conditional_delta_lamports'] is None for s in delayed)
+    assert all(s['paired']['unknown_creator_groups']==1 for s in delayed)
+    assert all('unknown_or_unliquidated_opportunities' in s['inference_blockers'] for s in delayed)
+
+
+def test_creator_pairing_keeps_abstention_cashflow_separate_from_unknown_opportunity_cost():
+    def run(positions):
+        return dict(positions=positions,trace=[],full_extra_costs_lamports='15000')
+    def position(mint,pnl,left='0'):
+        return dict(mint=mint,realized_pnl_lamports=str(pnl),remaining_atomic=left,entry_cost_known=True)
+    reference=run([position('m1',100),position('m2',300)])
+    candidate=run([position('m1',150)])
+    paired=research._paired_holdout(candidate,reference,{'m1':'same_creator','m2':'same_creator'})
+    assert paired['complete_creator_groups']==1
+    assert len(paired['opportunity_pairs'])==2
+    assert paired['creator_groups'][0]['conditional_delta_lamports']=='-250'
+    assert paired['complete_group_signs']==dict(positive=0,negative=1,tied=0)
+    abstention=paired['opportunity_pairs'][1]['candidate']
+    assert abstention['state']=='NO_POSITION_CASHFLOW_ONLY'
+    assert abstention['opportunity_cost_lamports']=='300'  # Conditional paper comparison only.
+    incomplete=research._paired_holdout(run([]),run([position('m1',150,'10')]),{'m1':'c'})
+    row=incomplete['opportunity_pairs'][0]
+    assert row['candidate']['net_pnl_lamports']=='0'
+    assert row['candidate']['opportunity_cost_lamports'] is None
+    assert row['conditional_delta_lamports'] is None
+    assert incomplete['total_conditional_delta_lamports'] is None
+
+
+@pytest.mark.parametrize('damage',['unknown_fees','refused_sell','partial_unfinished'])
+def test_paired_validation_preserves_missing_costs_refusals_and_inventory_instead_of_filling_gains(damage):
+    data=corpus(fees_unknown=damage=='unknown_fees',refused=damage=='refused_sell',
+        partial=damage=='partial_unfinished')
+    if damage=='partial_unfinished':data['frames']=data['frames'][:-1]
+    result=research.evaluate_research(data,paired_plan())
+    assert result['paired_validation']['promotion_allowed'] is False
+    coverage=result['paired_validation']['baseline_coverage']
+    assert len(coverage)==12
+    assert all(row['coverage']['total_conditional_delta_lamports'] is None for row in coverage)
+    assert all(row['coverage']['unknown_creator_groups']==1 for row in coverage)
+    if damage=='refused_sell':
+        assert all(row['coverage']['opportunity_pairs'][0]['reference']['refusal_count']>0 for row in coverage)
+        assert all(row['coverage']['opportunity_pairs'][0]['reference']['refusals'] for row in coverage)
+    for scenario in result['paired_validation']['scenarios']:
+        assert scenario['paired']['p_value'] is None
+        assert scenario['paired']['strict_qualified_market_pairs']==0
+        assert scenario['familywise_claim_allowed'] is False
+
+
+def test_declared_market_creator_independence_does_not_unlock_inference():
+    data=corpus();data['data_kind']='market_observation'
+    for frame in data['frames']:frame['creator_independence_verified']=True
+    result=research.evaluate_research(data,paired_plan())
+    assert result['paired_validation']['creator_independence_verified'] is False
+    assert all('independent_market_evidence_not_audited' in s['inference_blockers']
+        for s in result['paired_validation']['scenarios'])
+    assert all(s['paired']['p_value'] is None and s['familywise_claim_allowed'] is False
+        for s in result['paired_validation']['scenarios'])
+
+
+@pytest.mark.parametrize('option',[1,None,'true'])
+def test_paired_validation_flag_rejects_ambiguous_types(option):
+    with pytest.raises(ValueError,match='explicit Boolean'):
+        research.make_plan(registered_at_ms=1,development_end_ms=200000,
+            holdout_end_ms=500000,paired_validation=option)

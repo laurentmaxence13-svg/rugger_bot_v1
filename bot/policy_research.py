@@ -29,13 +29,16 @@ def candidates():
         for strategy in POLICY['strategies'] for name,values in variations]
 
 
-def make_plan(*,registered_at_ms,development_end_ms,holdout_end_ms,research_exit_horizon_ms=None):
+def make_plan(*,registered_at_ms,development_end_ms,holdout_end_ms,research_exit_horizon_ms=None,
+              paired_validation=False):
     times=(registered_at_ms,development_end_ms,holdout_end_ms)
     if any(type(t) is not int or t<=0 for t in times) or not registered_at_ms<development_end_ms<holdout_end_ms:
         raise ValueError('Registration, development and holdout clocks must be ordered')
     if research_exit_horizon_ms is not None and (type(research_exit_horizon_ms) is not int
             or not 30000<=research_exit_horizon_ms<=3600000):
         raise ValueError('Research exit horizon must be an integer between30000 and3600000ms')
+    if type(paired_validation) is not bool:
+        raise ValueError('Paired validation must be an explicit Boolean registration')
     plan=dict(schema='rugger-policy-research-plan-v1',registered_at_ms=registered_at_ms,
         development_end_ms=development_end_ms,holdout_end_ms=holdout_end_ms,
         candidates=candidates(),maximum_candidates=24,maximum_frames=5000,
@@ -44,13 +47,25 @@ def make_plan(*,registered_at_ms,development_end_ms,holdout_end_ms,research_exit
         production_promotion='NEVER; separate independent evidence and authorization required')
     # Omission preserves the exact original30s plan and report fingerprints.
     if research_exit_horizon_ms is not None:plan['research_exit_horizon_ms']=research_exit_horizon_ms
+    if paired_validation:
+        plan['paired_validation']={
+            'schema':'rugger-paired-policy-validation-design-v1',
+            'unit':'creator_group_after_same_mint_pairing',
+            'hypothesis_family_size':24,'familywise_alpha':{'numerator':1,'denominator':20},
+            'per_hypothesis_alpha':{'numerator':1,'denominator':480},
+            'multiplicity_method':'Bonferroni; registered allocation only, no inferential claim',
+            'minimum_complete_creator_groups':50,
+            'sensitivity_fee_multipliers':[1,2],'sensitivity_decision_delays_ms':[0,250],
+            'selection':'descriptive_only_after_development_candidates_frozen',
+            'inference':'BLOCKED until independent market evidence is separately audited'}
     return plan
 
 
 def _validate_plan(plan):
     if type(plan) is not dict:raise ValueError('Explicit frozen plan required')
     expected=make_plan(**{key:plan.get(key) for key in (
-        'registered_at_ms','development_end_ms','holdout_end_ms','research_exit_horizon_ms')})
+        'registered_at_ms','development_end_ms','holdout_end_ms','research_exit_horizon_ms')},
+        paired_validation='paired_validation' in plan)
     if plan!=expected:raise ValueError('Plan differs from the bounded frozen candidate design')
     return digest(plan)
 
@@ -67,6 +82,76 @@ def _objective(run):
     return dict(eligible=True,objective=score,dispersion_sol=math.sqrt(variance),
         tail_loss_sol=tail,expectancy_sol=mean,position_count=len(values),
         scope='net_fixture_or_conditional_quote_outcomes; not certified market edge')
+
+
+def _paired_outcome(run,mint):
+    """A zero cashflow from abstention never proves zero opportunity cost."""
+    positions=[row for row in run['positions'] if row['mint']==mint]
+    traces=[row for row in run['trace'] if row['mint']==mint]
+    refused=[row for row in traces if any(marker in (row.get('message') or '')
+        for marker in ('REFUSED','_UNQUALIFIED'))]
+    if len(positions)>1:raise ValueError('A paired opportunity must identify one native position')
+    result=dict(entered=bool(positions),net_pnl_lamports=None,remaining_atomic=None,
+        refusal_count=len(refused),entry_intentions=sum(row.get('enter_intent') is True for row in traces),
+        decision_reasons=sorted({row['decision_reason'] for row in traces}),
+        refusals=[dict(frame_id=row['frame_id'],decision_at_ms=row['decision_at_ms'],
+            reason=row['message']) for row in refused],
+        opportunity_cost_lamports=None)
+    if not positions:
+        result.update(state='NO_POSITION_CASHFLOW_ONLY',net_pnl_lamports='0',
+            remaining_atomic='0',cost_scope='no_position_no_order_cashflow_in_this_PAPER_replay')
+        return result
+    position=positions[0];result['remaining_atomic']=position['remaining_atomic']
+    known=(position['remaining_atomic']=='0' and position['entry_cost_known'] is True
+        and run['full_extra_costs_lamports'] is not None)
+    if known:
+        result.update(state='COMPLETE_CONDITIONAL_PAPER_OUTCOME',
+            net_pnl_lamports=str(int(position['realized_pnl_lamports'])),
+            cost_scope='complete_retained_quotes_and_known_extra_costs')
+    else:
+        result.update(state='UNKNOWN_OR_REMAINING_POSITION',cost_scope='unliquidated_or_costs_unknown')
+    return result
+
+
+def _paired_holdout(candidate,reference,universe):
+    """Pair all opportunities, then cluster mints sharing one creator.
+
+    This describes conditional ledger differences. No p-value is inferred from
+    fixture outcomes or from an input claiming that creators are independent.
+    """
+    pairs=[];creators={}
+    for mint,creator in sorted(universe.items()):
+        a=_paired_outcome(reference,mint);b=_paired_outcome(candidate,mint)
+        known=a['net_pnl_lamports'] is not None and b['net_pnl_lamports'] is not None
+        difference=int(b['net_pnl_lamports'])-int(a['net_pnl_lamports']) if known else None
+        if known:
+            if not a['entered'] and b['entered']:
+                a['opportunity_cost_lamports']=str(max(0,int(b['net_pnl_lamports'])))
+            if not b['entered'] and a['entered']:
+                b['opportunity_cost_lamports']=str(max(0,int(a['net_pnl_lamports'])))
+        row=dict(mint=mint,creator=creator,reference=a,candidate=b,
+            conditional_delta_lamports=str(difference) if difference is not None else None,
+            comparison_scope='conditional_same_opportunity_PAPER_cashflows; not realized market quality')
+        pairs.append(row);creators.setdefault(creator,[]).append(row)
+    groups=[]
+    for creator,rows in sorted(creators.items()):
+        complete=all(row['conditional_delta_lamports'] is not None for row in rows)
+        delta=sum(int(row['conditional_delta_lamports']) for row in rows) if complete else None
+        groups.append(dict(creator=creator,mints=len(rows),complete=complete,
+            conditional_delta_lamports=str(delta) if delta is not None else None,
+            unknown_opportunities=sum(row['conditional_delta_lamports'] is None for row in rows)))
+    known=[int(row['conditional_delta_lamports']) for row in groups if row['complete']]
+    complete=bool(groups) and len(known)==len(groups)
+    return dict(opportunity_pairs=pairs,creator_groups=groups,complete_creator_groups=len(known),
+        unknown_creator_groups=len(groups)-len(known),all_opportunities_complete=complete,
+        total_conditional_delta_lamports=str(sum(known)) if complete else None,
+        complete_subset_conditional_delta_lamports=str(sum(known)),
+        mean_complete_creator_delta_lamports=(dict(numerator=str(sum(known)),denominator=str(len(known)))
+            if known else None),
+        complete_group_signs=dict(positive=sum(v>0 for v in known),
+            negative=sum(v<0 for v in known),tied=sum(v==0 for v in known)),
+        strict_qualified_market_pairs=0,p_value=None,confidence_interval=None,
+        market_edge_demonstrated=False,scope='descriptive_creator_clustered_complete_subset_only')
 
 
 def empty_registry():
@@ -151,9 +236,11 @@ def evaluate_research(corpus,plan,*,registry=None):
     bounded=deepcopy(corpus)
     bounded['frames']=[f for f in corpus['frames'] if f['available_at_ms']<plan['holdout_end_ms']]
     api=p4._api();development=[]
-    def replay(candidate,split):
-        run=p4._run_arm(bounded,assignments,candidate['strategy'],split,fee_multiplier=1,
-            decision_delay_ms=0,development_end_ms=plan['development_end_ms'],api=api,
+    def replay(candidate,split,*,fee_multiplier=1,decision_delay_ms=0):
+        delayed=dict(bounded,frames=[f for f in bounded['frames']
+            if f['available_at_ms']+decision_delay_ms<plan['holdout_end_ms']])
+        run=p4._run_arm(delayed,assignments,candidate['strategy'],split,fee_multiplier=fee_multiplier,
+            decision_delay_ms=decision_delay_ms,development_end_ms=plan['development_end_ms'],api=api,
             research_overrides=candidate['overrides'],
             research_exit_horizon_ms=plan.get('research_exit_horizon_ms'))
         return {'candidate':deepcopy(candidate),'run':run,'metrics':_objective(run)}
@@ -169,6 +256,49 @@ def evaluate_research(corpus,plan,*,registry=None):
     comparison={c['id']:c for c in selected}
     comparison.update({c['id']:c for c in plan['candidates'] if c['id'].endswith(':baseline')})
     holdout=[replay(c,'validation') for c in comparison.values()]
+    paired=None
+    if 'paired_validation' in plan:
+        design=plan['paired_validation'];universe={f['mint']:f['creator'] for f in bounded['frames']
+            if assignments[f['mint']]=='validation'}
+        base={row['candidate']['id']:row for row in holdout};scenarios=[];baseline_coverage=[]
+        def summary(run):
+            fields=('entered_positions','closed_positions','unentered_candidates',
+                'known_modeled_extra_costs_lamports','full_extra_costs_lamports',
+                'qualification_failures','exit_attempts','max_realized_drawdown',
+                'portfolio_pnl_sol','all_entered_positions_liquidated')
+            return {name:run[name] for name in fields}
+        for fee in design['sensitivity_fee_multipliers']:
+            for delay in design['sensitivity_decision_delays_ms']:
+                arms=base if (fee,delay)==(1,0) else {
+                    candidate['id']:replay(candidate,'validation',fee_multiplier=fee,decision_delay_ms=delay)
+                    for candidate in comparison.values()}
+                for identifier,arm in arms.items():
+                    if identifier.endswith(':baseline'):
+                        baseline_coverage.append(dict(reference_id=identifier,fee_multiplier=fee,
+                            decision_delay_ms=delay,summary=summary(arm['run']),
+                            coverage=_paired_holdout(arm['run'],arm['run'],universe),
+                            scope='reference_coverage_only; self_delta_is_not_a_quality_comparison'))
+                for candidate in selected:
+                    reference_id=candidate['strategy']+':baseline'
+                    a=arms[reference_id]['run'];b=arms[candidate['id']]['run']
+                    measure=_paired_holdout(b,a,universe)
+                    blockers=['independent_market_evidence_not_audited']
+                    if corpus['data_kind']=='synthetic':blockers.append('synthetic_outcomes_only')
+                    if measure['complete_creator_groups']<design['minimum_complete_creator_groups']:
+                        blockers.append('insufficient_complete_creator_groups')
+                    if not measure['all_opportunities_complete']:blockers.append('unknown_or_unliquidated_opportunities')
+                    scenarios.append(dict(candidate_id=candidate['id'],reference_id=reference_id,
+                        fee_multiplier=fee,decision_delay_ms=delay,initial_capital_lamports='10000000000',
+                        identical_observation_universe=True,reference_summary=summary(a),
+                        candidate_summary=summary(b),paired=measure,inference_blockers=blockers,
+                        familywise_claim_allowed=False,promotion_allowed=False))
+        paired=dict(schema='rugger-paired-policy-validation-v1',design=deepcopy(design),
+            development_frozen_candidate_ids=list(frozen_ids),
+            selection_uses_sensitivities=False,scenarios=scenarios,baseline_coverage=baseline_coverage,
+            possible_hypotheses=24,actual_frozen_candidate_comparisons=len(selected),
+            condition_scenarios=4,creator_independence_verified=False,
+            multiple_testing_claim='registered Bonferroni allocation; inference blocked, no significance claim',
+            market_winner=None,promotion_allowed=False)
     registry['evaluated_holdouts'].append(key)
     registry['evaluated_windows'].append(dict(development_end_ms=plan['development_end_ms'],
         holdout_end_ms=plan['holdout_end_ms'],evaluation_key=key))
@@ -186,6 +316,7 @@ def evaluate_research(corpus,plan,*,registry=None):
         market_winner=None,network_requests=0,execution_verified=False,
         scope='Structured exploratory optimization; no market-profitability claim')
     if 'research_exit_horizon_ms' in plan:report['research_exit_horizon_ms']=plan['research_exit_horizon_ms']
+    if paired is not None:report['paired_validation']=paired
     return report
 
 

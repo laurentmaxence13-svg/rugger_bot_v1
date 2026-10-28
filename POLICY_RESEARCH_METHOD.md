@@ -124,3 +124,49 @@ acquiert1000unités,0,10SOL en acquiert100. Les sorties portent sur le lot propr
 à chaque entrée, avec15000lamports de frais additionnels identiques, et donnent
 respectivement0,199985/0,019985SOL nets synthétiques. Ce test démontre le passage
 du budget et l'effet relatif des frais fixes; il ne mesure pas une rentabilité.
+
+## Validation appariée et sensibilités préenregistrées
+
+`make_plan(..., paired_validation=True)` ajoute un design optionnel figé au plan.
+Son absence conserve le plan et le rapport précédents. Les24candidats de
+développement restent exactement les mêmes. Le design réserve une famille de
+24hypothèses : alpha famille1/20 et allocation Bonferroni1/480 par hypothèse.
+Cette allocation est enregistrée pour une future inférence admissible; aucun
+test statistique n'est proclamé exécuté sur les données actuelles.
+
+Les candidats sont d'abord figés sur le développement. Le holdout compare chaque
+candidat figé à la référence de sa propre stratégie, sur le même univers de
+mints et10SOL de capital initial pour chaque bras. Les résultats sont appariés
+par mint, puis regroupés par créateur : deux lancements du même créateur ne
+deviennent pas deux observations indépendantes. Les différences de P&L sont
+calculées en lamports entiers, avec moyennes rationnelles et nombres de groupes
+positifs/négatifs/égaux; ce sont des descriptions, pas des probabilités de gain.
+
+Les quatre conditions frais supplémentaires×1/×2 et délai0/250ms sont figées
+avant replay. Une hypothèse de coûts doublés n'est pas une mesure de frais réels.
+Chaque condition réutilise les mêmes devis propres aux lots et le ledger natif,
+sans mise à l'échelle d'un devis. Un délai qui franchit la fin du holdout exclut
+l'observation; il ne crée pas un prix ou une clôture au-delà de cette borne.
+Les sensibilités ne peuvent ni sélectionner un candidat ni rouvrir le holdout.
+
+La section `paired_validation` conserve les comparaisons, les refus d'entrée ou
+de sortie et leurs identifiants de frames, les frais connus, les reliquats et
+les groupes inconnus. `baseline_coverage` décrit aussi les références quand aucun
+candidat n'est admissible en développement, afin de conserver les refus et les
+sorties manquantes. Une différence agrégée reste inconnue si un groupe possède
+un reliquat ou des coûts inconnus. Le sous-ensemble complet demeure explicitement
+séparé et ne remplace pas les observations manquantes.
+
+Une abstention produit zéro flux de portefeuille dans ce replay sans ordre. Elle
+ne prouve pas un coût d'opportunité nul. Son écart conditionnel à la référence
+n'est calculable que si l'issue du lot de comparaison est complète; sinon cet
+écart et son coût d'opportunité restent inconnus. Les écarts de cashflow PAPER
+ne certifient jamais la qualité d'une décision sur le marché.
+
+Les champs `p_value` et `confidence_interval` restent `null`, et
+`familywise_claim_allowed` reste `false`. Une fixture, un champ déclarant des
+créateurs indépendants ou un simple nombre de groupes ne déverrouille pas
+l'inférence. Il manque l'audit des preuves de marché indépendantes, les cycles
+P3 complets et un échantillon admissible. Le minimum préenregistré de50groupes
+complets n'est pas une certification d'indépendance. Aucune politique active
+n'est modifiée, et aucun gagnant de marché n'est produit par cette validation.

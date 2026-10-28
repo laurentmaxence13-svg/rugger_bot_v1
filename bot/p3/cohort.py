@@ -201,3 +201,379 @@ def select_cohort(universe, *, decision_at_ms):
         'records':records,'selected':selected,'decision_at_ms':decision_at_ms,
         'selection_uses_provider_outcomes':False,'market_collection_executed':False,
         'qualified_economic_cycles':0,'execution_verified':False}
+
+
+def make_acquisition_plan(*, registered_at_ms, source_revision):
+    """Freeze the existing budget and the missing input contract before capture.
+
+    This is a prepared plan, not an authorization or a network entry point.
+    The timestamp and Git revision are caller declarations until separately
+    published; this function cannot certify their publication.
+    """
+    if (type(registered_at_ms) is not int or registered_at_ms <= 0
+            or type(source_revision) is not str or re.fullmatch('[0-9a-f]{40}', source_revision) is None):
+        raise ValueError('Explicit registration clock and exact source revision required')
+    return dict(schema='p3-master-acquisition-plan-v1',status='PREPARED_NOT_EXECUTED',
+        registered_at_ms=registered_at_ms,source_revision=source_revision,
+        criteria_sha256=criteria_sha256(),criteria=deepcopy(CRITERIA),
+        maximum_feature_checkpoints=128,maximum_quote_attempts=20,
+        feature_checkpoint='master_frame_inputs_v1',
+        feature_sources='existing_scanner_and_retained_cache_only; no_extra_source_calls',
+        costs='explicit_asof_own_position_cost_checkpoint_or_unknown',
+        snapshot_time='local_availability_and_RPC_context; never_provider_quote_clock',
+        observation_scope='indicative_quotes_and_conditional_models; no_fill_or_settlement',
+        independent_buyers='unknown_until_separate_supported_wallet_evidence',
+        market_collection_executed=False,active_policy_changed=False)
+
+
+def validate_acquisition_plan(plan, *, first_observation_at_ms=None):
+    if type(plan) is not dict:
+        raise ValueError('Explicit prepared acquisition plan required')
+    expected=make_acquisition_plan(registered_at_ms=plan.get('registered_at_ms'),
+        source_revision=plan.get('source_revision'))
+    if plan != expected:
+        raise ValueError('Acquisition plan differs from the fixed source and global budget contract')
+    if first_observation_at_ms is not None and (type(first_observation_at_ms) is not int
+            or first_observation_at_ms <= plan['registered_at_ms']):
+        raise ValueError('Acquisition observations must follow declared registration')
+    return hashlib.sha256(json.dumps(plan,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
+
+
+def _verified_capture_events(events, expected_tail):
+    """Reuse CaptureStore's actual hash-chain verifier, without opening a DB."""
+    from bot.p3.store import CaptureStore, _canonical
+    if (type(events) is not list or not events or len(events)>5000
+            or type(expected_tail) is not str or re.fullmatch('[0-9a-f]{64}', expected_tail) is None):
+        raise ValueError('A bounded complete capture and retained tail anchor are required')
+    records=[]
+    metadata={'id','payload','payload_sha256','previous_hash','record_hash'}
+    for event in events:
+        if type(event) is not dict:
+            raise ValueError('Explicit capture envelopes required')
+        try:
+            envelope={key:value for key,value in event.items() if key not in metadata}
+            records.append((event['id'],event['available_at_ms'],_canonical(envelope),
+                _canonical(event['payload']),event['payload_sha256'],
+                event['previous_hash'],event['record_hash']))
+        except (KeyError,TypeError):
+            raise ValueError('Capture envelope metadata missing') from None
+    if CaptureStore._verify_records(records) != expected_tail:
+        raise ValueError('Capture differs from retained external tail anchor')
+    return events
+
+
+def retain_comparison_inputs(store, *, mint, pool, creator, detected_at_ms,
+                             features, source_observation_ids, received_at_ms,
+                             snapshot_analysis_observation_id=None, token_decimals=None):
+    """Append available scanner/cache features to the existing capture journal.
+
+    This producer adds no source request. It must be called after its referenced
+    observations have committed, before the decision/outcome using those inputs.
+    Commit order is explicit even when several events share one millisecond.
+    """
+    from dataclasses import asdict,is_dataclass
+    from bot.p3.store import CaptureStore
+    from bot.analyser.final_decision_engine import SignalFeatures
+    from bot.p4_experiment import _features
+    if not isinstance(store,CaptureStore):
+        raise TypeError('The existing dedicated CaptureStore is required')
+    if (type(received_at_ms) is not int or received_at_ms<=0
+            or type(creator) is not str or not creator
+            or type(detected_at_ms) is not int or not 0<detected_at_ms<=received_at_ms
+            or (token_decimals is not None and (type(token_decimals) is not int or not 0<=token_decimals<=255))
+            or type(source_observation_ids) is not list or not source_observation_ids
+            or len(source_observation_ids)>128
+            or any(type(identity) is not int or identity<=0 for identity in source_observation_ids)
+            or len(set(source_observation_ids))!=len(source_observation_ids)):
+        raise ValueError('Explicit bounded already-retained source references required')
+    _mint(mint);_mint(pool)
+    previous=store.events();by_id={event['id']:event for event in previous}
+    if any(identity not in by_id or by_id[identity]['available_at_ms']>received_at_ms
+            for identity in source_observation_ids):
+        raise ValueError('Feature source is missing or unavailable before capture')
+    references=list(source_observation_ids)
+    if snapshot_analysis_observation_id is not None:
+        analysis=by_id.get(snapshot_analysis_observation_id)
+        if (type(snapshot_analysis_observation_id) is not int or analysis is None
+                or analysis.get('kind')!='candidate_decision' or analysis.get('mint')!=mint
+                or analysis['available_at_ms']>received_at_ms
+                or analysis.get('payload',{}).get('analysis',{}).get('pool_address')!=pool):
+            raise ValueError('Snapshot analysis was not retained before feature capture')
+        if snapshot_analysis_observation_id not in references:
+            references.append(snapshot_analysis_observation_id)
+    raw=asdict(features) if is_dataclass(features) else deepcopy(features)
+    frame=dict(mint=mint,creator=creator,pool=pool,detected_at_ms=detected_at_ms,
+        features=raw,features_available_at_ms=received_at_ms)
+    checked,_reason=_features(frame,{'SignalFeatures':SignalFeatures},received_at_ms)
+    if checked is None:
+        raise ValueError('Feature identity, freshness or schema is unqualified')
+    kinds={by_id[identity]['provenance'] for identity in references}
+    if kinds=={'synthetic'}:provenance='synthetic'
+    elif kinds and kinds<= {'live','historical_replay'}:
+        provenance='live' if kinds=={'live'} else 'historical_replay'
+    else:raise ValueError('Feature source provenance cannot mix synthetic and market inputs')
+    if sum(event.get('outcome')=='master_frame_inputs_v1' for event in previous)>=128:
+        raise ValueError('Prepared feature checkpoint budget exhausted')
+    return store.append('checkpoint',received_at_ms=received_at_ms,mint=mint,
+        provenance=provenance,outcome='master_frame_inputs_v1',payload=dict(
+            creator=creator,pool=pool,detected_at_ms=detected_at_ms,features=raw,
+            source_observation_ids=references,
+            snapshot_analysis_observation_id=snapshot_analysis_observation_id,
+            token_decimals=token_decimals))
+
+
+def _asof_bank(analysis_event, by_id, *, mint, pool, at, data_kind):
+    """Convert one retained analysis, preserving its original observed bank."""
+    if type(analysis_event) is not dict or analysis_event.get('kind')!='candidate_decision':
+        return None
+    try:
+        body=analysis_event['payload'];analysis=body['analysis']
+        snapshot=by_id[body['snapshot_observation_id']]
+        if (snapshot['kind']!='pool_snapshot' or snapshot['mint']!=mint
+                or analysis_event['mint']!=mint or analysis['mint']!=mint
+                or analysis['pool_address']!=pool or analysis_event['available_at_ms']>at
+                or snapshot['id']>=analysis_event['id']
+                or snapshot['available_at_ms']>analysis_event['available_at_ms']
+                or snapshot['source_slot']!=analysis.get('context_slot')
+                or snapshot['source_slot']!=analysis_event['source_slot']):
+            return None
+        _uint(snapshot['source_slot'],positive=True)
+        facts=analysis['facts'];raw=facts['pool'];state=deepcopy(raw)
+        if (analysis.get('evidence_profile')!='published_metadata_v1'
+                or facts.get('account_context_basis')!='caller_supplied_single_getMultipleAccounts_response'
+                or facts['addresses']['pool']!=pool or facts['addresses']['mint_a']!=mint
+                or state['mint_a']!=mint):
+            return None
+        for name in ('virtual_a','virtual_b','real_a','real_b','total_sell_a',
+                'total_fundraising_b','protocol_fee_accrued','platform_fee_accrued','decimals_a','status'):
+            state[name]=_uint(raw[name])
+        # A retained analysis alone is an upstream claim. When original RPC
+        # bytes are present, actually replay the pinned parser before carrying
+        # forward its certifications; otherwise preserve UNKNOWN.
+        certified=None;supply_verified=None;replayed=False
+        snapshot_body=snapshot.get('payload',{})
+        rpc=snapshot_body.get('raw_rpc_result') if type(snapshot_body) is dict else None
+        ordered=snapshot_body.get('requested_addresses') if type(snapshot_body) is dict else None
+        if type(rpc) is dict and type(ordered) is list:
+            values=rpc.get('value');context=rpc.get('context',{})
+            if (type(values) is not list or len(values)!=len(ordered) or len(set(ordered))!=len(ordered)
+                    or type(context) is not dict or context.get('slot')!=snapshot['source_slot']):
+                return None
+            from bot.p3.launchlab import analyze_snapshot
+            verified=analyze_snapshot(dict(zip(ordered,values)),context_slot=snapshot['source_slot'],
+                expected_mint=mint,pool_address=pool,evidence_profile='published_metadata_v1',
+                share_fee_rate_ppm=_uint(facts['share_fee_assumption_ppm']))
+            vf=verified.get('facts',{})
+            if any(vf.get(key)!=facts.get(key) for key in (
+                    'pool','config','platform','addresses','base_vault','quote_vault')):
+                return None
+            identity=vf.get('identity_certification',{})
+            certified=(identity.get('program_derived_addresses_verified') is True
+                and identity.get('account_discriminators_verified') is True
+                and verified.get('risk_flags')==[])
+            supply_verified=vf.get('supply_consistency',{}).get('matches') is True
+            replayed=True
+        bank=dict(mint=mint,pool=pool,source_slot=snapshot['source_slot'],
+            available_at_ms=analysis_event['available_at_ms'],pool_state=state,
+            fee_rates_ppm=[_uint(facts['config']['trade_fee_rate_ppm']),
+                _uint(facts['platform']['platform_fee_rate_ppm']),
+                _uint(facts['platform']['creator_fee_rate_ppm'])],
+            base_vault_atomic=_uint(facts['base_vault']['amount_atomic']),
+            quote_vault_lamports=_uint(facts['quote_vault']['amount_atomic']),
+            curve_type=_uint(facts['config']['curve_type']),
+            share_fee_rate_ppm=_uint(facts['share_fee_assumption_ppm']),
+            provenance='synthetic' if data_kind=='synthetic' else 'retained_rpc_snapshot',
+            observation_id=snapshot['id'],analysis_observation_id=analysis_event['id'],
+            identity_qualified=certified,supply_verified=supply_verified,
+            raw_snapshot_replayed=replayed,
+            certification_scope='pinned_parser_replay' if replayed else 'upstream_analysis_claim_only',
+            creation_verified=False,source_time_scope='RPC_bank_not_provider_quote_time')
+        return bank
+    except (KeyError,TypeError,ValueError):
+        return None
+
+
+def _asof_own_fees(available, buy_id, mint, data_kind):
+    """Other people's fees, future costs and missing costs cannot become ours."""
+    from dataclasses import asdict
+    from bot.p3.accounting import SolFeeBreakdown, _fees
+    for event in reversed(available):
+        payload=event.get('payload')
+        if (event.get('kind')!='checkpoint' or event.get('outcome')!='own_position_costs'
+                or event.get('mint')!=mint or type(payload) is not dict
+                or payload.get('buy_observation_id')!=buy_id
+                or payload.get('proxy') is not False
+                or payload.get('applicable_to_projected_position') is not True):
+            continue
+        fee=payload.get('fees')
+        try:
+            fee=deepcopy(fee)
+            if type(fee.get('failed_attempt_lamports')) is list:
+                fee['failed_attempt_lamports']=tuple(fee['failed_attempt_lamports'])
+            fee=SolFeeBreakdown(**fee);_fees(fee)
+            if (data_kind=='synthetic') != (fee.provenance=='synthetic'):
+                continue
+            result=asdict(fee);result['failed_attempt_lamports']=list(result['failed_attempt_lamports'])
+            return result,event['id']
+        except (KeyError,TypeError,ValueError,AttributeError):
+            continue
+    return None,None
+
+
+def _asof_creation(past, *, mint, pool, creator):
+    """Reparse the linked original transaction, not a creation boolean claim."""
+    from bot.scanner.transaction_parser import find_raydium_launches
+    by_id={event['id']:event for event in past}
+    for event in reversed(past):
+        if event.get('kind')!='launch' or event.get('mint')!=mint or event.get('outcome')!='observed':
+            continue
+        try:
+            body=event['payload'];transaction=by_id[body['transaction_observation_id']]
+            raw=transaction['payload']['raw_transaction']
+            signatures=raw['transaction']['signatures']
+            expected=dict(mint=mint,pool_state=pool,creator=creator,payer=body['payer'])
+            if (transaction['kind']!='transaction' or transaction['outcome']!='observed'
+                    or transaction['id']>=event['id']
+                    or transaction['available_at_ms']>event['available_at_ms']
+                    or transaction['signature']!=event.get('signature')
+                    or not signatures or signatures[0]!=event.get('signature')
+                    or raw.get('slot')!=event.get('source_slot')
+                    or transaction.get('source_slot')!=event.get('source_slot')
+                    or type(raw.get('meta')) is not dict or raw['meta'].get('err') is not None
+                    or any(body.get(key)!=value for key,value in expected.items())
+                    or expected not in find_raydium_launches(raw)):
+                continue
+            _uint(event.get('source_slot'),positive=True)
+            return [transaction['id'],event['id']]
+        except (KeyError,TypeError,ValueError,AttributeError):
+            continue
+    return []
+
+
+def build_comparison_corpus(selection, events, *, as_of_ms, integrity_verified, expected_tail):
+    """Bridge retained prospective inputs to causal Master/P4 frames offline.
+
+    Feature checkpoints must retain source observation IDs before use. No
+    missing creator, creation time, wallet independence, feature, cost or source
+    clock is inferred. Every selected/unselected universe row remains in the
+    denominator even when it cannot yield a frame. No economic cycle is settled.
+    """
+    if (integrity_verified is not True or type(as_of_ms) is not int or as_of_ms<0
+            or type(selection) is not dict or selection.get('schema')!='p3-active-cohort-selection-v1'
+            or selection.get('criteria_sha256')!=criteria_sha256()
+            or type(selection.get('records')) is not list
+            or selection.get('universe_size')!=len(selection['records'])
+            or type(selection.get('selected')) is not list
+            or selection.get('selected_count')!=len(selection['selected'])
+            or type(selection.get('decision_at_ms')) is not int
+            or selection['decision_at_ms']>as_of_ms):
+        raise ValueError('Fixed complete selection and explicit as-of capture proof required')
+    events=_verified_capture_events(events,expected_tail)
+    if (sum(e.get('outcome')=='master_frame_inputs_v1' for e in events)>128
+            or sum(e.get('kind')=='quote_attempt' for e in events)>CRITERIA['max_requests']):
+        raise ValueError('Prepared feature or quote work budget exceeded')
+    kinds={e.get('provenance') for e in events}
+    if kinds=={'synthetic'}:data_kind='synthetic'
+    elif kinds and kinds<= {'live','historical_replay'}:data_kind='market_observation'
+    else:raise ValueError('Synthetic and market capture provenance cannot be mixed or relabelled')
+    by_id={event['id']:event for event in events}
+    available=[event for event in events if event['available_at_ms']<=as_of_ms]
+    denominator=deepcopy(selection['records']);frames=[];candidate_results=[]
+    seen_indices=set()
+    for ordinal,selected in enumerate(selection['selected']):
+        index=selected.get('universe_index');mint=selected.get('mint');pool=selected.get('pool')
+        if (type(index) is not int or not 0<=index<len(denominator)
+                or index in seen_indices or selected.get('ordinal')!=ordinal
+                or denominator[index].get('selection_reason')!='selected_before_provider_outcomes'
+                or denominator[index]['source_row'].get('mint')!=mint
+                or denominator[index]['source_row'].get('pool')!=pool):
+            raise ValueError('Selected identity differs from retained universe')
+        seen_indices.add(index)
+        feature_events=[e for e in available if e.get('kind')=='checkpoint' and e.get('mint')==mint
+            and e.get('outcome')=='master_frame_inputs_v1']
+        reasons=[];made=[]
+        for event in feature_events:
+            body=event.get('payload',{});at=event['available_at_ms']
+            if type(body) is not dict:
+                reasons.append({'feature_observation_id':event['id'],'reason':'feature_payload_missing'})
+                continue
+            refs=body.get('source_observation_ids');detected=body.get('detected_at_ms')
+            creator=body.get('creator');fixed_creator=selected.get('creator_claim')
+            if (type(body) is not dict or body.get('pool')!=pool
+                    or type(creator) is not str or not creator
+                    or (fixed_creator is not None and creator!=fixed_creator)
+                    or type(detected) is not int or not 0<detected<=at
+                    or type(refs) is not list or not refs or len(refs)>128
+                    or any(type(ref) is not int or ref not in by_id or ref>=event['id']
+                        or by_id[ref]['available_at_ms']>at for ref in refs)
+                    or at<selection['decision_at_ms']):
+                reasons.append({'feature_observation_id':event['id'],'reason':'feature_identity_sources_or_chronology_unqualified'})
+                continue
+            past=[e for e in available if e['id']<event['id'] and e['available_at_ms']<=at]
+            frame=dict(id='capture:'+str(event['id'])+':'+event['record_hash'],mint=mint,pool=pool,
+                creator=creator,detected_at_ms=detected,available_at_ms=at,
+                features_available_at_ms=at,features=deepcopy(body.get('features')),
+                independent_buyers=None,source_slot=None,slot_available_at_ms=None,
+                data_kind=data_kind,source_evidence=dict(feature_observation_id=event['id'],
+                    source_observation_ids=deepcopy(refs),capture_record_hash=event['record_hash'],
+                    identity_basis='retained_upstream_claim_not_new_authentication'))
+            from bot.analyser.final_decision_engine import SignalFeatures
+            from bot.p4_experiment import _features
+            features,feature_reason=_features(frame,{'SignalFeatures':SignalFeatures},at)
+            if features is None:
+                reasons.append({'feature_observation_id':event['id'],'reason':feature_reason});continue
+            analysis_id=body.get('snapshot_analysis_observation_id')
+            analysis_event=by_id.get(analysis_id) if type(analysis_id) is int else None
+            if type(analysis_event) is dict and analysis_event['id']>=event['id']:
+                analysis_event=None
+            bank=_asof_bank(analysis_event,by_id,
+                mint=mint,pool=pool,at=at,data_kind=data_kind)
+            if bank is not None:
+                creation_ids=_asof_creation(past,mint=mint,pool=pool,creator=creator)
+                bank['creation_verified']=bool(creation_ids)
+                frame['bank_state']=bank;frame['source_slot']=bank['source_slot']
+                frame['slot_available_at_ms']=bank['available_at_ms']
+                frame['source_evidence']['creation_observation_ids']=creation_ids
+            buys=[e for e in past if e.get('mint')==mint and e.get('kind')=='quote_attempt'
+                and e.get('payload',{}).get('provider')=='raydium_trade_api'
+                and e.get('payload',{}).get('quote_side')=='buy']
+            size_contexts={};sell_contexts=[];quotes=[];fee_ids=[]
+            for buy in buys:
+                p=buy['payload'];size=p.get('input_amount_atomic')
+                try:_uint(size,positive=True)
+                except ValueError:continue
+                fees,fee_id=_asof_own_fees(past,buy['id'],mint,data_kind)
+                if fee_id is not None:fee_ids.append(fee_id)
+                context=dict(buy_observation=deepcopy(buy),token_decimals=body.get('token_decimals'),fees=fees)
+                sells=[e for e in past if e.get('mint')==mint and e.get('kind')=='quote_attempt'
+                    and e.get('payload',{}).get('provider')=='raydium_trade_api'
+                    and e.get('payload',{}).get('quote_side')=='sell'
+                    and e['payload'].get('inventory_buy_observation_id')==buy['id']
+                    and e['id']>buy['id']]
+                size_contexts[str(size)]={**context,'sell_observations':deepcopy(sells)}
+                quotes.extend([buy,*sells])
+                for sell in sells:
+                    sell_contexts.append(dict(sell_observation=deepcopy(sell),fees=deepcopy(fees),
+                        inventory_buy_observation_id=buy['id'],requested_quantity_atomic=sell['payload'].get('input_amount_atomic')))
+            frame['size_contexts']=size_contexts;frame['sell_contexts']=sell_contexts
+            chosen=size_contexts.get(selected.get('size_lamports'))
+            if chosen is not None:
+                frame['buy_context']={k:deepcopy(v) for k,v in chosen.items() if k!='sell_observations'}
+                frame['inventory_context']=deepcopy(frame['buy_context'])
+            frame['source_evidence'].update(quote_observation_ids=[e['id'] for e in quotes],
+                own_fee_observation_ids=fee_ids,bank_snapshot_observation_id=bank['observation_id'] if bank else None)
+            frames.append(frame);made.append(frame['id'])
+        candidate_results.append(dict(universe_index=index,mint=mint,pool=pool,frames=made,
+            state='inputs_retained' if made else 'UNKNOWN',refusals=reasons,
+            missing_reason=None if made else 'retained_features_and_sources_unavailable'))
+    frames.sort(key=lambda frame:(frame['available_at_ms'],frame['id']))
+    return dict(schema='p3-master-comparison-acquisition-v1',corpus=dict(data_kind=data_kind,frames=frames),
+        denominator=denominator,universe_size=len(denominator),selected_count=len(selection['selected']),
+        candidates=candidate_results,frame_count=len(frames),as_of_ms=as_of_ms,
+        refused_quote_observation_ids=[e['id'] for e in available if e.get('kind')=='quote_attempt'
+            and e.get('outcome')!='quoted'],unknown_candidate_count=sum(not row['frames'] for row in candidate_results),
+        future_observations_excluded=sum(e['available_at_ms']>as_of_ms for e in events),
+        retained_tail=expected_tail,integrity='verified_hash_chain_against_caller_retained_anchor_not_authenticated',
+        market_collection_executed=False,execution_verified=False,qualified_economic_cycles=0,
+        provider_clocks_inferred_from_RPC=False,active_policy_changed=False,
+        scope='retained_asof_inputs_and_complete_cohort_denominator; no_fill_or_market_edge')

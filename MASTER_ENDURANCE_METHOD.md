@@ -2,6 +2,7 @@
 
 ```sh
 python -B -m bot.master_endurance --output /tmp/master-endurance-new
+python -B -m bot.master_endurance --output /tmp/master-endurance-paced-new --events 1000 --restarts 10 --wall-seconds 30
 ```
 
 Le répertoire doit être nouveau. Les budgets par défaut sont 1 000 événements,
@@ -38,6 +39,29 @@ La durée est **virtuelle**. Cette endurance prouve des propriétés logicielles
 bornées du journal et des sauvegardes, pas une disponibilité réelle 24 h/24,
 une liquidité revendable ni une rentabilité. Zéro jambe réglée par le shadow,
 zéro cycle économique de marché qualifié, zéro promotion de politique active.
+
+L'option `--wall-seconds` ajoute désormais un protocole local cadencé de0 à60s.
+Elle ne lance aucun scanner : les timestamps d'observation restent ceux de la
+fixture synthétique. Les événements sont répartis sur la durée murale demandée,
+avec attentes d'au plus100ms; les calculs et backups peuvent allonger cette durée.
+Le rapport indique séparément cible, durée murale réellement mesurée, durée
+virtuelle et horloge synthétique. Trente secondes locales ne constituent pas
+une validation24h/24 ni une mesure de fraîcheur du marché.
+
+Ce mode ajoute une intention de référence de fixture explicitement indisponible
+en données de marché, puis le snapshot comparatif de douze champs avant le
+résultat de référence. Il mesure par horloge monotone deux étapes locales :
+lecture de l'historique/évaluation Master et écriture de la décision/journal.
+Pour chaque événement et étape, seul le premier échantillon est conservé; un
+replay ne réécrit pas la preuve. Les p50/p95/p99 sont des échantillons locaux,
+pas des latences réseau, de transaction ou de source.
+
+Le même audit accepte une intention structurée fournie par le vrai moteur de
+référence. Les snapshots et leurs empreintes sont immuables; le premier snapshot
+après connaissance du résultat est refusé. Les observations, score, risques,
+stratégies, action, montant, frais et inconnues, conditions de sortie, décisions
+A/B et statut du résultat futur sont séparés. Les désaccords d'action, de
+stratégie ou de montant ne constituent jamais des preuves de meilleure décision.
 
 Tests ciblés sur copie sans réseau ni données utilisateur :
 

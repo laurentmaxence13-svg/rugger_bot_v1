@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from bot.master_decision import MasterDecisionOrchestrator,POLICY,orchestrate
+from bot.master_decision import MasterDecisionOrchestrator,POLICY,CLASSIFICATION_POLICY,orchestrate,policy_hash
 from bot.p4_experiment import assess_curve_costs
 from bot.economic_demo import _load_api,_quote_observation
 from test_p4_experiment import cost_frame
@@ -174,3 +174,112 @@ def test_unlabelled_provenance_cannot_become_qualified_past_evidence():
     result=core.evaluate(frame,health=health,capital=capital)
     assert result['action']=='WAIT'
     assert 'qualified_past_edge_evidence_unavailable' in result['reasons']
+
+
+def situations(result):
+    return {row['key']:row for row in result['regime_assessment']['situations']}
+
+
+def growing_prefix():
+    core,frame,health,capital=qualified()
+    previous=deepcopy(frame);previous['id']='previous'
+    previous['features']['momentum_60s']=.02
+    previous['independent_buyers']=1
+    frame['id']='current';frame['available_at_ms']+=15000
+    frame['features_available_at_ms']=frame['slot_available_at_ms']=frame['available_at_ms']
+    frame['features']['observed_at']+=15
+    frame['features'].update(momentum_60s=.04,price_usd=1.02)
+    frame['source_slot']+=1;frame['independent_buyers']=3
+    frame['bank_state'].update(available_at_ms=frame['available_at_ms'],source_slot=frame['source_slot'])
+    health['observed_at_ms']=capital['observed_at_ms']=frame['available_at_ms']
+    return core,frame,previous,health,capital
+
+
+def test_nine_descriptive_situations_have_explicit_version_and_do_not_change_policy_identity():
+    core,frame,health,capital=qualified()
+    result=core.evaluate(frame,health=health,capital=capital)
+    assessment=result['regime_assessment'];rows=situations(result)
+    assert len(rows)==9 and set(rows)==set(CLASSIFICATION_POLICY['primary_priority'])
+    assert assessment['classification_policy_sha256']==policy_hash(CLASSIFICATION_POLICY)
+    assert result['policy_sha256']==policy_hash(POLICY)
+    assert assessment['classification_controls_entry'] is assessment['market_regime_certified'] is False
+    assert all(row['status'] in ('OBSERVED','NOT_OBSERVED','UNKNOWN') for row in rows.values())
+    assert all(row['as_of_ms']==frame['available_at_ms'] and row['source_ids']==[frame['id']] for row in rows.values())
+    assert result['action']=='ENTER'  # Descriptive additions do not rewrite the frozen priority.
+
+
+def test_growing_independent_activity_and_confirmed_momentum_require_a_causal_prefix():
+    core,frame,previous,health,capital=growing_prefix()
+    result=core.evaluate(frame,[previous],health=health,capital=capital)
+    rows=situations(result)
+    assert rows['EARLY_GROWING_ACTIVITY']['status']=='OBSERVED'
+    assert rows['CONFIRMED_MOMENTUM']['status']=='OBSERVED'
+    assert rows['EARLY_GROWING_ACTIVITY']['metrics']['previous_independent_buyers']==1
+    assert rows['POSSIBLE_MANIPULATION']['status']=='UNKNOWN'
+    no_history=situations(core.evaluate(frame,health=health,capital=capital))
+    assert no_history['EARLY_GROWING_ACTIVITY']['status']=='UNKNOWN'
+    assert no_history['CONFIRMED_MOMENTUM']['status']=='UNKNOWN'
+
+
+def test_transaction_buys_never_substitute_for_independent_activity_evidence():
+    core,frame,previous,health,capital=growing_prefix()
+    frame.pop('independent_buyers');frame['features']['tx_buys_5m']=100000
+    result=core.evaluate(frame,[previous],health=health,capital=capital)
+    assert situations(result)['EARLY_GROWING_ACTIVITY']['status']=='UNKNOWN'
+    assert situations(result)['CONFIRMED_MOMENTUM']['status']=='UNKNOWN'
+
+
+@pytest.mark.parametrize('kind',['overextension','momentum_loss','coordination','liquidity'])
+def test_regime_conditions_explain_observed_risks_without_claiming_future_reversal_or_manipulation(kind):
+    core,frame,health,capital=qualified()
+    if kind=='overextension':frame['features']['momentum_60s']=.4;key='OVEREXTENSION_RISK'
+    elif kind=='momentum_loss':frame['features']['momentum_60s']=-.05;key='MOMENTUM_LOSS'
+    elif kind=='coordination':frame['features']['same_slot_wallets']=3;key='POSSIBLE_MANIPULATION'
+    else:frame['features']['liquidity_usd']=100;key='INSUFFICIENT_LIQUIDITY'
+    result=core.evaluate(frame,health=health,capital=capital)
+    assert situations(result)[key]['status']=='OBSERVED'
+    assert situations(result)['POSSIBLE_MANIPULATION']['metrics']['manipulation_confirmed'] is False
+    assert situations(result)['OVEREXTENSION_RISK']['metrics']['reversal_observed'] is False
+    assert result['decision_evidence']['score'] is not None
+    assert result['decision_evidence']['reference_exit_conditions']['sl_pct']>0
+    assert result['decision_evidence']['financial_execution_authorized'] is False
+
+
+def test_unfavorable_economics_requires_current_costs_and_qualified_past_evidence():
+    core,frame,health,capital=qualified()
+    frame['research_evidence']['gross_proceeds_return_lower_bound']=.001
+    result=core.evaluate(frame,health=health,capital=capital)
+    assert situations(result)['ECONOMICALLY_UNFAVORABLE']['status']=='OBSERVED'
+    assert result['action']!='ENTER'
+    frame.pop('research_evidence')
+    result=core.evaluate(frame,health=health,capital=capital)
+    assert situations(result)['ECONOMICALLY_UNFAVORABLE']['status']=='UNKNOWN'
+    assert situations(result)['INSUFFICIENT_DATA']['status']=='OBSERVED'
+
+
+def test_future_or_wrong_identity_observations_cannot_change_descriptive_situations():
+    core,frame,previous,health,capital=growing_prefix()
+    expected=core.evaluate(frame,[previous],health=health,capital=capital)
+    future=deepcopy(frame);future['available_at_ms']+=1000
+    future['features']['momentum_60s']=-.99
+    foreign=deepcopy(previous);foreign['mint']=foreign['features']['mint']='other'
+    assert core.evaluate(frame,[previous,future,foreign],health=health,capital=capital)==expected
+
+
+def test_unavailable_current_features_cannot_leak_their_price_into_volatility():
+    core,frame,previous,health,capital=growing_prefix()
+    frame['features_available_at_ms']+=1;frame['features']['price_usd']=1e100
+    result=core.evaluate(frame,[previous],health=health,capital=capital)
+    assert situations(result)['HIGH_VOLATILITY']['status']=='UNKNOWN'
+    assert result['questions'][3]['metrics']['causal_return_dispersion_proxy'] is None
+    assert result['decision_evidence']['features_available_at_ms'] is None
+
+
+def test_no_coordination_flags_is_only_not_observed_when_behavior_and_holder_data_exist():
+    core,frame,health,capital=qualified()
+    frame['features']['wallet_graph_transactions']=1
+    result=core.evaluate(frame,health=health,capital=capital)
+    assert situations(result)['POSSIBLE_MANIPULATION']['status']=='NOT_OBSERVED'
+    frame['features']['holder_data_known']=False
+    result=core.evaluate(frame,health=health,capital=capital)
+    assert situations(result)['POSSIBLE_MANIPULATION']['status']=='UNKNOWN'

@@ -1227,8 +1227,38 @@ async def collect_once(con, session, cached, now, model=None,
                         pool=pool_address,signal_time=signal_time,decision_ms=int(read_clock()*1000),
                         features=master_features,inventory_context=inventory_context,health=health_snapshot,
                         financial_allowed=financial_allowed)
+                    from bot.master_comparison import reference_position_intent
+                    reference_model=decision.to_paper_model() if decision is not None else model
+                    ref_action=('BUY' if decision is not None and decision.enter and allowed
+                        else 'NO_TRADE' if decision is not None and not decision.enter else 'WAIT')
+                    ref_reasons=(list(decision.reasons) if decision is not None else
+                        ['legacy_reference_entry_intent_not_reconstructed'])
+                    if existing:
+                        ref_forced=None
+                        if decision is not None and 'vente_developpeur' in decision.risk_flags:ref_forced='DEV_SALE_RISK'
+                        elif decision is not None and 'transfert_relais' in decision.risk_flags:ref_forced='RELAY_RISK'
+                        ref_action,ref_reason=reference_position_intent(con,mint,int(read_clock()*1000),
+                            quote.price_usd,reference_model,forced=ref_forced)
+                        ref_reasons=[ref_reason]
+                    contemplated=None
+                    if ref_action=='BUY':
+                        from bot.analyser.paper_trader import _paper_free_capital
+                        from bot.analyser.token_inventory import _lamports
+                        if con.execute('SELECT 1 FROM paper_portfolio WHERE id=1').fetchone():
+                            ref_capital,ref_free=_paper_free_capital(con)
+                        else:ref_capital=ref_free=initial_capital_sol
+                        contemplated=str(_lamports(min(ref_free,ref_capital*float(position_pct)/100)))
+                    reference=dict(action=ref_action,selected_strategy='reference_current',
+                        score=decision.score if decision is not None else None,
+                        risks=list(decision.risk_flags) if decision is not None else None,
+                        input_lamports=contemplated,quantity_atomic=None,
+                        costs=frame.get('inventory_context',{}).get('fees'),
+                        exit_conditions=reference_model,reasons=ref_reasons,
+                        observed_at_ms=frame['available_at_ms'],intent_only=True,
+                        funding_and_exact_quote_checks_pending=True,
+                        execution_verified=False,promotion_allowed=False)
                     return master_shadow.evaluate(con,frame,inventory=inventory,
-                        health=health_snapshot,capital=capital)
+                        health=health_snapshot,capital=capital,reference=reference,measure_latency=True)
                 shadow_result,shadow_error=shadow_attempt(con,evaluate_shadow)
                 if shadow_error is not None:
                     allowed=False

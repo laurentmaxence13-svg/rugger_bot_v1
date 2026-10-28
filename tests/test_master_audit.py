@@ -105,6 +105,105 @@ def test_pure_master_proposal_is_durable_without_a_second_bankroll():
         assert audit.master_report(con)['proposed_strategies']=={'adaptive_hybrid':1}
 
 
+def reference(at=100,action='BUY'):
+    return dict(action=action,intent_only=True,observed_at_ms=at,selected_strategy='early_sniping',
+        input_lamports='1000000000',score=75,risks=[],reasons=['reference_prefix_approved'],
+        exit_conditions=dict(tp_pct=10,sl_pct=8))
+
+
+def test_paired_intentions_freeze_twelve_fields_before_future_outcome_and_explain_disagreement():
+    with closing(connect()) as con:
+        audit.setup_master_schema(con)
+        frame,decision=event();key=audit.record_master_decision(con,frame,decision)
+        snapshot=audit.record_master_comparison(con,key,frame,decision,reference())
+        assert snapshot['field_count']==len(snapshot['fields'])==12
+        assert snapshot['fields']['conditional_action']=={'reference':'BUY','master':'WAIT'}
+        assert snapshot['fields']['admissible_future_results']['status']=='PENDING'
+        assert snapshot['fields']['costs_known_and_unknown']['retained_fee_context'] is None
+        assert snapshot['action_disagreement'] and snapshot['disagreement']
+        assert 'reference:reference_prefix_approved' in snapshot['disagreement_reasons']
+        audit.complete_master_reference(con,key,dict(proposal_applied=False,reference_engine_result='LATER_PAPER_ENTRY'))
+        assert audit.record_master_comparison(con,key,frame,decision,reference())==snapshot
+        changed=reference();changed['score']=99
+        with pytest.raises(ValueError,match='conflict'):
+            audit.record_master_comparison(con,key,frame,decision,changed)
+        retained=json.loads(con.execute('SELECT snapshot_json FROM paper_master_comparisons').fetchone()[0])
+        assert retained==snapshot
+        report=audit.master_report(con)['master_reference_comparison']
+        assert report['paired_decisions']==report['disagreements']==report['action_disagreements']==1
+        assert report['evaluation_latency']['decision_audit_write']['samples']==0
+        assert report['economic_winner'] is None
+
+
+@pytest.mark.parametrize('damage',['future','unknown_clock','executed','not_intent','unknown_action'])
+def test_paired_intention_rejects_future_unproven_or_executed_reference(damage):
+    ref=reference()
+    if damage=='future':ref['observed_at_ms']=101
+    elif damage=='unknown_clock':ref.pop('observed_at_ms')
+    elif damage=='executed':ref['execution_verified']=True
+    elif damage=='not_intent':ref['intent_only']=False
+    else:ref['action']='GUARANTEED_PROFIT'
+    with pytest.raises(ValueError,match='causal conditional'):
+        audit.comparison_snapshot(*event(),ref)
+
+
+def test_cannot_register_first_comparison_after_observing_reference_outcome():
+    with closing(connect()) as con:
+        audit.setup_master_schema(con);frame,decision=event()
+        key=audit.record_master_decision(con,frame,decision)
+        audit.complete_master_reference(con,key,dict(proposal_applied=False,reference_engine_result='EXIT'))
+        with pytest.raises(ValueError,match='after their reference outcome'):
+            audit.record_master_comparison(con,key,frame,decision,reference())
+        assert con.execute('SELECT COUNT(*) FROM paper_master_comparisons').fetchone()==(0,)
+
+
+def test_measured_latency_retains_first_sample_and_does_not_change_immutable_decision(monkeypatch):
+    core,frame,health,capital=qualified();at=frame['available_at_ms']
+    with closing(connect()) as con:
+        audit.setup_master_schema(con);shadow=audit.MasterShadow(core)
+        ticks=iter((0,3000000,4000000,0,10000000,20000000))
+        monkeypatch.setattr(audit.time,'perf_counter_ns',lambda:next(ticks))
+        first=shadow.evaluate(con,frame,health=health,capital=capital,reference=reference(at),measure_latency=True)
+        again=shadow.evaluate(con,frame,health=health,capital=capital,reference=reference(at),measure_latency=True)
+        assert first==again
+        latency=audit.master_report(con)['master_reference_comparison']['evaluation_latency']
+        assert latency['history_read_and_master_evaluation']['p99_ms']==3
+        assert latency['decision_audit_write']['p99_ms']==1
+        assert latency['decision_audit_write']['samples']==1
+        assert con.execute('SELECT COUNT(*) FROM paper_trades').fetchone()==(0,)
+
+
+def test_corrupt_comparison_reports_unavailable_without_touching_the_portfolio():
+    with closing(connect()) as con:
+        enter(con);audit.setup_master_schema(con)
+        frame,decision=event();key=audit.record_master_decision(con,frame,decision)
+        audit.record_master_comparison(con,key,frame,decision,reference())
+        before=con.execute('SELECT * FROM paper_portfolio').fetchall()
+        con.execute("UPDATE paper_master_comparisons SET snapshot_json='{' WHERE event_key=?",(key,))
+        assert audit.master_report(con)['status']=='unavailable'
+        assert con.execute('SELECT * FROM paper_portfolio').fetchall()==before
+
+
+def test_latency_ignored_insert_cannot_claim_a_measurement_was_retained():
+    with closing(connect()) as con:
+        audit.setup_master_schema(con);key=audit.record_master_decision(con,*event())
+        con.execute('''CREATE TRIGGER ignore_latency BEFORE INSERT ON paper_master_latencies
+            BEGIN SELECT RAISE(IGNORE); END''')
+        with pytest.raises(ValueError,match='not retained'):
+            audit.record_master_latency(con,key,'decision_audit_write',1000)
+
+
+def test_valid_json_but_modified_comparison_fails_its_retained_fingerprint():
+    with closing(connect()) as con:
+        audit.setup_master_schema(con);frame,decision=event()
+        key=audit.record_master_decision(con,frame,decision)
+        snapshot=audit.record_master_comparison(con,key,frame,decision,reference())
+        snapshot['disagreement']=False
+        con.execute('UPDATE paper_master_comparisons SET snapshot_json=? WHERE event_key=?',
+            (json.dumps(snapshot),key))
+        assert audit.master_report(con)['status']=='unavailable'
+
+
 def test_reports_expose_shadow_readonly_and_corrupt_audit_cannot_reset_capital_or_hide_data():
     from bot.analyser.functional_report import build_functional_report
     from bot.operations import build_operational_health

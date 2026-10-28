@@ -7,10 +7,12 @@ import argparse
 from contextlib import closing
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import sqlite3
 import sys
+import time
 
 
 _FINANCIAL_TABLES=('paper_portfolio','paper_trades','paper_prices','paper_decisions',
@@ -33,7 +35,7 @@ def _require(condition,message):
     if not condition:raise RuntimeError(message)
 
 
-def run_master_endurance(output,*,events=1000,restarts=10):
+def run_master_endurance(output,*,events=1000,restarts=10,wall_seconds=0):
     """Create a NEW local fixture book, then audit N proposals without trading.
 
     A projected native position is opened once through record_quote before the
@@ -46,6 +48,9 @@ def run_master_endurance(output,*,events=1000,restarts=10):
         raise ValueError('Synthetic event budget must be an integer in 2..1000')
     if type(restarts) is not int or not 1<=restarts<=min(10,events):
         raise ValueError('Restart budget must be an integer in 1..min(10, events)')
+    if (type(wall_seconds) not in (int,float) or not math.isfinite(wall_seconds)
+            or not 0<=wall_seconds<=60):
+        raise ValueError('Optional local wall-time pacing must be bounded to 0..60 seconds')
     if output.exists() or output.is_symlink() or output.name.startswith('.env'):
         raise ValueError('A new dedicated synthetic endurance directory is required')
     output.mkdir(parents=True)
@@ -65,6 +70,7 @@ def run_master_endurance(output,*,events=1000,restarts=10):
         pool_byte=73,epoch_ms=1700000000000,step_ms=1000,input_lamports=1000000000,
         acquired_atomic=1000,entry_extra_lamports=5000,exit_extra_lamports=10000,
         events=events,restarts=restarts,missing_features=True)
+    if wall_seconds:fixture['wall_seconds']=wall_seconds
     epoch=fixture['epoch_ms'];mint,creator,pool=(_public_address(n) for n in (71,72,73))
     database=output/'initial.sqlite'
     con=sqlite3.connect(database,isolation_level=None)
@@ -93,7 +99,13 @@ def run_master_endurance(output,*,events=1000,restarts=10):
         _require(native['remaining_atomic']=='1000','Fixture position quantity is wrong')
         baseline_cash=_paper_free_capital(con)
 
+        wall_start=time.monotonic()
         for index in range(1,events+1):
+            # A wall-time run exercises the same local journal, not a scanner.
+            # Wait in bounded pieces; observation timestamps remain synthetic.
+            target=wall_start+wall_seconds*index/events
+            while wall_seconds and (remaining_wait:=target-time.monotonic())>0:
+                time.sleep(min(remaining_wait,.1))
             frame=dict(id='synthetic-master-'+str(index),mint=mint,creator=creator,pool=pool,
                 detected_at_ms=epoch,available_at_ms=epoch+index*fixture['step_ms'],
                 data_kind='synthetic',observation_scope='missing_source_data_fixture')
@@ -109,13 +121,18 @@ def run_master_endurance(output,*,events=1000,restarts=10):
             counts['interruptions']+=1;counts['checks']+=1
 
             con.execute('BEGIN IMMEDIATE')
-            key,decision=shadow.evaluate(con,frame,inventory=native)
+            reference=(dict(action='WAIT_FOR_DATA',intent_only=True,
+                observed_at_ms=frame['available_at_ms'],selected_strategy=None,
+                reasons=['no_new_market_observation_reference_action_unavailable'],
+                scope='synthetic_persistence_intent_fixture_not_reference_strategy_replay') if wall_seconds else None)
+            key,decision=shadow.evaluate(con,frame,inventory=native,reference=reference,
+                measure_latency=bool(wall_seconds))
             _require(decision['action']=='WAIT_FOR_DATA','Missing observations did not remain unknown')
             outcome=dict(proposal_applied=False,reference_engine_result='NO_REFERENCE_ACTION',
                 native_inventory_remaining_atomic=native['remaining_atomic'],
                 native_inventory_version=native['version'])
             complete_master_reference(con,key,outcome)
-            _require(shadow.evaluate(con,frame,inventory=native)==(key,decision),
+            _require(shadow.evaluate(con,frame,inventory=native,reference=reference)==(key,decision),
                      'Exact duplicate changed the shadow proposal')
             complete_master_reference(con,key,outcome)
             counts['duplicates']+=1
@@ -159,7 +176,7 @@ def run_master_endurance(output,*,events=1000,restarts=10):
                 _require(master_report(con)['decisions']==index
                     and master_report(con)['pending_reference_outcomes']==0,
                     'Restart lost committed events or outcomes')
-                _require(shadow.evaluate(con,frame,inventory=native)==(key,decision),
+                _require(shadow.evaluate(con,frame,inventory=native,reference=reference)==(key,decision),
                          'Restart changed duplicate identity or decision')
                 _require(_financial_snapshot(con)==baseline,'Restart changed native PAPER book')
                 receipts.append(dict(after_event=index,file=target.name,
@@ -191,7 +208,10 @@ def run_master_endurance(output,*,events=1000,restarts=10):
             position_status='open',fixture_entry_lamports='1000000000',
             fixture_entry_extra_lamports='5000',final_capital_sol=baseline_cash[0],
             final_available_cash_sol=baseline_cash[1],settled_shadow_legs=0,
-            virtual_elapsed_ms=events*fixture['step_ms'],virtual_time_only=True,
+            virtual_elapsed_ms=events*fixture['step_ms'],virtual_time_only=not bool(wall_seconds),
+            wall_time_paced=bool(wall_seconds),wall_target_ms=wall_seconds*1000,
+            wall_elapsed_ms=(time.monotonic()-wall_start)*1000,
+            observation_clock='synthetic_fixture_clock_not_market_or_provider_time',
             final_database=database.name,network_requests=0,real_orders_enabled=False,
             proposal_applied=False,promotion_allowed=False,active_policy_changed=False,
             strict_economic_cycles=0,economic_profitability_verified=False,execution_verified=False,
@@ -210,8 +230,11 @@ def main(argv=None):
     parser.add_argument('--output',type=Path,required=True,help='New dedicated local fixture directory')
     parser.add_argument('--events',type=int,default=1000)
     parser.add_argument('--restarts',type=int,default=10)
+    parser.add_argument('--wall-seconds',type=float,default=0,
+        help='Optional local paced endurance, 0..60 wall seconds; no market traffic')
     args=parser.parse_args(argv)
-    print(json.dumps(run_master_endurance(args.output,events=args.events,restarts=args.restarts),
+    print(json.dumps(run_master_endurance(args.output,events=args.events,restarts=args.restarts,
+        wall_seconds=args.wall_seconds),
         sort_keys=True,allow_nan=False))
 
 
