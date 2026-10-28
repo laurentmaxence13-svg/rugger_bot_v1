@@ -8,7 +8,11 @@ import asyncio
 from copy import deepcopy
 import hashlib
 import json
+import math
+import os
 from pathlib import Path
+import signal
+import subprocess
 import time
 
 import aiohttp
@@ -203,8 +207,29 @@ async def collect_active_cohort(store,session,plan,*,provenance='live'):
     store.append('checkpoint',provenance=provenance,received_at_ms=now_ms(),outcome='active_cohort_closed',
         payload=dict(requests_used=session.requests_used,stop_reason=stop_reason,
             elapsed_ms=(time.monotonic_ns()-mono)//1000000,position_acquired=False))
+    return build_active_cohort_report(store,plan)
+
+
+def build_active_cohort_report(store,plan):
+    """Recover a closed control from committed evidence without another request."""
+    plan_hash=validate_plan(plan)
     events=store.events();tail=store.verify_integrity()
-    acquisition=build_comparison_corpus(selection,events,as_of_ms=now_ms(),integrity_verified=True,expected_tail=tail)
+    if (not events or events[-1].get('outcome')!='active_cohort_closed'
+            or events[0].get('payload',{}).get('plan')!=plan
+            or events[0].get('payload',{}).get('plan_sha256')!=plan_hash):
+        raise ValueError('A closed journal matching the published plan is required')
+    close=events[-1];state=close['payload']
+    selection=next((e['payload'] for e in reversed(events) if e.get('outcome') in
+        ('active_cohort_fixed','active_cohort_fixed_after_source_stop')),None)
+    if (selection is None or type(state.get('requests_used')) is not int
+            or not 0<=state['requests_used']<=20 or type(state.get('elapsed_ms')) is not int
+            or state['elapsed_ms']<0 or state.get('position_acquired') is not False):
+        raise ValueError('Closed control counters and retained selection required')
+    discovery=next((e for e in events if e['kind']=='discovery'),None)
+    source_total=discovery['payload'].get('received_row_count') if discovery else None
+    projected={e.get('mint') for e in events if e.get('outcome')=='projected_inventory_fixed'}
+    acquisition=build_comparison_corpus(selection,events,as_of_ms=close['available_at_ms'],integrity_verified=True,expected_tail=tail)
+    acquisition['discovery_universe_known']=discovery is not None
     quotes=[e for e in events if e.get('kind')=='quote_attempt'
             and e.get('payload',{}).get('provider')=='raydium_trade_api']
     refused=[e for e in quotes if e.get('outcome')=='unavailable'
@@ -213,8 +238,8 @@ async def collect_active_cohort(store,session,plan,*,provenance='live'):
     models=[e for e in events if e.get('kind')=='quote_attempt'
         and e.get('payload',{}).get('provider')=='local_pinned_sdk_arithmetic']
     return dict(schema='p3-active-cohort-result-v1',plan_sha256=plan_hash,source_revision=plan['source_revision'],
-        requests_used=session.requests_used,elapsed_ms=(time.monotonic_ns()-mono)//1000000,
-        stop_reason=stop_reason,selection=selection,acquisition=acquisition,records=len(events),tail_hash=tail,
+        requests_used=state['requests_used'],elapsed_ms=state['elapsed_ms'],
+        stop_reason=state.get('stop_reason'),selection=selection,acquisition=acquisition,records=len(events),tail_hash=tail,
         received_index_rows=source_total,provider_quote_attempts=len(quotes),
         provider_quotes=sum(e.get('outcome')=='quoted' for e in quotes),
         provider_refusals=len(refused),
@@ -232,11 +257,35 @@ async def collect_active_cohort(store,session,plan,*,provenance='live'):
             REFUSED=[dict(mint=e.get('mint'),reason=e.get('reason')) for e in quotes if e.get('outcome')!='quoted']),
         own_additional_costs_known=False,independent_buyers_known=False,
         net_pnl_sol=None,qualified_economic_cycles=0,execution_verified=False,
-        market_collection_executed=provenance=='live' and session.requests_used>0,
+        market_collection_executed=close['provenance']=='live' and state['requests_used']>0,
+        discovery_universe_known=discovery is not None,
         active_policy_changed=False,economic_verdict='INSUFFICIENT DATA')
 
 
-async def _capture(plan,database):
+def run_process_watchdog(command,*,timeout_seconds=58,working_directory=None):
+    """Bound one child process, including executor cleanup; never restart it."""
+    if (type(command) is not list or not command or any(type(x) is not str for x in command)
+            or type(timeout_seconds) not in (int,float) or not math.isfinite(timeout_seconds)
+            or not 0<timeout_seconds<=60):
+        raise ValueError('One explicit child command and a deadline within60 seconds required')
+    start=time.monotonic();expired=False
+    child=subprocess.Popen(command,start_new_session=True,cwd=working_directory)
+    try:child.wait(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        expired=True
+        try:os.killpg(child.pid,signal.SIGTERM)
+        except ProcessLookupError:pass
+        try:child.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            try:os.killpg(child.pid,signal.SIGKILL)
+            except ProcessLookupError:pass
+            child.wait(timeout=1)
+    return dict(child_exit_code=child.returncode,process_deadline_exceeded=expired,
+        deadline_ms=timeout_seconds*1000,elapsed_ms=(time.monotonic()-start)*1000,
+        child_execution_count=1,retry_performed=False)
+
+
+async def _capture(plan,database,*,output=None):
     with CaptureStore(database) as store:
         async with aiohttp.ClientSession(trust_env=False,cookie_jar=aiohttp.DummyCookieJar()) as transport:
             if type(getattr(transport,'_retry_connection',None)) is not bool:
@@ -244,7 +293,11 @@ async def _capture(plan,database):
             transport._retry_connection=False
             session=cp.CampaignSession(transport,20,proxy_resolver=_environment_proxy,
                 rpc_url=plan['effective_rpc_endpoint'])
-            return await collect_active_cohort(store,session,plan)
+            report=await collect_active_cohort(store,session,plan)
+            # Publish before HTTP/DNS/executor cleanup, which can stall after
+            # the capture itself has already stopped and committed its receipt.
+            if output is not None:atomic_write_json(output,report,indent=2,sort_keys=True,allow_nan=False)
+            return report
 
 
 def main(argv=None):
@@ -258,8 +311,7 @@ def main(argv=None):
             or args.output.suffix!='.json' or len({p.resolve() for p in (args.plan,args.db,args.output)})!=3):
         parser.error('Retained plan and new separate capture/report required')
     plan=json.loads(args.plan.read_text());validate_plan(plan)
-    report=asyncio.run(_capture(plan,args.db))
-    atomic_write_json(args.output,report,indent=2,sort_keys=True,allow_nan=False)
+    report=asyncio.run(_capture(plan,args.db,output=args.output))
     print(json.dumps({k:report[k] for k in ('requests_used','stop_reason','qualified_economic_cycles')}))
 
 

@@ -2,6 +2,9 @@
 import asyncio
 from copy import deepcopy
 import time
+import json
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -184,3 +187,56 @@ def test_wrong_endpoint_and_retry_transport_refuse_before_any_request(tmp_path):
             with pytest.raises(ValueError,match='anonymous transport'):
                 asyncio.run(active.collect_active_cohort(store,session,plan(),provenance='synthetic'))
             assert store.events()==[] and session.requests_used==0 and transport.calls==[]
+
+
+def test_closed_capture_report_can_be_recovered_without_repeating_the_failed_request(tmp_path):
+    transport=Transport(gets=[Response(status=429)]);transport._retry_connection=False
+    session=CampaignSession(transport,20,rpc_url=CANONICAL_RPC_URL)
+    path=tmp_path/'closed.sqlite';registered=plan()
+    with CaptureStore(path) as store:
+        original=asyncio.run(active.collect_active_cohort(store,session,registered,provenance='synthetic'))
+    with CaptureStore(path,readonly=True) as store:
+        recovered=active.build_active_cohort_report(store,registered)
+    assert recovered==original
+    assert recovered['discovery_universe_known'] is False
+    assert recovered['acquisition']['discovery_universe_known'] is False
+    assert len(transport.calls)==1
+
+
+def test_report_is_published_before_a_transport_cleanup_failure(tmp_path,monkeypatch):
+    class CleanupFailure:
+        _retry_connection=True
+        def __init__(self,**kwargs):pass
+        async def __aenter__(self):return self
+        async def __aexit__(self,*args):raise RuntimeError('synthetic transport cleanup failure')
+    async def collected(*args,**kwargs):return dict(requests_used=1,qualified_economic_cycles=0)
+    monkeypatch.setattr(active.aiohttp,'ClientSession',CleanupFailure)
+    monkeypatch.setattr(active,'collect_active_cohort',collected)
+    output=tmp_path/'result.json'
+    with pytest.raises(RuntimeError,match='cleanup failure'):
+        asyncio.run(active._capture(plan(),tmp_path/'new.sqlite',output=output))
+    assert json.loads(output.read_text())==dict(requests_used=1,qualified_economic_cycles=0)
+
+
+def test_watchdog_stops_a_stalled_cleanup_without_restarting_or_losing_its_report(tmp_path):
+    retained=tmp_path/'retained.json'
+    program='import sys,time;from pathlib import Path;Path(sys.argv[1]).write_text("retained before cleanup");time.sleep(10)'
+    receipt=active.run_process_watchdog([sys.executable,'-B','-c',program,str(retained)],timeout_seconds=.5)
+    assert receipt['process_deadline_exceeded'] is True
+    assert receipt['child_execution_count']==1 and receipt['retry_performed'] is False
+    assert receipt['child_exit_code']<0
+    assert retained.read_text()=='retained before cleanup'
+
+
+def test_watchdog_child_resolves_the_package_when_parent_is_outside_repository(tmp_path,monkeypatch):
+    root=Path(__file__).resolve().parents[1]
+    monkeypatch.chdir(tmp_path)
+    receipt=active.run_process_watchdog([sys.executable,'-B','-m','bot.p3.active_cohort_campaign','--help'],
+        timeout_seconds=5,working_directory=root)
+    assert receipt['child_exit_code']==0 and receipt['process_deadline_exceeded'] is False
+
+
+@pytest.mark.parametrize('deadline',[True,0,-1,61,float('inf'),float('nan')])
+def test_watchdog_rejects_unbounded_deadlines_before_spawning(deadline,monkeypatch):
+    monkeypatch.setattr(active.subprocess,'Popen',lambda *a,**k:pytest.fail('invalid watchdog spawned a process'))
+    with pytest.raises(ValueError):active.run_process_watchdog(['unused'],timeout_seconds=deadline)

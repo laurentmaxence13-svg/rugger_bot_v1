@@ -77,3 +77,95 @@ n'est fabriqué. Les quatre mints déjà archivés sont identifiés dans SOURCE_
 pour distinguer nouveaux reçus et nouvelles opportunités indépendantes.
 
 Aucun ordre réel, signature, dépense, changement actif ou fusion de PR.
+
+## Résultat réellement obtenu
+
+Le code testé a été publié dans4d967d0839134db878f47bfbeba3108780ca71c4.
+Le plan a ensuite été publié dansd09db2998014580d2c2b47110b22471480eb24c8,
+puis relu et comparé à son hash local avant le premier appel. Les sources
+exécutées correspondaient aux empreintes du plan.
+
+| Mesure | Résultat |
+| --- | --- |
+| Tentatives toutes sources |1 sur20 maximum |
+| Fenêtre d'acquisition |8,009s sur60s maximum |
+| Source tentée |Index LaunchLab, GET sort=new |
+| Statut HTTP |INCONNU : aucune réponse reçue |
+| Reçu d'erreur |TimeoutError,8005,542ms |
+| Requêtes RPC / devis |0 /0 |
+| Univers de lancements |INCONNU, pas un univers vide observé |
+| Frames admissibles / décisions A/B |0 /0 |
+| Cycles économiques strictement qualifiés |0 |
+| P&L net et avantage Master |INCONNUS |
+
+La limitation prouvée est un timeout de transport sur la découverte via la route
+configurée. Le reçu ne permet pas d'attribuer l'échec au DNS, TLS, proxy, quota ou
+serveur. Aucun429/403 n'a été observé. Aucune seconde tentative, aucun changement
+de source, aucun probe ou contournement n'a été effectué. Les quotas futurs ne
+sont pas certifiés. Les anciennes données ne deviennent pas de nouvelles preuves.
+
+### Incident de nettoyage et corrections
+
+Le journal contenait une clôture commitée à8,009s, mais le processus n'était pas
+terminé : son nettoyage restait bloqué. Il a été terminé manuellement environ
+200,951s après le début de la requête. La fenêtre d'acquisition a respecté la
+borne, mais l'ensemble du processus n'a pas respecté60s. Cet incident est
+conservé dans CLEANUP_INTERRUPTION.json; sa cause interne exacte reste inconnue.
+
+Le rapport final, non encore publié avant ce nettoyage, a été reconstruit depuis
+les4événements du journal fermé et sa chaîne vérifiée. Ce n'est pas une nouvelle
+collecte. Le rapport utilise l'heure de clôture retenue, pas l'heure tardive de
+lecture, et distingue univers inconnu et zéro ligne effectivement reçue.
+
+Les corrections suivantes sont testées sans trafic de marché :
+
+- Écriture atomique du rapport avant fermeture du transport et de l'exécuteur.
+- Reconstruction pure d'un rapport depuis le journal fermé et le plan exact.
+- Wrapper `tools/run_p3_active_cohort.py` : un seul enfant, arrêt demandé à58s,
+  jusqu'à1s pourTERM puis1s pourKILL, sans retry. Répertoire et chemins absolus
+  explicites ; aucun problème de résolution du module hors dépôt.
+- Test réel d'un enfant local bloqué après écriture : rapport préservé, enfant
+  terminé, aucun redémarrage. Ce watchdog n'est pas appliqué rétroactivement009.
+
+Toute future exécution devra utiliser le wrapper et un nouveau plan publié
+portant le commit corrigé. Le plan009 ne doit pas servir à relancer ce contrôle.
+Une terminaison avant clôture doit garder un journal incomplet explicite, pas
+inventer une clôture ou un résultat économique. Aucune base utilisateur n'est
+ouverte et aucune SQLite n'est téléversée.
+
+### Qualification et comparaison
+
+OBSERVÉ : une tentative, ses clocks locales, son timeout et la clôture du journal.
+MODÉLISÉ : aucun modèle de marché calculable à partir de ce contrôle.
+INCONNU : univers, identités, activité, réserves, devis, coûts propres, acheteurs
+indépendants, P&L et avantage des stratégies. REFUSÉ : poursuite du contrôle
+après son premier échec ; aucune opportunité n'a été rejetée par une source
+de marché reçue. Aucun refus fournisseur de vente n'est déduit de ce timeout.
+
+Le comparateur existant a consommé l'enveloppe conservée, avec zéro frame. Son
+rapport est marqué post-capture, sans test de stratégie ni holdout préenregistré :
+il ne contient aucune décision, abstention observée, entrée ou sortie mesurable.
+Les24politiques n'ont reçu aucune donnée indépendante nouvelle. Aucun classement
+ni modification de paramètres.
+
+L'écart de taille0,10SOL/1SOL, les frais propres inconnus et les exigences passées
+du Master resteraient aussi à résoudre si le transport fonctionnait. Ces limites
+étaient déclarées avant l'appel, sans transformer les quotes indicatives en fills.
+
+### Preuves et état de reprise
+
+`evidence/p3/active_cohort_009` contient l'export vérifié des4événements, ancré à
+`fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d`.
+Les12bundles précédents sont inchangés ; l'index comporte13bundles et1698événements.
+Les reçus de publication, résultat reconstruit, admission, comparaison, incident
+et validation sont sous `validation/p3_active_cohort_009/`.
+
+**1936tests réussis,1ignoré,242subtests**,13,21s,-Werror,stderr0. Le seultest
+ignoré exige une base utilisateur absente. Aucune endurance1000événements relancée.
+
+P3 reste ouvert :0nouvelle observation de marché et0cycle qualifié. P4 reste
+sans corpus indépendant exploitable. P5 a reçu les corrections de conservation
+et d'arrêt de processus nécessaires à cet incident. Prochaine action : rétablir
+un accès de transport fonctionnel à la découverte, puis préenregistrer un contrôle
+distinct avant toute nouvelle tentative de marché. Aucun ordre, signature,
+dépense, modification de politique active ou fusion de PR.

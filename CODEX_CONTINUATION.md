@@ -9,6 +9,37 @@ présenter une PR ou un test comme validation économique. Aucune fusion automat
 
 
 
+
+## Contrôle P3 actif009 — tentative unique arrêtée, 28 octobre 2026
+
+Code source publié/relu `4d967d0839134db878f47bfbeba3108780ca71c4`.
+Plan publié/relu AVANT la première requête :
+`d09db2998014580d2c2b47110b22471480eb24c8`, hash
+`8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93`.
+
+Une tentative GET de découverte : TimeoutError après8005,542ms, aucun statut
+HTTP ni corps reçu. Capture fermée/commitée à8009ms,1requête sur20, aucunRPC,
+quote, lancement ou bank reçu. Univers inconnu, pas absence prouvée d'opportunités.
+Aucun retry/fallback, anciens006/007/008 non relancés. 0cycle économique qualifié,
+0nouvelle observation de marché, P&L et avantage Master UNKNOWN.
+
+Incident distinct : processus resté bloqué après clôture pendant le nettoyage,
+terminé manuellement à environ200,951s depuis l'appel. Ne pas présenter le
+processus009 comme borné à60s. Les4événements committés ont été récupérés et
+exportés sans SQLite;12anciensbundles inchangés,13bundles/1698événements au total.
+Correction : rapport écrit avant nettoyage, reconstruction pure depuis journal
+fermé, wrapper avec watchdogprocess58s+jusqu'à2s de terminaison, chemins/cwd
+explicites. Tests hors réseau, aucune seconde collecte.
+
+1936passed,1skipped,242subtests,13,21s,-Werror,stderr0. Lire
+P3_ACTIVE_COHORT_009.md et validation/p3_active_cohort_009/ADMISSIBILITY.json.
+Le comparateur reçoit zéro frame admissible et conserve univers inconnu; aucun
+score, WAIT ou P&L de marché n'est inventé. P3 ouvert; P4 sans nouveau corpus
+indépendant; P5 corrige la récupération/fin de processus, sans nouvelle endurance.
+Prochaine priorité : résoudre l'accès de transport LaunchLab; toute nouvelle
+tentative de marché exige un préenregistrement distinct, sans poursuivre009.
+PR22 ouverte, aucune fusion/transaction réelle/signature/dépense/politique active.
+
 ## Mission P3 — exécuteur de cohorte active prêt, avant acquisition
 
 Base distante d0e57c68d3702967ee8ccfefe2e6e51713e82e99 vérifiée. Le protocole

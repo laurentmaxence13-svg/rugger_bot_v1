@@ -307,6 +307,7 @@ def evaluate_acquired_comparison(acquisition,plan):
     result['acquisition_universe']=deepcopy({key:acquisition.get(key) for key in (
         'denominator','universe_size','selected_count','candidates','unknown_candidate_count',
         'refused_quote_observation_ids','future_observations_excluded','retained_tail','integrity','as_of_ms')})
+    result['acquisition_universe']['discovery_universe_known']=acquisition.get('discovery_universe_known')
     result['acquisition_sha256']=p4._hash(acquisition)
     result['acquisition_authentication_verified']=False
     return result

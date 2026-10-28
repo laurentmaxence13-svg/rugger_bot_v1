@@ -131,6 +131,17 @@
       "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6",
       "uncompressed_bytes": 260330,
       "uncompressed_sha256": "28f6dfedb12eb897b8ce37d5db32af518af3a393c08f25af7c47b48ba7b77c83"
+    },
+    {
+      "compressed_bytes": 2280,
+      "compressed_sha256": "82d99ce479cdffe1977d3adf9c6e03aed1ea1ecd4ba602daee7f228821e0078a",
+      "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+      "records": 4,
+      "run_id": "active_cohort_009",
+      "source_revision": "4d967d0839134db878f47bfbeba3108780ca71c4",
+      "tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+      "uncompressed_bytes": 6313,
+      "uncompressed_sha256": "93e66d7df6e65820ac639bb36b9b5769d1967cd072a9aef1ef0fba6712070293"
     }
   ],
   "cloud_storage_is_not_durable_backup": true,
