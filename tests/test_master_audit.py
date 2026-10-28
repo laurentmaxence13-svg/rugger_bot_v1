@@ -313,6 +313,10 @@ def test_shadow_integration_never_suppresses_native_protective_exit_or_undoes_se
         assert con.execute('SELECT realized_capital_sol FROM paper_portfolio').fetchone()[0]==pytest.approx(10.099985)
         summary=audit.master_report(con)
         assert summary['decisions']==(0 if failure_phase=='evaluate' else 1)
+        if failure_phase!='evaluate':
+            frame=json.loads(con.execute('SELECT frame_json FROM paper_master_decisions').fetchone()[0])
+            assert frame['health']['allow_new_entries'] is False
+            assert frame['capital_snapshot']['available_cash_lamports']==8999995000
         assert summary['pending_reference_outcomes']==(1 if failure_phase in ('outcome','post_settlement_read') else 0)
         assert not con.in_transaction
         if failure_phase is not None:

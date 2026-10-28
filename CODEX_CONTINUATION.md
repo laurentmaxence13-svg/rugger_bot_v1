@@ -7,6 +7,37 @@ présenter une PR ou un test comme validation économique. Aucune fusion automat
 
 
 
+
+## Reprise après a51850e — endurance finalisée, 28 octobre 2026
+
+Point distant vérifié : `a51850e0607d8160d1ae0dadf22fae6f3dcedc49`, arbre
+local équivalent `a04ea5560492f846682cdfe2f08b52e72bea0d25`. Arbre propre à
+la reprise ; comparateur et tests déjà publiés.
+
+**1915 passed, 1 skipped, 242 subtests**, 12,03 s, warnings en erreur, stderr0.
+Paire d'endurance identique : 1000 événements, 10 reprises, cible 30 s ;
+**120,246 s → 30,279 s**, 1031 reconstructions du rapport → 1. Les 7054
+invariants, décisions, capital et inventaire concordent. Snapshots immuables
+vérifiés. Une paire locale ne démontre pas une performance de marché.
+
+P3 : santé locale retenue avant décision, états capital/santé conservés dans
+les frames, enveloppe complète de cohorte transmise au comparateur. Les sources
+futures ou contradictoires ne deviennent pas une permission. Aucun hook réseau.
+P4 : quatre cas A/B et 14 lignes de résumé, rapport préenregistré de 24 candidats
+sauvegardé ; résultats exclusivement synthétiques, aucun gagnant ou promotion.
+P5 : lectures diagnostiques optimisées, contrôles financiers inchangés.
+
+Lire `MASTER_V2_COMPARISON_RESULTS.md`, `MASTER_P3_ACQUISITION.md` et les preuves
+sous `validation/master_v2/`. Le rapport qualified est reproduit par CLI octet
+pour octet après décompression.
+
+Archives : 8 banks/4 mints/2 sessions, 6 banks avec identité qualifiée ; coûts
+propres inconnus. **P3 ouvert, 0 cycle de marché strict, 0 nouvelle observation
+réseau.** P4/P5 partiellement validés. Prochaine priorité : cohorte indépendante
+préenregistrée avec clocks, coûts propres et lots liés, accès gratuits vérifiés.
+Ne pas refaire006/007/008. PR22 ouverte ; aucun ordre, signature, dépense ou fusion.
+
+
 ## Mandat V2 — comparaison mesurable, 28 octobre2026
 
 Base distante vérifiée `b680b90ae7f42c2eaf238f9773be34062cf42ac5`, arbre local

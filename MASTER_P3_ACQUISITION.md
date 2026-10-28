@@ -129,3 +129,16 @@ qualifié, aucune rentabilité prouvée.** La prochaine acquisition doit encore
 apporter les features sourcées, clocks de devis, coûts applicables et sorties
 liées aux quantités, sous le protocole préenregistré et ses budgets. Le corpus
 indépendant et les groupes de créateurs ne sont pas créés par cet adaptateur.
+
+## Santé retenue et frontière comparative
+
+`retain_comparison_inputs(..., health_observation_id=...)` accepte une référence
+vers un checkpoint `operational_health_v1` déjà commité, payload `{health: ...}`,
+issu de la supervision locale. Schéma, disponibilité, fraîcheur de 5 s et états
+des services sont contrôlés. Un état ready contradictoire ou futur est refusé.
+L'absence de checkpoint ne devient pas une permission. L'adaptateur transmet ce
+contexte dans frame.health comme attestation locale, sans authentification du
+fournisseur externe.
+
+`master-compare` accepte une enveloppe `acquisition` complète : univers, refus,
+inconnus et ancre de capture restent dans le rapport. Aucun hook réseau activé.

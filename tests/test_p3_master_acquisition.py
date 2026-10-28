@@ -80,6 +80,48 @@ def build(selection,events,tail,at=100040):
         integrity_verified=True,expected_tail=tail)
 
 
+@pytest.mark.parametrize('damage',[None,'future','inconsistent_ready'])
+def test_retained_supervision_reaches_comparison_only_when_available_and_consistent(tmp_path,damage):
+    selection,events,tail,ids=capture(tmp_path)
+    first=build(selection,events,tail)['corpus']['frames'][0]
+    clock=[100050]
+    health=dict(schema='rugger-paper-operational-health-v1',observed_at_ms=100050,
+        allow_new_entries=True,blocking_reasons=[],source_health={
+            name:dict(healthy=True) for name in ('scanner','rpc','websocket')})
+    if damage=='future':health['observed_at_ms']=100061
+    if damage=='inconsistent_ready':health['source_health']['rpc']['healthy']=False
+    with CaptureStore(tmp_path/'inputs.sqlite',clock_ms=lambda:clock[0]) as store:
+        health_id=store.append('checkpoint',received_at_ms=clock[0],provenance='synthetic',
+            outcome='operational_health_v1',payload=dict(health=health))
+        clock[0]=100060
+        kwargs=dict(mint=first['mint'],pool=first['pool'],creator=first['creator'],detected_at_ms=100000,
+            features=first['features'],source_observation_ids=[ids['snapshot'],ids['buy']],
+            received_at_ms=clock[0],health_observation_id=health_id)
+        before=len(store.events())
+        if damage:
+            with pytest.raises(ValueError,match='health'):retain_comparison_inputs(store,**kwargs)
+            assert len(store.events())==before
+        else:
+            retain_comparison_inputs(store,**kwargs)
+            retained=build(selection,store.events(),store.verify_integrity(),at=100060)
+            assert 'health' not in retained['corpus']['frames'][0]
+            assert retained['corpus']['frames'][1]['health']==health
+            assert retained['corpus']['frames'][1]['source_evidence']['health_observation_id']==health_id
+
+
+def test_p3_envelope_keeps_rejected_universe_and_unknowns_through_paired_replay(tmp_path):
+    from bot.master_comparison import evaluate_acquired_comparison,make_plan
+    selection,events,tail,_=capture(tmp_path,features=False)
+    acquisition=build(selection,events,tail)
+    report=evaluate_acquired_comparison(acquisition,make_plan(
+        registered_at_ms=1,development_end_ms=200000,holdout_end_ms=500000))
+    assert report['acquisition_universe']['denominator']==selection['records']
+    assert report['acquisition_universe']['universe_size']==2
+    assert report['acquisition_universe']['unknown_candidate_count']==1
+    assert report['observed_frames']==0
+    assert report['strict_market_economic_cycles']==0
+
+
 def test_prepared_plan_reuses_global_source_budget_and_cannot_silently_widen_it():
     plan=make_acquisition_plan(registered_at_ms=1,source_revision='a'*40)
     assert plan['criteria']['max_requests']==20

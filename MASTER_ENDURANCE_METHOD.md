@@ -68,3 +68,14 @@ Tests ciblés sur copie sans réseau ni données utilisateur :
 ```sh
 python -B tools/offline_check.py -q tests/test_master_endurance.py -p no:cacheprovider -W error
 ```
+
+## Optimisation après mesure murale
+
+Le rapport complet est construit une fois en fin de test, au lieu de N+3R+1
+fois. Les contrôles intermédiaires utilisent de vrais compteurs SQL dans les
+mêmes transactions. Aucun contrôle financier, d'inventaire ou de reprise n'est
+supprimé. Un test impose un seul appel au rapport détaillé.
+
+Paire 1000 événements/10 reprises/cible30s :120,246s→30,279s,7054invariants
+identiques. Voir `MASTER_V2_COMPARISON_RESULTS.md` et
+`tools/benchmark_master_endurance.py`.

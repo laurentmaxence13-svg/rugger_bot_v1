@@ -1,0 +1,1884 @@
+{
+  "corpus": {
+    "data_kind": "synthetic",
+    "frames": [
+      {
+        "available_at_ms": 100000,
+        "buy_context": {
+          "buy_observation": {
+            "available_at_ms": 99991,
+            "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-0",
+            "kind": "quote_attempt",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "outcome": "quoted",
+            "payload": {
+              "actual_input_amount_atomic": "1000000000",
+              "executable_confirmed": false,
+              "execution_guaranteed": false,
+              "fee_details": {
+                "account_creation_lamports": null,
+                "additional_costs_must_not_duplicate_route_fees": true,
+                "network_fee_lamports": null,
+                "priority_fee_lamports": null,
+                "route_fees": [
+                  {
+                    "fee_amount_atomic": "0",
+                    "fee_mint": "So11111111111111111111111111111111111111112",
+                    "fee_rate_raw": "0",
+                    "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                  }
+                ],
+                "total_cost_known": false
+              },
+              "http_status": 200,
+              "input_amount_atomic": "1000000000",
+              "input_mint": "So11111111111111111111111111111111111111112",
+              "latency_ms": 0,
+              "min_output_amount_atomic": "990",
+              "outcome": "quoted",
+              "output_amount_atomic": "1000",
+              "output_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "price_impact_pct": "0",
+              "provider": "raydium_trade_api",
+              "quality_flags": [
+                "additional_execution_costs_unknown"
+              ],
+              "quote_side": "buy",
+              "reason": null,
+              "received_at_ms": 99990,
+              "requested_at_ms": 99980,
+              "response_body_status": "synthetic_json_fixture",
+              "retained_sanitized_response": {
+                "data": {
+                  "actualInputAmount": "1000000000",
+                  "contextSlot": 101,
+                  "inputAmount": "1000000000",
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "otherAmountThreshold": "990",
+                  "outputAmount": "1000",
+                  "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                  "priceImpactPct": "0",
+                  "routePlan": [
+                    {
+                      "feeAmount": "0",
+                      "feeMint": "So11111111111111111111111111111111111111112",
+                      "feeRate": 0,
+                      "inputMint": "So11111111111111111111111111111111111111112",
+                      "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                    }
+                  ],
+                  "slippageBps": 100,
+                  "sourceTimeMs": 99975,
+                  "swapType": "BaseIn"
+                },
+                "success": true
+              },
+              "retry_after_seconds": null,
+              "route": [
+                {
+                  "feeAmount": "0",
+                  "feeMint": "So11111111111111111111111111111111111111112",
+                  "feeRate": 0,
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                  "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                }
+              ],
+              "sanitized_response_retained": true,
+              "sanitized_response_sha256": "5042e10588d6f54dc0e171550550d87304fccd416e765f2fe7eb010ff1304613",
+              "slippage_bps": 100,
+              "source_slot": 101,
+              "source_time_ms": 99975
+            },
+            "provenance": "synthetic",
+            "reason": null,
+            "received_at_ms": 99990,
+            "request_id": "synthetic-p4-buy-1",
+            "source_slot": 101,
+            "source_time_ms": 99975
+          },
+          "fees": {
+            "entry_extra_lamports": 5000,
+            "exit_extra_lamports": 10000,
+            "failed_attempt_lamports": [],
+            "provenance": "synthetic"
+          },
+          "token_decimals": 6
+        },
+        "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "detected_at_ms": 100000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 100,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.0,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 100,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 100000,
+        "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+        "independent_buyers": 1,
+        "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+        "pool": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "sell_contexts": [],
+        "slot_available_at_ms": 100000,
+        "source_slot": 100
+      },
+      {
+        "available_at_ms": 115000,
+        "buy_context": {
+          "buy_observation": {
+            "available_at_ms": 114991,
+            "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-1",
+            "kind": "quote_attempt",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "outcome": "quoted",
+            "payload": {
+              "actual_input_amount_atomic": "1000000000",
+              "executable_confirmed": false,
+              "execution_guaranteed": false,
+              "fee_details": {
+                "account_creation_lamports": null,
+                "additional_costs_must_not_duplicate_route_fees": true,
+                "network_fee_lamports": null,
+                "priority_fee_lamports": null,
+                "route_fees": [
+                  {
+                    "fee_amount_atomic": "0",
+                    "fee_mint": "So11111111111111111111111111111111111111112",
+                    "fee_rate_raw": "0",
+                    "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                  }
+                ],
+                "total_cost_known": false
+              },
+              "http_status": 200,
+              "input_amount_atomic": "1000000000",
+              "input_mint": "So11111111111111111111111111111111111111112",
+              "latency_ms": 0,
+              "min_output_amount_atomic": "891",
+              "outcome": "quoted",
+              "output_amount_atomic": "900",
+              "output_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "price_impact_pct": "0",
+              "provider": "raydium_trade_api",
+              "quality_flags": [
+                "additional_execution_costs_unknown"
+              ],
+              "quote_side": "buy",
+              "reason": null,
+              "received_at_ms": 114990,
+              "requested_at_ms": 114980,
+              "response_body_status": "synthetic_json_fixture",
+              "retained_sanitized_response": {
+                "data": {
+                  "actualInputAmount": "1000000000",
+                  "contextSlot": 102,
+                  "inputAmount": "1000000000",
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "otherAmountThreshold": "891",
+                  "outputAmount": "900",
+                  "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                  "priceImpactPct": "0",
+                  "routePlan": [
+                    {
+                      "feeAmount": "0",
+                      "feeMint": "So11111111111111111111111111111111111111112",
+                      "feeRate": 0,
+                      "inputMint": "So11111111111111111111111111111111111111112",
+                      "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                    }
+                  ],
+                  "slippageBps": 100,
+                  "sourceTimeMs": 114975,
+                  "swapType": "BaseIn"
+                },
+                "success": true
+              },
+              "retry_after_seconds": null,
+              "route": [
+                {
+                  "feeAmount": "0",
+                  "feeMint": "So11111111111111111111111111111111111111112",
+                  "feeRate": 0,
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "outputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                  "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                }
+              ],
+              "sanitized_response_retained": true,
+              "sanitized_response_sha256": "71b68d37e4f9e10c2304dc0fbd10513c371e055d977ac2896266392480cc16d9",
+              "slippage_bps": 100,
+              "source_slot": 102,
+              "source_time_ms": 114975
+            },
+            "provenance": "synthetic",
+            "reason": null,
+            "received_at_ms": 114990,
+            "request_id": "synthetic-p4-buy-2",
+            "source_slot": 102,
+            "source_time_ms": 114975
+          },
+          "fees": {
+            "entry_extra_lamports": 5000,
+            "exit_extra_lamports": 10000,
+            "failed_attempt_lamports": [],
+            "provenance": "synthetic"
+          },
+          "token_decimals": 6
+        },
+        "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "detected_at_ms": 100000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 115,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.02,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 100,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 115000,
+        "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+        "independent_buyers": 3,
+        "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+        "pool": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "sell_contexts": [],
+        "slot_available_at_ms": 115000,
+        "source_slot": 101
+      },
+      {
+        "available_at_ms": 130000,
+        "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "detected_at_ms": 100000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 130,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.2,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 100,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 130000,
+        "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+        "independent_buyers": 3,
+        "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+        "pool": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "sell_contexts": [
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-0",
+            "requested_quantity_atomic": "1000",
+            "sell_observation": {
+              "available_at_ms": 129991,
+              "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-sell-4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-0-2",
+              "kind": "quote_attempt",
+              "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "1000",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "1000",
+                "input_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 129990,
+                "requested_at_ms": 129980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "1000",
+                    "contextSlot": 103,
+                    "inputAmount": "1000",
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "feeRate": 0,
+                        "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 129975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "feeRate": 0,
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "0cfb06623852eb8dc1a56c88b71121ebc7d756b6725f4ef14af8ba6bfd9cfe4e",
+                "slippage_bps": 100,
+                "source_slot": 103,
+                "source_time_ms": 129975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 129990,
+              "request_id": "synthetic-p4-sell-3",
+              "source_slot": 103,
+              "source_time_ms": 129975
+            }
+          },
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-1",
+            "requested_quantity_atomic": "900",
+            "sell_observation": {
+              "available_at_ms": 129991,
+              "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-sell-4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-1-2",
+              "kind": "quote_attempt",
+              "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "900",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "900",
+                "input_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 129990,
+                "requested_at_ms": 129980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "900",
+                    "contextSlot": 103,
+                    "inputAmount": "900",
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "feeRate": 0,
+                        "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 129975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "feeRate": 0,
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "65781c56738560976fada304c7399a141f6b4f4cbeca9b3e4d49d297d690d297",
+                "slippage_bps": 100,
+                "source_slot": 103,
+                "source_time_ms": 129975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 129990,
+              "request_id": "synthetic-p4-sell-3",
+              "source_slot": 103,
+              "source_time_ms": 129975
+            }
+          }
+        ],
+        "slot_available_at_ms": 130000,
+        "source_slot": 102
+      },
+      {
+        "available_at_ms": 145000,
+        "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+        "detected_at_ms": 100000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 145,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.2,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 100,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 145000,
+        "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+        "independent_buyers": 3,
+        "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+        "pool": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8",
+        "sell_contexts": [
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-0",
+            "requested_quantity_atomic": "1000",
+            "sell_observation": {
+              "available_at_ms": 144991,
+              "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-sell-4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-0-3",
+              "kind": "quote_attempt",
+              "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "1000",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "1000",
+                "input_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 144990,
+                "requested_at_ms": 144980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "1000",
+                    "contextSlot": 104,
+                    "inputAmount": "1000",
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "feeRate": 0,
+                        "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 144975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "feeRate": 0,
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "adccc3456933f3514f308383611470f0bad5215d298028cccae68cab4775fcba",
+                "slippage_bps": 100,
+                "source_slot": 104,
+                "source_time_ms": 144975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 144990,
+              "request_id": "synthetic-p4-sell-4",
+              "source_slot": 104,
+              "source_time_ms": 144975
+            }
+          },
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-1",
+            "requested_quantity_atomic": "900",
+            "sell_observation": {
+              "available_at_ms": 144991,
+              "id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-sell-4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-buy-1-3",
+              "kind": "quote_attempt",
+              "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "900",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "900",
+                "input_mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 144990,
+                "requested_at_ms": 144980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "900",
+                    "contextSlot": 104,
+                    "inputAmount": "900",
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "feeRate": 0,
+                        "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 144975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "feeRate": 0,
+                    "inputMint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "CktRuQ2mttgRGkXJtyksdKHjUdc2C4TgDzyB98oEzy8"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "5c9030badc07a17005cd0d5aed77d38bdf1d95e3a823785d5d41da4892b5deb1",
+                "slippage_bps": 100,
+                "source_slot": 104,
+                "source_time_ms": 144975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 144990,
+              "request_id": "synthetic-p4-sell-4",
+              "source_slot": 104,
+              "source_time_ms": 144975
+            }
+          }
+        ],
+        "slot_available_at_ms": 145000,
+        "source_slot": 103
+      },
+      {
+        "available_at_ms": 300000,
+        "buy_context": {
+          "buy_observation": {
+            "available_at_ms": 299991,
+            "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-0",
+            "kind": "quote_attempt",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+            "outcome": "quoted",
+            "payload": {
+              "actual_input_amount_atomic": "1000000000",
+              "executable_confirmed": false,
+              "execution_guaranteed": false,
+              "fee_details": {
+                "account_creation_lamports": null,
+                "additional_costs_must_not_duplicate_route_fees": true,
+                "network_fee_lamports": null,
+                "priority_fee_lamports": null,
+                "route_fees": [
+                  {
+                    "fee_amount_atomic": "0",
+                    "fee_mint": "So11111111111111111111111111111111111111112",
+                    "fee_rate_raw": "0",
+                    "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                  }
+                ],
+                "total_cost_known": false
+              },
+              "http_status": 200,
+              "input_amount_atomic": "1000000000",
+              "input_mint": "So11111111111111111111111111111111111111112",
+              "latency_ms": 0,
+              "min_output_amount_atomic": "990",
+              "outcome": "quoted",
+              "output_amount_atomic": "1000",
+              "output_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "price_impact_pct": "0",
+              "provider": "raydium_trade_api",
+              "quality_flags": [
+                "additional_execution_costs_unknown"
+              ],
+              "quote_side": "buy",
+              "reason": null,
+              "received_at_ms": 299990,
+              "requested_at_ms": 299980,
+              "response_body_status": "synthetic_json_fixture",
+              "retained_sanitized_response": {
+                "data": {
+                  "actualInputAmount": "1000000000",
+                  "contextSlot": 101,
+                  "inputAmount": "1000000000",
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "otherAmountThreshold": "990",
+                  "outputAmount": "1000",
+                  "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                  "priceImpactPct": "0",
+                  "routePlan": [
+                    {
+                      "feeAmount": "0",
+                      "feeMint": "So11111111111111111111111111111111111111112",
+                      "feeRate": 0,
+                      "inputMint": "So11111111111111111111111111111111111111112",
+                      "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                    }
+                  ],
+                  "slippageBps": 100,
+                  "sourceTimeMs": 299975,
+                  "swapType": "BaseIn"
+                },
+                "success": true
+              },
+              "retry_after_seconds": null,
+              "route": [
+                {
+                  "feeAmount": "0",
+                  "feeMint": "So11111111111111111111111111111111111111112",
+                  "feeRate": 0,
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                  "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                }
+              ],
+              "sanitized_response_retained": true,
+              "sanitized_response_sha256": "d408902a175b15670f26c5e82248f8766fbee598fa3335e8dc0f8edfdd4e3784",
+              "slippage_bps": 100,
+              "source_slot": 101,
+              "source_time_ms": 299975
+            },
+            "provenance": "synthetic",
+            "reason": null,
+            "received_at_ms": 299990,
+            "request_id": "synthetic-p4-buy-1",
+            "source_slot": 101,
+            "source_time_ms": 299975
+          },
+          "fees": {
+            "entry_extra_lamports": 5000,
+            "exit_extra_lamports": 10000,
+            "failed_attempt_lamports": [],
+            "provenance": "synthetic"
+          },
+          "token_decimals": 6
+        },
+        "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+        "detected_at_ms": 300000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 300,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.0,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 300,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 300000,
+        "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-0",
+        "independent_buyers": 1,
+        "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+        "pool": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV",
+        "sell_contexts": [],
+        "slot_available_at_ms": 300000,
+        "source_slot": 100
+      },
+      {
+        "available_at_ms": 315000,
+        "buy_context": {
+          "buy_observation": {
+            "available_at_ms": 314991,
+            "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-1",
+            "kind": "quote_attempt",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+            "outcome": "quoted",
+            "payload": {
+              "actual_input_amount_atomic": "1000000000",
+              "executable_confirmed": false,
+              "execution_guaranteed": false,
+              "fee_details": {
+                "account_creation_lamports": null,
+                "additional_costs_must_not_duplicate_route_fees": true,
+                "network_fee_lamports": null,
+                "priority_fee_lamports": null,
+                "route_fees": [
+                  {
+                    "fee_amount_atomic": "0",
+                    "fee_mint": "So11111111111111111111111111111111111111112",
+                    "fee_rate_raw": "0",
+                    "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                  }
+                ],
+                "total_cost_known": false
+              },
+              "http_status": 200,
+              "input_amount_atomic": "1000000000",
+              "input_mint": "So11111111111111111111111111111111111111112",
+              "latency_ms": 0,
+              "min_output_amount_atomic": "891",
+              "outcome": "quoted",
+              "output_amount_atomic": "900",
+              "output_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "price_impact_pct": "0",
+              "provider": "raydium_trade_api",
+              "quality_flags": [
+                "additional_execution_costs_unknown"
+              ],
+              "quote_side": "buy",
+              "reason": null,
+              "received_at_ms": 314990,
+              "requested_at_ms": 314980,
+              "response_body_status": "synthetic_json_fixture",
+              "retained_sanitized_response": {
+                "data": {
+                  "actualInputAmount": "1000000000",
+                  "contextSlot": 102,
+                  "inputAmount": "1000000000",
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "otherAmountThreshold": "891",
+                  "outputAmount": "900",
+                  "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                  "priceImpactPct": "0",
+                  "routePlan": [
+                    {
+                      "feeAmount": "0",
+                      "feeMint": "So11111111111111111111111111111111111111112",
+                      "feeRate": 0,
+                      "inputMint": "So11111111111111111111111111111111111111112",
+                      "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                    }
+                  ],
+                  "slippageBps": 100,
+                  "sourceTimeMs": 314975,
+                  "swapType": "BaseIn"
+                },
+                "success": true
+              },
+              "retry_after_seconds": null,
+              "route": [
+                {
+                  "feeAmount": "0",
+                  "feeMint": "So11111111111111111111111111111111111111112",
+                  "feeRate": 0,
+                  "inputMint": "So11111111111111111111111111111111111111112",
+                  "outputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                  "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                }
+              ],
+              "sanitized_response_retained": true,
+              "sanitized_response_sha256": "2bd1260e5e141332597f7b969713a663783dcad1bbe62ae00c5e5f85fa57fd46",
+              "slippage_bps": 100,
+              "source_slot": 102,
+              "source_time_ms": 314975
+            },
+            "provenance": "synthetic",
+            "reason": null,
+            "received_at_ms": 314990,
+            "request_id": "synthetic-p4-buy-2",
+            "source_slot": 102,
+            "source_time_ms": 314975
+          },
+          "fees": {
+            "entry_extra_lamports": 5000,
+            "exit_extra_lamports": 10000,
+            "failed_attempt_lamports": [],
+            "provenance": "synthetic"
+          },
+          "token_decimals": 6
+        },
+        "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+        "detected_at_ms": 300000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 315,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.02,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 300,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 315000,
+        "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-1",
+        "independent_buyers": 3,
+        "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+        "pool": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV",
+        "sell_contexts": [],
+        "slot_available_at_ms": 315000,
+        "source_slot": 101
+      },
+      {
+        "available_at_ms": 330000,
+        "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+        "detected_at_ms": 300000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 330,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.2,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 300,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 330000,
+        "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-2",
+        "independent_buyers": 3,
+        "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+        "pool": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV",
+        "sell_contexts": [
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-0",
+            "requested_quantity_atomic": "1000",
+            "sell_observation": {
+              "available_at_ms": 329991,
+              "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-sell-gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-0-2",
+              "kind": "quote_attempt",
+              "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "1000",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "1000",
+                "input_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 329990,
+                "requested_at_ms": 329980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "1000",
+                    "contextSlot": 103,
+                    "inputAmount": "1000",
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "feeRate": 0,
+                        "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 329975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "feeRate": 0,
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "1b3ed2b2821397aa20b1e85ccfe7a01238ce6816b65b45b8c0e1b1e174f6417c",
+                "slippage_bps": 100,
+                "source_slot": 103,
+                "source_time_ms": 329975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 329990,
+              "request_id": "synthetic-p4-sell-3",
+              "source_slot": 103,
+              "source_time_ms": 329975
+            }
+          },
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-1",
+            "requested_quantity_atomic": "900",
+            "sell_observation": {
+              "available_at_ms": 329991,
+              "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-sell-gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-1-2",
+              "kind": "quote_attempt",
+              "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "900",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "900",
+                "input_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 329990,
+                "requested_at_ms": 329980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "900",
+                    "contextSlot": 103,
+                    "inputAmount": "900",
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "feeRate": 0,
+                        "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 329975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "feeRate": 0,
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "87070d06b389430fb875bb8ec2417a320452c560e2b00346c92cd9902d2233ab",
+                "slippage_bps": 100,
+                "source_slot": 103,
+                "source_time_ms": 329975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 329990,
+              "request_id": "synthetic-p4-sell-3",
+              "source_slot": 103,
+              "source_time_ms": 329975
+            }
+          }
+        ],
+        "slot_available_at_ms": 330000,
+        "source_slot": 102
+      },
+      {
+        "available_at_ms": 345000,
+        "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+        "detected_at_ms": 300000,
+        "features": {
+          "behavior_known": true,
+          "bundle_transactions": 0,
+          "bundle_wallets": 0,
+          "creator": "k7FaK87WHGVXzkaoHb7CdVPgkKDQhZ29VLDeBVbDfYn",
+          "depth_usd": null,
+          "dev_sales": 0,
+          "fdv_usd": null,
+          "fee_bps": null,
+          "funding_usd": null,
+          "holder_count": 10,
+          "holder_data_known": true,
+          "linked_wallets": 0,
+          "liquidity_usd": 12000.0,
+          "market_cap_usd": null,
+          "market_data_quality": "legacy",
+          "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+          "momentum_300s": null,
+          "momentum_60s": null,
+          "observed_at": 345,
+          "price_change_1h_pct": null,
+          "price_change_5m_pct": null,
+          "price_usd": 1.2,
+          "prior_launches": 5,
+          "quote_count": 1,
+          "quote_source": null,
+          "relay_transfers": 0,
+          "relevant_transactions": 0,
+          "same_slot_wallets": 0,
+          "signal_time": 300,
+          "slippage_bps_est": null,
+          "top_holder_share": 0.1,
+          "tx_buys_5m": null,
+          "tx_sells_5m": null,
+          "volume_24h_usd": null,
+          "volume_5m_usd": null,
+          "wallet_graph_transactions": 0,
+          "wallet_link_count": 0
+        },
+        "features_available_at_ms": 345000,
+        "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-3",
+        "independent_buyers": 3,
+        "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+        "pool": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV",
+        "sell_contexts": [
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-0",
+            "requested_quantity_atomic": "1000",
+            "sell_observation": {
+              "available_at_ms": 344991,
+              "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-sell-gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-0-3",
+              "kind": "quote_attempt",
+              "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "1000",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "1000",
+                "input_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 344990,
+                "requested_at_ms": 344980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "1000",
+                    "contextSlot": 104,
+                    "inputAmount": "1000",
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "feeRate": 0,
+                        "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 344975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "feeRate": 0,
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "8350e2b97ae453c3e8ba5df19f138ce0a39e84e110598a53cb26e5440d895355",
+                "slippage_bps": 100,
+                "source_slot": 104,
+                "source_time_ms": 344975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 344990,
+              "request_id": "synthetic-p4-sell-4",
+              "source_slot": 104,
+              "source_time_ms": 344975
+            }
+          },
+          {
+            "fees": {
+              "entry_extra_lamports": 5000,
+              "exit_extra_lamports": 10000,
+              "failed_attempt_lamports": [],
+              "provenance": "synthetic"
+            },
+            "inventory_buy_observation_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-1",
+            "requested_quantity_atomic": "900",
+            "sell_observation": {
+              "available_at_ms": 344991,
+              "id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-sell-gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-buy-1-3",
+              "kind": "quote_attempt",
+              "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+              "outcome": "quoted",
+              "payload": {
+                "actual_input_amount_atomic": "900",
+                "executable_confirmed": false,
+                "execution_guaranteed": false,
+                "fee_details": {
+                  "account_creation_lamports": null,
+                  "additional_costs_must_not_duplicate_route_fees": true,
+                  "network_fee_lamports": null,
+                  "priority_fee_lamports": null,
+                  "route_fees": [
+                    {
+                      "fee_amount_atomic": "0",
+                      "fee_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                      "fee_rate_raw": "0",
+                      "fee_rate_unit": "provider_unit_not_converted_to_bps"
+                    }
+                  ],
+                  "total_cost_known": false
+                },
+                "http_status": 200,
+                "input_amount_atomic": "900",
+                "input_mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                "latency_ms": 0,
+                "min_output_amount_atomic": "1188000000",
+                "outcome": "quoted",
+                "output_amount_atomic": "1200000000",
+                "output_mint": "So11111111111111111111111111111111111111112",
+                "price_impact_pct": "0",
+                "provider": "raydium_trade_api",
+                "quality_flags": [
+                  "additional_execution_costs_unknown"
+                ],
+                "quote_side": "sell",
+                "reason": null,
+                "received_at_ms": 344990,
+                "requested_at_ms": 344980,
+                "response_body_status": "synthetic_json_fixture",
+                "retained_sanitized_response": {
+                  "data": {
+                    "actualInputAmount": "900",
+                    "contextSlot": 104,
+                    "inputAmount": "900",
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "otherAmountThreshold": "1188000000",
+                    "outputAmount": "1200000000",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "priceImpactPct": "0",
+                    "routePlan": [
+                      {
+                        "feeAmount": "0",
+                        "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "feeRate": 0,
+                        "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                        "outputMint": "So11111111111111111111111111111111111111112",
+                        "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                      }
+                    ],
+                    "slippageBps": 100,
+                    "sourceTimeMs": 344975,
+                    "swapType": "BaseIn"
+                  },
+                  "success": true
+                },
+                "retry_after_seconds": null,
+                "route": [
+                  {
+                    "feeAmount": "0",
+                    "feeMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "feeRate": 0,
+                    "inputMint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+                    "outputMint": "So11111111111111111111111111111111111111112",
+                    "poolId": "p2Yicb86aZig616Eav2VWG9vuXR5mEqhtzshZYBxzsV"
+                  }
+                ],
+                "sanitized_response_retained": true,
+                "sanitized_response_sha256": "9e9d2fbbd684e3c37633c8d50db39b13d515a19c839437c6dfcae4ea914c353c",
+                "slippage_bps": 100,
+                "source_slot": 104,
+                "source_time_ms": 344975
+              },
+              "provenance": "synthetic",
+              "reason": null,
+              "received_at_ms": 344990,
+              "request_id": "synthetic-p4-sell-4",
+              "source_slot": 104,
+              "source_time_ms": 344975
+            }
+          }
+        ],
+        "slot_available_at_ms": 345000,
+        "source_slot": 103
+      }
+    ]
+  },
+  "plan": {
+    "candidates": [
+      {
+        "id": "early_sniping:baseline",
+        "overrides": {},
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "early_sniping:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "early_sniping"
+      },
+      {
+        "id": "confirmed_momentum:baseline",
+        "overrides": {},
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "confirmed_momentum:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "confirmed_momentum"
+      },
+      {
+        "id": "adaptive_hybrid:baseline",
+        "overrides": {},
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      {
+        "id": "adaptive_hybrid:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "adaptive_hybrid"
+      }
+    ],
+    "development_end_ms": 200000,
+    "holdout_end_ms": 500000,
+    "maximum_candidates": 24,
+    "maximum_frames": 5000,
+    "minimum_validation_creator_groups": 50,
+    "objective": {
+      "drawdown_capital_weight": 1,
+      "tail_loss_weight": 2
+    },
+    "paired_validation": {
+      "familywise_alpha": {
+        "denominator": 20,
+        "numerator": 1
+      },
+      "hypothesis_family_size": 24,
+      "inference": "BLOCKED until independent market evidence is separately audited",
+      "minimum_complete_creator_groups": 50,
+      "multiplicity_method": "Bonferroni; registered allocation only, no inferential claim",
+      "per_hypothesis_alpha": {
+        "denominator": 480,
+        "numerator": 1
+      },
+      "schema": "rugger-paired-policy-validation-design-v1",
+      "selection": "descriptive_only_after_development_candidates_frozen",
+      "sensitivity_decision_delays_ms": [
+        0,
+        250
+      ],
+      "sensitivity_fee_multipliers": [
+        1,
+        2
+      ],
+      "unit": "creator_group_after_same_mint_pairing"
+    },
+    "production_promotion": "NEVER; separate independent evidence and authorization required",
+    "registered_at_ms": 1,
+    "schema": "rugger-policy-research-plan-v1",
+    "selection": "development_only_then_frozen_holdout"
+  }
+}

@@ -264,7 +264,8 @@ def _verified_capture_events(events, expected_tail):
 
 def retain_comparison_inputs(store, *, mint, pool, creator, detected_at_ms,
                              features, source_observation_ids, received_at_ms,
-                             snapshot_analysis_observation_id=None, token_decimals=None):
+                             snapshot_analysis_observation_id=None, token_decimals=None,
+                             health_observation_id=None):
     """Append available scanner/cache features to the existing capture journal.
 
     This producer adds no source request. It must be called after its referenced
@@ -292,6 +293,10 @@ def retain_comparison_inputs(store, *, mint, pool, creator, detected_at_ms,
             for identity in source_observation_ids):
         raise ValueError('Feature source is missing or unavailable before capture')
     references=list(source_observation_ids)
+    if health_observation_id is not None:
+        if type(health_observation_id) is not int or _retained_health(by_id.get(health_observation_id),received_at_ms) is None:
+            raise ValueError('Operational health must be explicitly retained and causal')
+        if health_observation_id not in references:references.append(health_observation_id)
     if snapshot_analysis_observation_id is not None:
         analysis=by_id.get(snapshot_analysis_observation_id)
         if (type(snapshot_analysis_observation_id) is not int or analysis is None
@@ -319,7 +324,28 @@ def retain_comparison_inputs(store, *, mint, pool, creator, detected_at_ms,
             creator=creator,pool=pool,detected_at_ms=detected_at_ms,features=raw,
             source_observation_ids=references,
             snapshot_analysis_observation_id=snapshot_analysis_observation_id,
-            token_decimals=token_decimals))
+            token_decimals=token_decimals,
+            **({'health_observation_id':health_observation_id} if health_observation_id is not None else {})))
+
+
+def _retained_health(event,at):
+    """Read a local supervisor attestation; never infer RPC health from prices."""
+    if (type(event) is not dict or event.get('kind')!='checkpoint'
+            or event.get('outcome')!='operational_health_v1'
+            or type(event.get('available_at_ms')) is not int or event['available_at_ms']>at):
+        return None
+    health=event.get('payload',{}).get('health')
+    if type(health) is not dict:return None
+    observed=health.get('observed_at_ms')
+    if (health.get('schema')!='rugger-paper-operational-health-v1'
+            or type(observed) is not int or not 0<=observed<=event['available_at_ms']<=at
+            or at-observed>5000 or type(health.get('allow_new_entries')) is not bool):return None
+    if health['allow_new_entries'] is True:
+        sources=health.get('source_health')
+        if (health.get('blocking_reasons')!=[] or type(sources) is not dict
+                or any(type(sources.get(name)) is not dict or sources[name].get('healthy') is not True
+                    for name in ('scanner','rpc','websocket'))):return None
+    return deepcopy(health)
 
 
 def _asof_bank(analysis_event, by_id, *, mint, pool, at, data_kind):
@@ -517,6 +543,13 @@ def build_comparison_corpus(selection, events, *, as_of_ms, integrity_verified, 
                 data_kind=data_kind,source_evidence=dict(feature_observation_id=event['id'],
                     source_observation_ids=deepcopy(refs),capture_record_hash=event['record_hash'],
                     identity_basis='retained_upstream_claim_not_new_authentication'))
+            health_id=body.get('health_observation_id')
+            if health_id is not None:
+                health_event=by_id.get(health_id) if type(health_id) is int and health_id in refs else None
+                if type(health_event) is dict and health_event['id']>=event['id']:health_event=None
+                frame['health']=_retained_health(health_event,at)
+                frame['source_evidence']['health_observation_id']=health_id
+                frame['source_evidence']['health_basis']='retained_local_supervisor_attestation_not_provider_authentication'
             from bot.analyser.final_decision_engine import SignalFeatures
             from bot.p4_experiment import _features
             features,feature_reason=_features(frame,{'SignalFeatures':SignalFeatures},at)

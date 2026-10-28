@@ -1,0 +1,10 @@
+{
+  "after_source_sha256": "82e645f7169d20179f03351613bdb0279abb5ee6c87e0d790fb976a142e760e6",
+  "all_copied_sources_verified": true,
+  "baseline_tree": "a04ea5560492f846682cdfe2f08b52e72bea0d25",
+  "before_source_sha256": "9b139e9c84e0907164a2a9c6a5d35e40350827bd4e0b3a71898c05a9d32373ac",
+  "only_endurance_implementation_varied": true,
+  "schema": "rugger-endurance-source-copy-control-v1",
+  "scope": "Verified frozen before/after source copies after the measured 1000-event run; current tree may contain later prospective-input fixes",
+  "source_files": 106
+}

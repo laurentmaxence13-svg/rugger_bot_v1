@@ -143,6 +143,7 @@ class _Adapter:
         health,healthy=_health(frame,at);capital=_capital(con,at,api)
         current=deepcopy(frame);current['data_kind']=self.kind
         current['available_at_ms']=at
+        current['health']=deepcopy(health);current['capital_snapshot']=deepcopy(capital)
         # Availability is not retimed: latency can make the retained facts stale.
         contexts=[] if state is None else _sell_contexts(frame,state)
         if state is not None:
@@ -293,6 +294,24 @@ def evaluate_comparison(corpus,plan):
         limitation='retrospective conditional quote replay; no certified fills or causal own-entry market impact')
 
 
+def evaluate_acquired_comparison(acquisition,plan):
+    """Preserve the captured universe and unknowns across the P3/A-B boundary."""
+    if (type(acquisition) is not dict or acquisition.get('schema')!='p3-master-comparison-acquisition-v1'
+            or type(acquisition.get('denominator')) is not list
+            or acquisition.get('universe_size')!=len(acquisition['denominator'])
+            or acquisition.get('qualified_economic_cycles')!=0
+            or acquisition.get('execution_verified') is not False
+            or type(acquisition.get('candidates')) is not list):
+        raise ValueError('Retained P3 acquisition envelope and complete universe required')
+    result=evaluate_comparison(acquisition['corpus'],plan)
+    result['acquisition_universe']=deepcopy({key:acquisition.get(key) for key in (
+        'denominator','universe_size','selected_count','candidates','unknown_candidate_count',
+        'refused_quote_observation_ids','future_observations_excluded','retained_tail','integrity','as_of_ms')})
+    result['acquisition_sha256']=p4._hash(acquisition)
+    result['acquisition_authentication_verified']=False
+    return result
+
+
 def main(argv=None):
     os.environ['RUGGER_NO_DOTENV']='1'
     from bot.__main__ import _offline_policy
@@ -304,7 +323,10 @@ def main(argv=None):
             or args.input.stat().st_size>16777216 or args.output.exists() or args.output.is_symlink()
             or args.output.suffix!='.json' or args.input.resolve()==args.output.resolve()):
         parser.error('Retained JSON input and new separate output required')
-    data=json.loads(args.input.read_text());result=evaluate_comparison(data['corpus'],data['plan'])
+    data=json.loads(args.input.read_text())
+    if ('corpus' in data)==('acquisition' in data):parser.error('Exactly one corpus or retained P3 acquisition envelope required')
+    result=(evaluate_acquired_comparison(data['acquisition'],data['plan']) if 'acquisition' in data else
+        evaluate_comparison(data['corpus'],data['plan']))
     from bot.analyser.artifacts import atomic_write_json
     atomic_write_json(args.output,result,indent=2,sort_keys=True,allow_nan=False)
     print(json.dumps(dict(report=str(args.output),promotion_allowed=False,network_requests=0)))

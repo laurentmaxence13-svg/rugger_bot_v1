@@ -117,7 +117,8 @@ def run_master_endurance(output,*,events=1000,restarts=10,wall_seconds=0):
                 raise InterruptedError('Synthetic process interruption before commit')
             except InterruptedError:
                 con.rollback()
-            _require(master_report(con)['decisions']==index-1,'Interrupted event survived rollback')
+            _require(con.execute('SELECT COUNT(*) FROM paper_master_decisions').fetchone()[0]==index-1,
+                     'Interrupted event survived rollback')
             counts['interruptions']+=1;counts['checks']+=1
 
             con.execute('BEGIN IMMEDIATE')
@@ -161,7 +162,7 @@ def run_master_endurance(output,*,events=1000,restarts=10,wall_seconds=0):
                 target=output/('backup-'+str(index)+'.sqlite')
                 receipt=backup_paper_database(database,target)
                 with closing(sqlite3.connect(target)) as restored:
-                    _require(master_report(restored)['decisions']==index,
+                    _require(restored.execute('SELECT COUNT(*) FROM paper_master_decisions').fetchone()[0]==index,
                              'Backup included an uncommitted shadow event')
                     _require(_financial_snapshot(restored)==baseline,
                              'Committed backup changed native finances')
@@ -173,8 +174,9 @@ def run_master_endurance(output,*,events=1000,restarts=10,wall_seconds=0):
                 con=sqlite3.connect(database,isolation_level=None)
                 con.execute('PRAGMA journal_mode=WAL')
                 shadow=MasterShadow()
-                _require(master_report(con)['decisions']==index
-                    and master_report(con)['pending_reference_outcomes']==0,
+                retained,pending=con.execute('SELECT COUNT(*),COALESCE(SUM(reference_outcome_json IS NULL),0) '
+                    'FROM paper_master_decisions').fetchone()
+                _require(retained==index and pending==0,
                     'Restart lost committed events or outcomes')
                 _require(shadow.evaluate(con,frame,inventory=native,reference=reference)==(key,decision),
                          'Restart changed duplicate identity or decision')

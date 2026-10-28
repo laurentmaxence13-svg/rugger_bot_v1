@@ -1228,6 +1228,8 @@ async def collect_once(con, session, cached, now, model=None,
                         features=master_features,inventory_context=inventory_context,health=health_snapshot,
                         financial_allowed=financial_allowed)
                     from bot.master_comparison import reference_position_intent
+                    frame['health']=health_snapshot
+                    frame['capital_snapshot']=capital
                     reference_model=decision.to_paper_model() if decision is not None else model
                     ref_action=('BUY' if decision is not None and decision.enter and allowed
                         else 'NO_TRADE' if decision is not None and not decision.enter else 'WAIT')

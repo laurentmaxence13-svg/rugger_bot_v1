@@ -73,6 +73,22 @@ def test_short_wall_paced_endurance_measures_elapsed_time_and_first_local_latenc
     assert report['strict_economic_cycles']==report['settled_shadow_legs']==0
 
 
+def test_detailed_audit_report_is_built_once_without_weakening_restart_or_financial_checks(tmp_path,monkeypatch):
+    from bot import master_audit
+    original=master_audit.master_report;calls=[]
+    def counted(con):
+        calls.append(1)
+        return original(con)
+    monkeypatch.setattr(master_audit,'master_report',counted)
+    report=run_master_endurance(tmp_path/'bounded',events=40,restarts=3,wall_seconds=.001)
+    assert len(calls)==1
+    assert report['invariant_checks']==40*7+3*5+4
+    assert report['master_shadow']['decisions']==40
+    assert report['master_shadow']['pending_reference_outcomes']==0
+    assert report['master_shadow']['master_reference_comparison']['paired_decisions']==40
+    assert report['initial_financial_sha256']==report['final_financial_sha256']
+
+
 @pytest.mark.parametrize('wall',[True,-1,61,float('nan'),float('inf'),'30'])
 def test_wall_endurance_rejects_unbounded_or_invalid_pacing_before_writing(tmp_path,wall):
     output=tmp_path/'refused'
