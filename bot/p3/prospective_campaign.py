@@ -30,7 +30,7 @@ FIXED = dict(schema='p3-prospective-inventory-v1', plan_id='prospective-inventor
     input_lamports=1000000000, slippage_bps=100, index_sort='new', max_index_rows=100,
     rpc_endpoint=RPC_URL, evidence_profile='published_metadata_v1', partial_divisor=4,
     selection='first_three_unique_mints_and_pools_native_SOL_before_market_outcomes',
-    partial_rule='prefixed_quarter_after_initial_full_logical_refusal_only',
+    partial_rule='prefixed_quarter_after_initial_full_provider_rejected_only',
     fee_reference='latest_successful_transaction_in_one_row_page_of_first_selected_pool',
     creation_lookup=False, stop_on_provider_rejection=False, reference_cash_lamports=10000000000,
     logical_unavailability_continuation=['provider_rejected','route_unavailable'],
