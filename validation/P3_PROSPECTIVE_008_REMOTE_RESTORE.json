@@ -1,0 +1,49 @@
+{
+  "candidate_snapshot_analyses_replayed": 6,
+  "execution_verified": false,
+  "grouped_banks_replayed": 2,
+  "local_and_restored_replay_equal": true,
+  "net_economic_pnl_sol": null,
+  "original_sqlite_used": false,
+  "plan_sha256": "33f5085fe3bd43714bec7372cd1be6848fb458e3401a70a9358553dde8128a17",
+  "qualified_economic_cycles": 0,
+  "quote_bodies_replayed": 12,
+  "records_verified": 55,
+  "remaining_identity_unknown": {
+    "interpretation": "Platform fee wallet did not hash to the original admin-derived PDA; no original seed is inferred.",
+    "mint": "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+    "observed_in_both_bank_periods": true,
+    "reason": "original_platform_admin_seed_not_retained"
+  },
+  "remote_ref": "28c3a08d19ae48f2c5b9845207b4777b61ec41ec",
+  "replay_network_access_forbidden": true,
+  "replay_private_configuration_access_forbidden": true,
+  "replay_sqlite_access_forbidden": true,
+  "report_identical_on_replay": true,
+  "repository": "laurentmaxence13-svg/rugger_bot_v1",
+  "restored_files": [
+    {
+      "bytes": 996,
+      "path": "manifest.json",
+      "sha256": "bb0b1f2fdbde8d5d49e03d5b3d4dce92b4ff514a8cce5697a236c4b3ef275332"
+    },
+    {
+      "bytes": 50253,
+      "path": "events.jsonl.gz",
+      "sha256": "5533179529dc97bc26f362c51219d902109c42a2e40458e558d3d3ef10a1aa73"
+    },
+    {
+      "bytes": 8844,
+      "path": "P3_PROSPECTIVE_008_REPORT.json",
+      "sha256": "adb5b5e51c16c23ddd42d193e6e24aa8946f87cdc4d3da0ba5884609514f623c"
+    },
+    {
+      "bytes": 1218,
+      "path": "plan.json",
+      "sha256": "d397b411041a5021799c47c58e9b14f265f7586407391c8b992b6a8ec068fa7c"
+    }
+  ],
+  "schema": "p3-prospective-008-actual-remote-restore-v1",
+  "source": "files downloaded by parent via GitHub connector into a fresh directory",
+  "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6"
+}

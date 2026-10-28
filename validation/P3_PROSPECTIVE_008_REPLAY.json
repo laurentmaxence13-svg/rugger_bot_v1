@@ -1,0 +1,660 @@
+{
+  "analysis_network_requests": 0,
+  "bundle_records": 55,
+  "candidate_snapshot_analyses_replayed": 6,
+  "data_kind": "market_observation",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "execution_verified": false,
+  "fee_reference_classifications": [
+    {
+      "applicability_to_our_scenario": "UNPROVEN",
+      "compute_budget": {
+        "compute_unit_limit": 80857,
+        "compute_unit_price_micro_lamports": 6184982,
+        "derivation_scope": "explicit_message_budget_only; not_our_execution_cost",
+        "derived_requested_priority_fee_lamports": 500100,
+        "reasons": [],
+        "residual_network_fee_lamports": 5000
+      },
+      "economic_verdict": "INSUFFICIENT DATA",
+      "execution_verified": false,
+      "fee_scope": "total_reference_network_fee_including_priority; excludes_curve_fees_and_rent",
+      "fee_source": "retained_getTransaction.meta.fee",
+      "known_reference_fee": true,
+      "known_reference_fee_lamports": 505100,
+      "net_economic_pnl_sol": null,
+      "our_account_rent_lamports": null,
+      "our_additional_costs_known": false,
+      "our_network_fee_lamports": null,
+      "our_priority_fee_lamports": null,
+      "reasons": [],
+      "reference_block_time_ms": 1793146525000,
+      "reference_signature": "3fcxmDGV2erB6MZmaU2Mw1qkmjt3xZLr5q1qaUZYpcYeDYSkRzDevDcjoDbsHYh77iTtCpStnBvRboS14zZyeU1q",
+      "reference_slot": 462269805,
+      "reference_transaction_succeeded": true,
+      "schema": "p3-reference-transaction-cost-v1",
+      "source_provenance": "live",
+      "source_time_kind": "chain_block_time_estimate"
+    }
+  ],
+  "full_sell_refusals": 6,
+  "grouped_snapshots_verified": 2,
+  "measured_followup_wait_ms": 15002,
+  "measured_rejection": "All nine provider sells were unavailable; every requested amount also exceeds observed outstanding curve tokens.",
+  "net_economic_pnl_sol": null,
+  "partial_sell_refusals": 3,
+  "phase_checks": [
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "111693751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "57500000",
+        "buy_effective_input_lamports": "942500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "31973987104815",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "50708125000195394875000",
+          "numerator": "1506774142315945100203"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "57500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "217582695",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "1160082695",
+        "post_buy_counterfactual_real_a": "31973987104815",
+        "post_buy_counterfactual_real_b": "942500007",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "54193750",
+        "sell_gross_output_lamports": "942499999",
+        "sell_input_atomic": "31973987104815",
+        "sell_output_lamports": "888306249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "269008620690691750",
+          "numerator": "7693965519"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-111693751",
+      "curve_only_round_trip_cash_difference_sol": "-0.111693751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "57500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 8,
+      "identity_unknown_reasons": [],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "2RvDheyRSfeGKnHnQHQ2ZQt4N8opy1Rpq6wUymLaxr3A",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "217582695",
+      "observed_real_quote_reserves_lamports": "7",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "31973987104815",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            26
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "7993496776203",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            27
+          ],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "initial",
+      "public_PDA_checks_qualified": true,
+      "slot": 462270186,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 11,
+      "supply_matches": true
+    },
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "24843751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "12500000",
+        "buy_effective_input_lamports": "987500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "34193904632554",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "529806392763213612500000",
+          "numerator": "16883240412328491716573"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "12500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "0",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "987500000",
+        "post_buy_counterfactual_real_a": "34193904632554",
+        "post_buy_counterfactual_real_b": "987500000",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "12343750",
+        "sell_gross_output_lamports": "987499999",
+        "sell_input_atomic": "34193904632554",
+        "sell_output_lamports": "975156249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "1073025605596382000",
+          "numerator": "30000852951"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-24843751",
+      "curve_only_round_trip_cash_difference_sol": "-0.024843751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "12500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 8,
+      "identity_unknown_reasons": [
+        "original_platform_admin_seed_not_retained"
+      ],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "0",
+      "observed_real_quote_reserves_lamports": "0",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "34193904632554",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            28
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "8548476158138",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            29
+          ],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "initial",
+      "public_PDA_checks_qualified": false,
+      "slot": 462270186,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 14,
+      "supply_matches": true
+    },
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "111693751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "57500000",
+        "buy_effective_input_lamports": "942500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "31973987105824",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "1267703125004884871875",
+          "numerator": "37669353559050055344"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "57500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "310102988",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "1252602988",
+        "post_buy_counterfactual_real_a": "31973987105824",
+        "post_buy_counterfactual_real_b": "942500006",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "54193750",
+        "sell_gross_output_lamports": "942499999",
+        "sell_input_atomic": "31973987105824",
+        "sell_output_lamports": "888306249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "43041379310510680",
+          "numerator": "1231034483"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-111693751",
+      "curve_only_round_trip_cash_difference_sol": "-0.111693751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "57500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 8,
+      "identity_unknown_reasons": [],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "BCGtY7WycyDd2rTSiq8v8R3NpB6KacJ27a9ArXzR1hSP",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "310102988",
+      "observed_real_quote_reserves_lamports": "6",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "31973987105824",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            30
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "7993496776456",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            31
+          ],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "initial",
+      "public_PDA_checks_qualified": true,
+      "slot": 462270186,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 17,
+      "supply_matches": true
+    },
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "111693751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "57500000",
+        "buy_effective_input_lamports": "942500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "31973987104815",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "50708125000195394875000",
+          "numerator": "1506774142315945100203"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "57500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "217582695",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "1160082695",
+        "post_buy_counterfactual_real_a": "31973987104815",
+        "post_buy_counterfactual_real_b": "942500007",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "54193750",
+        "sell_gross_output_lamports": "942499999",
+        "sell_input_atomic": "31973987104815",
+        "sell_output_lamports": "888306249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "269008620690691750",
+          "numerator": "7693965519"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-111693751",
+      "curve_only_round_trip_cash_difference_sol": "-0.111693751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "57500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 34,
+      "identity_unknown_reasons": [],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "2RvDheyRSfeGKnHnQHQ2ZQt4N8opy1Rpq6wUymLaxr3A",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "217582695",
+      "observed_real_quote_reserves_lamports": "7",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "31973987104815",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            46
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "7993496776203",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "followup",
+      "public_PDA_checks_qualified": true,
+      "slot": 462270261,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 37,
+      "supply_matches": true
+    },
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "24843751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "12500000",
+        "buy_effective_input_lamports": "987500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "34193904632554",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "529806392763213612500000",
+          "numerator": "16883240412328491716573"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "12500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "0",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "987500000",
+        "post_buy_counterfactual_real_a": "34193904632554",
+        "post_buy_counterfactual_real_b": "987500000",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "12343750",
+        "sell_gross_output_lamports": "987499999",
+        "sell_input_atomic": "34193904632554",
+        "sell_output_lamports": "975156249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "1073025605596382000",
+          "numerator": "30000852951"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-24843751",
+      "curve_only_round_trip_cash_difference_sol": "-0.024843751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "12500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 34,
+      "identity_unknown_reasons": [
+        "original_platform_admin_seed_not_retained"
+      ],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "0",
+      "observed_real_quote_reserves_lamports": "0",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "34193904632554",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            47
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "8548476158138",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "followup",
+      "public_PDA_checks_qualified": false,
+      "slot": 462270261,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 40,
+      "supply_matches": true
+    },
+    {
+      "additional_proceeds_needed_before_extra_costs_lamports": "111693751",
+      "buy_quote_matches_pinned_local_quantity": true,
+      "counterfactual_own_entry": {
+        "additional_execution_costs_known": false,
+        "buy_curve_fee_lamports": "57500000",
+        "buy_effective_input_lamports": "942500000",
+        "buy_input_lamports": "1000000000",
+        "buy_output_atomic": "31973987105824",
+        "buy_output_shortfall_vs_spot_without_fees": {
+          "denominator": "1267703125004884871875",
+          "numerator": "37669353559050055344"
+        },
+        "execution_verified": false,
+        "fee_denominator": "1000000",
+        "fee_rate_total_ppm": "57500",
+        "kind": "conditional_constant_product_projection",
+        "net_economic_pnl_sol": null,
+        "observed_future_exit_quote": false,
+        "observed_vault_base_atomic": "1000000000000000",
+        "observed_vault_quote_lamports": "310102988",
+        "position_acquired": false,
+        "post_buy_counterfactual_quote_vault_min_lamports": "1252602988",
+        "post_buy_counterfactual_real_a": "31973987105824",
+        "post_buy_counterfactual_real_b": "942500006",
+        "rounding": "ceil_curve_fee_floor_output",
+        "sell_curve_fee_lamports": "54193750",
+        "sell_gross_output_lamports": "942499999",
+        "sell_input_atomic": "31973987105824",
+        "sell_output_lamports": "888306249",
+        "sell_state_basis": "counterfactual_after_hypothetical_buy_no_intervening_activity",
+        "spot_sol_per_whole_token": {
+          "denominator": "43041379310510680",
+          "numerator": "1231034483"
+        }
+      },
+      "curve_only_round_trip_cash_difference_lamports": "-111693751",
+      "curve_only_round_trip_cash_difference_sol": "-0.111693751",
+      "extra_execution_costs_unknown": true,
+      "fee_rate_total_ppm": "57500",
+      "grouped_account_subset_reproduced": true,
+      "grouped_snapshot_id": 34,
+      "identity_unknown_reasons": [],
+      "interpretation": "Counterfactual buy adds circulating tokens and reserves; the observed bank does not contain that buy.",
+      "mint": "BCGtY7WycyDd2rTSiq8v8R3NpB6KacJ27a9ArXzR1hSP",
+      "net_economic_pnl_sol": null,
+      "observed_outstanding_curve_tokens_atomic": "0",
+      "observed_quote_vault_lamports": "310102988",
+      "observed_real_quote_reserves_lamports": "6",
+      "observed_state_sell_checks": [
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "31973987105824",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [
+            48
+          ],
+          "scope": "full_expected"
+        },
+        {
+          "hypothetical_entry_impact_applied": false,
+          "input_atomic": "7993496776456",
+          "observed_bank_estimate": null,
+          "observed_bank_refusal": "sell_exceeds_observed_outstanding_curve_tokens",
+          "provider_observation_ids": [],
+          "scope": "partial_diagnostic"
+        }
+      ],
+      "phase": "followup",
+      "public_PDA_checks_qualified": true,
+      "slot": 462270261,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 43,
+      "supply_matches": true
+    }
+  ],
+  "plan_sha256": "33f5085fe3bd43714bec7372cd1be6848fb458e3401a70a9358553dde8128a17",
+  "positions_acquired": 0,
+  "projected_buys": 3,
+  "provider_quote_bodies_replayed": 12,
+  "qualified_economic_cycles": 0,
+  "quote_checks": [
+    {
+      "input_atomic": "1000000000",
+      "normalized_body_reproduced": true,
+      "observation_id": 20,
+      "outcome": "quoted",
+      "phase": "initial",
+      "reason": null,
+      "side": "buy",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "1000000000",
+      "normalized_body_reproduced": true,
+      "observation_id": 22,
+      "outcome": "quoted",
+      "phase": "initial",
+      "reason": null,
+      "side": "buy",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "1000000000",
+      "normalized_body_reproduced": true,
+      "observation_id": 24,
+      "outcome": "quoted",
+      "phase": "initial",
+      "reason": null,
+      "side": "buy",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "31973987104815",
+      "normalized_body_reproduced": true,
+      "observation_id": 26,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "7993496776203",
+      "normalized_body_reproduced": true,
+      "observation_id": 27,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "34193904632554",
+      "normalized_body_reproduced": true,
+      "observation_id": 28,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "8548476158138",
+      "normalized_body_reproduced": true,
+      "observation_id": 29,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "31973987105824",
+      "normalized_body_reproduced": true,
+      "observation_id": 30,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "7993496776456",
+      "normalized_body_reproduced": true,
+      "observation_id": 31,
+      "outcome": "unavailable",
+      "phase": "initial",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "31973987104815",
+      "normalized_body_reproduced": true,
+      "observation_id": 46,
+      "outcome": "unavailable",
+      "phase": "followup",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "34193904632554",
+      "normalized_body_reproduced": true,
+      "observation_id": 47,
+      "outcome": "unavailable",
+      "phase": "followup",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "input_atomic": "31973987105824",
+      "normalized_body_reproduced": true,
+      "observation_id": 48,
+      "outcome": "unavailable",
+      "phase": "followup",
+      "reason": "provider_rejected",
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    }
+  ],
+  "report_identical_on_replay": true,
+  "schema": "p3-prospective-008-offline-replay-v1",
+  "selected_candidates": 3,
+  "source_revision": "39fe7fd072b7076da49c88b4550cc08dcdbb57dc",
+  "sqlite_connections": 0,
+  "statistical_interpretation": "Three development candidates in one session; creator claims do not establish independent trials.",
+  "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6"
+}

@@ -60,12 +60,47 @@ def cli(root, *args):
                           timeout=20, check=False)
 
 
-@pytest.mark.parametrize('args', [('--help',), ('paper', '--help')])
+@pytest.mark.parametrize('args', [('--help',), ('paper', '--help'),
+    ('operations', '--help'), ('operations', 'serve', '--help'), ('experiment', '--help')])
 def test_public_help_does_not_load_dotenv_open_network_or_create_database(cli_tree, args):
     result = cli(cli_tree, *args)
     assert result.returncode == 0, result.stderr
     assert 'usage:' in result.stdout
     assert result.stderr == ''
+    assert not list(cli_tree.rglob('*.db'))
+
+
+def test_operations_cli_health_fails_closed_and_backup_preserves_source(cli_tree):
+    database=cli_tree/'paper.sqlite'
+    with sqlite3.connect(database) as con:
+        setup(con)
+        ensure_paper_portfolio(con,10,0)
+    before=database.read_bytes()
+    observations=cli_tree/'heartbeats.json';observations.write_text('{}')
+    output=cli_tree/'health.json'
+    result=cli(cli_tree,'operations','health','--db',database,'--observations',observations,'--output',output)
+    assert result.returncode==0 and result.stderr=='', result.stderr
+    health=json.loads(output.read_text())
+    assert health['allow_new_entries'] is False
+    assert len(health['blocking_reasons'])==3
+    backup=cli_tree/'backup.sqlite'
+    result=cli(cli_tree,'operations','backup','--db',database,'--output',backup)
+    assert result.returncode==0 and result.stderr=='', result.stderr
+    assert json.loads(result.stdout)['quick_check']=='ok'
+    assert database.read_bytes()==before
+    with sqlite3.connect(backup) as con:
+        assert con.execute('SELECT realized_capital_sol FROM paper_portfolio').fetchone()==(10,)
+
+
+def test_experiment_cli_runs_frozen_variants_without_secrets_or_network(cli_tree):
+    from test_p4_experiment import corpus,protocol
+    source=cli_tree/'corpus.json';output=cli_tree/'comparison.json'
+    source.write_text(json.dumps({'corpus':corpus(),'protocol':protocol()}))
+    result=cli(cli_tree,'experiment','--input',source,'--output',output)
+    assert result.returncode==0 and result.stderr=='', result.stderr
+    report=json.loads(output.read_text())
+    assert len(report['runs'])==24 and report['network_requests']==0
+    assert report['ranking'] is None and report['economic_profitability_verified'] is False
     assert not list(cli_tree.rglob('*.db'))
 
 
