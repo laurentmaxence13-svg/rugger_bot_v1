@@ -1,5 +1,44 @@
 # État du projet — candidat fonctionnel PAPER
 
+## Reprise prioritaire — P3 prospectif, P4 comparatif et P5, 28 octobre 2026
+
+Dernier code distant `1fa75efedf0ee80009d8b5d7dcfbc493e3dd217d`, arbre exact
+`31b87a6b2a0d56bf657d88ad9d048605d77eac62`, équivalent local `18e3570`.
+**1647 passed, 1 skipped, 242 subtests**,7,04s, warnings en erreur, stderr vide.
+Lire `P3_P4_P5_RELEASE_20261028.md`; PR22 ouverte, aucune fusion/transaction/dépense.
+
+- Travail interrompu récupéré, testé et publié `cc38e546` puis `39fe7fd0`.
+- Plan008 publié/relu `917a4541` AVANT sa collecte unique.20 appels toutes sources,
+  24,825s,3 candidats figés/3 achats indicatifs1SOL/6full+3quarter refusés,0cycle
+  qualifié, P&L net inconnu. Les neuf refus INSUFFICIENT_LIQUIDITY sont conservés.
+  Journal fermé exporté dans `evidence/p3/prospective_008`,55 événements. Index total
+  12bundles/1694événements; anciennes ancres intactes. Preuves publiées `28c3a08d`.
+- Replay local et restauration réellement téléchargée depuis ce commit identiques,
+  sockets/SQLite/.env interdits:12corps de devis,2banks,6analyses,1référence de frais.
+  Les six banks real_a=0 expliquent les refus sans notre achat. Le modèle propre
+  buy/reverse donne pertes de courbe0,111693751/0,024843751/0,111693751SOL avant
+  coûts additionnels inconnus. Aucun P&L net observé. La plateforme du deuxième
+  candidat reste UNKNOWN (seed admin original absent), les deux autres passent.
+- P4: `bot experiment` réutilise ledger/inventaire existants pour trois variantes
+  figées early_sniping/confirmed_momentum/adaptive_hybrid, décisions as-of, split
+  chronologique et exclusion des créateurs communs.24bras synthétiques vérifiés,
+  sensibilités frais×1/×2 et délai0/250ms, refus/reliquats explicites. Aucun vainqueur
+  ni activation. Le corpus008 manque de features permettant une comparaison réelle.
+- P5: `bot operations health|backup|serve`, état en lecture seule, snapshot WAL
+  cohérent, garde collect_once, urgence sans bloquer les clôtures, sauvegarde
+  committed-only/restauration testée, API limitée127.0.0.1.31tests ciblés. Aucun
+  serveur permanent lancé; heartbeats de production et endurance restent ouverts.
+
+**Prochaine action utile**: acquisition admissible des preuves temporelles et des
+coûts/bornes propres, puis cohorte prospective préenregistrée ayant une circulation
+observée suffisante avant les résultats, avec entrées/sorties liées à chaque lot.
+Ne pas relancer008/007/006 ni répéter les mêmes refus sur ces trois pools à vide.
+`P3_SOURCE_ACCESS_METHOD.md` décrit les sources légitimes et leurs limites; ne pas
+substituer blockTime à l'heure du fournisseur ni meta.fee d'autrui à nos coûts.
+L'effet contrefactuel de notre entrée reste séparé des banks futurs observés.
+Commandes de replay/comparaison/supervision dans la livraison; aucun réseau implicite.
+P3 OUVERT; P4/P5 PARTIELLEMENT VALIDÉS logiciellement, pas économiquement.
+
 ## Livraison courante — inventaire économique, 27 octobre 2026
 
 Code `82ce606`, arbre `49d9ca058dce7a6b953b96d997cf20a7bb187735`, local `2edcd43`.
