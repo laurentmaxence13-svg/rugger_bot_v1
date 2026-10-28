@@ -355,10 +355,11 @@ def _scaled_context(context,multiplier):
     return context
 
 
-def _position_pct(api,capital):
+def _position_pct(api,capital,target=None):
     # The existing book takes a percentage; preserve the protocol's exact integer
     # budget through that float display API, refusing unsupported magnitudes.
-    target=POLICY['position_lamports'];pct=(target/1e9)/capital*100
+    target=POLICY['position_lamports'] if target is None else target
+    pct=(target/1e9)/capital*100
     for _ in range(32):
         actual=api['_lamports'](capital*pct/100)
         if actual==target:return pct
@@ -367,7 +368,33 @@ def _position_pct(api,capital):
 
 
 def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_ms,development_end_ms,api,
-             curve_assessments=None):
+             curve_assessments=None,research_overrides=None):
+    # Research candidates adapt this same replay path. They never mutate POLICY,
+    # the live decision function or hard capital/admission limits.
+    overrides={} if research_overrides is None else dict(research_overrides)
+    allowed={'min_score','min_liquidity','tp_pct','sl_pct','trailing_stop_pct',
+             'hold_seconds','position_lamports','confirmation_delay_ms'}
+    if set(overrides)-allowed:raise ValueError('Unsupported research parameter')
+    for name,value in overrides.items():
+        if type(value) not in (int,float) or not math.isfinite(value) or value<=0:
+            raise ValueError('Explicit finite positive research parameters required')
+    if overrides.get('confirmation_delay_ms',15000)<15000:
+        raise ValueError('Research confirmation cannot bypass the existing adapter')
+    if overrides.get('min_score',45)<45 or overrides.get('min_liquidity',1000)<1000:
+        raise ValueError('Research candidates preserve baseline admission floors')
+    if 'position_lamports' in overrides and (type(overrides['position_lamports']) is not int
+            or overrides['position_lamports'] not in CURVE_COST_POLICY['position_lamports']):
+        raise ValueError('Research sizing requires an explicitly supported exact budget')
+    if overrides:
+        from dataclasses import replace
+        original_decide=api['decide'];api=dict(api)
+        def candidate_decide(features):
+            decision=original_decide(features,min_score=overrides.get('min_score',45),
+                min_liquidity=overrides.get('min_liquidity',1000))
+            changes={key:overrides[key] for key in ('tp_pct','sl_pct','trailing_stop_pct','hold_seconds') if key in overrides}
+            return replace(decision,**changes)
+        api['decide']=candidate_decide
+    budget=overrides.get('position_lamports',POLICY['position_lamports'])
     con=sqlite3.connect(':memory:',isolation_level=None)
     try:
         api['setup'](con);api['ensure_paper_portfolio'](con,10.0,0)
@@ -379,6 +406,14 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
             if split=='development' and at>=development_end_ms:continue
             history=histories.setdefault(mint,[])
             decision=decide_prefix(strategy,frame,history,api=api,decision_at_ms=at)
+            if (overrides.get('confirmation_delay_ms') and decision['enter']
+                    and decision['reason']=='confirmed_momentum'):
+                qualified=[h for h in history if h['available_at_ms']<=at
+                    and _features(h,api,h['available_at_ms'])[0] is not None
+                    and api['decide'](_features(h,api,h['available_at_ms'])[0]).enter]
+                first=min((h['available_at_ms'] for h in qualified),default=at)
+                if at-first<overrides['confirmation_delay_ms']:
+                    decision=dict(decision,enter=False,reason='awaiting_research_confirmation')
             state=api['inventory_state'](con,mint)
             entry=state is None and decision['enter']
             f,_=_features(frame,api,at)
@@ -387,7 +422,15 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                 quote=api['MarketQuote'](f.liquidity_usd,f.price_usd,frame['pool'],quote_source='offline_retained_features')
                 context=None
                 if state is None:
-                    context=_scaled_context(frame.get('buy_context'),fee_multiplier)
+                    selected=frame.get('buy_context')
+                    if research_overrides is not None:
+                        alternatives=frame.get('size_contexts',{})
+                        selected=alternatives.get(str(budget)) if type(alternatives) is dict else None
+                        fallback=frame.get('buy_context')
+                        if selected is None and type(fallback) is dict:
+                            observed=fallback.get('buy_observation',{}).get('payload',{})
+                            if observed.get('input_amount_atomic')==str(budget):selected=fallback
+                    context=_scaled_context(selected,fee_multiplier)
                 else:
                     buy_id=json.loads(state['entry_observation_json']).get('id')
                     matching=[item for item in frame.get('sell_contexts',[]) if type(item) is dict
@@ -399,7 +442,7 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                 model=models.get(mint,decision['model'])
                 try:
                     capital=api['_paper_reconciled_capital'](con)
-                    pct=_position_pct(api,capital) if capital>0 else 0
+                    pct=_position_pct(api,capital,budget) if capital>0 else 0
                     message=api['record_quote'](con,mint,frame['creator'],frame['detected_at_ms']//1000,
                         at//1000,quote,model,allow_entry=entry,strategy_mode='shadow_final',
                         force_exit_reason=('RESEARCH_HORIZON' if state and at-state['entry_decision_ms']>=POLICY['exit_horizon_ms'] else None),

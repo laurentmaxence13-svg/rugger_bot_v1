@@ -61,7 +61,8 @@ def cli(root, *args):
 
 
 @pytest.mark.parametrize('args', [('--help',), ('paper', '--help'),
-    ('operations', '--help'), ('operations', 'serve', '--help'), ('experiment', '--help')])
+    ('operations', '--help'), ('operations', 'serve', '--help'), ('experiment', '--help'),
+    ('policy-research', '--help')])
 def test_public_help_does_not_load_dotenv_open_network_or_create_database(cli_tree, args):
     result = cli(cli_tree, *args)
     assert result.returncode == 0, result.stderr

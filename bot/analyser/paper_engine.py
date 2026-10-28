@@ -864,6 +864,10 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
     from bot.analyser.functional_report import build_functional_report
     report['functional_dashboard'] = build_functional_report(
         con, data_kind=data_kind, latency_samples_ms=latency_samples_ms)
+    from bot.master_audit import master_report
+    master_summary = master_report(con)
+    if master_summary is not None:
+        report['master_shadow'] = master_summary
     if operational_health is not None:
         report['operational_health'] = operational_health
     if output:
@@ -1043,7 +1047,7 @@ async def collect_once(con, session, cached, now, model=None,
                        initial_capital_sol=10.0, position_pct=10.0,
                        entry_guard=None, *, quote_provider=None,
                        onchain_quote_provider=None, clock=None, latency_samples_ms=None,
-                       inventory_provider=None):
+                       inventory_provider=None, master_shadow=None):
     """Collect one bounded cycle; providers default to the production readers.
 
     Explicit providers and a clock allow deterministic integration without HTTP.
@@ -1189,6 +1193,7 @@ async def collect_once(con, session, cached, now, model=None,
                 messages.append(audit_message(report))
                 continue
             decision = None
+            features = None
             model_for_quote = model
             force_exit_reason = None
             if strategy_mode == 'shadow_final':
@@ -1207,6 +1212,29 @@ async def collect_once(con, session, cached, now, model=None,
             )
             scanner_allowed = _entry_guard_allows(entry_guard, con)
             allowed = financial_allowed and scanner_allowed
+            master_event = None
+            if master_shadow is not None:
+                from bot.master_audit import paper_context, shadow_attempt
+                def evaluate_shadow():
+                    master_features = features if features is not None else build_features(
+                        cached,mint,creator,signal_time,now_quote,price_history(con,mint),quote,
+                        prior_launches=prior_creator_launches(con,creator,signal_time))
+                    health_snapshot=(entry_guard.operational_snapshot(con)
+                        if isinstance(entry_guard,_ScannerEntryGuard) else dict(
+                            allow_new_entries=scanner_allowed,blocking_reasons=[],
+                            observed_at_ms=int(read_clock()*1000),scope='existing_entry_guard_result_only'))
+                    frame,inventory,health_snapshot,capital=paper_context(con,mint=mint,creator=creator,
+                        pool=pool_address,signal_time=signal_time,decision_ms=int(read_clock()*1000),
+                        features=master_features,inventory_context=inventory_context,health=health_snapshot,
+                        financial_allowed=financial_allowed)
+                    return master_shadow.evaluate(con,frame,inventory=inventory,
+                        health=health_snapshot,capital=capital)
+                shadow_result,shadow_error=shadow_attempt(con,evaluate_shadow)
+                if shadow_error is not None:
+                    allowed=False
+                    messages.append(f'MASTER_SHADOW_UNAVAILABLE {shadow_error}')
+                else:
+                    master_event,_proposal=shadow_result
             if strategy_mode == 'shadow_final':
                 record_decision(
                     con, features, decision, strategy_mode=strategy_mode,
@@ -1254,6 +1282,18 @@ async def collect_once(con, session, cached, now, model=None,
                 inventory_context=inventory_context,
                 require_inventory=inventory_provider is not None,
             )
+            if master_event is not None:
+                from bot.master_audit import complete_master_reference, shadow_attempt
+                def complete_shadow_reference():
+                    from bot.analyser.token_inventory import inventory_state
+                    after=inventory_state(con,mint)
+                    complete_master_reference(con,master_event,dict(proposal_applied=False,
+                        reference_engine_result=message,
+                        remaining_atomic=after['remaining_atomic'] if after else None,
+                        inventory_version=after['version'] if after else None))
+                _,shadow_error=shadow_attempt(con,complete_shadow_reference)
+                if shadow_error is not None:
+                    messages.append(f'MASTER_SHADOW_OUTCOME_PENDING {shadow_error}')
             if undated_identities and strategy_mode != 'shadow_final':
                 report = audit_mint(con, mint, creator, signal_time, now_quote,
                     'OBSERVATION_DATEE_AVEC_IDENTITES_NON_DATEES', quote=quote,
@@ -1379,7 +1419,8 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
               live_behavior=True, rpc_interval=2.5, behavior_max_tx=10,
               rpc_gate=None, min_liquidity=1000, shadow_baseline=False,
               shadow_final=False, initial_capital_sol=10.0, position_pct=10.0,
-              session_seconds=0, session_report=None, entry_guard=None, inventory_journal=None):
+              session_seconds=0, session_report=None, entry_guard=None, inventory_journal=None,
+              master_shadow_enabled=False):
     """Run the paper collector forever; no model means collection only."""
     if shadow_baseline and shadow_final:
         raise ValueError('Choisir un seul mode shadow.')
@@ -1413,6 +1454,11 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
         con.execute('PRAGMA busy_timeout=30000')
         setup(con)
+        master_shadow=None
+        if master_shadow_enabled:
+            from bot.master_audit import setup_master_schema,MasterShadow
+            setup_master_schema(con)
+            master_shadow=MasterShadow()
         ensure_signal_status_schema(con)
         ensure_audit_schema(con)
         ensure_paper_portfolio(con, initial_capital_sol)
@@ -1484,6 +1530,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     initial_capital_sol=initial_capital_sol, position_pct=position_pct,
                     entry_guard=entry_guard, latency_samples_ms=latency_samples,
                     inventory_provider=native_provider,
+                    master_shadow=master_shadow,
                 )
                 if cache_changed:
                     cached = load_cached_transactions(db)
@@ -1599,6 +1646,7 @@ async def run_with_scanner(args):
             position_pct=args.position_pct, session_seconds=args.session_seconds,
             session_report=args.session_report,
             inventory_journal=getattr(args, 'inventory_journal', None),
+            master_shadow_enabled=getattr(args,'master_shadow',False),
         )
         return
     tasks = []
@@ -1623,6 +1671,7 @@ async def run_with_scanner(args):
             session_seconds=args.session_seconds, session_report=args.session_report,
             entry_guard=entry_guard,
             inventory_journal=getattr(args, 'inventory_journal', None),
+            master_shadow_enabled=getattr(args,'master_shadow',False),
         ))
         tasks.append(engine_task)
         last_scanner_state = None
@@ -1714,6 +1763,8 @@ def main(argv=None):
                         help='P3 native SOL inventory quotes, maximum 20 attempts/60 s; never orders')
     parser.add_argument('--inventory-journal', type=Path,
                         help='New dedicated P3 quote journal, separate from the PAPER ledger')
+    parser.add_argument('--master-shadow', action='store_true',
+                        help='Journal bounded master proposals; active reference policy remains separate')
     args = parser.parse_args(argv)
     if bool(args.inventory_quotes) != bool(args.inventory_journal):
         parser.error('--inventory-quotes and a new --inventory-journal are required together')

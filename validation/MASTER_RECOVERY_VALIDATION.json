@@ -1,0 +1,32 @@
+{
+  "active_policy_changed": false,
+  "base_remote_commit": "9139dbe30e2871a0dc927c3312d54a88416e94f7",
+  "base_tree": "2b608119c45238e8915b0cb6cae44c852acdfe36",
+  "date": "2026-10-28",
+  "full": {
+    "passed": 1787,
+    "seconds": 8.9,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "network_requests": 0,
+  "promotion_allowed": false,
+  "real_orders": false,
+  "schema": "rugger-master-recovery-validation-v1",
+  "source_sha256": {
+    "bot/__main__.py": "98fad6c6d2cf65649839d2577fae44c13bc87fe7ee855a1911e94b9ac2d304cd",
+    "bot/analyser/paper_engine.py": "66eea99e40a78730f1545785362bcd02af072c4437869c77023e4cd618512098",
+    "bot/master_audit.py": "afb0d68c2acd78508549e16f01c94a1700c5b92f51e71ab38993f415315640ae",
+    "bot/master_decision.py": "cb409f0a381bc9053c1e2c8afa8160050bcb0d3543d982419efed4b0f4a875a8",
+    "bot/master_positions.py": "93c48109228aa7231886c6f488cfddeeadce6311b54eb06cddae87f18486545e",
+    "bot/p4_experiment.py": "da986e50f39a857ff0a0e9e49fb6a656236b7cd3a7a6698fd03c87eba7d89eea",
+    "bot/policy_research.py": "fb9a995a3dedd5aa6c1b6482ebea6815d2655f731b845d4356df14285ea0a2de"
+  },
+  "strict_market_economic_cycles": 0,
+  "targeted": {
+    "passed": 111,
+    "seconds": 2.76
+  }
+}

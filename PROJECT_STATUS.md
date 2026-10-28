@@ -1,5 +1,32 @@
 # État du projet — candidat fonctionnel PAPER
 
+
+## Reprise Master Trader sauvegardée — 28 octobre 2026
+
+Les trois composants locaux interrompus ont été récupérés, intégrés et testés.
+Voir `MASTER_TRADER_RECOVERY.md`, `MASTER_DECISION_METHOD.md` et
+`POLICY_RESEARCH_METHOD.md`. **1787 tests réussis, 1 ignoré, 242 subtests**,
+8,90s, warnings en erreur, stderr vide; 111 tests ciblés/intégration réussis.
+Aucun contrôle006/007/008 relancé, aucun trafic de marché, ordre ni dépense.
+
+Core : trois variantes, WAIT/NO_TRADE, 12 questions, réserves/coûts/tailles,
+preuves passées et fraîcheur. Positions : propositions HOLD/REDUCE/TP/EXIT/urgence
+sur inventaire exact, jamais un règlement autonome. Optimization : 24 candidats
+figés, holdout chronologique séparé par créateur, registre contre réutilisation,
+drift et rollback shadow. Politique active conservée.
+
+Branchement explicite `paper --master-shadow` (aucune boucle lancée ici) : table
+`paper_master_decisions` dans le même ledger, propositions immuables, résultat du
+moteur de référence distinct. Les pannes du journal refusent les nouvelles
+entrées et préservent les clôtures; les résultats non journalisés restent pending.
+`python -B -m bot policy-research --help` fonctionne hors réseau.
+
+**P3 ouvert : 0 cycle économique de marché strictement qualifié.** Les fixtures
+positives testent uniquement le fonctionnement. Aucun réglage n'est promu.
+Suite utile : endurance reproductible du shadow, résumé lecture seule et
+validation de nouvelles preuves P3 seulement sous protocole/limites existants.
+Le checkpoint distant et sa vérification seront inscrits dans le reçu suivant.
+
 ## Suite prioritaire — tailles et coûts cohérents après008, 28 octobre2026
 
 Code distant `249c7b6637d7c0cdf980b029474e4b0a576f237c`, arbre testé
