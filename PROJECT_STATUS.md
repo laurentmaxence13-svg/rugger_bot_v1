@@ -4,6 +4,21 @@
 
 
 
+
+## Mission P3 — exécuteur de cohorte active prêt, avant acquisition
+
+Base distante d0e57c68d3702967ee8ccfefe2e6e51713e82e99 vérifiée. Le protocole
+actif préparé ne possédait pas encore d'exécuteur ; celui-ci est ajouté sans
+relancer006/007/008 ni l'endurance. Sources publiques et transport local examinés.
+RPC canonique figé avant capture, aucun fallback ni probe additionnel.
+
+1926tests réussis,1ignoré,242subtests,12,72s,-Werror,stderr0. Le contrôle reste
+20requêtes/60s maximum, préfixe6→2cas actifs0,10SOL. Le code doit être publié,
+puis le plan lié à ce commit doit être publié/relu AVANT le premier appel.
+À ce checkpoint : zéro nouvelle requête de marché. Lire P3_ACTIVE_COHORT_009.md
+et validation/p3_active_cohort_009/SOURCE_REVIEW.json. P3 reste ouvert, aucun
+P&L net admissible ni indépendance statistique démontrée.
+
 ## Reprise après a51850e — endurance finalisée, 28 octobre 2026
 
 Point distant vérifié : `a51850e0607d8160d1ae0dadf22fae6f3dcedc49`, arbre

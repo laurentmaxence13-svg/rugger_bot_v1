@@ -204,6 +204,7 @@ def select_rows(payload):
 async def _discover(session, append):
     started, mono = now_ms(), time.monotonic_ns()
     payload, status, reason, cancelled = None, None, None, None
+    transport_error_type = None
     try:
         async with session.get(INDEX_URL, params={'sort': 'new'},
                                timeout=aiohttp.ClientTimeout(total=8)) as response:
@@ -212,8 +213,9 @@ async def _discover(session, append):
                 payload = await response.json(content_type=None)
             else:
                 reason = 'http_' + str(status)
-    except (aiohttp.ClientError, OSError, asyncio.TimeoutError):
+    except (aiohttp.ClientError, OSError, asyncio.TimeoutError) as error:
         reason = 'transport_or_timeout'
+        transport_error_type = type(error).__name__
     except (ValueError, TypeError, ReadOnlyPolicyError):
         reason = 'invalid_response_or_policy'
     except asyncio.CancelledError as error:
@@ -222,7 +224,8 @@ async def _discover(session, append):
     append('request', received_at_ms=received, outcome='observed' if payload is not None else 'error',
            reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': 'new',
                                   'requested_at_ms': started, 'http_status': status,
-                                  'latency_ms': (time.monotonic_ns()-mono)/1_000_000})
+                                  'latency_ms': (time.monotonic_ns()-mono)/1_000_000,
+                                  **({'transport_error_type':transport_error_type} if transport_error_type else {})})
     if cancelled is not None:
         raise cancelled
     return payload, received

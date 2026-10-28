@@ -162,6 +162,7 @@ async def _rpc(session, append, method, params, *, rpc_url=None):
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, result, status = 'error', None, None, None
     error_code, cancelled = None, None
+    transport_error_type = None
     retry = {'retry_after_seconds': None, 'retry_after_status': 'not_received',
              'retry_after_date_utc': None, 'retry_after_reference_date_utc': None}
     selected_url = getattr(session, 'rpc_url', RPC_URL)
@@ -192,8 +193,9 @@ async def _rpc(session, append, method, params, *, rpc_url=None):
                     reason = 'missing_rpc_result'
                 else:
                     result, outcome = payload['result'], 'observed'
-    except (aiohttp.ClientError, OSError, asyncio.TimeoutError):
+    except (aiohttp.ClientError, OSError, asyncio.TimeoutError) as error:
         reason = 'transport_or_timeout'
+        transport_error_type = type(error).__name__
     except ReadOnlyPolicyError:
         reason = 'request_budget_or_policy_rejection'
     except (ValueError, TypeError):
@@ -207,7 +209,8 @@ async def _rpc(session, append, method, params, *, rpc_url=None):
                'endpoint_kind': _rpc_endpoint_kind(target_url),
                'requested_at_ms': started, 'received_at_ms': received,
                'latency_ms': (time.monotonic_ns() - mono) / 1_000_000,
-               'http_status': status, 'rpc_error_code': error_code, **retry})
+               'http_status': status, 'rpc_error_code': error_code, **retry,
+               **({'transport_error_type':transport_error_type} if transport_error_type else {})})
     if cancelled is not None:
         raise cancelled
     return result, received, request_id, outcome

@@ -72,7 +72,9 @@ def select_prefix(payload):
     return retained,rows,total
 
 
-async def _grouped_snapshot(store,session,append,rows,graphs,minimum_slot,phase):
+async def _grouped_snapshot(store,session,append,rows,graphs,minimum_slot,phase,*,input_lamports=1000000000):
+    if type(input_lamports) is not int or not 0<input_lamports<2**64:
+        raise ValueError('Explicit positive uint64 snapshot model amount required')
     ordered=list(dict.fromkeys(address for row in rows if row['mint'] in graphs
                                for address in graphs[row['mint']].values()))
     if not ordered:
@@ -110,7 +112,7 @@ async def _grouped_snapshot(store,session,append,rows,graphs,minimum_slot,phase)
                 'source_group_observation_id':group_id,
                 'response_representation':'ordered_subset_of_retained_group_bank'})
         analysis=analyze_snapshot(all_accounts,context_slot=slot,expected_mint=mint,
-            pool_address=row['pool'],input_lamports=1000000000,evidence_profile='published_metadata_v1')
+            pool_address=row['pool'],input_lamports=input_lamports,evidence_profile='published_metadata_v1')
         append('candidate_decision',received_at_ms=now_ms(),source_slot=slot,mint=mint,
             outcome='not_admitted',reason='prospective_instrumentation_not_strategy_entry',
             payload={'snapshot_observation_id':identity,'analysis':analysis,'probe_phase':phase,

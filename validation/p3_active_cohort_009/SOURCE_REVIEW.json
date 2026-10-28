@@ -1,0 +1,82 @@
+{
+  "checked_at_ms": 1793219567451,
+  "first_access_rule": "first_market_request_is_part_of_the_same_20_attempt_60_second_control; no_separate_probe",
+  "free_access_basis": "public_anonymous_reads_only; no_account_credentials_wallet_subscription_or_payment_flow_used; HTTP402_or_other_error_stops",
+  "future_quota_certified": false,
+  "historical_data_policy": "not_reused_as_new_observations; repeated_mints_annotated_not_claimed_independent",
+  "historical_mints": [
+    "2RvDheyRSfeGKnHnQHQ2ZQt4N8opy1Rpq6wUymLaxr3A",
+    "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+    "BCGtY7WycyDd2rTSiq8v8R3NpB6KacJ27a9ArXzR1hSP",
+    "BdYsVstg6EZ3oSXgb6pXeqDa2KTikyVtehFcqzGRponk"
+  ],
+  "known_limits": {
+    "cohort_research_lamports": 100000000,
+    "independent_buyers_known": false,
+    "master_required_past_creator_groups": 20,
+    "master_required_past_cycles": 50,
+    "own_extra_costs_known": false,
+    "p4_scope": "development_only; no_independent_holdout_claim",
+    "quotes_not_scaled": true,
+    "reference_initial_lamports": 1000000000,
+    "strict_execution_cycles_remain_zero": true
+  },
+  "market_requests": 0,
+  "remote_access_verified": false,
+  "schema": "p3-active-cohort-source-review-v1",
+  "scope": "documentation_and_local_transport_only",
+  "sources": [
+    {
+      "access": "documented_public_anonymous_HTTPS",
+      "billing": "no_authenticated_account_or_payment_capability",
+      "documentation": "https://docs.raydium.io/sdk-api/rest-api",
+      "endpoint": "https://launch-mint-v1.raydium.io/get/list",
+      "observable": [
+        "ordered_index_rows",
+        "public_identity_claims",
+        "local_receipt"
+      ],
+      "role": "discovery",
+      "unknown": [
+        "onchain_creation_proof",
+        "source_freshness"
+      ]
+    },
+    {
+      "access": "documented_public_rate_limited_RPC",
+      "billing": "read_only_no_blockchain_transaction",
+      "documentation": "https://solana.com/docs/references/clusters",
+      "endpoint": "https://api.mainnet.solana.com",
+      "observable": [
+        "account_bytes",
+        "RPC_context_slot",
+        "public_transaction_metadata"
+      ],
+      "role": "bank_and_creation",
+      "unknown": [
+        "future_quota",
+        "provider_quote_clock",
+        "independent_buyers"
+      ]
+    },
+    {
+      "access": "documented_public_anonymous_GET",
+      "billing": "no_build_no_wallet_no_sign_no_send",
+      "documentation": "https://docs.raydium.io/sdk-api/trade-api",
+      "endpoint": "https://transaction-v1.raydium.io/compute/swap-base-in",
+      "observable": [
+        "exact_requested_amount",
+        "returned_quote_or_refusal",
+        "route_and_included_fees",
+        "supplied_clocks_only"
+      ],
+      "role": "indicative_quotes",
+      "unknown": [
+        "fill",
+        "actual_own_execution_costs",
+        "own_entry_effect_on_future_bank"
+      ]
+    }
+  ],
+  "stop_policy": "persist_first_non2xx_transport_malformed_error_then_global_stop; no_retry_no_fallback"
+}
