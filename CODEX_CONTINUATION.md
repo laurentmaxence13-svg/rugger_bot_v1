@@ -4,6 +4,49 @@
 `PROJECT_STATUS.md`. Continuer les objectifs accessibles sans relance ; ne jamais
 présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
+## Suite prioritaire — tailles et coûts cohérents après008, 28 octobre2026
+
+Code distant `249c7b6637d7c0cdf980b029474e4b0a576f237c`, arbre testé
+`a5a4ccb99119ee38a6604f3f96cb0ba00c40f3ba`, local `6ce9906`.
+Premier checkpoint `446d2623`. **1724 passed,1 skipped,242 subtests**,7,56s,
+warnings en erreur, stderr0. Lire `POST008_POSITION_SIZES_RESULTS.md`.
+Aucune collecte nouvelle, aucun ancien contrôle relancé, PR22 ouverte non fusionnée.
+
+- Modèle P3 achat puis vente du même lot sur le bank après achat, entiers et
+  réserves dépensables exacts, frais/bornes/uint64 contrôlés. Sensibilités aux
+  achats tiers et ventes de50%/100% du stock préexistant; jamais notre propre lot.
+- Huit banks archivés007/008, quatre mints/deux sessions,32cas mathématiques pour
+  0,05/0,10/0,25/1SOL. Sixbanks avec identité qualifiée, sans indépendance revendiquée.
+  Frictions relatives proches2,484% ou11,169% avant coûts supplémentaires UNKNOWN.
+  À1SOL: pertes0,024843751 ou0,111693751SOL. Sous0,001SOL de coûts supposés,
+  demande tierce minimale≈0,42SOL/2,10SOL selon la courbe;96seuils vérifiés au
+  lamport précédent. Ni prévision de flux, ni fill, ni bénéfice de marché.
+- Rapport complet compressé, manifeste et32lignesCSV dans
+  `validation/position_size_study/`; résumé, seuils et sources ancrées sous
+  `validation/P3_POSITION_*`. Ne pas assimiler8banks à8trades indépendants.
+- Cohorte préparée/non exécutée: conserver100lignes, six SOL uniques examinés,
+  deux au plus actifs/capacité de Q entier0,10SOL,20appels/60s globaux,15s/slot
+  supérieur, créations/coûts/réponses inconnues explicites. Critères publiés avant
+  toute collecte future. Application rétrospective008:100lignes gardées, zéro
+  sélection;3inactifs et3snapshots manquants. Ne pas relancer ces pools.
+- Trois variantes P4 consomment le supplément causal tailles/coûts/sorties.
+ 24intentions UNKNOWN sur ces données sans features,96associations variante/taille,
+  aucun gagnant. Ancien rapport24bras synthétiques octet pour octet préservé.
+- P5 raccordé aux vrais callbacks internes RPC/WS existants, horloges civile et
+  monotone, panne non réinitialisable, couverture/rapport. Aucun trafic ajouté.
+  Endurance interne1000cycles,83h20min virtuelles,1000jambes/doublons,10reprises,
+  750refus+10préflights sans preuve source,4021invariants, reliquat0. Aucune
+  disponibilité murale24h/24 ni performance de marché certifiée.
+
+**P3 OUVERT,0cycle strictement qualifié, net de marché inconnu.** Manquent preuves
+horaires/slots fournisseur, création/identité selon le cas, coûts propres/rent/cash,
+sorties futures cohérentes avec notre entrée et corpus indépendant. P4/P5
+PARTIELLEMENT VALIDÉS. Les modèles conditionnels ne remplacent pas ces preuves.
+Prochaine acquisition: nouveaux cas à circulation/capacité suffisante et métadonnées
+source/coûts utiles, protocole figé avant départ; ne pas refaire006/007/008.
+Commandes hors réseau et reçus complets dans la livraison. Les titres suivants
+conservent l'historique précédent, pas une nouvelle mission de récupération.
+
 ## Reprise prioritaire — P3 prospectif, P4 comparatif et P5, 28 octobre 2026
 
 Dernier code distant `1fa75efedf0ee80009d8b5d7dcfbc493e3dd217d`, arbre exact
