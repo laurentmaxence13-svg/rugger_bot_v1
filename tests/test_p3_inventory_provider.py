@@ -1,9 +1,11 @@
 """Public inventory quotes on fake transport only; no request leaves the test."""
 import asyncio
+import time
 
 import pytest
 
 from bot.p3 import inventory_provider as ip
+from bot.p3 import campaign as cp
 from bot.p3.exit_qualification import inventory_from_buy
 from bot.p3.replay import replay_quote_observation
 from bot.p3.store import CaptureStore
@@ -229,3 +231,195 @@ def test_committed_journal_readback_error_latches_before_any_second_request(tmp_
         asyncio.run(scenario())
         assert len(original_events()) == 1
         assert provider.requests_used == len(transport.calls) == 1
+
+
+class MixedTransport(Transport):
+    def post(self, url, **kwargs):
+        self.calls.append((url,kwargs))
+        return Response({'jsonrpc':'2.0','id':1,'result':{'context':{'slot':100},'value':[]}})
+
+
+def shared_session(transport):
+    session = cp.CampaignSession(transport,max_requests=20)
+    session._deadline_ns = time.monotonic_ns()+60_000_000_000
+    return session
+
+
+def test_shared_rpc_and_quotes_debit_exactly_one_global_counter_without_fresh_budget(tmp_path):
+    transport = MixedTransport(Response(quote_payload()))
+    shared = shared_session(transport)
+    async def prior_rpc_calls():
+        for _ in range(19):
+            async with shared.post(shared.rpc_url,json={
+                    'jsonrpc':'2.0','id':1,'method':'getMultipleAccounts','params':[[]]}) as response:
+                await response.json()
+    asyncio.run(prior_rpc_calls())
+    deadline = shared._deadline_ns
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store,shared_session=shared)
+        assert provider._session is shared
+        assert provider.deadline_monotonic == deadline/1_000_000_000
+        async def scenario():
+            assert await call(provider) is not None
+            assert await call(provider) is None
+        asyncio.run(scenario())
+        assert provider.requests_used == shared.requests_used == len(transport.calls) == 20
+        assert shared._deadline_ns == deadline
+        assert provider.stopped_reason == 'inventory_quote_request_budget_exhausted'
+        assert len(store.events()) == 1
+
+
+@pytest.mark.parametrize('invalid',['transport','deadline_missing','deadline_extended','budget'])
+def test_shared_session_identity_registered_deadline_and_cap_are_checked_before_dispatch(tmp_path,invalid):
+    transport = MixedTransport()
+    shared = shared_session(transport)
+    supplied = transport
+    if invalid == 'transport':
+        supplied = MixedTransport()
+    elif invalid == 'deadline_missing':
+        shared._deadline_ns = None
+    elif invalid == 'deadline_extended':
+        shared._deadline_ns += 60_000_000_000
+    else:
+        shared.max_requests = 19
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        with pytest.raises(ValueError,match='Shared campaign'):
+            ip.NativeInventoryQuoteProvider(supplied,store,shared_session=shared)
+    assert transport.calls == supplied.calls == []
+
+
+def test_shared_deadline_cannot_be_reset_by_constructing_provider_later(tmp_path):
+    transport = MixedTransport()
+    shared = shared_session(transport)
+    shared._deadline_ns = time.monotonic_ns()-1
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store,shared_session=shared)
+        assert asyncio.run(call(provider)) is None
+        assert provider.stopped_reason == 'inventory_quote_deadline_exhausted'
+    assert transport.calls == [] and shared.requests_used == 0
+
+
+@pytest.mark.parametrize('refusal', ['provider_rejected', 'route_unavailable'])
+def test_preregistered_business_refusal_policy_keeps_receipt_and_allows_next_fixed_observation(tmp_path,refusal):
+    body = {'success':False,'msg':'INSUFFICIENT_LIQUIDITY'}
+    if refusal == 'route_unavailable':
+        body = quote_payload()
+        body['data']['routePlan'] = []
+    transport = MixedTransport(Response(body),Response(quote_payload()))
+    shared = shared_session(transport)
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store,shared_session=shared,
+                                                   stop_on_provider_rejection=False)
+        async def scenario():
+            first = await call(provider)
+            assert provider.stopped_reason is None
+            second = await call(provider)
+            return first,second
+        first,second = asyncio.run(scenario())
+        assert first['buy_observation']['reason'] == refusal
+        assert second['buy_observation']['outcome'] == 'quoted'
+        assert len(store.events()) == len(transport.calls) == shared.requests_used == 2
+
+
+def test_empty_route_still_stops_default_standalone_provider(tmp_path):
+    body = quote_payload()
+    body['data']['routePlan'] = []
+    transport = Transport(Response(body),Response(quote_payload()))
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store)
+        async def scenario():
+            first = await call(provider)
+            assert first['buy_observation']['reason'] == 'route_unavailable'
+            assert await call(provider) is None
+        asyncio.run(scenario())
+        assert provider.stopped_reason == 'route_unavailable'
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize('failure', [OSError('synthetic transport error'),asyncio.TimeoutError()])
+def test_transport_errors_and_timeouts_never_use_business_refusal_exception(tmp_path,failure):
+    transport = Transport(failure,Response(quote_payload()))
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store,stop_on_provider_rejection=False)
+        async def scenario():
+            first = await call(provider)
+            assert first['buy_observation']['reason'] in ('transport_error','timeout')
+            assert first['buy_observation']['payload']['http_status'] is None
+            assert await call(provider) is None
+        asyncio.run(scenario())
+        assert provider.stopped_reason in ('transport_error','timeout')
+    assert len(transport.calls) == 1
+
+
+@pytest.mark.parametrize('status,body',[(429,{'error':'quota'}),
+                                      (200,{'success':True,'data':{}})])
+def test_campaign_business_policy_never_weakens_http_or_malformed_stops(tmp_path,status,body):
+    transport = MixedTransport(Response(body,status=status),Response(quote_payload()))
+    shared = shared_session(transport)
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store,shared_session=shared,
+                                                   stop_on_provider_rejection=False)
+        async def scenario():
+            assert await call(provider) is not None
+            assert await call(provider) is None
+        asyncio.run(scenario())
+        assert provider.stopped_reason is not None
+        assert len(store.events()) == len(transport.calls) == shared.requests_used == 1
+
+
+def test_custom_campaign_append_can_stop_global_run_after_failed_receipt_is_committed(tmp_path):
+    transport = MixedTransport(Response({'error':'quota'},status=429))
+    shared = shared_session(transport)
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        def append(kind,**event):
+            identity = store.append(kind,provenance='live',**event)
+            assert store.events()[-1]['id'] == identity
+            if event['payload'].get('http_status') == 429:
+                raise cp.CampaignSourceStopped('source_error_after_persisted_receipt')
+            return identity
+        provider = ip.NativeInventoryQuoteProvider(transport,store,shared_session=shared,append=append)
+        async def scenario():
+            with pytest.raises(cp.CampaignSourceStopped):
+                await call(provider)
+            assert await call(provider) is None
+        asyncio.run(scenario())
+        assert len(store.events()) == shared.requests_used == len(transport.calls) == 1
+        assert provider.stopped_reason == 'inventory_quote_persistence_error'
+
+
+@pytest.mark.parametrize('mode',['quoted','unsafe','cancelled'])
+def test_controlled_observation_metadata_survives_quote_fallback_and_cancellation(tmp_path,mode):
+    body = quote_payload()
+    if mode == 'unsafe':
+        body['api_key'] = 'synthetic-never-retain'
+    response = asyncio.CancelledError() if mode == 'cancelled' else Response(body)
+    transport = Transport(response)
+    metadata = {'probe_phase':'followup','exit_scope':'full_remaining',
+                'inventory_buy_observation_id':1,'prospective_ordinal':2}
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store)
+        async def scenario():
+            request = provider(None,USDC,side='buy',amount_atomic='1000000000',
+                inventory=None,decision_at_ms=1000,observation_metadata=metadata)
+            if mode == 'cancelled':
+                with pytest.raises(asyncio.CancelledError):
+                    await request
+            else:
+                await request
+        asyncio.run(scenario())
+        event, = store.events()
+        assert all(event['payload'][key] == value for key,value in metadata.items())
+        assert event['payload']['input_amount_atomic'] == '1000000000'
+
+
+@pytest.mark.parametrize('metadata',[{'source_time_ms':123},{'probe_phase':'https://invalid'},
+                                    {'inventory_buy_observation_id':True},
+                                    {'prospective_ordinal':-1},['initial']])
+def test_metadata_cannot_override_quote_fields_or_inject_uncontrolled_data(tmp_path,metadata):
+    transport = Transport()
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        provider = ip.NativeInventoryQuoteProvider(transport,store)
+        with pytest.raises(ValueError):
+            asyncio.run(provider(None,USDC,side='buy',amount_atomic='1000000000',
+                inventory=None,decision_at_ms=1000,observation_metadata=metadata))
+    assert transport.calls == []

@@ -6,6 +6,7 @@ Quotes remain indicative observations, including when their output is retained
 as a projected PAPER lot. Unknown execution costs never become zero costs.
 """
 import asyncio
+import re
 import time
 import uuid
 
@@ -44,19 +45,43 @@ class _DeadlineQuoteSession(ReadOnlySession):
 class NativeInventoryQuoteProvider:
     """Observe at most 20 exact-size quotes within 60 seconds of construction.
 
-    Any unavailable/error/refused response permanently stops this instance.
+    The standalone default stops after any unavailable/error/refused response.
+    A preregistered campaign may retain HTTP-200 business refusals and continue
+    its fixed schedule, sharing the exact global request counter and deadline.
     Exhausted/stopped calls return None without another request. Cancellation
     retains the bounded receipt and propagates. The PAPER engine chooses the
     amount before awaiting and adds its inventory version/decision afterwards.
     """
 
-    def __init__(self, session, store, *, max_requests=20):
+    def __init__(self, session, store, *, max_requests=20, shared_session=None,
+                 append=None, stop_on_provider_rejection=True):
         if not isinstance(store, CaptureStore):
             raise TypeError('A dedicated CaptureStore is required')
+        if type(stop_on_provider_rejection) is not bool:
+            raise ValueError('Quote refusal policy must be explicit')
+        if append is not None and not callable(append):
+            raise TypeError('Capture append callback must be callable')
         self.started_monotonic = time.monotonic()
         self.deadline_monotonic = self.started_monotonic+60
-        self._session = _DeadlineQuoteSession(session, max_requests, self.deadline_monotonic)
+        if shared_session is None:
+            self._session = _DeadlineQuoteSession(session, max_requests, self.deadline_monotonic)
+        else:
+            from bot.p3.campaign import CampaignSession
+            deadline = getattr(shared_session, '_deadline_ns', None)
+            if (not isinstance(shared_session, CampaignSession)
+                    or shared_session.session is not session
+                    or type(max_requests) is not int or max_requests != 20
+                    or shared_session.max_requests != max_requests
+                    or type(deadline) is not int or deadline <= 0
+                    or deadline-time.monotonic_ns() > 60_000_000_000):
+                raise ValueError('Shared campaign requires the same transport, 20-call cap and fixed deadline')
+            # No wrapper, fresh quota or fresh timer around this session. Its
+            # discovery/RPC/quote calls all debit this exact shared counter.
+            self._session = shared_session
+            self.deadline_monotonic = deadline/1_000_000_000
         self._store = store
+        self._append = append
+        self._stop_on_provider_rejection = stop_on_provider_rejection
         self._lock = asyncio.Lock()
         self.stopped_reason = None
 
@@ -75,14 +100,32 @@ class NativeInventoryQuoteProvider:
             self.stopped_reason = 'inventory_quote_transport_retry_policy_unsafe'
         return self.stopped_reason is None
 
+    @staticmethod
+    def _metadata(value):
+        if value is None:
+            return {}
+        if type(value) is not dict or set(value)-{
+                'probe_phase', 'exit_scope', 'inventory_buy_observation_id', 'prospective_ordinal'}:
+            raise ValueError('Unsupported inventory quote observation metadata')
+        result = dict(value)
+        for key, item in result.items():
+            if key in ('probe_phase', 'exit_scope'):
+                if type(item) is not str or re.fullmatch(r'[A-Za-z0-9_:-]{1,64}', item) is None:
+                    raise ValueError('Invalid inventory quote observation label')
+            elif (type(item) is not int or not (1 if key == 'inventory_buy_observation_id' else 0)
+                  <= item < 2**63):
+                raise ValueError('Invalid inventory quote observation identifier')
+        return result
+
     async def __call__(self, session_ignored, mint, *, side, amount_atomic,
-                       inventory, decision_at_ms):
+                       inventory, decision_at_ms, observation_metadata=None):
         # Serialize consumers so a second request cannot race past the first
         # refusal before its latch has been recorded.
         async with self._lock:
             if not self._ready():
                 return None
             try:
+                metadata = self._metadata(observation_metadata)
                 mint, amount = _mint(mint), _atomic(amount_atomic)
                 if mint == SOL_MINT or side not in ('buy', 'sell'):
                     raise ValueError('Invalid inventory quote side or mint')
@@ -101,7 +144,12 @@ class NativeInventoryQuoteProvider:
             input_mint, output_mint = (SOL_MINT, mint) if side == 'buy' else (mint, SOL_MINT)
             identities = []
             def append(kind, **record):
-                identity = self._store.append(kind, provenance='live', **record)
+                # Also annotate cancellation/policy-fallback receipts. Optional
+                # metadata never replaces normalization or provenance fields.
+                if metadata and kind == 'quote_attempt':
+                    record['payload'] = dict(record['payload'], **metadata)
+                identity = (self._append(kind, **record) if self._append is not None else
+                            self._store.append(kind, provenance='live', **record))
                 identities.append(identity)
                 return identity
             remaining = self.deadline_monotonic-time.monotonic()
@@ -134,7 +182,11 @@ class NativeInventoryQuoteProvider:
             except Exception:
                 self.stopped_reason = 'inventory_quote_persistence_error'
                 raise
-            if not retained or event['outcome'] != 'quoted':
+            logical_refusal = (retained and event['outcome'] == 'unavailable'
+                and event.get('reason') in ('provider_rejected', 'route_unavailable')
+                and event['payload'].get('http_status') == 200)
+            if ((not retained or event['outcome'] != 'quoted')
+                    and (self._stop_on_provider_rejection or not logical_refusal)):
                 self.stopped_reason = event.get('reason') or 'inventory_quote_unavailable'
             context = {'fees':None, 'token_decimals':None, 'max_source_age_ms':5000,
                        'acquisition_verified':False, 'execution_verified':False}
