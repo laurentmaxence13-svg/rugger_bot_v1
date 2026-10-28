@@ -31,18 +31,21 @@ def main(argv=None):
     sub.add_parser('operations', help='Offline PAPER health and consistent local backup', add_help=False)
     sub.add_parser('experiment', help='Offline frozen strategy comparison on a registered corpus', add_help=False)
     sub.add_parser('policy-research', help='Offline bounded parameter research; shadow only', add_help=False)
+    sub.add_parser('master-endurance', help='Offline shadow restart and ledger-preservation checks', add_help=False)
     paper = sub.add_parser('paper', help='Supervised scanner + existing PAPER engine', add_help=False)
     paper.add_argument('--network', action='store_true', help='Explicit network opt-in; use a registered bounded protocol')
     args, extra = parser.parse_known_args(argv)
-    if args.command in ('operations', 'experiment', 'policy-research'):
+    if args.command in ('operations', 'experiment', 'policy-research', 'master-endurance'):
         os.environ['RUGGER_NO_DOTENV'] = '1'
         sys.addaudithook(_offline_policy)
         if args.command == 'operations':
             from bot.operations import main as offline_main
         elif args.command == 'experiment':
             from bot.p4_experiment import main as offline_main
-        else:
+        elif args.command == 'policy-research':
             from bot.policy_research import main as offline_main
+        else:
+            from bot.master_endurance import main as offline_main
         return offline_main(extra)
     if args.command == 'paper':
         if not args.network and '--help' not in extra and '-h' not in extra:

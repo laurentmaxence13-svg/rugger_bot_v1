@@ -290,7 +290,7 @@ def build_functional_report(con, *, data_kind='unknown', latency_samples_ms=None
             native_return_basis='exact_SOL_lamport_legs_no_FX_required',
             legacy_return_basis='USD_marks_with_constant_SOL_USD_assumption',
             native_fx_required=False)
-    return {'schema': 'rugger-functional-dashboard-v1', 'paper_only': True,
+    report = {'schema': 'rugger-functional-dashboard-v1', 'paper_only': True,
             'real_orders_enabled': False, 'data_kind': data_kind,
             'performance_data_complete': bool(complete),
             'capital_reconciled': finance.get('capital_reconciled', False),
@@ -300,6 +300,11 @@ def build_functional_report(con, *, data_kind='unknown', latency_samples_ms=None
             'latency_sample_counts': latency_counts, 'missing_data_counts': missing,
             'metrics_unknown_count': sum(metric['value'] is None for metric in metrics.values()),
             'missing_count_scope': 'categories_may_overlap; do_not_sum_as_unique_events'}
+    from bot.master_audit import master_report
+    master_summary=master_report(con)
+    if master_summary is not None:
+        report['master_shadow']=master_summary
+    return report
 
 
 def summarize_market_quote_admission(admission):

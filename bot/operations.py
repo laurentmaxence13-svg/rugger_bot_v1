@@ -107,8 +107,12 @@ def _build_operational_health(con, observations, *, now_ms, max_age_ms,
         reasons.append('ledger_integrity_or_available_cash_unproven')
         capital = free = None
 
+    from bot.master_audit import master_report
+    master_summary=master_report(con)
+    if master_summary is not None and master_summary['status']!='available':
+        reasons.append('master_shadow_audit_unavailable')
     reasons = sorted(set(reasons))
-    return {'schema': 'rugger-paper-operational-health-v1', 'paper_only': True,
+    report = {'schema': 'rugger-paper-operational-health-v1', 'paper_only': True,
             'observed_at_ms': now_ms, 'max_source_age_ms': max_age_ms,
             'allow_new_entries': not reasons, 'blocking_reasons': reasons,
             'source_health': sources, 'capital_sol': capital, 'available_cash_sol': free,
@@ -121,6 +125,9 @@ def _build_operational_health(con, observations, *, now_ms, max_age_ms,
             'inventory_preserved': inventory is not None and inventory.get('inventory_consistent') is True,
             'real_orders_enabled': False, 'economic_pnl_verified': False,
             'scope': 'local_paper_preflight; observed_heartbeats_are_caller_attestations'}
+    if master_summary is not None:
+        report['master_shadow']=master_summary
+    return report
 
 
 class OperationalEntryGuard:

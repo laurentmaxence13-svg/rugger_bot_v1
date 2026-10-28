@@ -44,14 +44,56 @@ n'est produit si les positions ne sont pas totalement liquidées/coûts connus.
 
 Un candidat par stratégie est figé sur le développement, avant le replay du
 holdout. Le holdout ne sert pas à choisir parmi les24candidats : il compare ces
-candidats préfigés et leurs références. Le registre interdit une seconde lecture
-de la même fenêtre préenregistrée, même si un prix futur du corpus est modifié.
+candidats préfigés et leurs références. Le registre conserve les empreintes et
+les bornes explicites des fenêtres consommées. Il interdit une seconde lecture
+de la même fenêtre et tout chevauchement des intervalles
+`[development_end_ms, holdout_end_ms)`, même si une borne ou un prix futur est
+légèrement modifié. Les fenêtres adjacentes sans intersection restent admissibles.
 Le registre renvoyé doit être conservé pour que cette protection survive à un
 nouveau processus; la CLI n'invente pas un stockage durable ou une authentification.
-Changer seulement l'heure déclarée d'enregistrement ne déverrouille pas une
-fenêtre déjà évaluée. L'horizon commun de replay reste30s : les valeurs de durée
-900s/1800s ne sont donc pas départagées sur des positions déjà sorties à cet
-horizon. Les fixtures actuelles ne démontrent pas l'intérêt de ces paramètres.
+Un ancien registre non vide ne conservant que les empreintes ne permet pas de
+prouver l'absence de chevauchement : toute nouvelle évaluation est refusée.
+Ne pas contourner ce refus en effaçant le registre. Ses bornes doivent être
+retrouvées dans les protocoles conservés avant une migration explicite et
+vérifiable. Le rollback d'un pointeur shadow reste possible sans lire de nouvel
+outcome. Un ancien registre vide peut être enrichi de la liste des fenêtres.
+Les types, empreintes, bornes et liens des pointeurs sont vérifiés; les versions
+entières des sélections/rollbacks augmentent et ne sont jamais décrémentées.
+Changer seulement l'heure déclarée d'enregistrement ou l'horizon de recherche
+ne déverrouille pas une fenêtre déjà évaluée.
+
+### Horizon expérimental et comparaisons longues
+
+L'horizon commun reste30s par défaut. Son omission conserve le plan et les replays
+économiques antérieurs. Le rapport est enrichi des bornes du registre; cette
+correction anti-réutilisation change volontairement son empreinte, sans changer
+les métriques. Le rapport historique précédent reste conservé.
+Pour un futur protocole, `make_plan` peut figer
+`research_exit_horizon_ms` entre30000 et3600000ms, entiers seulement. Cet horizon
+s'applique uniquement aux bras de recherche : `POLICY`, les paramètres actifs,
+les seuils financiers et les anciens appels P4 restent inchangés. Le protocole
+doit le fixer avant l'évaluation et prévoir des observations suffisamment longues.
+Allonger l'horizon n'invente pas de prix ni devis entre les observations.
+
+Le moteur continue d'appliquer les TP, SL, trailing et durée figés à l'entrée;
+l'horizon commun ajoute une borne de recherche. La première observation valable
+après une échéance peut produire une intention de sortie, jamais un fill à une
+heure interpolée. Une coupure développement/holdout reste prioritaire : un devis
+après la coupure ne liquide pas le lot. Les reliquats restent incomplets.
+
+Deux scénarios ciblés, entièrement synthétiques, démontrent désormais ces chemins
+avec horizon préenregistré1h, lot1000unités et15000lamports de coûts additionnels :
+
+| Comparaison | Sortie observée dans la fixture | Net synthétique SOL |
+| --- | --- | --- |
+| Durée900s |1000s, soit900s après entrée |0,029985 |
+| Durée1800s |1900s, soit1800s après entrée |0,019985 |
+| Trailing3,5% |À220s, soit60s après le sommet à160s |0,039985 |
+| Trailing5% |À280s, soit120s après le même sommet |0,019985 |
+
+Ces cas valident le mécanisme de comparaison et la comptabilité. Ils ne
+départagent pas les stratégies sur le marché. Le rapport initial30s demeure
+une mesure distincte, sans conclusion sur les durées900s/1800s.
 
 ## Suivi, versions et interdiction de promotion
 

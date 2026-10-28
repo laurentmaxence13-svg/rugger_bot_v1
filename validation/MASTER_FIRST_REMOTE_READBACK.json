@@ -1,0 +1,36 @@
+{
+  "schema": "rugger-master-first-checkpoint-readback-v1",
+  "date": "2026-10-28",
+  "repository": "laurentmaxence13-svg/rugger_bot_v1",
+  "branch": "fix/p3-exit-evidence-continuation",
+  "pr": 22,
+  "remote_commit": "2c5e18cd17dd15e77deda7e796886c921cff0b46",
+  "local_commit": "303b19eb8f1dc4eb74ae6a8a547f39946c6c6f87",
+  "local_and_remote_tree": "5cb30af8266895de4c2157c1df4961c1e04167da",
+  "parent_remote": "9139dbe30e2871a0dc927c3312d54a88416e94f7",
+  "pr_head_read_back": true,
+  "pr_state": "open",
+  "merged": false,
+  "component_blobs_read_back": [
+    {
+      "path": "bot/master_decision.py",
+      "remote_blob_sha": "13b5843fb2fca1db4e5038235e74b53cf3f81b98",
+      "local_blob_sha": "13b5843fb2fca1db4e5038235e74b53cf3f81b98",
+      "equal": true
+    },
+    {
+      "path": "bot/master_positions.py",
+      "remote_blob_sha": "2509742e79cbb6694bdef78dae28bb5595bbbd77",
+      "local_blob_sha": "2509742e79cbb6694bdef78dae28bb5595bbbd77",
+      "equal": true
+    },
+    {
+      "path": "bot/policy_research.py",
+      "remote_blob_sha": "d0bc14c28b6b19f379d3ba4d9ca57a222c4b6181",
+      "local_blob_sha": "d0bc14c28b6b19f379d3ba4d9ca57a222c4b6181",
+      "equal": true
+    }
+  ],
+  "validation_blob_sha": "fd60b6430a99905d9de069502b9d2cc2172cc22c",
+  "scope": "Pinned GitHub reads verified after branch update; metadata only, no databases uploaded"
+}

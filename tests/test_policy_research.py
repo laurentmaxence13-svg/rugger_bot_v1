@@ -45,6 +45,69 @@ def test_changing_holdout_does_not_change_frozen_development_candidates_and_cann
         research.evaluate_research(changed,reregistered,registry=a['registry'])
 
 
+@pytest.mark.parametrize('start,end',[(199999,500000),(200001,500000),(100000,200001),
+    (499999,800000),(210000,490000)])
+def test_consumed_holdout_rejects_shifted_overlapping_windows_before_replay(start,end,monkeypatch):
+    original=research.evaluate_research(corpus(),plan())
+    shifted=research.make_plan(registered_at_ms=1,development_end_ms=start,holdout_end_ms=end)
+    monkeypatch.setattr(p4,'_api',lambda:pytest.fail('Overlapping holdout reached ledger replay'))
+    with pytest.raises(ValueError,match='overlaps a consumed'):
+        research.evaluate_research(corpus(),shifted,registry=original['registry'])
+
+
+@pytest.mark.parametrize('start,end',[(100000,200000),(500000,800000)])
+def test_consumed_holdout_permits_adjacent_disjoint_windows_and_preserves_input_registry(start,end):
+    original=research.evaluate_research(corpus(),plan())
+    retained=deepcopy(original['registry'])
+    adjacent=research.make_plan(registered_at_ms=1,development_end_ms=start,holdout_end_ms=end)
+    result=research.evaluate_research(corpus(),adjacent,registry=original['registry'])
+    assert original['registry']==retained
+    assert len(result['registry']['evaluated_windows'])==2
+    assert result['registry']['evaluated_windows'][0]['development_end_ms']==200000
+    assert result['registry']['evaluated_windows'][1]['development_end_ms']==start
+    assert result['registry']['evaluated_windows'][1]['holdout_end_ms']==end
+
+
+def test_legacy_consumed_hashes_without_bounds_fail_closed_but_empty_registry_can_upgrade():
+    original=research.evaluate_research(corpus(),plan())
+    legacy=deepcopy(original['registry']);legacy.pop('evaluated_windows')
+    future=research.make_plan(registered_at_ms=1,development_end_ms=500000,holdout_end_ms=800000)
+    with pytest.raises(ValueError,match='Legacy consumed holdout bounds are unknown'):
+        research.evaluate_research(corpus(),future,registry=legacy)
+    # Pointer maintenance reads no new outcomes and can still roll back legacy state.
+    selected=research.choose_shadow(original,original['frozen_candidate_ids'][0],registry=legacy)
+    assert research.rollback_shadow(selected)['current_shadow'] is None
+    empty=research.empty_registry();empty.pop('evaluated_windows')
+    upgraded=research.evaluate_research(corpus(),plan(),registry=empty)
+    assert len(upgraded['registry']['evaluated_windows'])==1
+
+
+@pytest.mark.parametrize('mutation',[
+    lambda r:r.update(version=True),lambda r:r.update(version=-1),lambda r:r.update(version=1.5),
+    lambda r:r.update(previous_shadows='invalid'),lambda r:r.update(evaluated_holdouts=[{}]),
+    lambda r:r.update(evaluated_windows=None),lambda r:r.update(active_policy_changed=True),
+    lambda r:r.update(current_shadow={})])
+def test_untrusted_registry_types_and_versions_reject_before_replay(mutation,monkeypatch):
+    state=research.empty_registry();mutation(state)
+    monkeypatch.setattr(p4,'_api',lambda:pytest.fail('Invalid registry reached ledger replay'))
+    with pytest.raises(ValueError):research.evaluate_research(corpus(),plan(),registry=state)
+
+
+def test_registry_rejects_tampered_consumed_bounds_and_versions_never_rewind():
+    original=research.evaluate_research(corpus(),plan())
+    damaged=deepcopy(original['registry']);damaged['evaluated_windows'][0]['holdout_end_ms']+=1
+    with pytest.raises(ValueError,match='bounds or fingerprint'):
+        research.evaluate_research(corpus(),plan(),registry=damaged)
+    selected=research.choose_shadow(original,original['frozen_candidate_ids'][0])
+    damaged=deepcopy(selected);damaged['version']=0
+    with pytest.raises(ValueError,match='monotone integer version'):research.rollback_shadow(damaged)
+    assert selected['version']==1
+    rolled=research.rollback_shadow(selected)
+    assert rolled['version']==2
+    again=research.choose_shadow(original,original['frozen_candidate_ids'][0],registry=rolled)
+    assert again['version']==3
+
+
 def test_unknown_costs_and_unliquidated_lots_prevent_objective_and_selection():
     result=research.evaluate_research(corpus(fees_unknown=True),plan())
     assert all(r['metrics']['objective'] is None for r in result['development'])
@@ -150,3 +213,123 @@ def test_plan_tampering_and_budgets_reject_before_replay():
     with pytest.raises(ValueError,match='preserve baseline'):
         p4._run_arm(corpus(),{},'early_sniping','development',fee_multiplier=1,decision_delay_ms=0,
             development_end_ms=200000,api=api,research_overrides={'min_score':1})
+
+
+def long_corpus(sequence):
+    """Fresh exact-quantity observations, with disjoint declared creator groups."""
+    api=_load_api();frames=[]
+    templates=(corpus()['frames'][0],corpus()['frames'][4])
+    for template,start in zip(templates,(100000,4000000)):
+        buy_id=template['mint']+'-long-buy'
+        for index,(offset,price,proceeds) in enumerate(sequence):
+            at=start+offset;frame=deepcopy(template)
+            frame.update(id=template['mint']+'-long-'+str(index),detected_at_ms=start,
+                available_at_ms=at,features_available_at_ms=at,source_slot=100+index,
+                slot_available_at_ms=at,buy_context=None,sell_contexts=[])
+            frame['features'].update(signal_time=start//1000,observed_at=at//1000,price_usd=price)
+            fees=dict(entry_extra_lamports=5000,exit_extra_lamports=10000,
+                failed_attempt_lamports=[],provenance='synthetic')
+            observation=_quote_observation(api,side='buy' if index==0 else 'sell',
+                mint=frame['mint'],pool=frame['pool'],amount=1000000000 if index==0 else 1000,
+                output=1000 if index==0 else proceeds,requested=at-20,index=index+1,case='research_long')
+            observation['id']=buy_id if index==0 else frame['id']+'-sell'
+            if index==0:
+                frame['buy_context']=dict(buy_observation=observation,token_decimals=6,fees=fees)
+            else:
+                frame['sell_contexts']=[dict(inventory_buy_observation_id=buy_id,
+                    sell_observation=observation,requested_quantity_atomic='1000',fees=fees)]
+            frames.append(frame)
+    return dict(data_kind='synthetic',frames=frames)
+
+
+def extended_plan(**kwargs):
+    return research.make_plan(registered_at_ms=1,development_end_ms=3000000,
+        holdout_end_ms=8000000,research_exit_horizon_ms=3600000,**kwargs)
+
+
+def candidate_run(report,name):
+    return next(row['run'] for row in report['development'] if row['candidate']['id']=='early_sniping:'+name)
+
+
+def exit_message(run):
+    return next(row for row in run['trace'] if (row['message'] or '').startswith('EXIT '))
+
+
+def test_preregistered_extended_horizon_distinguishes900_and1800_second_holds_with_same_exact_lot():
+    sequence=((0,1.,None),(60000,1.04,1040000000),(900000,1.03,1030000000),
+        (1800000,1.02,1020000000))
+    data=long_corpus(sequence);report=research.evaluate_research(data,extended_plan())
+    assert report['research_exit_horizon_ms']==3600000
+    short=candidate_run(report,'confirmation-exit');baseline=candidate_run(report,'baseline')
+    assert exit_message(short)['decision_at_ms']==1000000
+    assert exit_message(baseline)['decision_at_ms']==1900000
+    assert 'reason=TIMEOUT' in exit_message(short)['message']
+    assert 'reason=TIMEOUT' in exit_message(baseline)['message']
+    assert short['legs'][0]['quantity_atomic']==baseline['legs'][0]['quantity_atomic']=='1000'
+    assert short['known_modeled_extra_costs_lamports']==baseline['known_modeled_extra_costs_lamports']=='15000'
+    assert short['realized_pnl_sol']==pytest.approx(.029985)
+    assert baseline['realized_pnl_sol']==pytest.approx(.019985)
+    assert report['promotion_allowed'] is False
+    # An unregistered call retains the original30s horizon and different exit.
+    p=research.make_plan(registered_at_ms=1,development_end_ms=3000000,holdout_end_ms=8000000)
+    legacy=candidate_run(research.evaluate_research(data,p),'baseline')
+    assert exit_message(legacy)['decision_at_ms']==160000
+    assert 'reason=RESEARCH_HORIZON' in exit_message(legacy)['message']
+
+
+def test_extended_horizon_preserves_frozen_trailing_stops_before_time_limits():
+    sequence=((0,1.,None),(60000,1.08,1080000000),(120000,1.04,1040000000),
+        (180000,1.02,1020000000))
+    report=research.evaluate_research(long_corpus(sequence),extended_plan())
+    tighter=candidate_run(report,'confirmation-exit');baseline=candidate_run(report,'baseline')
+    assert exit_message(tighter)['decision_at_ms']==220000
+    assert exit_message(baseline)['decision_at_ms']==280000
+    assert 'reason=TRAILING_STOP' in exit_message(tighter)['message']
+    assert 'reason=TRAILING_STOP' in exit_message(baseline)['message']
+    assert tighter['realized_pnl_sol']==pytest.approx(.039985)
+    assert baseline['realized_pnl_sol']==pytest.approx(.019985)
+    assert tighter['all_entered_positions_liquidated'] is True
+    assert baseline['all_entered_positions_liquidated'] is True
+
+
+@pytest.mark.parametrize('price,proceeds,reason',[(1.2,1200000000,'TP'),(.9,900000000,'SL')])
+def test_extended_horizon_preserves_entry_take_profit_and_stop_loss(price,proceeds,reason):
+    report=research.evaluate_research(long_corpus(((0,1.,None),(60000,price,proceeds))),extended_plan())
+    run=candidate_run(report,'baseline')
+    assert exit_message(run)['decision_at_ms']==160000
+    assert 'reason='+reason+' ' in exit_message(run)['message']
+    assert run['legs'][0]['quantity_atomic']=='1000'
+    assert run['realized_pnl_sol']==pytest.approx((proceeds-1000015000)/1e9)
+
+
+def test_extended_horizon_cannot_use_exit_beyond_development_or_holdout_end_or_unlock_window():
+    data=long_corpus(((0,1.,None),(60000,1.04,1040000000),(900000,1.03,1030000000),
+        (1800000,1.02,1020000000)))
+    p=research.make_plan(registered_at_ms=1,development_end_ms=1500000,
+        holdout_end_ms=5500000,research_exit_horizon_ms=3600000)
+    result=research.evaluate_research(data,p)
+    baseline=candidate_run(result,'baseline')
+    assert baseline['closed_positions']==0
+    assert baseline['positions'][0]['remaining_atomic']=='1000'
+    assert baseline['portfolio_pnl_sol'] is None
+    validation=next(row for row in result['holdout'] if row['candidate']['id']=='early_sniping:baseline')
+    assert validation['run']['closed_positions']==0
+    assert validation['metrics']['eligible'] is False
+    changed=deepcopy(data)
+    for frame in changed['frames']:
+        if frame['available_at_ms']>=1500000:frame['features']['price_usd']=100
+    again=research.evaluate_research(changed,p)
+    assert again['development']==result['development']
+    changed_horizon=deepcopy(p);changed_horizon['research_exit_horizon_ms']=3500000
+    with pytest.raises(ValueError,match='already evaluated'):
+        research.evaluate_research(data,changed_horizon,registry=result['registry'])
+
+
+@pytest.mark.parametrize('horizon',[True,29999,3600001,30000.0])
+def test_research_horizon_is_bounded_and_isolated_from_original_replay(horizon):
+    with pytest.raises(ValueError,match='Research exit horizon'):
+        research.make_plan(registered_at_ms=1,development_end_ms=200000,
+            holdout_end_ms=500000,research_exit_horizon_ms=horizon)
+    with pytest.raises(ValueError,match='research-only'):
+        p4._run_arm(corpus(),{},'early_sniping','development',fee_multiplier=1,
+            decision_delay_ms=0,development_end_ms=200000,api=p4._api(),research_exit_horizon_ms=3600000)

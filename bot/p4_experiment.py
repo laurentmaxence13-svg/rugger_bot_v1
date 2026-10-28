@@ -368,10 +368,16 @@ def _position_pct(api,capital,target=None):
 
 
 def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_ms,development_end_ms,api,
-             curve_assessments=None,research_overrides=None):
+             curve_assessments=None,research_overrides=None,research_exit_horizon_ms=None):
     # Research candidates adapt this same replay path. They never mutate POLICY,
     # the live decision function or hard capital/admission limits.
     overrides={} if research_overrides is None else dict(research_overrides)
+    horizon=POLICY['exit_horizon_ms']
+    if research_exit_horizon_ms is not None:
+        if (research_overrides is None or type(research_exit_horizon_ms) is not int
+                or not POLICY['exit_horizon_ms']<=research_exit_horizon_ms<=3600000):
+            raise ValueError('A bounded explicit research-only exit horizon is required')
+        horizon=research_exit_horizon_ms
     allowed={'min_score','min_liquidity','tp_pct','sl_pct','trailing_stop_pct',
              'hold_seconds','position_lamports','confirmation_delay_ms'}
     if set(overrides)-allowed:raise ValueError('Unsupported research parameter')
@@ -445,7 +451,7 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                     pct=_position_pct(api,capital,budget) if capital>0 else 0
                     message=api['record_quote'](con,mint,frame['creator'],frame['detected_at_ms']//1000,
                         at//1000,quote,model,allow_entry=entry,strategy_mode='shadow_final',
-                        force_exit_reason=('RESEARCH_HORIZON' if state and at-state['entry_decision_ms']>=POLICY['exit_horizon_ms'] else None),
+                        force_exit_reason=('RESEARCH_HORIZON' if state and at-state['entry_decision_ms']>=horizon else None),
                         initial_capital_sol=10.0,position_pct=pct,max_open=POLICY['max_open'],
                         max_entries_day=POLICY['max_entries_day'],max_daily_loss_pct=POLICY['max_daily_loss_pct'],
                         inventory_context=context,require_inventory=True)

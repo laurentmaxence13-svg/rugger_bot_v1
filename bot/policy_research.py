@@ -29,22 +29,28 @@ def candidates():
         for strategy in POLICY['strategies'] for name,values in variations]
 
 
-def make_plan(*,registered_at_ms,development_end_ms,holdout_end_ms):
+def make_plan(*,registered_at_ms,development_end_ms,holdout_end_ms,research_exit_horizon_ms=None):
     times=(registered_at_ms,development_end_ms,holdout_end_ms)
     if any(type(t) is not int or t<=0 for t in times) or not registered_at_ms<development_end_ms<holdout_end_ms:
         raise ValueError('Registration, development and holdout clocks must be ordered')
-    return dict(schema='rugger-policy-research-plan-v1',registered_at_ms=registered_at_ms,
+    if research_exit_horizon_ms is not None and (type(research_exit_horizon_ms) is not int
+            or not 30000<=research_exit_horizon_ms<=3600000):
+        raise ValueError('Research exit horizon must be an integer between30000 and3600000ms')
+    plan=dict(schema='rugger-policy-research-plan-v1',registered_at_ms=registered_at_ms,
         development_end_ms=development_end_ms,holdout_end_ms=holdout_end_ms,
         candidates=candidates(),maximum_candidates=24,maximum_frames=5000,
         objective={'tail_loss_weight':2,'drawdown_capital_weight':1},
         minimum_validation_creator_groups=50,selection='development_only_then_frozen_holdout',
         production_promotion='NEVER; separate independent evidence and authorization required')
+    # Omission preserves the exact original30s plan and report fingerprints.
+    if research_exit_horizon_ms is not None:plan['research_exit_horizon_ms']=research_exit_horizon_ms
+    return plan
 
 
 def _validate_plan(plan):
     if type(plan) is not dict:raise ValueError('Explicit frozen plan required')
     expected=make_plan(**{key:plan.get(key) for key in (
-        'registered_at_ms','development_end_ms','holdout_end_ms')})
+        'registered_at_ms','development_end_ms','holdout_end_ms','research_exit_horizon_ms')})
     if plan!=expected:raise ValueError('Plan differs from the bounded frozen candidate design')
     return digest(plan)
 
@@ -65,7 +71,58 @@ def _objective(run):
 
 def empty_registry():
     return {'schema':'rugger-shadow-policy-registry-v1','version':0,'current_shadow':None,
-        'previous_shadows':[],'evaluated_holdouts':[],'active_policy_changed':False}
+        'previous_shadows':[],'evaluated_holdouts':[],'evaluated_windows':[],
+        'active_policy_changed':False}
+
+
+def _registry(value,*,require_windows=True):
+    """Validate persisted research state before replay or pointer mutation."""
+    def hash_value(item):
+        return type(item) is str and len(item)==64 and all(c in '0123456789abcdef' for c in item)
+    def pointer(item):
+        return item is None or (type(item) is dict
+            and set(item)=={'candidate_id','plan_sha256','evaluation_key'}
+            and type(item['candidate_id']) is str and bool(item['candidate_id'])
+            and hash_value(item['plan_sha256']) and hash_value(item['evaluation_key']))
+    if (type(value) is not dict or value.get('schema')!='rugger-shadow-policy-registry-v1'
+            or value.get('active_policy_changed') is not False
+            or type(value.get('version')) is not int or value['version']<0
+            or type(value.get('previous_shadows')) is not list or len(value['previous_shadows'])>16
+            or value['version']<len(value['previous_shadows'])
+            or not all(pointer(p) for p in value['previous_shadows'])
+            or 'current_shadow' not in value or not pointer(value['current_shadow'])
+            or (value['version']==0 and (value['current_shadow'] is not None or value['previous_shadows']))
+            or type(value.get('evaluated_holdouts')) is not list
+            or len(value['evaluated_holdouts'])>128
+            or not all(hash_value(h) for h in value['evaluated_holdouts'])
+            or len(set(value['evaluated_holdouts']))!=len(value['evaluated_holdouts'])):
+        raise ValueError('Explicit bounded shadow registry with monotone integer version required')
+    state=deepcopy(value)
+    hashes=state['evaluated_holdouts']
+    for p in [state['current_shadow'],*state['previous_shadows']]:
+        if p is not None and p['evaluation_key'] not in hashes:
+            raise ValueError('Shadow pointer requires a retained holdout evaluation')
+    if 'evaluated_windows' not in state:
+        if hashes:
+            if require_windows:raise ValueError('Legacy consumed holdout bounds are unknown; new replay refused')
+            return state
+        state['evaluated_windows']=[]
+    windows=state['evaluated_windows']
+    if type(windows) is not list or len(windows)!=len(hashes):
+        raise ValueError('Explicit consumed holdout bounds required')
+    previous=[]
+    for index,window in enumerate(windows):
+        if (type(window) is not dict or set(window)!={'development_end_ms','holdout_end_ms','evaluation_key'}
+                or any(type(window[name]) is not int for name in ('development_end_ms','holdout_end_ms'))
+                or not 0<window['development_end_ms']<window['holdout_end_ms']
+                or window['evaluation_key']!=hashes[index]
+                or digest({name:window[name] for name in ('development_end_ms','holdout_end_ms')})!=hashes[index]):
+            raise ValueError('Invalid consumed holdout bounds or fingerprint')
+        start,end=window['development_end_ms'],window['holdout_end_ms']
+        if any(start<prior_end and prior_start<end for prior_start,prior_end in previous):
+            raise ValueError('Overlapping consumed holdout bounds in registry')
+        previous.append((start,end))
+    return state
 
 
 def evaluate_research(corpus,plan,*,registry=None):
@@ -82,14 +139,14 @@ def evaluate_research(corpus,plan,*,registry=None):
     protocol={key:plan[key] for key in ('registered_at_ms','development_end_ms')}
     protocol['policy_sha256']=p4._hash(p4.POLICY)
     assignments=p4._validate(corpus,protocol)
-    registry=deepcopy(empty_registry() if registry is None else registry)
-    if (registry.get('schema')!='rugger-shadow-policy-registry-v1'
-            or type(registry.get('evaluated_holdouts')) is not list
-            or registry.get('active_policy_changed') is not False):
-        raise ValueError('Explicit shadow registry required')
+    registry=_registry(empty_registry() if registry is None else registry)
     # Altering a future price must not unlock another look at the same window.
     key=digest({name:plan[name] for name in ('development_end_ms','holdout_end_ms')})
     if key in registry['evaluated_holdouts']:raise ValueError('This frozen holdout was already evaluated')
+    if any(plan['development_end_ms']<window['holdout_end_ms']
+            and window['development_end_ms']<plan['holdout_end_ms']
+            for window in registry['evaluated_windows']):
+        raise ValueError('This holdout overlaps a consumed evaluation window')
     if len(registry['evaluated_holdouts'])>=128:raise ValueError('Bounded research registry is full')
     bounded=deepcopy(corpus)
     bounded['frames']=[f for f in corpus['frames'] if f['available_at_ms']<plan['holdout_end_ms']]
@@ -97,7 +154,8 @@ def evaluate_research(corpus,plan,*,registry=None):
     def replay(candidate,split):
         run=p4._run_arm(bounded,assignments,candidate['strategy'],split,fee_multiplier=1,
             decision_delay_ms=0,development_end_ms=plan['development_end_ms'],api=api,
-            research_overrides=candidate['overrides'])
+            research_overrides=candidate['overrides'],
+            research_exit_horizon_ms=plan.get('research_exit_horizon_ms'))
         return {'candidate':deepcopy(candidate),'run':run,'metrics':_objective(run)}
     for candidate in plan['candidates']:development.append(replay(candidate,'development'))
     selected=[]
@@ -112,12 +170,14 @@ def evaluate_research(corpus,plan,*,registry=None):
     comparison.update({c['id']:c for c in plan['candidates'] if c['id'].endswith(':baseline')})
     holdout=[replay(c,'validation') for c in comparison.values()]
     registry['evaluated_holdouts'].append(key)
+    registry['evaluated_windows'].append(dict(development_end_ms=plan['development_end_ms'],
+        holdout_end_ms=plan['holdout_end_ms'],evaluation_key=key))
     creators={f['creator'] for f in bounded['frames'] if assignments[f['mint']]=='validation'}
     unresolved=['independent_market_economic_cycles_not_verified','production_activation_not_authorized']
     if corpus['data_kind']=='synthetic':unresolved.append('synthetic_results_only')
     if len(creators)<plan['minimum_validation_creator_groups']:unresolved.append('insufficient_validation_creator_groups')
     if any(not r['metrics']['eligible'] for r in holdout):unresolved.append('holdout_missing_or_unliquidated_outcomes')
-    return dict(schema='rugger-policy-research-report-v1',plan_sha256=plan_hash,corpus_sha256=digest(corpus),
+    report=dict(schema='rugger-policy-research-report-v1',plan_sha256=plan_hash,corpus_sha256=digest(corpus),
         data_kind=corpus['data_kind'],assignments=assignments,development=development,
         frozen_candidate_ids=frozen_ids,freeze_basis='development_only_before_holdout_replay',
         holdout=holdout,holdout_evaluation_key=key,registry=registry,
@@ -125,14 +185,17 @@ def evaluate_research(corpus,plan,*,registry=None):
         promotion_allowed=False,promotion_blockers=unresolved,active_policy_changed=False,
         market_winner=None,network_requests=0,execution_verified=False,
         scope='Structured exploratory optimization; no market-profitability claim')
+    if 'research_exit_horizon_ms' in plan:report['research_exit_horizon_ms']=plan['research_exit_horizon_ms']
+    return report
 
 
 def choose_shadow(report,candidate_id,registry=None):
     """Versioned experimental pointer only; production state is unreachable."""
     if candidate_id not in report['frozen_candidate_ids']:
         raise ValueError('Candidate was not frozen before validation')
-    state=deepcopy(report['registry'] if registry is None else registry)
-    if state.get('active_policy_changed') is not False or len(state.get('previous_shadows',[]))>=16:
+    state=_registry(report['registry'] if registry is None else registry,require_windows=False)
+    if (len(state['previous_shadows'])>=16
+            or report['holdout_evaluation_key'] not in state['evaluated_holdouts']):
         raise ValueError('A bounded shadow-only registry is required')
     state['previous_shadows'].append(state['current_shadow'])
     state['current_shadow']={'candidate_id':candidate_id,'plan_sha256':report['plan_sha256'],
@@ -142,8 +205,8 @@ def choose_shadow(report,candidate_id,registry=None):
 
 
 def rollback_shadow(registry):
-    state=deepcopy(registry)
-    if state.get('active_policy_changed') is not False or not state.get('previous_shadows'):
+    state=_registry(registry,require_windows=False)
+    if not state['previous_shadows']:
         raise ValueError('A previous shadow version is required')
     state['current_shadow']=state['previous_shadows'].pop();state['version']+=1
     return state

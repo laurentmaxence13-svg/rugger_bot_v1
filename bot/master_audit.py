@@ -5,6 +5,7 @@ commit, rollback, capital change or execution is hidden in an event writer.
 """
 import hashlib
 import json
+import sqlite3
 
 
 def _json(value):
@@ -116,15 +117,39 @@ def complete_master_reference(con,key,outcome):
 def master_report(con):
     """Read-only aggregates; missing schema adds no fields to older reports."""
     if not _exists(con):return None
+    try:
+        return _master_report(con)
+    except (sqlite3.Error,ValueError,TypeError,KeyError,AttributeError):
+        return dict(schema='rugger-master-shadow-report-v1',mode='shadow',
+            status='unavailable',decisions=None,pending_reference_outcomes=None,
+            actions=None,proposed_strategies=None,proposal_applied=False,
+            promotion_allowed=False,economic_profitability_verified=False,
+            error='retained_shadow_audit_unreadable',
+            scope='optional_shadow_audit; financial_ledger_not_repaired_or_reset')
+
+
+def _master_report(con):
     total,pending=con.execute('SELECT COUNT(*),SUM(reference_outcome_json IS NULL) FROM paper_master_decisions').fetchone()
     rows=con.execute('SELECT decision_json,reference_outcome_json FROM paper_master_decisions ORDER BY id DESC LIMIT 1000').fetchall()
     actions={};strategies={}
     for proposal,outcome in rows:
-        decision=json.loads(proposal);action=decision.get('action','UNKNOWN')
+        decision=json.loads(proposal)
+        if type(decision) is not dict or decision.get('promotion_allowed') is not False:
+            raise ValueError('Unreadable shadow policy record')
+        action=decision.get('action')
+        if action not in ('ENTER','WAIT','NO_TRADE','HOLD','REDUCE','TAKE_PROFIT',
+                'EXIT','EMERGENCY_EXIT','WAIT_FOR_DATA'):
+            raise ValueError('Unreadable shadow action')
+        if outcome is not None:
+            reference=json.loads(outcome)
+            if type(reference) is not dict or reference.get('proposal_applied') is not False:
+                raise ValueError('Unreadable reference-engine outcome')
         actions[action]=actions.get(action,0)+1
         strategy=decision.get('selected_strategy')
+        if strategy is not None and strategy not in ('early_sniping','confirmed_momentum','adaptive_hybrid'):
+            raise ValueError('Unreadable shadow strategy')
         if strategy is not None:strategies[strategy]=strategies.get(strategy,0)+1
-    return dict(schema='rugger-master-shadow-report-v1',mode='shadow',decisions=total,
+    return dict(schema='rugger-master-shadow-report-v1',mode='shadow',status='available',decisions=total,
         actions=actions,proposed_strategies=strategies,pending_reference_outcomes=pending or 0,
         action_counts_scope='last_1000_decisions',action_counts_sample=len(rows),
         proposal_applied=False,promotion_allowed=False,economic_profitability_verified=False,
@@ -140,7 +165,8 @@ class MasterShadow:
         self.orchestrator=orchestrator
 
     def evaluate(self,con,frame,*,inventory=None,health=None,capital=None):
-        history=master_history(con,frame['mint'],as_of_ms=frame['available_at_ms'])
+        # A retry must see the same strict prefix, never its retained proposal.
+        history=master_history(con,frame['mint'],as_of_ms=frame['available_at_ms']-1)
         decision=self.orchestrator.evaluate(frame,history,inventory=inventory,health=health,capital=capital)
         key=record_master_decision(con,frame,decision,inputs=dict(inventory=inventory,health=health,capital=capital))
         return key,decision

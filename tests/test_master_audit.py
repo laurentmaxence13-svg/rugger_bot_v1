@@ -2,6 +2,7 @@
 import asyncio
 from contextlib import closing
 import json
+import io
 import sqlite3
 
 import pytest
@@ -104,11 +105,76 @@ def test_pure_master_proposal_is_durable_without_a_second_bankroll():
         assert audit.master_report(con)['proposed_strategies']=={'adaptive_hybrid':1}
 
 
+def test_reports_expose_shadow_readonly_and_corrupt_audit_cannot_reset_capital_or_hide_data():
+    from bot.analyser.functional_report import build_functional_report
+    from bot.operations import build_operational_health
+    from test_operations import observations
+    with closing(connect()) as con:
+        from bot.analyser.paper_trader import ensure_paper_portfolio
+        ensure_paper_portfolio(con,10,0)
+        assert 'master_shadow' not in build_functional_report(con)
+        audit.setup_master_schema(con)
+        key=audit.record_master_decision(con,*event())
+        con.execute('UPDATE paper_master_decisions SET decision_json=? WHERE event_key=?',('{bad',key))
+        before=con.total_changes
+        con.set_authorizer(lambda action,*args:sqlite3.SQLITE_DENY if action in (
+            sqlite3.SQLITE_INSERT,sqlite3.SQLITE_UPDATE,sqlite3.SQLITE_DELETE,sqlite3.SQLITE_CREATE_TABLE
+        ) else sqlite3.SQLITE_OK)
+        health=build_operational_health(con,observations(),now_ms=3000)
+        dashboard=build_functional_report(con)
+        assert health['master_shadow']==dashboard['master_shadow']
+        assert dashboard['master_shadow']['status']=='unavailable'
+        assert dashboard['master_shadow']['decisions'] is None
+        assert health['allow_new_entries'] is False
+        assert 'master_shadow_audit_unavailable' in health['blocking_reasons']
+        assert health['capital_sol']==health['available_cash_sol']==10
+        assert con.total_changes==before
+
+
+def test_health_api_exposes_durable_shadow_summary_without_a_server_or_database_write():
+    from bot.operations import build_operational_health,make_read_only_handler
+    from test_operations import observations
+    with closing(connect()) as con:
+        from bot.analyser.paper_trader import ensure_paper_portfolio
+        ensure_paper_portfolio(con,10,0);audit.setup_master_schema(con)
+        audit.record_master_decision(con,*event())
+        handler=object.__new__(make_read_only_handler(
+            lambda:build_operational_health(con,observations(),now_ms=3000)))
+        handler.path='/health';handler.wfile=io.BytesIO();status=[]
+        handler.send_response=status.append
+        handler.send_header=lambda *args:None
+        handler.end_headers=lambda:None
+        before=con.total_changes;handler.do_GET()
+        result=json.loads(handler.wfile.getvalue())
+        assert status==[200]
+        assert result['master_shadow']['actions']=={'WAIT':1}
+        assert result['master_shadow']['pending_reference_outcomes']==1
+        assert result['capital_sol']==10 and con.total_changes==before
+
+
 def prepare(con):
     engine.ensure_signal_status_schema(con)
     con.execute('''CREATE TABLE launch_candidates (
         mint TEXT,deployer_candidate TEXT,block_time INTEGER,status TEXT)''')
     con.execute('INSERT INTO launch_candidates VALUES(?,?,?,?)',(USDC,'creator',100,'creator_identified'))
+
+
+@pytest.mark.parametrize('broken',[False,True])
+def test_shadow_wait_keeps_reference_entry_separate_but_audit_failure_blocks_new_entry(broken,monkeypatch):
+    with closing(connect()) as con:
+        prepare(con);audit.setup_master_schema(con)
+        shadow=audit.MasterShadow()
+        if broken:
+            def fail(*args,**kwargs):raise ValueError('audit unavailable')
+            monkeypatch.setattr(shadow,'evaluate',fail)
+        async def quote(*args,**kwargs):return MarketQuote(12000,1,'pair'),0
+        messages,_,_=asyncio.run(engine.collect_once(con,object(),[],160,model=engine.shadow_baseline_model(),
+            quote_provider=quote,clock=lambda:160,master_shadow=shadow))
+        assert con.execute('SELECT COUNT(*) FROM paper_trades').fetchone()==(0 if broken else 1,),messages
+        if not broken:
+            decision,outcome=con.execute('SELECT decision_json,reference_outcome_json FROM paper_master_decisions').fetchone()
+            assert json.loads(decision)['action']=='WAIT'
+            assert json.loads(outcome)['proposal_applied'] is False
 
 
 @pytest.mark.parametrize('failure_phase',[None,'evaluate','outcome','post_settlement_read'])

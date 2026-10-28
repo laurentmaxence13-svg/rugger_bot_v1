@@ -62,7 +62,7 @@ def cli(root, *args):
 
 @pytest.mark.parametrize('args', [('--help',), ('paper', '--help'),
     ('operations', '--help'), ('operations', 'serve', '--help'), ('experiment', '--help'),
-    ('policy-research', '--help')])
+    ('policy-research', '--help'), ('master-endurance', '--help')])
 def test_public_help_does_not_load_dotenv_open_network_or_create_database(cli_tree, args):
     result = cli(cli_tree, *args)
     assert result.returncode == 0, result.stderr
@@ -103,6 +103,35 @@ def test_experiment_cli_runs_frozen_variants_without_secrets_or_network(cli_tree
     assert len(report['runs'])==24 and report['network_requests']==0
     assert report['ranking'] is None and report['economic_profitability_verified'] is False
     assert not list(cli_tree.rglob('*.db'))
+
+
+def test_policy_research_cli_runs_native_replay_under_network_and_dotenv_tripwires(cli_tree):
+    from test_p4_experiment import corpus
+    from test_policy_research import plan
+    source=cli_tree/'research.json';output=cli_tree/'research-report.json'
+    source.write_text(json.dumps(dict(corpus=corpus(),plan=plan())))
+    result=cli(cli_tree,'policy-research','--input',source,'--output',output)
+    assert result.returncode==0 and result.stderr=='',result.stderr
+    report=json.loads(output.read_text())
+    assert len(report['development'])==24
+    assert report['network_requests']==0 and report['promotion_allowed'] is False
+    assert report['market_winner'] is None and report['active_policy_changed'] is False
+    retained=output.read_bytes()
+    again=cli(cli_tree,'policy-research','--input',source,'--output',output)
+    assert again.returncode!=0 and output.read_bytes()==retained
+    assert not list(cli_tree.rglob('*.db'))
+
+
+def test_master_endurance_cli_runs_restart_checks_with_network_and_dotenv_tripwires(cli_tree):
+    directory=cli_tree/'shadow-endurance'
+    result=cli(cli_tree,'master-endurance','--output',directory,'--events',40,'--restarts',3)
+    assert result.returncode==0 and result.stderr=='',result.stderr
+    report=json.loads((directory/'report.json').read_text())
+    assert report['schema']=='rugger-master-shadow-endurance-v1'
+    assert report['network_requests']==0 and report['promotion_allowed'] is False
+    retained=(directory/'report.json').read_bytes()
+    again=cli(cli_tree,'master-endurance','--output',directory,'--events',40,'--restarts',3)
+    assert again.returncode!=0 and (directory/'report.json').read_bytes()==retained
 
 
 def test_paper_requires_network_optin_before_importing_config(cli_tree):

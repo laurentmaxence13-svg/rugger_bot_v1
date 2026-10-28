@@ -5,6 +5,42 @@
 présenter une PR ou un test comme validation économique. Aucune fusion automatique.
 
 
+
+## Master Trader — intégration et endurance validées, 28 octobre 2026
+
+Premier checkpoint réellement publié/relu : `2c5e18cd17dd15e77deda7e796886c921cff0b46`,
+arbre identique local/distant `5cb30af8266895de4c2157c1df4961c1e04167da`. Les trois
+blobs Core/Positions/Optimization ont été relus depuis GitHub et comparés au code
+testé; reçu `validation/MASTER_FIRST_REMOTE_READBACK.json`.
+
+Dernière suite complète : **1831 passed,1 skipped,242 subtests**,10,33s,
+warnings en erreur, stderr0. Sources gelées, aucun ordre/réseau de marché/dépense
+ni modification des anciennes preuves P3. PR22 doit rester ouverte sans fusion.
+
+- Core et Positions intégrés en shadow : décisions expliquées, douze questions,
+  trois stratégies, WAIT/NO_TRADE, sorties/quantités/frais/protections.
+- Journal dans le même ledger. Panne optionnelle : nouvelles entrées refusées,
+  clôtures préservées. Doublon après32préfixes et reprises corrigé via préfixe strict.
+- Recherche :24candidats, horizon optionnel préenregistré30s–1h; scénarios longs
+  différencient durée900/1800s et trailing3,5/5%, uniquement sur fixtures.
+  Fenêtres holdout chevauchantes refusées; ancien registre consommé sans bornes
+  refuse une nouvelle lecture. Préserver le registre renvoyé entre processus.
+- Rapports et /health exposent le résumé shadow en lecture seule. Un audit
+  illisible est explicitement indisponible, sans reset du cash ou de l'inventaire.
+- Endurance :1000événements/1000doublons/1000conflits/1000interruptions annulées,
+  dix reprises/dix snapshots immuables,7054invariants. Capital10SOL, cash8,999995SOL
+  et1000unités atomiques conservés; zéro jambe réglée par le shadow.
+- Rapport recherche complet99475octets et entrée synthétique conservés sous
+  `validation/policy_research_fixture/`, reproduction CLI octet pour octet vérifiée.
+  Ancien rapport99260octets conservé; seuls les nouveaux champs de registre changent.
+
+Lire `MASTER_TRADER_RECOVERY.md`, les trois méthodes Master/Optimization/Endurance
+et `validation/MASTER_SHADOW_INTEGRATION_VALIDATION.json`.
+**P3 ouvert :0cycle de marché strictement qualifié; aucune rentabilité démontrée.**
+Aucune promotion active. Prochaine priorité : attacher des preuves P3 admissibles
+au même lot et comparer causalement les sorties sur un corpus indépendant, sous
+protocole préenregistré existant; ne pas refaire006/007/008 ni collecter sans limites.
+
 ## Reprise Master Trader sauvegardée — 28 octobre 2026
 
 Les trois composants locaux interrompus ont été récupérés, intégrés et testés.
