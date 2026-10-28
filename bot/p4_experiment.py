@@ -28,6 +28,17 @@ POLICY = {
 }
 
 
+# A separately hashed research supplement: never changes POLICY or active sizing.
+CURVE_COST_POLICY = {
+    'schema':'p4-causal-curve-cost-comparison-v1',
+    'position_lamports':[50000000,100000000,250000000,1000000000],
+    'hypothetical_additional_cost_lamports':[0,15000,1000000],
+    'hypothetical_external_buy_lamports':[0,100000000,500000000,1000000000],
+    'bank_max_availability_age_ms':5000,
+    'selection':'NONE; descriptive same-state counterfactuals only',
+}
+
+
 def _hash(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
 
@@ -84,6 +95,11 @@ def _validate(corpus,protocol):
                 raise ValueError('Future information in decision frame')
         if frame.get('source_slot') is not None:_integer(frame['source_slot'],'source slot',True)
         if frame.get('independent_buyers') is not None:_integer(frame['independent_buyers'],'independent buyers')
+        if frame.get('bank_state') is not None:
+            bank=frame['bank_state']
+            if type(bank) is not dict:raise ValueError('Explicit bank-state mapping required')
+            if type(bank.get('available_at_ms')) is not int or bank['available_at_ms']>at:
+                raise ValueError('Future or unknown bank availability in decision frame')
     development_creators={creator for creator,_pool,detected in identities.values() if detected<cutoff}
     assignments={}
     for mint,(creator,_pool,detected) in identities.items():
@@ -165,6 +181,156 @@ def decide_prefix(strategy,frame,history,*,api=None,decision_at_ms=None):
         'model':base.to_paper_model(),'score':base.score}
 
 
+def _bank_for_costs(frame,at):
+    bank=frame.get('bank_state')
+    if bank is None:return None,'bank_state_unknown'
+    if type(bank) is not dict:return None,'bank_state_invalid'
+    available=bank.get('available_at_ms')
+    if type(available) is not int or available<0 or available>at:
+        raise ValueError('Bank was not available at this decision')
+    if not 0<=at-available<=CURVE_COST_POLICY['bank_max_availability_age_ms']:
+        return None,'bank_availability_stale_or_invalid'
+    identity=bank.get('observation_id')
+    if (bank.get('mint')!=frame.get('mint') or bank.get('pool')!=frame.get('pool')
+            or type(bank.get('source_slot')) is not int or bank['source_slot']<=0
+            or bank['source_slot']!=frame.get('source_slot')
+            or bank.get('provenance') not in ('retained_rpc_snapshot','synthetic')
+            or not ((type(identity) is int and identity>0) or (type(identity) is str and bool(identity)))
+            or type(bank.get('pool_state')) is not dict):
+        return None,'bank_identity_or_provenance_unqualified'
+    pool=bank['pool_state']
+    if pool.get('mint_a')!=frame['mint']:
+        return None,'bank_pool_mint_mismatch'
+    required=('fee_rates_ppm','base_vault_atomic','quote_vault_lamports','curve_type','share_fee_rate_ppm')
+    if any(name not in bank for name in required):return None,'bank_cost_inputs_missing'
+    for name in ('identity_qualified','creation_verified','supply_verified'):
+        if bank.get(name) is not None and type(bank[name]) is not bool:
+            return None,'bank_certification_state_invalid'
+    try:json.dumps(bank,allow_nan=False)
+    except (TypeError,ValueError):return None,'bank_nonfinite_or_non_json'
+    return bank,None
+
+
+def _asof_provider_quality(frame,size,at):
+    """Keep exact indicative observations; no quote scaling or inferred fills."""
+    from fractions import Fraction
+    from bot.p3.exit_qualification import inventory_from_buy
+    from bot.p3.replay import replay_quote_observation
+    from bot.p3.quotes import SOL_MINT
+    contexts=frame.get('size_contexts',{})
+    context=contexts.get(str(size)) if type(contexts) is dict else None
+    if context is None and type(frame.get('buy_context')) is dict:
+        candidate=frame['buy_context'].get('buy_observation')
+        if type(candidate) is dict and candidate.get('payload',{}).get('input_amount_atomic')==str(size):
+            context=dict(buy_observation=candidate,sell_observations=[])
+    result=dict(buy_observation_id=None,projected_quantity_atomic=None,
+        full_sell_observation_ids=[],partial_sell_observation_ids=[],refusal_observation_ids=[],
+        full_sell_quoted=False,max_quoted_inventory_fraction=None,
+        source_times_unknown=0,source_slots_unknown=0,observations_used=0,
+        buy_body_replayed=False,validation_reasons=[],
+        economic_qualified=False,execution_verified=False,
+        basis='exact_retained_quotes_available_at_decision; no scaling or fills')
+    if type(context) is not dict:return result
+    buy=context.get('buy_observation');p=buy.get('payload',{}) if type(buy) is dict else {}
+    if (type(buy) is not dict or type(buy.get('available_at_ms')) is not int
+            or buy['available_at_ms']>at or buy.get('mint')!=frame['mint']
+            or buy.get('outcome')!='quoted' or p.get('input_mint')!=SOL_MINT
+            or p.get('output_mint')!=frame['mint'] or p.get('input_amount_atomic')!=str(size)
+            or type(p.get('output_amount_atomic')) is not str or not p['output_amount_atomic'].isdecimal()
+            or int(p['output_amount_atomic'])<=0):return result
+    retained=inventory_from_buy(buy,token_decimals=None,entry_decision_at_ms=at,max_source_age_ms=5000)
+    result['validation_reasons']=retained['reasons']
+    if not retained['accepted']:return result
+    result['buy_body_replayed']=True
+    quantity=int(p['output_amount_atomic']);accepted=[buy];coverage=None
+    result.update(buy_observation_id=buy.get('id'),projected_quantity_atomic=str(quantity))
+    seen=set()
+    for sell in context.get('sell_observations',[]):
+        if (type(sell) is not dict or type(sell.get('id')) not in (str,int)
+                or sell.get('id') in seen):continue
+        sp=sell.get('payload',{})
+        if (type(sell.get('available_at_ms')) is not int or not buy['available_at_ms']<=sell['available_at_ms']<=at
+                or sell.get('mint')!=frame['mint'] or sp.get('input_mint')!=frame['mint']
+                or sp.get('output_mint')!=SOL_MINT or type(sp.get('input_amount_atomic')) is not str
+                or not sp['input_amount_atomic'].isdecimal()):continue
+        q=int(sp['input_amount_atomic'])
+        if not 0<q<=quantity:continue
+        try:
+            checked=replay_quote_observation(sell)
+            if checked['status']!='REPLAYED':continue
+        except (ValueError,TypeError,KeyError):continue
+        if sell.get('outcome')=='quoted' and sp.get('actual_input_amount_atomic')!=str(q):continue
+        seen.add(sell.get('id'));accepted.append(sell)
+        if sell.get('outcome')=='quoted':
+            (result['full_sell_observation_ids'] if q==quantity else result['partial_sell_observation_ids']).append(sell.get('id'))
+            fraction=Fraction(q,quantity);coverage=max(coverage or fraction,fraction)
+        elif sell.get('outcome') in ('unavailable','error'):
+            result['refusal_observation_ids'].append(sell.get('id'))
+    result.update(full_sell_quoted=bool(result['full_sell_observation_ids']),
+        max_quoted_inventory_fraction=str(coverage) if coverage is not None else None,
+        observations_used=len(accepted),source_times_unknown=sum(e.get('source_time_ms') is None for e in accepted),
+        source_slots_unknown=sum(e.get('source_slot') is None for e in accepted))
+    return result
+
+
+def assess_curve_costs(frame,history=(),*,decision_at_ms=None,api=None):
+    """Compare fixed research sizes before outcomes, outside the PAPER ledger.
+
+    The bank belongs to this decision's available prefix. Each size gets an
+    independent integer buy/own-state sell, never a scaled external quotation.
+    Extra-cost and external-flow scenarios are explicitly hypothetical; they do
+    not certify freshness, executable liquidity, own costs or future outcomes.
+    """
+    from bot.p3.position_model import evaluate_position
+    from bot.p3.launchlab import observed_sell_projection,SnapshotEvidenceError
+    at=frame.get('available_at_ms') if decision_at_ms is None else decision_at_ms
+    if type(at) is not int or type(frame.get('available_at_ms')) is not int or at<frame['available_at_ms']:
+        raise ValueError('Decision precedes frame availability')
+    bank,reason=_bank_for_costs(frame,at)
+    decisions={}
+    for strategy in POLICY['strategies']:
+        if type(frame.get('features')) is not dict:
+            decisions[strategy]={'enter_intent':None,'reason':'strategy_features_unknown'}
+        else:
+            decision=decide_prefix(strategy,frame,history,api=api,decision_at_ms=at)
+            decisions[strategy]={'enter_intent':decision['enter'],'reason':decision['reason']}
+    result=dict(schema=CURVE_COST_POLICY['schema'],policy_sha256=_hash(CURVE_COST_POLICY),
+        frame_id=frame.get('id'),mint=frame.get('mint'),pool=frame.get('pool'),decision_at_ms=at,
+        bank_available=bank is not None,bank_unavailable_reason=reason,strategy_decisions=decisions,
+        sizes=[],ranking=None,active_size_changed=False,ledger_credited=False,
+        strict_economic_cycles=0,economic_profitability_verified=False,execution_verified=False)
+    if bank is None:return result
+    result['source_bank']={key:bank.get(key) for key in ('observation_id','source_slot','available_at_ms',
+        'provenance','identity_qualified','creation_verified','supply_verified','evidence_tail_hash')}
+    result['source_bank']['availability_age_ms']=at-bank['available_at_ms']
+    result['source_bank']['availability_does_not_certify_provider_quote_freshness']=True
+    kwargs=dict(pool=bank['pool_state'],fee_rates_ppm=bank['fee_rates_ppm'],
+        base_vault_atomic=bank['base_vault_atomic'],quote_vault_lamports=bank['quote_vault_lamports'],
+        curve_type=bank['curve_type'],share_fee_rate_ppm=bank['share_fee_rate_ppm'])
+    for size in CURVE_COST_POLICY['position_lamports']:
+        model=evaluate_position(input_lamports=size,**kwargs)
+        observed=None;refusal=None
+        if model['admissible']:
+            try:
+                observed=observed_sell_projection(bank['pool_state'],
+                    input_token_atomic=int(model['buy_output_atomic']),fee_rates_ppm=bank['fee_rates_ppm'],
+                    quote_vault_lamports=bank['quote_vault_lamports'],curve_type=bank['curve_type'],
+                    share_fee_rate_ppm=bank['share_fee_rate_ppm'])
+            except SnapshotEvidenceError as error:refusal=str(error)
+        costs=[dict(additional_costs_lamports=str(extra),cost_basis='explicit_hypothetical_total',
+            model=evaluate_position(input_lamports=size,additional_costs_lamports=extra,**kwargs))
+            for extra in CURVE_COST_POLICY['hypothetical_additional_cost_lamports']]
+        reserve=[dict(external_buy_lamports=str(flow),
+            flow_basis='hypothetical_external_buy_after_our_entry_not_observed_future',
+            model=evaluate_position(input_lamports=size,external_buy_lamports=flow,**kwargs))
+            for flow in CURVE_COST_POLICY['hypothetical_external_buy_lamports']]
+        result['sizes'].append(dict(input_lamports=str(size),same_state_own_entry_model=model,
+            observed_state_sell_estimate=observed,observed_state_sell_refusal=refusal,
+            observed_state_does_not_contain_own_entry=True,hypothetical_additional_costs=costs,
+            hypothetical_reserve_sensitivity=reserve,provider_quotes=_asof_provider_quality(frame,size,at)))
+    return result
+
+
 def _scaled_context(context,multiplier):
     context=deepcopy(context) if type(context) is dict else {}
     fees=context.get('fees')
@@ -188,7 +354,8 @@ def _position_pct(api,capital):
     raise ValueError('Fixed research budget cannot be represented by existing sizing API')
 
 
-def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_ms,development_end_ms,api):
+def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_ms,development_end_ms,api,
+             curve_assessments=None):
     con=sqlite3.connect(':memory:',isolation_level=None)
     try:
         api['setup'](con);api['ensure_paper_portfolio'](con,10.0,0)
@@ -232,6 +399,8 @@ def _run_arm(corpus,assignments,strategy,split,*,fee_multiplier,decision_delay_m
                 if state is None and api['inventory_state'](con,mint) is not None:models[mint]=decision['model']
             trace.append({'frame_id':frame['id'],'mint':mint,'decision_at_ms':at,'enter_intent':entry,
                           'decision_reason':decision['reason'],'decision_score':decision['score'],'message':message})
+            if curve_assessments is not None and (frame['id'],at) in curve_assessments:
+                trace[-1]['curve_cost_assessment_sha256']=_hash(curve_assessments[(frame['id'],at)])
             history.append(frame)
         states=[]
         for row in con.execute('SELECT mint,acquired_atomic,remaining_atomic,cost_basis_remaining_lamports,realized_pnl_lamports,entry_extra_lamports FROM paper_token_inventory ORDER BY mint'):
@@ -281,15 +450,29 @@ def evaluate_experiment(corpus,protocol,*,include_sensitivity=True):
     runs=[]
     multipliers=POLICY['sensitivity_fee_multipliers'] if include_sensitivity else [1]
     delays=POLICY['sensitivity_decision_delays_ms'] if include_sensitivity else [0]
+    curve_assessments=None
+    if any(frame.get('bank_state') is not None for frame in corpus['frames']):
+        curve_assessments={}
+        for delay in delays:
+            histories={}
+            for frame in corpus['frames']:
+                history=histories.setdefault(frame['mint'],[])
+                at=frame['available_at_ms']+delay
+                if (frame.get('bank_state') is not None
+                        and assignments[frame['mint']]!='excluded_creator_overlap'
+                        and not (assignments[frame['mint']]=='development' and at>=protocol['development_end_ms'])):
+                    curve_assessments[(frame['id'],at)]=assess_curve_costs(frame,history,decision_at_ms=at,api=api)
+                history.append(frame)
     for multiplier in multipliers:
         for delay in delays:
             for split in ('development','validation'):
                 for strategy in POLICY['strategies']:
                     result=_run_arm(corpus,assignments,strategy,split,fee_multiplier=multiplier,
-                                    decision_delay_ms=delay,development_end_ms=protocol['development_end_ms'],api=api)
+                                    decision_delay_ms=delay,development_end_ms=protocol['development_end_ms'],api=api,
+                                    curve_assessments=curve_assessments)
                     result.update(fee_multiplier=multiplier,decision_delay_ms=delay)
                     runs.append(result)
-    return {'schema':'p4-native-experiment-report-v1','data_kind':corpus['data_kind'],
+    report={'schema':'p4-native-experiment-report-v1','data_kind':corpus['data_kind'],
         'policy':deepcopy(POLICY),'policy_sha256':_hash(POLICY),'protocol':deepcopy(protocol),
         'corpus_sha256':_hash(corpus),'assignments':assignments,'runs':runs,
         'validation_creator_groups':len({f['creator'] for f in corpus['frames'] if assignments[f['mint']]=='validation'}),
@@ -300,6 +483,13 @@ def evaluate_experiment(corpus,protocol,*,include_sensitivity=True):
         'uncertainty':'No market confidence claim; creator clustering and minimum sample still required',
         'network_requests':0,'acquisition_verified':False,'execution_verified':False,
         'model_eligible':False,'own_entry_impact_qualification':'No observed execution effect; independent quote scenarios only'}
+    if curve_assessments is not None:
+        report['curve_cost_comparison']={'policy':deepcopy(CURVE_COST_POLICY),
+            'policy_sha256':_hash(CURVE_COST_POLICY),'assessments':list(curve_assessments.values()),
+            'basis':'causal_same_bank_model_supplement_not_ledger_cashflows',
+            'active_book_position_lamports':POLICY['position_lamports'],'ranking':None,
+            'strict_economic_cycles':0,'execution_verified':False}
+    return report
 
 
 def main(argv=None):

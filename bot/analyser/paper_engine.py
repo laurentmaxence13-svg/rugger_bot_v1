@@ -98,6 +98,18 @@ class _ScannerEntryGuard:
         except sqlite3.Error:
             return False
 
+    def operational_snapshot(self, con):
+        """Read-only P5 snapshot from this lifetime's actual source callbacks."""
+        from bot.operations import build_operational_health
+        health = self.health or getattr(self.task, 'scanner_health', None)
+        observations = health.operational_observations() if health is not None else {}
+        if 'scanner' in observations and not self.allows(con):
+            observations['scanner']['state'] = 'unavailable'
+            observations['scanner']['evidence'] = 'scanner_coverage_or_lifetime_guard_refusal'
+        return build_operational_health(con, observations, now_ms=int(self.clock()*1000),
+            max_age_ms=int(self.MAX_STATE_AGE*1000),
+            emergency_stop=health is None or health.failed)
+
     def allows(self, con):
         # collect_once uses its own locked connection: no separate stale snapshot.
         health = self.health or getattr(self.task, 'scanner_health', None)
@@ -737,7 +749,7 @@ def _valuation_scope(con=None):
 
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
                  validation_status='not_validated', *, data_kind='unknown',
-                 latency_samples_ms=None):
+                 latency_samples_ms=None, operational_health=None):
     """Write an operational report, explicitly marked PAPER ONLY."""
     open_count = con.execute(
         "SELECT COUNT(*) FROM paper_trades WHERE status='open'"
@@ -852,6 +864,8 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
     from bot.analyser.functional_report import build_functional_report
     report['functional_dashboard'] = build_functional_report(
         con, data_kind=data_kind, latency_samples_ms=latency_samples_ms)
+    if operational_health is not None:
+        report['operational_health'] = operational_health
     if output:
         _write_json_report(output, report)
     return report
@@ -1484,6 +1498,8 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     con, now, len(cached), output=report,
                     strategy_mode=strategy_mode,
                     latency_samples_ms=latency_samples,
+                    operational_health=(entry_guard.operational_snapshot(con)
+                        if isinstance(entry_guard, _ScannerEntryGuard) else None),
                     validation_status=(
                         'diagnostic_not_validated'
                         if strategy_mode.startswith('shadow_')
@@ -1588,7 +1604,7 @@ async def run_with_scanner(args):
     tasks = []
     failures = []
     try:
-        health = ScannerHealth()
+        health = ScannerHealth(require_observations=True)
         scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db, health=health))
         tasks.append(scanner_task)
         entry_guard = _ScannerEntryGuard(args.db, scanner_task, health=health)

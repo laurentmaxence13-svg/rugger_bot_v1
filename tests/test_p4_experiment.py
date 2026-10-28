@@ -226,3 +226,142 @@ def test_direct_strategy_api_refuses_future_availability_without_corpus_wrapper(
     frame['features_available_at_ms']-=1
     frame['slot_available_at_ms']+=1
     assert p4.decide_prefix('early_sniping',frame,[])['enter'] is False
+
+
+def cost_frame(frame=None,*,no_circulation=False):
+    from test_p3_launchlab import fixture
+    from bot.p3.launchlab import _pool
+    frame=deepcopy(corpus()['frames'][0] if frame is None else frame)
+    accounts,addresses=fixture()
+    pool,_=_pool(accounts[addresses['pool']])
+    pool['mint_a']=frame['mint']
+    if no_circulation:
+        pool.update(real_a=0,real_b=0)
+    frame['bank_state']={'mint':frame['mint'],'pool':frame['pool'],'source_slot':frame['source_slot'],
+        'available_at_ms':frame['available_at_ms'],'pool_state':pool,'fee_rates_ppm':[2500,10000,5000],
+        'base_vault_atomic':10**15,'quote_vault_lamports':pool['real_b']+3000000,
+        'curve_type':0,'share_fee_rate_ppm':0,'provenance':'synthetic','observation_id':'bank-'+frame['id'],
+        'identity_qualified':None,'creation_verified':False,'supply_verified':True}
+    return frame
+
+
+def test_size_grid_recalculates_curve_quantities_and_exposes_fixed_cost_tradeoff():
+    frame=cost_frame(no_circulation=True);original=deepcopy(frame)
+    assessment=p4.assess_curve_costs(frame)
+    assert frame==original  # Bank and quotes are never rewritten with our buy.
+    assert [row['input_lamports'] for row in assessment['sizes']]==['50000000','100000000','250000000','1000000000']
+    first,last=assessment['sizes'][0],assessment['sizes'][-1]
+    assert int(last['same_state_own_entry_model']['buy_output_atomic'])<20*int(first['same_state_own_entry_model']['buy_output_atomic'])
+    for row in assessment['sizes']:
+        model=row['same_state_own_entry_model'];amount=int(row['input_lamports'])
+        assert model['admissible'] is True
+        assert model['modeled_net_pnl_lamports'] is None
+        assert row['observed_state_sell_refusal']=='sell_exceeds_observed_outstanding_curve_tokens'
+        by_cost={entry['additional_costs_lamports']:entry['model'] for entry in row['hypothetical_additional_costs']}
+        assert int(by_cost['15000']['modeled_net_pnl_lamports'])==int(by_cost['0']['modeled_net_pnl_lamports'])-15000
+        assert int(by_cost['1000000']['modeled_net_pnl_lamports'])==int(by_cost['0']['modeled_net_pnl_lamports'])-1000000
+        assert by_cost['0']['additional_costs_observed'] is False
+        assert by_cost['15000']['cost_basis']=='caller_hypothetical_scenario'
+        assert int(by_cost['15000']['break_even_extra_proceeds_lamports'])==amount+15000-int(model['sell_output_lamports'])
+        products=[int(case['model']['sell_output_lamports']) for case in row['hypothetical_reserve_sensitivity']]
+        assert products==sorted(products) and products[-1]>products[0]
+    assert 15000/int(first['input_lamports'])>15000/int(last['input_lamports'])
+    assert assessment['ranking'] is None and assessment['active_size_changed'] is False
+    assert assessment['ledger_credited'] is False and assessment['strict_economic_cycles']==0
+
+
+def test_future_bank_cannot_change_current_strategy_cost_decision():
+    frame=cost_frame();frame['bank_state']['available_at_ms']+=1
+    with pytest.raises(ValueError,match='Bank was not available'):
+        p4.assess_curve_costs(frame)
+    data=corpus();data['frames'][0]=frame
+    with pytest.raises(ValueError,match='bank availability'):
+        p4.evaluate_experiment(data,protocol(),include_sensitivity=False)
+
+
+@pytest.mark.parametrize('damage',['mint','slot','provenance','stale'])
+def test_unqualified_bank_is_retained_as_missing_not_used_for_model(damage):
+    frame=cost_frame();bank=frame['bank_state']
+    if damage=='mint':bank['pool_state']['mint_a']='other'
+    elif damage=='slot':bank['source_slot']+=1
+    elif damage=='provenance':bank['provenance']='unknown'
+    else:bank['available_at_ms']-=5001
+    result=p4.assess_curve_costs(frame)
+    assert result['bank_available'] is False and result['sizes']==[]
+    assert result['bank_unavailable_reason']
+
+
+def test_missing_strategy_features_stay_unknown_despite_available_curve_state():
+    frame=cost_frame();del frame['features']
+    result=p4.assess_curve_costs(frame)
+    assert len(result['sizes'])==4
+    assert all(decision['enter_intent'] is None for decision in result['strategy_decisions'].values())
+    assert result['source_bank']['identity_qualified'] is None
+    assert result['source_bank']['availability_does_not_certify_provider_quote_freshness'] is True
+    assert result['strict_economic_cycles']==0
+
+
+def test_size_crossing_fundraising_boundary_is_not_dropped_or_scaled_down():
+    frame=cost_frame();bank=frame['bank_state'];bank['pool_state']['total_fundraising_b']=bank['pool_state']['real_b']+200000000
+    result=p4.assess_curve_costs(frame)
+    assert len(result['sizes'])==4
+    assert result['sizes'][0]['same_state_own_entry_model']['admissible'] is True
+    assert result['sizes'][-1]['same_state_own_entry_model']['admissible'] is False
+    assert result['sizes'][-1]['same_state_own_entry_model']['reason']=='buy_crosses_fundraising_or_remaining_boundary'
+    assert result['sizes'][-1]['input_lamports']=='1000000000'
+
+
+def test_curve_supplement_integrates_without_changing_ledger_or_using_future_prices():
+    data=corpus();data['frames']=[cost_frame(f) for f in data['frames']]
+    baseline=p4.evaluate_experiment(corpus(),protocol(),include_sensitivity=False)
+    result=p4.evaluate_experiment(data,protocol(),include_sensitivity=False)
+    assert result['curve_cost_comparison']['active_book_position_lamports']==1000000000
+    assert len(result['curve_cost_comparison']['assessments'])==8
+    for original,current in zip(baseline['runs'],result['runs']):
+        assert current['positions']==original['positions'] and current['legs']==original['legs']
+        assert all('curve_cost_assessment_sha256' in row for row in current['trace'])
+    changed=deepcopy(data)
+    changed['frames'][2]['features']['price_usd']=1000000
+    changed['frames'][2]['bank_state']['fee_rates_ppm']=[250000,250000,250000]
+    second=p4.evaluate_experiment(changed,protocol(),include_sensitivity=False)
+    assert result['curve_cost_comparison']['assessments'][0]==second['curve_cost_comparison']['assessments'][0]
+    assert result['curve_cost_comparison']['assessments'][1]==second['curve_cost_comparison']['assessments'][1]
+
+
+def test_exact_provider_quotes_are_not_rescaled_to_other_sizes_or_added_twice():
+    data=corpus();frame=cost_frame(data['frames'][2])
+    buy=data['frames'][0]['buy_context']['buy_observation']
+    sell=frame['sell_contexts'][0]['sell_observation']
+    frame['size_contexts']={'1000000000':{'buy_observation':buy,'sell_observations':[sell,deepcopy(sell)]}}
+    assessment=p4.assess_curve_costs(frame)
+    for row in assessment['sizes'][:-1]:
+        assert row['provider_quotes']['observations_used']==0
+        assert row['provider_quotes']['projected_quantity_atomic'] is None
+    quality=assessment['sizes'][-1]['provider_quotes']
+    assert quality['projected_quantity_atomic']=='1000'
+    assert quality['full_sell_observation_ids']==[sell['id']]
+    assert quality['max_quoted_inventory_fraction']=='1'
+    assert quality['economic_qualified'] is False
+    assert quality['buy_body_replayed'] is True
+
+
+def test_provider_quality_rejects_corrupt_buy_and_does_not_read_future_sells():
+    data=corpus();frame=cost_frame(data['frames'][2])
+    buy=data['frames'][0]['buy_context']['buy_observation'];sell=deepcopy(frame['sell_contexts'][0]['sell_observation'])
+    sell['available_at_ms']=frame['available_at_ms']+1
+    frame['size_contexts']={'1000000000':{'buy_observation':deepcopy(buy),'sell_observations':[sell]}}
+    result=p4.assess_curve_costs(frame)['sizes'][-1]['provider_quotes']
+    assert result['observations_used']==1 and result['full_sell_observation_ids']==[]
+    assert result['max_quoted_inventory_fraction'] is None
+    frame['size_contexts']['1000000000']['buy_observation']['payload']['output_amount_atomic']='999999999'
+    corrupted=p4.assess_curve_costs(frame)['sizes'][-1]['provider_quotes']
+    assert corrupted['observations_used']==0 and corrupted['buy_body_replayed'] is False
+    assert corrupted['validation_reasons']
+
+
+def test_nonfinite_bank_not_silently_used_and_baseline_policy_remains_frozen():
+    frame=cost_frame();frame['bank_state']['fee_rates_ppm'][0]=float('nan')
+    result=p4.assess_curve_costs(frame)
+    assert result['bank_available'] is False and result['bank_unavailable_reason']=='bank_nonfinite_or_non_json'
+    assert p4._hash(p4.POLICY)=='c02f28a2d491f0b9031fb14ceec8e6a09743a840c1a6788801bb63dad1cffa8f'
+    assert p4.POLICY['position_lamports']==1000000000

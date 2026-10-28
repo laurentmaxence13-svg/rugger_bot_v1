@@ -1,0 +1,104 @@
+{
+  "admission_refusals": 750,
+  "backups_verified": 10,
+  "data_kind": "synthetic",
+  "economic_profitability_verified": false,
+  "execution_verified": false,
+  "final_available_cash_sol": 10.039995,
+  "final_capital_sol": 10.039995,
+  "final_database": "backup-1000.sqlite",
+  "fixture_entry_lamports": "1000000000",
+  "fixture_net_pnl_lamports": "39995000",
+  "fixture_total_extra_fees_lamports": "10005000",
+  "fixture_total_proceeds_lamports": "1050000000",
+  "health_phase_counts": {
+    "disconnected": 250,
+    "emergency": 250,
+    "healthy": 250,
+    "stale": 250
+  },
+  "invariant_checks": 4011,
+  "inventory_acquired_atomic": "1000000",
+  "inventory_remaining_atomic": "0",
+  "network_requests": 0,
+  "real_orders_enabled": false,
+  "replayed_quotes_ignored": 1000,
+  "restart_snapshots": [
+    {
+      "after_cycle": 100,
+      "backup_quick_check": "ok",
+      "legs": 100,
+      "native_version": 100,
+      "remaining_atomic": "900000"
+    },
+    {
+      "after_cycle": 200,
+      "backup_quick_check": "ok",
+      "legs": 200,
+      "native_version": 200,
+      "remaining_atomic": "800000"
+    },
+    {
+      "after_cycle": 300,
+      "backup_quick_check": "ok",
+      "legs": 300,
+      "native_version": 300,
+      "remaining_atomic": "700000"
+    },
+    {
+      "after_cycle": 400,
+      "backup_quick_check": "ok",
+      "legs": 400,
+      "native_version": 400,
+      "remaining_atomic": "600000"
+    },
+    {
+      "after_cycle": 500,
+      "backup_quick_check": "ok",
+      "legs": 500,
+      "native_version": 500,
+      "remaining_atomic": "500000"
+    },
+    {
+      "after_cycle": 600,
+      "backup_quick_check": "ok",
+      "legs": 600,
+      "native_version": 600,
+      "remaining_atomic": "400000"
+    },
+    {
+      "after_cycle": 700,
+      "backup_quick_check": "ok",
+      "legs": 700,
+      "native_version": 700,
+      "remaining_atomic": "300000"
+    },
+    {
+      "after_cycle": 800,
+      "backup_quick_check": "ok",
+      "legs": 800,
+      "native_version": 800,
+      "remaining_atomic": "200000"
+    },
+    {
+      "after_cycle": 900,
+      "backup_quick_check": "ok",
+      "legs": 900,
+      "native_version": 900,
+      "remaining_atomic": "100000"
+    },
+    {
+      "after_cycle": 1000,
+      "backup_quick_check": "ok",
+      "legs": 1000,
+      "native_version": 1000,
+      "remaining_atomic": "0"
+    }
+  ],
+  "restarts_verified": 10,
+  "schema": "rugger-offline-endurance-v1",
+  "scope": "virtual-time software endurance; not wall-clock or production availability validation",
+  "settled_legs": 1000,
+  "virtual_cycles": 1000,
+  "virtual_elapsed_ms": 2001000
+}
