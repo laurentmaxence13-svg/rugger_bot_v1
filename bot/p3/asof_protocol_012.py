@@ -32,6 +32,7 @@ FIXED=dict(
     first_interval_minimum_ms=15000,
     second_interval_minimum_ms=15000,
     max_S1_receipt_age_ms=5000,
+    max_S0_receipt_age_ms=45000,
     source_clock='solana_getMultipleAccounts_context_slot_only',
     bank_time='getBlockTime_estimate_not_provider_quote_source_clock',
     selection='pinned_STRICT_or_RESEARCH_ONLY_plus_S0_S1_net_buy_compatible_change',
