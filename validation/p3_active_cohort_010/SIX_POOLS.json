@@ -1,0 +1,947 @@
+[
+  {
+    "activity": "unknown",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "2HpxA1fqGCBcQav3NgeVBX66jog4hVoFK8PGrMgrCygh",
+    "creator_index_claim": "2HpxA1fqGCBcQav3NgeVBX66jog4hVoFK8PGrMgrCygh",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified",
+      "snapshot_or_curve_evidence_unusable"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 252,
+        "derived_address": "2KnqS9oZPo6CheEQv5zjkSPkeR5Xdu5uYM2nDa8UiCiC",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "AAs6spovZZk6vncAJzSMNvffw2CoR1CCeiE1VWuusdvA",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "857PhaYhvXdqBVo8QGqnp9R8TdGz8oLLurhFp4MzUdxT",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "YvWXoyyRpD5fPVZHZV6SY8NS1nuTFmyewxudD3mwuE3",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "Bvrx7PSzZoNSGQeSHiQnkfpBJNjY8xRj3vDD6xvWHUZX",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "3EWcNCziEQjjsNNqgj4KzF6idG5UBjuWG3GQP2Anbonk",
+    "modeled_full_exit_capacity_0_1_SOL": null,
+    "pool": "2KnqS9oZPo6CheEQv5zjkSPkeR5Xdu5uYM2nDa8UiCiC",
+    "real_a": "250969595059116",
+    "real_b": "9159110829",
+    "risk_flags": [
+      "mint_supply_or_decimals_mismatch"
+    ],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": false,
+      "mint_minus_pool_atomic": "-1",
+      "mint_supply_atomic": "999999999999999",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "unresolved"
+    }
+  },
+  {
+    "activity": "active",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "Djvy5Vr8KTCBBf2uRQAvk3tka34PVoJ8YcNB2k5s5T3S",
+    "creator_index_claim": "Djvy5Vr8KTCBBf2uRQAvk3tka34PVoJ8YcNB2k5s5T3S",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified",
+      "observed_full_exit_capacity_unavailable:sell_exceeds_observed_outstanding_curve_tokens"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "DCJX5RZb4KvDQkyhXAgvEZwAxbx8FboeuwFmcksoXyYh",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "4aTUu1CY9dBu2cDvvNMpEjReMqDaqMxRp7NrJj1B27xA",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "9RUrPzQ5hLHkLzbriLEhjZKEuXy9L6cntfuGacsphMWa",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 252,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "7t3y1f2NukpPdaSzYnU3rdLVBCyQVdhf9rJYMEwRJ9pw",
+    "modeled_full_exit_capacity_0_1_SOL": false,
+    "pool": "DCJX5RZb4KvDQkyhXAgvEZwAxbx8FboeuwFmcksoXyYh",
+    "real_a": "2241850801020",
+    "real_b": "62811410",
+    "risk_flags": [],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": true,
+      "mint_minus_pool_atomic": "0",
+      "mint_supply_atomic": "1000000000000000",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "not_required"
+    }
+  },
+  {
+    "activity": "active",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "2a71vys7nu3JoibHoREz8fDMCC9PZ5Z19e75okMzocwk",
+    "creator_index_claim": "2a71vys7nu3JoibHoREz8fDMCC9PZ5Z19e75okMzocwk",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "87A7ujoS6Yv9q2GZc25dJGALVYAN38VYnzBbAYMzYWHA",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "Htw5WEgC5sjrSTjr7wJ2KfgvS9Pqf6jxZ6a49nP8pQAW",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 248,
+        "derived_address": "3fwGrJw39Csw84hWLC3hQyWgypaDCiC7sGWQywtAq29C",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 252,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "DkvJvgLawc4TToQtKP8PJvNwYo9s65MQkX4y2guDdCiN",
+    "modeled_full_exit_capacity_0_1_SOL": true,
+    "pool": "87A7ujoS6Yv9q2GZc25dJGALVYAN38VYnzBbAYMzYWHA",
+    "real_a": "106814581114037",
+    "real_b": "3316592852",
+    "risk_flags": [],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": true,
+      "mint_minus_pool_atomic": "0",
+      "mint_supply_atomic": "1000000000000000",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "not_required"
+    }
+  },
+  {
+    "activity": "no_observed_circulation",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "J9ExGufoPVwBS1vuwWGMCzrumDgWmWg7wfe17XKddGEp",
+    "creator_index_claim": "J9ExGufoPVwBS1vuwWGMCzrumDgWmWg7wfe17XKddGEp",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified",
+      "observed_activity_insufficient",
+      "observed_full_exit_capacity_unavailable:sell_exceeds_observed_outstanding_curve_tokens"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "4SPadRxD88iE9imk4hwrVDtqSLdVa5yYBJysjr4yNsY7",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "2rcGvdwkp54knhmQxvjspeTJeizfUnkE5dhxBVKUcnDZ",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "8MKUtBeU9qAQJkGMyEknYQwsQ11s5GgUgkpYeBseWFSP",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 249,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "rayfqP1sEWfE1SJTSa5Z1szTW1hYpLWoBNwwPGRoJgV",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "27YaqPkYC4GcBsB3ZHLD3uAjCdeASpcaJqc6J74y4Fae",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "AFVbiHTLLH4o8qjaVpWys6D78SL573cPaeWe21jytray",
+    "modeled_full_exit_capacity_0_1_SOL": false,
+    "pool": "4SPadRxD88iE9imk4hwrVDtqSLdVa5yYBJysjr4yNsY7",
+    "real_a": "0",
+    "real_b": "1",
+    "risk_flags": [],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": true,
+      "mint_minus_pool_atomic": "0",
+      "mint_supply_atomic": "1000000000000000",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "not_required"
+    }
+  },
+  {
+    "activity": "active",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "3TNh3MWVzrvHPbnpTByeJaxM8LJUAjB9xzivoEXyG4wU",
+    "creator_index_claim": "3TNh3MWVzrvHPbnpTByeJaxM8LJUAjB9xzivoEXyG4wU",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "BEPf4ESFjWigi9Uq6tSShAXHx2oi5NAdSCdxHkQm8JhL",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "8AG7VKirCQ5GEUGCC9JGk9x8teR1kR2MuK4E3sPJm7cr",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 255,
+        "derived_address": "BtHS8qbNnjbe1uF316saKuaPSnGXXPvwMva6VaPJXQBB",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 252,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "4NsR2QMxp59geg74NmggW7BBGU9epHZJMzfNGXKxYJnG",
+    "modeled_full_exit_capacity_0_1_SOL": true,
+    "pool": "BEPf4ESFjWigi9Uq6tSShAXHx2oi5NAdSCdxHkQm8JhL",
+    "real_a": "140886222921339",
+    "real_b": "4534415062",
+    "risk_flags": [],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": true,
+      "mint_minus_pool_atomic": "0",
+      "mint_supply_atomic": "1000000000000000",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "not_required"
+    }
+  },
+  {
+    "activity": "unknown",
+    "context_slot": 462625157,
+    "creator_claim_matches_account": true,
+    "creator_decoded_onchain": "GbbCpznonKjVT7abomcCkCZfUCq4wAwTn3Y5hqwdM285",
+    "creator_index_claim": "GbbCpznonKjVT7abomcCkCZfUCq4wAwTn3Y5hqwdM285",
+    "exclusion_reasons": [
+      "identity_supply_or_permissions_unqualified",
+      "snapshot_or_curve_evidence_unusable"
+    ],
+    "identity_blocking_reasons": [
+      "original_platform_admin_seed_not_retained"
+    ],
+    "identity_checks": [
+      {
+        "name": "input_graph",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "config_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "config_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_discriminator",
+        "status": "PASS"
+      },
+      {
+        "name": "platform_empty_curve_params",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_config",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_platform",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_mint_b",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_a",
+        "status": "PASS"
+      },
+      {
+        "name": "pool_link_vault_b",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_a_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "mint_b_program_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_a_mint_link",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_layout_owner",
+        "status": "PASS"
+      },
+      {
+        "name": "vault_b_mint_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "DDqBcHkgj8e8pSJgXHgKfWJMvzUKuR1RfUCYtQ6C2vUf",
+        "name": "pool_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 253,
+        "derived_address": "4MqGWNzbXj7cPWJ3nbJ47oiJ1r1b8qHfWeHjej7xQhUa",
+        "name": "vault_a_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "8bePSxxTvXABfSMdcFJhJDX5eT2YfrYG9Lio9P4YXx1c",
+        "name": "vault_b_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 250,
+        "derived_address": "WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh",
+        "name": "authority_pda",
+        "status": "PASS"
+      },
+      {
+        "name": "config_quote_link",
+        "status": "PASS"
+      },
+      {
+        "bump": 254,
+        "derived_address": "6s1xP3hpbAfFoNtUNF8mfHsjr2Bd97JxFJRWLbL6aHuX",
+        "name": "config_pda",
+        "status": "PASS"
+      },
+      {
+        "bump": 252,
+        "candidate_assumed_to_be_admin": false,
+        "candidate_hash_matched": false,
+        "candidate_public_key": "5CEbueQnq1Ym2uSSx2xXds3jQAqT1BDnkA59RZobSPAG",
+        "candidate_seed_source": "PlatformConfig.platform_fee_wallet",
+        "derived_address": "T9kW72h2ZJ3wM5ayckhjXPut4iMBoDR4NjQBP6heY6M",
+        "name": "platform_pda",
+        "reason": "original_platform_admin_seed_not_retained",
+        "status": "UNKNOWN",
+        "verification_basis": "canonical_PDA_hash_equality_only"
+      }
+    ],
+    "mint": "25mbv6mFYBq8S6kXVNefEiqomcBBuGSsRbJck5gnaxmk",
+    "modeled_full_exit_capacity_0_1_SOL": null,
+    "pool": "DDqBcHkgj8e8pSJgXHgKfWJMvzUKuR1RfUCYtQ6C2vUf",
+    "real_a": "51015326518244",
+    "real_b": "1497542025",
+    "risk_flags": [
+      "mint_supply_or_decimals_mismatch"
+    ],
+    "strict_eligible": false,
+    "supply": {
+      "context_slot": 462625157,
+      "matches": false,
+      "mint_minus_pool_atomic": "-50476479364118",
+      "mint_supply_atomic": "949523520635882",
+      "pool_supply_atomic": "1000000000000000",
+      "reconciliation_status": "unresolved"
+    }
+  }
+]

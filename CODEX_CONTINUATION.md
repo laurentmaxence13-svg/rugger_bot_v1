@@ -1,5 +1,21 @@
 # Rugger Bot V1 — reprise autonome depuis Git
 
+## Reprise29octobre — P0 P3-010 récupéré
+
+Journal47événements exporté avec ancre1d2afec8,14bundles/1745événements; les13anciens
+inchangés. Rapport original et6analyses de comptes reproduits sans réseau/SQLite.
+100lignes de sélection conservées,6pools,3actifs,2capacités modélisées0,10SOL;
+6identités plateforme UNKNOWN,2supplies divergentes,0devis/0cycle/0A/B admissible.
+4requêtes historiques/2342ms capture/2569,909ms processus; contrôle010 jamais relancé.
+JSON complet de découverte absent dès la collecte (unsafe_or_oversized); seules les
+100lignes sélection/digests sont conservées. Ne pas prétendre à un raw replay complet.
+Preuves/reproduction : validation/p3_active_cohort_010/RECOVERY.md, SIX_POOLS.json,
+reproduce.py et evidence/p3/active_cohort_010. Aucune donnée utilisateur/secret/SQLite publié.
+Suite autorisée : examiner PR24 sur structures réelles, séparer STRICT/RESEARCH_ONLY,
+puis nouveau protocole011 borné/publié, jamais010. Issues23 et25. Aucun ordre/dépense,
+politique active ou fusion. Endurance et anciens audits exclus de la reprise.
+
+
 ## P3-010 — transport préparé, avant diagnostic, 28 octobre 2026
 
 Base distante298f305, arbre local/distant5ea18477 vérifié; arbre propre au départ.
