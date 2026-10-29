@@ -35,6 +35,6 @@
   "priority_fee_micro_lamports": 0,
   "max_priority_fee_lamports": 0,
   "max_bank_age_ms": 5000,
-  "max_rpc_requests": 17,
+  "max_rpc_requests": 18,
   "max_transport_elapsed_seconds": 40
 }
