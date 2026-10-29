@@ -25,6 +25,7 @@ class FakeRpc:
         self.blockhash_slot=1236
         self.change_pool=False
         self.drop_account=False
+        self.block_time=1
 
     async def genesis_hash(self):
         self.calls.append('genesis')
@@ -54,6 +55,11 @@ class FakeRpc:
         self.calls.append('rent')
         return 2039280
 
+    async def get_block_time(self,slot):
+        assert slot==self.second_slot
+        self.calls.append(('getBlockTime',slot))
+        return self.block_time
+
     async def send_transaction(self,*args,**kwargs):
         raise AssertionError('read_only_bank_probe_may_not_send')
 
@@ -63,7 +69,7 @@ def prepare(rpc,*,ticks=(1050,1070,1100),**overrides):
     clock=iter(ticks)
     params=dict(pool_address=args['pool_address'],mint=args['mint'],
         wallet=args['wallet'],decision_id=args['decision_id'],
-        min_context_slot=1234,observed_block_time_seconds=1,
+        min_context_slot=1234,
         expected_genesis_hash=GENESIS,expected_endpoint_sha256=ENDPOINT,
         amount_in=args['amount_in'],slippage_bps=args['slippage_bps'],
         max_slippage_bps=args['max_slippage_bps'],
@@ -82,7 +88,11 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     order=result['order']
     assert validate_cpmm_exit(order)==order
     assert order.transaction.required_signers==(order.user,)
-    assert result['read_only_RPC_calls']==5
+    assert result['read_only_RPC_calls']==6
+    assert result['source_block_time_seconds']==1
+    assert result['source_block_time_slot']==1235
+    assert result['source_block_time_provided_by_pinned_RPC'] is True
+    assert result['observed_block_time_independently_verified'] is False
     assert result['source_bank_slot']==1235
     assert result['initial_pool_bank_slot']==1234
     assert result['blockhash_bank_slot']==1236
@@ -93,7 +103,7 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     assert result['onchain_program_pin_verified_by_this_module'] is False
     assert result['migration_provenance_verified_by_this_module'] is False
     assert [c[0] if isinstance(c,tuple) else c for c in rpc.calls]==[
-        'genesis','bank','bank','blockhash','rent']
+        'genesis','bank','bank','blockhash','rent','getBlockTime']
     assert rpc.calls[2][2]==1234 and len(rpc.calls[2][1])==10
 
 
@@ -122,6 +132,7 @@ def test_legitimate_inflight_reserve_or_counter_updates_use_only_joint_bank():
     'endpoint','genesis','first_bank','second_bank','changed_pool',
     'incomplete_bank','blockhash_bank','missing_token_account',
     'stale_acquisition','stale_decision','wrong_mint',
+    'missing_source_block_time','future_source_block_time',
 ])
 def test_any_stale_bank_or_unknown_account_fails_closed(attack):
     rpc=FakeRpc(fixture_bank())
@@ -142,6 +153,8 @@ def test_any_stale_bank_or_unknown_account_fails_closed(attack):
     if attack=='stale_decision':ticks=(1050,1070,7000)
     if attack=='wrong_mint':
         overrides['mint']=rpc.kwargs['wallet']
+    if attack=='missing_source_block_time':rpc.block_time=None
+    if attack=='future_source_block_time':rpc.block_time=99999
     with pytest.raises((ValueError,TypeError)):
         prepare(rpc,ticks=ticks,**overrides)
     assert 'sendTransaction' not in rpc.calls
@@ -150,8 +163,6 @@ def test_any_stale_bank_or_unknown_account_fails_closed(attack):
 @pytest.mark.parametrize('key,bad',[
     ('min_context_slot',True),('min_context_slot',0),
     ('max_bank_age_ms',False),('max_bank_age_ms',5001),
-    ('observed_block_time_seconds',0),
-    ('observed_block_time_seconds',True),
 ])
 def test_source_limits_are_required_and_bounded(key,bad):
     rpc=FakeRpc(fixture_bank())
