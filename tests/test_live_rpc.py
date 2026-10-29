@@ -161,3 +161,24 @@ def test_financial_payload_rechecks_gate_after_connection_delay():
     admitted[0]=True
     run(payload.write(Writer()))
     assert written==[b'public-test-json']
+
+
+def test_rpc_get_block_time_is_exact_positive_source_epoch_not_caller_guess():
+    rpc=Transport(1793295100)
+    assert run(SolanaRpc(rpc).get_block_time(1235))==1793295100
+    assert rpc.calls==[('getBlockTime',[1235])]
+
+
+@pytest.mark.parametrize('invalid',[None,False,True,0,-1,1.5,'1793295100',2**64])
+def test_rpc_get_block_time_missing_or_untyped_fails_closed(invalid):
+    t=Transport(invalid)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_block_time(1235))
+
+
+@pytest.mark.parametrize('invalid',[None,True,0,-1,'1235'])
+def test_rpc_get_block_time_rejects_noninteger_source_slot_without_request(invalid):
+    t=Transport(1793295100)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_block_time(invalid))
+    assert t.calls==[]
