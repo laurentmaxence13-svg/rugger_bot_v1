@@ -53,7 +53,7 @@ def fixture(monkeypatch):
             snapshot=bank(mint,pool,10,1000,1000,2000,2000))
         delta=0 if n==0 else n*50
         current.append(dict(mint=mint,pool=pool,
-            snapshot=bank(mint,pool,11,1000-delta,1000+delta,2000-delta,2000+delta),
+            snapshot=bank(mint,pool,11,1000+delta,1000+delta,2000-delta,2000+delta),
             snapshot_available_at_ms=2000))
     strict=cohort.select_cohort(current,decision_at_ms=2001)
     return strict,previous
