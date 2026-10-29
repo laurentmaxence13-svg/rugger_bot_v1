@@ -24,6 +24,10 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
                   execution_verified=False,strict_identity_verified=False,
                   net_market_pnl_sol=None,market_profitability_verified=False,
                   independent_market_edge_verified=False,
+                  projected_entry_quantity_atomic=None,
+                  modeled_sold_quantity_atomic='0',
+                  modeled_unliquidated_quantity_atomic=None,
+                  inventory_acquired=False,
                   extra_cost_basis='explicit_hypothetical_range_not_execution_evidence')
 
     def refuse(why):
@@ -56,7 +60,8 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
     if len(matching)!=1:
         return refuse('S2_not_selected_before_outcome')
     choice=matching[0]
-    if choice.get('trade_allowed') is not False:
+    if (choice.get('trade_allowed') is not False
+            or type(choice.get('universe_index')) is not int or choice['universe_index']<0):
         return refuse('research_selection_unexpectedly_tradable')
     strict=flow_selection.get('original_strict_selection')
     rows=strict.get('records') if type(strict) is dict else None
@@ -71,22 +76,35 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
     if (type(s1) is not dict or type(s1_available) is not int
             or not 0 <= s1_available <= entry_ms
             or s1.get('mint')!=s2.get('mint') or s1.get('pool_address')!=s2.get('pool_address')
+            or type(s1.get('context_slot')) is not int or s1['context_slot']<=0
             or s1.get('context_slot')!=choice.get('decision_slot')
             or type(s2.get('context_slot')) is not int
             or s2['context_slot']<=s1['context_slot']):
         return refuse('S1_S2_identity_slot_or_temporal_link_invalid')
-    if (s2.get('evidence_profile') != 'published_metadata_v1'
-            or s2.get('risk_flags') != []):
-        return refuse('S2_pin_or_safety_not_verified')
     from bot.p3.cohort import classify_snapshot
     from bot.p3.launchlab import observed_sell_projection,SnapshotEvidenceError
+    from bot.p3.research_gate import assess_research_only
+    from bot.p3.observed_activity import _nat,snapshot_transition_reason
     try:
         screen=classify_snapshot(s1,size_lamports=budget_lamports,
             available_at_ms=s1_available,decision_at_ms=entry_ms,
             expected_mint=choice['mint'],expected_pool=choice['pool'])
         entry=screen.get('own_entry_projection')
-        if type(entry) is not dict or screen.get('observed_full_exit_capacity') is not True:
+        admitted=(screen.get('screen_eligible') is True
+            or assess_research_only(s1,screen).get('research_only') is True)
+        if (not admitted or type(entry) is not dict
+                or screen.get('observed_full_exit_capacity') is not True):
             return refuse('S1_projected_exact_entry_unavailable')
+        quantity=_nat(entry['buy_output_atomic'])
+        if quantity<=0:return refuse('S1_projected_exact_entry_unavailable')
+        # A later refusal cannot erase the earlier, frozen projected lot.
+        # This is a contingent model remainder, never an acquired position.
+        result.update(mint=choice['mint'],pool=choice['pool'],
+            entry_budget_lamports=str(budget_lamports),
+            projected_entry_quantity_atomic=str(quantity),
+            modeled_unliquidated_quantity_atomic=str(quantity))
+        transition=snapshot_transition_reason(s1,s2)
+        if transition:return refuse('S1_S2_terms_or_safety_unqualified:'+transition)
         facts=s2['facts']
         if (facts.get('account_context_basis')!='caller_supplied_single_getMultipleAccounts_response'
                 or facts['supply_consistency'].get('matches') is not True
@@ -95,47 +113,30 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
             return refuse('S2_identity_supply_or_safety_unqualified')
         if (facts['pool'].get('mint_a')!=choice['mint']
                 or facts['pool'].get('mint_b')!='So11111111111111111111111111111111111111112'
-                or int(facts['pool']['status'])!=0
-                or int(facts['config']['curve_type'])!=0):
+                or _nat(facts['pool']['status'])!=0
+                or _nat(facts['config']['curve_type'])!=0):
             return refuse('S2_pool_scope_different_or_inactive')
-        # Parsed LaunchLab `facts` serializes every integer as a decimal
-        # string; observed_sell_projection requires native unsigned integers.
-        # Reuse the pinned cohort validator rather than reimplementing parsing.
-        from bot.p3.cohort import _uint
-        initial_facts = s1['facts']
-        immutable = ('mint_a', 'mint_b', 'supply', 'total_sell_a',
-                     'total_fundraising_b')
-        if any(initial_facts['pool'].get(key) != facts['pool'].get(key)
-               for key in immutable):
-            return refuse('S2_pool_identity_or_terms_changed')
-        for role, keys in (
-                ('config', ('curve_type', 'trade_fee_rate_ppm')),
-                ('platform', ('platform_fee_rate_ppm', 'creator_fee_rate_ppm'))):
-            if any(initial_facts[role].get(k) != facts[role].get(k)
-                   for k in keys):
-                return refuse('S2_fee_or_curve_config_changed')
-        if (initial_facts.get('share_fee_assumption_ppm')
-                != facts.get('share_fee_assumption_ppm')):
-            return refuse('S2_share_fee_assumption_changed')
-        rate=tuple(_uint(facts[role][key]) for role,key in (
-            ('config','trade_fee_rate_ppm'),
-            ('platform','platform_fee_rate_ppm'),
-            ('platform','creator_fee_rate_ppm')))
-        share=_uint(facts['share_fee_assumption_ppm'])
-        exact_pool=dict(facts['pool'])
-        for key in ('virtual_a', 'virtual_b', 'real_a', 'real_b',
-                    'protocol_fee_accrued', 'platform_fee_accrued', 'status'):
-            exact_pool[key]=_uint(facts['pool'][key])
-        quantity=_uint(entry['buy_output_atomic'],positive=True)
-        sale=observed_sell_projection(exact_pool,input_token_atomic=quantity,
+        rate=(_nat(facts['config']['trade_fee_rate_ppm']),
+              _nat(facts['platform']['platform_fee_rate_ppm']),
+              _nat(facts['platform']['creator_fee_rate_ppm']))
+        # Published snapshot facts are JSON-safe decimal strings. The curve
+        # primitive deliberately accepts only exact uint64 integers: convert
+        # only its numeric fields, without float/bool/int coercion shortcuts.
+        typed_pool=dict(facts['pool'])
+        for key in ('status','virtual_a','virtual_b','real_a','real_b',
+                    'protocol_fee_accrued','platform_fee_accrued'):
+            typed_pool[key]=_nat(typed_pool[key])
+        sale=observed_sell_projection(typed_pool,input_token_atomic=quantity,
             fee_rates_ppm=rate,
-            quote_vault_lamports=_uint(facts['quote_vault']['amount_atomic']),
-            curve_type=_uint(facts['config']['curve_type']),
-            share_fee_rate_ppm=share)
-        received=int(sale['output_lamports'])
+            quote_vault_lamports=_nat(facts['quote_vault']['amount_atomic']),
+            curve_type=_nat(facts['config']['curve_type']),
+            share_fee_rate_ppm=_nat(facts['share_fee_assumption_ppm']))
+        received=_nat(sale['output_lamports'])
         if quantity<=0 or received<0 or received>=2**64:
             return refuse('invalid_S2_full_exit_projection')
-    except (KeyError,TypeError,ValueError,OverflowError,SnapshotEvidenceError):
+    except SnapshotEvidenceError as error:
+        return refuse('S2_curve_model_refused:'+str(error))
+    except (KeyError,TypeError,ValueError,OverflowError):
         return refuse('invalid_or_unqualified_observed_bank_model')
     conditional_drag=received-budget_lamports
     return {**result,'status':'CONDITIONAL_BANK_MARKOUT',
@@ -144,6 +145,8 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
             'S1_decision_at_ms':entry_ms,'S2_available_at_ms':s2_available_at_ms,
             'entry_budget_lamports':str(budget_lamports),
             'projected_entry_quantity_atomic':str(quantity),
+            'modeled_sold_quantity_atomic':str(quantity),
+            'modeled_unliquidated_quantity_atomic':'0',
             'S2_sell_proceeds_lamports':str(received),
             'gross_conditional_markout_lamports':str(conditional_drag),
             'net_conditional_upper_lamports':str(conditional_drag-extra_cost_lower_lamports),

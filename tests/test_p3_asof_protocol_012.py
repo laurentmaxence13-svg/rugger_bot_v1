@@ -1,5 +1,6 @@
 """P3-012 preregistration cannot be changed retroactively or launch network."""
 from copy import deepcopy
+import json
 import pytest
 
 from bot.p3.asof_protocol_012 import FIXED,make_plan,validate_plan
@@ -13,9 +14,7 @@ def test_plan_binds_budget_selection_and_research_only():
     assert p==original
     assert sum(p['request_budget'].values())==20
     assert p['unique_native_SOL_prefix']==12
-    assert p['max_S0_receipt_age_ms']>=p['first_interval_minimum_ms']
-    assert p['max_S1_receipt_age_ms']<p['max_S0_receipt_age_ms']
-    assert p['snapshots']==('S0_predecision','S1_predecision','S2_postdecision')
+    assert p['snapshots']==['S0_predecision','S1_predecision','S2_postdecision']
     assert p['selection_known_before_S2']
     assert not p['provider_quotes_authorized']
     assert not p['external_orders_authorized']
@@ -41,3 +40,11 @@ def test_capture_must_follow_registration_and_commit_is_exact():
         validate_plan(p,first_observation_at_ms=1000)
     with pytest.raises(ValueError):
         make_plan(registered_at_ms=1000,source_revision='not_a_real_commit')
+
+
+def test_exact_published_JSON_roundtrip_retains_the_same_immutable_plan():
+    plan=make_plan(registered_at_ms=1000,source_revision='a'*40)
+    assert validate_plan(json.loads(json.dumps(plan)))==validate_plan(plan)
+    assert plan['max_S0_receipt_age_at_decision_ms']>plan['first_interval_minimum_ms']
+    assert sum(plan['request_budget'].values())==20
+    assert plan['provider_quotes_authorized'] is False

@@ -1,0 +1,3 @@
+# Optional execution adapter dependency; the PAPER installation stays unchanged.
+-r requirements.txt
+cryptography>=46,<47

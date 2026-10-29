@@ -9,7 +9,7 @@ from copy import deepcopy
 from bot.p3.observed_activity import classify_predecision_reserve_change
 
 
-def select_predecision_flow(strict_selection, previous_by_mint, *, max_observation_span_ms=45000):
+def select_predecision_flow(strict_selection, previous_by_mint, *, max_observation_span_ms=30000):
     """Choose at most the fixed cohort size using S0->S1, never S2.
 
     The caller must verify the original event journal and source provenance.

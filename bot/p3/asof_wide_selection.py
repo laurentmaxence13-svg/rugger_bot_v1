@@ -13,7 +13,7 @@ from bot.p3.observed_activity import classify_predecision_reserve_change
 
 def select_twelve_prefix_asof_research(universe, prior_by_mint, *, decision_at_ms,
                                        screen_prefix=12, max_candidates=2,
-                                       max_prior_age_ms=45000):
+                                       max_prior_age_ms=30000):
     from bot.p3.cohort import select_cohort,classify_snapshot,CRITERIA
     from bot.p3.research_gate import assess_research_only
     from bot.p3.quotes import SOL_MINT,_mint

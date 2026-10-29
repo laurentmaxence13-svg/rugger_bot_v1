@@ -52,3 +52,13 @@ def test_widened_selection_keeps_static_pool_denominator_and_no_lookahead():
     assert first['universe_size']==8
     assert first['assessments'][6]['reason']=='outside_fixed_twelve_prefix'
     assert not first['selected_using_future_quotes_or_S2']
+
+
+def test_fifteen_second_minimum_plus_bank_latency_is_not_always_stale():
+    universe,previous=_universe()
+    for row in universe:row['snapshot_available_at_ms']=16500
+    result=select_twelve_prefix_asof_research(universe,previous,decision_at_ms=17000)
+    assert result['selected_count']==2
+    assert [r['universe_index'] for r in result['selected']]==[6,7]
+    assert select_twelve_prefix_asof_research(universe,previous,decision_at_ms=17000,
+        max_prior_age_ms=15000)['selected_count']==0
