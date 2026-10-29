@@ -7,11 +7,13 @@ migration/Ed25519, onchain pin verification, CPMM build, unsigned simulation,
 and writes/reads the private 0600 report in ONE continuous flow.
 """
 import asyncio
+import base64
 import json
 import os
 import time
 
 import aiohttp
+import pytest
 
 from bot.p3 import transport as transport_module
 from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
@@ -178,3 +180,49 @@ def test_cli_rejects_unknown_real_message_fee_without_second_submission(
     assert report['trade_sent'] is False
     assert report['actual_read_only_evidence']['unsigned_simulation'] is None
     assert sum(method=='sendTransaction' for method,_ in fake.calls)==0
+
+
+
+@pytest.mark.parametrize('attack,expected_last_rpc',[
+    ('wrong_genesis','getGenesisHash'),
+    ('program_ELF_changed','getMultipleAccounts'),
+    ('historical_signature_forged','getTransaction'),
+])
+def test_complete_cli_fails_closed_on_network_program_or_signature_tampering(
+        monkeypatch,tmp_path,capsys,attack,expected_last_rpc):
+    fake=MainnetFixture()
+    fake.block_time=int(time.time())
+    if attack=='program_ELF_changed':
+        from bot.p3.certification import PROGRAM
+        address,first,second=fake.programs[PROGRAM]
+        tampered=dict(second)
+        raw=bytearray(base64.b64decode(tampered['data'][0]))
+        raw[-1]^=0x01
+        tampered['data']=[base64.b64encode(raw).decode(),'base64']
+        fake.programs[PROGRAM]=(address,first,tampered)
+    if attack=='historical_signature_forged':
+        fake.migration['transaction']['message']['recentBlockhash']=(
+            fake.pool['recent_blockhash'])
+    original=fake.__call__
+    async def altered(method,params):
+        if attack=='wrong_genesis' and method=='getGenesisHash':
+            fake.calls.append((method,params))
+            return fake.pool['pool_address']
+        return await original(method,params)
+    history=fake_http(monkeypatch,altered)
+    plan=prepared_plan(fake)
+    planfile=tmp_path/'plan.json'
+    planfile.write_text(json.dumps(plan))
+    out=tmp_path/'refusal.json'
+    exitcode=cli.main(['--plan',str(planfile),'--out',str(out),'--run-readonly'])
+    assert exitcode==2
+    assert json.loads(capsys.readouterr().out)['status']=='REFUSED'
+    report=json.loads(out.read_text())
+    assert report['status']=='REFUSED'
+    assert report['trade_sent'] is False
+    assert report['signer_used'] is False
+    assert report['live_ready_to_arm'] is False
+    assert history[-1][1]==expected_last_rpc
+    assert all(method!='sendTransaction' for _,method in history)
+    assert all(method!='simulateTransaction' for _,method in history)
+    assert len(history)<18
