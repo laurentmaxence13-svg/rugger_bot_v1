@@ -1,6 +1,8 @@
 """CPMM read-only bank acquisition with real builder and synthetic RPC only."""
 import asyncio
 from copy import deepcopy
+import base64
+import struct
 
 import pytest
 
@@ -34,7 +36,11 @@ class FakeRpc:
             return dict(context=dict(slot=self.first_slot),
                 value=[deepcopy(self.accounts[keys[0]])])
         values=[deepcopy(self.accounts[k]) for k in keys]
-        if self.change_pool:values[0]['lamports']+=1
+        if self.change_pool:
+            raw=bytearray(base64.b64decode(values[0]['data'][0]))
+            # Replace canonical LP mint, a stable pool identity field.
+            raw[8+4*32:8+5*32]=bytes([93])*32
+            values[0]['data'][0]=base64.b64encode(raw).decode()
         if self.drop_account:values.pop()
         return dict(context=dict(slot=self.second_slot),value=values)
 
@@ -89,6 +95,27 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     assert [c[0] if isinstance(c,tuple) else c for c in rpc.calls]==[
         'genesis','bank','bank','blockhash','rent']
     assert rpc.calls[2][2]==1234 and len(rpc.calls[2][1])==10
+
+
+def test_legitimate_inflight_reserve_or_counter_updates_use_only_joint_bank():
+    rpc=FakeRpc(fixture_bank())
+    first_raw=rpc.accounts[rpc.kwargs['pool_address']]['data'][0]
+    original=rpc.get_multiple_accounts
+    async def changed_bank(keys,*,min_context_slot):
+        outcome=await original(keys,min_context_slot=min_context_slot)
+        if len(keys)==10:
+            raw=bytearray(base64.b64decode(outcome['value'][0]['data'][0]))
+            # Real pools update LP supply, fees and counters; this is a
+            # mutable field, not a change in the linked account graph.
+            struct.pack_into('<Q',raw,333,struct.unpack_from('<Q',raw,333)[0]+12)
+            outcome['value'][0]['data'][0]=base64.b64encode(raw).decode()
+        return outcome
+    rpc.get_multiple_accounts=changed_bank
+    result=prepare(rpc)
+    assert result['order'].source_slot==1235
+    assert result['order'].transaction.required_signers==(rpc.kwargs['wallet'],)
+    assert rpc.accounts[rpc.kwargs['pool_address']]['data'][0]==first_raw
+    assert result['live_execution_authorized'] is False
 
 
 @pytest.mark.parametrize('attack',[
