@@ -72,7 +72,7 @@ def validate_readonly_plan(plan):
             or not 0<=plan["max_price_impact_bps"]<10000
             or plan["compute_unit_limit"]>1_400_000
             or plan["max_bank_age_ms"]>5000
-            or plan["max_rpc_requests"]!=17
+            or plan["max_rpc_requests"]!=18
             or plan["max_transport_elapsed_seconds"]>60):
         raise ValueError("strict_single_pass_RPC_budget_and_limits_required")
     pins=plan["program_pins"]
