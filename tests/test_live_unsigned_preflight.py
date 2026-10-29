@@ -6,6 +6,7 @@ acquired, persisted and reviewed before claiming execution readiness.
 """
 import asyncio
 import hashlib
+import json
 
 import pytest
 
@@ -41,7 +42,7 @@ class SimulationRpc:
         self.calls.append('simulateTransaction')
         self.simulated_raw=raw
         return dict(context_slot=self.slot,err=self.error,
-                    unitsConsumed=self.units)
+                    unitsConsumed=self.units,logs=['Program log: offline test'])
 
     async def send_transaction(self,*_args,**_kwargs):
         raise AssertionError('sendTransaction_is_forbidden_in_unsigned_probe')
@@ -67,6 +68,11 @@ def test_buy_and_sell_are_exact_unsigned_messages_and_never_sent(side):
     assert rpc.simulated_raw==order.transaction.unsigned_transaction()
     assert rpc.calls==['getGenesisHash','getBlockHeight','simulateTransaction']
     assert result['simulation_slot']>=result['source_slot']
+    raw=result['parsed_RPC_simulation_result']
+    assert raw['logs']==['Program log: offline test']
+    assert result['original_HTTP_RPC_envelope_retained'] is False
+    assert result['parsed_RPC_simulation_sha256']==hashlib.sha256(json.dumps(
+        raw,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     assert result['route_executed'] is False
     assert result['live_ready_to_arm'] is False
     assert result['economic_edge_validated'] is False
@@ -117,6 +123,8 @@ def test_rpc_failure_is_retained_as_failure_never_a_fake_pass():
     assert result['result']=='REFUSED'
     assert result['reason']=='simulation_returned_error'
     assert result['simulation_error_class']=='dict'
+    assert result['parsed_RPC_simulation_result']['err']==rpc.error
+    assert len(result['parsed_RPC_simulation_sha256'])==64
 
 
 @pytest.mark.parametrize('slot,compute',[(1233,100000),(1300,None),(1300,200001),(True,1)])
@@ -168,3 +176,14 @@ def test_invalid_cpmm_order_cannot_reach_RPC():
     with pytest.raises(ValueError,match='modified'):
         run(rpc,replace(order,expected_output=order.expected_output+100))
     assert rpc.calls==[]
+
+
+
+def test_noncanonical_simulation_payload_refused_without_promoting_success():
+    order=build_launchlab_order(**route_request())
+    rpc=SimulationRpc()
+    rpc.error={'bad_nan':float('nan')}
+    result=run(rpc,order)
+    assert result['result']=='REFUSED'
+    assert result['reason']=='noncanonical_simulation_response'
+    assert rpc.calls==['getGenesisHash','getBlockHeight','simulateTransaction']
