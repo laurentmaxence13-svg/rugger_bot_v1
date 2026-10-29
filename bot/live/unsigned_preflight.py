@@ -106,6 +106,20 @@ async def check_unsigned_order(
             or not _integer(simulation.get("context_slot"), positive=True)
             or simulation["context_slot"] < order.source_slot):
         return _refused("missing_or_noncausal_simulation_receipt", **base)
+    # This is the parsed RPC simulation value plus context slot, not the
+    # original HTTP JSON-RPC envelope. Retain it privately, with an exact
+    # canonical SHA256, for third-party replay and error investigation.
+    try:
+        simulation_json=json.dumps(simulation,sort_keys=True,
+            separators=(",",":"),allow_nan=False).encode()
+    except (TypeError,ValueError,OverflowError):
+        return _refused("noncanonical_simulation_response", **base)
+    if len(simulation_json)>4*1024*1024:
+        return _refused("simulation_response_exceeds_evidence_limit", **base)
+    simulation_evidence=dict(
+        parsed_RPC_simulation_result=simulation,
+        parsed_RPC_simulation_sha256=hashlib.sha256(simulation_json).hexdigest(),
+        original_HTTP_RPC_envelope_retained=False)
     try:
         registered_request = json.loads(order.rebuild_request_json)
         maximum_compute = registered_request["compute_unit_limit"]
@@ -116,10 +130,12 @@ async def check_unsigned_order(
         return _refused("original_compute_limit_invalid", **base)
     if simulation["err"] is not None:
         return {**_refused("simulation_returned_error", **base),
+                **simulation_evidence,
                 "simulation_slot": simulation["context_slot"],
                 "simulation_error_class": type(simulation["err"]).__name__}
     if not _integer(units) or units > maximum_compute:
-        return _refused("simulation_compute_units_unqualified", **base)
+        return {**_refused("simulation_compute_units_unqualified", **base),
+                **simulation_evidence}
     # A success may be stale by the time it arrives. This is a simulation
     # receipt, not permission to sign a transaction at a later instant.
     return dict(
@@ -133,6 +149,7 @@ async def check_unsigned_order(
         message_sha256=message_sha256,
         unsigned_transaction_sha256=_digest_bytes(serialized),
         simulation_units=units,
+        **simulation_evidence,
         registered_compute_limit=maximum_compute,
         source_available_at_ms=order.source_available_at_ms,
         request_at_ms=now_ms,
