@@ -89,6 +89,24 @@ def make_plan(*,registered_at_ms,source_revision):
                 source_revision=source_revision)
 
 
+def _exact_json_value(actual,expected):
+    """Match the registered JSON contract without bool/int/float aliases.
+
+    Python dictionary equality treats 20.0 as 20 and False as 0. A registered
+    protocol requires the exact JSON types, including lists rather than tuples,
+    throughout its nested budgets and parameter hypotheses.
+    """
+    if type(actual) is not type(expected):
+        return False
+    if type(expected) is dict:
+        return (actual.keys()==expected.keys()
+            and all(_exact_json_value(actual[key],value) for key,value in expected.items()))
+    if type(expected) is list:
+        return (len(actual)==len(expected)
+            and all(_exact_json_value(left,right) for left,right in zip(actual,expected)))
+    return actual==expected
+
+
 def validate_plan(plan,*,first_observation_at_ms=None):
     if type(plan) is not dict:
         raise ValueError('exact_registered_P3_012_protocol_required')
@@ -97,7 +115,7 @@ def validate_plan(plan,*,first_observation_at_ms=None):
                            source_revision=plan['source_revision'])
     except (KeyError,TypeError,ValueError):
         raise ValueError('exact_registered_P3_012_protocol_required') from None
-    if plan!=expected:
+    if not _exact_json_value(plan,expected):
         raise ValueError('altered_or_unsupported_P3_012_plan')
     if sum(plan['request_budget'].values())!=plan['max_requests']:
         raise ValueError('request_budget_not_bound')

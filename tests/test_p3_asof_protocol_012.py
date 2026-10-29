@@ -48,3 +48,20 @@ def test_exact_published_JSON_roundtrip_retains_the_same_immutable_plan():
     assert plan['max_S0_receipt_age_at_decision_ms']>plan['first_interval_minimum_ms']
     assert sum(plan['request_budget'].values())==20
     assert plan['provider_quotes_authorized'] is False
+
+
+@pytest.mark.parametrize('mutation',[
+    lambda p:p.__setitem__('max_requests',20.0),
+    lambda p:p.__setitem__('provider_quotes_authorized',0),
+    lambda p:p.__setitem__('primary_model_input_lamports',100000000.0),
+    lambda p:p['cost_assumptions'].__setitem__('buy_signatures',True),
+    lambda p:p['request_budget'].__setitem__('discovery',1.0),
+    lambda p:p.__setitem__('snapshots',tuple(p['snapshots'])),
+    lambda p:p['snapshots'].append('unregistered_S3'),
+    lambda p:p['position_sizes_lamports'].__setitem__(0,100000000.0),
+])
+def test_exact_JSON_types_and_array_shape_cannot_alias_the_registered_plan(mutation):
+    plan=make_plan(registered_at_ms=1000,source_revision='a'*40)
+    mutation(plan)
+    with pytest.raises(ValueError,match='altered_or_unsupported'):
+        validate_plan(plan)

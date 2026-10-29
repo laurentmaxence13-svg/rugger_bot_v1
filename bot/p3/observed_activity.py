@@ -16,7 +16,7 @@ _IMMUTABLE_POOL_KEYS = ('mint_a', 'mint_b', 'config', 'platform', 'vault_a', 'va
 _IMMUTABLE_POOL_AMOUNTS = ('supply', 'total_sell_a', 'total_fundraising_b',
                           'virtual_a', 'virtual_b', 'decimals_a', 'decimals_b',
                           'migrate_type', 'mint_program_flag', 'migrate_fee')
-_IMMUTABLE_CONFIG = ('curve_type', 'trade_fee_rate_ppm')
+_IMMUTABLE_CONFIG = ('curve_type', 'trade_fee_rate_ppm', 'max_share_fee_rate_ppm')
 _IMMUTABLE_PLATFORM = ('platform_fee_rate_ppm', 'creator_fee_rate_ppm')
 _REQUIRED_CHECKS = frozenset((
     'input_graph', 'pool_layout_owner', 'config_layout_owner', 'platform_layout_owner',
@@ -110,6 +110,8 @@ def snapshot_safety_reason(state):
             return 'pool_mint_supply_or_decimals_inconsistent'
         if _nat(pool['status'])!=0 or _nat(facts['config']['curve_type'])!=0:
             return 'inactive_or_migrated_curve'
+        if _nat(facts['share_fee_assumption_ppm'])>_nat(facts['config']['max_share_fee_rate_ppm']):
+            return 'share_fee_exceeds_configured_maximum'
         if (_nat(facts['base_vault']['state'])!=1 or _nat(facts['quote_vault']['state'])!=1
                 or facts['quote_vault'].get('is_native') is not True):
             return 'vault_state_or_native_quote_unqualified'
@@ -135,6 +137,8 @@ def snapshot_transition_reason(before,after):
             return 'curve_or_fee_configuration_changed'
         if any(_nat(initial['platform'][k])!=_nat(recent['platform'][k]) for k in _IMMUTABLE_PLATFORM):
             return 'platform_fee_terms_changed'
+        if _nat(initial['share_fee_assumption_ppm'])!=_nat(recent['share_fee_assumption_ppm']):
+            return 'share_fee_assumption_changed'
         mint_terms=('supply_atomic','decimals','mint_authority_present','mint_authority',
                     'freeze_authority_present','freeze_authority','token_program','extension_types')
         if any(initial['base_mint'].get(k)!=recent['base_mint'].get(k) for k in mint_terms):

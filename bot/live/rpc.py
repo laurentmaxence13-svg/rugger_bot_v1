@@ -114,6 +114,14 @@ def _pubkey(value):
     return value
 
 
+def _signature(value):
+    from bot.p3.platform_admin_history import _signature as validate
+    try:
+        return validate(value)
+    except (ValueError,TypeError):
+        raise RpcError('Invalid Solana signature identity') from None
+
+
 class SolanaRpc:
     """RPC contract used by the persistent execution engine (no implicit retries)."""
     def __init__(self, transport):
@@ -146,29 +154,29 @@ class SolanaRpc:
             raise RpcError('Serialized bounded Solana transaction required')
         return base64.b64encode(raw).decode('ascii')
 
-    async def simulate_transaction(self, raw, *, sig_verify):
+    async def simulate_transaction(self, raw, *, sig_verify, min_context_slot=None):
         if type(sig_verify) is not bool:
             raise RpcError('Explicit simulation signature verification flag required')
-        result = await self.transport('simulateTransaction', [self._encoded(raw),
-            dict(encoding='base64', commitment='confirmed', sigVerify=sig_verify,
-                 replaceRecentBlockhash=False)])
+        options=dict(encoding='base64', commitment='confirmed', sigVerify=sig_verify,
+                     replaceRecentBlockhash=False)
+        if min_context_slot is not None:
+            options['minContextSlot']=_uint(min_context_slot,positive=True)
+        result = await self.transport('simulateTransaction', [self._encoded(raw),options])
         if (type(result) is not dict or type(result.get('value')) is not dict
                 or 'err' not in result['value']):
             raise RpcError('Malformed simulation result')
-        return result['value']
+        slot=_uint(result.get('context',{}).get('slot'),positive=True)
+        if min_context_slot is not None and slot<min_context_slot:
+            raise RpcError('Simulation bank precedes causal source')
+        return dict(result['value'],context_slot=slot)
 
     async def send_transaction(self, raw):
         result = await self.transport('sendTransaction', [self._encoded(raw),
             dict(encoding='base64', skipPreflight=False, preflightCommitment='confirmed', maxRetries=0)])
-        from bot.p3.platform_admin_history import _signature
-        if _signature(result) is None:
-            raise RpcError('Invalid submission signature')
-        return result
+        return _signature(result)
 
     async def signature_status(self, signature):
-        from bot.p3.platform_admin_history import _signature
-        if _signature(signature) is None:
-            raise RpcError('Invalid signature status identity')
+        _signature(signature)
         result = await self.transport('getSignatureStatuses', [[signature], dict(searchTransactionHistory=True)])
         values = result.get('value') if type(result) is dict else None
         if type(values) is not list or len(values) != 1:
@@ -183,9 +191,7 @@ class SolanaRpc:
         return status
 
     async def get_transaction(self, signature):
-        from bot.p3.platform_admin_history import _signature
-        if _signature(signature) is None:
-            raise RpcError('Invalid transaction identity')
+        _signature(signature)
         value = await self.transport('getTransaction', [signature,
             dict(encoding='json', commitment='finalized', maxSupportedTransactionVersion=0)])
         if value is not None and type(value) is not dict:

@@ -22,12 +22,28 @@ def run(awaitable):return asyncio.run(awaitable)
 
 
 def test_unsigned_simulation_never_replaces_signed_message_blockhash():
-    t=Transport(dict(value=dict(err=None,unitsConsumed=50000)))
+    t=Transport(dict(context=dict(slot=123),value=dict(err=None,unitsConsumed=50000)))
     assert run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False))['err'] is None
     method,p=t.calls[0]
     assert method=='simulateTransaction' and base64.b64decode(p[0])==RAW
     assert p[1]['sigVerify'] is False and p[1]['replaceRecentBlockhash'] is False
     assert p[1]['encoding']=='base64'
+
+
+def test_simulation_causal_slot_is_retained_and_old_or_missing_slot_refused():
+    t=Transport(dict(context=dict(slot=123),value=dict(err=None)))
+    assert run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False,min_context_slot=123))['context_slot']==123
+    assert t.calls[-1][1][1]['minContextSlot']==123
+    with pytest.raises(RpcError):run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False,min_context_slot=124))
+    t.result.pop('context')
+    with pytest.raises(RpcError):run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False))
+
+
+@pytest.mark.parametrize('method',['signature_status','get_transaction','send_transaction'])
+def test_invalid_signature_identity_is_sanitized_rpc_error(method):
+    t=Transport('bad')
+    with pytest.raises(RpcError):
+        run(getattr(SolanaRpc(t),method)(RAW if method=='send_transaction' else 'bad'))
 
 
 def test_send_no_implicit_retry_and_preflight_is_required():

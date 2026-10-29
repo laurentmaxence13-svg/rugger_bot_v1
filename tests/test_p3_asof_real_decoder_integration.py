@@ -185,6 +185,41 @@ def test_later_full_exit_liquidity_refusal_preserves_known_projected_lot():
     assert marked['modeled_sold_quantity_atomic']=='0' and marked['inventory_acquired'] is False
 
 
+@pytest.mark.parametrize('share', ['100',True,1.0,'001',str(2**64)])
+def test_share_fee_hypothesis_cannot_change_or_coerce_between_entry_and_exit(share):
+    selection,s1,s2,_,_=_selected_case()
+    assert s1['facts']['share_fee_assumption_ppm']=='0'
+    s2['facts']['share_fee_assumption_ppm']=share
+    marked=evaluate_asof_slot_markout(selection,s2,s2_available_at_ms=33000,
+        exit_decision_at_ms=33100,budget_lamports=100000000,
+        extra_cost_lower_lamports=10000,extra_cost_upper_lamports=1000000)
+    assert marked['status']=='REFUSED'
+    assert marked['modeled_sold_quantity_atomic']=='0'
+    assert marked['modeled_unliquidated_quantity_atomic']==marked['projected_entry_quantity_atomic']
+    assert marked['economic_cycle_qualified'] is False
+
+
+@pytest.mark.parametrize('phase', ['S1','S2'])
+def test_share_fee_is_bounded_by_the_configured_maximum_in_both_banks(phase):
+    from bot.p3.observed_activity import snapshot_safety_reason
+    selection,s1,s2,_,_=_selected_case()
+    state=s1 if phase=='S1' else s2
+    maximum=int(state['facts']['config']['max_share_fee_rate_ppm'])
+    state['facts']['share_fee_assumption_ppm']=str(maximum+1)
+    assert snapshot_safety_reason(state)=='share_fee_exceeds_configured_maximum'
+
+
+def test_share_fee_configured_maximum_change_is_not_silently_accepted():
+    selection,s1,s2,_,_=_selected_case()
+    s2['facts']['config']['max_share_fee_rate_ppm']=str(
+        int(s2['facts']['config']['max_share_fee_rate_ppm'])+1)
+    marked=evaluate_asof_slot_markout(selection,s2,s2_available_at_ms=33000,
+        exit_decision_at_ms=33100,budget_lamports=100000000,
+        extra_cost_lower_lamports=10000,extra_cost_upper_lamports=1000000)
+    assert marked['status']=='REFUSED'
+    assert marked['reasons']==['S1_S2_terms_or_safety_unqualified:curve_or_fee_configuration_changed']
+
+
 def test_pinned_buy_arithmetic_increases_outstanding_tokens_and_decreases_base_vault():
     accounts,addresses,s0,_=research_snapshot(return_accounts=True)
     pool=launchlab._pool(accounts[addresses['pool']])[0]

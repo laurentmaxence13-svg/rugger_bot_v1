@@ -79,7 +79,7 @@ may still cause refusal; this is retained, not rescued by widening a window
 after observing the outcome. Selectors allow an explicit registered window;
 the collector must pass and verify the exact immutable plan value.
 
-## Residual counter-review findings requiring correction
+## Findings at the tested checkpoint and subsequent corrections
 
 `platform_admin_history._create_params` at the tested checkpoint decodes the
 three Borsh strings but does not bound their lengths. The pinned IDL's
@@ -108,6 +108,45 @@ equality. Consequently `max_requests=20.0`, `provider_quotes_authorized=0` and
 or boolean fixed fields. This is not evidence of a request-budget bypass, but it
 violates the exact JSON-type protocol contract. Compare recursive JSON types
 as well as values, and test numeric/boolean aliases before preregistration.
+
+After this baseline, the root integrator corrected the Borsh string bounds and
+reported 32 focused tests passed. The reviewer then added the share-fee
+invariant and canonical uint64/configured-maximum validation at both snapshots.
+`max_share_fee_rate_ppm` is now also preserved across the transition. Eight new
+actual-decoder regression cases cover changed share assumptions, bool/float/
+noncanonical/overflow values, both-bank limits and a changed configured maximum.
+The five affected suites passed **67 tests in 1.40 seconds**, stderr empty, using
+the same disposable offline runner. Logs:
+`/workspace/work/live-20261029/p3-share-fee-regressions.{txt,stderr}`.
+Final combined-tree validation remains necessary.
+
+The reviewer also corrected the exact-type protocol contract before any
+preregistration. The validator now recursively matches the fixed JSON types,
+values, keys and array lengths. Eight regression cases reject floating-point
+request/amount aliases, numeric booleans, nested budget/fee aliases, tuples and
+an extra snapshot. Canonical JSON roundtrip remains accepted. The combined
+protocol/share-fee focused log is retained at
+`/workspace/work/live-20261029/p3-protocol-share-regressions.{txt,stderr}`:
+**86 passed in 1.41 seconds, stderr empty**.
+
+## RPC adapter counter-review handed to the root integrator
+
+Read-only review of the newly added `bot/live/rpc.py` identified these integration
+requirements; this baseline does not certify that subsequent repairs passed:
+
+- `_signature` raises `ValueError` for a noncanonical identifier and never
+  returns `None`. Adapter methods must wrap malformed source identifiers as
+  sanitized `RpcError`, including submission, status and finalized lookup.
+- Preserve and validate the simulation's actual `context.slot`; bind its
+  `minContextSlot` to the prepared route's minimum causal slot. Returning only
+  `result.value` loses the evidence that the simulated bank is not older than
+  the route. Missing context must remain unknown/refused.
+- Source clocks, body hashes, request IDs and endpoint identity need durable
+  receipts when admitted by the execution engine. A successful response alone
+  is not retained provenance.
+- A `finalized` request option does not bind a returned transaction to the
+  requested signature. The engine must verify the actual transaction identity,
+  slot and pre/post balances before financial reconciliation.
 
 ## Boundaries that remain explicit
 
