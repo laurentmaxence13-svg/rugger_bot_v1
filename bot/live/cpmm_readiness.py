@@ -18,6 +18,7 @@ from .program_pin import attest_program_pin
 from .migration_rpc_receipt import read_finalized_migration
 from .cpmm_bank import prepare_cpmm_sell_from_rpc
 from .unsigned_preflight import check_unsigned_order
+from .solana_signatures import verify_compiled_rpc_signatures
 
 
 async def preflight_migrated_sell(
@@ -31,7 +32,7 @@ async def preflight_migrated_sell(
 ):
     """Read-only end-to-end qualification; at most 17 RPC requests.
 
-    Five read phases: dual on-chain code pins, structural finalized migration,
+    Five read phases: dual on-chain code pins, cryptographic finalized migration,
     joint-bank CPMM account graph, and unsigned exact wire simulation.
     The block's timestamp is obtained from the bank's own slot by getBlockTime.
     Caller retains any raw receipt returned and documents transport budget.
@@ -79,6 +80,23 @@ async def preflight_migrated_sell(
             or type(migration.get("migration_slot")) is not int
             or migration["migration_slot"]<=0):
         return dict(envelope,reason="migration_not_qualified",
+            migration=migration,program_pins_matched=True)
+    # A JSON-RPC structural match is insufficient: require the original
+    # Ed25519 signature to verify over the exact compiled message bytes.
+    raw_migration=migration.get("raw_RPC_response")
+    if (type(raw_migration) is not dict
+            or raw_migration.get("slot")!=migration["migration_slot"]
+            or raw_migration.get("transaction",{}).get("signatures",[None])[0]
+                    !=migration_signature):
+        return dict(envelope,reason="migration_signed_raw_receipt_missing",
+            migration=migration,program_pins_matched=True)
+    try:
+        signature_proof=verify_compiled_rpc_signatures(raw_migration)
+    except (ValueError,KeyError,TypeError,RuntimeError):
+        return dict(envelope,reason="historical_migration_Ed25519_invalid",
+            migration=migration,program_pins_matched=True)
+    if signature_proof.get("cryptographic_signatures_verified") is not True:
+        return dict(envelope,reason="historical_migration_Ed25519_unverified",
             migration=migration,program_pins_matched=True)
     min_bank=max(min_context_slot,migration["migration_slot"]+1,
                  pin_results[PROGRAM]["joint_bank_slot"],
@@ -138,6 +156,8 @@ async def preflight_migrated_sell(
                             joint_bank_slot=pin["joint_bank_slot"])
             for program_id,pin in pin_results.items()},
         migration=migration,
+        historical_migration_signatures=signature_proof,
+        historical_signature_cryptographically_verified=True,
         bank=dict((k,v) for k,v in bank.items() if k!="order"),
         unsigned_message_sha256=hashlib.sha256(
             order.transaction.message).hexdigest(),
