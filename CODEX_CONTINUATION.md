@@ -1,3 +1,11 @@
+# REPRISE PRIORITAIRE — MANDAT RÉEL DU 29 OCTOBRE 2026
+
+**Décision du propriétaire : Rugger a pour destination finale l'exécution réelle autonome, et non la simulation perpétuelle.** Lire `AGENTS.md` et `LIVE_READINESS_MANDATE.md` avant toute continuation. Le développement des modules d'exécution réelle est maintenant demandé et autorisé sur branches de travail, avec tests isolés. **L'envoi d'ordres mainnet, signature par un portefeuille financé ou engagement de fonds n'est pas encore autorisé** : il exige une activation explicite une fois les validations techniques achevées.
+
+**Point de reprise technique** : PR #29 (`d8771ae`) et PR #30 (`54f153e`). Ne pas perdre les modifications Cloud éventuellement non publiées. Revoir, corriger et valider le collecteur P3-012, puis construire en parallèle une architecture `RESEARCH/SHADOW/LIVE_PREPARED/LIVE_ARMED/LIVE_ENABLED` réellement capable de router, construire, simuler, signer sous contrôle, envoyer, confirmer et réconcilier des transactions. Aucune stratégie P4 ni profitabilité live démontrée à ce jour. Les comptes rendus historiques ci-dessous décrivent l'état antérieur ; leurs interdictions de **développement** de code live sont remplacées par le mandat courant, pas les contrôles d'accès aux fonds.
+
+---
+
 # Rugger Bot V1 — reprise autonome depuis Git
 
 ## Livraison vérifiée29octobre
