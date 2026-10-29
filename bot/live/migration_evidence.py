@@ -31,6 +31,17 @@ ROLES=(
     'base_token_program','quote_token_program','associated_token_program',
     'system_program','rent_program','metadata_program',
 )
+REQUIRED_WRITABLE_ROLES=frozenset((0,1,5,7,8,9,11,12,15,16,17,19,20,21))
+FIXED_PROGRAMS=dict(
+    cpswap_program=CPMM_PROGRAM,
+    lock_program='LockrWmn6K5twhz3y9w1dQERbmgSaRkfnTeTKbpofwE',
+    base_token_program='TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    quote_token_program='TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+    associated_token_program='ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL',
+    system_program='11111111111111111111111111111111',
+    rent_program='SysvarRent111111111111111111111111111111111',
+    metadata_program='metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s',
+)
 
 
 def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_pool,
@@ -52,6 +63,8 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
     try:
         for addr in (mint,launchlab_pool,cpmm_pool):
             _decode(addr)
+        if mint==SOL_MINT or launchlab_pool==cpmm_pool:
+            return no('distinct_native_SOL_migration_identities_required')
         _signature(signature)
         if (type(observed_at_slot) is not int or observed_at_slot<=0
                 or type(tx) is not dict):
@@ -124,7 +137,10 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
             if keys_by_index[references[0]]['signer'] is not True:
                 continue
             if any(keys_by_index[references[i]]['writable'] is not True
-                   for i in (5,7,8,9,12,17)):
+                   for i in REQUIRED_WRITABLE_ROLES):
+                continue
+            named=dict(zip(ROLES,resolved,strict=True))
+            if any(named[role]!=address for role,address in FIXED_PROGRAMS.items()):
                 continue
             expected=dict(
                 cpswap_authority=find_program_address(
@@ -142,9 +158,23 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
                 cpswap_observation=find_program_address(
                     (b'observation',_decode(cpmm_pool)),
                     program_id=CPMM_PROGRAM)[0],
+                pool_state=find_program_address((b'pool',_decode(mint),_decode(SOL_MINT)))[0],
+                authority=find_program_address((b'vault_auth_seed',))[0],
+                base_vault=find_program_address((b'pool_vault',_decode(launchlab_pool),_decode(mint)))[0],
+                quote_vault=find_program_address((b'pool_vault',_decode(launchlab_pool),_decode(SOL_MINT)))[0],
+                lock_authority=find_program_address((b'lock_cp_authority_seed',),
+                    program_id=FIXED_PROGRAMS['lock_program'])[0],
             )
-            named=dict(zip(ROLES,resolved,strict=True))
             if any(named[k]!=v for k,v in expected.items()):
+                continue
+            # CPMM initialization accepts either its canonical pool PDA or a
+            # random pool account signed by the caller. CPI cannot manufacture
+            # an external signature for the random alternative.
+            tokens=sorted((mint,SOL_MINT),key=_decode)
+            canonical_cpmm_pool=find_program_address((b'pool',
+                _decode(named['cpswap_config']),*map(_decode,tokens)),
+                program_id=CPMM_PROGRAM)[0]
+            if cpmm_pool!=canonical_cpmm_pool and keys_by_index[references[5]]['signer'] is not True:
                 continue
             return dict(base,status='STRUCTURAL_MIGRATION_RECEIPT',
                 reason=None,migration_signature=signature,migration_slot=slot,
@@ -154,6 +184,7 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
                 ).hexdigest(),
                 retained_transaction_sha256=raw_transaction_sha256,
                 cpswap_config=named['cpswap_config'],
+                normalized_roles=named,
                 source_transport_authenticated=False,
                 cryptographic_signatures_verified=False,
                 cpmm_pool_state_account_decoded=False,

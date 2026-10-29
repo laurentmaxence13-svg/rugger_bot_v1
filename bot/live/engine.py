@@ -1,4 +1,4 @@
-"""LaunchLab execution lifecycle, inactive without explicit financial authority.
+"""LaunchLab/CPMM lifecycle, inactive without explicit financial authority.
 
 Transport, isolated signer and fresh admission evidence are injected services.
 There is no key loader, automatic arming, fallback route, transaction rebuild or
@@ -14,7 +14,8 @@ from typing import Protocol
 
 from bot.p3.certification import PROGRAM, _decode, _encode
 from .journal import ACTIVE, ExecutionJournal, canonical, uint
-from .route import validate_prepared_order
+from .route_dispatch import (validate_execution_order, execution_program,
+                             route_kind, order_inventory_pool)
 from .safety import AdmissionRequest, HealthEvidence, Mode, evaluate_admission
 from .wire import shortvec
 
@@ -115,6 +116,19 @@ def reconcile_transaction(row, payload):
     if type(payload) is not dict or payload.get('version', 'legacy') not in ('legacy', None):
         raise ValueError('finalized_legacy_transaction_required')
     order = json.loads(row['order_json'])
+    inventory_pool=order_inventory_pool(order)
+    if order.get('route_kind')=='CPMM':
+        # A changed serialized record must never make an unrelated signed
+        # message settle the held LaunchLab position. Rebuild the exact CPMM
+        # route independently of the submitted/signature metadata.
+        from .cpmm_exit import build_cpmm_exit
+        try:
+            rebuilt=build_cpmm_exit(**json.loads(order['rebuild_request_json']))
+            core=order_record(rebuilt)
+            if canonical({k:order.get(k) for k in core})!=canonical(core):
+                raise ValueError('serialized_CPMM_order_changed')
+        except (TypeError,KeyError,ValueError,OverflowError):
+            raise ValueError('finalized_CPMM_route_record_invalid') from None
     transaction, meta = payload.get('transaction'), payload.get('meta')
     if type(transaction) is not dict or type(meta) is not dict:
         raise ValueError('finalized_transaction_metadata_missing')
@@ -144,7 +158,8 @@ def reconcile_transaction(row, payload):
         return dict(slot=slot, fee_lamports=fee, chain_error=meta['err'],
             token_delta_atomic=0, wallet_delta_lamports=native_delta,
             gross_output_lamports=0, rent_locked_lamports=0,
-            realized_market_execution=True, economic_edge_proven=False)
+            realized_market_execution=True, economic_edge_proven=False,
+            inventory_pool=inventory_pool)
 
     def token_amount(name):
         values = meta.get(name)
@@ -182,7 +197,8 @@ def reconcile_transaction(row, payload):
     return dict(slot=slot, fee_lamports=fee, chain_error=None,
         token_delta_atomic=token_delta, wallet_delta_lamports=native_delta,
         gross_output_lamports=gross_output, rent_locked_lamports=rent_locked,
-        realized_market_execution=True, economic_edge_proven=False)
+        realized_market_execution=True, economic_edge_proven=False,
+        inventory_pool=inventory_pool)
 
 
 class ExecutionEngine:
@@ -208,15 +224,17 @@ class ExecutionEngine:
                     reconciliation=json.loads(row['reconciliation_json']) if row['reconciliation_json'] else None)
 
     async def _admission(self, decision_id, order, *, own_reservation=False):
+        self._refuse_retired_launchlab_route(order)
         if self.evidence_provider is None or self.envelope is None or self.arming is None:
             raise ValueError('explicit_authorization_and_fresh_evidence_required')
         request, health = await self.evidence_provider(decision_id, order)
         if type(request) is not AdmissionRequest or type(health) is not HealthEvidence:
             raise ValueError('typed_fresh_submission_evidence_required')
         wire_parameters = json.loads(order.rebuild_request_json)
+        binding=self._cpmm_binding(order) if route_kind(order)=='CPMM' else None
         priority = (wire_parameters['compute_unit_limit'] * wire_parameters['priority_fee_micro_lamports'] + 999999) // 1000000
         expected = dict(decision_id=decision_id, side=order.side.lower(), wallet=order.user,
-            program_id=PROGRAM, mint=order.mint, pool=order.pool,
+            program_id=execution_program(order), mint=order.mint, pool=order.pool,
             amount_in_atomic=order.input_amount, quote_input_atomic=order.input_amount,
             quote_output_atomic=order.expected_output, minimum_out_atomic=order.minimum_out,
             network_fee_upper_lamports=order.network_fee_upper_lamports,
@@ -227,7 +245,8 @@ class ExecutionEngine:
             quote_received_at_ms=order.source_available_at_ms,
             compute_units=wire_parameters['compute_unit_limit'],
             slippage_bps=wire_parameters['slippage_bps'], priority_fee_lamports=priority,
-            price_impact_bps=order.price_impact_bps)
+            price_impact_bps=order.price_impact_bps,
+            position_pool=binding['inventory_pool'] if binding else None)
         if any(getattr(request, key) != value for key, value in expected.items()):
             raise ValueError('admission_evidence_not_bound_to_exact_prepared_order')
         actual_endpoint = getattr(self.rpc, 'endpoint_sha256', None)
@@ -249,6 +268,32 @@ class ExecutionEngine:
         self._admission_cache[decision_id] = (request, health, balance, now)
         return balance
 
+    def _refuse_retired_launchlab_route(self,order):
+        if (route_kind(order)=='LAUNCHLAB'
+                and self.journal.inventory_migration(order.mint,order.pool) is not None):
+            raise ValueError('LaunchLab_route_retired_by_verified_migration')
+
+    def _cpmm_binding(self,order,*,prepared_genesis=None):
+        if route_kind(order)!='CPMM':return None
+        endpoint=getattr(self.rpc,'endpoint_sha256',None)
+        if self.envelope is None:
+            # In PREPARED mode the source-backed registration still supplies
+            # the pinned cluster. Never infer a migration from raw pool state.
+            genesis=prepared_genesis
+        else:genesis=self.envelope.genesis_hash
+        if type(endpoint) is not str or type(genesis) is not str:
+            raise ValueError('CPMM_pinned_migration_source_required')
+        binding=self.journal.migration_binding(order.mint,order.pool,
+            at_ms=self.clock_ms(),source_slot=order.source_slot,wallet=order.user,
+            endpoint_sha256=endpoint,genesis_hash=genesis)
+        row=self.journal.get(json.loads(order.rebuild_request_json)['decision_id'])
+        if row is not None:
+            record=json.loads(row['order_json'])
+            if (record.get('migration_binding_sha256')!=binding['binding_sha256']
+                    or order_inventory_pool(record)!=binding['inventory_pool']):
+                raise ValueError('CPMM_order_migration_binding_changed')
+        return binding
+
     def _final_admission(self, decision_id):
         if self.mode is not Mode.LIVE_ENABLED:
             raise ValueError('execution_disarmed_before_submission')
@@ -256,6 +301,18 @@ class ExecutionEngine:
         if operational_check is not None:
             operational_check()
         request, health, balance, balance_observed_at = self._admission_cache[decision_id]
+        record=json.loads(self.journal.get(decision_id)['order_json'])
+        if (record.get('route_kind')!='CPMM'
+                and self.journal.inventory_migration(record['mint'],record['pool']) is not None):
+            raise ValueError('LaunchLab_route_retired_by_verified_migration')
+        if record.get('route_kind')=='CPMM':
+            binding=self.journal.migration_binding(record['mint'],record['pool'],
+                at_ms=self.clock_ms(),source_slot=record['source_slot'],wallet=record['user'],
+                endpoint_sha256=self.envelope.rpc_endpoint_sha256,
+                genesis_hash=self.envelope.genesis_hash)
+            if (binding['binding_sha256']!=record['migration_binding_sha256']
+                    or binding['inventory_pool']!=order_inventory_pool(record)):
+                raise ValueError('final_CPMM_migration_binding_changed')
         risk = self.journal.risk_snapshot(at=balance_observed_at,
             wallet_balance_lamports=balance, exclude_decision_id=decision_id)
         verdict = evaluate_admission(request, envelope=self.envelope,
@@ -264,16 +321,23 @@ class ExecutionEngine:
             raise ValueError('final_submission_admission_refused:' + ','.join(verdict.reasons))
 
     async def execute(self, decision_id, order):
-        order = validate_prepared_order(order)
+        order = validate_execution_order(order)
         if json.loads(order.rebuild_request_json)['decision_id'] != decision_id:
             raise ValueError('decision_id_not_bound_to_prepared_route')
         if order.transaction.required_signers != (order.user,):
             raise ValueError('exact_isolated_wallet_signer_required')
         record = order_record(order)
+        if route_kind(order)=='CPMM':
+            genesis=await self.rpc.genesis_hash() if self.envelope is None else None
+            binding=self._cpmm_binding(order,prepared_genesis=genesis)
+            record.update(route_kind='CPMM',program_id=execution_program(order),
+                inventory_pool=binding['inventory_pool'],
+                migration_binding_sha256=binding['binding_sha256'])
         if not self.journal.create(decision_id, record, self.clock_ms()):
             # A duplicate can only inspect/recover its original signature; it
             # never silently reconstructs, re-signs or re-sends an order.
             return self.result(decision_id)
+        self._refuse_retired_launchlab_route(order)
         if self.mode is Mode.RESEARCH:
             return self.result(decision_id)
         if self.journal.killed:
@@ -282,7 +346,9 @@ class ExecutionEngine:
         if type(height) is not int or height > order.transaction.last_valid_block_height:
             self.journal.release_unsent(decision_id, self.clock_ms(), 'blockhash_expired_before_simulation')
             return self.result(decision_id)
-        simulation = await self.rpc.simulate_transaction(order.transaction.unsigned_transaction(), sig_verify=False)
+        simulation_options=dict(sig_verify=False)
+        if route_kind(order)=='CPMM':simulation_options['min_context_slot']=order.source_slot
+        simulation = await self.rpc.simulate_transaction(order.transaction.unsigned_transaction(), **simulation_options)
         if type(simulation) is not dict or 'err' not in simulation or simulation['err'] is not None:
             self.journal.transition(decision_id, ('PREPARED',), 'SIMULATION_FAILED', self.clock_ms(), failure_type='simulation_refused')
             return self.result(decision_id)
@@ -350,6 +416,18 @@ class ExecutionEngine:
             return self.result(decision_id)
         if not row or row['state'] not in ACTIVE or not row['signature']:
             return self.result(decision_id)
+        record=json.loads(row['order_json'])
+        if record.get('route_kind')=='CPMM':
+            # A restart must not settle a mainnet order from an accidentally
+            # different endpoint/cluster. The pinned source is durable even
+            # when recovery runs without a signer or financial envelope.
+            binding=self.journal.migration_binding(record['mint'],record['pool'],
+                at_ms=self.clock_ms(),source_slot=record['source_slot'],wallet=record['user'],
+                endpoint_sha256=getattr(self.rpc,'endpoint_sha256',None),
+                genesis_hash=await self.rpc.genesis_hash())
+            if (binding['binding_sha256']!=record['migration_binding_sha256']
+                    or binding['inventory_pool']!=order_inventory_pool(record)):
+                raise ValueError('CPMM_recovery_source_or_inventory_binding_changed')
         status = await self.rpc.signature_status(row['signature'])
         now = self.clock_ms()
         if status is None:

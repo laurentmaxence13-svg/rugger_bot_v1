@@ -331,6 +331,7 @@ class AdmissionRequest:
     route_verified: bool
     costs_known: bool
     anti_rug_reasons: tuple
+    position_pool: str | None = None
 
     def __post_init__(self):
         for key in ('decision_id', 'quote_source_id'):
@@ -341,6 +342,12 @@ class AdmissionRequest:
             raise ValueError('invalid_cluster')
         for key in ('wallet', 'genesis_hash', 'program_id', 'mint', 'pool'):
             _pubkey(getattr(self, key), key)
+        if self.position_pool is not None:
+            _pubkey(self.position_pool,'position_pool')
+            from .cpmm_swap import CPMM_PROGRAM
+            if (self.side!='sell' or self.program_id!=CPMM_PROGRAM
+                    or self.position_pool in (self.pool,self.mint)):
+                raise ValueError('migrated_inventory_identity_requires_distinct_CPMM_sell')
         if self.pool == self.mint:
             raise ValueError('pool_mint_alias')
         for key in ('rpc_endpoint_sha256', 'quote_payload_sha256', 'route_message_sha256'):
@@ -477,7 +484,8 @@ def evaluate_admission(request, *, envelope, arming, health, risk, now_ms,
                 reasons.append('daily_loss_limit')
         else:
             position = next((p for p in risk.positions
-                             if p.mint == request.mint and p.pool == request.pool), None)
+                             if p.mint == request.mint and p.pool ==
+                             (request.position_pool or request.pool)), None)
             if position is None or request.amount_in_atomic > position.quantity_atomic-position.reserved_atomic:
                 reasons.append('sell_exceeds_unreserved_inventory')
     except ValueError:

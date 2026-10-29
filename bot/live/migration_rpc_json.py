@@ -57,7 +57,7 @@ def normalized_compiled_transaction(tx):
     if len(set(static))!=len(static):
         raise ValueError('duplicate_static_message_keys')
     v0=tx.get('version', 'legacy')
-    if v0 not in ('legacy',0):
+    if not ((type(v0) is str and v0=='legacy') or (type(v0) is int and v0==0)):
         raise ValueError('unsupported_transaction_message_version')
     lookups=message.get('addressTableLookups',[])
     if type(lookups) is not list:

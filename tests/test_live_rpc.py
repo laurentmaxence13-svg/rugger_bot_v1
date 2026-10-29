@@ -39,6 +39,17 @@ def test_simulation_causal_slot_is_retained_and_old_or_missing_slot_refused():
     with pytest.raises(RpcError):run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False))
 
 
+def test_finalized_signature_discovery_is_single_bounded_page_without_fallback():
+    t=Transport([dict(signature=SIG,slot=123,err=None)])
+    result=run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
+    assert result[0]['signature']==SIG
+    assert t.calls==[('getSignaturesForAddress',[KEY,dict(limit=2,commitment='finalized')])]
+    for limit in (True,0,1001,2.0):
+        with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=limit))
+    t.result=[dict(signature='bad',slot=123,err=None)]
+    with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
+
+
 @pytest.mark.parametrize('method',['signature_status','get_transaction','send_transaction'])
 def test_invalid_signature_identity_is_sanitized_rpc_error(method):
     t=Transport('bad')

@@ -100,7 +100,7 @@ def test_forged_compiled_RPC_header_or_lookup_permissions_fail_closed(change):
         message['header']['numReadonlyUnsignedAccounts']+=1
     if change=='missing_header':del message['header']
     if change=='malformed_signature_count':
-        message['header']['numRequiredSignatures']=2
+        message['header']['numRequiredSignatures']=3
     if change=='mixed_key_encodings':
         message['accountKeys'][2]=dict(pubkey=message['accountKeys'][2])
     if change=='duplicate_static_key':
