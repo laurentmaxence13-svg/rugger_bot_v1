@@ -219,3 +219,31 @@ def test_fee_receipt_invalid_floor_fails_before_transport(invalid):
         run(SolanaRpc(t).get_fee_for_message_receipt(b'message',
                                                       min_context_slot=invalid))
     assert t.calls==[]
+
+
+
+def test_rpc_method_trace_has_only_number_method_and_outcome_even_on_http_failure():
+    http=Http(b'RPC SECRET private_wallet_token',status=429)
+    transport=HttpJsonRpcTransport(http,endpoint='https://api.mainnet.solana.com',
+                                   proxy='http://proxy:8080')
+    with pytest.raises(RpcError):
+        run(transport('getGenesisHash',[]))
+    assert transport.method_trace==[
+        dict(ordinal=1,method='getGenesisHash',outcome='failed')]
+    assert 'SECRET' not in str(transport.method_trace)
+    assert 'proxy' not in str(transport.method_trace)
+    assert transport.used==1
+    assert transport.stopped is True
+
+
+def test_rpc_method_trace_preserves_request_order_and_never_logs_params():
+    http=Http(b'{"jsonrpc":"2.0","id":1,"result":999}')
+    transport=HttpJsonRpcTransport(http,endpoint='https://api.mainnet.solana.com',
+                                   proxy='http://proxy:8080',max_requests=1)
+    assert run(transport('getBlockHeight',[dict(private_arg='DO_NOT_LOG')]))==999
+    assert transport.method_trace==[
+        dict(ordinal=1,method='getBlockHeight',outcome='success')]
+    assert 'DO_NOT_LOG' not in str(transport.method_trace)
+    with pytest.raises(RpcError):
+        run(transport('getBlockHeight',[dict(private_arg='SECRET')]))
+    assert len(transport.method_trace)==1
