@@ -15,6 +15,7 @@ from bot.p3.certification import PROGRAM, _decode, find_program_address
 from bot.p3.platform_admin_history import _b58_bytes, _signature
 from bot.p3.quotes import SOL_MINT
 from bot.live.cpmm_swap import CPMM_PROGRAM
+from bot.live.migration_rpc_json import normalized_compiled_transaction
 
 
 MIGRATE_TO_CPSWAP_DISC=bytes((136,92,200,103,28,218,144,140))
@@ -55,6 +56,10 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
         if (type(observed_at_slot) is not int or observed_at_slot<=0
                 or type(tx) is not dict):
             return no('transaction_and_observation_slot_required')
+        raw_transaction_sha256=hashlib.sha256(json.dumps(
+            tx,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
+        ).hexdigest()
+        tx=normalized_compiled_transaction(tx)
         slot=tx['slot']
         payload=tx['transaction']
         meta=tx['meta']
@@ -147,9 +152,7 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
                 normalized_role_sha256=hashlib.sha256(
                     json.dumps(named,sort_keys=True,separators=(',',':')).encode()
                 ).hexdigest(),
-                retained_transaction_sha256=hashlib.sha256(
-                    json.dumps(tx,sort_keys=True,separators=(',',':'),
-                               allow_nan=False).encode()).hexdigest(),
+                retained_transaction_sha256=raw_transaction_sha256,
                 cpswap_config=named['cpswap_config'],
                 source_transport_authenticated=False,
                 cryptographic_signatures_verified=False,
