@@ -68,6 +68,9 @@ class HttpJsonRpcTransport:
         self.proxy = proxy
         self.max_requests = max_requests
         self.used = 0
+        # Each trace record contains ONLY the exact allowlisted method name,
+        # ordinal and local outcome, never params, URLs, response or headers.
+        self.method_trace = []
         self.deadline = time.monotonic() + max_elapsed_seconds
         self.submission_authorizer = submission_authorizer
         self.stopped = False
@@ -89,6 +92,8 @@ class HttpJsonRpcTransport:
             raise RpcError('Transport stopped or budget exhausted')
         self.used += 1
         request_id = self.used
+        trace_entry=dict(ordinal=request_id,method=method,outcome='attempted')
+        self.method_trace.append(trace_entry)
         timeout = aiohttp.ClientTimeout(total=min(8, remaining), connect=min(4, remaining),
             sock_connect=min(3, remaining), sock_read=min(4, remaining),
             ceil_threshold=float('inf'))
@@ -115,8 +120,10 @@ class HttpJsonRpcTransport:
                     or type(value.get('id')) is not int or value['id'] != request_id
                     or 'error' in value or 'result' not in value):
                 raise RpcError('Invalid or failed RPC envelope')
+            trace_entry['outcome']='success'
             return value['result']
         except BaseException as error:
+            trace_entry['outcome']='failed'
             self.stopped = True
             if isinstance(error, (KeyboardInterrupt, SystemExit, asyncio.CancelledError)):
                 raise
