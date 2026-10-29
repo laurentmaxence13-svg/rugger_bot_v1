@@ -19,24 +19,28 @@ from bot.live.route import ephemeral_wsol_address
 from bot.p3.certification import _encode
 from test_live_cpmm_stage import _staged
 from test_live_migration_evidence import SIG
+from test_live_signed_migration_reference import signed_rpc_migration
 from test_live_unsigned_preflight import GENESIS,ENDPOINT
 
 
 def registered(tmp_path):
     engine,old,cpmm,tx,amount=_staged(tmp_path)
+    signed,real_sig=signed_rpc_migration(tx)
     class Rpc:
         endpoint_sha256=ENDPOINT
         async def genesis_hash(self):return GENESIS
         async def get_transaction(self,signature):
-            assert signature==SIG
-            return deepcopy(tx)
-    receipt=asyncio.run(read_finalized_migration(Rpc(),signature=SIG,mint=cpmm.mint,
+            assert signature==real_sig
+            return deepcopy(signed)
+    receipt=asyncio.run(read_finalized_migration(Rpc(),signature=real_sig,mint=cpmm.mint,
         launchlab_pool=old.pool,cpmm_pool=cpmm.pool,expected_endpoint_sha256=ENDPOINT,
         expected_genesis_hash=GENESIS,observed_at_slot=cpmm.source_slot))
     assert receipt['status']=='FINALIZED_RPC_STRUCTURAL_MATCH',receipt
     binding=engine.journal.register_cpmm_migration(receipt,wallet=cpmm.user,
         received_at_ms=1400,expected_endpoint_sha256=ENDPOINT,expected_genesis_hash=GENESIS)
-    return engine,old,cpmm,tx,amount,binding
+    assert binding['cryptographic_signature_verified'] is True
+    assert binding['consensus_independently_verified'] is False
+    return engine,old,cpmm,signed,amount,binding
 
 
 def record(cpmm,binding,**overrides):
