@@ -15,6 +15,7 @@ from bot.live.cpmm_swap import CPMM_PROGRAM
 from bot.live.cpmm_exit import build_cpmm_exit
 from test_live_cpmm_exit import fixture_bank,MINT,WALLET,POOL
 from test_live_unsigned_preflight import ENDPOINT,GENESIS
+from test_live_solana_signatures import signed_fixture
 
 
 class NoFinancialRpc:
@@ -28,6 +29,9 @@ class NoFinancialRpc:
 def run(monkeypatch,*,attack=None,overrides=None):
     log=[]
     order=build_cpmm_exit(**fixture_bank())
+    signed_migration,_=signed_fixture()
+    signed_migration["slot"]=111
+    signed_signature=signed_migration["transaction"]["signatures"][0]
     async def pin(_rpc,**kw):
         log.append(('pin',kw['program_id']))
         if attack=='pin' and kw['program_id']==CPMM_PROGRAM:
@@ -39,8 +43,11 @@ def run(monkeypatch,*,attack=None,overrides=None):
         log.append(('migration',kw['cpmm_pool']))
         if attack=='migration':
             return dict(status='REFUSED',reason='source_unqualified')
+        if attack=='forged_signature':
+            signed_migration["transaction"]["message"]["recentBlockhash"]=PROGRAM
         return dict(status='FINALIZED_RPC_STRUCTURAL_MATCH',
                     migration_slot=111,raw_RPC_response_returned_to_caller=True,
+                    raw_RPC_response=signed_migration,
                     source_launchlab_pool=kw['launchlab_pool'],
                     migrated_cpmm_pool=kw['cpmm_pool'],
                     mint=kw['mint'],signature=kw['signature'])
@@ -75,7 +82,7 @@ def run(monkeypatch,*,attack=None,overrides=None):
     monkeypatch.setattr(runbook,'check_unsigned_order',simulation)
     params=dict(program_pins={PROGRAM:{},CPMM_PROGRAM:{}},
         original_launchlab_pool=GENESIS,migrated_cpmm_pool=POOL,
-        migration_signature=GENESIS,mint=MINT,wallet=WALLET,
+        migration_signature=signed_signature,mint=MINT,wallet=WALLET,
         decision_id='synthetic-cpmm-end-to-end-001',
         expected_endpoint_sha256=ENDPOINT,
         expected_genesis_hash=GENESIS,
@@ -94,6 +101,8 @@ def test_read_only_runbook_checks_both_programs_before_migration_bank_and_unsign
         ('pin',PROGRAM),('pin',CPMM_PROGRAM),('migration',POOL),
         ('bank',1234),('simulation','SELL')]
     assert result['program_pins_matched']
+    assert result['historical_signature_cryptographically_verified'] is True
+    assert result['historical_migration_signatures']['exact_message_sha256']
     assert len(result['program_pin_read_only_evidence'])==2
     assert result['exact_prepared_order'].transaction.required_signers==(WALLET,)
     assert result['exact_prepared_order'].pool==POOL
@@ -107,7 +116,7 @@ def test_read_only_runbook_checks_both_programs_before_migration_bank_and_unsign
 
 
 @pytest.mark.parametrize('attack,expected_calls',[
-    ('pin',2),('migration',3),('simulation',5),
+    ('pin',2),('migration',3),('forged_signature',3),('simulation',5),
 ])
 def test_fail_closed_short_circuits_preflight(monkeypatch,attack,expected_calls):
     result,calls=run(monkeypatch,attack=attack)
