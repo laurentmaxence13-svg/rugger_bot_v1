@@ -109,10 +109,16 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
     # Independently check the exact compiled message fee, including priority
     # compute-budget fees, against the reserved upper bound. A null response
     # means the RPC could not price this message: no fallback to 5000 lamports.
-    message_fee=await rpc.get_fee_for_message(order.transaction.message)
-    if (type(message_fee) is not int or not 0<message_fee
-            or message_fee>order.network_fee_upper_lamports):
-        raise ValueError("CPMM_actual_message_fee_unknown_or_exceeds_cap")
+    fee_receipt=await rpc.get_fee_for_message_receipt(
+        order.transaction.message,
+        min_context_slot=latest["context_slot"])
+    if (type(fee_receipt) is not dict
+            or type(fee_receipt.get("context_slot")) is not int
+            or fee_receipt["context_slot"]<latest["context_slot"]
+            or type(fee_receipt.get("value")) is not int
+            or not 0<fee_receipt["value"]<=order.network_fee_upper_lamports):
+        raise ValueError("CPMM_fee_receipt_noncausal_unknown_or_exceeds_cap")
+    message_fee=fee_receipt["value"]
     fee_received=clock_ms()
     if (type(fee_received) is not int or
             not 0<=fee_received-decision<=max_bank_age_ms or
@@ -123,6 +129,7 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
         read_only_RPC_calls=7,bank_received_at_ms=received,
         fee_verified_at_ms=fee_received,
         message_fee_lamports=message_fee,
+        fee_source_context_slot=fee_receipt["context_slot"],
         decision_at_ms=decision,
         source_block_time_seconds=observed_block_time_seconds,
         source_block_time_slot=slot_b,
