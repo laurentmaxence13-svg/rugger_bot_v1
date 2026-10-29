@@ -139,3 +139,32 @@ def test_missing_or_unsafe_operator_proof_refused(field,bad):
     with pytest.raises(ValueError):
         run(rpc,order,**{field:bad})
     assert rpc.calls==[]
+
+
+def test_full_cpmm_exit_uses_exact_same_unsigned_RPC_boundary():
+    from bot.live.cpmm_exit import build_cpmm_exit
+    from bot.live.cpmm_swap import CPMM_PROGRAM
+    from test_live_cpmm_exit import fixture_bank
+    order=build_cpmm_exit(**fixture_bank())
+    rpc=SimulationRpc()
+    result=run(rpc,order)
+    assert result['result']=='SIMULATION_SUCCEEDED_UNSENT'
+    assert result['program_id']==CPMM_PROGRAM
+    assert result['side']=='SELL'
+    assert result['message_sha256']==hashlib.sha256(order.transaction.message).hexdigest()
+    assert rpc.simulated_raw==order.transaction.unsigned_transaction()
+    assert rpc.calls==['getGenesisHash','getBlockHeight','simulateTransaction']
+    assert result['migration_provenance_verified'] is False
+    assert result['live_ready_to_arm'] is False
+    assert not result['route_executed']
+
+
+def test_invalid_cpmm_order_cannot_reach_RPC():
+    from dataclasses import replace
+    from bot.live.cpmm_exit import build_cpmm_exit
+    from test_live_cpmm_exit import fixture_bank
+    order=build_cpmm_exit(**fixture_bank())
+    rpc=SimulationRpc()
+    with pytest.raises(ValueError,match='modified'):
+        run(rpc,replace(order,expected_output=order.expected_output+100))
+    assert rpc.calls==[]
