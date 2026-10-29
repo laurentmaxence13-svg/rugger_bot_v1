@@ -182,3 +182,40 @@ def test_rpc_get_block_time_rejects_noninteger_source_slot_without_request(inval
     with pytest.raises(RpcError):
         run(SolanaRpc(t).get_block_time(invalid))
     assert t.calls==[]
+
+
+def test_fee_receipt_requests_message_at_or_after_blockhash_bank_and_retains_context():
+    t=Transport(dict(context=dict(slot=400),value=5000))
+    result=run(SolanaRpc(t).get_fee_for_message_receipt(b'compiled-test-message',
+                                                         min_context_slot=399))
+    assert result==dict(context_slot=400,value=5000)
+    assert t.calls==[('getFeeForMessage',[
+        base64.b64encode(b'compiled-test-message').decode(),
+        dict(commitment='confirmed',minContextSlot=399)])]
+
+
+@pytest.mark.parametrize('reply',[
+    dict(context=dict(slot=399),value=5000),
+    dict(context=dict(slot=True),value=5000),
+    dict(context=dict(slot=400),value=None),
+    dict(context=dict(slot=400),value=0),
+    dict(context=dict(slot=400),value=-1),
+    dict(context=dict(slot=400),value='5000'),
+    dict(value=5000),
+    dict(context=None,value=5000),
+    True,
+])
+def test_fee_receipt_invalid_or_older_bank_always_refused(reply):
+    t=Transport(reply)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_fee_for_message_receipt(b'compiled-test-message',
+                                                      min_context_slot=400))
+
+
+@pytest.mark.parametrize('invalid',[True,0,-1,'400',None])
+def test_fee_receipt_invalid_floor_fails_before_transport(invalid):
+    t=Transport(dict(context=dict(slot=400),value=5000))
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_fee_for_message_receipt(b'message',
+                                                      min_context_slot=invalid))
+    assert t.calls==[]
