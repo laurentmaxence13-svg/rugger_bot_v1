@@ -1,0 +1,35 @@
+{
+  "commitment": "confirmed",
+  "creation_signature": "3umbNJxM9hFM6GAebVd6pj86q7Hj5ete5ygjVE6BcPpr73XWQQPQ5Ron5Nv9tw94XJdmoBBirs1d8fNFwVU4mADa",
+  "creation_slot": 461979373,
+  "first_snapshot_slot": 461982938,
+  "imported_module_sha256": {
+    "bot/p3/campaign.py": "f1fd6e42613ad232cef4daa03bea9c6e0643bc5d2e5eecc180fccfca960d2883",
+    "bot/p3/collect.py": "8b6ad27bedb1538957c15408b0cc2f6601aba85ee3c6692f91ea290f10853a7b",
+    "bot/p3/evidence.py": "9e3da01797d87a53ecdd4a69a50e59caaf18d4d9593eec9d1d41e27f6575e139",
+    "bot/p3/store.py": "80a6fb05a053b8106d8c8f10fc756544a4107bf02f3762c5de1fbb486ff33e05"
+  },
+  "max_elapsed_ms": 30000,
+  "max_requests": 8,
+  "max_supported_transaction_version": 1,
+  "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+  "no_pagination": true,
+  "no_wallet_or_transaction_submission": true,
+  "page_coverage_exhaustive": false,
+  "plan_id": "mint-history-004",
+  "registered_at_ms": 1793114170561,
+  "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+  "rpc_methods": [
+    "getSignaturesForAddress",
+    "getTransaction"
+  ],
+  "schema": "p3-historical-mint-plan-v1",
+  "script_sha256": "1d02a18f67dd114e3d4860d1f1df7e64422b5bf99910d1f9e18f177165ffd4f6",
+  "selection": "successful_received_page_rows_creation_slot_exclusive_to_first_snapshot_inclusive_sort_slot_then_signature_first_seven",
+  "signature_page_limit": 1000,
+  "source_revision": "b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2",
+  "stop_on_first_source_or_evidence_error": true,
+  "target_supply_deficit_atomic": "979542505800",
+  "transaction_limit": 7,
+  "wire_retries": 0
+}

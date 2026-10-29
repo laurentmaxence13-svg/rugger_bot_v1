@@ -1,14 +1,70 @@
 """In-process scanner refusal latch and shared cancellation-safe supervision."""
 import asyncio
+import time
 
 
 class ScannerHealth:
     """One supervision lifetime. A failure can never be reset by a SQL refresh."""
-    def __init__(self):
+    def __init__(self, *, require_observations=False, clock_ms=None, monotonic_ms=None):
+        if type(require_observations) is not bool:
+            raise ValueError('Explicit runtime observation policy required')
         self._failed = False
         self.failures = []
         self.failure_event = asyncio.Event()
         self.tasks = []
+        self.require_observations = require_observations
+        self.clock_ms = clock_ms or (lambda: time.time_ns()//1000000)
+        self.monotonic_ms = monotonic_ms or (lambda: time.monotonic_ns()//1000000)
+        self._services = {}
+
+    def _observe(self, source, state, evidence):
+        # Only internal control paths call these methods. No token price/time
+        # or saved SQLite row is used as a transport heartbeat.
+        at, tick = self.clock_ms(), self.monotonic_ms()
+        if type(at) is not int or type(tick) is not int or min(at, tick) < 0:
+            raise ValueError('Nonnegative internal clocks required')
+        self._services[source] = dict(state=state, observed_at_ms=at,
+            monotonic_at_ms=tick, evidence=evidence)
+
+    def observe_rpc(self, successful):
+        if type(successful) is not bool:
+            raise ValueError('RPC outcome must be explicit')
+        self._observe('rpc', 'healthy' if successful else 'unavailable', 'existing_rpc_result')
+
+    def observe_websocket(self, state):
+        if state == 'notification':
+            # A notification cannot establish a subscription on its own.
+            if self._services.get('websocket', {}).get('state') != 'subscribed':
+                return
+            self._observe('websocket', 'subscribed', 'existing_subscribed_notification')
+        elif state in ('subscribing', 'subscribed', 'subscription_refused', 'disconnected'):
+            self._observe('websocket', state,
+                'subscription_ack' if state == 'subscribed' else 'existing_stream_state')
+        else:
+            raise ValueError('Unknown internal WebSocket state')
+
+    def services_fresh(self, max_age_ms=120000):
+        now, monotonic = self.clock_ms(), self.monotonic_ms()
+        if (type(max_age_ms) is not int or max_age_ms <= 0 or type(now) is not int
+                or type(monotonic) is not int or min(now, monotonic) < 0):
+            return False
+        for source, state in (('rpc','healthy'), ('websocket','subscribed')):
+            observation = self._services.get(source, {})
+            at, tick = observation.get('observed_at_ms'), observation.get('monotonic_at_ms')
+            if (observation.get('state') != state or type(at) is not int or type(tick) is not int
+                    or not 0 <= now-at <= max_age_ms or not 0 <= monotonic-tick <= max_age_ms):
+                return False
+        return not self.failed
+
+    def operational_observations(self):
+        """Snapshot existing callbacks without creating traffic or refreshing time."""
+        observations = {source: {key: value for key, value in item.items()
+                        if key != 'monotonic_at_ms'} for source, item in self._services.items()}
+        stamps = [item['observed_at_ms'] for item in self._services.values()]
+        observations['scanner'] = dict(state='ready' if self.permits_entries() else 'unavailable',
+            observed_at_ms=min(stamps) if len(stamps) == 2 else None,
+            evidence='monitored_tasks_and_existing_transport_callbacks')
+        return observations
 
     @property
     def failed(self):
@@ -55,6 +111,8 @@ class ScannerHealth:
             if task.done() or task.cancelling():
                 self.fail(f'scanner task stopped: {task.get_name()}')
                 return False
+        if self.require_observations and not self.services_fresh():
+            return False
         return True
 
     def append_errors(self, failures):

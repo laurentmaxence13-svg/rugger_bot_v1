@@ -1,0 +1,70 @@
+{
+  "MODELLED": {
+    "market_curve_models": 0,
+    "projected_inventories": 0
+  },
+  "OBSERVED": {
+    "blocking_transport_receipts": 1,
+    "committed_records": 4,
+    "request_attempts": 1
+  },
+  "P3": "OPEN",
+  "P4": "NO_INDEPENDENT_DATA_ADMITTED",
+  "P5": "BOUNDED_CAPTURE_AND_REPORT_RECOVERY_TESTED",
+  "REFUSED": {
+    "control_stopped": "first_source_transport_timeout",
+    "opportunities_rejected_by_market": null
+  },
+  "UNKNOWN": [
+    "discovery_universe",
+    "new_launches",
+    "pool_creator_identity",
+    "reserves_activity_liquidity",
+    "buy_sell_quotes",
+    "own_execution_costs",
+    "independent_buyers",
+    "net_PnL",
+    "strategy_advantage"
+  ],
+  "acquisition_elapsed_ms": 8009,
+  "actual_acquisition_window_within_60_seconds": true,
+  "actual_overall_process_within_60_seconds": false,
+  "actual_process_elapsed_until_interruption_ms": 200951,
+  "admissible_decision_frames": 0,
+  "cleanup_process_stalled": true,
+  "cleanup_reason_unproven": true,
+  "conditional_quote_cycles": 0,
+  "discovery_universe_known": false,
+  "evidence_tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+  "executed_transactions": 0,
+  "future_process_watchdog_tested_without_network": true,
+  "future_watchdog_trigger_seconds": 58,
+  "market_response_data_received": false,
+  "master_decisions": 0,
+  "max_acquisition_ms": 60000,
+  "max_requests": 20,
+  "net_PnL": null,
+  "new_market_observations": 0,
+  "new_watchdog_not_used_retroactively": true,
+  "no_fallback": true,
+  "no_retry": true,
+  "old_evidence_bundles_preserved": 12,
+  "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+  "preregistration_commit": "d09db2998014580d2c2b47110b22471480eb24c8",
+  "prior_controls_replayed": false,
+  "process_terminated_after_capture_close": true,
+  "published_before_first_request": true,
+  "reference_decisions": 0,
+  "requests_used": 1,
+  "schema": "p3-active-cohort-009-admissibility-v1",
+  "source_commit": "4d967d0839134db878f47bfbeba3108780ca71c4",
+  "stopping_receipt": {
+    "http_status": null,
+    "outcome": "error",
+    "provider": "raydium_launch_mint_index",
+    "reason": "transport_or_timeout",
+    "transport_error_type": "TimeoutError"
+  },
+  "strict_qualified_economic_cycles": 0,
+  "termination_grace_max_seconds": 2
+}

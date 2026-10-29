@@ -1,0 +1,133 @@
+{
+  "creation_verified": false,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_ms": 19871,
+  "execution_verified": false,
+  "fixed_quantity_checkpoint_id": 14,
+  "fixed_sell_quantity_atomic": "18765447579",
+  "net_pnl_lamports": null,
+  "plan_sha256": "6639407545df5accb89f80d48fdfa91a7dcd651ab54c154138743c6c57f680e9",
+  "position_acquired": false,
+  "quotes": [
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "min_output_amount_atomic": "33735546141668",
+      "outcome": "quoted",
+      "output_amount_atomic": "34076309234009",
+      "probe_phase": "initial",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793133935164,
+      "requested_at_ms": 1793133934682,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "18765447579",
+      "http_status": 200,
+      "input_amount_atomic": "18765447579",
+      "min_output_amount_atomic": "514714",
+      "outcome": "quoted",
+      "output_amount_atomic": "519914",
+      "probe_phase": "initial",
+      "quote_side": "sell",
+      "reason": null,
+      "received_at_ms": 1793133935464,
+      "requested_at_ms": 1793133935165,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "1000000000",
+      "http_status": 200,
+      "input_amount_atomic": "1000000000",
+      "min_output_amount_atomic": "33735546141668",
+      "outcome": "quoted",
+      "output_amount_atomic": "34076309234009",
+      "probe_phase": "followup",
+      "quote_side": "buy",
+      "reason": null,
+      "received_at_ms": 1793133950030,
+      "requested_at_ms": 1793133949444,
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "actual_input_amount_atomic": "18765447579",
+      "http_status": 200,
+      "input_amount_atomic": "18765447579",
+      "min_output_amount_atomic": "514714",
+      "outcome": "quoted",
+      "output_amount_atomic": "519914",
+      "probe_phase": "followup",
+      "quote_side": "sell",
+      "reason": null,
+      "received_at_ms": 1793133951055,
+      "requested_at_ms": 1793133950032,
+      "source_slot": null,
+      "source_time_ms": null
+    }
+  ],
+  "records": 1030,
+  "requests_used": 12,
+  "schema": "p3-active-exit-result-v1",
+  "selected_mint": "BdYsVstg6EZ3oSXgb6pXeqDa2KTikyVtehFcqzGRponk",
+  "selection_mode": "public_identity_checked_execution_unverified",
+  "sell_prechecks": [
+    {
+      "phase": "initial",
+      "projection": {
+        "additional_execution_costs_known": false,
+        "curve_fee_lamports": "6582",
+        "execution_verified": false,
+        "fee_rate_total_ppm": "12500",
+        "gross_output_lamports": "526496",
+        "hypothetical_entry_impact_applied": false,
+        "input_token_atomic": "18765447579",
+        "kind": "observed_state_conditional_sell_estimate",
+        "net_economic_pnl_sol": null,
+        "output_lamports": "519914",
+        "position_acquired": false,
+        "spendable_quote_vault_lamports": "52558502"
+      },
+      "status": "conditional"
+    },
+    {
+      "phase": "followup",
+      "projection": {
+        "additional_execution_costs_known": false,
+        "curve_fee_lamports": "6582",
+        "execution_verified": false,
+        "fee_rate_total_ppm": "12500",
+        "gross_output_lamports": "526496",
+        "hypothetical_entry_impact_applied": false,
+        "input_token_atomic": "18765447579",
+        "kind": "observed_state_conditional_sell_estimate",
+        "net_economic_pnl_sol": null,
+        "output_lamports": "519914",
+        "position_acquired": false,
+        "spendable_quote_vault_lamports": "52558502"
+      },
+      "status": "conditional"
+    }
+  ],
+  "snapshots": [
+    {
+      "phase": "initial",
+      "slot": 462210629,
+      "snapshot_observation_id": 9
+    },
+    {
+      "new_bank": true,
+      "phase": "followup",
+      "slot": 462210706,
+      "snapshot_observation_id": 1023
+    }
+  ],
+  "source_identity_basis": "pre_registered_caller_revision",
+  "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+  "strict_exit_qualified": false,
+  "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b"
+}

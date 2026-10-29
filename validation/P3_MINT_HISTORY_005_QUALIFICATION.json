@@ -1,0 +1,39 @@
+{
+  "burn_mechanism_observed": true,
+  "checks": [
+    {
+      "balance_drop_equals_parsed_burn": true,
+      "independent_account_balance_drop_atomic": "14960820821",
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "parsed_burn_atomic": "14960820821",
+      "post_balance_atomic": "0",
+      "pre_balance_atomic": "14960820821",
+      "signature": "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+      "single_SPL_token_mutation": true,
+      "slot": 461979692,
+      "source_token_account": "6nVJPVvgu211GhegKTw3gHXD6NMziyY7QTowJcW959eL"
+    },
+    {
+      "balance_drop_equals_parsed_burn": true,
+      "independent_account_balance_drop_atomic": "14425454354",
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "parsed_burn_atomic": "14425454354",
+      "post_balance_atomic": "0",
+      "pre_balance_atomic": "14425454354",
+      "signature": "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA",
+      "single_SPL_token_mutation": true,
+      "slot": 461981360,
+      "source_token_account": "6nVJPVvgu211GhegKTw3gHXD6NMziyY7QTowJcW959eL"
+    }
+  ],
+  "economic_verdict": "INSUFFICIENT DATA",
+  "full_supply_reconciliation": false,
+  "history_still_missing": "21 other eligible transactions from control004 plus one same-creation-slot transaction excluded by its strict lower boundary; no completeness guarantee from one RPC signature page",
+  "independently_confirmed_burn_sum_atomic": "29386275175",
+  "new_network_requests": 0,
+  "risk_guards_changed": false,
+  "schema": "p3-history-005-independent-burn-qualification-v1",
+  "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce",
+  "target_supply_deficit_atomic": "979542505800",
+  "unexplained_deficit_atomic": "950156230625"
+}

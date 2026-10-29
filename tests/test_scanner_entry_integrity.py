@@ -416,6 +416,8 @@ def test_healthy_supervised_wiring_uses_current_state(tmp_path):
     with closing(database(db)) as con:
         async def scanner(**kwargs):
             kwargs['health'].tasks.append(asyncio.current_task())
+            kwargs['health'].observe_rpc(True)
+            kwargs['health'].observe_websocket('subscribed')
             state(con)
             await asyncio.Event().wait()
         async def engine(*a, **kwargs):

@@ -54,6 +54,116 @@
       "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790",
       "uncompressed_bytes": 276017,
       "uncompressed_sha256": "9f0a2213a155f650425ceb062dbefe351bbdbf224a00a03b82d8720ccc64bdd7"
+    },
+    {
+      "compressed_bytes": 73480,
+      "compressed_sha256": "60a4458fc9bc4f1700642193f585d816697e41b3d939641b51287776353a45d8",
+      "plan_sha256": "6a1fcd9fda45c7bafa38c1367703e81797d6dceaca77c7225f5eaea612fa8d28",
+      "records": 152,
+      "run_id": "retention_003",
+      "source_revision": "455defdbe6ec388e245e188476716452b82a47c6",
+      "tail_hash": "914901e885fa97c87e7e81f0bd2750d0092a4cfb7a12f709c5402c993ed75fce",
+      "uncompressed_bytes": 319920,
+      "uncompressed_sha256": "38d01dbdb93a65ed0211813379b8ce97545881d37a9e15eeca72f53da3e9a2c5"
+    },
+    {
+      "compressed_bytes": 17487,
+      "compressed_sha256": "a7fc5233bd1f4d14bfd7a5ea36c84f18f61f1cd392276ede5241d19ff5265126",
+      "plan_sha256": "576793f828c0f772e0cbd4aebcfdce0b97d2d285db095ca4270fd2d8f89ce5da",
+      "records": 19,
+      "run_id": "mint_history_004",
+      "source_revision": "b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2",
+      "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2",
+      "uncompressed_bytes": 159353,
+      "uncompressed_sha256": "6ea6419cdeadecddd3ff259cbb9180e7bb963cb6eee3d81b59836aa51cb51389"
+    },
+    {
+      "compressed_bytes": 5871,
+      "compressed_sha256": "384d4c918c3c17c7916b7c93fb822dcc87d1ebcf3b081f8b3ca42c43722afc22",
+      "plan_sha256": "229e6f5b795dc2f8022079cdb9d8adba63b7abeb7de4d4501607945e66881684",
+      "records": 12,
+      "run_id": "mint_history_005",
+      "source_revision": "b0eef8e464c3dfec1c28cd998b41bd3d66d0dad2",
+      "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce",
+      "uncompressed_bytes": 32636,
+      "uncompressed_sha256": "894c52fc9cd5a0e3debc50352444f4bd88cda096ef3dfa27bd23a70da04899bc"
+    },
+    {
+      "compressed_bytes": 27426,
+      "compressed_sha256": "c2ed72f75c345f145bdd2ad70bb775e39b3fddb5b53cfceab4cbd16dac28e7a7",
+      "plan_sha256": "ad170961e06d9199119da1b3a6ae1d7abc3c5c35cc71b10469d101475a70c0a8",
+      "records": 25,
+      "run_id": "mint_history_006",
+      "source_revision": "43fb90ee9dec2721bada12ed7c50b9745a41da24",
+      "tail_hash": "7a62d2a496d274bb1dcaa099ae8115a2223a5abcfef2509b30c875d09f7fe7bb",
+      "uncompressed_bytes": 225183,
+      "uncompressed_sha256": "ce7976d4b8618f03a4802d766a0d6184692a12667a98379d5bea4de0beb64a92"
+    },
+    {
+      "compressed_bytes": 1467,
+      "compressed_sha256": "c9be649182e0e7afb263cc6cdec0beb93daeaa620a8fae52ecb810da0addde2c",
+      "plan_sha256": "13932ba576d11f488d95e546590de18e9b134455c1279e498e269daaefb10e45",
+      "records": 4,
+      "run_id": "rpc_health_before007",
+      "source_revision": "ce70a4bbf190bf6360d5cce031fe89b0f5be2e0e",
+      "tail_hash": "e4aa64e19c7e526b5512286054e239263adc6adf423aba7e075a1296785e2b8b",
+      "uncompressed_bytes": 4162,
+      "uncompressed_sha256": "946820ce9e26c26158213f1fb095615858ce06aec67bfa28eb6886af9c3d9c37"
+    },
+    {
+      "compressed_bytes": 354041,
+      "compressed_sha256": "ff4429972bf4ef0c763d5ca7b9a4629b52b04251d0ebcb7dbd370f5be03ff7fe",
+      "plan_sha256": "6639407545df5accb89f80d48fdfa91a7dcd651ab54c154138743c6c57f680e9",
+      "records": 1030,
+      "run_id": "active_exit_007",
+      "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+      "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b",
+      "uncompressed_bytes": 1340165,
+      "uncompressed_sha256": "363a712b9d8a596b928b2b1b0f948f7718d1585bc3f556d1d349a5ac586e5503"
+    },
+    {
+      "compressed_bytes": 50253,
+      "compressed_sha256": "5533179529dc97bc26f362c51219d902109c42a2e40458e558d3d3ef10a1aa73",
+      "plan_sha256": "33f5085fe3bd43714bec7372cd1be6848fb458e3401a70a9358553dde8128a17",
+      "records": 55,
+      "run_id": "prospective_008",
+      "source_revision": "39fe7fd072b7076da49c88b4550cc08dcdbb57dc",
+      "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6",
+      "uncompressed_bytes": 260330,
+      "uncompressed_sha256": "28f6dfedb12eb897b8ce37d5db32af518af3a393c08f25af7c47b48ba7b77c83"
+    },
+    {
+      "compressed_bytes": 2280,
+      "compressed_sha256": "82d99ce479cdffe1977d3adf9c6e03aed1ea1ecd4ba602daee7f228821e0078a",
+      "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+      "records": 4,
+      "run_id": "active_cohort_009",
+      "source_revision": "4d967d0839134db878f47bfbeba3108780ca71c4",
+      "tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+      "uncompressed_bytes": 6313,
+      "uncompressed_sha256": "93e66d7df6e65820ac639bb36b9b5769d1967cd072a9aef1ef0fba6712070293"
+    },
+    {
+      "compressed_bytes": 66446,
+      "compressed_sha256": "4b49d9ef92eb2ebcd9cb7fddf2a67924bc788cd7d0a774ae9ac39814b919b66c",
+      "plan_sha256": "2c9e38d5843a9d65f418afab81f9614f976b7751c31b0f8581a0fa992ec32ff5",
+      "records": 47,
+      "run_id": "active_cohort_010",
+      "source_revision": "5bec177fdcc2c98354d13b5650c466b6bfc2a2fb",
+      "tail_hash": "1d2afec81a12cc6abfac5f5d1afaa5cca08846f70585ab8a54d83f8a69caf66d",
+      "uncompressed_bytes": 333791,
+      "uncompressed_sha256": "38a1731638484a94613ca8d24e021f78d6f4091e6fb605edf278319d4ae70f33"
+    },
+    {
+      "compressed_bytes": 99041,
+      "compressed_sha256": "2a3c88bc5ab7e302f7ce2224bcc738b90dea2595e0007d4288bf67e351db2b9b",
+      "plan_sha256": "76f9aff77d32b7da4112c370a2ea816447379823876898ca563886846d233ce8",
+      "records": 142,
+      "run_id": "research_011",
+      "source_revision": "ae89a344bec3855c2cb6f26f75bab4865ac73ac0",
+      "tail_hash": "40532579c596a58c0676ca55a074da302c737293b6841377b4fa00fd1bcff997",
+      "uncompressed_bytes": 526425,
+      "uncompressed_sha256": "1bcd757dc2b00967a0a66161d69352dcab104c340b0197975a940e8f410dc3a0"
     }
   ],
   "cloud_storage_is_not_durable_backup": true,

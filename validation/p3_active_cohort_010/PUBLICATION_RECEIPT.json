@@ -1,0 +1,10 @@
+{
+  "market_requests_before_receipt": 0,
+  "plan_git_blob": "4482e26d0941f3ac37aeb9f76dd7bbd3dff54665",
+  "plan_sha256": "2c9e38d5843a9d65f418afab81f9614f976b7751c31b0f8581a0fa992ec32ff5",
+  "published_plan_commit": "430ac7c1b042b4c665fa53a2b16aace1a14ece91",
+  "remote_plan_readback_matched_local_blob": true,
+  "schema": "p3-010-publication-receipt-v1",
+  "source_remote_commit": "5bec177fdcc2c98354d13b5650c466b6bfc2a2fb",
+  "verified_at_ms": 1793222222404
+}

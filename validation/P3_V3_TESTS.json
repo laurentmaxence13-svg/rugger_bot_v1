@@ -1,0 +1,17 @@
+{
+  "command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_seconds": 4.51,
+  "failed": 0,
+  "local_equivalent_commit": "06a77559b5cb3804098681e4407173307f67ead7",
+  "network_prohibited": true,
+  "passed": 1366,
+  "published_code_commit": "455defdbe6ec388e245e188476716452b82a47c6",
+  "schema": "p3-v3-software-validation-v1",
+  "skipped": 1,
+  "stderr_bytes": 0,
+  "subtests_passed": 242,
+  "tested_git_tree": "294289227071b849133e476446152c5772bbec5b",
+  "user_database_absent": true,
+  "warnings_as_errors": true
+}

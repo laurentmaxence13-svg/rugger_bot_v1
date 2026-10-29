@@ -151,6 +151,8 @@ def _market_quote_from_pair(pair):
 
 
 def setup(con):
+    from bot.analyser.token_inventory import setup_inventory_schema
+    setup_inventory_schema(con)
     con.executescript('''
     CREATE TABLE IF NOT EXISTS paper_quote_conflicts (
       mint TEXT NOT NULL, timestamp INTEGER NOT NULL,
@@ -317,6 +319,10 @@ def entry_allowed(con, now, max_open=3, max_entries_day=20,
     ).fetchone()[0]
     if open_count >= max(0, int(max_open)):
         return False
+    if _inventory_exists(con) and con.execute(
+            "SELECT 1 FROM paper_token_inventory i JOIN paper_trades t ON t.mint=i.mint "
+            "WHERE t.status='open' AND i.cost_basis_remaining_lamports IS NULL LIMIT 1").fetchone():
+        return False
 
     day_start = int(now) - int(now) % 86400
     entries_today = con.execute(
@@ -344,6 +350,15 @@ def entry_allowed(con, now, max_open=3, max_entries_day=20,
             (day_start, int(now)),
         ).fetchone()
 
+        if _inventory_exists(con):
+            try:
+                events = _paper_realization_events(con)
+            except (TypeError,ValueError):
+                return False
+            if any(event['time'] > int(now) for event in events):
+                return False
+            pnl_today = math.fsum(event['pnl_sol'] for event in events if day_start <= event['time'] <= int(now))
+            missing = 0
         if missing:
             return False
 
@@ -497,7 +512,8 @@ def record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
                  initial_capital_sol=10.0, position_pct=10.0, *,
-                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
+                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0,
+                 inventory_context=None, require_inventory=False):
     # Entries must read free capital and reserve it under the same write lock.
     # Closing and opening positions therefore share one serialization boundary.
     args = (con, mint, creator, signal_time, now, quote, model, hold, cost_bps,
@@ -506,30 +522,135 @@ def record_quote(con, mint, creator, signal_time, now, quote, model,
         return _record_quote(
             con, *args[1:], _close_locked=True, max_open=max_open,
             max_entries_day=max_entries_day, max_daily_loss_pct=max_daily_loss_pct,
+            inventory_context=inventory_context, require_inventory=require_inventory,
         )
 
 
-def _paper_free_capital(con):
-    """Read validated SOL reservations; an open trade itself is the reservation."""
-    initial, capital = con.execute(
-        'SELECT initial_capital_sol,realized_capital_sol FROM paper_portfolio WHERE id=1'
-    ).fetchone()
-    initial = _financial_number(initial, 'initial_capital_sol', positive=True)
-    capital = _financial_number(capital, 'realized_capital_sol')
-    pnls = [_financial_number(row[0], 'historical pnl_sol') for row in
-            con.execute("SELECT pnl_sol FROM paper_trades WHERE status='closed'")]
-    expected = _financial_number(initial + math.fsum(pnls), 'ledger capital')
-    if not math.isclose(capital, expected, rel_tol=1e-9, abs_tol=1e-12):
+def _inventory_decision_ms(context, now):
+    value = context.get('decision_at_ms',int(now*1000)) if isinstance(context,dict) else int(now*1000)
+    if type(value) is not int or not int(now)*1000 <= value < (int(now)+1)*1000:
+        raise ValueError('Atomic inventory decision time disagrees with quote collection second')
+    return value
+
+
+def _inventory_exists(con):
+    table = con.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='paper_token_inventory'").fetchone()
+    return bool(table and con.execute('SELECT 1 FROM paper_token_inventory LIMIT 1').fetchone())
+
+
+def _inventory_int(value, name, *, nonnegative=True):
+    if not isinstance(value, str) or len(value) > 128:
+        raise ValueError('Invalid atomic inventory field: '+name)
+    try:
+        number = int(value)
+    except ValueError:
+        raise ValueError('Invalid atomic inventory field: '+name) from None
+    if str(number) != value or (nonnegative and number < 0):
+        raise ValueError('Invalid atomic inventory field: '+name)
+    return number
+
+
+def _paper_realization_events(con):
+    """One economic event stream; aggregate native closures are never credited twice.
+
+    Native leg integers remain authoritative. Bookkeeping seconds preserve the
+    legacy inclusive session/day API; exact decision milliseconds remain stored.
+    """
+    native = {}
+    if _inventory_exists(con):
+        for mint, acquired, remaining, total, basis_left, pnl in con.execute(
+                'SELECT mint,acquired_atomic,remaining_atomic,cost_basis_total_lamports,'
+                'cost_basis_remaining_lamports,realized_pnl_lamports FROM paper_token_inventory'):
+            native[mint] = dict(acquired=_inventory_int(acquired,'acquired'),
+                remaining=_inventory_int(remaining,'remaining'), total=total, basis_left=basis_left,
+                pnl=_inventory_int(pnl,'realized_pnl',nonnegative=False), sold=0, allocated=0, leg_pnl=0)
+            if not 0 <= native[mint]['remaining'] <= native[mint]['acquired'] or native[mint]['acquired'] <= 0:
+                raise ValueError('Inconsistent native inventory quantity')
+    events = []
+    for mint, entry, exit_at, pnl, size in con.execute(
+            "SELECT mint,entry_time,exit_time,pnl_sol,position_sol FROM paper_trades WHERE status='closed'"):
+        size = _financial_number(size,'position_sol',positive=True)
+        if mint in native:
+            continue
+        entry = _financial_number(entry,'entry_time',nonnegative=True)
+        exit_at = _financial_number(exit_at,'exit_time',nonnegative=True)
+        pnl = _financial_number(pnl,'historical pnl_sol')
+        if exit_at < entry:
+            raise ValueError('Legacy realization predates entry')
+        events.append(dict(time=exit_at,time_ms=exit_at*1000,pnl_sol=pnl,mint=mint,
+                           order=(0,mint),kind='legacy_position'))
+    if native:
+        for rowid, leg_id, mint, at, quantity, proceeds, fee, basis, pnl in con.execute(
+                'SELECT rowid,id,mint,decision_ms,quantity_atomic,proceeds_lamports,extra_fee_lamports,'
+                'allocated_basis_lamports,pnl_lamports FROM paper_token_legs'):
+            if mint not in native or type(at) is not int or at < 0:
+                raise ValueError('Orphan or undated native realization')
+            quantity = _inventory_int(quantity,'leg quantity')
+            proceeds = _inventory_int(proceeds,'leg proceeds')
+            fee = _inventory_int(fee,'leg fee')
+            basis = _inventory_int(basis,'leg basis')
+            pnl = _inventory_int(pnl,'leg pnl',nonnegative=False)
+            if quantity <= 0 or pnl != proceeds-fee-basis:
+                raise ValueError('Native realization does not reconcile')
+            item = native[mint]
+            item['sold'] += quantity; item['allocated'] += basis; item['leg_pnl'] += pnl
+            events.append(dict(time=at//1000,time_ms=at,pnl_sol=pnl/1_000_000_000,
+                               mint=mint,order=(1,rowid),kind='native_leg',leg_id=leg_id))
+        for mint, item in native.items():
+            trade = con.execute('SELECT status,pnl_sol,entry_time FROM paper_trades WHERE mint=?',(mint,)).fetchone()
+            if trade is None or item['sold'] != item['acquired']-item['remaining'] or item['leg_pnl'] != item['pnl']:
+                raise ValueError('Native position aggregate does not reconcile')
+            if any(e['time'] < trade[2] for e in events if e['mint'] == mint):
+                raise ValueError('Native realization predates entry')
+            if item['total'] is None or item['basis_left'] is None:
+                if item['sold']:
+                    raise ValueError('Unknown native basis cannot have settled legs')
+            else:
+                total = _inventory_int(item['total'],'total basis')
+                left = _inventory_int(item['basis_left'],'remaining basis')
+                if total-left != item['allocated'] or left < 0 or (item['remaining'] == 0 and left != 0):
+                    raise ValueError('Native remaining basis does not reconcile')
+            if trade[0] == 'closed':
+                if item['remaining'] != 0 or not math.isclose(
+                        _financial_number(trade[1],'native aggregate pnl'),item['pnl']/1_000_000_000,
+                        rel_tol=0,abs_tol=1e-12):
+                    raise ValueError('Closed native position retains inventory or inconsistent PnL')
+            elif item['remaining'] == 0:
+                raise ValueError('Open native position has no remaining inventory')
+    return sorted(events,key=lambda e:(e['time_ms'],e['order']))
+
+
+def _paper_reconciled_capital(con):
+    row = con.execute('SELECT initial_capital_sol,realized_capital_sol FROM paper_portfolio WHERE id=1').fetchone()
+    if row is None:
+        raise ValueError('Missing PAPER portfolio')
+    initial = _financial_number(row[0],'initial_capital_sol',positive=True)
+    capital = _financial_number(row[1],'realized_capital_sol')
+    native = _inventory_exists(con)
+    pnls = ([e['pnl_sol'] for e in _paper_realization_events(con)] if native else
+            [_financial_number(row[0],'historical pnl_sol') for row in
+             con.execute("SELECT pnl_sol FROM paper_trades WHERE status='closed'")])
+    expected = _financial_number(initial+math.fsum(pnls),'ledger capital')
+    if not math.isclose(capital,expected,rel_tol=0 if native else 1e-9,abs_tol=1e-12):
         raise ValueError('Unreconciled PAPER portfolio')
+    return capital
+
+
+def _paper_free_capital(con):
+    """Reserve remaining native basis or the unchanged legacy position amount."""
+    capital = _paper_reconciled_capital(con)
+    native = {}
+    if _inventory_exists(con):
+        native = dict(con.execute('SELECT mint,cost_basis_remaining_lamports FROM paper_token_inventory'))
     sizes = []
-    for size, pnl, exit_time, capital_after in con.execute(
-            "SELECT position_sol,pnl_sol,exit_time,capital_after_sol "
-            "FROM paper_trades WHERE status='open'"):
-        sizes.append(_financial_number(size, 'reserved position_sol', positive=True))
-        if any(value is not None for value in (pnl, exit_time, capital_after)):
+    for mint, size, pnl, exit_time, capital_after in con.execute(
+            "SELECT mint,position_sol,pnl_sol,exit_time,capital_after_sol FROM paper_trades WHERE status='open'"):
+        size = _financial_number(size,'reserved position_sol',positive=True)
+        if any(value is not None for value in (pnl,exit_time,capital_after)):
             raise ValueError('PAPER open position contains closure accounting')
-    committed = _financial_number(math.fsum(sizes), 'committed capital')
-    return capital, _financial_number(capital - committed, 'free capital')
+        sizes.append(_inventory_int(native[mint],'reserved native basis')/1_000_000_000 if mint in native else size)
+    committed = _financial_number(math.fsum(sizes),'committed capital')
+    return capital,_financial_number(capital-committed,'free capital')
 
 
 PRICE_FIELDS = (
@@ -586,7 +707,8 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                  hold=3600, cost_bps=200, allow_entry=True,
                  strategy_mode='validated', force_exit_reason=None,
                  initial_capital_sol=10.0, position_pct=10.0, _close_locked=False,
-                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0):
+                 max_open=3, max_entries_day=20, max_daily_loss_pct=10.0,
+                 inventory_context=None, require_inventory=False):
     if not _close_locked:
         with _paper_close_transaction(con):
             return _record_quote(
@@ -595,6 +717,7 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                 initial_capital_sol, position_pct, _close_locked=True,
                 max_open=max_open, max_entries_day=max_entries_day,
                 max_daily_loss_pct=max_daily_loss_pct,
+                inventory_context=inventory_context, require_inventory=require_inventory,
             )
     market_quote = _quote_values(quote)
     liquidity, price, pair = market_quote
@@ -646,6 +769,15 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
             reason = 'TRAILING_STOP'
         elif now >= entry_time + hold_s:
             reason = 'TIMEOUT'
+        native_position = (_inventory_exists(con) and con.execute(
+            'SELECT 1 FROM paper_token_inventory WHERE mint=?',(mint,)).fetchone())
+        if native_position:
+            if reason:
+                from bot.analyser.token_inventory import settle_exit
+                return settle_exit(con,mint,inventory_context,_inventory_decision_ms(inventory_context,now),reason,price,peak)
+            con.execute("UPDATE paper_trades SET peak_price=?,last_price=?,last_quote_time=? WHERE mint=? AND status='open'",
+                        (peak,price,now,mint))
+            return None
         if reason:
             result = gross_return - cost / 10000
             position_row = con.execute('SELECT position_sol,pnl_sol,exit_time,capital_after_sol '
@@ -661,20 +793,20 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                 raise ValueError('Missing PAPER portfolio for closure')
             initial = _financial_number(portfolio[0], 'initial_capital_sol', positive=True)
             capital_before = _financial_number(portfolio[1], 'realized_capital_sol')
-            closed_pnls = [_financial_number(row[0], 'historical pnl_sol') for row in
-                           con.execute("SELECT pnl_sol FROM paper_trades WHERE status='closed'")]
-            expected = _financial_number(initial + math.fsum(closed_pnls), 'ledger capital')
-            if not math.isclose(capital_before, expected, rel_tol=1e-9, abs_tol=1e-12):
-                raise ValueError('Unreconciled PAPER portfolio')
+            _paper_reconciled_capital(con)
             # Keep the full liability, including negative equity after extreme
             # simulated costs. Never silently clip capital or alter trade PnL.
             capital_after = _financial_number(capital_before + pnl_sol, 'capital_after_sol')
+            # The active decision recalculates the cost assumption on every
+            # quote. Persist the exact assumption charged here, rather than the
+            # entry estimate, so a restarted reporter can reconcile gross/net.
+            # It remains a PAPER assumption, never an observed execution fee.
             updated = con.execute('''UPDATE paper_trades
                            SET exit_time=?,exit_price=?,net_return=?,exit_reason=?,
                                peak_price=?,last_price=?,last_quote_time=?,pnl_sol=?,
-                               capital_after_sol=?,status='closed'
+                               capital_after_sol=?,cost_bps=?,status='closed'
                            WHERE mint=? AND status='open' ''',
-                        (now, price, result, reason, peak, price, now, pnl_sol, capital_after, mint))
+                        (now, price, result, reason, peak, price, now, pnl_sol, capital_after, cost, mint))
             if updated.rowcount != 1:
                 raise RuntimeError('PAPER open-to-closed transition failed')
             updated = con.execute('UPDATE paper_portfolio SET realized_capital_sol=?,updated_at=? WHERE id=1',
@@ -729,6 +861,12 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
                          max_entries_day=max_entries_day,
                          max_daily_loss_pct=max_daily_loss_pct):
         return None
+    prepared = None
+    if inventory_context is not None or require_inventory:
+        from bot.analyser.token_inventory import prepare_entry
+        prepared = prepare_entry(con,mint,inventory_context,_inventory_decision_ms(inventory_context,now),position_sol,free_capital)
+        if not prepared.get('accepted'):
+            return 'INVENTORY ENTRY REFUSED '+mint+' reason='+str(prepared.get('reason','unqualified_inventory'))
     inserted = con.execute('''INSERT OR IGNORE INTO paper_trades
         (mint,creator,signal_time,entry_time,entry_price,peak_price,last_price,
          last_quote_time,cost_bps,strategy_mode,position_sol,status) VALUES(?,?,?,?,?,?,?,?,?,?,?, 'open')''',
@@ -736,6 +874,9 @@ def _record_quote(con, mint, creator, signal_time, now, quote, model,
          str(strategy_mode or 'validated'), position_sol))
     if inserted.rowcount != 1:
         return None
+    if prepared is not None:
+        from bot.analyser.token_inventory import persist_entry
+        persist_entry(con,mint,prepared)
     score_label = (f'{score:.1f}/100' if strategy_mode == 'shadow_final'
                    else f'{score:+.2%}')
     return (f'ENTRY {mint} simulated price={price:.10g} USD score={score_label} '

@@ -1,0 +1,44 @@
+{
+  "collection_run_registered": false,
+  "criteria": {
+    "activity": "observed_real_a_positive_and_real_b_positive",
+    "capacity": "own_buy_expected_quantity_has_observed_full_sell_capacity_same_bank",
+    "creation_lookup": "one_bounded_page_and_one_matching_creation_transaction_per_candidate",
+    "creation_signature_limit": 1000,
+    "evidence_profile": "published_metadata_v1",
+    "followup_delay_ms": 15000,
+    "index_sort": "new",
+    "max_elapsed_ms": 60000,
+    "max_local_snapshot_age_ms": 5000,
+    "max_requests": 20,
+    "max_universe_rows": 100,
+    "missing_provider_clock_or_applicable_costs": "keep_unknown_and_zero_strict_qualified_cycles",
+    "p4_scope": "development_only; no independent_holdout_claim",
+    "request_budget": {
+      "creation_pages_and_matching_bodies": 4,
+      "discovery": 1,
+      "followup_bank_and_block_time": 2,
+      "initial_group_bank_and_block_time": 2,
+      "one_fee_reference_page_and_body": 2,
+      "optional_prefixed_quarter_diagnostics": 2,
+      "six_pool_roots": 1,
+      "two_buys_and_initial_full_sells": 4,
+      "two_followup_full_sells": 2
+    },
+    "research_input_lamports": 100000000,
+    "schema": "p3-active-cohort-criteria-v1",
+    "screen_prefix": 6,
+    "selection": "first_two_identity_qualified_active_capacity_cases_in_fixed_six_prefix",
+    "source_error_policy": "stop_after_persisting_first_http_transport_or_malformed_error",
+    "sources": {
+      "discovery": "https://launch-mint-v1.raydium.io/get/list",
+      "quotes": "https://transaction-v1.raydium.io/compute/swap-base-in",
+      "rpc": "https://api.mainnet-beta.solana.com"
+    },
+    "status": "PREPARED_NOT_EXECUTED",
+    "target_candidates": 2
+  },
+  "criteria_sha256": "116c4d5e9fa66991113c23ab17118622e2d50576381b0d4dcfe743666da8ee06",
+  "registration_before_any_new_market_request_required": true,
+  "source_revision_for_run": null
+}

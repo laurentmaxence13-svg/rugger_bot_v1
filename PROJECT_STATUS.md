@@ -1,6 +1,478 @@
-# État du projet — préparation P3
+# État du projet — candidat fonctionnel PAPER
 
-## Mission courante — v2 exécutée et preuves archivées
+## Livraison vérifiée29octobre
+
+Résultats011 publiésdd9cce2, archive+manifest+rapport retéléchargés et réellement
+vérifiés.0nouvelle requête marché pendant cette vérification. Reçu sous
+validation/p3_research_011/REMOTE_READBACK.json; mapping local/distant et reprise
+exacte dansDELIVERY.json. Codeae89a344,préenregistrement7016e346,P0sauvé36f5fbe.
+Ne pas relancer010/011. Continuer sur les clocks/costs/inputs causaux manquants,
+sans promotion de politique ou prétention de P&L net certifié.
+
+
+##29octobre —011 a obtenu les premières paires de devis complètes
+
+Plan publié/relu7016e346,sourceae89a344.20requêtes/27,686s capture/27,933s processus,
+fin normale,sansretry/fallback.100lignes,6pools,2RESEARCH_ONLY/0STRICT;2nouveauxmints
+par rapport aux537connus.4quotes achat propres0,10/1SOL,8quotes venteQentier aux
+2horizons,0refus.8paires descriptives sur4lots, pas8essaisindépendants.
+Écarts conditionnels0,10SOL : -0,002749377/-0,003084445SOL;1SOL : -0,050711207/
+-0,081701720SOL,avant coûts inconnus. Les montants de suivi sont identiques;
+aucune fraîcheur ou marché immobile déduits. Fees déjà danssorties, pasredéduites.
+ActualInputAmount déclaré exact12/12; sourceTimeMs/contextSlot absents12/12.
+Identité plateformeUNKNOWN,coûts propres etfeatures causales manquants :0cycle
+strict,0cycleéconomiquequalifié,P&L netUNKNOWN,0décisionA/Badmissible. Aucuneoptimisation
+ou promotion des24politiques, aucunparamètreactif changé. Modèlespropresachat/revente
+et seuilsdeflux restent contrefactuels; résultats dansP3_RESEARCH_011.md.
+142événements archivés,ancre40532579;15bundles/1887événements,14anciensinchangés.
+Rapport+8analyses+12corps de devis reproduits. Scriptvalidation/p3_research_011/reproduce.py.
+JSONcompletindex absent,100lignes/digests présents. AucunSQLiteouclépublié.
+Ne jamais relancer010/011. Prochainepriorité :clocks de devis,coûtspropres applicables,
+featurescausales puisA/B; aucune nouvellecampagneidentique pour gonflerlescompteurs.
+PAPER ONLY, PR22ouverte,sanssignature,dépense,fusion ouledgerutilisateur.
+
+
+##29octobre — RESEARCH_ONLY intégré;011 prêt avant acquisition
+
+P0 publié/relu36f5fbe (archive et rapport retéléchargés, chaîne47événements vérifiée).
+PR24 examinée au commitbef10cc; gate repris et corrigé sur vrais schémas. Cinq
+écrans détachés/falsifiés refusés, blocages supplémentaires conservés. SélecteurSTRICT,
+certification, bridge financier, politiques et ledger inchangés. Sur010 :2recherche,
+0strict, sélection stricte exactement égale à l'original. Aucun010 relancé.
+
+2040tests réussis,1skip,242subtests,15,90s,-Werror,stderr0. Démonstration synthétique
+complète :4lots/8paires,0,10et1SOL propres,sortiesQentier immédiat/suivi15s,0ledger.
+Aucun avantage économique déduit des fixtures. Nouveau runner011 prêt : index
+lastTrade documenté,20requêtes/60s global, watchdog58+2, décisions de collecte figées
+avantquotes, source clocks/actualInput/costs UNKNOWN gardés. Le protocole011 doit
+être associé au code exact, publié/relu avant toute collecte. LireP3_RESEARCH_011.md.
+P3 économique et A/B restent ouverts; aucune promotion des24politiques.
+
+
+## Reprise29octobre — P0 P3-010 récupéré
+
+Journal47événements exporté avec ancre1d2afec8,14bundles/1745événements; les13anciens
+inchangés. Rapport original et6analyses de comptes reproduits sans réseau/SQLite.
+100lignes de sélection conservées,6pools,3actifs,2capacités modélisées0,10SOL;
+6identités plateforme UNKNOWN,2supplies divergentes,0devis/0cycle/0A/B admissible.
+4requêtes historiques/2342ms capture/2569,909ms processus; contrôle010 jamais relancé.
+JSON complet de découverte absent dès la collecte (unsafe_or_oversized); seules les
+100lignes sélection/digests sont conservées. Ne pas prétendre à un raw replay complet.
+Preuves/reproduction : validation/p3_active_cohort_010/RECOVERY.md, SIX_POOLS.json,
+reproduce.py et evidence/p3/active_cohort_010. Aucune donnée utilisateur/secret/SQLite publié.
+Suite autorisée : examiner PR24 sur structures réelles, séparer STRICT/RESEARCH_ONLY,
+puis nouveau protocole011 borné/publié, jamais010. Issues23 et25. Aucun ordre/dépense,
+politique active ou fusion. Endurance et anciens audits exclus de la reprise.
+
+
+## P3-010 — transport préparé, avant diagnostic, 28 octobre 2026
+
+Base distante298f305, arbre local/distant5ea18477 vérifié; arbre propre au départ.
+Contrat LaunchLab confirmé par documentation officielle. Traces DNS du proxy et
+phases HTTP ajoutées, délais par phase, proxy obligatoire pour010, watchdog58+2s.
+Nettoyage bloqué par DNS synthétique reproduit hors réseau; cause historique009
+reste inconnue. Plan de diagnostic distinct : une résolution/proxyTCP et au plus
+3HEAD racines,23+2s, sans corps, marché, retry ou fallback. Aucun diagnostic actif
+ni acquisition010 encore exécuté à ce checkpoint. Lire P3_TRANSPORT_010.md et
+validation/p3_transport_010/. Une collecte010 exige son propre plan publié et
+un accès nécessaire établi; ne jamais relancer009 ou l'endurance.
+
+
+
+
+
+
+
+
+## Contrôle P3 actif009 — tentative unique arrêtée, 28 octobre 2026
+
+Code source publié/relu `4d967d0839134db878f47bfbeba3108780ca71c4`.
+Plan publié/relu AVANT la première requête :
+`d09db2998014580d2c2b47110b22471480eb24c8`, hash
+`8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93`.
+
+Une tentative GET de découverte : TimeoutError après8005,542ms, aucun statut
+HTTP ni corps reçu. Capture fermée/commitée à8009ms,1requête sur20, aucunRPC,
+quote, lancement ou bank reçu. Univers inconnu, pas absence prouvée d'opportunités.
+Aucun retry/fallback, anciens006/007/008 non relancés. 0cycle économique qualifié,
+0nouvelle observation de marché, P&L et avantage Master UNKNOWN.
+
+Incident distinct : processus resté bloqué après clôture pendant le nettoyage,
+terminé manuellement à environ200,951s depuis l'appel. Ne pas présenter le
+processus009 comme borné à60s. Les4événements committés ont été récupérés et
+exportés sans SQLite;12anciensbundles inchangés,13bundles/1698événements au total.
+Correction : rapport écrit avant nettoyage, reconstruction pure depuis journal
+fermé, wrapper avec watchdogprocess58s+jusqu'à2s de terminaison, chemins/cwd
+explicites. Tests hors réseau, aucune seconde collecte.
+
+1936passed,1skipped,242subtests,13,21s,-Werror,stderr0. Lire
+P3_ACTIVE_COHORT_009.md et validation/p3_active_cohort_009/ADMISSIBILITY.json.
+Le comparateur reçoit zéro frame admissible et conserve univers inconnu; aucun
+score, WAIT ou P&L de marché n'est inventé. P3 ouvert; P4 sans nouveau corpus
+indépendant; P5 corrige la récupération/fin de processus, sans nouvelle endurance.
+Prochaine priorité : résoudre l'accès de transport LaunchLab; toute nouvelle
+tentative de marché exige un préenregistrement distinct, sans poursuivre009.
+PR22 ouverte, aucune fusion/transaction réelle/signature/dépense/politique active.
+
+## Mission P3 — exécuteur de cohorte active prêt, avant acquisition
+
+Base distante d0e57c68d3702967ee8ccfefe2e6e51713e82e99 vérifiée. Le protocole
+actif préparé ne possédait pas encore d'exécuteur ; celui-ci est ajouté sans
+relancer006/007/008 ni l'endurance. Sources publiques et transport local examinés.
+RPC canonique figé avant capture, aucun fallback ni probe additionnel.
+
+1926tests réussis,1ignoré,242subtests,12,72s,-Werror,stderr0. Le contrôle reste
+20requêtes/60s maximum, préfixe6→2cas actifs0,10SOL. Le code doit être publié,
+puis le plan lié à ce commit doit être publié/relu AVANT le premier appel.
+À ce checkpoint : zéro nouvelle requête de marché. Lire P3_ACTIVE_COHORT_009.md
+et validation/p3_active_cohort_009/SOURCE_REVIEW.json. P3 reste ouvert, aucun
+P&L net admissible ni indépendance statistique démontrée.
+
+## Reprise après a51850e — endurance finalisée, 28 octobre 2026
+
+Point distant vérifié : `a51850e0607d8160d1ae0dadf22fae6f3dcedc49`, arbre
+local équivalent `a04ea5560492f846682cdfe2f08b52e72bea0d25`. Arbre propre à
+la reprise ; comparateur et tests déjà publiés.
+
+**1915 passed, 1 skipped, 242 subtests**, 12,03 s, warnings en erreur, stderr0.
+Paire d'endurance identique : 1000 événements, 10 reprises, cible 30 s ;
+**120,246 s → 30,279 s**, 1031 reconstructions du rapport → 1. Les 7054
+invariants, décisions, capital et inventaire concordent. Snapshots immuables
+vérifiés. Une paire locale ne démontre pas une performance de marché.
+
+P3 : santé locale retenue avant décision, états capital/santé conservés dans
+les frames, enveloppe complète de cohorte transmise au comparateur. Les sources
+futures ou contradictoires ne deviennent pas une permission. Aucun hook réseau.
+P4 : quatre cas A/B et 14 lignes de résumé, rapport préenregistré de 24 candidats
+sauvegardé ; résultats exclusivement synthétiques, aucun gagnant ou promotion.
+P5 : lectures diagnostiques optimisées, contrôles financiers inchangés.
+
+Lire `MASTER_V2_COMPARISON_RESULTS.md`, `MASTER_P3_ACQUISITION.md` et les preuves
+sous `validation/master_v2/`. Le rapport qualified est reproduit par CLI octet
+pour octet après décompression.
+
+Archives : 8 banks/4 mints/2 sessions, 6 banks avec identité qualifiée ; coûts
+propres inconnus. **P3 ouvert, 0 cycle de marché strict, 0 nouvelle observation
+réseau.** P4/P5 partiellement validés. Prochaine priorité : cohorte indépendante
+préenregistrée avec clocks, coûts propres et lots liés, accès gratuits vérifiés.
+Ne pas refaire006/007/008. PR22 ouverte ; aucun ordre, signature, dépense ou fusion.
+
+
+## Mandat V2 — comparaison mesurable, 28 octobre2026
+
+Base distante vérifiée `b680b90ae7f42c2eaf238f9773be34062cf42ac5`, arbre local
+`b18a76230c7adee09dd97c69686f9e2f5da63646`, sources/validation1831tests concordants.
+Nouvelle suite : **1910passed,1skipped,242subtests**,12,20s,-Werror,stderr0.
+
+`bot/master_comparison.py`/CLI `master-compare` compare moteur final actuel et
+Master sur la même bande d'observations, deux livres isolés et une implémentation
+comptable native unique. Décisions figées avant le pas de règlement simulé,
+quantités/devis propres, mêmes10SOL et contraintes. Référence10%du capital
+réconcilié, Master tailles admissibles; aucun scaling de devis. Les frais stressés
+sont présents AVANT les deux décisions. Holdout séparé par créateur et par première
+disponibilité; une identité future ne change jamais l'admission d'un candidat passé.
+
+Journalruntime shadow : snapshot12champs référence/Master avant résultat,
+désaccords etlatenceslocales. Ne crédite jamais le portefeuille actif.
+ClassificationCore :9situations explicables/UNKNOWN, descriptive, sanschanger
+politiqueactive nihashduclassement. P4 optinpaired_validation :24hypothèses,
+αfamille0,05/24,4conditionsfrais/délai; appariement puisclustercréateur, aucun
+pvalue/intervalle ni promotion sanspreuves indépendantes. P3 prépare acquisition
+bornée+producteurfeatures+adaptateurCaptureStore vérifié; pas decollecteactivée.
+
+Tests économiques : l'abstentionMaster peut manquer0,199985SOL surfixture;
+REDUCE puisreliquat donne0,149975SOL contre0,199985 référence avecdevis distincts
+et10000lamports de frais de sortie supplémentaires. Les ventes refusées gardent
+reliquat et résultat total UNKNOWN. Ni vainqueur ni bénéfice de marché.
+
+Lire `MASTER_V2_COMPARISON_RESULTS.md`, `MASTER_P3_ACQUISITION.md` et méthodes.
+**P3ouvert,0cyclemarchéstrict,0nouvelleobservationréseau.** P4/P5partiellementvalidés
+logiciellement, paséconomiquement. PR22ouverte, sansfusion/ordre/signature/dépense.
+Suite immédiate : publierpreuves reproductibles, mesurerendurance murale et
+optimiserles lecturesdiagnostiquesrépétées; acquisitionréellefutureseulementsous
+protocole préenregistré et limitesexistantes, sansrefaire006/007/008.
+
+## Master Trader — intégration et endurance validées, 28 octobre 2026
+
+Premier checkpoint réellement publié/relu : `2c5e18cd17dd15e77deda7e796886c921cff0b46`,
+arbre identique local/distant `5cb30af8266895de4c2157c1df4961c1e04167da`. Les trois
+blobs Core/Positions/Optimization ont été relus depuis GitHub et comparés au code
+testé; reçu `validation/MASTER_FIRST_REMOTE_READBACK.json`.
+
+Dernière suite complète : **1831 passed,1 skipped,242 subtests**,10,33s,
+warnings en erreur, stderr0. Sources gelées, aucun ordre/réseau de marché/dépense
+ni modification des anciennes preuves P3. PR22 doit rester ouverte sans fusion.
+
+- Core et Positions intégrés en shadow : décisions expliquées, douze questions,
+  trois stratégies, WAIT/NO_TRADE, sorties/quantités/frais/protections.
+- Journal dans le même ledger. Panne optionnelle : nouvelles entrées refusées,
+  clôtures préservées. Doublon après32préfixes et reprises corrigé via préfixe strict.
+- Recherche :24candidats, horizon optionnel préenregistré30s–1h; scénarios longs
+  différencient durée900/1800s et trailing3,5/5%, uniquement sur fixtures.
+  Fenêtres holdout chevauchantes refusées; ancien registre consommé sans bornes
+  refuse une nouvelle lecture. Préserver le registre renvoyé entre processus.
+- Rapports et /health exposent le résumé shadow en lecture seule. Un audit
+  illisible est explicitement indisponible, sans reset du cash ou de l'inventaire.
+- Endurance :1000événements/1000doublons/1000conflits/1000interruptions annulées,
+  dix reprises/dix snapshots immuables,7054invariants. Capital10SOL, cash8,999995SOL
+  et1000unités atomiques conservés; zéro jambe réglée par le shadow.
+- Rapport recherche complet99475octets et entrée synthétique conservés sous
+  `validation/policy_research_fixture/`, reproduction CLI octet pour octet vérifiée.
+  Ancien rapport99260octets conservé; seuls les nouveaux champs de registre changent.
+
+Lire `MASTER_TRADER_RECOVERY.md`, les trois méthodes Master/Optimization/Endurance
+et `validation/MASTER_SHADOW_INTEGRATION_VALIDATION.json`.
+**P3 ouvert :0cycle de marché strictement qualifié; aucune rentabilité démontrée.**
+Aucune promotion active. Prochaine priorité : attacher des preuves P3 admissibles
+au même lot et comparer causalement les sorties sur un corpus indépendant, sous
+protocole préenregistré existant; ne pas refaire006/007/008 ni collecter sans limites.
+
+## Reprise Master Trader sauvegardée — 28 octobre 2026
+
+Les trois composants locaux interrompus ont été récupérés, intégrés et testés.
+Voir `MASTER_TRADER_RECOVERY.md`, `MASTER_DECISION_METHOD.md` et
+`POLICY_RESEARCH_METHOD.md`. **1787 tests réussis, 1 ignoré, 242 subtests**,
+8,90s, warnings en erreur, stderr vide; 111 tests ciblés/intégration réussis.
+Aucun contrôle006/007/008 relancé, aucun trafic de marché, ordre ni dépense.
+
+Core : trois variantes, WAIT/NO_TRADE, 12 questions, réserves/coûts/tailles,
+preuves passées et fraîcheur. Positions : propositions HOLD/REDUCE/TP/EXIT/urgence
+sur inventaire exact, jamais un règlement autonome. Optimization : 24 candidats
+figés, holdout chronologique séparé par créateur, registre contre réutilisation,
+drift et rollback shadow. Politique active conservée.
+
+Branchement explicite `paper --master-shadow` (aucune boucle lancée ici) : table
+`paper_master_decisions` dans le même ledger, propositions immuables, résultat du
+moteur de référence distinct. Les pannes du journal refusent les nouvelles
+entrées et préservent les clôtures; les résultats non journalisés restent pending.
+`python -B -m bot policy-research --help` fonctionne hors réseau.
+
+**P3 ouvert : 0 cycle économique de marché strictement qualifié.** Les fixtures
+positives testent uniquement le fonctionnement. Aucun réglage n'est promu.
+Suite utile : endurance reproductible du shadow, résumé lecture seule et
+validation de nouvelles preuves P3 seulement sous protocole/limites existants.
+Le checkpoint distant et sa vérification seront inscrits dans le reçu suivant.
+
+## Suite prioritaire — tailles et coûts cohérents après008, 28 octobre2026
+
+Code distant `249c7b6637d7c0cdf980b029474e4b0a576f237c`, arbre testé
+`a5a4ccb99119ee38a6604f3f96cb0ba00c40f3ba`, local `6ce9906`.
+Premier checkpoint `446d2623`. Preuves publiées `12e164fb`, quatre artefacts
+retéléchargés puis rapport558754octets/32lignesCSV reproduits à l’identique.
+Reçu `validation/POSITION_SIZE_REMOTE_RESTORE.json`. **1724 passed,1 skipped,242 subtests**,7,56s,
+warnings en erreur, stderr0. Lire `POST008_POSITION_SIZES_RESULTS.md`.
+Aucune collecte nouvelle, aucun ancien contrôle relancé, PR22 ouverte non fusionnée.
+
+- Modèle P3 achat puis vente du même lot sur le bank après achat, entiers et
+  réserves dépensables exacts, frais/bornes/uint64 contrôlés. Sensibilités aux
+  achats tiers et ventes de50%/100% du stock préexistant; jamais notre propre lot.
+- Huit banks archivés007/008, quatre mints/deux sessions,32cas mathématiques pour
+  0,05/0,10/0,25/1SOL. Sixbanks avec identité qualifiée, sans indépendance revendiquée.
+  Frictions relatives proches2,484% ou11,169% avant coûts supplémentaires UNKNOWN.
+  À1SOL: pertes0,024843751 ou0,111693751SOL. Sous0,001SOL de coûts supposés,
+  demande tierce minimale≈0,42SOL/2,10SOL selon la courbe;96seuils vérifiés au
+  lamport précédent. Ni prévision de flux, ni fill, ni bénéfice de marché.
+- Rapport complet compressé, manifeste et32lignesCSV dans
+  `validation/position_size_study/`; résumé, seuils et sources ancrées sous
+  `validation/P3_POSITION_*`. Ne pas assimiler8banks à8trades indépendants.
+- Cohorte préparée/non exécutée: conserver100lignes, six SOL uniques examinés,
+  deux au plus actifs/capacité de Q entier0,10SOL,20appels/60s globaux,15s/slot
+  supérieur, créations/coûts/réponses inconnues explicites. Critères publiés avant
+  toute collecte future. Application rétrospective008:100lignes gardées, zéro
+  sélection;3inactifs et3snapshots manquants. Ne pas relancer ces pools.
+- Trois variantes P4 consomment le supplément causal tailles/coûts/sorties.
+ 24intentions UNKNOWN sur ces données sans features,96associations variante/taille,
+  aucun gagnant. Ancien rapport24bras synthétiques octet pour octet préservé.
+- P5 raccordé aux vrais callbacks internes RPC/WS existants, horloges civile et
+  monotone, panne non réinitialisable, couverture/rapport. Aucun trafic ajouté.
+  Endurance interne1000cycles,83h20min virtuelles,1000jambes/doublons,10reprises,
+  750refus+10préflights sans preuve source,4021invariants, reliquat0. Aucune
+  disponibilité murale24h/24 ni performance de marché certifiée.
+
+**P3 OUVERT,0cycle strictement qualifié, net de marché inconnu.** Manquent preuves
+horaires/slots fournisseur, création/identité selon le cas, coûts propres/rent/cash,
+sorties futures cohérentes avec notre entrée et corpus indépendant. P4/P5
+PARTIELLEMENT VALIDÉS. Les modèles conditionnels ne remplacent pas ces preuves.
+Prochaine acquisition: nouveaux cas à circulation/capacité suffisante et métadonnées
+source/coûts utiles, protocole figé avant départ; ne pas refaire006/007/008.
+Commandes hors réseau et reçus complets dans la livraison. Les titres suivants
+conservent l'historique précédent, pas une nouvelle mission de récupération.
+
+## Reprise prioritaire — P3 prospectif, P4 comparatif et P5, 28 octobre 2026
+
+Dernier code distant `1fa75efedf0ee80009d8b5d7dcfbc493e3dd217d`, arbre exact
+`31b87a6b2a0d56bf657d88ad9d048605d77eac62`, équivalent local `18e3570`.
+**1647 passed, 1 skipped, 242 subtests**,7,04s, warnings en erreur, stderr vide.
+Lire `P3_P4_P5_RELEASE_20261028.md`; PR22 ouverte, aucune fusion/transaction/dépense.
+
+- Travail interrompu récupéré, testé et publié `cc38e546` puis `39fe7fd0`.
+- Plan008 publié/relu `917a4541` AVANT sa collecte unique.20 appels toutes sources,
+  24,825s,3 candidats figés/3 achats indicatifs1SOL/6full+3quarter refusés,0cycle
+  qualifié, P&L net inconnu. Les neuf refus INSUFFICIENT_LIQUIDITY sont conservés.
+  Journal fermé exporté dans `evidence/p3/prospective_008`,55 événements. Index total
+  12bundles/1694événements; anciennes ancres intactes. Preuves publiées `28c3a08d`.
+- Replay local et restauration réellement téléchargée depuis ce commit identiques,
+  sockets/SQLite/.env interdits:12corps de devis,2banks,6analyses,1référence de frais.
+  Les six banks real_a=0 expliquent les refus sans notre achat. Le modèle propre
+  buy/reverse donne pertes de courbe0,111693751/0,024843751/0,111693751SOL avant
+  coûts additionnels inconnus. Aucun P&L net observé. La plateforme du deuxième
+  candidat reste UNKNOWN (seed admin original absent), les deux autres passent.
+- P4: `bot experiment` réutilise ledger/inventaire existants pour trois variantes
+  figées early_sniping/confirmed_momentum/adaptive_hybrid, décisions as-of, split
+  chronologique et exclusion des créateurs communs.24bras synthétiques vérifiés,
+  sensibilités frais×1/×2 et délai0/250ms, refus/reliquats explicites. Aucun vainqueur
+  ni activation. Le corpus008 manque de features permettant une comparaison réelle.
+- P5: `bot operations health|backup|serve`, état en lecture seule, snapshot WAL
+  cohérent, garde collect_once, urgence sans bloquer les clôtures, sauvegarde
+  committed-only/restauration testée, API limitée127.0.0.1.31tests ciblés. Aucun
+  serveur permanent lancé; heartbeats de production et endurance restent ouverts.
+
+**Prochaine action utile**: acquisition admissible des preuves temporelles et des
+coûts/bornes propres, puis cohorte prospective préenregistrée ayant une circulation
+observée suffisante avant les résultats, avec entrées/sorties liées à chaque lot.
+Ne pas relancer008/007/006 ni répéter les mêmes refus sur ces trois pools à vide.
+`P3_SOURCE_ACCESS_METHOD.md` décrit les sources légitimes et leurs limites; ne pas
+substituer blockTime à l'heure du fournisseur ni meta.fee d'autrui à nos coûts.
+L'effet contrefactuel de notre entrée reste séparé des banks futurs observés.
+Commandes de replay/comparaison/supervision dans la livraison; aucun réseau implicite.
+P3 OUVERT; P4/P5 PARTIELLEMENT VALIDÉS logiciellement, pas économiquement.
+
+## Livraison courante — inventaire économique, 27 octobre 2026
+
+Code `82ce606`, arbre `49d9ca058dce7a6b953b96d997cf20a7bb187735`, local `2edcd43`.
+**1 535 tests et 242 sous-tests réussis, 1 ignoré**, warnings en erreur, stderr vide.
+Configuration agressive conservée, un seul portefeuille PAPER, aucune dépense.
+
+Inventaire atomique projeté attaché aux positions, jambes partielles entières,
+reliquats et frais conservés, pertes partielles incluses dans les contrôles.
+Clôture native par simple ratio de prix interdite ; aucun deuxième crédit à la fin.
+Reconnexion/doublons/annulation/triggers ignorés/version/survente testés. L'ancien
+historique garde ses quantités UNKNOWN. Le reporting distingue P&L SOL natif,
+ancien modèle USD/SOL constant et métriques impossibles faute de données.
+
+Nouvelle démo `python -B -m bot economic-demo --output work/atomic-demo-next` :
+full +0,199985 SOL ; partiel 40 %/60% après reprise +0,049975 ; refus ouvert sans
+réalisation ; SL −0,300015. Ce sont quatre fixtures distinctes, pas un rendement
+de stratégie. Comparaison à coûts identiques : ancien/nouveau +0,18 SOL, sans
+gain artificiel lié au changement d'hypothèse de frais.
+
+Lecteur de nouvelles quotes connecté au moteur, tailles entières exactes,
+plafond propre 20 / 60 s, sans retry/fallback, journal neuf et arrêt premier refus.
+Seulement testé hors réseau ; aucune nouvelle collecte ni contrôle répété.
+007 déjà conservé fournit Q projeté et deux petites sorties indicatives, mais
+aucune demande pour Q entier, aucune horloge/frais complets, zéro cycle qualifié.
+
+Rapport `P3_ATOMIC_INVENTORY_RELEASE.md`, preuves `validation/P3_ATOMIC_*`,
+comparaison `validation/P3_MATCHED_INVENTORY_COSTS.json`. P3 non terminé ; prochaine
+étape : observation prospective complète avec quantités, source et coûts prouvés.
+Préparation P4 documentée, aucune stratégie promue. PR #22 ouverte, non fusionnée.
+
+## Référence précédente — première livraison fonctionnelle
+
+`python -B -m bot demo --output work/demo-001` exécute maintenant le cycle réel
+des composants sur une fixture synthétique : recovery/parseur/cache → garde
+scanner/backfill → features/scoring → entrée → suivi → TP → frais → portefeuille
+→ tableau de bord. Reconnexion SQLite après l'entrée et déduplication vérifiées.
+Modèle : 1 SOL engagé, brut 0,20 / coût supposé 0,02 / net 0,18 SOL, capital 10 → 10,18 SOL.
+Ce résultat synthétique ne démontre ni inventaire acquis ni rentabilité de marché.
+
+Correction causale : le coût réellement appliqué à la clôture est persisté
+atomiquement, ce qui permet de rapprocher le rapport après redémarrage. Aucun
+changement de seuil ou de TP/SL. Rapports en lecture seule et latences mesurées
+avec horloge monotone, provenance et inconnus explicites.
+
+Code distant `f50d226`, arbre testé `c343ad51f418c04e2d18e8d050877996e585a0f4`,
+équivalent local `4da94d3`. **1 435 passed, 1 skipped, 242 subtests passed**,
+warnings en erreur, stderr vide, 5,31 s. Preuves `8aeb6c8`, PR #22 ouverte.
+
+RPC contrôlé par une lecture préenregistrée HTTP200 (1 requête / 1,087 s), puis 007
+exécuté une fois (12 requêtes / 19,871 s). Deux petites ventes indicatives obtenues
+aux deux horizons ; supply et PDA du nouveau cas cohérentes. Quantité seulement
+0,05507 % du devis d’achat de 1 SOL indépendant, pas de sortie complète ni P&L certifié. Heure/slot
+source fournisseur inconnus, création absente du préfixe borné. Pas de contournement
+de quota, retry, ordre ou dépense. Les 12 transactions de l'ancien mint restent
+un travail borné distinct, non bloquant pour l'intégration du moteur.
+
+11 bundles / 1 639 événements conservés ; les deux nouveaux bundles ont été restaurés
+effectivement depuis GitHub, quatre quotes et deux snapshots reproduits sans DB
+ni réseau pendant replay. Lire `RUGGER_V1_FUNCTIONAL_RELEASE.md`,
+`validation/RUGGER_FUNCTIONAL_RELEASE_VALIDATION.json` et
+`validation/RUGGER_FUNCTIONAL_REMOTE_RESTORE.json`.
+
+Prochaine intégration : inventaire atomique lié à l'entrée puis qualification
+d'une sortie à cette même quantité, avec impact d'entrée, frais et chronologie.
+Configuration agressive conservée ; comparaison de stratégies seulement sur
+cycles interprétables. Les sections suivantes sont des références antérieures.
+
+## Référence antérieure — sorties à inventaire fixe et historique006
+
+Code `fb8584d`, arbre `b049d1ef153287bd9d9cd78c52e583e79e3bcf54`.
+**1 415 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
+PR #22 ouverte, non fusionnée. Orientation agressive et paramètres conservés.
+
+- Dix nouveaux corps historiques, autre transaction du slot de création résolue.
+  Trois burns total513119481705 ; résiduel466423024095, 12 corps manquants.
+- Arrêt réel HTTP429 au11eappel/6,216s ; aucune requête de marché après. Retry-After
+  était perdu par l'ancien code ; correctif testé, aucun délai inventé pour006.
+- Bridge d'inventaire et de frais qualifie les couples de devis ; les sept couples
+  archivés restent non qualifiés, aucun P&L ou fill revendiqué.
+- Nouveau contrôle 007 prêt : banques actives, q observé fixe, deux horizons, stock/
+  liquidité vérifiés. Non exécuté suitequota, aucun changement du moteur de stratégie.
+- 9 archives/605 événements,006 restauré depuis GitHub et qualification identique.
+- Reprise/commandes : CODEX_CONTINUATION.md ; preuves et limites :
+  P3_CONTINUATION_006_RESULTS.md, P3_MINT_HISTORY_006_RESULTS.md.
+
+## Référence précédente — conservation réelle vérifiée, #22 non fusionnée
+
+27 octobre 2026. Code final validé `e2e2008`, arbre `fbcd7ff26d09734e5e8eec558ffcf554c418757c`.
+**1 379 passed, 1 skipped, 242 subtests passed**, warnings en erreur, stderr vide.
+PR #22 et branche de reprise inchangées ; aucune fusion autorisée/effectuée.
+
+- Contrôle v3 préenregistré dans GitHub avant départ : **19 tentatives / 26,034 s**,
+  deux créations, quatre snapshots et quatre corps de devis conservés.
+- Deux refus de vente réels **INSUFFICIENT_LIQUIDITY**, aucune cotation positive forcée.
+- Deux burns historiques prouvés : 29386275175 unités ; reste 950156230625 non
+  réconcilié, garde supply maintenu. Contrôles 004/005 clos, preuves conservées.
+- **Contenu partagé de Configurer rugger_bot_v1 retrouvé** : 10 tours, copie exacte
+  et transcription sous `history/`. Derniers diffs P3_PR21_REVIEW/collect récupérés ; sélection RPC canonique
+  complétée et testée, sans fallback ni modification des protocoles historiques.
+  Cela ne désarchive pas la tâche ni ne restaure la VM. Orientation agressive
+  documentée dans `AGGRESSIVE_STRATEGY_CONTEXT.md`, aucun seuil modifié.
+- Export de 152 événements puis restauration effective depuis GitHub, sans DB
+  source : quatre analyses et quatre normalisations reproduites.
+- Total conservé : **8 bundles / 580 événements** ; anciens corps absents inchangés.
+- Code : diagnostics HTTP bornés, statut conservé à annulation, replay sémantique,
+  plan successeur/profil enregistré/arrêts sur erreurs et délai monotone.
+- **Conservation instrumentale validée sur ce contrôle ; NO-GO économique.**
+  Banque de vente observée vide, achat hypothétique absent, identité plateforme et
+  données de frais/horodatages/validation indépendante encore incomplètes.
+- Sources et preuves : `CODEX_CONTINUATION.md`, `P3_RETENTION_EXIT_RESULTS.md`,
+  `P3_SHORT_CONTROL_ACCESS.md`, `validation/P3_RETENTION_REMOTE_RESTORE.json`.
+
+## Livraison initiale de reprise #22 — historique
+
+27 octobre 2026. Lire [CODEX_CONTINUATION.md](CODEX_CONTINUATION.md) pour reprendre
+sans l’ancienne conversation. Dernier main vérifié : fusion #21 `7ddddb9`.
+[PR #22](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/22) **non fusionnée**,
+branche `fix/p3-exit-evidence-continuation`, code publié `4f0fec8`, arbre testé
+`539f716e04666c126ee0c30b628d22417625951a`.
+
+- Corrigé : montants de devis rejetés encore exposés, tentatives annulées absentes,
+  timing perdu lors d’un refus de corps dangereux, faits supply masqués par rejet.
+- Validation actuelle : **1 348 passed, 1 skipped, 242 subtests passed**, warnings
+  en erreur, stderr vide ; six cas causaux échouent sur l’ancienne version.
+- Replay : **5 archives / 397 événements**, quatre analyses v2 identiques ; dix
+  anciens corps quote restent absents. Oracle indépendant : 1 000 cas synthétiques.
+- Outils réutilisables et rapport : `tools/`, `P3_CONTINUATION_VALIDATION.md`,
+  `validation/P3_CONTINUATION_TESTS.json`. Instructions AGENTS actualisées.
+- Ancienne session et modifications non publiées **non récupérées**.
+- **NO-GO économique / INSUFFICIENT DATA**. Plateforme UNKNOWN et divergence supply
+  non réconciliée ; aucune vente qualifiée ni nouveau résultat économique.
+- Prochaine dépendance : droits/quota gratuit et transport, puis contrôle court
+  préenregistré de conservation réelle. Aucune collecte marché ni boucle PAPER
+  exécutée ici ; aucun ledger utilisateur, seuil, portefeuille ou dépense modifié.
+
+## Référence historique — v2 exécutée et preuves archivées
 
 - [PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20)
   **fusionnée** : main `8167264931af3a22dcce32e9d1a821d275b51307`.
@@ -15,7 +487,7 @@
   Aucun SQLite, ledger ou .env publié. Les anciens corps jamais conservés
   restent manquants, explicitement déclarés dans les manifestes.
 - Branche : `fix/p3-data-certification-and-durable-replay`, base main fusionné.
-  [PR #21 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
+  [PR #21 fusionnée](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
   Code testé : `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`.
   Suite finale : **1 342 réussis, 1 ignoré, 242 sous-tests**, warnings en erreur,
   stderr vide ; aucun réseau dans les tests, aucune dépendance ajoutée.

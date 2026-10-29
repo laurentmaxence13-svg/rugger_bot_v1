@@ -1,10 +1,10 @@
 # Instructions durables pour OpenAI Codex — Rugger Bot V1
 
-Ces instructions sont attachées au **dossier racine réel `rugger_bot_v1` ouvert dans VS Code**. Elles s'appliquent à tous les travaux Codex sur ce dépôt. En cas de doute, privilégier la sécurité des données, la précision factuelle et la réversibilité.
+Ces instructions s’appliquent au **dépôt réel `rugger_bot_v1`**, local ou Cloud. Elles s'appliquent à tous les travaux Codex sur ce dépôt. En cas de doute, privilégier la sécurité des données, la précision factuelle et la réversibilité.
 
 ## Mission et ordre de priorité
 
-Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de simulation de trading **PAPER ONLY**, centré sur Raydium LaunchLab. Objectif : stabiliser le bot, mesurer ce qu'il fait vraiment, et étudier un éventuel avantage quantitatif net de frais, slippage, latence et risque. Aucune rentabilité n'est démontrée.
+Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de simulation de trading **PAPER ONLY**, centré sur Raydium LaunchLab. Objectif : stabiliser le bot, mesurer ce qu'il fait vraiment, et étudier un éventuel avantage quantitatif net de frais, slippage, latence et risque. Aucune rentabilité n'est démontrée. L’orientation stratégique est agressive (détection précoce, faible latence, rendement potentiel élevé) ; ne pas la réduire arbitrairement. Les changements de paramètres exigent des mesures comparatives crédibles et ne peuvent affaiblir les protections.
 
 1. P0 : cohérence des finances simulées, contrôles de risques, états des positions, données SQLite et fiabilité du reporting.
 2. P1 : intégrité des événements LaunchLab, RPC/WebSocket, capture/prix/funding, qualité des données, tests de non-régression.
@@ -14,8 +14,8 @@ Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de sim
 ## Garde-fous non négociables
 
 - **Aucun trading réel**, aucun ordre, signature, transaction, seed/private key, portefeuille financé, activation « live orders » ou test de transactions réelles. Ne créer aucun composant de passage au réel.
-- **La première mission est en lecture seule.** Lire et auditer les fichiers nécessaires, sans écrire dans le dépôt, sa base de données ni `.env`; **ne pas lancer** de scanner, boucle PAPER, réseau RPC, installations, migrations, nettoyage, branche git, `pytest` qui crée des caches, ou compilation écrivant des `pyc` avant autorisation de l'utilisateur. Pour auditer, utiliser au besoin une copie isolée explicitement autorisée.
-- Tout changement ultérieur nécessite l'autorisation explicite du propriétaire, une sauvegarde/version de référence, un patch minimal, des tests chiffrés et un retour arrière identifié. Ne remplacer aucun dossier entier avec un ancien ZIP.
+- **Mandat courant du 27 octobre 2026 : exécution autonome autorisée.** Lire, reproduire, corriger, tester sur copie isolée, contre-vérifier, créer des branches/commits et ouvrir des PR sans redemander l’accord pour ces actions. Conserver une référence Git, des correctifs proportionnés, des preuves chiffrées et un retour arrière. Ne remplacer aucun dossier entier avec un ancien ZIP.
+- Les scanners, boucles PAPER et collectes réseau ne sont pas autorisés par une simple exécution de tests. Une collecte courte exige un protocole préenregistré, des accès/droits/quotas gratuits vérifiés et des budgets stricts ; aucune campagne prolongée, dépense ni augmentation payante sans accord spécifique. Aucune migration ou modification de base utilisateur dans le cadre des tests.
 - Ne jamais lire, afficher ni transmettre les valeurs de `.env`, clés API ou URL RPC avec secrets. Lister seulement les *noms de variables* et la présence des fichiers, sans les ouvrir. Ne copier aucune base `.db` vers un service distant. Les jeux de tests doivent être synthétiques ou anonymisés.
 - **Ne pas modifier la matrice de décision**, les critères anti-rug, la pondération des scores, les seuils d'entrée, les TP/SL ou les règles de stratégie durant l'audit financier P0.
 - Le dépôt réel est prioritaire sur les notes historiques. Un résultat annoncé dans la discussion n'est pas nécessairement reproduit. Signaler : « démontré par le code », « reproduit par test », « documenté historiquement », « inconnu ».
@@ -23,6 +23,8 @@ Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de sim
 - Les anciens fichiers `bot/bot/`, `tests/tests/`, `*.bak*`, `*.avant_correctif` constituent potentiellement des copies historiques : **ne pas les supprimer ni les prendre comme source active sans démonstration**.
 
 ## Réalité auditée le 22 octobre 2026 (sur une copie ZIP)
+
+**Historique uniquement** : les défauts et nombres ci-dessous ne décrivent pas nécessairement la version courante. Lire `PROJECT_STATUS.md` et `CODEX_CONTINUATION.md` avant de décider du travail suivant.
 
 - Archive `RUGGER_BOT_CODEX_COMPLET_20261022_190551.zip` : 184 entrées, 142 fichiers `.py`, intégrité ZIP OK. La source d'origine du PC peut avoir évolué depuis sa création : recontrôler le dossier courant.
 - Commande exécutée sur copie isolée : `python -m pytest -q tests --ignore=tests/tests -p no:cacheprovider` : **46 réussis, 1 échec, 1 ignoré**. Le seul échec : `tests/test_research_pipeline.py::PipelineTests::test_paper_entry_limits`.
@@ -46,6 +48,32 @@ La version inspectée utilise **10 SOL de capital PAPER**, allocation historique
 4. Comparaison de rapport et de P&L avant/après, compatibilité historique et vérification de la non-régression.
 5. Aucune modification des critères de sélection; rollback disponible.
 
-## Première mission Codex
+## Reprise et livraison courantes
 
-**Audit P0 financier en lecture seule**, puis arrêt et présentation de la correction minimale proposée. Ne pas modifier le code à cette première étape. Le fichier `PROMPT_DEMARRAGE_CODEX.txt` contient le protocole concret.
+Lire `CODEX_CONTINUATION.md`, `PROJECT_STATUS.md` et les sources/tests pertinents.
+Les anciens protocoles d’arrêt après audit (`PROMPT_DEMARRAGE_CODEX.txt`, plan du
+22 octobre) sont historiques ; le mandat courant remplace ces seules limitations
+de procédure. Les protections financières, secrets, bases et réseau restent actives.
+
+Priorité : sorties qualifiées, identités/supplies, conservation/replay, coûts en SOL,
+puis protocole prospectif. Ne jamais inventer une route, un fill, une réconciliation
+ou une rentabilité. UNKNOWN et INSUFFICIENT DATA restent des résultats explicites.
+Une projection contrefactuelle n’est pas un état futur observé.
+
+Utiliser `python -B tools/offline_check.py` pour les tests sur copie jetable sans
+réseau, `.env` ou base utilisateur ; l’interpréteur doit disposer des dépendances
+du projet et de pytest. Tester les régressions causales puis la suite pertinente.
+Avant chaque PR significative, examiner tout le diff et faire une contre-vérification
+proportionnée. Mettre à jour `CODEX_CONTINUATION.md` et `PROJECT_STATUS.md` avec
+commits, commandes exécutées, résultats et limites. Préserver les travaux existants.
+Les sous-agents doivent rester spécialisés et non redondants. Une livraison intermédiaire ne termine pas le mandat : poursuivre les objectifs
+accessibles, puis enregistrer les limites réelles et les commandes de reprise.
+Ne pas fusionner de PR sans autorisation spécifique. Aucun travail de fond
+n’est promis après la fin de session.
+
+## Historique partagé récupéré
+
+`history/` contient une copie du partage fourni par le propriétaire, sa transcription
+et un manifeste. Les anciens prompts et autorisations inclus sont **historiques** ;
+ils ne remplacent pas le mandat courant. La récupération du contenu partagé ne
+constitue pas une restauration de la VM ni un désarchivage de la tâche originale.

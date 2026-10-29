@@ -601,3 +601,84 @@ def test_cli_cannot_overwrite_registered_plan_or_existing_tail_anchor(tmp_path, 
         cp.main()
     assert all(path.read_bytes() == value for path, value in retained.items())
     assert not output.exists() and not (tmp_path/'p3.sqlite').exists()
+
+
+def plan_v3():
+    return dict(plan_v2(), schema='p3-launchlab-campaign-v3',
+                plan_id='launchlab-retention-sol-003',
+                source_main='7ddddb9f73339242fbcb5b9bf10fa329c82fa700',
+                source_revision='a'*40, evidence_profile='published_metadata_v1',
+                stop_on_source_error=True)
+
+
+def test_retention_successor_keeps_old_plan_hashes_and_rejects_guard_changes():
+    old_hashes = [cp.validate_plan(p) for p in (plan(), plan_v2())]
+    assert cp.validate_plan(plan_v3()) not in old_hashes
+    for field, value in [('evidence_profile', 'legacy'), ('stop_on_source_error', False),
+                         ('source_revision', 'not-a-revision'), ('max_requests', 21)]:
+        with pytest.raises(ValueError):
+            cp.validate_plan(dict(plan_v3(), **{field: value}))
+    assert [cp.validate_plan(p) for p in (plan(), plan_v2())] == old_hashes
+
+
+def test_new_profile_is_retained_and_replayable_in_snapshot(tmp_path):
+    from test_p3_qualification import qualified_fixture
+    accounts, addresses = qualified_fixture()
+    row = cp.select_rows(payload(indexed(mint=addresses['mint_a'], pool=addresses['pool'])))[1][0]
+    transport = Transport(posts=[rpc(bank(accounts, addresses, 1234)), rpc(100)])
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        snapshot = asyncio.run(cp._snapshot(store, cp.CampaignSession(transport, 20),
+            append_for(store), row, addresses, 1200, 'initial',
+            evidence_profile='published_metadata_v1'))
+        assert snapshot['analysis']['facts']['supply_consistency']['matches'] is True
+        retained = store.events(kind='pool_snapshot')[0]['payload']
+        assert retained['evidence_profile'] == 'published_metadata_v1'
+        replay = cp.analyze_snapshot(dict(zip(retained['requested_addresses'],
+            retained['raw_rpc_result']['value'])), context_slot=1234,
+            expected_mint=row['mint'], pool_address=row['pool'],
+            evidence_profile=retained['evidence_profile'])
+        assert replay == snapshot['analysis']
+
+
+@pytest.mark.parametrize('status', [403, 429, 503])
+def test_new_run_stops_after_failed_rpc_receipt_without_further_consumption(tmp_path, status):
+    transport = Transport(posts=[Response(status=status)], gets=[Response(payload(indexed()))])
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        report = asyncio.run(cp.collect_campaign(store, cp.CampaignSession(transport, 20),
+            plan_v3(), provenance='synthetic'))
+        assert len(transport.calls) == report['manifest']['run']['requests_used'] == 2
+        requests = store.events(kind='request')
+        assert requests[-1]['payload']['http_status'] == status
+        assert any(e['reason'] == 'campaign_stopped_on_source_error' for e in store.events(kind='gap'))
+        assert store.events(kind='quote_attempt') == []
+        assert report['economic_verdict'] == 'INSUFFICIENT DATA'
+
+
+@pytest.mark.parametrize('failure,reason', [
+    (asyncio.TimeoutError(), 'timeout'),
+    (OSError('synthetic transport failure'), 'transport_error'),
+    (ValueError('synthetic invalid response'), 'malformed_response'),
+])
+def test_retention_run_stops_after_quote_failure_receipt_before_followup(tmp_path, monkeypatch, failure, reason):
+    accounts, addresses = fixture()
+    row, page, tx = creation_fixture()
+    initial = bank(accounts, addresses, 1234)
+    later = bank(accounts, addresses, 1274)
+    transport = Transport(posts=[
+        rpc({'context': {'slot': 1230}, 'value': [accounts[row['pool']]]}),
+        rpc(initial), rpc(100), rpc(page), rpc(tx), rpc(later), rpc(115)],
+        gets=[Response(payload(indexed())), Response(error=failure)])
+    monkeypatch.setattr(cp.asyncio, 'sleep', no_sleep)
+    with CaptureStore(tmp_path/'p3.sqlite') as store:
+        report = asyncio.run(cp.collect_campaign(store, cp.CampaignSession(transport, 20),
+            plan_v3(), provenance='synthetic'))
+        assert len(transport.calls) == report['manifest']['run']['requests_used'] == 7
+        quotes = [e for e in store.events(kind='quote_attempt')
+                  if e['payload'].get('provider') == 'raydium_trade_api']
+        assert len(quotes) == 1
+        assert quotes[0]['reason'] == reason
+        assert quotes[0]['payload']['quote_side'] == 'buy'
+        assert quotes[0]['payload']['requested_at_ms'] <= quotes[0]['received_at_ms']
+        assert any(e['reason'] == 'campaign_stopped_on_source_error' for e in store.events(kind='gap'))
+        assert report['manifest']['candidates'][0]['coherent_snapshot_count'] == 1
+        assert report['economic_verdict'] == 'INSUFFICIENT DATA'

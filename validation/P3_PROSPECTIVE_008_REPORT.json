@@ -1,0 +1,265 @@
+{
+  "candidates_analyzed": 3,
+  "candidates_with_full_sell_quote": 0,
+  "candidates_with_projected_entry": 3,
+  "cases": [
+    {
+      "additional_fees_applicable": false,
+      "admission_reasons": [
+        "additional_execution_costs_unknown",
+        "buy_source_time_unknown",
+        "creation_transaction_unverified"
+      ],
+      "analyzed": true,
+      "case_state": "observed_unqualified",
+      "conditional_net_projections": [],
+      "creation_verified": false,
+      "creator_claim": "2zr2ZnyW1Z8nNdNbKjVVJ23L8ndc8i4ES84XfS2H14Bz",
+      "distinct_bank_slots": [
+        462270186,
+        462270261
+      ],
+      "full_sell_observation_attempts": 2,
+      "full_sell_quote_availability": 0.0,
+      "full_sell_quote_ids": [],
+      "identity_supply_permissions_qualified": true,
+      "latency": {
+        "method": "nearest_rank_of_measured_request_latency_not_provider_data_age",
+        "missing_or_invalid": 2,
+        "p50": 392.058087,
+        "p95": 1737.30208,
+        "p99": 1737.30208,
+        "sample_count": 4,
+        "unit": "ms"
+      },
+      "max_quoted_inventory_fraction_by_phase": {},
+      "mint": "2RvDheyRSfeGKnHnQHQ2ZQt4N8opy1Rpq6wUymLaxr3A",
+      "ordinal": 0,
+      "partial_sell_observation_attempts": 1,
+      "partial_sell_quote_availability": 0.0,
+      "partial_sell_quote_ids": [],
+      "pool": "ADv25W11uwKoyWCSTgdFRzHJNWWckLTRGehZc3vWJ3ar",
+      "projected_entries": [
+        {
+          "acquired_atomic": "31973987104815",
+          "buy_observation_id": 20,
+          "checkpoint_id": 21,
+          "minimum_atomic": "31654247233766"
+        }
+      ],
+      "provider_refusal_codes": {
+        "INSUFFICIENT_LIQUIDITY": 3
+      },
+      "quote_source_slots_unknown": 4,
+      "quote_source_times_unknown": 4,
+      "refused_sell_quote_ids": [
+        26,
+        27,
+        46
+      ],
+      "sell_error_quote_ids": [],
+      "unattempted_sell_quote_ids": [],
+      "unavailable_other_sell_quote_ids": []
+    },
+    {
+      "additional_fees_applicable": false,
+      "admission_reasons": [
+        "additional_execution_costs_unknown",
+        "buy_source_time_unknown",
+        "creation_transaction_unverified",
+        "identity_supply_or_permissions_unqualified"
+      ],
+      "analyzed": true,
+      "case_state": "observed_unqualified",
+      "conditional_net_projections": [],
+      "creation_verified": false,
+      "creator_claim": "HKSXVMLXFe6vjNp9sxkiUDNtuSrWzjN4yDwFaRYn9FHj",
+      "distinct_bank_slots": [
+        462270186,
+        462270261
+      ],
+      "full_sell_observation_attempts": 2,
+      "full_sell_quote_availability": 0.0,
+      "full_sell_quote_ids": [],
+      "identity_supply_permissions_qualified": false,
+      "latency": {
+        "method": "nearest_rank_of_measured_request_latency_not_provider_data_age",
+        "missing_or_invalid": 2,
+        "p50": 322.689318,
+        "p95": 398.865605,
+        "p99": 398.865605,
+        "sample_count": 4,
+        "unit": "ms"
+      },
+      "max_quoted_inventory_fraction_by_phase": {},
+      "mint": "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+      "ordinal": 1,
+      "partial_sell_observation_attempts": 1,
+      "partial_sell_quote_availability": 0.0,
+      "partial_sell_quote_ids": [],
+      "pool": "8d4a7jKqHcE3bhJnMjExdBz21UFxvsk8iL1Ef625igwA",
+      "projected_entries": [
+        {
+          "acquired_atomic": "34193904632554",
+          "buy_observation_id": 22,
+          "checkpoint_id": 23,
+          "minimum_atomic": "33851965586228"
+        }
+      ],
+      "provider_refusal_codes": {
+        "INSUFFICIENT_LIQUIDITY": 3
+      },
+      "quote_source_slots_unknown": 4,
+      "quote_source_times_unknown": 4,
+      "refused_sell_quote_ids": [
+        28,
+        29,
+        47
+      ],
+      "sell_error_quote_ids": [],
+      "unattempted_sell_quote_ids": [],
+      "unavailable_other_sell_quote_ids": []
+    },
+    {
+      "additional_fees_applicable": false,
+      "admission_reasons": [
+        "additional_execution_costs_unknown",
+        "buy_source_time_unknown",
+        "creation_transaction_unverified"
+      ],
+      "analyzed": true,
+      "case_state": "observed_unqualified",
+      "conditional_net_projections": [],
+      "creation_verified": false,
+      "creator_claim": "2zr2ZnyW1Z8nNdNbKjVVJ23L8ndc8i4ES84XfS2H14Bz",
+      "distinct_bank_slots": [
+        462270186,
+        462270261
+      ],
+      "full_sell_observation_attempts": 2,
+      "full_sell_quote_availability": 0.0,
+      "full_sell_quote_ids": [],
+      "identity_supply_permissions_qualified": true,
+      "latency": {
+        "method": "nearest_rank_of_measured_request_latency_not_provider_data_age",
+        "missing_or_invalid": 2,
+        "p50": 487.921239,
+        "p95": 1891.969614,
+        "p99": 1891.969614,
+        "sample_count": 4,
+        "unit": "ms"
+      },
+      "max_quoted_inventory_fraction_by_phase": {},
+      "mint": "BCGtY7WycyDd2rTSiq8v8R3NpB6KacJ27a9ArXzR1hSP",
+      "ordinal": 2,
+      "partial_sell_observation_attempts": 1,
+      "partial_sell_quote_availability": 0.0,
+      "partial_sell_quote_ids": [],
+      "pool": "AcA4SBjvARWQKLWqJvo5E8ut8wQaDfe8BC83oigAgFgd",
+      "projected_entries": [
+        {
+          "acquired_atomic": "31973987105824",
+          "buy_observation_id": 24,
+          "checkpoint_id": 25,
+          "minimum_atomic": "31654247234765"
+        }
+      ],
+      "provider_refusal_codes": {
+        "INSUFFICIENT_LIQUIDITY": 3
+      },
+      "quote_source_slots_unknown": 4,
+      "quote_source_times_unknown": 4,
+      "refused_sell_quote_ids": [
+        30,
+        31,
+        48
+      ],
+      "sell_error_quote_ids": [],
+      "unattempted_sell_quote_ids": [],
+      "unavailable_other_sell_quote_ids": []
+    }
+  ],
+  "cohort_status": "prefix_fixed",
+  "collection_closed": true,
+  "creator_groups_observed": 2,
+  "creator_identity_claims_not_certified": true,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "effective_independent_sample_size": null,
+  "elapsed_ms": 24825,
+  "execution_verified": false,
+  "full_sell_observation_attempts": 6,
+  "full_sell_quotes": 0,
+  "indexed_rows_retained": 100,
+  "integrity_basis": "caller_verified_bundle_and_retained_tail",
+  "latency": {
+    "method": "nearest_rank_of_measured_request_latency_not_provider_data_age",
+    "missing_or_invalid": 6,
+    "p50": 394.489321,
+    "p95": 1793.14942,
+    "p99": 1891.969614,
+    "sample_count": 20,
+    "unit": "ms"
+  },
+  "market_universe_coverage_verified": false,
+  "model_eligible": false,
+  "net_pnl_scope": "see_admissible_conditional_scenarios_only; missing_cases_not_zero",
+  "net_pnl_sol": null,
+  "not_discovered": false,
+  "p4": {
+    "assignment_preregistered": true,
+    "assignments": [
+      {
+        "cohort": "development",
+        "creator_claim": "2zr2ZnyW1Z8nNdNbKjVVJ23L8ndc8i4ES84XfS2H14Bz",
+        "mint": "2RvDheyRSfeGKnHnQHQ2ZQt4N8opy1Rpq6wUymLaxr3A",
+        "ordinal": 0
+      },
+      {
+        "cohort": "development",
+        "creator_claim": "HKSXVMLXFe6vjNp9sxkiUDNtuSrWzjN4yDwFaRYn9FHj",
+        "mint": "9L6N2ruokJjtoYUQaJLdLcf5TErAKRLD9MkznGpQKCKA",
+        "ordinal": 1
+      },
+      {
+        "cohort": "development",
+        "creator_claim": "2zr2ZnyW1Z8nNdNbKjVVJ23L8ndc8i4ES84XfS2H14Bz",
+        "mint": "BCGtY7WycyDd2rTSiq8v8R3NpB6KacJ27a9ArXzR1hSP",
+        "ordinal": 2
+      }
+    ],
+    "holdout_candidates": 0,
+    "holdout_policy": "future_preregistered_after_model_freeze_excluding_development_creators",
+    "model_selected": false,
+    "plan_id": "prospective-inventory-008",
+    "scope": "instrumental_development_only",
+    "sha256": "55a69bdfe40714d3355dafae148b2ef97d5f327108b48df1140b3975519abeec",
+    "statistical_power_claimed": false
+  },
+  "partial_sell_observation_attempts": 3,
+  "partial_sell_quotes": 0,
+  "plan_id": "prospective-inventory-008",
+  "plan_registration_recorded": true,
+  "plan_sha256": "33f5085fe3bd43714bec7372cd1be6848fb458e3401a70a9358553dde8128a17",
+  "prefix_fixed": true,
+  "projected_entry_observations": 3,
+  "qualified_economic_quote_scenarios": 0,
+  "quoted_route_fees_already_in_output_by_mint": {
+    "So11111111111111111111111111111111111111112": "127500000"
+  },
+  "records": 55,
+  "reference_cash_lamports": 10000000000,
+  "reference_cash_scope": "registered_model_reference_not_wallet_or_observed_cash",
+  "refused_sell_quotes": 9,
+  "requests_used": 20,
+  "route_fee_scope": "quote_observations_not_fees_paid; repeated_quotes_not_summed_as_costs",
+  "schema": "p3-prospective-corpus-report-v1",
+  "selected_corpus_size": 3,
+  "session_groups_observed": 1,
+  "settled_positions": 0,
+  "source_revision": "39fe7fd072b7076da49c88b4550cc08dcdbb57dc",
+  "stop_reason": null,
+  "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6",
+  "unattempted_sells": 0,
+  "unavailable_other_sells": 0,
+  "unknown_creator_candidates": 0
+}

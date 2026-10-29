@@ -68,9 +68,10 @@ class _ScannerEntryGuard:
     """Fail closed on stale/unknown supervised state; not a coverage proof."""
     MAX_STATE_AGE = 120.0  # Two default backfill intervals; not a market limit.
 
-    def __init__(self, db, task, health=None):
+    def __init__(self, db, task, health=None, *, clock=None):
         self.db, self.task, self.health = db, task, health
-        self.started_at = time.time()
+        self.clock = clock or (lambda: time.time())
+        self.started_at = self.clock()
         self.program_id = os.getenv('RAYDIUM_LAUNCHPAD_PROGRAM_ID',
                                     RAYDIUM_LAUNCHPAD_PROGRAM_ID).strip()
         self.initial_checked_at = None
@@ -97,6 +98,18 @@ class _ScannerEntryGuard:
         except sqlite3.Error:
             return False
 
+    def operational_snapshot(self, con):
+        """Read-only P5 snapshot from this lifetime's actual source callbacks."""
+        from bot.operations import build_operational_health
+        health = self.health or getattr(self.task, 'scanner_health', None)
+        observations = health.operational_observations() if health is not None else {}
+        if 'scanner' in observations and not self.allows(con):
+            observations['scanner']['state'] = 'unavailable'
+            observations['scanner']['evidence'] = 'scanner_coverage_or_lifetime_guard_refusal'
+        return build_operational_health(con, observations, now_ms=int(self.clock()*1000),
+            max_age_ms=int(self.MAX_STATE_AGE*1000),
+            emergency_stop=health is None or health.failed)
+
     def allows(self, con):
         # collect_once uses its own locked connection: no separate stale snapshot.
         health = self.health or getattr(self.task, 'scanner_health', None)
@@ -119,9 +132,10 @@ class _ScannerEntryGuard:
                 return False
             if history != 'caught_up' or reason is not None or ws != 'subscribed':
                 return False
+            now = self.clock()
             if (not isinstance(checked, (int, float)) or not math.isfinite(checked)
-                    or not self.started_at <= checked <= time.time()
-                    or time.time() - checked > self.MAX_STATE_AGE
+                    or not self.started_at <= checked <= now
+                    or now - checked > self.MAX_STATE_AGE
                     or (self.initial_checked_at is not None and checked <= self.initial_checked_at)):
                 return False
             if (not isinstance(signature, str) or not signature
@@ -533,15 +547,32 @@ def _realized_metrics(con, started_at=None, ended_at=None):
                   and all(finite(r[3]) for r in rows)
                   and math.isclose(realized, initial + sum(r[3] for r in rows),
                                    rel_tol=1e-9, abs_tol=1e-12))
+    from bot.analyser.paper_trader import _inventory_exists, _paper_realization_events
+    native = _inventory_exists(con)
+    events = []
+    if native:
+        try:
+            events = _paper_realization_events(con)
+            reconciled = (finite(initial) and finite(realized) and math.isclose(
+                realized,initial+math.fsum(event['pnl_sol'] for event in events),
+                rel_tol=0,abs_tol=1e-12))
+        except (TypeError,ValueError,OverflowError):
+            incomplete += 1
+            reconciled = False
+    prior_events = [event for event in events if started_at is not None and event['time'] < started_at]
+    current_events = [event for event in events
+                      if (started_at is None or event['time'] >= started_at)
+                      and (ended_at is None or event['time'] <= ended_at)]
     valid = (finite(initial) and initial > 0 and not incomplete
              and not inconsistent and not invalid_positions and reconciled)
-    opening = initial + sum(r[3] for r in prior) if valid else None
+    opening = initial + (math.fsum(e['pnl_sol'] for e in prior_events) if native else sum(r[3] for r in prior)) if valid else None
     valid = valid and opening > 0
     equity = peak = opening if valid else None
     drawdown = 0.0
     if valid:
-        for row in closed:
-            equity += row[3]
+        cashflows = [e['pnl_sol'] for e in current_events] if native else [r[3] for r in closed]
+        for pnl in cashflows:
+            equity += pnl
             if equity < 0:
                 valid = False
                 break
@@ -558,7 +589,7 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         'max_drawdown': drawdown if valid else None,
         'win_rate': sum(p > 0 for p in pnls) / len(pnls) if pnls else None,
         'assumed_cost_bps_total': sum(costs) if all(finite(c) for c in costs) else None,
-        'pnl_sol': sum(pnls) if valid else None,
+        'pnl_sol': (math.fsum(e['pnl_sol'] for e in current_events) if native else sum(pnls)) if valid else None,
         'profit_factor': gains / losses if losses > 0 else None,
         'capital_start_sol': opening if valid else None,
         'capital_end_sol': equity if valid else None,
@@ -570,6 +601,9 @@ def _realized_metrics(con, started_at=None, ended_at=None):
         'closed_trades': len(closed),
         'wins': sum(p > 0 for p in pnls) if valid else None,
         'losses': sum(p <= 0 for p in pnls) if valid else None,
+        **({'realization_events':len(current_events),
+            'realization_basis':'legacy_closed_positions_plus_native_legs_without_aggregate_double_count',
+            'trade_statistics_scope':'fully_closed_positions; native_partial_legs_are_not_independent_trades'} if native else {}),
     }
 
 
@@ -689,9 +723,9 @@ def _write_json_report(output, report, *, allow_nan=True):
     _raise_paper_failures(failures)
 
 
-def _valuation_scope():
+def _valuation_scope(con=None):
     """Separate ledger reconciliation from an observed economic SOL return."""
-    return {
+    scope = {
         'account_currency': 'SOL',
         'observed_price_currency': 'USD',
         'return_conversion_assumption': 'constant_SOL_USD',
@@ -699,10 +733,23 @@ def _valuation_scope():
         'economic_pnl_verified': False,
         'execution_prices_verified': False,
     }
+    if con is not None and _table_exists(con,'paper_token_inventory'):
+        native = con.execute('SELECT COUNT(*) FROM paper_token_inventory').fetchone()[0]
+        total = con.execute('SELECT COUNT(*) FROM paper_trades').fetchone()[0]
+        if native:
+            scope.update(native_inventory_positions=native,legacy_positions_without_atomic_inventory=total-native,
+                         native_inventory_acquired=False,native_net_basis='SOL_quote_proceeds_minus_exact_allocated_basis_and_extra_fees')
+            if native == total:
+                scope.update(return_conversion_assumption='native_SOL_quote_amounts',fx_required_for_sol_pnl=False,
+                             usd_marks_scope='exit_triggers_only; not_native_PnL_conversion')
+            else:
+                scope['return_conversion_assumption']='mixed_native_SOL_quotes_and_legacy_constant_SOL_USD'
+    return scope
 
 
 def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
-                 validation_status='not_validated'):
+                 validation_status='not_validated', *, data_kind='unknown',
+                 latency_samples_ms=None, operational_health=None):
     """Write an operational report, explicitly marked PAPER ONLY."""
     open_count = con.execute(
         "SELECT COUNT(*) FROM paper_trades WHERE status='open'"
@@ -784,7 +831,7 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'inconsistent_closed_trades': metrics.get('inconsistent_closed_trades', 0),
         'invalid_position_closed_trades': metrics.get('invalid_position_closed_trades', 0),
         'equity_basis': 'realized_sol',
-        'valuation_scope': _valuation_scope(),
+        'valuation_scope': _valuation_scope(con),
         'market_data_coverage': _market_data_coverage(con),
         'quote_provenance': _quote_provenance(con),
         'rejection_reasons': _decision_reason_counts(con),
@@ -814,6 +861,15 @@ def paper_report(con, now, cached_count, output=None, strategy_mode='validated',
         'undated_status_counts': diagnostic_states,
         'undated_mints_without_audit': len(undated)-sum(diagnostic_states.values()),
     }
+    from bot.analyser.functional_report import build_functional_report
+    report['functional_dashboard'] = build_functional_report(
+        con, data_kind=data_kind, latency_samples_ms=latency_samples_ms)
+    from bot.master_audit import master_report
+    master_summary = master_report(con)
+    if master_summary is not None:
+        report['master_shadow'] = master_summary
+    if operational_health is not None:
+        report['operational_health'] = operational_health
     if output:
         _write_json_report(output, report)
     return report
@@ -975,14 +1031,31 @@ async def _observe_undated(con, session, record, max_age):
     return [audit_message(report)], wait
 
 
+def _record_runtime_latency(samples, stage, started_ns):
+    """Bounded in-memory rolling sample, measured with a monotonic clock."""
+    if samples is not None:
+        values = samples.setdefault(stage, [])
+        values.append((time.perf_counter_ns() - started_ns) / 1_000_000)
+        del values[:-1024]
+
+
 async def collect_once(con, session, cached, now, model=None,
                        max_open=3, max_entries_day=20,
                        max_daily_loss_pct=10.0, max_candidates=10,
                        max_age=7200, live_fetcher=None,
                        min_liquidity=1000, strategy_mode='validated',
                        initial_capital_sol=10.0, position_pct=10.0,
-                       entry_guard=None):
-    """Collect one bounded cycle; return messages and cooldown seconds."""
+                       entry_guard=None, *, quote_provider=None,
+                       onchain_quote_provider=None, clock=None, latency_samples_ms=None,
+                       inventory_provider=None, master_shadow=None):
+    """Collect one bounded cycle; providers default to the production readers.
+
+    Explicit providers and a clock allow deterministic integration without HTTP.
+    Selection, risk guards, persistence and accounting follow the same path.
+    """
+    quote_reader = quote_provider or fetch_quote
+    onchain_reader = onchain_quote_provider or fetch_onchain_quote
+    read_clock = clock or (lambda: time.time())
     records = _launch_records(con, now)
     undated = _undated_candidates(con, now, max_age, records)
     candidates = _scheduled_candidates(con, now, max_age, max_candidates,
@@ -1007,19 +1080,21 @@ async def collect_once(con, session, cached, now, model=None,
         ).fetchone() if "pool_state" in {r[1] for r in con.execute("PRAGMA table_info(launch_candidates)")} else None
         pool_address = (matching_launches[-1]['pool_state'] if matching_launches
                         else pool_row[0] if pool_row else None)
+        acquisition_started = time.perf_counter_ns()
         quote = None
         if pool_address:
             try:
-                quote = await fetch_onchain_quote(session, mint, pool_address)
+                quote = await onchain_reader(session, mint, pool_address)
             except Exception as exc:
                 print(f"[ONCHAIN] lecture indisponible : {type(exc).__name__}", flush=True)
         wait_seconds = 0
         if quote is None:
-            quote, wait_seconds = await fetch_quote(
+            quote, wait_seconds = await quote_reader(
             session, mint, min_liquidity=min_liquidity, include_metrics=True,
         )
+        _record_runtime_latency(latency_samples_ms, 'quote_acquisition', acquisition_started)
         cooldown = max(cooldown, wait_seconds)
-        status_now = int(time.time())
+        status_now = int(read_clock())
         if wait_seconds:
             msg = set_signal_status(
                 con, mint, creator, signal_time, status_now,
@@ -1070,6 +1145,32 @@ async def collect_once(con, session, cached, now, model=None,
             cache_changed = changed or cache_changed
             if changed:
                 cached = load_cached_transactions(live_fetcher.db_path)
+        inventory_context = None
+        if inventory_provider is not None:
+            from bot.analyser.token_inventory import inventory_state, _lamports
+            from bot.analyser.paper_trader import _paper_free_capital
+            state_before = inventory_state(con, mint)
+            amount = state_before['remaining_atomic'] if state_before else None
+            if state_before is None:
+                try:
+                    if con.execute('SELECT 1 FROM paper_portfolio WHERE id=1').fetchone():
+                        capital, free = _paper_free_capital(con)
+                    else:
+                        capital = free = float(initial_capital_sol)
+                    amount = str(_lamports(min(free, capital*float(position_pct)/100)))
+                except ValueError:
+                    pass  # Unknown liabilities must not invent a buy budget.
+            if amount is not None and int(amount) > 0:
+                # Providers receive the exact size BEFORE their request. They may
+                # explicitly preselect a partial size, never scale a response.
+                inventory_context = await inventory_provider(session, mint,
+                    side='sell' if state_before else 'buy', amount_atomic=amount,
+                    inventory=state_before, decision_at_ms=int(read_clock()*1000))
+                if inventory_context is not None:
+                    inventory_context = dict(inventory_context)
+                    inventory_context['inventory_version'] = state_before['version'] if state_before else 0
+                    inventory_context['decision_at_ms'] = int(read_clock()*1000)
+            now_quote = int(read_clock())
         # No await inside: serialize the history check, features, decision and ledger.
         with _paper_close_transaction(con):
             if skip_recorded_quote(con, mint, now_quote, quote):
@@ -1092,6 +1193,7 @@ async def collect_once(con, session, cached, now, model=None,
                 messages.append(audit_message(report))
                 continue
             decision = None
+            features = None
             model_for_quote = model
             force_exit_reason = None
             if strategy_mode == 'shadow_final':
@@ -1110,6 +1212,61 @@ async def collect_once(con, session, cached, now, model=None,
             )
             scanner_allowed = _entry_guard_allows(entry_guard, con)
             allowed = financial_allowed and scanner_allowed
+            master_event = None
+            if master_shadow is not None:
+                from bot.master_audit import paper_context, shadow_attempt
+                def evaluate_shadow():
+                    master_features = features if features is not None else build_features(
+                        cached,mint,creator,signal_time,now_quote,price_history(con,mint),quote,
+                        prior_launches=prior_creator_launches(con,creator,signal_time))
+                    health_snapshot=(entry_guard.operational_snapshot(con)
+                        if isinstance(entry_guard,_ScannerEntryGuard) else dict(
+                            allow_new_entries=scanner_allowed,blocking_reasons=[],
+                            observed_at_ms=int(read_clock()*1000),scope='existing_entry_guard_result_only'))
+                    frame,inventory,health_snapshot,capital=paper_context(con,mint=mint,creator=creator,
+                        pool=pool_address,signal_time=signal_time,decision_ms=int(read_clock()*1000),
+                        features=master_features,inventory_context=inventory_context,health=health_snapshot,
+                        financial_allowed=financial_allowed)
+                    from bot.master_comparison import reference_position_intent
+                    frame['health']=health_snapshot
+                    frame['capital_snapshot']=capital
+                    reference_model=decision.to_paper_model() if decision is not None else model
+                    ref_action=('BUY' if decision is not None and decision.enter and allowed
+                        else 'NO_TRADE' if decision is not None and not decision.enter else 'WAIT')
+                    ref_reasons=(list(decision.reasons) if decision is not None else
+                        ['legacy_reference_entry_intent_not_reconstructed'])
+                    if existing:
+                        ref_forced=None
+                        if decision is not None and 'vente_developpeur' in decision.risk_flags:ref_forced='DEV_SALE_RISK'
+                        elif decision is not None and 'transfert_relais' in decision.risk_flags:ref_forced='RELAY_RISK'
+                        ref_action,ref_reason=reference_position_intent(con,mint,int(read_clock()*1000),
+                            quote.price_usd,reference_model,forced=ref_forced)
+                        ref_reasons=[ref_reason]
+                    contemplated=None
+                    if ref_action=='BUY':
+                        from bot.analyser.paper_trader import _paper_free_capital
+                        from bot.analyser.token_inventory import _lamports
+                        if con.execute('SELECT 1 FROM paper_portfolio WHERE id=1').fetchone():
+                            ref_capital,ref_free=_paper_free_capital(con)
+                        else:ref_capital=ref_free=initial_capital_sol
+                        contemplated=str(_lamports(min(ref_free,ref_capital*float(position_pct)/100)))
+                    reference=dict(action=ref_action,selected_strategy='reference_current',
+                        score=decision.score if decision is not None else None,
+                        risks=list(decision.risk_flags) if decision is not None else None,
+                        input_lamports=contemplated,quantity_atomic=None,
+                        costs=frame.get('inventory_context',{}).get('fees'),
+                        exit_conditions=reference_model,reasons=ref_reasons,
+                        observed_at_ms=frame['available_at_ms'],intent_only=True,
+                        funding_and_exact_quote_checks_pending=True,
+                        execution_verified=False,promotion_allowed=False)
+                    return master_shadow.evaluate(con,frame,inventory=inventory,
+                        health=health_snapshot,capital=capital,reference=reference,measure_latency=True)
+                shadow_result,shadow_error=shadow_attempt(con,evaluate_shadow)
+                if shadow_error is not None:
+                    allowed=False
+                    messages.append(f'MASTER_SHADOW_UNAVAILABLE {shadow_error}')
+                else:
+                    master_event,_proposal=shadow_result
             if strategy_mode == 'shadow_final':
                 record_decision(
                     con, features, decision, strategy_mode=strategy_mode,
@@ -1154,7 +1311,21 @@ async def collect_once(con, session, cached, now, model=None,
                 initial_capital_sol=initial_capital_sol, position_pct=position_pct,
                 max_open=max_open, max_entries_day=max_entries_day,
                 max_daily_loss_pct=max_daily_loss_pct,
+                inventory_context=inventory_context,
+                require_inventory=inventory_provider is not None,
             )
+            if master_event is not None:
+                from bot.master_audit import complete_master_reference, shadow_attempt
+                def complete_shadow_reference():
+                    from bot.analyser.token_inventory import inventory_state
+                    after=inventory_state(con,mint)
+                    complete_master_reference(con,master_event,dict(proposal_applied=False,
+                        reference_engine_result=message,
+                        remaining_atomic=after['remaining_atomic'] if after else None,
+                        inventory_version=after['version'] if after else None))
+                _,shadow_error=shadow_attempt(con,complete_shadow_reference)
+                if shadow_error is not None:
+                    messages.append(f'MASTER_SHADOW_OUTCOME_PENDING {shadow_error}')
             if undated_identities and strategy_mode != 'shadow_final':
                 report = audit_mint(con, mint, creator, signal_time, now_quote,
                     'OBSERVATION_DATEE_AVEC_IDENTITES_NON_DATEES', quote=quote,
@@ -1280,7 +1451,8 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
               live_behavior=True, rpc_interval=2.5, behavior_max_tx=10,
               rpc_gate=None, min_liquidity=1000, shadow_baseline=False,
               shadow_final=False, initial_capital_sol=10.0, position_pct=10.0,
-              session_seconds=0, session_report=None, entry_guard=None):
+              session_seconds=0, session_report=None, entry_guard=None, inventory_journal=None,
+              master_shadow_enabled=False):
     """Run the paper collector forever; no model means collection only."""
     if shadow_baseline and shadow_final:
         raise ValueError('Choisir un seul mode shadow.')
@@ -1295,7 +1467,16 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         model = shadow_baseline_model()
     else:
         model = eligible_model(model_path) if model_path else None
-    con = session = live_fetcher = None
+    if inventory_journal is not None:
+        journal_path = Path(inventory_journal)
+        if (journal_path.exists() or journal_path.is_symlink()
+                or journal_path.suffix not in ('.sqlite','.db') or journal_path.name.startswith('.env')
+                or not 1 <= session_seconds <= 60
+                or journal_path.resolve() in {Path(db).resolve(), Path(report or db).resolve(),
+                                              Path(session_report or db).resolve()}):
+            raise ValueError('Native quotes require a new separate journal and a 1..60 second session')
+    con = session = live_fetcher = native_capture = None
+    native_provider = None
     session_ready = False
     failures = []
     stage = 'database initialization'
@@ -1305,6 +1486,11 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         con = sqlite3.connect(db, timeout=30.0, isolation_level=None)
         con.execute('PRAGMA busy_timeout=30000')
         setup(con)
+        master_shadow=None
+        if master_shadow_enabled:
+            from bot.master_audit import setup_master_schema,MasterShadow
+            setup_master_schema(con)
+            master_shadow=MasterShadow()
         ensure_signal_status_schema(con)
         ensure_audit_schema(con)
         ensure_paper_portfolio(con, initial_capital_sol)
@@ -1314,6 +1500,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         if session_seconds:
             print(f'[SESSION] validation PAPER limitee a {int(session_seconds)} secondes.', flush=True)
         cached = []
+        latency_samples = {}
         refreshed_at = 0
         if live_behavior:
             stage = 'behavior initialization'
@@ -1342,8 +1529,17 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
         print('Mode : ' + mode_message, flush=True)
         stage = 'HTTP initialization'
         timeout = aiohttp.ClientTimeout(total=12)
-        session = aiohttp.ClientSession(timeout=timeout)
+        options = {'trust_env':False,'cookie_jar':aiohttp.DummyCookieJar()} if inventory_journal is not None else {}
+        session = aiohttp.ClientSession(timeout=timeout,**options)
         await session.__aenter__()
+        if inventory_journal is not None:
+            from bot.p3.store import CaptureStore
+            from bot.p3.inventory_provider import NativeInventoryQuoteProvider
+            if type(getattr(session,'_retry_connection',None)) is not bool:
+                raise ValueError('Unsupported native quote transport retry policy')
+            session._retry_connection = False
+            native_capture = CaptureStore(inventory_journal)
+            native_provider = NativeInventoryQuoteProvider(session,native_capture,max_requests=20)
         while True:
             now = int(time.time())
             if session_seconds and now - session_started >= int(session_seconds):
@@ -1353,6 +1549,7 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                 cached = load_cached_transactions(db)
                 refreshed_at = now
             stage = 'collection'
+            cycle_started = time.perf_counter_ns()
             try:
                 messages, cooldown, cache_changed = await collect_once(
                     con, session, cached, now, model=model,
@@ -1363,7 +1560,9 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     min_liquidity=min_liquidity,
                     strategy_mode=strategy_mode,
                     initial_capital_sol=initial_capital_sol, position_pct=position_pct,
-                    entry_guard=entry_guard,
+                    entry_guard=entry_guard, latency_samples_ms=latency_samples,
+                    inventory_provider=native_provider,
+                    master_shadow=master_shadow,
                 )
                 if cache_changed:
                     cached = load_cached_transactions(db)
@@ -1372,10 +1571,14 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                 print('[PAPER] source prix temporairement lente; nouvelle tentative automatique.', flush=True)
                 cooldown = 3
             else:
+                _record_runtime_latency(latency_samples, 'collection_cycle', cycle_started)
                 stage = 'periodic report'
                 state = paper_report(
                     con, now, len(cached), output=report,
                     strategy_mode=strategy_mode,
+                    latency_samples_ms=latency_samples,
+                    operational_health=(entry_guard.operational_snapshot(con)
+                        if isinstance(entry_guard, _ScannerEntryGuard) else None),
                     validation_status=(
                         'diagnostic_not_validated'
                         if strategy_mode.startswith('shadow_')
@@ -1403,6 +1606,11 @@ async def run(db, model_path=None, poll=15, report=None, max_open=3,
                     await session.close()
                 except BaseException as exc:
                     failures.append(('HTTP close', exc))
+            if native_capture is not None:
+                try:
+                    native_capture.close()
+                except BaseException as exc:
+                    failures.append(('native journal close', exc))
             if live_fetcher is not None:
                 try:
                     await live_fetcher.close()
@@ -1469,12 +1677,14 @@ async def run_with_scanner(args):
             shadow_final=args.shadow_final, initial_capital_sol=args.capital_sol,
             position_pct=args.position_pct, session_seconds=args.session_seconds,
             session_report=args.session_report,
+            inventory_journal=getattr(args, 'inventory_journal', None),
+            master_shadow_enabled=getattr(args,'master_shadow',False),
         )
         return
     tasks = []
     failures = []
     try:
-        health = ScannerHealth()
+        health = ScannerHealth(require_observations=True)
         scanner_task = asyncio.create_task(scanner_run(rpc_gate=rpc_gate, db_path=args.db, health=health))
         tasks.append(scanner_task)
         entry_guard = _ScannerEntryGuard(args.db, scanner_task, health=health)
@@ -1492,6 +1702,8 @@ async def run_with_scanner(args):
             initial_capital_sol=args.capital_sol, position_pct=args.position_pct,
             session_seconds=args.session_seconds, session_report=args.session_report,
             entry_guard=entry_guard,
+            inventory_journal=getattr(args, 'inventory_journal', None),
+            master_shadow_enabled=getattr(args,'master_shadow',False),
         ))
         tasks.append(engine_task)
         last_scanner_state = None
@@ -1543,7 +1755,7 @@ def _print_scanner_state(db, previous=None):
 
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--db', type=Path, default=BASE_DIR / 'data' / 'rugger_bot.db')
     parser.add_argument('--model', type=Path, help='JSON d’un modèle déjà validé hors échantillon')
@@ -1579,7 +1791,17 @@ def main():
                         help='ne pas lancer le scanner Helius dans ce processus')
     parser.add_argument('--no-live-behavior', action='store_true',
                         help='utiliser seulement le cache Helius déjà présent')
-    args = parser.parse_args()
+    parser.add_argument('--inventory-quotes', action='store_true',
+                        help='P3 native SOL inventory quotes, maximum 20 attempts/60 s; never orders')
+    parser.add_argument('--inventory-journal', type=Path,
+                        help='New dedicated P3 quote journal, separate from the PAPER ledger')
+    parser.add_argument('--master-shadow', action='store_true',
+                        help='Journal bounded master proposals; active reference policy remains separate')
+    args = parser.parse_args(argv)
+    if bool(args.inventory_quotes) != bool(args.inventory_journal):
+        parser.error('--inventory-quotes and a new --inventory-journal are required together')
+    if args.inventory_quotes and not 1 <= args.session_seconds <= 60:
+        parser.error('Native inventory quotes require --session-seconds between 1 and 60')
     try:
         asyncio.run(run_with_scanner(args))
     except KeyboardInterrupt:

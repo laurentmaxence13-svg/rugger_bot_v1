@@ -1,0 +1,13 @@
+{
+  "economic_verdict": "INSUFFICIENT DATA",
+  "fx_cases": 500,
+  "ledger_access": false,
+  "native_cases": 500,
+  "network_access": false,
+  "rejected_unsafe_inputs": 1009,
+  "schema": "p3-independent-accounting-check-v1",
+  "seed": 20261027,
+  "status": "PASS",
+  "sub_lamport_boundary_cases": 1,
+  "synthetic_cases": 1000
+}

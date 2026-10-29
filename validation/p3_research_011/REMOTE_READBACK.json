@@ -1,0 +1,20 @@
+{
+  "archive_actually_downloaded": true,
+  "chain_verified": true,
+  "complete_indicative_market_pairs": 8,
+  "manifest_actually_downloaded": true,
+  "net_market_pnl_sol": null,
+  "new_market_requests_during_verification": 0,
+  "plan_remote_commit": "7016e3469e5a09658be12ddb3488f7b5ca0604ac",
+  "records": 142,
+  "report_reproduced_from_downloaded_events": true,
+  "result_actually_downloaded": true,
+  "results_local_commit": "f0dcac97b3f4fdb9038605533fcca1bc746d4e98",
+  "results_remote_commit": "dd9cce2a9737a6a428275485c693da6dfcdd4a98",
+  "schema": "p3-011-remote-readback-v1",
+  "source_remote_commit": "ae89a344bec3855c2cb6f26f75bab4865ac73ac0",
+  "strict_cycles": 0,
+  "tail_hash": "40532579c596a58c0676ca55a074da302c737293b6841377b4fa00fd1bcff997",
+  "tree": "177a835f54bf8e5e3b62a5ff8a20329931e4fd64",
+  "verified_at_ms": 1793255665369
+}

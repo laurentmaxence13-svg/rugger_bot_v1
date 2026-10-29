@@ -1,0 +1,15 @@
+{
+  "analysis_identical": true,
+  "bundles_restored": 2,
+  "database_access_prohibited": true,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "network_during_replay_prohibited": true,
+  "quote_bodies_replayed": 4,
+  "records_restored": 1034,
+  "remote_commit": "8aeb6c83ac10d73ba4901b287bf776bd729d879a",
+  "restored_from": "GitHub file API base64 in a new directory",
+  "schema": "rugger-functional-remote-restore-v1",
+  "snapshot_analyses_reproduced": 2,
+  "source_journal_used": false,
+  "sqlite_uploaded": false
+}

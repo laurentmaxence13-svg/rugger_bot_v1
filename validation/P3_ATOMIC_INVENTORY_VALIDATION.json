@@ -1,0 +1,127 @@
+{
+  "P3_completed": false,
+  "application_code_commit": "82ce606ef0952154efb0d964e8cfea7befc20c37",
+  "date": "2026-10-27",
+  "demonstration": {
+    "cases_independent": true,
+    "command": "python -B -m bot economic-demo --output work/atomic-demo-next",
+    "data_kind": "synthetic",
+    "executed_directory": "/workspace/work/atomic-demo-final",
+    "fully_disposed_cases": 3,
+    "open_cases": 1,
+    "outcomes": [
+      {
+        "capital_sol": 10.199985,
+        "case": "full_tp",
+        "pnl_lamports": "199985000",
+        "remaining_atomic": "0",
+        "status": "closed"
+      },
+      {
+        "capital_sol": 10.049975,
+        "case": "partial_restart",
+        "pnl_lamports": "49975000",
+        "remaining_atomic": "0",
+        "status": "closed"
+      },
+      {
+        "capital_sol": 10.0,
+        "case": "refused_liquidity",
+        "pnl_lamports": "0",
+        "remaining_atomic": "25000000",
+        "status": "open"
+      },
+      {
+        "capital_sol": 9.699985,
+        "case": "adverse_sl",
+        "pnl_lamports": "-300015000",
+        "remaining_atomic": "0",
+        "status": "closed"
+      }
+    ],
+    "position_notional_lamports": "1000000000",
+    "projected_acquired_atomic_per_case": "25000000",
+    "restart_scope": "SQLite connection and inventory receipts reloaded, not a VM restart",
+    "token_decimals": 6
+  },
+  "economic_verdict": "INSUFFICIENT DATA",
+  "financial_spend": false,
+  "invariants_tested": [
+    "one_portfolio",
+    "quantity_and_basis_integer_conservation",
+    "partial_profit_not_credited_twice_at_final_close",
+    "daily_loss_includes_open_partial_realization",
+    "missing_cost_blocks_available_capital",
+    "legacy_unknown_inventory_not_imputed",
+    "cancel_and_savepoint_rollback",
+    "uint64_text_inventory_survives_restart",
+    "duplicate_quote_old_version_old_quote_and_oversell_refused",
+    "exit_fee_not_financed_by_future_proceeds"
+  ],
+  "local_equivalent_commit": "2edcd43f97db2f2e914d32bb68ed978e74733308",
+  "market": {
+    "diagnostic_sell_atomic": "18765447579",
+    "full_inventory_availability_rate": null,
+    "full_inventory_quote_requests": 0,
+    "indicative_quotes_attempted": 2,
+    "indicative_quotes_available": 2,
+    "net_pnl_sol": null,
+    "projected_inventory_atomic": "34076309234009",
+    "qualified_economic_cycles": 0,
+    "source_control": "007 already archived, not rerun"
+  },
+  "matched_cost_experiment": {
+    "command": "python -B tools/compare_native_inventory_costs.py",
+    "legacy_net_sol": ".18",
+    "native_net_sol": ".18",
+    "performance_uplift_claimed": false,
+    "script_sha256": "aa6bbc0de905d3e08282a60d58c6dee8b16b733b1052494c8b35f8a1bf5cfc95",
+    "total_synthetic_cost_lamports": "20000000"
+  },
+  "native_quote_reader": {
+    "caller_must_register_observation_protocol": true,
+    "enabled_by_default": false,
+    "historical_rpc_control_repeated": false,
+    "implemented": true,
+    "max_elapsed_seconds": 60,
+    "max_quote_attempts": 20,
+    "new_real_requests_this_session": 0,
+    "stop_on_first_refusal": true
+  },
+  "private_ledger_mutated": false,
+  "proof_sha256": {
+    "validation/P3_ATOMIC_INVENTORY_DEMO.json": "ddb7d76c4eae86145ea87b290d6e1e9b08d3aeedca982d9b2127c9a097272964",
+    "validation/P3_ATOMIC_INVENTORY_TESTS.log": "8e4135176ccb39caf70163cb34e16dbe1c4cacbfa4d31b1ababa054d2a7a6b41",
+    "validation/P3_ATOMIC_MARKET_EVALUATION.json": "c49157f5ef78c4c0d5f101ceda5233bad2dccd090bc9d61245f3c861a0059b73",
+    "validation/P3_MATCHED_INVENTORY_COSTS.json": "0bc2b646bfff23b0296de22993b65d52d71ef6d5e5d03febc49f88dbfb4e4153",
+    "validation/atomic_inventory_demo/adverse_sl_report.json": "d1e1356f167435822e990b897134013a98203aaceaa95f3365a0cb3bcf54d5d9",
+    "validation/atomic_inventory_demo/full_tp_report.json": "fd615cf0b9003cd3af49ad47b14253ddcda30453093e5a5160aae609fb7dd60d",
+    "validation/atomic_inventory_demo/partial_restart_report.json": "1f621fe09970d29158bb4412656059c1bc7ae24313b7d1fdbe4c816456f7a5fa",
+    "validation/atomic_inventory_demo/refused_liquidity_report.json": "23d89da7cedf9ff42570e8abcce5518a931441a78cf7604a7fee51d5380823c3"
+  },
+  "real_orders": false,
+  "reproduced_defects_corrected": [
+    "bridge_asyncio_run_inside_active_event_loop",
+    "ignored_trigger_write_not_raising_for_inventory_portfolio_and_closure",
+    "final_upfront_fee_reservation_confused_with_fees_funded_by_already_realized_cash",
+    "native_provider_persistence_readback_failure_did_not_latch",
+    "native_quote_proxy_resolution_overrunning_deadline"
+  ],
+  "schema": "p3-atomic-inventory-validation-v1",
+  "sqlite_uploaded": false,
+  "strategy_parameters_changed": false,
+  "tested_tree": "49d9ca058dce7a6b953b96d997cf20a7bb187735",
+  "tests": {
+    "additional_tests": 100,
+    "command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+    "elapsed_seconds": 5.88,
+    "network_prohibited": true,
+    "passed": 1535,
+    "previous_passed": 1435,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "timezone": "Europe/Paris"
+}

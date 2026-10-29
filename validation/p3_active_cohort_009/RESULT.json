@@ -1,0 +1,89 @@
+{
+  "acquisition": {
+    "active_policy_changed": false,
+    "as_of_ms": 1793219802197,
+    "candidates": [],
+    "corpus": {
+      "data_kind": "market_observation",
+      "frames": []
+    },
+    "denominator": [],
+    "discovery_universe_known": false,
+    "execution_verified": false,
+    "frame_count": 0,
+    "future_observations_excluded": 0,
+    "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+    "market_collection_executed": false,
+    "provider_clocks_inferred_from_RPC": false,
+    "qualified_economic_cycles": 0,
+    "refused_quote_observation_ids": [],
+    "retained_tail": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+    "schema": "p3-master-comparison-acquisition-v1",
+    "scope": "retained_asof_inputs_and_complete_cohort_denominator; no_fill_or_market_edge",
+    "selected_count": 0,
+    "universe_size": 0,
+    "unknown_candidate_count": 0
+  },
+  "active_policy_changed": false,
+  "discovery_universe_known": false,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_ms": 8009,
+  "execution_verified": false,
+  "independent_buyers_known": false,
+  "market_collection_executed": true,
+  "net_pnl_sol": null,
+  "observation_categories": {
+    "MODELLED": {
+      "curve_arithmetic_records": 0,
+      "expected_buy_inventories": 0
+    },
+    "OBSERVED": {
+      "discovery_responses": 0,
+      "provider_quote_receipts": 0,
+      "provider_quoted": 0,
+      "retained_RPC_account_responses": 0
+    },
+    "REFUSED": [],
+    "UNKNOWN": {
+      "applicable_own_execution_costs": true,
+      "independent_buyers": true,
+      "independent_strategy_edge": true,
+      "provider_quote_clock_gaps": 0
+    }
+  },
+  "own_additional_costs_known": false,
+  "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+  "positions_acquired": 0,
+  "projected_positions": 0,
+  "provider_quote_attempts": 0,
+  "provider_quotes": 0,
+  "provider_refusals": 0,
+  "provider_unavailable_or_errors": 0,
+  "qualified_economic_cycles": 0,
+  "received_index_rows": null,
+  "records": 4,
+  "report_reconstructed_after_cleanup_termination": true,
+  "reporting_source_sha256": "487889f22309ba01e6c4b26af33c18369a745700661aed4362254471521d20ae",
+  "requests_used": 1,
+  "schema": "p3-active-cohort-result-v1",
+  "selection": {
+    "criteria_sha256": "116c4d5e9fa66991113c23ab17118622e2d50576381b0d4dcfe743666da8ee06",
+    "criteria_status": "PREPARED_NOT_EXECUTED",
+    "decision_at_ms": 1793219802196,
+    "excluded_or_not_reached_count": 0,
+    "execution_verified": false,
+    "market_collection_executed": false,
+    "qualified_economic_cycles": 0,
+    "records": [],
+    "schema": "p3-active-cohort-selection-v1",
+    "screened_prefix_count": 0,
+    "selected": [],
+    "selected_count": 0,
+    "selection_uses_provider_outcomes": false,
+    "universe_size": 0
+  },
+  "settled_legs": 0,
+  "source_revision": "4d967d0839134db878f47bfbeba3108780ca71c4",
+  "stop_reason": "source_error_after_persisted_receipt",
+  "tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d"
+}

@@ -191,3 +191,36 @@ charge locales restent plus conservatrices que les plafonds documentaires.
 collecte/redistribution à compléter ; rentabilité INSUFFICIENT DATA.** Aucun
 ordre, construction/signature de transaction, portefeuille ou paiement n'a été
 utilisé par cette revue documentaire.
+
+## Recontrôle documentaire du 27 octobre 2026
+
+Les pages officielles [REST API surface](https://docs.raydium.io/sdk-api/rest-api)
+et [Trade API](https://docs.raydium.io/sdk-api/trade-api) ont été relues via
+l’outil Web, sans appel de marché. Trade API documente le GET de devis, les refus
+logiques HTTP 200/success=false et 120 devis/minute/IP avec Retry-After sur 429.
+REST confirme l’accès anonyme hors Forum et les limites progressives par IP.
+Ces indications ne garantissent pas la disponibilité ou un quota réservé.
+La page Trade API décrit CPMM/CLMM/AMM v4 ; elle ne constitue pas une preuve
+de support de tout pool LaunchLab avant migration. La cause des deux refus
+historiques reste inconnue faute de corps conservés ; aucune augmentation de
+slippage ni réduction de montant n’a été effectuée pour obtenir une réponse positive.
+
+Ces pages consultées n’établissent pas des conditions complètes de conservation
+des nouvelles réponses. La prochaine collecte attend un contrôle des conditions
+applicables, de la gratuité/quota disponible et du transport courant. Aucun accès
+API marché, abonnement, compte ou droit supplémentaire activé par ce recontrôle.
+
+## Contrôle effectif du 27 octobre — complément à la revue documentaire
+
+La [section officielle License / REST and Trade APIs](https://docs.raydium.io/resources/license)
+précise l’usage raisonnable des services publics par les intégrateurs. La décision
+opérationnelle limitée au replay interne minimal est détaillée dans
+`P3_SHORT_CONTROL_ACCESS.md` ; aucune interdiction n’est inférée de la seule absence
+de licence explicite des données. Aucun droit général de redistribution n’en découle.
+
+Le contrôle unique v3 préenregistré a effectivement utilisé 19 tentatives en
+26,034 secondes, sans clé ni portefeuille : transport anonyme observé fonctionnel,
+deux créations et quatre snapshots conservés. Les deux refus de vente HTTP200
+ont le message fournisseur INSUFFICIENT_LIQUIDITY. Leur archivage puis restauration
+depuis GitHub et replay sont démontrés dans `validation/P3_RETENTION_REMOTE_RESTORE.json`.
+Cela ne démontre ni quota durable, ni support de tous tokens, ni rentabilité.
