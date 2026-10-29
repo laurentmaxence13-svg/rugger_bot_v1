@@ -28,7 +28,14 @@ from test_live_wire_route import _instructions
 
 WALLET=_encode(bytes([22])*32)
 MINT=_encode(bytes([55])*32)
-POOL=_encode(bytes([88])*32)
+# The synthetic migrated pool is a REAL test-key public address, since the
+# pinned LaunchLab migration uses this noncanonical pool as an explicit
+# transaction signer. The known test-only seed is never used for trading.
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from cryptography.hazmat.primitives import serialization
+_TEST_POOL_SIGNER=Ed25519PrivateKey.from_private_bytes(bytes([84])*32)
+POOL=_encode(_TEST_POOL_SIGNER.public_key().public_bytes(
+    encoding=serialization.Encoding.Raw,format=serialization.PublicFormat.Raw))
 BLOCKHASH=_encode(bytes([33])*32)
 DECISION='synthetic-cpmm-end-to-end-001'
 RENT=2039280
