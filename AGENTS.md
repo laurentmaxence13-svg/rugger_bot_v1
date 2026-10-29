@@ -4,7 +4,7 @@ Ces instructions s’appliquent au **dépôt réel `rugger_bot_v1`**, local ou C
 
 ## Mission et ordre de priorité
 
-Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de simulation de trading **PAPER ONLY**, centré sur Raydium LaunchLab. Objectif : stabiliser le bot, mesurer ce qu'il fait vraiment, et étudier un éventuel avantage quantitatif net de frais, slippage, latence et risque. Aucune rentabilité n'est démontrée. L’orientation stratégique est agressive (détection précoce, faible latence, rendement potentiel élevé) ; ne pas la réduire arbitrairement. Les changements de paramètres exigent des mesures comparatives crédibles et ne peuvent affaiblir les protections.
+Rugger Bot est un système Solana/Raydium LaunchLab **destiné à devenir un bot d'exécution réelle autonome**, avec environnements recherche, shadow et live activable. L'état historique est la simulation ; **aucune transaction financière réelle n'est actuellement autorisée**. Le mandat propriétaire du 29/10/2026, `LIVE_READINESS_MANDATE.md`, remplace l'interdiction de développer des composants réels. Le codage et les tests du routeur, de la signature isolée et de la réconciliation sont désormais un objectif explicite. L'orientation demeure agressive dans des limites de risque bornées, sans présumer de rentabilité.
 
 1. P0 : cohérence des finances simulées, contrôles de risques, états des positions, données SQLite et fiabilité du reporting.
 2. P1 : intégrité des événements LaunchLab, RPC/WebSocket, capture/prix/funding, qualité des données, tests de non-régression.
@@ -13,9 +13,9 @@ Rugger Bot est un outil Python d'observation de nouveaux tokens Solana et de sim
 
 ## Garde-fous non négociables
 
-- **Aucun trading réel**, aucun ordre, signature, transaction, seed/private key, portefeuille financé, activation « live orders » ou test de transactions réelles. Ne créer aucun composant de passage au réel.
+- **Développer l'exécution réelle est désormais autorisé et demandé** : routeur, construction/simulation de transactions, interface de signature isolée, soumission, confirmation, réconciliation, contrôles de risque et kill-switch, sur branches et environnements de test. **Aucun swap mainnet, aucune signature avec un portefeuille réel, aucun dépôt/engagement de fonds ou activation LIVE sans autorisation explicite du propriétaire pour l'opération et le budget.** Aucun secret lu ou publié. Mode par défaut inactif, clés absentes, échec fermé. Voir `LIVE_READINESS_MANDATE.md`.
 - **Mandat courant du 27 octobre 2026 : exécution autonome autorisée.** Lire, reproduire, corriger, tester sur copie isolée, contre-vérifier, créer des branches/commits et ouvrir des PR sans redemander l’accord pour ces actions. Conserver une référence Git, des correctifs proportionnés, des preuves chiffrées et un retour arrière. Ne remplacer aucun dossier entier avec un ancien ZIP.
-- Les scanners, boucles PAPER et collectes réseau ne sont pas autorisés par une simple exécution de tests. Une collecte courte exige un protocole préenregistré, des accès/droits/quotas gratuits vérifiés et des budgets stricts ; aucune campagne prolongée, dépense ni augmentation payante sans accord spécifique. Aucune migration ou modification de base utilisateur dans le cadre des tests.
+- Les scanners et collectes réseau ne sont pas autorisés par une simple exécution de tests. Une collecte courte exige un protocole préenregistré, des accès/droits/quotas gratuits vérifiés et des budgets stricts ; aucune campagne prolongée, dépense ni augmentation payante sans accord spécifique. Les tests du futur routeur LIVE sont isolés, sans portefeuille réel ni modification de la base utilisateur.
 - Ne jamais lire, afficher ni transmettre les valeurs de `.env`, clés API ou URL RPC avec secrets. Lister seulement les *noms de variables* et la présence des fichiers, sans les ouvrir. Ne copier aucune base `.db` vers un service distant. Les jeux de tests doivent être synthétiques ou anonymisés.
 - **Ne pas modifier la matrice de décision**, les critères anti-rug, la pondération des scores, les seuils d'entrée, les TP/SL ou les règles de stratégie durant l'audit financier P0.
 - Le dépôt réel est prioritaire sur les notes historiques. Un résultat annoncé dans la discussion n'est pas nécessairement reproduit. Signaler : « démontré par le code », « reproduit par test », « documenté historiquement », « inconnu ».
@@ -50,7 +50,7 @@ La version inspectée utilise **10 SOL de capital PAPER**, allocation historique
 
 ## Reprise et livraison courantes
 
-Lire `CODEX_CONTINUATION.md`, `PROJECT_STATUS.md` et les sources/tests pertinents.
+**Mandat prioritaire du 29 octobre 2026 : construire et valider un système `LIVE_READY_TO_ARM`.** Lire `LIVE_READINESS_MANDATE.md`, puis `CODEX_CONTINUATION.md`, `PROJECT_STATUS.md` et les sources/tests pertinents. Le développement live est requis, mais n'autorise actuellement aucune dépense mainnet. Conserver séparés `LIVE_READY_TO_ARM`, `LIVE_EXECUTION_VERIFIED` et `ECONOMIC_EDGE_VALIDATED` ; ne jamais déclarer ces états sans preuve.
 Les anciens protocoles d’arrêt après audit (`PROMPT_DEMARRAGE_CODEX.txt`, plan du
 22 octobre) sont historiques ; le mandat courant remplace ces seules limitations
 de procédure. Les protections financières, secrets, bases et réseau restent actives.
