@@ -108,6 +108,10 @@ def prepared_plan(simulation):
     plan['migration_signature']=simulation.signature
     plan['original_launchlab_pool']=OLD
     plan['amount_in']=simulation.pool['amount_in']
+    # The full-wire fixture has 10 micro-lamports/CU on 200_000 CU,
+    # resulting in a 2-lamport priority-fee ceiling and 5002 total fee.
+    plan['priority_fee_micro_lamports']=simulation.pool['priority_fee_micro_lamports']
+    plan['max_priority_fee_lamports']=simulation.pool['max_priority_fee_lamports']
     plan['min_context_slot']=1234
     plan['rpc_endpoint']=PUBLIC_MAINNET_RPC
     plan['expected_genesis_hash']=MAINNET_GENESIS
