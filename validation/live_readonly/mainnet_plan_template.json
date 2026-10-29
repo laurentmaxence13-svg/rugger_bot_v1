@@ -1,0 +1,40 @@
+{
+  "schema": "rugger-cpmm-readonly-mainnet-plan-v1",
+  "rpc_endpoint": "https://api.mainnet.solana.com",
+  "expected_genesis_hash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+  "send_allowed": false,
+  "signature_allowed": false,
+  "financial_execution_allowed": false,
+  "operator_confirmed_readonly": false,
+  "program_pins": {
+    "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj": {
+      "expected_deployment_slot": 0,
+      "expected_programdata_sha256": "REPLACE_WITH_EXTERNALLY_APPROVED_SHA256",
+      "expected_elf_sha256": "REPLACE_WITH_EXTERNALLY_APPROVED_SHA256",
+      "expected_upgrade_authority": "REPLACE_WITH_CURRENT_PUBLIC_AUTHORITY_OR_NULL"
+    },
+    "CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C": {
+      "expected_deployment_slot": 0,
+      "expected_programdata_sha256": "REPLACE_WITH_EXTERNALLY_APPROVED_SHA256",
+      "expected_elf_sha256": "REPLACE_WITH_EXTERNALLY_APPROVED_SHA256",
+      "expected_upgrade_authority": "REPLACE_WITH_CURRENT_PUBLIC_AUTHORITY_OR_NULL"
+    }
+  },
+  "original_launchlab_pool": "REPLACE_PUBLIC_ADDRESS",
+  "migrated_cpmm_pool": "REPLACE_PUBLIC_ADDRESS",
+  "migration_signature": "REPLACE_REAL_FINALIZED_SIGNATURE",
+  "mint": "REPLACE_CLASSIC_SPL_MINT",
+  "wallet": "REPLACE_PUBLIC_WALLET_WITH_TOKEN_POSITION",
+  "decision_id": "REPLACE_UNIQUE_STABLE_ID",
+  "min_context_slot": 0,
+  "amount_in": 0,
+  "slippage_bps": 100,
+  "max_slippage_bps": 200,
+  "max_price_impact_bps": 500,
+  "compute_unit_limit": 200000,
+  "priority_fee_micro_lamports": 0,
+  "max_priority_fee_lamports": 0,
+  "max_bank_age_ms": 5000,
+  "max_rpc_requests": 17,
+  "max_transport_elapsed_seconds": 40
+}
