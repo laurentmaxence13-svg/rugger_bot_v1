@@ -172,10 +172,11 @@ class ExecutionJournal:
                                 expected_endpoint_sha256,expected_genesis_hash):
         """Persist a pinned finalized-RPC claim without moving owned inventory.
 
-        Only the trusted read service may supply this receipt. The retained raw
-        response is revalidated; this does not independently prove consensus or
-        cryptographically verify the historical signature. A structural-only
-        staging result cannot be used here.
+        The pinned finalized-RPC result is only a *claim* of inclusion;
+        original legacy/v0 compiled message bytes and each required Ed25519
+        signature are additionally verified before a durable financial mapping
+        can be registered. This does NOT independently verify chain consensus
+        or RPC transport. Structural-only staging is insufficient.
         """
         from .migration_evidence import validate_migrate_to_cpswap_transaction
         from bot.p3.certification import _decode
@@ -208,14 +209,30 @@ class ExecutionJournal:
                 or structural.get('migration_slot')!=receipt.get('migration_slot')
                 or structural.get('normalized_role_sha256')!=receipt.get('normalized_role_sha256')):
             raise ValueError('retained_migration_structure_mismatch')
+        # The read service deliberately does not authorize a financial trade.
+        # A caller-controlled "signature_verified" flag MUST NOT bypass an
+        # independent reconstruction of the exact Solana wire and Ed25519
+        # verification of ALL required historical message signers.
+        from .solana_signatures import verify_compiled_rpc_signatures
+        try:
+            proof=verify_compiled_rpc_signatures(raw)
+        except (KeyError,TypeError,ValueError,RuntimeError,OverflowError):
+            raise ValueError('historical_migration_cryptographic_signatures_invalid') from None
+        if (proof.get('result')!='ED25519_MESSAGE_SIGNATURES_VALID'
+                or proof.get('cryptographic_signatures_verified') is not True
+                or raw['transaction']['signatures'][0]!=receipt['signature']):
+            raise ValueError('historical_migration_cryptographic_signatures_unverified')
         binding=dict(schema='rugger-owned-cpmm-migration-binding-v1',mint=mint,
             inventory_pool=origin,cpmm_pool=destination,wallet=wallet,
             migration_slot=uint(structural['migration_slot'],positive=True),
             observed_at_slot=observed,received_at_ms=received_at_ms,
             endpoint_sha256=expected_endpoint_sha256,genesis_hash=expected_genesis_hash,
             receipt_sha256=hashlib.sha256(canonical(receipt).encode()).hexdigest(),
-            receipt=receipt,source_scope='retained_pinned_finalized_RPC_claim',
-            cryptographic_signature_verified=False,consensus_independently_verified=False)
+            receipt=receipt,source_scope='retained_pinned_finalized_RPC_claim_and_Ed25519_message_signatures',
+            cryptographic_signature_verified=True,
+            cryptographic_proof_sha256=hashlib.sha256(canonical(proof).encode()).hexdigest(),
+            exact_signed_message_sha256=proof['exact_message_sha256'],
+            consensus_independently_verified=False)
         binding['binding_sha256']=hashlib.sha256(canonical(binding).encode()).hexdigest()
         encoded=canonical(binding)
         with self.atomic():
