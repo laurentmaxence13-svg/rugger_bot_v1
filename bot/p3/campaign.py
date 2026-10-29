@@ -78,11 +78,14 @@ def validate_plan(plan):
 class CampaignSession(ReadOnlySession):
     """Adds only discovery and two account-reading methods to the P3 policy."""
     def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL,
-                 bounded_phases=False):
+                 bounded_phases=False,discovery_sort='new'):
         super().__init__(session, max_requests, proxy_resolver=proxy_resolver, rpc_url=rpc_url)
         if type(bounded_phases) is not bool:
             raise ValueError('Explicit transport phase policy required')
         self.bounded_phases = bounded_phases
+        if discovery_sort not in ('new','lastTrade'):
+            raise ValueError('Registered discovery sorting required')
+        self.discovery_sort=discovery_sort
         self._deadline_ns = None
 
     def check_deadline(self):
@@ -139,7 +142,7 @@ class CampaignSession(ReadOnlySession):
         else:
             params = kwargs.pop('params', None)
             self._anonymous_options(kwargs)
-            if params != {'sort': 'new'}:
+            if params != {'sort': self.discovery_sort}:
                 raise ReadOnlyPolicyError('Unexpected discovery query')
             kwargs['params'] = params
         kwargs['allow_redirects'] = False
@@ -215,8 +218,9 @@ async def _discover(session, append):
     started, mono = now_ms(), time.monotonic_ns()
     payload, status, reason, cancelled = None, None, None, None
     transport_error_type = None
+    sort=getattr(session,'discovery_sort','new')
     try:
-        async with session.get(INDEX_URL, params={'sort': 'new'},
+        async with session.get(INDEX_URL, params={'sort': sort},
                                timeout=aiohttp.ClientTimeout(total=8)) as response:
             status = response.status
             if status == 200:
@@ -232,7 +236,7 @@ async def _discover(session, append):
         reason, cancelled = 'capture_cancelled', error
     received = now_ms()
     append('request', received_at_ms=received, outcome='observed' if payload is not None else 'error',
-           reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': 'new',
+           reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': sort,
                                   'requested_at_ms': started, 'http_status': status,
                                   'latency_ms': (time.monotonic_ns()-mono)/1_000_000,
                                   **({'transport_error_type':transport_error_type} if transport_error_type else {})})

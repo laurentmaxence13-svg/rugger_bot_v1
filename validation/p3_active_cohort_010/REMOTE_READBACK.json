@@ -1,0 +1,15 @@
+{
+  "archive_actually_downloaded": true,
+  "downloaded_chain_verified": true,
+  "downloaded_report_reproduced": true,
+  "local_commit": "b3e824d0e1d2137bd15ce1657ee71a403400b80b",
+  "manifest_actually_downloaded": true,
+  "new_market_requests": 0,
+  "records": 47,
+  "remote_commit": "36f5fbe25fb647beb119f24fcf0b18d4a9c8fe87",
+  "result_actually_downloaded": true,
+  "schema": "p3-010-remote-readback-v1",
+  "tail_hash": "1d2afec81a12cc6abfac5f5d1afaa5cca08846f70585ab8a54d83f8a69caf66d",
+  "tree": "8be3d9427a6d7147da91c1230cf4a607bb23c211",
+  "verified_at_ms": 1793253605877
+}

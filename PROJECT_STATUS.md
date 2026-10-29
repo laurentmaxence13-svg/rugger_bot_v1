@@ -1,5 +1,22 @@
 # État du projet — candidat fonctionnel PAPER
 
+##29octobre — RESEARCH_ONLY intégré;011 prêt avant acquisition
+
+P0 publié/relu36f5fbe (archive et rapport retéléchargés, chaîne47événements vérifiée).
+PR24 examinée au commitbef10cc; gate repris et corrigé sur vrais schémas. Cinq
+écrans détachés/falsifiés refusés, blocages supplémentaires conservés. SélecteurSTRICT,
+certification, bridge financier, politiques et ledger inchangés. Sur010 :2recherche,
+0strict, sélection stricte exactement égale à l'original. Aucun010 relancé.
+
+2040tests réussis,1skip,242subtests,15,90s,-Werror,stderr0. Démonstration synthétique
+complète :4lots/8paires,0,10et1SOL propres,sortiesQentier immédiat/suivi15s,0ledger.
+Aucun avantage économique déduit des fixtures. Nouveau runner011 prêt : index
+lastTrade documenté,20requêtes/60s global, watchdog58+2, décisions de collecte figées
+avantquotes, source clocks/actualInput/costs UNKNOWN gardés. Le protocole011 doit
+être associé au code exact, publié/relu avant toute collecte. LireP3_RESEARCH_011.md.
+P3 économique et A/B restent ouverts; aucune promotion des24politiques.
+
+
 ## Reprise29octobre — P0 P3-010 récupéré
 
 Journal47événements exporté avec ancre1d2afec8,14bundles/1745événements; les13anciens

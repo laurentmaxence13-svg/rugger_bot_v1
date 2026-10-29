@@ -1,0 +1,20 @@
+{
+  "PR24_merged": false,
+  "PR24_reviewed_commit": "bef10cc63a87f4142886b9880cd1575e02cfa8c5",
+  "checked_at_ms": 1793254678110,
+  "full_result": "2040 passed, 1 skipped, 242 subtests passed in 15.90s",
+  "new_live_acquisition_executed": false,
+  "provider_market_quotes_at_source_checkpoint": 0,
+  "research_gate_on010": {
+    "original_strict_selection_exactly_unchanged": true,
+    "research_only": 2,
+    "strict": 0
+  },
+  "schema": "p3-011-code-validation-v1",
+  "scope": "fresh disposable copy; no network,dotenv,userDB",
+  "stderr_bytes": 0,
+  "synthetic_complete_pairs": 8,
+  "synthetic_pairs_are_not_market_evidence": true,
+  "targeted_result": "181 passed in1.57s before final CLI hardening; full suite includes updated guards",
+  "warnings": "error"
+}

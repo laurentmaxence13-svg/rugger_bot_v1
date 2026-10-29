@@ -19,6 +19,50 @@ from bot.p3.launchlab import analyze_snapshot
 from bot.p3.replay import replay_quote_observation
 
 
+def _positive_uint64(value):
+    if type(value) is str:
+        if re.fullmatch(r'[1-9][0-9]{0,19}', value) is None:
+            raise ValueError('Model input must be a canonical positive atomic amount')
+        value = int(value)
+    if type(value) is not int or not 0 < value < 2**64:
+        raise ValueError('Model input must be a positive uint64 atomic amount')
+    return value
+
+
+def _registered_primary_amount(events):
+    amounts = set()
+    for event in events:
+        if event['kind'] != 'checkpoint':
+            continue
+        plan = event['payload'].get('plan')
+        if type(plan) is not dict:
+            continue
+        if 'primary_model_input_lamports' in plan:
+            amounts.add(_positive_uint64(plan['primary_model_input_lamports']))
+        if 'input_lamports' in plan:
+            amounts.add(_positive_uint64(plan['input_lamports']))
+        acquisition = plan.get('acquisition')
+        criteria = acquisition.get('criteria') if type(acquisition) is dict else None
+        if type(criteria) is dict and 'research_input_lamports' in criteria:
+            amounts.add(_positive_uint64(criteria['research_input_lamports']))
+    if len(amounts) > 1:
+        raise ValueError('Retained plans disagree about the primary model amount')
+    return next(iter(amounts)) if amounts else None
+
+
+def _analysis_input_lamports(analysis, registered):
+    projection = analysis.get('conditional_projection')
+    value = projection.get('buy_input_lamports') if type(projection) is dict else None
+    if value is not None:
+        retained = _positive_uint64(value)
+        if registered is not None and retained != registered:
+            raise ValueError('Retained projection amount differs from its registered primary amount')
+        return retained
+    # Rejected snapshots may have no projection. The registered amount still
+    # applies; only genuinely legacy captures without an amount use1SOL.
+    return registered if registered is not None else 1_000_000_000
+
+
 def verify(evidence_root):
     root = Path(evidence_root)
     index_path = root / 'index.json'
@@ -37,6 +81,7 @@ def verify(evidence_root):
         if any(key not in bundle or bundle[key] != value for key, value in anchor.items()):
             raise ValueError('Evidence index disagrees with bundle')
         events = bundle['events']
+        registered_amount = _registered_primary_amount(events)
         by_id = {event['id']: event for event in events}
         provider_quotes = [event for event in events if event['kind'] == 'quote_attempt'
                            and event['payload'].get('provider') == 'raydium_trade_api']
@@ -59,7 +104,8 @@ def verify(evidence_root):
                 raise ValueError('Retained snapshot account order is incomplete')
             replay = analyze_snapshot(dict(zip(addresses, result['value'])),
                 context_slot=result['context']['slot'], expected_mint=event['mint'],
-                pool_address=evidence['addresses']['pool'], input_lamports=1_000_000_000,
+                pool_address=evidence['addresses']['pool'],
+                input_lamports=_analysis_input_lamports(payload['analysis'], registered_amount),
                 evidence_profile=evidence.get('evidence_profile', 'legacy'))
             if replay != payload['analysis']:
                 raise ValueError('Legacy snapshot analysis replay differs from retained result')

@@ -1,0 +1,281 @@
+{
+  "complete_synthetic_pairs": 8,
+  "conditions": [
+    {
+      "budget_lamports": "100000000",
+      "conditional_delta_lamports": "-1000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "initial",
+      "projected_quantity_atomic": "1000"
+    },
+    {
+      "budget_lamports": "100000000",
+      "conditional_delta_lamports": "-1000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "followup",
+      "projected_quantity_atomic": "1000"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_delta_lamports": "-20000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-21000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "initial",
+      "projected_quantity_atomic": "10000"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_delta_lamports": "-20000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-21000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "followup",
+      "projected_quantity_atomic": "10000"
+    },
+    {
+      "budget_lamports": "100000000",
+      "conditional_delta_lamports": "-1000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "initial",
+      "projected_quantity_atomic": "1000"
+    },
+    {
+      "budget_lamports": "100000000",
+      "conditional_delta_lamports": "-1000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-1100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "followup",
+      "projected_quantity_atomic": "1000"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_delta_lamports": "-20000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-21000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "initial",
+      "projected_quantity_atomic": "10000"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_delta_lamports": "-20000000",
+      "cost_scenarios": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20005000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-20100000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-21000000",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "phase": "followup",
+      "projected_quantity_atomic": "10000"
+    }
+  ],
+  "fixture_report_sha256": "a2e9979eac51bc4f53fe42116c562186fa211ceaf566108e000a1e9b9aca49b3",
+  "guard_rejected_export_outside_tmp": true,
+  "guard_was_not_weakened": true,
+  "ledger_mutation": false,
+  "net_market_pnl_sol": null,
+  "new_market_pairs": 0,
+  "projected_lots": 4,
+  "provenance": "synthetic_generated_banks_and_quotes_not_market",
+  "requests": 20,
+  "research_selected": 2,
+  "schema": "p3-011-synthetic-pipeline-demonstration-v1",
+  "scope": "functional_integration_only; no strategy superiority or measured market edge",
+  "separate_budgets": [
+    "100000000",
+    "1000000000"
+  ],
+  "source_revision_placeholder": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "strict_cycles": 0,
+  "strict_selected": 0,
+  "synthetic_reexecution_tmp_authorized": true
+}
