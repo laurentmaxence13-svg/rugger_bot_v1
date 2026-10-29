@@ -25,6 +25,49 @@ def _sha(value):
     return value
 
 
+def _compiled_rpc_json_only(raw):
+    """getTransaction encoding=json cannot provide synthetic jsonParsed flags.
+
+    Only the actual compiled account indices and message header may establish
+    signer and writable roles. This is a *format* check, not RPC authentication.
+    """
+    try:
+        version=raw.get('version','legacy')
+        if not (type(version) is str and version=='legacy'
+                or type(version) is int and version==0):
+            return False
+        transaction=raw['transaction']
+        message=transaction['message']
+        keys=message['accountKeys']
+        instructions=message['instructions']
+        header=message['header']
+        signatures=transaction['signatures']
+        if (type(keys) is not list or not 1<=len(keys)<=256
+                or any(type(k) is not str for k in keys)
+                or type(instructions) is not list
+                or type(signatures) is not list
+                or type(header) is not dict
+                or type(raw.get('meta')) is not dict):
+            return False
+        counts=(header.get('numRequiredSignatures'),
+                header.get('numReadonlySignedAccounts'),
+                header.get('numReadonlyUnsignedAccounts'))
+        if (any(type(v) is not int or not 0<=v<=255 for v in counts)
+                or not 1<=counts[0]<=len(keys)
+                or len(signatures)!=counts[0]):
+            return False
+        for instruction in instructions:
+            if (type(instruction) is not dict
+                    or type(instruction.get('programIdIndex')) is not int
+                    or type(instruction.get('accounts')) is not list
+                    or type(instruction.get('data')) is not str
+                    or any(type(i) is not int for i in instruction['accounts'])):
+                return False
+        return True
+    except (KeyError,TypeError,ValueError):
+        return False
+
+
 async def read_finalized_migration(rpc, *, signature, mint, launchlab_pool,
                                    cpmm_pool, expected_endpoint_sha256,
                                    expected_genesis_hash, observed_at_slot):
@@ -62,6 +105,11 @@ async def read_finalized_migration(rpc, *, signature, mint, launchlab_pool,
                     rpc_calls=2)
     if type(raw) is not dict:
         return dict(base,reason='malformed_finalized_RPC_response',rpc_calls=2)
+    if not _compiled_rpc_json_only(raw):
+        return dict(base,status='REFUSED',
+            reason='RPC_getTransaction_expected_compiled_json_not_jsonParsed',
+            rpc_calls=2,raw_RPC_response_returned_to_caller=True,
+            raw_RPC_response=raw)
     normalized_bytes=json.dumps(raw,sort_keys=True,
         separators=(',',':'),allow_nan=False).encode()
     structural=validate_migrate_to_cpswap_transaction(
