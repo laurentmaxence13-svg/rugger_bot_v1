@@ -223,8 +223,15 @@ def build_cpmm_exit(*, accounts, pool_address, mint, wallet, context_slot,
         (b'observation',_decode(pool_address)),program_id=CPMM_PROGRAM)[0]
     if observation!=pool['observation_key']:
         raise ValueError('cpmm_observation_PDA_mismatch')
-    _account(accounts.get(observation),name='observation',
+    canonical_lp=find_program_address(
+        (b'pool_lp_mint',_decode(pool_address)),program_id=CPMM_PROGRAM)[0]
+    if pool['lp_mint']!=canonical_lp:
+        raise ValueError('cpmm_lp_mint_PDA_mismatch')
+    raw_observation=_account(accounts.get(observation),name='observation',
              size=OBSERVATION_ACCOUNT_SIZE,discriminator=OBSERVATION_DISCRIMINATOR)
+    if (raw_observation[8]!=1 or struct.unpack_from('<H',raw_observation,9)[0]>=100
+            or _key(raw_observation,11)!=pool_address):
+        raise ValueError('cpmm_observation_content_identity_invalid')
     token_index=0 if pool['token_0_mint']==mint else 1
     input_vault=pool['token_'+str(token_index)+'_vault']
     output_vault=pool['token_'+str(1-token_index)+'_vault']
