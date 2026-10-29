@@ -258,3 +258,65 @@ def test_restart_reconciliation_rejects_different_rpc_source_before_status_looku
         assert engine.journal.get(decision(order))['reserved_atomic']==reservation
         assert len(rpc.send_calls)==1
     finally:engine.journal.close()
+
+
+@pytest.mark.parametrize('damage',[
+    'temp_rent_not_closed','preexisting_temp_balance',
+    'temp_post_token_zero','temp_post_token_positive',
+    'post_token_balances_missing','post_token_index_boolean',
+])
+def test_finalized_cpmm_sell_cannot_settle_with_unclosed_ephemeral_wsol(
+        tmp_path,damage):
+    engine,old,order,rpc,clock,_=configured_cpmm(tmp_path)
+    result=run(engine.execute(decision(order),order))
+    assert result['state']=='SUBMITTED'
+    saved=engine.journal.get(decision(order))
+    payload=finalized_payload(order,result['signature'])
+    payload['slot']=1600
+    keys=payload['transaction']['message']['accountKeys']
+    index=keys.index(order.quote_token_account)
+    assert index!=keys.index(order.base_token_account)
+    if damage=='temp_rent_not_closed':
+        payload['meta']['postBalances'][index]=order.rent_deposit_lamports
+    elif damage=='preexisting_temp_balance':
+        payload['meta']['preBalances'][index]=1
+    elif damage=='post_token_balances_missing':
+        payload['meta'].pop('postTokenBalances')
+    elif damage=='post_token_index_boolean':
+        payload['meta']['postTokenBalances'].append(
+            dict(accountIndex=True,mint=order.mint,owner=order.user,
+                 uiTokenAmount=dict(amount='0')))
+    else:
+        payload['meta']['postTokenBalances'].append(
+            dict(accountIndex=index,mint='So11111111111111111111111111111111111111112',
+                 owner=order.user,
+                 uiTokenAmount=dict(amount='0' if damage=='temp_post_token_zero' else '1')))
+    before=[dict(x) for x in engine.journal.con.execute('SELECT * FROM positions')]
+    try:
+        with pytest.raises(ValueError,match='CPMM_'):
+            reconcile_transaction(saved,payload)
+        assert [dict(x) for x in engine.journal.con.execute(
+            'SELECT * FROM positions')]==before
+        assert engine.journal.get(decision(order))['reserved_atomic']==order.input_amount
+        assert len(rpc.send_calls)==1
+        assert engine.journal.verify_audit()
+    finally:engine.journal.close()
+
+
+def test_finalized_cpmm_sell_proves_ephemeral_wsol_close_with_real_receipt_shape(tmp_path):
+    engine,old,order,rpc,clock,_=configured_cpmm(tmp_path)
+    try:
+        result=run(engine.execute(decision(order),order))
+        assert result['state']=='SUBMITTED'
+        payload=finalized_payload(order,result['signature'])
+        payload['slot']=1600
+        keys=payload['transaction']['message']['accountKeys']
+        index=keys.index(order.quote_token_account)
+        assert payload['meta']['preBalances'][index]==0
+        assert payload['meta']['postBalances'][index]==0
+        reconciliation=reconcile_transaction(engine.journal.get(decision(order)),payload)
+        assert reconciliation['chain_error'] is None
+        assert reconciliation['inventory_pool']==old.pool
+        assert reconciliation['gross_output_lamports']==order.expected_output
+        assert reconciliation['rent_locked_lamports']==0
+    finally:engine.journal.close()
