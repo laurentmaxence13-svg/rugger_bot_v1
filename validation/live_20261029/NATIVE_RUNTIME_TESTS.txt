@@ -1,0 +1,3 @@
+Offline validation: 253 source/fixture files copied; no .env, Git metadata or user database.
+........................................                                 [100%]
+40 passed in 1.03s

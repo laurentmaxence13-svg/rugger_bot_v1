@@ -253,7 +253,8 @@ def constant_product_projection(pool, *, input_lamports, fee_rates_ppm, base_vau
 
 def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
                      input_lamports=1_000_000_000, share_fee_rate_ppm=0,
-                     discriminator_pins=None, evidence_profile='legacy'):
+                     discriminator_pins=None, evidence_profile='legacy',
+                     compute_projection=True):
     """Interpret one caller-supplied getMultipleAccounts bank snapshot.
 
     accounts maps public address to the RPC account value. All seven accounts
@@ -261,6 +262,9 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
     and timestamps; this function neither fetches nor proves that acquisition.
     Pins must originate in an independent audited account schema, not sampled
     from the very accounts being validated.
+    compute_projection=False performs the identical raw identity/security
+    validation without requiring a new BUY to be admissible. Sell routing can
+    then validate its own exact quantity, including near fundraising limits.
     The opt-in published_metadata_v1 profile applies independent IDL/PDA checks
     and the audited metadata-only Token-2022 subset. Legacy campaign replays keep
     their original interpretation by default; new analyses never rewrite them.
@@ -279,6 +283,10 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         'real_orders_enabled':False,
     }
     try:
+        if type(compute_projection) is not bool:
+            raise SnapshotEvidenceError('explicit_projection_boolean_required')
+        if not compute_projection:
+            report['projection_requested'] = False
         if evidence_profile not in ('legacy', 'published_metadata_v1'):
             raise SnapshotEvidenceError('unsupported_evidence_profile')
         qualified = evidence_profile == 'published_metadata_v1'
@@ -398,6 +406,8 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         report['facts']['share_fee_assumption_ppm']=str(share_fee_rate_ppm)
         if flags:
             report['blocking_reasons'].extend(flags)
+            return report
+        if not compute_projection:
             return report
         report['conditional_projection']=constant_product_projection(
             pool,input_lamports=input_lamports,

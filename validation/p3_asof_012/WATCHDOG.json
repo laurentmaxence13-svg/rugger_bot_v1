@@ -1,0 +1,11 @@
+{
+  "acquisition_report_retained": true,
+  "child_execution_count": 1,
+  "child_exit_code": 0,
+  "deadline_ms": 58000,
+  "elapsed_ms": 35942.297487999895,
+  "interrupted_prefix_replay_only": false,
+  "process_deadline_exceeded": false,
+  "retry_performed": false,
+  "termination_reserve_ms": 2000
+}

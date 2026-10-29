@@ -1,5 +1,19 @@
 # CHANGEMENT DE CAP — 29 OCTOBRE 2026
 
+## Dernier checkpoint LIVE — sauvegarde distante vérifiée
+
+PR33 :sauvegarde98b1570 retéléchargée(44fichiers),code corrigé6b43c94(11blobs
+relus),2529tests/242sous-tests/1skip,22,15s,stderr0,warnings en erreur.
+Route LaunchLab réelle classiqueSPL/SOL,signataire UNIX isolé,admission/armement,
+journal et réconciliation,Master runtime et sorties natives implémentés/testés
+hors réseau. P3-012 original conservé/rejoué :12requêtes,25banks,100lignes,
+1sélection,2tailles alternatives négatives,12WAIT/WAIT,0cycle économique strict.
+Aucune nouvelle acquisition012 après reprise. Diagnostic distinct2lectures du
+programme déployé réalisé/préenregistré ;ELF conservé,sourcebuildindépendantUNKNOWN.
+LIVE_READY_TO_ARM non établi,LIVE_EXECUTION_VERIFIED non établi,edge non validé.
+Lire `LIVE_EXECUTION_CHECKPOINT.md` pour preuves,limites et commandes de reprise.
+
+
 Le propriétaire demande un Rugger Bot V1 **conçu pour trader réellement** (Solana/Raydium LaunchLab, stratégie agressive, exécution autonome bornée). Le logiciel n'est pas actuellement LIVE_READY ni autorisé à engager des fonds. Le mandat `LIVE_READINESS_MANDATE.md` et les instructions `AGENTS.md` mis à jour sont prioritaires sur les anciennes formulations PAPER ONLY pour le **développement** du moteur réel. Les informations de résultat P3-011 et des tests ci-dessous restent historiques et ne constituent ni edge net ni exécution live. Les jalons distincts sont `LIVE_READY_TO_ARM` (tests), `LIVE_EXECUTION_VERIFIED` (vrais ordres explicitement autorisés), `ECONOMIC_EDGE_VALIDATED` (avantage net indépendant).
 
 ---

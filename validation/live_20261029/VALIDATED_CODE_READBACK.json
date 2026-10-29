@@ -1,0 +1,51 @@
+{
+  "remote_commit": "6b43c94ab95ec7b4943e2b574ebf780a82d972d9",
+  "tree": "a6e5a7091efde57d9e11596369f4ad2f09414f89",
+  "files": [
+    {
+      "path": "bot/live/engine.py",
+      "git_blob": "5c88a14683f69db5a6601d95d8cc7f8ba192cf28"
+    },
+    {
+      "path": "bot/live/rpc.py",
+      "git_blob": "dcdf71dfb07aa9603f471c12c4463333536a1cd8"
+    },
+    {
+      "path": "bot/live/runtime.py",
+      "git_blob": "a2eb784c96d95b9ded4903652708411216bc8ccc"
+    },
+    {
+      "path": "bot/live/submission.py",
+      "git_blob": "60d6d1ba2462cd1e357572c8378441a3129a0eac"
+    },
+    {
+      "path": "tests/test_live_positions.py",
+      "git_blob": "16a7f6191e1567cf59dd0568aaa980ec2b180e25"
+    },
+    {
+      "path": "tests/test_live_rpc.py",
+      "git_blob": "2fca539edd443ea7e89e402a524fe07687a2d0ca"
+    },
+    {
+      "path": "tests/test_live_runtime.py",
+      "git_blob": "1f9ae55bdad5c45421ef49d6d3294907d8d76461"
+    },
+    {
+      "path": "tests/test_live_runtime_review.py",
+      "git_blob": "66434003cc8ff9c773d38b7ff2e7b98cb0ae85c3"
+    },
+    {
+      "path": "tests/test_live_submission.py",
+      "git_blob": "e87396b89b86009eef35860c26bd88994e5633dc"
+    },
+    {
+      "path": "validation/live_20261029/REMOTE_CHECKPOINT_READBACK.json",
+      "git_blob": "d8640c5c00572d5d1cc5a69b4a5ef1810dfbbc88"
+    },
+    {
+      "path": "validation/p3_asof_012/REMOTE_RESTORE.json",
+      "git_blob": "6d4b2349b7ff17c8610f6dc974e24ad23f29f302"
+    }
+  ],
+  "all_git_blobs_match": true
+}

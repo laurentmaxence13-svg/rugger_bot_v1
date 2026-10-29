@@ -313,6 +313,87 @@ def evaluate_acquired_comparison(acquisition,plan):
     return result
 
 
+def freeze_bank_research_decisions(selection, *, decision_at_ms):
+    """Run the existing two engines BEFORE S2, retaining missing USD features.
+
+    Native bank arithmetic cannot be supplied as a clocked executable quote or
+    USD feature. These are comparable admission decisions, not a performance
+    experiment. Every book is in-memory and initialized independently to 10 SOL.
+    The complete discovery denominator remains in the frozen input envelope.
+    """
+    if (type(selection) is not dict
+            or selection.get('schema')!='p3-asof-flow-research-selection-v1'
+            or selection.get('selected_using_future_quotes_or_S2') is not False
+            or selection.get('original_strict_selection_unchanged') is not True
+            or selection.get('trade_allowed') is not False
+            or type(decision_at_ms) is not int
+            or selection.get('decision_at_ms')!=decision_at_ms):
+        raise ValueError('Frozen pre-S2 research selection required')
+    records=selection.get('original_strict_selection',{}).get('records')
+    assessments=selection.get('assessments')
+    if (type(records) is not list or type(assessments) is not list
+            or len(assessments)!=selection.get('universe_size')
+            or len(records)!=len(assessments) or not 0<len(records)<=100):
+        raise ValueError('Full frozen discovery denominator required')
+    frames=[];excluded=[];seen=set()
+    for record,assessment in zip(records,assessments):
+        row=record.get('source_row',{})
+        bank=row.get('snapshot');available=row.get('snapshot_available_at_ms')
+        index=record.get('universe_index')
+        if index!=assessment.get('universe_index'):
+            raise ValueError('Discovery record index mismatch')
+        if (assessment.get('reason') in ('outside_fixed_twelve_prefix',
+                'invalid_or_outside_native_SOL_scope','duplicate_mint_or_pool')
+                or type(bank) is not dict):
+            excluded.append(dict(universe_index=index,reason=assessment.get('reason')))
+            continue
+        if (type(available) is not int or not 0<=available<=decision_at_ms
+                or bank.get('mint')!=row.get('mint')
+                or bank.get('pool_address')!=row.get('pool')
+                or row['mint'] in seen):
+            raise ValueError('Future or inconsistent predecision bank')
+        seen.add(row['mint'])
+        frame=dict(id='bank012-'+p4._hash(dict(index=index,row=row,at=decision_at_ms)),
+            mint=row['mint'],pool=row['pool'],creator=row.get('creator_claim'),
+            available_at_ms=decision_at_ms,detected_at_ms=available,
+            detection_clock_basis='first_S1_receipt_in_this_frame_not_launch_creation',
+            source_slot=bank.get('context_slot'),slot_available_at_ms=available,
+            features=None,features_available_at_ms=None,health=None,
+            independent_buyers=None,observed_native_bank=deepcopy(bank),
+            native_bank_available_at_ms=available,
+            unknowns=['SOL_USD_asof','USD_strategy_features','independent_buyers',
+                'own_applicable_costs','clocked_executable_quotes','operational_health'])
+        frames.append(frame)
+    if len(frames)>12:
+        raise ValueError('Fixed twelve-prefix bank frame limit exceeded')
+    corpus=dict(data_kind='market_observation',frames=frames)
+    assignments={f['mint']:'development' for f in frames}
+    api=p4._api()
+    common=dict(fee_multiplier=1,decision_delay_ms=0,
+        development_end_ms=decision_at_ms+1,api=api)
+    left=_Adapter('reference','market_observation')
+    a=p4._run_arm(corpus,assignments,'early_sniping','development',decision_adapter=left,**common)
+    right=_Adapter('master','market_observation',left.snapshots)
+    b=p4._run_arm(corpus,assignments,'early_sniping','development',decision_adapter=right,**common)
+    # Missing features must remain a hard refusal through the actual adapters.
+    if a['entered_positions'] or b['entered_positions']:
+        raise ValueError('Bank-only input unexpectedly admitted to execution')
+    pairs=[dict(frame_id=f['id'],mint=f['mint'],
+        reference=deepcopy(left.snapshots[f['id']]),
+        master=deepcopy(right.snapshots[f['id']]),
+        decision_at_ms=decision_at_ms) for f in frames]
+    return dict(schema='p3-bank-master-reference-frozen-v1',decision_at_ms=decision_at_ms,
+        selection_sha256=p4._hash(selection),frames_sha256=p4._hash(frames),
+        universe_size=len(records),paired_admission_decisions=len(pairs),pairs=pairs,
+        excluded=excluded,initial_capital_each_lamports='10000000000',
+        final_cash_each_lamports='10000000000',isolated_books=True,
+        reference_entries=0,master_entries=0,strict_economic_cycles=0,
+        frozen_before_S2=True,net_market_pnl_lamports=None,
+        executable_quote_comparison=False,strategy_performance_comparable=False,
+        execution_verified=False,independent_market_edge_verified=False,
+        promotion_allowed=False,active_policy_changed=False)
+
+
 def main(argv=None):
     os.environ['RUGGER_NO_DOTENV']='1'
     from bot.__main__ import _offline_policy

@@ -1,0 +1,9 @@
+{
+  "child_exit_code": 0,
+  "process_deadline_exceeded": false,
+  "deadline_ms": 18000,
+  "elapsed_ms": 2368.137820994889,
+  "termination_reserve_ms": 2000,
+  "child_execution_count": 1,
+  "retry_performed": false
+}

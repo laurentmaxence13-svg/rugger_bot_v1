@@ -64,3 +64,4 @@ L'objectif d'une session Codex est d'**exécuter et corriger**, pas de produire 
 La politique de stratégie peut rester **agressive** sur la détection et la prise de risque **dans les plafonds autorisés** ; pas d'augmentation automatique et illimitée des fonds, pas de contournement des critères de risque pour obtenir plus d'entrées.
 
 **Référence :** ce document prévaut sur les interdictions historiques de *développement* de modules réels dans le dépôt, mais **pas** sur les règles de confidentialité, de budget, de validation et d'autorisation d'opérations financières.
+

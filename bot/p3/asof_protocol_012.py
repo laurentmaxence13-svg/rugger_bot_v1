@@ -16,7 +16,7 @@ FIXED=dict(
     run_id='p3_asof_012',
     index_source='https://launch-mint-v1.raydium.io/get/list',
     index_sort='lastTrade',
-    rpc_source='https://api.mainnet-beta.solana.com',
+    rpc_source='https://api.mainnet.solana.com',
     commitment='confirmed',
     universe_limit=100,
     unique_native_SOL_prefix=12,
@@ -28,11 +28,16 @@ FIXED=dict(
     provider_quotes_authorized=False,
     external_orders_authorized=False,
     market_connection_requires_registered_plan_and_preflight=True,
-    snapshots=('S0_predecision','S1_predecision','S2_postdecision'),
+    snapshots=['S0_predecision','S1_predecision','S2_postdecision'],
     first_interval_minimum_ms=15000,
     second_interval_minimum_ms=15000,
     max_S1_receipt_age_ms=5000,
-    max_S0_receipt_age_ms=45000,
+    max_S0_receipt_age_at_decision_ms=30000,
+    phase_timeouts_seconds=dict(total=8,connect=4,sock_connect=3,sock_read=4),
+    process_child_deadline_seconds=58,
+    process_termination_reserve_seconds=2,
+    primary_model_input_lamports=100000000,
+    position_sizes_lamports=[100000000,1000000000],
     source_clock='solana_getMultipleAccounts_context_slot_only',
     bank_time='getBlockTime_estimate_not_provider_quote_source_clock',
     selection='pinned_STRICT_or_RESEARCH_ONLY_plus_S0_S1_net_buy_compatible_change',
@@ -43,6 +48,19 @@ FIXED=dict(
     quote_resizing_prohibited=True,
     unknown_admin_never_promoted=True,
     cost_basis='separate_explicit_paper_legacy_v0_bounds_not_observed',
+    cost_assumptions=dict(buy_signatures=1,sell_signatures=1,
+        buy_cu_limit=1400000,sell_cu_limit=1400000,
+        priority_price_min_micro_lamports=0,priority_price_max_micro_lamports=1000,
+        extra_failed_transactions_max=2,worst_failed_transaction_fee_lamports=6400),
+    ATA_scenarios=['unknown_ATA','hypothetical_existing_ATA','hypothetical_new_classic_ATA'],
+    classic_ATA_deposit_hypothesis_lamports=2039280,
+    historical_signature_page_limit=1000,
+    historical_platforms_max=2,
+    historical_selection='first_two_unique_platforms_of_fixed_S0_native_prefix',
+    historical_tx_selection='oldest_successful_signature_in_single_received_page_at_or_before_S0',
+    historical_lookup_timing='inside_S0_S1_interval; proof_available_before_decision_or_no_refinement',
+    decisions='existing_Master_reference_paired_research_abstentions_when_USD_features_unknown; freeze_before_S2',
+    partial_capture_policy='retain_committed_prefix_and_close_as_interrupted; never_resume_market_requests',
     own_buy_impact_on_actual_S2='unmodeled; no certified_strict_cycle_or_market_PnL',
     max_requests=20,
     max_elapsed_ms=60000,
@@ -71,6 +89,24 @@ def make_plan(*,registered_at_ms,source_revision):
                 source_revision=source_revision)
 
 
+def _exact_json_value(actual,expected):
+    """Match the registered JSON contract without bool/int/float aliases.
+
+    Python dictionary equality treats 20.0 as 20 and False as 0. A registered
+    protocol requires the exact JSON types, including lists rather than tuples,
+    throughout its nested budgets and parameter hypotheses.
+    """
+    if type(actual) is not type(expected):
+        return False
+    if type(expected) is dict:
+        return (actual.keys()==expected.keys()
+            and all(_exact_json_value(actual[key],value) for key,value in expected.items()))
+    if type(expected) is list:
+        return (len(actual)==len(expected)
+            and all(_exact_json_value(left,right) for left,right in zip(actual,expected)))
+    return actual==expected
+
+
 def validate_plan(plan,*,first_observation_at_ms=None):
     if type(plan) is not dict:
         raise ValueError('exact_registered_P3_012_protocol_required')
@@ -79,7 +115,7 @@ def validate_plan(plan,*,first_observation_at_ms=None):
                            source_revision=plan['source_revision'])
     except (KeyError,TypeError,ValueError):
         raise ValueError('exact_registered_P3_012_protocol_required') from None
-    if plan!=expected:
+    if not _exact_json_value(plan,expected):
         raise ValueError('altered_or_unsupported_P3_012_plan')
     if sum(plan['request_budget'].values())!=plan['max_requests']:
         raise ValueError('request_budget_not_bound')
