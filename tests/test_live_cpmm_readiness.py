@@ -5,6 +5,7 @@ migration, bank, and RPC message decoders have separate real-wire fixture
 tests. Passing cannot certify a mainnet execution or independently sign.
 """
 import asyncio
+import hashlib
 
 import pytest
 
@@ -14,10 +15,6 @@ from bot.live.cpmm_swap import CPMM_PROGRAM
 from bot.live.cpmm_exit import build_cpmm_exit
 from test_live_cpmm_exit import fixture_bank,MINT,WALLET,POOL
 from test_live_unsigned_preflight import ENDPOINT,GENESIS
-
-
-SOURCE=_p=fixture_bank()
-ORIGINAL=SOURCE['wallet']
 
 
 class NoFinancialRpc:
@@ -35,30 +32,43 @@ def run(monkeypatch,*,attack=None,overrides=None):
         log.append(('pin',kw['program_id']))
         if attack=='pin' and kw['program_id']==CPMM_PROGRAM:
             return dict(result='REFUSED')
-        return dict(result='PIN_MATCHED_READ_ONLY',programdata_sha256='a'*64,
-            elf_sha256='b'*64,deployment_slot=90,joint_bank_slot=110)
+        return dict(result='PIN_MATCHED_READ_ONLY',program_id=kw['program_id'],
+            programdata_sha256='a'*64,elf_sha256='b'*64,
+            deployment_slot=90,joint_bank_slot=1234)
     async def migration(_rpc,**kw):
         log.append(('migration',kw['cpmm_pool']))
         if attack=='migration':
             return dict(status='REFUSED',reason='source_unqualified')
         return dict(status='FINALIZED_RPC_STRUCTURAL_MATCH',
-                    migration_slot=111,raw_RPC_response_returned_to_caller=True)
+                    migration_slot=111,raw_RPC_response_returned_to_caller=True,
+                    source_launchlab_pool=kw['launchlab_pool'],
+                    migrated_cpmm_pool=kw['cpmm_pool'],
+                    mint=kw['mint'],signature=kw['signature'])
     async def bank(_rpc,**kw):
         log.append(('bank',kw['min_context_slot']))
         if attack=='bank_wrong_pool':
             from dataclasses import replace
             result=replace(order,pool=kw['wallet'])
         else:result=order
-        return dict(order=result,source_bank_slot=1235,
-                    decision_at_ms=1080,
+        return dict(order=result,source_bank_slot=order.source_slot,
+                    decision_at_ms=order.decision_at_ms,
+                    bank_received_at_ms=order.source_available_at_ms,
                     migration_provenance_verified_by_this_module=False)
     async def simulation(_rpc,prepared,**kw):
         log.append(('simulation',prepared.side))
         if attack=='simulation':
             return dict(result='REFUSED',reason='simulation_error')
-        return dict(result='SIMULATION_SUCCEEDED_UNSENT',
-                    message_sha256='a'*64,source_slot=prepared.source_slot,
-                    route_executed=False)
+        data=dict(result='SIMULATION_SUCCEEDED_UNSENT',side='SELL',
+                    message_sha256=hashlib.sha256(prepared.transaction.message).hexdigest(),
+                    unsigned_transaction_sha256=hashlib.sha256(
+                        prepared.transaction.unsigned_transaction()).hexdigest(),
+                    source_slot=prepared.source_slot,
+                    simulation_slot=prepared.source_slot,
+                    route_executed=False,sig_verify=False,
+                    live_ready_to_arm=False)
+        if attack=='forged_simulation':
+            data['message_sha256']='0'*64
+        return data
     monkeypatch.setattr(runbook,'attest_program_pin',pin)
     monkeypatch.setattr(runbook,'read_finalized_migration',migration)
     monkeypatch.setattr(runbook,'prepare_cpmm_sell_from_rpc',bank)
@@ -125,3 +135,8 @@ def test_program_pins_must_be_exact_explicit_pair(monkeypatch,attack):
 def test_simulation_clock_must_follow_bank_decision(monkeypatch):
     with pytest.raises(ValueError,match='simulation_clock_invalid'):
         run(monkeypatch,overrides={'clock_ms':lambda:1000})
+
+
+def test_forged_successful_simulation_message_never_qualifies(monkeypatch):
+    with pytest.raises(ValueError,match='receipt_identity'):
+        run(monkeypatch,attack='forged_simulation')
