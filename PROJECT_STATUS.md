@@ -1,5 +1,27 @@
 # État du projet — candidat fonctionnel PAPER
 
+##29octobre —011 a obtenu les premières paires de devis complètes
+
+Plan publié/relu7016e346,sourceae89a344.20requêtes/27,686s capture/27,933s processus,
+fin normale,sansretry/fallback.100lignes,6pools,2RESEARCH_ONLY/0STRICT;2nouveauxmints
+par rapport aux537connus.4quotes achat propres0,10/1SOL,8quotes venteQentier aux
+2horizons,0refus.8paires descriptives sur4lots, pas8essaisindépendants.
+Écarts conditionnels0,10SOL : -0,002749377/-0,003084445SOL;1SOL : -0,050711207/
+-0,081701720SOL,avant coûts inconnus. Les montants de suivi sont identiques;
+aucune fraîcheur ou marché immobile déduits. Fees déjà danssorties, pasredéduites.
+ActualInputAmount déclaré exact12/12; sourceTimeMs/contextSlot absents12/12.
+Identité plateformeUNKNOWN,coûts propres etfeatures causales manquants :0cycle
+strict,0cycleéconomiquequalifié,P&L netUNKNOWN,0décisionA/Badmissible. Aucuneoptimisation
+ou promotion des24politiques, aucunparamètreactif changé. Modèlespropresachat/revente
+et seuilsdeflux restent contrefactuels; résultats dansP3_RESEARCH_011.md.
+142événements archivés,ancre40532579;15bundles/1887événements,14anciensinchangés.
+Rapport+8analyses+12corps de devis reproduits. Scriptvalidation/p3_research_011/reproduce.py.
+JSONcompletindex absent,100lignes/digests présents. AucunSQLiteouclépublié.
+Ne jamais relancer010/011. Prochainepriorité :clocks de devis,coûtspropres applicables,
+featurescausales puisA/B; aucune nouvellecampagneidentique pour gonflerlescompteurs.
+PAPER ONLY, PR22ouverte,sanssignature,dépense,fusion ouledgerutilisateur.
+
+
 ##29octobre — RESEARCH_ONLY intégré;011 prêt avant acquisition
 
 P0 publié/relu36f5fbe (archive et rapport retéléchargés, chaîne47événements vérifiée).

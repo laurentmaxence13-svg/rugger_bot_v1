@@ -1,0 +1,66 @@
+{
+  "AB_economically_comparable_decisions": 0,
+  "P4_policy_promotion": false,
+  "active_policy_changed": false,
+  "bank_slots": [
+    462777988,
+    462777990,
+    462778085
+  ],
+  "buy_quotes": 4,
+  "capture_elapsed_ms": 27686,
+  "complete_receipt_linked_indicative_market_pairs": 8,
+  "creator_claims_or_signers_do_not_prove_independence": true,
+  "distinct_new_mints": 2,
+  "events": 142,
+  "fees_double_counted": false,
+  "full_sell_quotes": 8,
+  "independent_executed_cycles": 0,
+  "ledger_mutation": false,
+  "missing_AB": [
+    "strict_identity",
+    "provider_source_clock_and_context",
+    "applicable_own_costs",
+    "causal_features_and_health",
+    "Master_50past_qualified_cycles_20creator_groups"
+  ],
+  "missing_costs": [
+    "own_network_fee",
+    "priority_fee",
+    "ATA_rent_and_recovery",
+    "failure_costs"
+  ],
+  "missing_identity": [
+    "historical_platform_admin_seed"
+  ],
+  "native_SOL_pools_screened": 6,
+  "net_market_pnl_sol": null,
+  "plan_sha256": "76f9aff77d32b7da4112c370a2ea816447379823876898ca563886846d233ce8",
+  "process_elapsed_ms": 27933.294539999908,
+  "projected_lots": 4,
+  "prospective_economic_cycles_usable": 0,
+  "provider_context_slot_present": 0,
+  "provider_reported_exact_inputs": 12,
+  "provider_source_time_present": 0,
+  "quote_refusals": 0,
+  "raw_discovery_metadata_retained": false,
+  "real_orders": 0,
+  "request_split": {
+    "RPC_reads": 7,
+    "discovery_GET": 1,
+    "indicative_quote_GET": 12
+  },
+  "requests": 20,
+  "route_pool_identifiers_match_screened": true,
+  "same_bank_quote_context_verified": false,
+  "schema": "p3-011-economic-admissibility-v1",
+  "selected_budget_scaling": false,
+  "selected_creator_claims_previously_seen": 0,
+  "selected_mints_previously_seen": 0,
+  "selected_research_only": 2,
+  "selected_strict": 0,
+  "source_revision": "ae89a344bec3855c2cb6f26f75bab4865ac73ac0",
+  "strict_market_cycles": 0,
+  "tail_hash": "40532579c596a58c0676ca55a074da302c737293b6841377b4fa00fd1bcff997",
+  "universe_selection_rows": 100
+}
