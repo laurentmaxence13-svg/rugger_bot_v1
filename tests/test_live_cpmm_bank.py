@@ -27,6 +27,7 @@ class FakeRpc:
         self.drop_account=False
         self.block_time=1
         self.message_fee=5002
+        self.fee_bank_slot=1237
 
     async def genesis_hash(self):
         self.calls.append('genesis')
@@ -61,10 +62,11 @@ class FakeRpc:
         self.calls.append(('getBlockTime',slot))
         return self.block_time
 
-    async def get_fee_for_message(self,message):
+    async def get_fee_for_message_receipt(self,message,*,min_context_slot):
         assert type(message) is bytes and len(message)>0
-        self.calls.append('getFeeForMessage')
-        return self.message_fee
+        assert min_context_slot==self.blockhash_slot
+        self.calls.append(('getFeeForMessage',min_context_slot))
+        return dict(value=self.message_fee,context_slot=self.fee_bank_slot)
 
     async def send_transaction(self,*args,**kwargs):
         raise AssertionError('read_only_bank_probe_may_not_send')
@@ -96,6 +98,7 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     assert order.transaction.required_signers==(order.user,)
     assert result['read_only_RPC_calls']==7
     assert result['message_fee_lamports']==5002
+    assert result['fee_source_context_slot']==1237
     assert result['fee_verified_at_ms']==1120
     assert result['source_block_time_seconds']==1
     assert result['source_block_time_slot']==1235
@@ -142,6 +145,7 @@ def test_legitimate_inflight_reserve_or_counter_updates_use_only_joint_bank():
     'stale_acquisition','stale_decision','wrong_mint',
     'missing_source_block_time','future_source_block_time',
     'missing_message_fee','excess_message_fee','stale_message_fee',
+    'old_fee_bank','missing_fee_context','boolean_fee_bank',
 ])
 def test_any_stale_bank_or_unknown_account_fails_closed(attack):
     rpc=FakeRpc(fixture_bank())
@@ -167,6 +171,9 @@ def test_any_stale_bank_or_unknown_account_fails_closed(attack):
     if attack=='missing_message_fee':rpc.message_fee=None
     if attack=='excess_message_fee':rpc.message_fee=6000
     if attack=='stale_message_fee':ticks=(1050,1070,1100,7000)
+    if attack=='old_fee_bank':rpc.fee_bank_slot=1235
+    if attack=='missing_fee_context':rpc.fee_bank_slot=None
+    if attack=='boolean_fee_bank':rpc.fee_bank_slot=True
     with pytest.raises((ValueError,TypeError)):
         prepare(rpc,ticks=ticks,**overrides)
     assert 'sendTransaction' not in rpc.calls
