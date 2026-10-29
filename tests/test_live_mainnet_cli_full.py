@@ -143,6 +143,13 @@ def test_full_cli_bounded_simulation_emits_private_hashed_report_without_send(
     assert all(method!='sendTransaction' for _,method in http_history)
     report=json.loads(out.read_text())
     assert report['status']=='UNSIGNED_CPMM_ROUTE_SIMULATED'
+    assert report['diagnostic_phase']=='complete'
+    assert report['observed_read_only_RPC_calls']==18
+    assert len(report['bounded_RPC_method_trace'])==18
+    assert [x['ordinal'] for x in report['bounded_RPC_method_trace']]==list(range(1,19))
+    assert all(set(x)=={'ordinal','method','outcome'} for x in report['bounded_RPC_method_trace'])
+    assert all(x['outcome']=='success' for x in report['bounded_RPC_method_trace'])
+    assert 'sendTransaction' not in str(report['bounded_RPC_method_trace'])
     assert report['trade_sent'] is False
     assert report['signer_used'] is False
     assert report['wallet_armed'] is False
@@ -177,6 +184,11 @@ def test_cli_rejects_unknown_real_message_fee_without_second_submission(
     assert public['requests_used']<=18
     report=json.loads(out.read_text())
     assert report['status']=='REFUSED'
+    assert report['diagnostic_phase']=='cpmm_bank'
+    assert report['observed_read_only_RPC_calls']==15
+    assert report['reason']=='RpcError'
+    assert all('params' not in x and 'wallet' not in x
+               for x in report['bounded_RPC_method_trace'])
     assert report['trade_sent'] is False
     assert report['actual_read_only_evidence']['unsigned_simulation'] is None
     assert sum(method=='sendTransaction' for method,_ in fake.calls)==0
@@ -219,6 +231,13 @@ def test_complete_cli_fails_closed_on_network_program_or_signature_tampering(
     assert json.loads(capsys.readouterr().out)['status']=='REFUSED'
     report=json.loads(out.read_text())
     assert report['status']=='REFUSED'
+    assert report['diagnostic_phase']=={
+        'wrong_genesis':'program_pin_launchlab',
+        'program_ELF_changed':'program_pin_launchlab',
+        'historical_signature_forged':'migration_receipt',
+    }[attack]
+    assert len(report['bounded_RPC_method_trace'])==len(history)
+    assert all(x['outcome']=='success' for x in report['bounded_RPC_method_trace'])
     assert report['trade_sent'] is False
     assert report['signer_used'] is False
     assert report['live_ready_to_arm'] is False
