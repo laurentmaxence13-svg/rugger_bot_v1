@@ -13,6 +13,9 @@ import json
 from typing import Any
 
 from bot.live.route import validate_prepared_order
+from bot.live.cpmm_exit import PreparedCpmmExit, validate_cpmm_exit
+from bot.live.cpmm_swap import CPMM_PROGRAM
+from bot.p3.certification import PROGRAM
 
 
 def _integer(value, *, positive=False):
@@ -64,7 +67,14 @@ async def check_unsigned_order(
             or not _integer(max_bank_age_ms, positive=True)
             or max_bank_age_ms > 5000):
         raise ValueError("explicit_genesis_endpoint_clock_and_freshness_required")
-    order = validate_prepared_order(order)
+    # Validate the *complete* transaction against its own original retained
+    # request. Never let a caller provide a fake validation success flag.
+    if type(order) is PreparedCpmmExit:
+        order = validate_cpmm_exit(order)
+        route_program = CPMM_PROGRAM
+    else:
+        order = validate_prepared_order(order)
+        route_program = PROGRAM
     prepared = order.transaction
     if prepared.required_signers != (order.user,):
         return _refused("unexpected_signer_requirement", side=order.side,
@@ -117,6 +127,7 @@ async def check_unsigned_order(
         result="SIMULATION_SUCCEEDED_UNSENT",
         reason=None,
         side=order.side,
+        program_id=route_program,
         source_slot=order.source_slot,
         simulation_slot=simulation["context_slot"],
         message_sha256=message_sha256,
@@ -133,6 +144,7 @@ async def check_unsigned_order(
         signature_verified=False,
         real_funds_spent=False,
         buy_sell_mainnet_execution_verified=False,
+        migration_provenance_verified=False,
         live_ready_to_arm=False,
         economic_edge_validated=False,
         caveat="Unsigned simulation is not a fill or permission to spend; current source, program and costs must be revalidated.",
