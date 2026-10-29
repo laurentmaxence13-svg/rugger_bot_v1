@@ -16,6 +16,7 @@ os.environ["RUGGER_NO_DOTENV"]="1"
 
 from bot.live.readonly_plan import validate_readonly_plan,readonly_plan_sha256
 from bot.live.readonly_report import make_private_report,save_private_report
+from bot.live.readonly_diagnostics import safe_refusal_reason
 
 
 async def once(plan):
@@ -41,9 +42,16 @@ async def once(plan):
             max_elapsed_seconds=plan["max_transport_elapsed_seconds"],
             submission_authorizer=None)
         rpc=SolanaRpc(transport)
+        phase=dict(name='not_started')
+        def note_phase(label):
+            # Only labels from the internal fixed phase sequence are accepted.
+            if label not in ('program_pin_launchlab','program_pin_cpmm',
+                'migration_receipt','cpmm_bank','unsigned_simulation','complete'):
+                raise ValueError('unknown_internal_preflight_phase')
+            phase['name']=label
         try:
             result=await preflight_migrated_sell(
-                rpc,program_pins=plan["program_pins"],
+                rpc,phase_hook=note_phase,program_pins=plan["program_pins"],
                 original_launchlab_pool=plan["original_launchlab_pool"],
                 migrated_cpmm_pool=plan["migrated_cpmm_pool"],
                 migration_signature=plan["migration_signature"],
@@ -64,9 +72,11 @@ async def once(plan):
         except (ValueError,TypeError,KeyError,RuntimeError) as error:
             # Never convert a failed RPC, wallet mismatch or route validation
             # into a success. Suppress raw exception text (may contain data).
-            result=dict(status="REFUSED",reason=type(error).__name__)
+            result=dict(status="REFUSED",reason=safe_refusal_reason(error))
         result["observed_read_only_RPC_calls"]=transport.used
         result["max_allowed_RPC_calls"]=plan["max_rpc_requests"]
+        result["diagnostic_phase"]=phase["name"]
+        result["rpc_method_trace"]=list(transport.method_trace)
         result["financial_order_submitted"]=False
         return result
 
@@ -96,7 +106,8 @@ def main(argv=None):
     report,_=make_private_report(plan,result)
     sha=save_private_report(path,report)
     print(json.dumps(dict(status=result.get("status","REFUSED"),
-        reason=result.get("reason"),plan_sha256=plan_hash,
+        reason=result.get("reason"),diagnostic_phase=result.get("diagnostic_phase"),
+        plan_sha256=plan_hash,
         report_file_sha256=sha,
         requests_used=result["observed_read_only_RPC_calls"],
         financial_order_submitted=False,
