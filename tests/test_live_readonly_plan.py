@@ -45,7 +45,7 @@ def _plan():
         slippage_bps=100,max_slippage_bps=200,
         max_price_impact_bps=500,compute_unit_limit=200000,
         priority_fee_micro_lamports=0,max_priority_fee_lamports=0,
-        max_bank_age_ms=5000,max_rpc_requests=17,
+        max_bank_age_ms=5000,max_rpc_requests=18,
         max_transport_elapsed_seconds=40)
 
 
@@ -71,7 +71,7 @@ def read_only_example_does_not_pretend_to_certify_balance(p):
     ('send_allowed',True),('signature_allowed',True),
     ('financial_execution_allowed',True),
     ('operator_confirmed_readonly',False),
-    ('max_rpc_requests',18),('max_rpc_requests',0),
+    ('max_rpc_requests',19),('max_rpc_requests',0),
     ('max_rpc_requests',True),
     ('max_transport_elapsed_seconds',61),
     ('min_context_slot',True),
