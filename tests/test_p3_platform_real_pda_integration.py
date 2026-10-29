@@ -14,6 +14,14 @@ from test_p3_research_integration import research_snapshot
 DISC=bytes([176,90,196,175,253,113,220,20])
 
 
+def _full_args():
+    number=(0).to_bytes(8,'little')
+    def bor(s):
+        b=s.encode()
+        return len(b).to_bytes(4,'little')+b
+    return DISC+number*4+bor('LaunchLab')+bor('')+bor('')+number*2
+
+
 def _record():
     _,addresses,analysis,_=research_snapshot(platform_verified=True,return_accounts=True)
     admin=encode(bytes([61])*32)
@@ -29,11 +37,15 @@ def _record():
                 {'pubkey':encode(bytes([82])*32),'signer':False},
                 {'pubkey':encode(bytes([83])*32),'signer':False},
                 {'pubkey':expected,'signer':False},
-                {'pubkey':PROGRAM,'signer':False}],
+                {'pubkey':PROGRAM,'signer':False},
+                {'pubkey':encode(bytes([84])*32),'signer':False},
+                {'pubkey':'11111111111111111111111111111111','signer':False},
+                {'pubkey':encode(bytes([85])*32),'signer':False},
+                {'pubkey':encode(bytes([86])*32),'signer':False}],
                 'instructions':[{
                     'programIdIndex':4,
-                    'accounts':[0,1,2,3],
-                    'data':encode(DISC+b'ignored_anchor_args')
+                    'accounts':[0,1,2,3,5,6,7,8],
+                    'data':encode(_full_args())
                 }]}}}
 
 
@@ -58,3 +70,13 @@ def test_tampered_real_pda_historical_tx_rejected():
         snapshot_context_slot=analysis['context_slot'])
     assert result['status']=='UNKNOWN'
     assert not result['historical_seed_certified']
+
+
+def test_incomplete_historical_platform_params_rejected_even_if_pda_matches():
+    addresses,analysis,admin,tx=_record()
+    tx['transaction']['message']['instructions'][0]['data']=encode(DISC+b'foo')
+    result=verify_historical_platform_creation(tx,platform_config=addresses['platform'],
+        signature=tx['transaction']['signatures'][0],
+        snapshot_context_slot=analysis['context_slot'])
+    assert result['status']=='UNKNOWN'
+    assert result['historical_seed_certified'] is False
