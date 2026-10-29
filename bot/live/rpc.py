@@ -260,6 +260,27 @@ class SolanaRpc:
     async def get_fee_for_message(self, message):
         return await self.fee_for_message(message)
 
+    async def get_fee_for_message_receipt(self, message, *, min_context_slot):
+        """Price the exact message with an RPC-enforced causal bank floor.
+
+        The value must be positive and the returned context slot must be
+        at least the source bank AND the recent blockhash bank chosen by the
+        caller. Never accept a fee from an earlier bank or a null quote.
+        """
+        if type(message) is not bytes or not message or len(message)>1232:
+            raise RpcError('Exact bounded serialized message required')
+        floor=_uint(min_context_slot,positive=True)
+        result=await self.transport('getFeeForMessage', [
+            base64.b64encode(message).decode(),
+            dict(commitment='confirmed',minContextSlot=floor)])
+        if type(result) is not dict or type(result.get('context')) is not dict:
+            raise RpcError('RPC fee receipt context required')
+        slot=_uint(result['context'].get('slot'),positive=True)
+        if slot<floor:
+            raise RpcError('RPC fee bank precedes required causal bank')
+        fee=_uint(result.get('value'),positive=True)
+        return dict(value=fee,context_slot=slot)
+
     async def rent_exemption(self, account_bytes):
         if type(account_bytes) is not int or not 0 < account_bytes <= 10485760:
             raise RpcError('Bounded exact account size required')
