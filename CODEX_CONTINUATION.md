@@ -1,5 +1,15 @@
 # Rugger Bot V1 — reprise autonome depuis Git
 
+## Livraison vérifiée29octobre
+
+Résultats011 publiésdd9cce2, archive+manifest+rapport retéléchargés et réellement
+vérifiés.0nouvelle requête marché pendant cette vérification. Reçu sous
+validation/p3_research_011/REMOTE_READBACK.json; mapping local/distant et reprise
+exacte dansDELIVERY.json. Codeae89a344,préenregistrement7016e346,P0sauvé36f5fbe.
+Ne pas relancer010/011. Continuer sur les clocks/costs/inputs causaux manquants,
+sans promotion de politique ou prétention de P&L net certifié.
+
+
 ##29octobre —011 a obtenu les premières paires de devis complètes
 
 Plan publié/relu7016e346,sourceae89a344.20requêtes/27,686s capture/27,933s processus,

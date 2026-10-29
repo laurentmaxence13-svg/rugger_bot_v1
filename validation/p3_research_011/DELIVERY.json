@@ -1,0 +1,82 @@
+{
+  "P0_remote_restore_verified": true,
+  "P1_gate_on_real010": {
+    "research_only": 2,
+    "strict": 0
+  },
+  "P2_result": {
+    "independent_mints_new_to_retained_denominator": 2,
+    "net_market_PnL_sol": null,
+    "new_indicative_market_pairs": 8,
+    "projected_lots": 4,
+    "source_independence_certified": false,
+    "strict_cycles": 0
+  },
+  "P3_AB": {
+    "admissible_decisions": 0,
+    "forced_books": false
+  },
+  "P4_parameters_optimized_or_promoted": false,
+  "P5_independent_profitability_verified": false,
+  "PR": 22,
+  "PR_merge_authorized": false,
+  "active_policy_changed": false,
+  "branch": "fix/p3-exit-evidence-continuation",
+  "checkpoints": [
+    {
+      "local": "b3e824d0e1d2137bd15ce1657ee71a403400b80b",
+      "purpose": "P0 recovered010",
+      "remote": "36f5fbe25fb647beb119f24fcf0b18d4a9c8fe87",
+      "tree": "8be3d9427a6d7147da91c1230cf4a607bb23c211"
+    },
+    {
+      "local": "9b8b008c493833ef83a8da14f00fc7ba3c51202e",
+      "purpose": "P1 research gate and validated011 code",
+      "remote": "ae89a344bec3855c2cb6f26f75bab4865ac73ac0",
+      "tree": "a12fe1efdd3b867662765fb0696b53ddd4302f98"
+    },
+    {
+      "local": "b88678b448e1f6226417b869e3cdeb622ce5225f",
+      "purpose": "P2 preregistration",
+      "remote": "7016e3469e5a09658be12ddb3488f7b5ca0604ac",
+      "tree": "70183933b51e9120bc1b15024e8a6cec1d297fe1"
+    },
+    {
+      "local": "f0dcac97b3f4fdb9038605533fcca1bc746d4e98",
+      "purpose": "P2 acquired evidence and economic limits",
+      "remote": "dd9cce2a9737a6a428275485c693da6dfcdd4a98",
+      "tree": "177a835f54bf8e5e3b62a5ff8a20329931e4fd64"
+    }
+  ],
+  "client_date": "2026-10-29",
+  "client_timezone": "Europe/Paris",
+  "full_tests": {
+    "elapsed_seconds": "15.90",
+    "passed": 2040,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests": 242,
+    "warnings_as_errors": true
+  },
+  "local_remote_commit_hashes_differ_but_trees_identical": true,
+  "must_not_repeat": [
+    "006",
+    "007",
+    "008",
+    "009",
+    "010",
+    "011",
+    "validated endurance1000"
+  ],
+  "network_budget_current_mission": {
+    "P0_recovery": 0,
+    "P3011_market_reads": 20,
+    "extra_diagnostics": 0
+  },
+  "next_priority": "quote source clocks/context plus applicable own costs and causal scanner features; preserve historical identity UNKNOWN; then sufficient independent comparison corpus",
+  "real_transactions": 0,
+  "repository": "laurentmaxence13-svg/rugger_bot_v1",
+  "schema": "rugger-research011-delivery-v1",
+  "spend": 0,
+  "user_database_accessed": false
+}
