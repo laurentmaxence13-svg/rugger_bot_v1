@@ -278,3 +278,45 @@ def test_ambiguous_migrated_sale_preserves_reservations_and_binding_after_restar
             restored.release_unsent(decision,1600,'blind-retry-forbidden')
         assert restored.verify_audit()
     finally:restored.close()
+
+
+@pytest.mark.parametrize('damage',[
+    'first_signature','second_signature','recent_blockhash','payer_pubkey',
+])
+def test_financial_migration_refuses_structurally_valid_but_unsigned_history(
+        tmp_path,damage):
+    engine,old,cpmm,parsed,amount=_staged(tmp_path)
+    raw,signature=signed_rpc_migration(parsed)
+    if damage=='first_signature':
+        signature=_encode(bytes([17])*64)
+        raw['transaction']['signatures'][0]=signature
+    elif damage=='second_signature':
+        raw['transaction']['signatures'][1]=_encode(bytes([18])*64)
+    elif damage=='recent_blockhash':
+        raw['transaction']['message']['recentBlockhash']=_encode(bytes([19])*32)
+    else:
+        raw['transaction']['message']['accountKeys'][0]=_encode(bytes([20])*32)
+    class Rpc:
+        endpoint_sha256=ENDPOINT
+        async def genesis_hash(self):return GENESIS
+        async def get_transaction(self,asked):
+            assert asked==signature
+            return deepcopy(raw)
+    try:
+        receipt=asyncio.run(read_finalized_migration(Rpc(),signature=signature,
+            mint=cpmm.mint,launchlab_pool=old.pool,cpmm_pool=cpmm.pool,
+            expected_endpoint_sha256=ENDPOINT,expected_genesis_hash=GENESIS,
+            observed_at_slot=cpmm.source_slot))
+        assert receipt['status']=='FINALIZED_RPC_STRUCTURAL_MATCH'
+        assert receipt['cryptographic_signature_bytes_verified'] is False
+        before=[dict(x) for x in engine.journal.con.execute('SELECT * FROM positions')]
+        with pytest.raises(ValueError,match='cryptographic_signatures'):
+            engine.journal.register_cpmm_migration(receipt,wallet=cpmm.user,
+                received_at_ms=1400,expected_endpoint_sha256=ENDPOINT,
+                expected_genesis_hash=GENESIS)
+        assert engine.journal.con.execute(
+            'SELECT COUNT(*) FROM cpmm_migrations').fetchone()[0]==0
+        assert [dict(x) for x in engine.journal.con.execute(
+            'SELECT * FROM positions')]==before
+        assert engine.journal.verify_audit()
+    finally:engine.journal.close()
