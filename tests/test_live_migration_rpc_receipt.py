@@ -58,7 +58,9 @@ def test_finalized_compiled_RPC_reply_matches_source_pool_and_migrated_pool_with
     assert response['source_RPC_genesis_pin_matched']
     assert response['source_RPC_endpoint_pin_matched']
     assert response['source_signature_appeared_in_finalized_RPC_transaction']
-    assert response['actual_RPC_response_retained']
+    assert response['raw_RPC_response_returned_to_caller']
+    assert response['raw_RPC_response']==raw
+    assert response['durable_receipt_archived_by_this_function'] is False
     assert response['rpc_calls']==2
     assert rpc.calls==['getGenesisHash','getTransaction']
     assert not response['live_execution_allowed']
