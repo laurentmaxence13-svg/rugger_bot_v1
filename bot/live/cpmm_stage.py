@@ -69,6 +69,16 @@ async def stage_cpmm_exit(engine, *, decision_id, original_pool, order,
         observed_at_slot=order.source_slot)
     if migration['status']!='STRUCTURAL_MIGRATION_RECEIPT':
         raise ValueError('CPMM_origin_to_migrated_pool_not_structurally_verified')
+    confirmed=[
+        json.loads(row['reconciliation_json'])['slot']
+        for row in engine.journal.con.execute(
+            "SELECT order_json,reconciliation_json FROM orders WHERE state='RECONCILED'")
+        if json.loads(row['order_json'])['mint']==order.mint
+        and json.loads(row['order_json'])['pool']==original_pool
+        and json.loads(row['reconciliation_json'])['chain_error'] is None
+    ]
+    if not confirmed or max(confirmed)>=migration['migration_slot']:
+        raise ValueError('CPMM_migration_must_follow_original_finalized_position')
     result=await check_unsigned_order(engine.rpc,order,
         expected_genesis_hash=expected_genesis_hash,
         expected_endpoint_sha256=expected_endpoint_sha256,now_ms=now_ms)
