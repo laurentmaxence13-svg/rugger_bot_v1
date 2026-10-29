@@ -1,0 +1,86 @@
+"""Safe, finite failure vocabulary for the unsent mainnet preflight runner.
+
+Never copy arbitrary exception text from a remote RPC response, a URL, an
+HTTP request, an injected tool, or an account field into persisted evidence.
+Only exact known internal failure codes are released. Unknown failures retain
+their exception TYPE but not its message.
+"""
+
+# All members are source-defined, non-parametric, and contain no addresses.
+SAFE_FAILURE_CODES=frozenset("""
+RPC_endpoint_not_pinned
+RPC_genesis_not_pinned
+RPC_endpoint_not_expected
+RPC_genesis_not_expected
+RPC_fee_bank_precedes_required_causal_bank
+CPMM_pool_pair_invalid
+CPMM_duplicate_bank_accounts
+CPMM_incomplete_joint_bank
+CPMM_pool_identity_changed_between_reads
+CPMM_bank_acquisition_stale
+CPMM_blockhash_bank_precedes_account_bank
+CPMM_block_time_missing_or_untrusted
+CPMM_bank_or_block_time_stale
+CPMM_fee_receipt_noncausal_unknown_or_exceeds_cap
+CPMM_message_fee_verification_stale
+CPMM_account_acquisition_exceeded_freshness_limit
+CPMM_pool_authority_bump_mismatch
+CPMM_noncanonical_fee_config
+CPMM_observation_content_identity_invalid
+CPMM_priority_fee_cap_exceeded
+CPMM_wallet_cannot_fund_rent_and_fee
+CPMM_exit_route_rebuild_failed
+cpmm_exact_u64_required
+cpmm_creator_fee_mode_invalid
+cpmm_unsupported_fee_rates
+cpmm_input_fully_consumed_by_fees
+cpmm_curve_output_zero_or_vault_exhausted
+cpmm_output_zero_after_creator_fee
+cpmm_explicit_temporal_slippage_and_compute_limits_required
+cpmm_explicit_classic_SPL_bank_required
+cpmm_pool_mint_status_time_or_program_unqualified
+cpmm_noncanonical_fee_config
+cpmm_vaults_not_derived_from_actual_pool
+cpmm_lp_mint_PDA_mismatch
+cpmm_observation_PDA_mismatch
+cpmm_same_bank_complete_nonaliased_accounts_required
+cpmm_ephemeral_WSOL_already_exists
+cpmm_plain_system_wallet_required
+cpmm_mint_decimals_or_authorities_unqualified
+cpmm_vault_identity_or_authority_invalid
+cpmm_user_inventory_unqualified
+cpmm_effective_vault_insufficient_after_accrued_fees
+cpmm_price_impact_limit_exceeded
+cpmm_wallet_cannot_fund_rent_and_fee
+program_owner_or_executable_invalid
+program_data_encoding_invalid
+program_data_size_or_encoding_invalid
+program_reported_space_mismatch
+program_variant_invalid
+programdata_PDA_mismatch
+programdata_variant_missing
+program_upgrade_slot_not_active
+programdata_authority_tag_invalid
+programdata_ELF_missing
+complete_explicit_program_pins_required
+program_endpoint_changed
+program_cluster_changed
+program_pointer_changed
+program_code_or_upgrade_pin_mismatch
+first_bank_slot_invalid
+joint_bank_slot_invalid
+invalid_program_base64
+historical_transaction_Ed25519_signature_invalid
+serialized_Solana_message_packet_limit
+noncanonical_Ed25519_signature_encoding
+""".split())
+
+
+def safe_refusal_reason(error):
+    if type(error) not in (ValueError, TypeError, KeyError, RuntimeError):
+        return "UNCLASSIFIED_FAILURE"
+    # Never use string interpolation or substring matches for remote input.
+    msg=str(error)
+    if msg in SAFE_FAILURE_CODES:
+        return msg
+    return type(error).__name__
