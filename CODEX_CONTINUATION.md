@@ -1,5 +1,31 @@
 # REPRISE PRIORITAIRE — MANDAT RÉEL DU 29 OCTOBRE 2026
 
+## Dernier checkpoint vérifié — lire avant les références historiques
+
+PR33, branche `feat/master-live-integration-20261029`. Sauvegarde urgente98b1570 :
+44fichiers retéléchargés, archive012 restaurée matériellement,159événements et25
+analyses reproduits. Code corrigé6b43c94, arbrea6e5a7091efde57d9e11596369f4ad2f09414f89,
+local3f291f1 :2529tests/242sous-tests/1skip,22,15s,-Werror,stderr0 ;11blobs relus.
+Faits futurs, déconnexion/désarmement finaux, annulation d'envoi et barrière HTTP
+corrigés ;seuils Master figés avant entrée et sorties natives reliés au moteur.
+LIVE_READY_TO_ARM NON ÉTABLI ;défaut désarmé,0opération financière. Lire
+`LIVE_EXECUTION_CHECKPOINT.md` et `validation/live_20261029/FINAL_VALIDATION.json`.
+
+P3-012 CLOS, NE PAS RELANCER :12requêtes/35,494s,100lignes,12S0+12S1+1S2,
+1sélection,2tailles alternatives négatives,12WAIT/WAIT,0cycle strict. JSON index
+brut absent dès la collecte ;lignes/digests etrawRPC conservés. Replay sans réseau :
+`python -B validation/p3_asof_012/reproduce.py`. Aucun ancien contrôle/endurance à refaire.
+
+Diagnostic programme distinct préenregistréfc1a920 :2lectures/1,782s,0wallet/pool,
+ELFobservé4c87da8e...,déploiement446221802,slotobservé462966622 ;sourcebuildUNKNOWN,
+aucune approbation auto. NE PAS RELANCER ;replay via
+`python -B validation/live_20261029/reproduce_program_probe.py`.
+Prochaine route critique :correspondance binaire/source indépendante, simulationRPC
+unsigned achat/vente sur configuration isolée admissible, assemblage services réels,
+sortie après migration. Token2022/migration refusés actuellement. Aucun armement,
+signature de portefeuille réel, dépense, promotion de politique ou fusion autorisé.
+
+
 **Décision du propriétaire : Rugger a pour destination finale l'exécution réelle autonome, et non la simulation perpétuelle.** Lire `AGENTS.md` et `LIVE_READINESS_MANDATE.md` avant toute continuation. Le développement des modules d'exécution réelle est maintenant demandé et autorisé sur branches de travail, avec tests isolés. **L'envoi d'ordres mainnet, signature par un portefeuille financé ou engagement de fonds n'est pas encore autorisé** : il exige une activation explicite une fois les validations techniques achevées.
 
 **Point de reprise technique** : PR #29 (`d8771ae`) et PR #30 (`54f153e`). Ne pas perdre les modifications Cloud éventuellement non publiées. Revoir, corriger et valider le collecteur P3-012, puis construire en parallèle une architecture `RESEARCH/SHADOW/LIVE_PREPARED/LIVE_ARMED/LIVE_ENABLED` réellement capable de router, construire, simuler, signer sous contrôle, envoyer, confirmer et réconcilier des transactions. Aucune stratégie P4 ni profitabilité live démontrée à ce jour. Les comptes rendus historiques ci-dessous décrivent l'état antérieur ; leurs interdictions de **développement** de code live sont remplacées par le mandat courant, pas les contrôles d'accès aux fonds.
