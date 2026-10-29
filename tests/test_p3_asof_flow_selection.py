@@ -53,7 +53,7 @@ def fixture(monkeypatch):
             snapshot=bank(mint,pool,10,1000,1000,2000,2000))
         delta=0 if n==0 else n*50
         current.append(dict(mint=mint,pool=pool,
-            snapshot=bank(mint,pool,11,1000-delta,1000+delta,2000-delta,2000+delta),
+            snapshot=bank(mint,pool,11,1000+delta,1000+delta,2000-delta,2000+delta),
             snapshot_available_at_ms=2000))
     strict=cohort.select_cohort(current,decision_at_ms=2001)
     return strict,previous
@@ -82,8 +82,9 @@ def test_modified_strict_selection_cannot_retroactively_admit(fixture):
 
 def test_stale_or_later_S0_never_qualifies(fixture):
     strict,prev=fixture
-    prev['Mint1']['available_at_ms']=-20000
-    assert [x['mint'] for x in select_predecision_flow(strict,prev)['selected']]==['Mint2']
+    prev['Mint1']['available_at_ms']=1000
+    assert [x['mint'] for x in select_predecision_flow(
+        strict,prev,max_observation_span_ms=500)['selected']]==['Mint2'
     prev['Mint1']['available_at_ms']=1000
     prev['Mint1']['snapshot']['context_slot']=11
     assert [x['mint'] for x in select_predecision_flow(strict,prev)['selected']]==['Mint2']

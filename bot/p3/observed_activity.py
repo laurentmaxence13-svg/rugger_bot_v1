@@ -4,7 +4,9 @@ Two snapshots are PRE-DECISION features only. An entry must be decided after the
 second snapshot and future exits require a *third* subsequently received state.
 No price, fill, wallet, identity certification or permission is inferred here.
 
-A nonzero net reserve change may be compatible with a buy or a sell, but does
+In LaunchLab a buy INCREASES pool real_a (sold-to-public circulation) while
+reducing the token vault; a sell decreases real_a. A nonzero net change may
+be compatible with a buy or a sell, but does
 NOT independently certify on-chain trade volume, wallet independence, or a
 provider quote's freshness. Zero changes do not prove no trades occurred.
 """
@@ -107,9 +109,9 @@ def classify_predecision_reserve_change(
         return reject('invalid_or_missing_atomic_reserves')
     deltas = {name: end-start for name, (start, end) in measurements.items()}
     all_same = all(amount == 0 for amount in deltas.values())
-    buy_compatible = (deltas['real_a_atomic'] < 0 and deltas['real_b_lamports'] > 0
+    buy_compatible = (deltas['real_a_atomic'] > 0 and deltas['real_b_lamports'] > 0
                       and deltas['base_vault_atomic'] < 0 and deltas['quote_vault_lamports'] > 0)
-    sell_compatible = (deltas['real_a_atomic'] > 0 and deltas['real_b_lamports'] < 0
+    sell_compatible = (deltas['real_a_atomic'] < 0 and deltas['real_b_lamports'] < 0
                        and deltas['base_vault_atomic'] > 0 and deltas['quote_vault_lamports'] < 0)
     if all_same:
         signal = 'NO_NET_RESERVE_CHANGE_OBSERVED'

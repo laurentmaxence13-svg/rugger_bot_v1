@@ -37,6 +37,16 @@ def functions(monkeypatch):
     return mod.verify_historical_platform_creation
 
 
+def full_platform_args():
+    # 3*u64 migrate_nft_info; fee_rate u64; three Borsh strings;
+    # creator_fee_rate u64; platform_vesting_scale u64.
+    numbers=(0).to_bytes(8,'little')
+    def bor(s):
+        b=s.encode('utf-8')
+        return len(b).to_bytes(4,'little')+b
+    return DISCRIMINATOR+numbers*4+bor('Test')+bor('')+bor('')+numbers*2
+
+
 def transaction():
     return {'slot':100,'meta':{'err':None},'transaction':{
         'signatures':['SIG_test'],'message':{
@@ -44,9 +54,13 @@ def transaction():
                            {'pubkey':'FeeWallet','signer':False},
                            {'pubkey':'NFTWallet','signer':False},
                            {'pubkey':'PDA_AdminA','signer':False},
-                           {'pubkey':PROGRAM,'signer':False}],
-            'instructions':[{'programId':PROGRAM,'data':encode(DISCRIMINATOR+b'xx'),
-                             'accounts':[0,1,2,3]}]}}}
+                           {'pubkey':PROGRAM,'signer':False},
+                           {'pubkey':'CpswapConfig','signer':False},
+                           {'pubkey':'11111111111111111111111111111111','signer':False},
+                           {'pubkey':'TransferFeeAuth','signer':False},
+                           {'pubkey':'VestingWallet','signer':False}],
+            'instructions':[{'programId':PROGRAM,'data':encode(full_platform_args()),
+                             'accounts':[0,1,2,3,5,6,7,8]}]}}}
 
 
 def check(fn,tx):
@@ -90,3 +104,23 @@ def test_compiled_program_id_account_indices_supported(functions):
     x=transaction();ix=x['transaction']['message']['instructions'][0]
     del ix['programId'];ix['programIdIndex']=4
     assert check(functions,x)['status']=='PASS'
+
+
+def test_partial_args_prefix_only_is_not_a_platform_creation(functions):
+    tx=transaction()
+    tx['transaction']['message']['instructions'][0]['data']=encode(DISCRIMINATOR+b'xx')
+    assert check(functions,tx)['status']=='UNKNOWN'
+
+
+def test_trailing_bytes_and_truncated_borsh_rejected(functions):
+    tx=transaction()
+    ix=tx['transaction']['message']['instructions'][0]
+    for data in (full_platform_args()[:-1],full_platform_args()+b'X'):
+        ix['data']=encode(data)
+        assert check(functions,tx)['status']=='UNKNOWN'
+
+
+def test_missing_create_platform_account_is_rejected(functions):
+    tx=transaction()
+    tx['transaction']['message']['instructions'][0]['accounts']=[0,1,2,3]
+    assert check(functions,tx)['status']=='UNKNOWN'

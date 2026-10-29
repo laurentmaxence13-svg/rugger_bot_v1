@@ -19,10 +19,11 @@ def _advance_accounts(accounts, addresses, *, token_atomic, sol_lamports):
     """Construct a coherent *synthetic* second bank, not a recorded swap."""
     updated=deepcopy(accounts)
     pool=addresses['pool'];base=addresses['vault_a'];quote=addresses['vault_b']
+    # LaunchLab buys increase real_a/real_b, while token vault quantity decreases.
     # Pool layout fixed by pinned LaunchLab IDL: real_a=53, real_b=61.
     current=launchlab._pool(updated[pool])[0]
-    assert current['real_a']>token_atomic
-    mutate_account(updated,pool,53,current['real_a']-token_atomic,'<Q')
+    assert current['real_a']+token_atomic <= current['total_sell_a']
+    mutate_account(updated,pool,53,current['real_a']+token_atomic,'<Q')
     mutate_account(updated,pool,61,current['real_b']+sol_lamports,'<Q')
     # SPL token-account amount at offset 64.
     from bot.p3.launchlab import _vault

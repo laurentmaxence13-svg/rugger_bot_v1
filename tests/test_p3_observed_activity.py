@@ -47,7 +47,7 @@ def test_p3_011_second_mint_same_reserves_is_not_momentum():
 
 
 def test_positive_directional_net_change_is_only_a_candidate():
-    a=state();b=state(slot=462777991,real_a=628873252768391,real_b=42478068777,
+    a=state();b=state(slot=462777991,real_a=628873252768591,real_b=42478068777,
                       base=371126747231409,quote=44847327176)
     r=run(a,b)
     assert r['signal']=='NET_BUY_COMPATIBLE_CHANGE'
@@ -57,7 +57,7 @@ def test_positive_directional_net_change_is_only_a_candidate():
 
 
 def test_net_sell_compatible_is_not_positive():
-    a=state();b=state(slot=462777991,real_a=628873252768591,real_b=42478068577,
+    a=state();b=state(slot=462777991,real_a=628873252768391,real_b=42478068577,
                       base=371126747231609,quote=44847326976)
     r=run(a,b)
     assert r['signal']=='NET_SELL_COMPATIBLE_CHANGE'
@@ -102,7 +102,7 @@ def test_config_changes_refuse_momentum_signal():
 
 
 def test_mixed_changes_cannot_be_treated_as_buys():
-    a=state();b=state(slot=462777991,real_a=628873252768391,real_b=42478068777,
+    a=state();b=state(slot=462777991,real_a=628873252768591,real_b=42478068777,
                       base=371126747231609,quote=44847327176)
     assert run(a,b)['signal']=='MIXED_OR_NONSWAP_CHANGE'
     assert not run(a,b)['candidate_recent_net_buy_change']

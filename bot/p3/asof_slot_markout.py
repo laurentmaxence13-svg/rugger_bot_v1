@@ -98,15 +98,40 @@ def evaluate_asof_slot_markout(flow_selection, s2, *,
                 or int(facts['pool']['status'])!=0
                 or int(facts['config']['curve_type'])!=0):
             return refuse('S2_pool_scope_different_or_inactive')
-        rate=(int(facts['config']['trade_fee_rate_ppm']),
-              int(facts['platform']['platform_fee_rate_ppm']),
-              int(facts['platform']['creator_fee_rate_ppm']))
-        quantity=int(entry['buy_output_atomic'])
-        sale=observed_sell_projection(facts['pool'],input_token_atomic=quantity,
+        # Parsed LaunchLab `facts` serializes every integer as a decimal
+        # string; observed_sell_projection requires native unsigned integers.
+        # Reuse the pinned cohort validator rather than reimplementing parsing.
+        from bot.p3.cohort import _uint
+        initial_facts = s1['facts']
+        immutable = ('mint_a', 'mint_b', 'supply', 'total_sell_a',
+                     'total_fundraising_b')
+        if any(initial_facts['pool'].get(key) != facts['pool'].get(key)
+               for key in immutable):
+            return refuse('S2_pool_identity_or_terms_changed')
+        for role, keys in (
+                ('config', ('curve_type', 'trade_fee_rate_ppm')),
+                ('platform', ('platform_fee_rate_ppm', 'creator_fee_rate_ppm'))):
+            if any(initial_facts[role].get(k) != facts[role].get(k)
+                   for k in keys):
+                return refuse('S2_fee_or_curve_config_changed')
+        if (initial_facts.get('share_fee_assumption_ppm')
+                != facts.get('share_fee_assumption_ppm')):
+            return refuse('S2_share_fee_assumption_changed')
+        rate=tuple(_uint(facts[role][key]) for role,key in (
+            ('config','trade_fee_rate_ppm'),
+            ('platform','platform_fee_rate_ppm'),
+            ('platform','creator_fee_rate_ppm')))
+        share=_uint(facts['share_fee_assumption_ppm'])
+        exact_pool=dict(facts['pool'])
+        for key in ('virtual_a', 'virtual_b', 'real_a', 'real_b',
+                    'protocol_fee_accrued', 'platform_fee_accrued', 'status'):
+            exact_pool[key]=_uint(facts['pool'][key])
+        quantity=_uint(entry['buy_output_atomic'],positive=True)
+        sale=observed_sell_projection(exact_pool,input_token_atomic=quantity,
             fee_rates_ppm=rate,
-            quote_vault_lamports=int(facts['quote_vault']['amount_atomic']),
-            curve_type=int(facts['config']['curve_type']),
-            share_fee_rate_ppm=int(facts['share_fee_assumption_ppm']))
+            quote_vault_lamports=_uint(facts['quote_vault']['amount_atomic']),
+            curve_type=_uint(facts['config']['curve_type']),
+            share_fee_rate_ppm=share)
         received=int(sale['output_lamports'])
         if quantity<=0 or received<0 or received>=2**64:
             return refuse('invalid_S2_full_exit_projection')
