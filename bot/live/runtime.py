@@ -7,15 +7,51 @@ The native execution journal remains separate from the existing PAPER book.
 import hashlib
 import json
 import time
+from fractions import Fraction
 
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p3.certification import PROGRAM
 from .journal import ACTIVE, canonical
 from .route import build_launchlab_order
 from .safety import Mode
+from .positions import FrozenEntryPlan,persist_entry_plan,evaluate_live_position
 
 
 def _hash(value):return hashlib.sha256(canonical(value).encode()).hexdigest()
+
+
+def _validate_source_availability(value,source_at):
+    """A delayed consumer cannot add future embedded facts to a source frame."""
+    if type(value) is dict:
+        for key,item in value.items():
+            if key=='available_at_ms' or key.endswith('_available_at_ms') or key=='observed_at_ms':
+                if item is not None and (type(item) is not int or not 0<=item<=source_at):
+                    raise ValueError('future_or_invalid_source_availability')
+            _validate_source_availability(item,source_at)
+    elif type(value) is list:
+        for item in value:_validate_source_availability(item,source_at)
+
+
+def freeze_entry_thresholds(proposal,decision_id,*,max_price_impact_bps):
+    """Freeze the existing Master's actual exit plan, without tuning thresholds."""
+    model=proposal.get('decision_evidence',{}).get('reference_exit_conditions')
+    if proposal.get('action')!='ENTER' or type(model) is not dict:
+        raise ValueError('Master_entry_with_explicit_exit_conditions_required')
+    values={}
+    for key in ('tp_pct','sl_pct','trailing_stop_pct'):
+        if key not in model:raise ValueError('incomplete_frozen_Master_exit_conditions')
+        value=model[key]
+        if value is None:value=0  # The existing model explicitly disables this trigger.
+        if type(value) not in (int,float,str):raise ValueError('invalid_frozen_Master_threshold')
+        values[key]=str(value)
+        try:
+            if Fraction(values[key])<0:raise ValueError()
+        except (ValueError,ZeroDivisionError):
+            raise ValueError('invalid_frozen_Master_threshold') from None
+    return FrozenEntryPlan(entry_decision_id=decision_id,
+        entry_at_ms=proposal['decision_at_ms'],hold_seconds=model.get('hold_seconds'),
+        net_take_profit_lamports=0,max_observation_age_ms=5000,
+        max_price_impact_bps=max_price_impact_bps,**values)
 
 
 class JournalDecisionContext:
@@ -96,6 +132,10 @@ class LiveRuntime:
                 raise ValueError('master_source_frame_identity_reused')
             return dict(decision_id=decision_id,proposal=retained['payload']['proposal'],
                 execution=self.engine.result(decision_id),duplicate=True)
+        available=frame.get('available_at_ms')
+        if type(available) is not int or not 0<=self.clock_ms()-available<=5000:
+            raise ValueError('frame_unavailable_or_stale_at_actual_decision')
+        _validate_source_availability(frame,available)
         context=await self.context_provider()
         now=self.clock_ms();available=frame.get('available_at_ms')
         if type(available) is not int or not 0<=now-available<=5000:
@@ -122,6 +162,37 @@ class LiveRuntime:
                 or request.get('amount_in')!=int(proposal['input_lamports'])):
             raise ValueError('route_differs_from_frozen_Master_intent')
         order=build_launchlab_order(**request)
+        plan=freeze_entry_thresholds(proposal,decision_id,
+            max_price_impact_bps=order.max_price_impact_bps)
+        persist_entry_plan(self.engine.journal,order.mint,order.pool,plan,at_ms=self.clock_ms())
+        result['execution']=await self.engine.execute(decision_id,order)
+        return result
+
+    async def observe_position(self,frame):
+        """Drive the same native engine from frozen Master position triggers."""
+        if type(frame) is not dict:raise ValueError('explicit_native_position_frame_required')
+        context=await self.context_provider();now=self.clock_ms()
+        source_health=context.get('health')
+        health=(dict(source_health,allow_position_management=
+            source_health.get('allow_new_entries') is True) if type(source_health) is dict else None)
+        proposal=evaluate_live_position(self.engine.journal,frame.get('mint'),frame.get('pool'),
+            frame,health=health,at=now)
+        result=dict(proposal=proposal,execution=None)
+        if (proposal['execution_blocked'] or proposal['action'] not in
+                ('REDUCE','EXIT','TAKE_PROFIT','EMERGENCY_EXIT')
+                or self.engine.mode in (Mode.RESEARCH,Mode.SHADOW)):
+            return result
+        if (self.engine.mode is Mode.LIVE_ENABLED
+                and self.approved_policy_sha256!=self.core.policy_sha256):
+            raise ValueError('explicit_unchanged_strategy_policy_approval_required')
+        orders=[frame.get('prepared_full_exit'),*frame.get('prepared_partial_exits',())]
+        matches=[o for o in orders if o is not None
+            and o.semantic_digest==proposal['route_semantic_digest']]
+        if len(matches)!=1:raise ValueError('unique_exact_position_route_required')
+        order=matches[0]
+        if str(order.input_amount)!=proposal['input_quantity_atomic']:
+            raise ValueError('position_quantity_differs_from_frozen_proposal')
+        decision_id=json.loads(order.rebuild_request_json)['decision_id']
         result['execution']=await self.engine.execute(decision_id,order)
         return result
 
@@ -136,6 +207,12 @@ class LiveRuntime:
         histories={}
         async for frame in frames:
             if self.engine.journal.killed:break
+            if frame.get('kind')=='position':
+                try:yield await self.observe_position(frame)
+                except BaseException:
+                    self.engine.journal.kill('native_position_runtime_interrupted_or_failed',self.clock_ms())
+                    raise
+                continue
             history=histories.setdefault(frame.get('mint'),[])
             try:
                 yield await self.observe(frame,history[-32:])

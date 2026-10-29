@@ -16,6 +16,25 @@ class RpcError(RuntimeError):
     pass
 
 
+class _GuardedJsonPayload(aiohttp.BytesPayload):
+    """Recheck after connection/TLS acquisition, before writing financial bytes."""
+    def __init__(self,body,raw,authorizer):
+        super().__init__(body,content_type='application/json')
+        self.raw,self.authorizer=raw,authorizer
+
+    async def write(self,writer):
+        if self.authorizer(self.raw) is not True:
+            raise RpcError('Submission revoked before transaction payload write')
+        await super().write(writer)
+
+    async def write_with_length(self,writer,content_length):
+        # aiohttp >=3.12 uses this path instead of write(). Never permit a
+        # partial JSON body or a bypass through its optimized BytesPayload API.
+        if content_length is not None and content_length!=len(self._value):
+            raise RpcError('Exact complete transaction payload length required')
+        await self.write(writer)
+
+
 READ_METHODS = frozenset(('getGenesisHash', 'getLatestBlockhash', 'getBlockHeight',
     'simulateTransaction', 'getSignatureStatuses', 'getTransaction', 'getBalance',
     'getTokenAccountBalance', 'getMultipleAccounts', 'getFeeForMessage',
@@ -74,8 +93,14 @@ class HttpJsonRpcTransport:
             sock_connect=min(3, remaining), sock_read=min(4, remaining),
             ceil_threshold=float('inf'))
         try:
+            envelope=dict(jsonrpc='2.0',id=request_id,method=method,params=params)
+            if method=='sendTransaction':
+                import json
+                options=dict(data=_GuardedJsonPayload(json.dumps(envelope,separators=(',',':')).encode(),
+                    raw,self.submission_authorizer))
+            else:options=dict(json=envelope)
             async with self.session.post(self.endpoint,
-                    json=dict(jsonrpc='2.0', id=request_id, method=method, params=params),
+                    **options,
                     proxy=self.proxy, allow_redirects=False, timeout=timeout) as response:
                 if response.status != 200:
                     raise RpcError('RPC HTTP response refused')

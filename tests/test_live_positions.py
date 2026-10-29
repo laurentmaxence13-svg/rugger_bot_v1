@@ -163,6 +163,9 @@ def test_partial_reduction_then_final_close_preserves_exact_remaining_cost(tmp_p
     result=evaluate(engine,order,frame)
     assert result['action']=='REDUCE' and result['input_quantity_atomic']==str(half)
     sell=frame['prepared_partial_exits'][0];clock[0]=1200
+    # This simulated response must describe the bank on which the sell was
+    # prepared; the engine correctly rejects the older default fake bank.
+    rpc.simulation['context_slot']=sell.source_slot
     decision=json.loads(sell.rebuild_request_json)['decision_id']
     submitted=asyncio.run(engine.execute(decision,sell))
     rpc.tx=finalized_payload(sell,submitted['signature']);rpc.tx['slot']=1302

@@ -1,0 +1,185 @@
+{
+  "schema": "rugger-remote-checkpoint-readback-v1",
+  "remote_commit": "98b1570d4b6316e743b2b55b9478c47a0c7c86ee",
+  "tree": "cc61216bf0428c776e8a4309429a3f5a08308c74",
+  "files": [
+    {
+      "path": "P3_ASOF_012_RESULTS.md",
+      "git_blob": "0b2a5ac57538c35498f1b96491a1e52548833a9e"
+    },
+    {
+      "path": "bot/live/engine.py",
+      "git_blob": "4b9ad6a1b73a0d89f33c940db9a3caeb18887356"
+    },
+    {
+      "path": "bot/live/evidence.py",
+      "git_blob": "7f58798b3d02fe0f3eec4fe900d3de1660e12038"
+    },
+    {
+      "path": "bot/live/journal.py",
+      "git_blob": "8d8fee67bbf57ddbeb9c11171a95cc31bc20ad3b"
+    },
+    {
+      "path": "bot/live/launchlab_swap_abi.json",
+      "git_blob": "519da1a8699e3c6a9ec5836a1464b8a38ac9b8aa"
+    },
+    {
+      "path": "bot/live/positions.py",
+      "git_blob": "1c7fc85ce85ce735668678bff2401feb6fbf9430"
+    },
+    {
+      "path": "bot/live/route.py",
+      "git_blob": "eed886f1e29773abec79264f51ffb4aaf406e184"
+    },
+    {
+      "path": "bot/live/runtime.py",
+      "git_blob": "a6d3d947239e509749e03b7b29dd991a452c4668"
+    },
+    {
+      "path": "bot/live/safety.py",
+      "git_blob": "c27e87b0e4663ee20f8884a0d3cfbbb223e046ad"
+    },
+    {
+      "path": "bot/live/signer.py",
+      "git_blob": "b1641e952fd0856daaed8e602ec4c45d34a821d7"
+    },
+    {
+      "path": "bot/live/wire.py",
+      "git_blob": "9891f59bf1aeaf81688d2330856df1761d5f5b8c"
+    },
+    {
+      "path": "bot/master_positions.py",
+      "git_blob": "e8a12a99cdc2aedaf5d99ce51046c307e90986a3"
+    },
+    {
+      "path": "evidence/p3/asof_012/events.jsonl.gz",
+      "git_blob": "417725650ea857ce314554f959d23b1122dff792"
+    },
+    {
+      "path": "evidence/p3/asof_012/manifest.json",
+      "git_blob": "eb42f7000531d7e765a354ef3458812cabfba6d1"
+    },
+    {
+      "path": "evidence/p3/index.json",
+      "git_blob": "0bbfa9161df32d290ff99c4b7b32d56e4da738eb"
+    },
+    {
+      "path": "tests/test_live_adversarial_review.py",
+      "git_blob": "5d4f6c9ad48562d03c8bbd790f68e5d35518dd8c"
+    },
+    {
+      "path": "tests/test_live_engine.py",
+      "git_blob": "76045d75ed37f735a3c2fe048a3aa63ca17947d8"
+    },
+    {
+      "path": "tests/test_live_evidence.py",
+      "git_blob": "729bbd582208b59ba2fd8a95dfe892a3ea715d6b"
+    },
+    {
+      "path": "tests/test_live_positions.py",
+      "git_blob": "3b84f1ff0a7fc006d9bf52109398dd0af7be4caa"
+    },
+    {
+      "path": "tests/test_live_runtime.py",
+      "git_blob": "300c11e7b8e31ec97282ba4851665b645a6b55d3"
+    },
+    {
+      "path": "tests/test_live_runtime_review.py",
+      "git_blob": "e464a8cdde2f3595a6529542bf2a95b37e92b85e"
+    },
+    {
+      "path": "tests/test_live_safety.py",
+      "git_blob": "43660f7b293ae35a90008217be0fe2b9cfeab86b"
+    },
+    {
+      "path": "tests/test_live_signer.py",
+      "git_blob": "68284d189fab72fb834402f9ab8594665cedd607"
+    },
+    {
+      "path": "tests/test_live_wire_route.py",
+      "git_blob": "4aad819dbf7c26ed5508db49ccb092dcdd28114b"
+    },
+    {
+      "path": "validation/live_20261029/012-replay.json",
+      "git_blob": "88d904ea5da3cc93ba062ca004e591805c879c52"
+    },
+    {
+      "path": "validation/live_20261029/LIVE_ADVERSARIAL_REVIEW.md",
+      "git_blob": "ee2ed8a9e0bc0e9297512e90bc7e076681a8fd9f"
+    },
+    {
+      "path": "validation/live_20261029/LIVE_ROUTE_WIRE.md",
+      "git_blob": "8bc8129710d36a06e78309f34a14d0c7a4aa9e5b"
+    },
+    {
+      "path": "validation/live_20261029/RECOVERED_FILES.json",
+      "git_blob": "0d6c296c3eeb19dfdd943fb923871db15fa2d19b"
+    },
+    {
+      "path": "validation/live_20261029/RECOVERY_CHECKPOINT.json",
+      "git_blob": "3e8343ad03f0979ae9e6d58405413050d71832b2"
+    },
+    {
+      "path": "validation/live_20261029/collector012-targeted.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "validation/live_20261029/collector012-targeted.txt",
+      "git_blob": "a9f36dda55c175f507ee3da77c73b062d1ee77cd"
+    },
+    {
+      "path": "validation/live_20261029/engine-targeted.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "validation/live_20261029/engine-targeted.txt",
+      "git_blob": "a01812e1db925adc2c15312195e63156cc3b184c"
+    },
+    {
+      "path": "validation/live_20261029/live-counterreview.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "validation/live_20261029/live-counterreview.txt",
+      "git_blob": "4589ae74b790cdeeebe30d9981b0c620dc343824"
+    },
+    {
+      "path": "validation/live_20261029/positions-targeted.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "validation/live_20261029/positions-targeted.txt",
+      "git_blob": "a9b5d605ce641de7da289b809bed464d7ab7133d"
+    },
+    {
+      "path": "validation/p3_asof_012/ECONOMIC_ANALYSIS.json",
+      "git_blob": "d8be4b810beef80d1e80a655d66cf77c6d04bcf7"
+    },
+    {
+      "path": "validation/p3_asof_012/PROCESS.stderr",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "validation/p3_asof_012/PROCESS.txt",
+      "git_blob": "f9be288ce71cae0619fafc3aa41ee6e14334d7ab"
+    },
+    {
+      "path": "validation/p3_asof_012/REGISTRATION_READBACK.json",
+      "git_blob": "5bdda0320e69e9d31dd7d9518b5872a28b9ed0cb"
+    },
+    {
+      "path": "validation/p3_asof_012/WATCHDOG.json",
+      "git_blob": "13ea21f649b6e3abd4ff44a1dd056a39a61350c2"
+    },
+    {
+      "path": "validation/p3_asof_012/reproduce.py",
+      "git_blob": "6ea1f9cc41a82fe4752728100dadb1a82bb47736"
+    },
+    {
+      "path": "validation/p3_asof_012/result.json.gz",
+      "git_blob": "526f3901d9bfc71040b3abe3c92a25e760be9e05"
+    }
+  ],
+  "downloaded_files": 44,
+  "all_git_blob_ids_match": true
+}

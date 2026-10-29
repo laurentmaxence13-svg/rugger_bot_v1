@@ -63,3 +63,38 @@ def test_actual_scanner_disconnect_during_final_rpc_prevents_submission(tmp_path
         finally:
             task.cancel();await asyncio.gather(task,return_exceptions=True)
     asyncio.run(scenario())
+
+
+def test_disarming_during_final_rpc_prevents_submission(tmp_path):
+    async def scenario():
+        engine,order,rpc,signer,_=configured(tmp_path)
+        original=rpc.get_block_height
+        async def disarmed_height():
+            result=await original()
+            if signer.calls:engine.mode=Mode.LIVE_PREPARED
+            return result
+        rpc.get_block_height=disarmed_height
+        try:
+            with pytest.raises(ValueError,match='disarmed'):
+                await engine.execute(json.loads(order.rebuild_request_json)['decision_id'],order)
+            assert not rpc.send_calls
+        finally:engine.journal.close()
+    asyncio.run(scenario())
+
+
+def test_cancellation_during_send_persists_ambiguous_reservation_and_kill(tmp_path):
+    async def scenario():
+        engine,order,rpc,_,_=configured(tmp_path)
+        rpc.send_error=asyncio.CancelledError()
+        decision=json.loads(order.rebuild_request_json)['decision_id']
+        try:
+            with pytest.raises(asyncio.CancelledError):await engine.execute(decision,order)
+            row=engine.journal.get(decision)
+            assert row['state']=='UNCERTAIN' and row['reserved_lamports']>0
+            assert engine.journal.killed and len(rpc.send_calls)==1
+            await engine.recover(decision)
+            assert engine.journal.get(decision)['reserved_lamports']>0
+            assert len(rpc.send_calls)==1
+            assert engine.journal.verify_audit()
+        finally:engine.journal.close()
+    asyncio.run(scenario())

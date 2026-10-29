@@ -5,6 +5,7 @@ There is no key loader, automatic arming, fallback route, transaction rebuild or
 blind send retry. Tests use explicitly isolated signers/RPCs, never a wallet.
 """
 import base64
+import asyncio
 from dataclasses import asdict
 import hashlib
 import json
@@ -249,6 +250,11 @@ class ExecutionEngine:
         return balance
 
     def _final_admission(self, decision_id):
+        if self.mode is not Mode.LIVE_ENABLED:
+            raise ValueError('execution_disarmed_before_submission')
+        operational_check=getattr(self.evidence_provider,'assert_operational_now',None)
+        if operational_check is not None:
+            operational_check()
         request, health, balance, balance_observed_at = self._admission_cache[decision_id]
         risk = self.journal.risk_snapshot(at=balance_observed_at,
             wallet_balance_lamports=balance, exclude_decision_id=decision_id)
@@ -317,7 +323,7 @@ class ExecutionEngine:
                 raise ValueError('blockhash_expired_during_signing')
             self.journal.transition(decision_id, ('SIGNED',), 'SUBMITTING', self.clock_ms(),
                 final_admission=lambda: self._final_admission(decision_id))
-        except Exception as error:
+        except BaseException as error:
             self.journal.release_unsent(decision_id, self.clock_ms(), type(error).__name__)
             raise
         # No RPC or signer call may occur between this write-ahead marker and
@@ -326,9 +332,11 @@ class ExecutionEngine:
             returned = await self.rpc.send_transaction(raw)
             if returned != signature:
                 raise ValueError('rpc_returned_different_transaction_signature')
-        except Exception as error:
+        except BaseException as error:
             self.journal.transition(decision_id, ('SUBMITTING',), 'UNCERTAIN', self.clock_ms(), failure_type=type(error).__name__)
             self.journal.kill('ambiguous_submission_requires_chain_reconciliation', self.clock_ms())
+            if isinstance(error,(asyncio.CancelledError,KeyboardInterrupt,SystemExit)):
+                raise
             return self.result(decision_id)
         self.journal.transition(decision_id, ('SUBMITTING',), 'SUBMITTED', self.clock_ms())
         return self.result(decision_id)

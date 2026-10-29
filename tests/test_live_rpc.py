@@ -142,3 +142,22 @@ def test_http_budget_and_request_identity_are_preserved():
     assert run(t('getBlockHeight',[]))==15
     with pytest.raises(RpcError):run(t('getBlockHeight',[]))
     assert len(http.calls)==1
+
+
+def test_financial_payload_rechecks_gate_after_connection_delay():
+    from bot.live.rpc import _GuardedJsonPayload
+    admitted=[True];written=[]
+    class Writer:
+        async def write(self,value):written.append(value)
+    payload=_GuardedJsonPayload(b'public-test-json',RAW,lambda raw:admitted[0] and raw==RAW)
+    admitted[0]=False
+    with pytest.raises(RpcError,match='revoked'):
+        run(payload.write(Writer()))
+    with pytest.raises(RpcError,match='revoked'):
+        run(payload.write_with_length(Writer(),None))
+    with pytest.raises(RpcError,match='complete'):
+        run(payload.write_with_length(Writer(),1))
+    assert not written
+    admitted[0]=True
+    run(payload.write(Writer()))
+    assert written==[b'public-test-json']
