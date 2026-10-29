@@ -13,6 +13,8 @@ def test_plan_binds_budget_selection_and_research_only():
     assert p==original
     assert sum(p['request_budget'].values())==20
     assert p['unique_native_SOL_prefix']==12
+    assert p['max_S0_receipt_age_ms']>=p['first_interval_minimum_ms']
+    assert p['max_S1_receipt_age_ms']<p['max_S0_receipt_age_ms']
     assert p['snapshots']==('S0_predecision','S1_predecision','S2_postdecision')
     assert p['selection_known_before_S2']
     assert not p['provider_quotes_authorized']
