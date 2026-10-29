@@ -6,8 +6,8 @@ No signer, submission, ledger mutation, or auto-arming path exists here.
 
 A successful output means only that supplied program pins matched claims
 from one pinned RPC and an unsigned transaction simulated on a later bank.
-Historical signature cryptography and independent RPC consensus are NOT
-verified. It is never a financial execution authorization.
+Historical transaction Ed25519 signatures ARE checked, but independent
+RPC consensus and chain inclusion are NOT verified. It is never a financial execution authorization.
 """
 import hashlib
 import json
@@ -28,7 +28,7 @@ async def preflight_migrated_sell(
     clock_ms, amount_in, slippage_bps, max_slippage_bps,
     max_price_impact_bps, compute_unit_limit=200000,
     priority_fee_micro_lamports=0, max_priority_fee_lamports=0,
-    max_bank_age_ms=5000,
+    max_bank_age_ms=5000, phase_hook=None,
 ):
     """Read-only end-to-end qualification; at most 18 RPC requests.
 
@@ -43,6 +43,12 @@ async def preflight_migrated_sell(
             or type(min_context_slot) is not int or min_context_slot<=0
             or not callable(clock_ms)):
         raise ValueError("two_explicit_program_pins_and_source_slot_required")
+    def phase(name):
+        if phase_hook is not None:
+            if not callable(phase_hook):
+                raise ValueError("noncallable_preflight_phase_hook")
+            phase_hook(name)
+
     envelope=dict(schema="rugger-cpmm-unsigned-preflight-v1",
         status="REFUSED", live_ready_to_arm=False,
         live_execution_authorized=False,
@@ -52,6 +58,7 @@ async def preflight_migrated_sell(
         economic_edge_validated=False)
     pin_results={}
     for program_id in (PROGRAM,CPMM_PROGRAM):
+        phase("program_pin_launchlab" if program_id==PROGRAM else "program_pin_cpmm")
         expected=dict(program_pins[program_id])
         if "program_id" in expected and expected["program_id"]!=program_id:
             raise ValueError("program_pin_identity_mismatch")
@@ -66,6 +73,7 @@ async def preflight_migrated_sell(
                 or pin["joint_bank_slot"]<min_context_slot):
             return dict(envelope,reason="onchain_program_pin_not_matched")
         pin_results[program_id]=pin
+    phase("migration_receipt")
     migration=await read_finalized_migration(
         rpc,signature=migration_signature,mint=mint,
         launchlab_pool=original_launchlab_pool,cpmm_pool=migrated_cpmm_pool,
@@ -101,6 +109,7 @@ async def preflight_migrated_sell(
     min_bank=max(min_context_slot,migration["migration_slot"]+1,
                  pin_results[PROGRAM]["joint_bank_slot"],
                  pin_results[CPMM_PROGRAM]["joint_bank_slot"])
+    phase("cpmm_bank")
     bank=await prepare_cpmm_sell_from_rpc(
         rpc,pool_address=migrated_cpmm_pool,mint=mint,
         wallet=wallet,decision_id=decision_id,min_context_slot=min_bank,
@@ -125,6 +134,7 @@ async def preflight_migrated_sell(
     now=clock_ms()
     if type(now) is not int or now<bank["decision_at_ms"]:
         raise ValueError("simulation_clock_invalid")
+    phase("unsigned_simulation")
     simulated=await check_unsigned_order(
         rpc,order,expected_genesis_hash=expected_genesis_hash,
         expected_endpoint_sha256=expected_endpoint_sha256,
@@ -169,6 +179,7 @@ async def preflight_migrated_sell(
         source_transport_independently_authenticated=False)
     if simulated["result"]!="SIMULATION_SUCCEEDED_UNSENT":
         return dict(base,status="REFUSED",reason="unsigned_simulation_failed")
+    phase("complete")
     return dict(base,status="UNSIGNED_CPMM_ROUTE_SIMULATED",
                 reason=None,
                 actual_mainnet_execution_confirmed=False,
