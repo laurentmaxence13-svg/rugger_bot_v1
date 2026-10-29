@@ -30,7 +30,7 @@ async def preflight_migrated_sell(
     priority_fee_micro_lamports=0, max_priority_fee_lamports=0,
     max_bank_age_ms=5000,
 ):
-    """Read-only end-to-end qualification; at most 17 RPC requests.
+    """Read-only end-to-end qualification; at most 18 RPC requests.
 
     Five read phases: dual on-chain code pins, cryptographic finalized migration,
     joint-bank CPMM account graph, and unsigned exact wire simulation.
