@@ -74,6 +74,7 @@ class SyntheticSolanaTransport:
             self.programs[program]=(address,program_account,pd_account)
             self.program_pins[program]=pins
         self.source_blockhash=self.pool['recent_blockhash']
+        self.block_time=1
 
     async def __call__(self,method,params):
         self.calls.append((method,params))
@@ -111,7 +112,7 @@ class SyntheticSolanaTransport:
             return 2039280
         if method=='getBlockTime':
             assert params[0]==1235
-            return 1
+            return self.block_time
         if method=='getFeeForMessage':
             assert params[1]['minContextSlot']==1236
             assert params[1]['commitment']=='confirmed'
