@@ -77,7 +77,7 @@ noncanonical_Ed25519_signature_encoding
 
 
 def safe_refusal_reason(error):
-    if type(error) not in (ValueError, TypeError, KeyError, RuntimeError):
+    if not isinstance(error, (ValueError, TypeError, KeyError, RuntimeError)):
         return "UNCLASSIFIED_FAILURE"
     # Never use string interpolation or substring matches for remote input.
     msg=str(error)
