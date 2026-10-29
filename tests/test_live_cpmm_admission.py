@@ -25,6 +25,7 @@ from test_live_cpmm_stage import _staged
 from test_live_evidence import FixtureRpc,GENESIS,ENDPOINT,_raw_account,deployment_fixture
 from test_live_migration_evidence import SIG
 from test_live_migration_rpc_json import _compiled
+from test_live_signed_migration_reference import signed_rpc_migration
 from test_live_migration_rpc_receipt import Rpc as MigrationRpc
 
 
@@ -42,8 +43,13 @@ def cpmm_deployment():
 def exercise(tmp_path,assertion,*,register=True,registered_at_ms=1400):
     engine,entry,order,migration,amount=_staged(tmp_path)
     async def scenario():
-        receipt=await read_finalized_migration(MigrationRpc(_compiled(migration)),
-            signature=SIG,mint=order.mint,launchlab_pool=entry.pool,cpmm_pool=order.pool,
+        signed,signed_sig=signed_rpc_migration(migration)
+        class SignedRpc(MigrationRpc):
+            async def get_transaction(self,signature):
+                assert signature==signed_sig
+                return deepcopy(signed)
+        receipt=await read_finalized_migration(SignedRpc(signed),
+            signature=signed_sig,mint=order.mint,launchlab_pool=entry.pool,cpmm_pool=order.pool,
             expected_endpoint_sha256=ENDPOINT,expected_genesis_hash=GENESIS,
             observed_at_slot=order.source_slot)
         if register:
