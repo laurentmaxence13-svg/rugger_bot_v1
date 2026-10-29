@@ -10,12 +10,13 @@ from bot.p3.certification import PROGRAM,_decode,_encode,find_program_address
 from bot.p3.quotes import SOL_MINT
 from bot.live.cpmm_swap import CPMM_PROGRAM
 from bot.live.migration_evidence import (
-    MIGRATE_TO_CPSWAP_DISC,ROLES,validate_migrate_to_cpswap_transaction,
+    MIGRATE_TO_CPSWAP_DISC,ROLES,REQUIRED_WRITABLE_ROLES,FIXED_PROGRAMS,
+    validate_migrate_to_cpswap_transaction,
 )
 
 
 MINT=_encode(bytes([55])*32)
-OLD=_encode(bytes([91])*32)
+OLD=find_program_address((b'pool',_decode(MINT),_decode(SOL_MINT)))[0]
 NEW=_encode(bytes([88])*32)
 PAYER=_encode(bytes([22])*32)
 SIG=_encode(bytes([77])*64)
@@ -26,6 +27,8 @@ def migration():
     addresses.update(
         payer=PAYER,base_mint=MINT,quote_mint=SOL_MINT,
         cpswap_program=CPMM_PROGRAM,cpswap_pool=NEW,
+        cpswap_config=find_program_address((b'amm_config',b'\0\0'),
+            program_id=CPMM_PROGRAM)[0],
         pool_state=OLD,
         cpswap_authority=find_program_address((b'vault_and_lp_mint_auth_seed',),
                                              program_id=CPMM_PROGRAM)[0],
@@ -38,22 +41,30 @@ def migration():
         cpswap_observation=find_program_address(
             (b'observation',_decode(NEW)),program_id=CPMM_PROGRAM)[0],
     )
-    ordered=[PAYER]
+    addresses.update(FIXED_PROGRAMS)
+    addresses.update(
+        authority=find_program_address((b'vault_auth_seed',))[0],
+        base_vault=find_program_address((b'pool_vault',_decode(OLD),_decode(MINT)))[0],
+        quote_vault=find_program_address((b'pool_vault',_decode(OLD),_decode(SOL_MINT)))[0],
+        lock_authority=find_program_address((b'lock_cp_authority_seed',),
+            program_id=FIXED_PROGRAMS['lock_program'])[0],
+    )
+    ordered=[PAYER,NEW]
     for k in addresses.values():
         if k not in ordered:
             ordered.append(k)
     ordered.append(PROGRAM)
-    keys=[dict(pubkey=k,signer=(i==0),writable=False) for i,k in enumerate(ordered)]
+    keys=[dict(pubkey=k,signer=(i<2),writable=False) for i,k in enumerate(ordered)]
     refs=[ordered.index(addresses[role]) for role in ROLES]
-    for r in (5,7,8,9,12,17):
+    for r in REQUIRED_WRITABLE_ROLES:
         keys[refs[r]]['writable']=True
     keys[0]['writable']=True
     transaction=dict(
         slot=100,meta={'err':None},
         transaction={
-            'signatures':[SIG],
+            'signatures':[SIG,_encode(bytes([78])*64)],
             'message':{
-                'header':{'numRequiredSignatures':1},
+                'header':{'numRequiredSignatures':2},
                 'accountKeys':keys,
                 'instructions':[dict(programIdIndex=ordered.index(PROGRAM),
                      accounts=refs,data=_encode(MIGRATE_TO_CPSWAP_DISC))],

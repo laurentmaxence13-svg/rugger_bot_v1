@@ -66,6 +66,10 @@ class ExecutionJournal:
           CREATE TABLE IF NOT EXISTS daily(
             day TEXT PRIMARY KEY,spent INTEGER NOT NULL DEFAULT 0,
             realized_loss INTEGER NOT NULL DEFAULT 0,realized_pnl INTEGER NOT NULL DEFAULT 0);
+          CREATE TABLE IF NOT EXISTS cpmm_migrations(
+            mint TEXT NOT NULL,inventory_pool TEXT NOT NULL,cpmm_pool TEXT NOT NULL,
+            binding_json TEXT NOT NULL,PRIMARY KEY(mint,inventory_pool),
+            UNIQUE(mint,cpmm_pool));
         ''')
         self.con.execute(f'PRAGMA application_id={APPLICATION_ID}')
 
@@ -96,6 +100,7 @@ class ExecutionJournal:
         expected = {}
         ledger_digest = None
         kill_reason = None
+        migrations = {}
         for row in self.con.execute('SELECT * FROM audit ORDER BY sequence'):
             digest = hashlib.sha256((previous + row['event_json']).encode()).hexdigest()
             if row['previous_hash'] != previous or row['event_hash'] != digest:
@@ -106,6 +111,11 @@ class ExecutionJournal:
             kind = event['kind']
             if kind == 'kill':
                 kill_reason = event['reason']
+            elif kind == 'cpmm_migration':
+                key=(event['mint'],event['inventory_pool'],event['cpmm_pool'])
+                if key in migrations:
+                    raise ValueError('duplicate_cpmm_migration_audit')
+                migrations[key]=event['binding_json']
             elif kind == 'prepared':
                 expected[decision] = dict(state='PREPARED', order_sha256=event['order_sha256'],
                     semantic_digest=event['semantic_digest'], reserved_lamports=0,
@@ -152,7 +162,145 @@ class ExecutionJournal:
         if ledger_digest is None and (self.con.execute('SELECT COUNT(*) FROM positions').fetchone()[0]
                                       or self.con.execute('SELECT COUNT(*) FROM daily').fetchone()[0]):
             raise ValueError('unreconciled_inventory_in_execution_journal')
+        actual_migrations={(row['mint'],row['inventory_pool'],row['cpmm_pool']):row['binding_json']
+            for row in self.con.execute('SELECT * FROM cpmm_migrations')}
+        if migrations!=actual_migrations:
+            raise ValueError('cpmm_migration_not_bound_to_durable_audit')
         return previous
+
+    def register_cpmm_migration(self,receipt,*,wallet,received_at_ms,
+                                expected_endpoint_sha256,expected_genesis_hash):
+        """Persist a pinned finalized-RPC claim without moving owned inventory.
+
+        Only the trusted read service may supply this receipt. The retained raw
+        response is revalidated; this does not independently prove consensus or
+        cryptographically verify the historical signature. A structural-only
+        staging result cannot be used here.
+        """
+        from .migration_evidence import validate_migrate_to_cpswap_transaction
+        from bot.p3.certification import _decode
+        uint(received_at_ms,positive=True);_decode(wallet);_decode(expected_genesis_hash)
+        if (type(expected_endpoint_sha256) is not str or len(expected_endpoint_sha256)!=64
+                or any(c not in '0123456789abcdef' for c in expected_endpoint_sha256)
+                or type(receipt) is not dict
+                or receipt.get('schema')!='rugger-finalized-cpmm-migration-rpc-v1'
+                or receipt.get('status')!='FINALIZED_RPC_STRUCTURAL_MATCH'
+                or receipt.get('expected_endpoint_sha256')!=expected_endpoint_sha256
+                or receipt.get('expected_genesis_hash')!=expected_genesis_hash
+                or any(receipt.get(k) is not True for k in (
+                    'source_RPC_endpoint_pin_matched','source_RPC_genesis_pin_matched',
+                    'source_signature_appeared_in_finalized_RPC_transaction',
+                    'raw_RPC_response_returned_to_caller'))):
+            raise ValueError('pinned_finalized_RPC_migration_receipt_required')
+        mint,origin,destination=(receipt.get(k) for k in
+            ('mint','source_launchlab_pool','migrated_cpmm_pool'))
+        for key in (mint,origin,destination):_decode(key)
+        observed=uint(receipt.get('observed_at_slot'),positive=True)
+        raw=receipt.get('raw_RPC_response')
+        digest=hashlib.sha256(canonical(raw).encode()).hexdigest()
+        if digest!=receipt.get('raw_response_sha256'):
+            raise ValueError('retained_migration_RPC_response_hash_mismatch')
+        structural=validate_migrate_to_cpswap_transaction(raw,
+            signature=receipt.get('signature'),mint=mint,launchlab_pool=origin,
+            cpmm_pool=destination,observed_at_slot=observed)
+        if (origin==destination or structural.get('status')!='STRUCTURAL_MIGRATION_RECEIPT'
+                or structural!=receipt.get('structural_validation')
+                or structural.get('migration_slot')!=receipt.get('migration_slot')
+                or structural.get('normalized_role_sha256')!=receipt.get('normalized_role_sha256')):
+            raise ValueError('retained_migration_structure_mismatch')
+        binding=dict(schema='rugger-owned-cpmm-migration-binding-v1',mint=mint,
+            inventory_pool=origin,cpmm_pool=destination,wallet=wallet,
+            migration_slot=uint(structural['migration_slot'],positive=True),
+            observed_at_slot=observed,received_at_ms=received_at_ms,
+            endpoint_sha256=expected_endpoint_sha256,genesis_hash=expected_genesis_hash,
+            receipt_sha256=hashlib.sha256(canonical(receipt).encode()).hexdigest(),
+            receipt=receipt,source_scope='retained_pinned_finalized_RPC_claim',
+            cryptographic_signature_verified=False,consensus_independently_verified=False)
+        binding['binding_sha256']=hashlib.sha256(canonical(binding).encode()).hexdigest()
+        encoded=canonical(binding)
+        with self.atomic():
+            self.verify_audit()
+            old=self.con.execute('SELECT binding_json FROM cpmm_migrations WHERE mint=? AND inventory_pool=?',
+                (mint,origin)).fetchone()
+            if old:
+                previous=json.loads(old[0])
+                comparable=dict(binding,received_at_ms=previous['received_at_ms'])
+                comparable.pop('binding_sha256')
+                comparable['binding_sha256']=hashlib.sha256(canonical(comparable).encode()).hexdigest()
+                if received_at_ms<previous['received_at_ms'] or previous!=comparable:
+                    raise ValueError('immutable_cpmm_migration_binding_conflict')
+                return previous
+            positions=list(self.con.execute('SELECT * FROM positions WHERE mint=? AND quantity_atomic>0',(mint,)))
+            if len(positions)!=1 or positions[0]['pool']!=origin:
+                raise ValueError('migration_requires_unambiguous_original_owned_inventory')
+            if self.con.execute('SELECT 1 FROM cpmm_migrations WHERE mint=? AND cpmm_pool=?',(mint,destination)).fetchone():
+                raise ValueError('cpmm_destination_already_bound_to_another_position')
+            for row in self.con.execute('SELECT order_json FROM orders WHERE state IN (%s)' % ','.join('?' for _ in ACTIVE),ACTIVE):
+                if json.loads(row[0])['mint']==mint:
+                    raise ValueError('migration_registration_has_in_flight_inventory')
+            settled=[];buys=[]
+            for row in self.con.execute("SELECT order_json,reconciliation_json FROM orders WHERE state='RECONCILED'"):
+                order=json.loads(row['order_json']);fill=json.loads(row['reconciliation_json'])
+                if order['mint']==mint and order.get('inventory_pool',order['pool'])==origin and fill['chain_error'] is None:
+                    settled.append(fill['slot'])
+                    if order['user']!=wallet:raise ValueError('migration_wallet_not_original_inventory_owner')
+                    if order['side']=='BUY':buys.append(order)
+            if not buys or not settled or max(settled)>=binding['migration_slot']:
+                raise ValueError('migration_must_follow_original_finalized_position')
+            self.con.execute('INSERT INTO cpmm_migrations VALUES(?,?,?,?)',(mint,origin,destination,encoded))
+            self._audit('cpmm_migration',received_at_ms,mint=mint,inventory_pool=origin,
+                cpmm_pool=destination,binding_json=encoded)
+        return binding
+
+    def bound_migration(self,mint,cpmm_pool,*,at_ms,source_slot,wallet):
+        """Read the durable association; no heartbeat or RPC freshness inferred."""
+        uint(at_ms,positive=True);uint(source_slot,positive=True)
+        self.verify_audit()
+        row=self.con.execute('SELECT binding_json FROM cpmm_migrations WHERE mint=? AND cpmm_pool=?',
+            (mint,cpmm_pool)).fetchone()
+        if not row:raise ValueError('source_backed_owned_migration_binding_missing')
+        binding=json.loads(row[0]);claimed=binding.pop('binding_sha256',None)
+        if hashlib.sha256(canonical(binding).encode()).hexdigest()!=claimed:
+            raise ValueError('cpmm_migration_binding_digest_invalid')
+        binding['binding_sha256']=claimed
+        if (binding['wallet']!=wallet or binding['received_at_ms']>at_ms
+                or source_slot<binding['observed_at_slot']
+                or source_slot<binding['migration_slot']):
+            raise ValueError('migration_binding_identity_or_causal_clock_mismatch')
+        return binding
+
+    def migration_binding(self,mint,cpmm_pool,*,at_ms,source_slot,wallet,
+                          endpoint_sha256,genesis_hash):
+        binding=self.bound_migration(mint,cpmm_pool,at_ms=at_ms,source_slot=source_slot,wallet=wallet)
+        if binding['endpoint_sha256']!=endpoint_sha256 or binding['genesis_hash']!=genesis_hash:
+            raise ValueError('migration_binding_RPC_scope_mismatch')
+        return binding
+
+    def inventory_migration(self,mint,original_pool):
+        """Return a retained graduation for a stable inventory, or None."""
+        self.verify_audit()
+        row=self.con.execute('SELECT binding_json FROM cpmm_migrations WHERE mint=? AND inventory_pool=?',
+            (mint,original_pool)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def _inventory_pool(self,order,at,*,financial=False):
+        """Resolve immutable position identity independently from execution pool."""
+        if order.get('route_kind')=='CPMM':
+            from .cpmm_swap import CPMM_PROGRAM
+            binding=self.bound_migration(order['mint'],order['pool'],at_ms=at,
+                source_slot=order['source_slot'],wallet=order['user'])
+            if (order.get('program_id')!=CPMM_PROGRAM or order.get('side')!='SELL'
+                    or order.get('inventory_pool')!=binding['inventory_pool']
+                    or order.get('migration_binding_sha256')!=binding['binding_sha256']):
+                raise ValueError('CPMM_order_not_bound_to_original_inventory')
+            return binding['inventory_pool']
+        if financial and ('fee_detail_json' in order or 'original_launchlab_pool' in order):
+            raise ValueError('nonfinancial_CPmm_stage_cannot_reserve_inventory')
+        if order.get('inventory_pool',order['pool'])!=order['pool']:
+            raise ValueError('unbound_cross_pool_inventory_reference')
+        if financial and self.inventory_migration(order['mint'],order['pool']) is not None:
+            raise ValueError('LaunchLab_inventory_has_finalized_CPmm_migration')
+        return order['pool']
 
     def _ledger_digest(self):
         rows = dict(positions=[dict(r) for r in self.con.execute('SELECT * FROM positions ORDER BY mint,pool')],
@@ -176,6 +324,7 @@ class ExecutionJournal:
                 if old['order_json'] != encoded:
                     raise ValueError('decision_id_reused_with_different_order')
                 return False
+            if order.get('route_kind')=='CPMM':self._inventory_pool(order,at)
             self.con.execute('INSERT INTO orders(decision_id,semantic_digest,state,created_at_ms,updated_at_ms,order_json) VALUES(?,?,?,?,?,?)',
                              (decision_id, order['semantic_digest'], 'PREPARED', at, at, encoded))
             self._audit('prepared', at, decision_id=decision_id,
@@ -232,6 +381,7 @@ class ExecutionJournal:
             if not row or row['state'] != 'SIMULATED':
                 raise ValueError('reservation_requires_simulated_order')
             order = json.loads(row['order_json'])
+            inventory_pool=self._inventory_pool(order,at,financial=True)
             pending = list(self.con.execute('SELECT * FROM orders WHERE state IN (%s)' % ','.join('?' for _ in ACTIVE), ACTIVE))
             reserved = sum(x['reserved_lamports'] for x in pending)
             if len(pending) >= max_in_flight_orders:
@@ -252,7 +402,7 @@ class ExecutionJournal:
                     raise ValueError('open_position_limit')
             else:
                 quantity = order['input_amount']
-                position = next((p for p in positions if p['mint'] == order['mint'] and p['pool'] == order['pool']), None)
+                position = next((p for p in positions if p['mint'] == order['mint'] and p['pool'] == inventory_pool), None)
                 pending_quantity = sum(x['reserved_atomic'] for x in pending
                                        if json.loads(x['order_json'])['mint'] == order['mint'])
                 if not position or quantity + pending_quantity > position['quantity_atomic']:
@@ -320,6 +470,7 @@ class ExecutionJournal:
             if row['state'] not in ACTIVE:
                 raise ValueError('reconciliation_requires_submitted_execution')
             order = json.loads(row['order_json'])
+            inventory_pool=self._inventory_pool(order,at,financial=True)
             fee = uint(reconciliation['fee_lamports'])
             day = datetime.fromtimestamp(at / 1000, timezone.utc).date().isoformat()
             spent, pnl = fee, 0
@@ -329,7 +480,7 @@ class ExecutionJournal:
                 pnl = -fee
             if not failed:
                 delta = reconciliation['token_delta_atomic']
-                position = self.con.execute('SELECT * FROM positions WHERE mint=? AND pool=?', (order['mint'], order['pool'])).fetchone()
+                position = self.con.execute('SELECT * FROM positions WHERE mint=? AND pool=?', (order['mint'], inventory_pool)).fetchone()
                 if order['side'] == 'BUY':
                     if type(delta) is not int or delta <= 0:
                         raise ValueError('buy_requires_positive_reconciled_inventory')
@@ -345,7 +496,7 @@ class ExecutionJournal:
                     allocated = position['entry_cost_lamports'] * sold // position['quantity_atomic']
                     pnl = reconciliation['gross_output_lamports'] - fee - allocated
                     self.con.execute('UPDATE positions SET quantity_atomic=?,entry_cost_lamports=? WHERE mint=? AND pool=?',
-                                     (position['quantity_atomic'] - sold, position['entry_cost_lamports'] - allocated, order['mint'], order['pool']))
+                                     (position['quantity_atomic'] - sold, position['entry_cost_lamports'] - allocated, order['mint'], inventory_pool))
             self.con.execute('INSERT INTO daily(day,spent,realized_loss,realized_pnl) VALUES(?,?,?,?) ON CONFLICT(day) DO UPDATE SET spent=spent+excluded.spent,realized_loss=realized_loss+excluded.realized_loss,realized_pnl=realized_pnl+excluded.realized_pnl',
                              (day, spent, max(0, -pnl), pnl))
             previous_failures = self.con.execute("SELECT value FROM execution_meta WHERE key='consecutive_failures'").fetchone()

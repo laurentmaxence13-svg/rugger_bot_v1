@@ -17,6 +17,8 @@ from bot.p3.certification import _decode
 from bot.p3.observed_activity import snapshot_transition_reason
 from .journal import ACTIVE, canonical, uint
 from .route import PreparedLaunchLabOrder, validate_prepared_order
+from .cpmm_exit import PreparedCpmmExit
+from .route_dispatch import validate_execution_order, order_inventory_pool
 from .safety import HealthEvidence
 
 
@@ -152,6 +154,8 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
         conditional_exit_gross_lamports=None, exit_fee_upper_lamports=None,
         frozen_plan_sha256=None, decision_at_ms=at, source_frame_id=None,
         source_slot=None, route_semantic_digest=None, reasons=[], quote_refusals=[],
+        inventory_pool=pool, execution_pool=None, route_kind=None,
+        migration_binding_sha256=None,
         execution_blocked=True, liquidity_model_qualified=False,
         liquidation_basis='CONDITIONAL_PINNED_CURVE_AT_OBSERVED_BANK',
         costs_scope='actual_finalized_entry_basis_plus_explicit_exit_network_upper_bound; curve_fees_already_in_output; ATA_rent_is_locked_asset',
@@ -193,7 +197,14 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
     fingerprint = hashlib.sha256(canonical(dict(id=frame['id'], mint=mint, pool=pool,
         available_at_ms=available, source_slot=frame.get('source_slot'),
         inventory_quantity=remaining,inventory_basis=basis,ledger_sha256=journal._ledger_digest(),
-        order_digests=[o.semantic_digest if type(o) is PreparedLaunchLabOrder else None for o in orders],
+        order_digests=[dict(route_kind='CPMM' if type(o) is PreparedCpmmExit else 'LAUNCHLAB',
+                           semantic_digest=o.semantic_digest,
+                           request_sha256=hashlib.sha256(o.rebuild_request_json.encode()).hexdigest(),
+                           message_sha256=hashlib.sha256(o.transaction.message).hexdigest(),
+                           quantity=o.input_amount,expected_output=o.expected_output,
+                           minimum_out=o.minimum_out,
+                           network_fee=o.network_fee_upper_lamports)
+                      if type(o) in (PreparedLaunchLabOrder,PreparedCpmmExit) else None for o in orders],
         features=frame.get('features'), features_available_at_ms=frame.get('features_available_at_ms'))).encode()).hexdigest()
     old = journal.con.execute('SELECT * FROM live_position_decisions WHERE mint=? AND pool=? AND frame_id=?', (mint,pool,frame['id'])).fetchone()
     if old:
@@ -212,7 +223,7 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
     settled = []
     for row in journal.con.execute("SELECT * FROM orders WHERE state='RECONCILED'"):
         order = json.loads(row['order_json'])
-        if order['mint'] == mint and order['pool'] == pool:
+        if order['mint'] == mint and order_inventory_pool(order) == pool:
             settled.append((row,json.loads(row['reconciliation_json'])))
     last_slot = max(fill['slot'] for _,fill in settled)
     last_at = max(row['updated_at_ms'] for row,_ in settled)
@@ -236,8 +247,9 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
         input_lamports=1,evidence_profile='published_metadata_v1',compute_projection=False)
     for order in orders:
         try:
-            order=validate_prepared_order(order)
-            if (order.side!='SELL' or order.mint!=mint or order.pool!=pool or order.user!=original_order['user']
+            order=validate_execution_order(order)
+            if (order.side!='SELL' or order.mint!=mint or order.user!=original_order['user']
+                    or order.base_token_account!=original_order['base_token_account']
                     or not 0<order.input_amount<=remaining or order.base_balance_before!=remaining
                     or not last_at<=order.source_available_at_ms<=available
                     or not 0<=at-order.source_available_at_ms<=plan.max_observation_age_ms
@@ -245,9 +257,20 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
                     or order.source_slot<last_slot or order.source_slot!=frame.get('source_slot')
                     or order.price_impact_bps>plan.max_price_impact_bps):
                 raise ValueError('exit_model_quantity_causality_identity_or_limits_invalid')
-            changed=snapshot_transition_reason(initial_analysis,_analysis(order))
-            if changed:
-                raise ValueError('entry_exit_bank_terms_changed:'+changed)
+            binding=None
+            if type(order) is PreparedCpmmExit:
+                binding=journal.bound_migration(mint,order.pool,at_ms=at,
+                    source_slot=order.source_slot,wallet=order.user)
+                if binding['inventory_pool']!=pool or order.source_available_at_ms<binding['received_at_ms']:
+                    raise ValueError('CPMM_exit_precedes_or_differs_from_registered_migration')
+            else:
+                if order.pool!=pool:
+                    raise ValueError('LaunchLab_exit_pool_differs_from_owned_position')
+                if journal.inventory_migration(mint,pool) is not None:
+                    raise ValueError('LaunchLab_exit_after_finalized_CPMM_migration')
+                changed=snapshot_transition_reason(initial_analysis,_analysis(order))
+                if changed:
+                    raise ValueError('entry_exit_bank_terms_changed:'+changed)
             net=order.expected_output-order.network_fee_upper_lamports
             allocated=basis*order.input_amount//remaining
             accepted.append(dict(quantity_atomic=str(order.input_amount),
@@ -255,11 +278,19 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
                 extra_fees_lamports=str(order.network_fee_upper_lamports),
                 conditional_net_lamports=str(net-allocated),
                 conditional_total_position_net_lamports=str(realized+net-original_cost) if order.input_amount==remaining else None,
-                route_semantic_digest=order.semantic_digest,order=order))
+                route_semantic_digest=order.semantic_digest,order=order,
+                route_kind='CPMM' if type(order) is PreparedCpmmExit else 'LAUNCHLAB',
+                migration_binding=binding))
         except (ValueError,TypeError,KeyError,OverflowError) as error:
             result['quote_refusals'].append(type(error).__name__+':'+str(error))
     full=next((v for v in accepted if int(v['quantity_atomic'])==remaining),None)
     partial=max((v for v in accepted if int(v['quantity_atomic'])<remaining),key=lambda v:int(v['quantity_atomic']),default=None)
+    if full is not None:
+        result.update(execution_pool=full['order'].pool,route_kind=full['route_kind'],
+            migration_binding_sha256=(full['migration_binding']['binding_sha256']
+                if full['migration_binding'] else None))
+        if full['route_kind']=='CPMM':
+            result['liquidation_basis']='CONDITIONAL_CPMM_AT_OBSERVED_BANK'
     ratio=Fraction(int(full['proceeds_lamports'])-int(full['extra_fees_lamports']),basis)-1 if full and basis>0 else None
     previous_peak=Fraction(int(state['numerator']),int(state['denominator'])) if state else Fraction(1)
     current_factor=ratio+1 if ratio is not None else None
@@ -277,7 +308,7 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
     pending=[]
     for row in journal.con.execute('SELECT * FROM orders WHERE state IN (%s)' % ','.join('?' for _ in ACTIVE),ACTIVE):
         order=json.loads(row['order_json'])
-        if order['mint']==mint and order['pool']==pool:pending.append(row)
+        if order['mint']==mint:pending.append(row)
     blocked=bool(journal.killed or pending or not healthy or chosen is None)
     if pending:reasons.append('position_has_unreconciled_or_reserved_order')
     if journal.killed:reasons.append('persistent_kill_blocks_financial_submission')
@@ -293,7 +324,12 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
         result.update(input_quantity_atomic=chosen['quantity_atomic'],
             conditional_exit_gross_lamports=chosen['proceeds_lamports'],
             exit_fee_upper_lamports=chosen['extra_fees_lamports'],
-            route_semantic_digest=chosen['route_semantic_digest'],liquidity_model_qualified=True)
+            route_semantic_digest=chosen['route_semantic_digest'],liquidity_model_qualified=True,
+            execution_pool=chosen['order'].pool,route_kind=chosen['route_kind'],
+            migration_binding_sha256=(chosen['migration_binding']['binding_sha256']
+                if chosen['migration_binding'] else None))
+        if chosen['route_kind']=='CPMM':
+            result['liquidation_basis']='CONDITIONAL_CPMM_AT_OBSERVED_BANK'
     peak_record=[str(peak.numerator),str(peak.denominator),available,frame['source_slot']] if full else None
     encoded=canonical(result)
     with journal.atomic():

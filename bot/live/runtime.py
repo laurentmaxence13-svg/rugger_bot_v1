@@ -13,6 +13,7 @@ from bot.master_decision import MasterDecisionOrchestrator
 from bot.p3.certification import PROGRAM
 from .journal import ACTIVE, canonical
 from .route import build_launchlab_order
+from .route_dispatch import validate_execution_order,execution_program,route_kind
 from .safety import Mode
 from .positions import FrozenEntryPlan,persist_entry_plan,evaluate_live_position
 
@@ -171,6 +172,10 @@ class LiveRuntime:
     async def observe_position(self,frame):
         """Drive the same native engine from frozen Master position triggers."""
         if type(frame) is not dict:raise ValueError('explicit_native_position_frame_required')
+        available=frame.get('available_at_ms')
+        if type(available) is not int or not 0<=self.clock_ms()-available<=5000:
+            raise ValueError('position_frame_unavailable_or_stale_at_actual_decision')
+        _validate_source_availability(frame,available)
         context=await self.context_provider();now=self.clock_ms()
         source_health=context.get('health')
         health=(dict(source_health,allow_position_management=
@@ -189,11 +194,21 @@ class LiveRuntime:
         matches=[o for o in orders if o is not None
             and o.semantic_digest==proposal['route_semantic_digest']]
         if len(matches)!=1:raise ValueError('unique_exact_position_route_required')
-        order=matches[0]
+        order=validate_execution_order(matches[0])
         if str(order.input_amount)!=proposal['input_quantity_atomic']:
             raise ValueError('position_quantity_differs_from_frozen_proposal')
+        if proposal['inventory_pool']!=frame['pool'] or proposal['execution_pool']!=order.pool:
+            raise ValueError('position_execution_or_inventory_identity_changed')
+        if route_kind(order)=='CPMM':
+            binding=self.engine.journal.bound_migration(order.mint,order.pool,
+                at_ms=self.clock_ms(),source_slot=order.source_slot,wallet=order.user)
+            if (binding['inventory_pool']!=frame['pool']
+                    or binding['binding_sha256']!=proposal['migration_binding_sha256']):
+                raise ValueError('position_migration_binding_changed_after_decision')
         decision_id=json.loads(order.rebuild_request_json)['decision_id']
         result['execution']=await self.engine.execute(decision_id,order)
+        result.update(inventory_pool=frame['pool'],execution_pool=order.pool,
+            execution_program=execution_program(order),route_kind=route_kind(order))
         return result
 
     async def recover_pending(self):

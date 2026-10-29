@@ -38,7 +38,7 @@ class _GuardedJsonPayload(aiohttp.BytesPayload):
 READ_METHODS = frozenset(('getGenesisHash', 'getLatestBlockhash', 'getBlockHeight',
     'simulateTransaction', 'getSignatureStatuses', 'getTransaction', 'getBalance',
     'getTokenAccountBalance', 'getMultipleAccounts', 'getFeeForMessage',
-    'getMinimumBalanceForRentExemption'))
+    'getMinimumBalanceForRentExemption','getSignaturesForAddress'))
 
 
 class HttpJsonRpcTransport:
@@ -222,6 +222,20 @@ class SolanaRpc:
         if value is not None and type(value) is not dict:
             raise RpcError('Malformed finalized transaction')
         return value
+
+    async def get_signatures_for_address(self,address,*,limit=20):
+        """One explicit bounded finalized page; no retry or hidden pagination."""
+        if type(limit) is not int or not 1<=limit<=1000:
+            raise RpcError('Explicit bounded signature page required')
+        result=await self.transport('getSignaturesForAddress',[_pubkey(address),
+            dict(limit=limit,commitment='finalized')])
+        if type(result) is not list or len(result)>limit:
+            raise RpcError('Malformed bounded signature page')
+        for row in result:
+            if type(row) is not dict or 'err' not in row:
+                raise RpcError('Malformed historical signature row')
+            _signature(row.get('signature'));_uint(row.get('slot'),positive=True)
+        return result
 
     async def get_balance(self, wallet):
         result = await self.transport('getBalance', [_pubkey(wallet), dict(commitment='finalized')])

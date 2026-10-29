@@ -229,7 +229,9 @@ def build_cpmm_exit(*, accounts, pool_address, mint, wallet, context_slot,
         raise ValueError('cpmm_lp_mint_PDA_mismatch')
     raw_observation=_account(accounts.get(observation),name='observation',
              size=OBSERVATION_ACCOUNT_SIZE,discriminator=OBSERVATION_DISCRIMINATOR)
-    if (raw_observation[8]!=1 or struct.unpack_from('<H',raw_observation,9)[0]>=100
+    # A newly initialized CPMM has pool_id set and initialized=false until its
+    # first swap updates the oracle. Neither value means reserves are absent.
+    if (raw_observation[8] not in (0,1) or struct.unpack_from('<H',raw_observation,9)[0]>=100
             or _key(raw_observation,11)!=pool_address):
         raise ValueError('cpmm_observation_content_identity_invalid')
     token_index=0 if pool['token_0_mint']==mint else 1

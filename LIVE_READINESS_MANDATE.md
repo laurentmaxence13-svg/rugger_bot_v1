@@ -1,5 +1,24 @@
 # Mandat principal 29/10/2026 — Rugger Bot V1 orienté exécution RÉELLE
 
+## Critère programme corrigé par le propriétaire — PR34
+
+Les sources on-chain LaunchLab ne sont pas publiques. Une compilation source
+indépendante identique au binaire ne constitue plus une condition absolue.
+Le contrôle requis lie l'identité du programme et son ProgramData canonique,
+l'ABI officielle épinglée, l'empreinte des octets déployés, le slot de déploiement,
+l'autorité de mise à jour, la détection des changements et les simulations RPC
+des messages exacts. Une empreinte observée n'est ni un audit du source privé,
+ni une garantie contre une mise à jour ultérieure. Ne jamais accepter un nouveau
+hash automatiquement après une divergence.
+
+La liquidation après migration est une voie CPMM distincte du SELL LaunchLab.
+Les positions et coûts conservent leur identité d'origine dans le journal ;
+une migration n'acquiert, ne vend et ne crédite aucun token. Les réservations
+et règlements des deux routes doivent partager le même inventaire atomique.
+Les anciens pools AMM v4 restent explicitement hors périmètre jusqu'à une voie
+supplémentaire validée. Aucune interdiction de transaction financière ou de fusion
+n'est levée par cette correction technique.
+
 ## Décision du propriétaire : l'objectif final n'est pas PAPER ONLY
 
 Cette directive remplace, pour le **développement à venir**, les formulations historiques `PAPER ONLY` du dépôt lorsqu'elles interdisaient **de concevoir** des composants de trading réel. Le système actuellement installé reste en simulation, **sans autorisation d'envoyer des transactions financières au moment de ce mandat**.
