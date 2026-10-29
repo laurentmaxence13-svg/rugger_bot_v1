@@ -1,3 +1,9 @@
+# CHANGEMENT DE CAP — 29 OCTOBRE 2026
+
+Le propriétaire demande un Rugger Bot V1 **conçu pour trader réellement** (Solana/Raydium LaunchLab, stratégie agressive, exécution autonome bornée). Le logiciel n'est pas actuellement LIVE_READY ni autorisé à engager des fonds. Le mandat `LIVE_READINESS_MANDATE.md` et les instructions `AGENTS.md` mis à jour sont prioritaires sur les anciennes formulations PAPER ONLY pour le **développement** du moteur réel. Les informations de résultat P3-011 et des tests ci-dessous restent historiques et ne constituent ni edge net ni exécution live. Les jalons distincts sont `LIVE_READY_TO_ARM` (tests), `LIVE_EXECUTION_VERIFIED` (vrais ordres explicitement autorisés), `ECONOMIC_EDGE_VALIDATED` (avantage net indépendant).
+
+---
+
 # État du projet — candidat fonctionnel PAPER
 
 ## Livraison vérifiée29octobre
