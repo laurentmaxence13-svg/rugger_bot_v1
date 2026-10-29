@@ -51,6 +51,7 @@ async def check_unsigned_order(
     expected_endpoint_sha256: str,
     now_ms: int,
     max_bank_age_ms: int = 5000,
+    clock_ms=None,
 ):
     """Simulate one exact, already-prepared legacy order with zero signatures.
 
@@ -65,8 +66,21 @@ async def check_unsigned_order(
             or any(c not in "0123456789abcdef" for c in expected_endpoint_sha256)
             or not _integer(now_ms, positive=True)
             or not _integer(max_bank_age_ms, positive=True)
-            or max_bank_age_ms > 5000):
+            or max_bank_age_ms > 5000
+            or (clock_ms is not None and not callable(clock_ms))):
         raise ValueError("explicit_genesis_endpoint_clock_and_freshness_required")
+    # Optional deadline rechecks are especially important when the source
+    # is acquired within a tight live market window. The original now_ms
+    # snapshot cannot prove freshness after one or more slow RPC calls.
+    def elapsed_source_refusal(phase, source_available_at_ms, base):
+        if clock_ms is None:
+            return None
+        observed=clock_ms()
+        if (type(observed) is not int
+                or not 0 <= observed-source_available_at_ms <= max_bank_age_ms):
+            return _refused("stale_or_future_source_bank_after_"+phase,**base)
+        return None
+
     # Validate the *complete* transaction against its own original retained
     # request. Never let a caller provide a fake validation success flag.
     if type(order) is PreparedCpmmExit:
@@ -90,10 +104,16 @@ async def check_unsigned_order(
         return _refused("RPC_endpoint_not_pinned", **base)
     if await rpc.genesis_hash() != expected_genesis_hash:
         return _refused("unexpected_cluster_genesis", **base)
+    timed_out=elapsed_source_refusal("genesis",order.source_available_at_ms,base)
+    if timed_out is not None:
+        return timed_out
     height = await rpc.get_block_height()
     if (not _integer(height, positive=True)
             or height > prepared.last_valid_block_height):
         return _refused("blockhash_expired_before_simulation", **base)
+    timed_out=elapsed_source_refusal("block_height",order.source_available_at_ms,base)
+    if timed_out is not None:
+        return timed_out
     serialized = prepared.unsigned_transaction()
     if type(serialized) is not bytes or not 65 <= len(serialized) <= 1232:
         return _refused("unsigned_wire_size_invalid", **base)
@@ -102,6 +122,9 @@ async def check_unsigned_order(
     # endpoint is called.
     simulation = await rpc.simulate_transaction(
         serialized, sig_verify=False, min_context_slot=order.source_slot)
+    timed_out=elapsed_source_refusal("simulation",order.source_available_at_ms,base)
+    if timed_out is not None:
+        return timed_out
     if (type(simulation) is not dict or "err" not in simulation
             or not _integer(simulation.get("context_slot"), positive=True)
             or simulation["context_slot"] < order.source_slot):

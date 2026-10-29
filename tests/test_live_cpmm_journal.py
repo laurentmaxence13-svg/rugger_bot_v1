@@ -212,7 +212,12 @@ def test_concurrent_partial_reservations_never_exceed_one_original_inventory(tmp
         left=prepared(journal,record(a,binding),'partial-reservation-1');reserve(journal,left)
         right=prepared(journal,record(b,binding),'partial-reservation-2');reserve(journal,right)
         assert sum(r[0] for r in journal.con.execute('SELECT reserved_atomic FROM orders'))==amount
-        extra=prepared(journal,record(partial_order(cpmm,1,'excess-1'),binding),'excess-1')
+        # One atomic token is entirely consumed by integer-rounded LP /
+        # creator fees and cannot form a valid CPMM order. Use a small
+        # economically executable order to challenge the inventory gate,
+        # not the independent minimum-fee safety check.
+        excess_amount=10_000
+        extra=prepared(journal,record(partial_order(cpmm,excess_amount,'excess-1'),binding),'excess-1')
         with pytest.raises(ValueError,match='already_reserved'):reserve(journal,extra)
         first_position=dict(journal.con.execute('SELECT * FROM positions').fetchone())
         first_basis=first_position['entry_cost_lamports']

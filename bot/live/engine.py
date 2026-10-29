@@ -149,6 +149,33 @@ def reconcile_transaction(row, payload):
     slot = uint(payload.get('slot'), positive=True)
     if slot < order['source_slot']:
         raise ValueError('finalized_slot_precedes_observed_intent')
+    if order.get('route_kind') == 'CPMM':
+        # The exact signed SELL creates one ephemeral WSOL account and closes
+        # it atomically into the wallet. A nominal quote can look profitable
+        # even when rent remains trapped in that account; do not finalize a
+        # position from net wallet proceeds without checking closure. This
+        # is a consequence of the actually finalized transaction's native
+        # balance vector, not a claim inferred from the unsigned builder.
+        ephemeral = order['quote_token_account']
+        if (type(ephemeral) is not str or ephemeral in (
+                order['user'], order['base_token_account'])
+                or keys.count(ephemeral) != 1):
+            raise ValueError('CPMM_ephemeral_WSOL_identity_missing_in_finalized_message')
+        temp_index = keys.index(ephemeral)
+        if before[temp_index] != 0 or after[temp_index] != 0:
+            raise ValueError('CPMM_ephemeral_WSOL_not_fully_closed_at_finality')
+        # A closed token account must not appear as a post-transaction token
+        # balance. Missing pre/post token arrays are refused below; do not
+        # silently treat a missing array as positive proof of closure.
+        post_tokens = meta.get('postTokenBalances')
+        if (type(post_tokens) is not list or
+                any(type(item) is not dict for item in post_tokens)):
+            raise ValueError('CPMM_post_token_balances_required_for_closure')
+        if any(type(item.get('accountIndex')) is not int
+               for item in post_tokens):
+            raise ValueError('CPMM_post_token_balance_indices_invalid')
+        if any(item['accountIndex'] == temp_index for item in post_tokens):
+            raise ValueError('CPMM_ephemeral_WSOL_persisted_in_token_balances')
     native_delta = after[wallet_index] - before[wallet_index]
     if meta.get('err') is not None:
         if (native_delta != -fee
