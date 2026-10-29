@@ -1,4 +1,4 @@
-"""Read-only CPMM bank acquisition; builds a non-signed SELL, never sends."""
+"""Read-only CPMM bank and exact message fee verification; never sends."""
 from bot.p3.certification import _decode
 from bot.p3.quotes import SOL_MINT
 from .cpmm_exit import (
@@ -13,7 +13,7 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
         amount_in, slippage_bps, max_slippage_bps, max_price_impact_bps,
         compute_unit_limit=200000, priority_fee_micro_lamports=0,
         max_priority_fee_lamports=0, max_bank_age_ms=5000):
-    """Six bounded read-only RPC requests; no signer, wallet key or trade.
+    """Seven bounded read-only RPC requests; no signer, wallet key or trade.
 
     A caller must independently verify migration and RPC transport provenance.
     The transport must enforce its own request and elapsed-time budgets.
@@ -106,9 +106,23 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
         compute_unit_limit=compute_unit_limit,
         priority_fee_micro_lamports=priority_fee_micro_lamports,
         max_priority_fee_lamports=max_priority_fee_lamports)
+    # Independently check the exact compiled message fee, including priority
+    # compute-budget fees, against the reserved upper bound. A null response
+    # means the RPC could not price this message: no fallback to 5000 lamports.
+    message_fee=await rpc.get_fee_for_message(order.transaction.message)
+    if (type(message_fee) is not int or not 0<message_fee
+            or message_fee>order.network_fee_upper_lamports):
+        raise ValueError("CPMM_actual_message_fee_unknown_or_exceeds_cap")
+    fee_received=clock_ms()
+    if (type(fee_received) is not int or
+            not 0<=fee_received-decision<=max_bank_age_ms or
+            not 0<=fee_received-start<=max_bank_age_ms):
+        raise ValueError("CPMM_message_fee_verification_stale")
     return dict(order=order,source_bank_slot=slot_b,
         initial_pool_bank_slot=slot_a,blockhash_bank_slot=latest["context_slot"],
-        read_only_RPC_calls=6,bank_received_at_ms=received,
+        read_only_RPC_calls=7,bank_received_at_ms=received,
+        fee_verified_at_ms=fee_received,
+        message_fee_lamports=message_fee,
         decision_at_ms=decision,
         source_block_time_seconds=observed_block_time_seconds,
         source_block_time_slot=slot_b,
