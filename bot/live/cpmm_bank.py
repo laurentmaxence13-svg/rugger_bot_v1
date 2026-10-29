@@ -62,8 +62,16 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
     if type(values) is not list or len(values)!=10:
         raise ValueError("CPMM_incomplete_joint_bank")
     accounts=dict(zip(addresses,values,strict=True))
-    if accounts[pool_address]!=raw_pool:
-        raise ValueError("CPMM_pool_changed_between_reads")
+    # A pool can legitimately receive trades while we fetch the rest of its
+    # accounts. Only its stable identity must agree; quote and status MUST
+    # come exclusively from the complete, later bank.
+    latest_pool=_pool(_account(accounts[pool_address],name="pool",
+                         size=POOL_ACCOUNT_SIZE,discriminator=POOL_DISCRIMINATOR))
+    stable_keys=("amm_config","token_0_vault","token_1_vault",
+                 "token_0_mint","token_1_mint","token_0_program",
+                 "token_1_program","observation_key","lp_mint","auth_bump")
+    if any(latest_pool[key]!=pool[key] for key in stable_keys):
+        raise ValueError("CPMM_pool_identity_changed_between_reads")
     received=clock_ms()
     if type(received) is not int or not 0<=received-start<=max_bank_age_ms:
         raise ValueError("CPMM_bank_acquisition_stale")
