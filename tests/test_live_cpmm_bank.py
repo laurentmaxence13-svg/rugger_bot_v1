@@ -26,6 +26,7 @@ class FakeRpc:
         self.change_pool=False
         self.drop_account=False
         self.block_time=1
+        self.message_fee=5002
 
     async def genesis_hash(self):
         self.calls.append('genesis')
@@ -60,11 +61,16 @@ class FakeRpc:
         self.calls.append(('getBlockTime',slot))
         return self.block_time
 
+    async def get_fee_for_message(self,message):
+        assert type(message) is bytes and len(message)>0
+        self.calls.append('getFeeForMessage')
+        return self.message_fee
+
     async def send_transaction(self,*args,**kwargs):
         raise AssertionError('read_only_bank_probe_may_not_send')
 
 
-def prepare(rpc,*,ticks=(1050,1070,1100),**overrides):
+def prepare(rpc,*,ticks=(1050,1070,1100,1120),**overrides):
     args=rpc.kwargs
     clock=iter(ticks)
     params=dict(pool_address=args['pool_address'],mint=args['mint'],
@@ -88,7 +94,9 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     order=result['order']
     assert validate_cpmm_exit(order)==order
     assert order.transaction.required_signers==(order.user,)
-    assert result['read_only_RPC_calls']==6
+    assert result['read_only_RPC_calls']==7
+    assert result['message_fee_lamports']==5002
+    assert result['fee_verified_at_ms']==1120
     assert result['source_block_time_seconds']==1
     assert result['source_block_time_slot']==1235
     assert result['source_block_time_provided_by_pinned_RPC'] is True
@@ -103,7 +111,7 @@ def test_pool_discovery_reads_all_ten_accounts_in_one_bank_and_builds_real_unsig
     assert result['onchain_program_pin_verified_by_this_module'] is False
     assert result['migration_provenance_verified_by_this_module'] is False
     assert [c[0] if isinstance(c,tuple) else c for c in rpc.calls]==[
-        'genesis','bank','bank','blockhash','rent','getBlockTime']
+        'genesis','bank','bank','blockhash','rent','getBlockTime','getFeeForMessage']
     assert rpc.calls[2][2]==1234 and len(rpc.calls[2][1])==10
 
 
@@ -133,11 +141,12 @@ def test_legitimate_inflight_reserve_or_counter_updates_use_only_joint_bank():
     'incomplete_bank','blockhash_bank','missing_token_account',
     'stale_acquisition','stale_decision','wrong_mint',
     'missing_source_block_time','future_source_block_time',
+    'missing_message_fee','excess_message_fee','stale_message_fee',
 ])
 def test_any_stale_bank_or_unknown_account_fails_closed(attack):
     rpc=FakeRpc(fixture_bank())
     overrides={}
-    ticks=(1050,1070,1100)
+    ticks=(1050,1070,1100,1120)
     if attack=='endpoint':overrides['expected_endpoint_sha256']='f'*64
     if attack=='genesis':rpc.genesis=rpc.kwargs['pool_address']
     if attack=='first_bank':rpc.first_slot=1233
@@ -149,12 +158,15 @@ def test_any_stale_bank_or_unknown_account_fails_closed(attack):
         from bot.live.route import associated_token_address
         address=associated_token_address(rpc.kwargs['wallet'],rpc.kwargs['mint'])
         rpc.accounts[address]=None
-    if attack=='stale_acquisition':ticks=(1050,7000,7100)
-    if attack=='stale_decision':ticks=(1050,1070,7000)
+    if attack=='stale_acquisition':ticks=(1050,7000,7100,7200)
+    if attack=='stale_decision':ticks=(1050,1070,7000,7100)
     if attack=='wrong_mint':
         overrides['mint']=rpc.kwargs['wallet']
     if attack=='missing_source_block_time':rpc.block_time=None
     if attack=='future_source_block_time':rpc.block_time=99999
+    if attack=='missing_message_fee':rpc.message_fee=None
+    if attack=='excess_message_fee':rpc.message_fee=6000
+    if attack=='stale_message_fee':ticks=(1050,1070,1100,7000)
     with pytest.raises((ValueError,TypeError)):
         prepare(rpc,ticks=ticks,**overrides)
     assert 'sendTransaction' not in rpc.calls
