@@ -1,0 +1,2 @@
+{"requests_used": 12, "stop_reason": null, "qualified_economic_cycles": 0}
+{"child_exit_code": 0, "process_deadline_exceeded": false, "deadline_ms": 58000, "elapsed_ms": 35942.297487999895, "termination_reserve_ms": 2000, "child_execution_count": 1, "retry_performed": false, "acquisition_report_retained": true, "interrupted_prefix_replay_only": false}

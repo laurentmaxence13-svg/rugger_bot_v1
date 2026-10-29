@@ -143,6 +143,45 @@ def _exit_value(inventory, context, at, max_age, acquired, remaining, version):
     return result
 
 
+def choose_frozen_position_action(*, emergency, creator_risk, ratio,
+        trailing_drawdown_ratio, trailing_armed, age_ms, model, features,
+        full, partial, observations_complete):
+    """Shared trigger precedence for PAPER and native-SOL live proposals.
+
+    Each caller qualifies its own inventory and liquidation observations first.
+    Ratios are exact Fractions. This helper neither certifies a quote nor changes
+    an entry policy, settles a position, or authorizes an order.
+    """
+    action='HOLD';reasons=['entry_thesis_not_invalidated_by_available_observations'];chosen=None
+    if emergency or creator_risk:
+        action='EMERGENCY_EXIT';reasons=['operational_emergency' if emergency else 'observed_creator_or_relay_sale_risk']
+    elif ratio is not None and _number(model.get('sl_pct'),positive=True) and ratio<=-Fraction(str(model['sl_pct']))/100:
+        action='EXIT';reasons=['frozen_stop_loss_reached']
+    elif (trailing_armed and trailing_drawdown_ratio is not None
+          and _number(model.get('trailing_stop_pct'),positive=True)
+          and trailing_drawdown_ratio<=1-Fraction(str(model['trailing_stop_pct']))/100):
+        action='EXIT';reasons=['frozen_trailing_stop_reached']
+    elif _integer(model.get('hold_seconds')) and model['hold_seconds']>0 and age_ms>=model['hold_seconds']*1000:
+        action='EXIT';reasons=['frozen_maximum_hold_reached']
+    elif ratio is not None and _number(model.get('tp_pct'),positive=True) and ratio>=Fraction(str(model['tp_pct']))/100:
+        positive=full is not None and int(full['conditional_total_position_net_lamports'])>0
+        action='TAKE_PROFIT' if positive else 'EXIT'
+        reasons=['frozen_price_target_and_positive_SOL_net' if positive else 'frozen_price_target_SOL_profit_unproven']
+    elif (full is not None and _integer(model.get('net_take_profit_lamports'))
+          and model['net_take_profit_lamports']>0
+          and int(full['conditional_total_position_net_lamports'])>=model['net_take_profit_lamports']):
+        action='TAKE_PROFIT';reasons=['frozen_net_profit_target_reached']
+    elif (features is not None and _number(features.get('momentum_60s')) and features['momentum_60s']<0
+          and _integer(features.get('tx_buys_5m')) and _integer(features.get('tx_sells_5m'))
+          and features['tx_sells_5m']>features['tx_buys_5m']):
+        action='REDUCE' if partial else 'EXIT' if full else 'WAIT_FOR_DATA'
+        reasons=['observed_momentum_and_flow_deterioration'];chosen=partial if partial else full
+    elif not observations_complete:
+        action='WAIT_FOR_DATA';reasons=['position_observations_stale_missing_or_source_unhealthy']
+    if action in ('EMERGENCY_EXIT','EXIT','TAKE_PROFIT'):chosen=full
+    return action,reasons,chosen
+
+
 def evaluate_position_plan(frame, inventory, *, policy=None, health=None):
     """Propose one action using only available facts and the frozen entry plan.
 
@@ -199,34 +238,15 @@ def evaluate_position_plan(frame, inventory, *, policy=None, health=None):
         'liquidatable_full_net_lamports':full['conditional_total_position_net_lamports'] if full else None,
         'features_available':f is not None,'entry_policy_present':bool(model)}
     creator_risk=(f is not None and any(_integer(f.get(key)) and f[key]>0 for key in ('dev_sales','relay_transfers')))
-    action='HOLD';reasons=['entry_thesis_not_invalidated_by_available_observations'];chosen=None
-    if emergency or creator_risk:
-        action='EMERGENCY_EXIT';reasons=['operational_emergency' if emergency else 'observed_creator_or_relay_sale_risk']
-    elif ratio is not None and _number(model.get('sl_pct'),positive=True) and ratio<=-Fraction(str(model['sl_pct']))/100:
-        action='EXIT';reasons=['frozen_stop_loss_reached']
-    elif (_number(price,positive=True) and _number(original,positive=True) and _number(peak,positive=True)
-          and peak>original and _number(model.get('trailing_stop_pct'),positive=True)
-          and Fraction(str(price))<=Fraction(str(peak))*(1-Fraction(str(model['trailing_stop_pct']))/100)):
-        action='EXIT';reasons=['frozen_trailing_stop_reached']
-    elif _integer(model.get('hold_seconds')) and model['hold_seconds']>0 and at-entry>=model['hold_seconds']*1000:
-        action='EXIT';reasons=['frozen_maximum_hold_reached']
-    elif ratio is not None and _number(model.get('tp_pct'),positive=True) and ratio>=Fraction(str(model['tp_pct']))/100:
-        positive=full is not None and int(full['conditional_total_position_net_lamports'])>0
-        action='TAKE_PROFIT' if positive else 'EXIT'
-        reasons=['frozen_price_target_and_positive_SOL_net' if positive else 'frozen_price_target_SOL_profit_unproven']
-    elif (full is not None and _integer(model.get('net_take_profit_lamports'))
-          and model['net_take_profit_lamports']>0
-          and int(full['conditional_total_position_net_lamports'])>=model['net_take_profit_lamports']):
-        action='TAKE_PROFIT';reasons=['frozen_net_profit_target_reached']
-    elif (f is not None and _number(f.get('momentum_60s')) and f['momentum_60s']<0
-          and _integer(f.get('tx_buys_5m')) and _integer(f.get('tx_sells_5m'))
-          and f['tx_sells_5m']>f['tx_buys_5m']):
-        action='REDUCE' if partial else 'EXIT' if full else 'WAIT_FOR_DATA'
-        reasons=['observed_momentum_and_flow_deterioration'];chosen=partial if partial else full
-    elif (f is None or not model or full is None
-          or (type(health) is dict and health.get('allow_new_entries') is False)):
-        action='WAIT_FOR_DATA';reasons=['position_observations_stale_missing_or_source_unhealthy']
-    if action in ('EMERGENCY_EXIT','EXIT','TAKE_PROFIT'):chosen=full
+    trailing_valid=(_number(price,positive=True) and _number(original,positive=True)
+                    and _number(peak,positive=True))
+    action,reasons,chosen=choose_frozen_position_action(
+        emergency=emergency,creator_risk=creator_risk,ratio=ratio,
+        trailing_drawdown_ratio=Fraction(str(price))/Fraction(str(peak)) if trailing_valid else None,
+        trailing_armed=trailing_valid and peak>original,age_ms=at-entry,
+        model=model,features=f,full=full,partial=partial,
+        observations_complete=not (f is None or not model or full is None
+          or (type(health) is dict and health.get('allow_new_entries') is False)))
     if action in ('EMERGENCY_EXIT','EXIT','TAKE_PROFIT'):
         result['proposed_quantity_atomic']=str(remaining)
     if chosen is not None and action in ('EMERGENCY_EXIT','EXIT','TAKE_PROFIT','REDUCE'):
