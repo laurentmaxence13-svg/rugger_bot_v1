@@ -59,7 +59,10 @@ async def preflight_migrated_sell(
             expected_genesis_hash=expected_genesis_hash,
             min_context_slot=min_context_slot)
         pin=await attest_program_pin(rpc,**expected)
-        if pin["result"]!="PIN_MATCHED_READ_ONLY":
+        if (pin["result"]!="PIN_MATCHED_READ_ONLY"
+                or pin.get("program_id")!=program_id
+                or type(pin.get("joint_bank_slot")) is not int
+                or pin["joint_bank_slot"]<min_context_slot):
             return dict(envelope,reason="onchain_program_pin_not_matched")
         pin_results[program_id]=pin
     migration=await read_finalized_migration(
@@ -68,7 +71,13 @@ async def preflight_migrated_sell(
         expected_endpoint_sha256=expected_endpoint_sha256,
         expected_genesis_hash=expected_genesis_hash,
         observed_at_slot=min_context_slot)
-    if migration["status"]!="FINALIZED_RPC_STRUCTURAL_MATCH":
+    if (migration["status"]!="FINALIZED_RPC_STRUCTURAL_MATCH"
+            or migration.get("source_launchlab_pool")!=original_launchlab_pool
+            or migration.get("migrated_cpmm_pool")!=migrated_cpmm_pool
+            or migration.get("mint")!=mint
+            or migration.get("signature")!=migration_signature
+            or type(migration.get("migration_slot")) is not int
+            or migration["migration_slot"]<=0):
         return dict(envelope,reason="migration_not_qualified",
             migration=migration,program_pins_matched=True)
     min_bank=max(min_context_slot,migration["migration_slot"]+1,
@@ -89,7 +98,11 @@ async def preflight_migrated_sell(
     order=bank["order"]
     if (order.pool!=migrated_cpmm_pool or order.mint!=mint
             or order.user!=wallet or order.input_amount!=amount_in
-            or bank["source_bank_slot"]<min_bank):
+            or type(bank.get("source_bank_slot")) is not int
+            or bank["source_bank_slot"]<min_bank
+            or order.source_slot!=bank["source_bank_slot"]
+            or order.decision_at_ms!=bank.get("decision_at_ms")
+            or order.source_available_at_ms!=bank.get("bank_received_at_ms")):
         raise ValueError("cpmm_route_differs_from_migration_or_wallet")
     now=clock_ms()
     if type(now) is not int or now<bank["decision_at_ms"]:
@@ -98,6 +111,20 @@ async def preflight_migrated_sell(
         rpc,order,expected_genesis_hash=expected_genesis_hash,
         expected_endpoint_sha256=expected_endpoint_sha256,
         now_ms=now,max_bank_age_ms=max_bank_age_ms)
+    # A wrapper or RPC provider must not replace the exact simulation
+    # receipt with a successful boolean. Bind the receipt to the serialized
+    # message already frozen by the full bank route builder.
+    if simulated["result"]=="SIMULATION_SUCCEEDED_UNSENT":
+        if (simulated.get("message_sha256")!=hashlib.sha256(
+                order.transaction.message).hexdigest()
+                or simulated.get("unsigned_transaction_sha256")!=hashlib.sha256(
+                    order.transaction.unsigned_transaction()).hexdigest()
+                or simulated.get("side")!="SELL"
+                or simulated.get("simulation_slot",0)<order.source_slot
+                or simulated.get("route_executed") is not False
+                or simulated.get("sig_verify") is not False
+                or simulated.get("live_ready_to_arm") is not False):
+            raise ValueError("unsigned_simulation_receipt_identity_or_permission_mismatch")
     base=dict(envelope,
         migrated_cpmm_pool=migrated_cpmm_pool,
         original_launchlab_pool=original_launchlab_pool,
