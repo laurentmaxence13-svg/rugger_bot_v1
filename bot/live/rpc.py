@@ -38,7 +38,7 @@ class _GuardedJsonPayload(aiohttp.BytesPayload):
 READ_METHODS = frozenset(('getGenesisHash', 'getLatestBlockhash', 'getBlockHeight',
     'simulateTransaction', 'getSignatureStatuses', 'getTransaction', 'getBalance',
     'getTokenAccountBalance', 'getMultipleAccounts', 'getFeeForMessage',
-    'getMinimumBalanceForRentExemption'))
+    'getMinimumBalanceForRentExemption', 'getBlockTime'))
 
 
 class HttpJsonRpcTransport:
@@ -172,6 +172,13 @@ class SolanaRpc:
 
     async def get_block_height(self):
         return _uint(await self.transport('getBlockHeight', [dict(commitment='confirmed')]), positive=True)
+
+    async def get_block_time(self, slot):
+        # Solana may return null when a very recent confirmed block is not
+        # yet indexed. A null/negative/boolean timestamp cannot qualify a
+        # LIVE market-source bank; callers must abort without fallback.
+        value=await self.transport('getBlockTime', [_uint(slot,positive=True)])
+        return _uint(value,positive=True)
 
     @staticmethod
     def _encoded(raw):
