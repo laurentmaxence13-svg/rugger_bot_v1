@@ -17,7 +17,7 @@ from bot.live.migration_evidence import (
 
 MINT=_encode(bytes([55])*32)
 OLD=find_program_address((b'pool',_decode(MINT),_decode(SOL_MINT)))[0]
-NEW=_encode(bytes([88])*32)
+from test_live_cpmm_exit import POOL as NEW  # same synthetic signable migration target
 PAYER=_encode(bytes([22])*32)
 SIG=_encode(bytes([77])*64)
 

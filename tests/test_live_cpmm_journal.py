@@ -19,24 +19,28 @@ from bot.live.route import ephemeral_wsol_address
 from bot.p3.certification import _encode
 from test_live_cpmm_stage import _staged
 from test_live_migration_evidence import SIG
+from test_live_signed_migration_reference import signed_rpc_migration
 from test_live_unsigned_preflight import GENESIS,ENDPOINT
 
 
 def registered(tmp_path):
     engine,old,cpmm,tx,amount=_staged(tmp_path)
+    signed,real_sig=signed_rpc_migration(tx)
     class Rpc:
         endpoint_sha256=ENDPOINT
         async def genesis_hash(self):return GENESIS
         async def get_transaction(self,signature):
-            assert signature==SIG
-            return deepcopy(tx)
-    receipt=asyncio.run(read_finalized_migration(Rpc(),signature=SIG,mint=cpmm.mint,
+            assert signature==real_sig
+            return deepcopy(signed)
+    receipt=asyncio.run(read_finalized_migration(Rpc(),signature=real_sig,mint=cpmm.mint,
         launchlab_pool=old.pool,cpmm_pool=cpmm.pool,expected_endpoint_sha256=ENDPOINT,
         expected_genesis_hash=GENESIS,observed_at_slot=cpmm.source_slot))
     assert receipt['status']=='FINALIZED_RPC_STRUCTURAL_MATCH',receipt
     binding=engine.journal.register_cpmm_migration(receipt,wallet=cpmm.user,
         received_at_ms=1400,expected_endpoint_sha256=ENDPOINT,expected_genesis_hash=GENESIS)
-    return engine,old,cpmm,tx,amount,binding
+    assert binding['cryptographic_signature_verified'] is True
+    assert binding['consensus_independently_verified'] is False
+    return engine,old,cpmm,signed,amount,binding
 
 
 def record(cpmm,binding,**overrides):
@@ -274,3 +278,85 @@ def test_ambiguous_migrated_sale_preserves_reservations_and_binding_after_restar
             restored.release_unsent(decision,1600,'blind-retry-forbidden')
         assert restored.verify_audit()
     finally:restored.close()
+
+
+@pytest.mark.parametrize('damage',[
+    'first_signature','second_signature','recent_blockhash','payer_pubkey',
+])
+def test_financial_migration_refuses_structurally_valid_but_unsigned_history(
+        tmp_path,damage):
+    engine,old,cpmm,parsed,amount=_staged(tmp_path)
+    raw,signature=signed_rpc_migration(parsed)
+    if damage=='first_signature':
+        signature=_encode(bytes([17])*64)
+        raw['transaction']['signatures'][0]=signature
+    elif damage=='second_signature':
+        raw['transaction']['signatures'][1]=_encode(bytes([18])*64)
+    elif damage=='recent_blockhash':
+        raw['transaction']['message']['recentBlockhash']=_encode(bytes([19])*32)
+    else:
+        raw['transaction']['message']['accountKeys'][0]=_encode(bytes([20])*32)
+    class Rpc:
+        endpoint_sha256=ENDPOINT
+        async def genesis_hash(self):return GENESIS
+        async def get_transaction(self,asked):
+            assert asked==signature
+            return deepcopy(raw)
+    try:
+        receipt=asyncio.run(read_finalized_migration(Rpc(),signature=signature,
+            mint=cpmm.mint,launchlab_pool=old.pool,cpmm_pool=cpmm.pool,
+            expected_endpoint_sha256=ENDPOINT,expected_genesis_hash=GENESIS,
+            observed_at_slot=cpmm.source_slot))
+        assert receipt['status']=='FINALIZED_RPC_STRUCTURAL_MATCH'
+        assert receipt['cryptographic_signature_bytes_verified'] is False
+        before=[dict(x) for x in engine.journal.con.execute('SELECT * FROM positions')]
+        with pytest.raises(ValueError,match='cryptographic_signatures'):
+            engine.journal.register_cpmm_migration(receipt,wallet=cpmm.user,
+                received_at_ms=1400,expected_endpoint_sha256=ENDPOINT,
+                expected_genesis_hash=GENESIS)
+        assert engine.journal.con.execute(
+            'SELECT COUNT(*) FROM cpmm_migrations').fetchone()[0]==0
+        assert [dict(x) for x in engine.journal.con.execute(
+            'SELECT * FROM positions')]==before
+        assert engine.journal.verify_audit()
+    finally:engine.journal.close()
+
+
+@pytest.mark.parametrize('downgrade',['legacy_structural_only','changed_proof_digest'])
+def test_older_or_forged_durable_migration_binding_cannot_enable_financial_sell(
+        tmp_path,downgrade):
+    engine,old,cpmm,_,_,binding=registered(tmp_path)
+    journal=engine.journal
+    try:
+        # Model a pre-upgrade journal with a perfectly consistent hash chain,
+        # not just a corrupted row rejected by the normal audit code.
+        row=journal.con.execute('SELECT * FROM cpmm_migrations').fetchone()
+        past=json.loads(row['binding_json'])
+        past.pop('binding_sha256')
+        if downgrade=='legacy_structural_only':
+            past['cryptographic_signature_verified']=False
+            past.pop('cryptographic_proof_sha256')
+            past.pop('exact_signed_message_sha256')
+            past['source_scope']='retained_pinned_finalized_RPC_claim'
+        else:
+            past['cryptographic_proof_sha256']='f'*64
+        past['binding_sha256']=hashlib.sha256(canonical(past).encode()).hexdigest()
+        encoded=canonical(past)
+        journal.con.execute('UPDATE cpmm_migrations SET binding_json=?',(encoded,))
+        last=journal.con.execute('SELECT * FROM audit ORDER BY sequence DESC LIMIT 1').fetchone()
+        event=json.loads(last['event_json'])
+        assert event['kind']=='cpmm_migration'
+        event['binding_json']=encoded
+        event_json=canonical(event)
+        event_sha=hashlib.sha256((last['previous_hash']+event_json).encode()).hexdigest()
+        journal.con.execute('UPDATE audit SET event_json=?,event_hash=? WHERE sequence=?',
+                            (event_json,event_sha,last['sequence']))
+        assert journal.verify_audit()
+        with pytest.raises(ValueError,match=(
+            'legacy_structural_only' if downgrade=='legacy_structural_only'
+            else 'retained_migration_Ed25519')):
+            journal.bound_migration(cpmm.mint,cpmm.pool,
+                at_ms=1500,source_slot=cpmm.source_slot,wallet=cpmm.user)
+        assert journal.con.execute('SELECT COUNT(*) FROM positions').fetchone()[0]==1
+        assert journal.verify_audit()
+    finally:journal.close()
