@@ -15,7 +15,7 @@ import aiohttp
 
 from bot.p3 import transport as transport_module
 from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
-from tools import run_readonly_cpmm_preflight as cli
+from bot.live import readonly_cli as cli
 from test_live_cpmm_rpc_integration import SyntheticSolanaTransport
 from test_live_readonly_plan import _plan
 from test_live_migration_evidence import OLD
