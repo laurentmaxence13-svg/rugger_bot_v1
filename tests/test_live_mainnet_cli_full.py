@@ -18,6 +18,7 @@ from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
 from tools import run_readonly_cpmm_preflight as cli
 from test_live_cpmm_rpc_integration import SyntheticSolanaTransport
 from test_live_readonly_plan import _plan
+from test_live_migration_evidence import OLD
 
 
 class MainnetFixture(SyntheticSolanaTransport):
@@ -105,6 +106,7 @@ def prepared_plan(simulation):
     plan=_plan()
     plan['program_pins']=simulation.program_pins
     plan['migration_signature']=simulation.signature
+    plan['original_launchlab_pool']=OLD
     plan['amount_in']=simulation.pool['amount_in']
     plan['min_context_slot']=1234
     plan['rpc_endpoint']=PUBLIC_MAINNET_RPC
