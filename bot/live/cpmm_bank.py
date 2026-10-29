@@ -8,14 +8,14 @@ from .route import associated_token_address, ephemeral_wsol_address
 
 
 async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
-        decision_id, min_context_slot, observed_block_time_seconds, clock_ms,
+        decision_id, min_context_slot, clock_ms,
         expected_genesis_hash, expected_endpoint_sha256,
         amount_in, slippage_bps, max_slippage_bps, max_price_impact_bps,
         compute_unit_limit=200000, priority_fee_micro_lamports=0,
         max_priority_fee_lamports=0, max_bank_age_ms=5000):
-    """Five bounded read-only RPC requests; no signer, wallet key or trade.
+    """Six bounded read-only RPC requests; no signer, wallet key or trade.
 
-    A caller must independently verify migration and block-time provenance.
+    A caller must independently verify migration and RPC transport provenance.
     The transport must enforce its own request and elapsed-time budgets.
     """
     for addr in (pool_address,mint,wallet,expected_genesis_hash):
@@ -25,8 +25,6 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
             or any(c not in "0123456789abcdef" for c in expected_endpoint_sha256)
             or type(min_context_slot) is not int or min_context_slot<=0
             or type(max_bank_age_ms) is not int or not 0<max_bank_age_ms<=5000
-            or type(observed_block_time_seconds) is not int
-            or observed_block_time_seconds<=0
             or not callable(clock_ms)):
         raise ValueError("explicit_RPC_bank_clock_limits_required")
     start=clock_ms()
@@ -81,6 +79,13 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
             latest["context_slot"]<slot_b):
         raise ValueError("CPMM_blockhash_bank_precedes_account_bank")
     rent=await rpc.rent_exemption(165)
+    # Source block time must come from the SAME causal bank slot rather than
+    # from an operator argument. Solana returns null for some fresh slots;
+    # the strict RPC adapter refuses those, never fabricates a timestamp.
+    observed_block_time_seconds=await rpc.get_block_time(slot_b)
+    if (type(observed_block_time_seconds) is not int
+            or observed_block_time_seconds<=0):
+        raise ValueError("CPMM_block_time_missing_or_untrusted")
     decision=clock_ms()
     if (type(decision) is not int or
             not 0<=decision-start<=max_bank_age_ms or
@@ -103,8 +108,11 @@ async def prepare_cpmm_sell_from_rpc(rpc, *, pool_address, mint, wallet,
         max_priority_fee_lamports=max_priority_fee_lamports)
     return dict(order=order,source_bank_slot=slot_b,
         initial_pool_bank_slot=slot_a,blockhash_bank_slot=latest["context_slot"],
-        read_only_RPC_calls=5,bank_received_at_ms=received,
+        read_only_RPC_calls=6,bank_received_at_ms=received,
         decision_at_ms=decision,
+        source_block_time_seconds=observed_block_time_seconds,
+        source_block_time_slot=slot_b,
+        source_block_time_provided_by_pinned_RPC=True,
         observed_block_time_independently_verified=False,
         onchain_program_pin_verified_by_this_module=False,
         migration_provenance_verified_by_this_module=False,
