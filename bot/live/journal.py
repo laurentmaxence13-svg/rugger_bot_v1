@@ -280,6 +280,25 @@ class ExecutionJournal:
         if hashlib.sha256(canonical(binding).encode()).hexdigest()!=claimed:
             raise ValueError('cpmm_migration_binding_digest_invalid')
         binding['binding_sha256']=claimed
+        # Existing private journals may have structural-only bindings created
+        # by an older software version. Merely upgrading the code MUST NOT
+        # promote such records to financial authorization.
+        if binding.get('cryptographic_signature_verified') is not True:
+            raise ValueError('legacy_structural_only_migration_cannot_authorize_live')
+        from .solana_signatures import verify_compiled_rpc_signatures
+        try:
+            receipt=binding['receipt']
+            raw=receipt['raw_RPC_response']
+            proof=verify_compiled_rpc_signatures(raw)
+            if (receipt['signature']!=raw['transaction']['signatures'][0]
+                    or binding.get('exact_signed_message_sha256')
+                        !=proof['exact_message_sha256']
+                    or binding.get('cryptographic_proof_sha256')
+                        !=hashlib.sha256(canonical(proof).encode()).hexdigest()
+                    or proof.get('cryptographic_signatures_verified') is not True):
+                raise ValueError('retained_migration_Ed25519_proof_changed')
+        except (KeyError,TypeError,ValueError,RuntimeError,OverflowError):
+            raise ValueError('retained_migration_Ed25519_proof_invalid') from None
         if (binding['wallet']!=wallet or binding['received_at_ms']>at_ms
                 or source_slot<binding['observed_at_slot']
                 or source_slot<binding['migration_slot']):
