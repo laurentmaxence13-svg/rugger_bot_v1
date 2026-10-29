@@ -1,0 +1,56 @@
+name: Rugger isolated LIVE / P3 regression
+on:
+  push:
+    branches:
+      - 'feat/live-real-preflight-*'
+      - 'feat/master-live-integration-*'
+  pull_request:
+    paths:
+      - 'bot/**'
+      - 'tests/**'
+      - 'tools/offline_check.py'
+      - 'requirements*.txt'
+      - '.github/workflows/rugger-isolated-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-offline-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  isolated-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - name: Checkout exact repository revision without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Install Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.11'
+      - name: Install isolated test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Record exact tree and module hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          git status --porcelain
+          sha256sum bot/live/unsigned_preflight.py tests/test_live_unsigned_preflight.py
+      - name: Run full offline suite, including unsigned BUY and SELL regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error
