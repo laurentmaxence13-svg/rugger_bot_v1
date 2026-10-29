@@ -8,7 +8,7 @@ Ce dossier documente la prochaine acquisition réseau, distincte de P3-012. Aucu
 2. Inspecter `bot/live/{program_pin,migration_rpc_receipt,solana_signatures,cpmm_bank,cpmm_readiness}.py`, `bot/live/readonly_plan.py` et `tools/run_readonly_cpmm_preflight.py` sur le SHA effectivement utilisé. Ces fichiers ont leurs propres tests, sans clés.
 3. Constituer une **signature historique réelle** `migrate_to_cpswap`, l'ancien pool LaunchLab, le nouveau pool CPMM, le token SPL et un wallet public disposant des tokens à vendre. Le protocole refuse toute valeur inventée. N'utiliser que des adresses publiques, jamais de phrase de récupération, clé privée, secret de service ou fichier `.env`.
 4. Épingler indépendamment les empreintes ProgramData/ELF, le slot de déploiement et l'autorité de mise à jour **actuels** de LaunchLab et CPMM. La capture historique LaunchLab du 29/10/2026 n'autorise pas automatiquement les programmes.
-5. Définir le `min_context_slot` après la migration finalisée et un budget d'appels RPC : exactement **17 appels au plus**, aucun retry, arrêt au premier échec, délai maximum 60 secondes.
+5. Définir le `min_context_slot` après la migration finalisée et un budget d'appels RPC : exactement **18 appels au plus**, aucun retry, arrêt au premier échec, délai maximum 60 secondes.
 
 La commande exige un plan JSON rempli avec **exactement** les champs de `bot/live/readonly_plan.py`. Le gabarit `mainnet_plan_template.json` comporte volontairement des valeurs interdites : il ne peut pas être exécuté sans configuration explicite.
 
