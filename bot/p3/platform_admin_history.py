@@ -10,6 +10,8 @@ signature. This module performs no RPC call and does not change STRICT checks;
 it returns a corroborated historical public admin seed for later integration.
 """
 
+import struct
+
 from bot.p3.certification import PROGRAM, _decode, find_program_address
 
 # Raydium IDL commit e7e0c96fe77bcf6a020b84a44c47a722aac8e359
@@ -25,6 +27,37 @@ def _b58_bytes(value):
         number=number*58+_BASE58.index(char)
     prefix=len(value)-len(value.lstrip('1'))
     return bytes(prefix)+number.to_bytes((number.bit_length()+7)//8,'big')
+
+
+def _complete_platform_params(data):
+    """Validate the entire Anchor/Borsh CreatePlatformConfig argument payload.
+
+    Pinned IDL PlatformParams: MigrateNftInfo(3*u64), fee_rate(u64),
+    3 Borsh strings, creator_fee_rate(u64), platform_vesting_scale(u64).
+    PlatformConfig account reserves 64/256/256 bytes for the string fields.
+    Truncated, extra, oversized and invalid UTF-8 arguments are rejected.
+    This is structural validation only, NOT evidence of an actual on-chain
+    transaction or economic acceptability of the values.
+    """
+    if type(data) is not bytes or not data.startswith(_CREATE_PLATFORM_CONFIG_DISC):
+        return False
+    if len(data) < 68:
+        return False
+    position=8+4*8
+    limits=(64,256,256)
+    for limit in limits:
+        if position+4>len(data):
+            return False
+        length=struct.unpack_from('<I',data,position)[0]
+        position+=4
+        if length>limit or position+length>len(data):
+            return False
+        try:
+            data[position:position+length].decode('utf-8')
+        except UnicodeDecodeError:
+            return False
+        position+=length
+    return position+16==len(data)
 
 
 def verify_historical_platform_creation(tx, *, platform_config, signature,
@@ -90,10 +123,10 @@ def verify_historical_platform_creation(tx, *, platform_config, signature,
                 data=_b58_bytes(raw)
             except (ValueError,OverflowError):
                 continue
-            if not data.startswith(_CREATE_PLATFORM_CONFIG_DISC):
+            if not _complete_platform_params(data):
                 continue
             accounts=item.get('accounts')
-            if type(accounts) is not list or len(accounts)<4:
+            if type(accounts) is not list or len(accounts)<8:
                 continue
             def pub(ref):
                 if type(ref) is int and ref in keyed:
