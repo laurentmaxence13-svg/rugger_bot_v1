@@ -1,0 +1,40 @@
+{
+  "schema": "rugger-free-Parquet-prepurchase-readiness-v1",
+  "sample_version": "2026-09-08-v4",
+  "source_archive_sha256": "ad9b590643ecafedc483c17dcf57613696e7da8731b27a717bb8c7ba3e54a6f3",
+  "manifest_files_sha256_verified": 23,
+  "event_creation_rows": 100,
+  "distinct_creator_claims": 76,
+  "create_events_matched_by_pool_and_signature": 100,
+  "trade_event_rows": 100,
+  "all_instruction_rows": 400,
+  "trade_instruction_to_event_matched": 92,
+  "matched_instruction_direction_counts": {
+    "buy": 58,
+    "sell": 34
+  },
+  "wsol_instruction_counts": {
+    "buy": 14,
+    "sell": 11
+  },
+  "wsol_instruction_event_matched": {
+    "buy": 2,
+    "sell": 0
+  },
+  "historical_pairs_joined": 2,
+  "historical_pairs_wsol": 0,
+  "wsol_unique_pools": 14,
+  "wsol_mints_created_in_sample": 2,
+  "full_creation_denominator_verified": false,
+  "complete_wallet_history_verified": false,
+  "after_migration_CPMM_swaps_present": false,
+  "all_fees_reconciled": false,
+  "at_decision_master_reference_observed": false,
+  "creator_disjoint_holdout_50_verified": false,
+  "source_trades_are_independent_short_per_table_samples": true,
+  "net_master_outperformance_verified": false,
+  "verdict": "NO_GO_ECONOMIC_DATA_INSUFFICIENT",
+  "net_delta_lamports": null,
+  "real_wallet_transactions_sent": 0,
+  "LIVE_READY_TO_ARM": false
+}
