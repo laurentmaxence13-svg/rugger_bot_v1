@@ -16,6 +16,7 @@ from urllib.request import Request, build_opener, HTTPSHandler, ProxyHandler, HT
 from urllib.error import HTTPError, URLError
 
 from bot.live.readonly_plan import MAINNET_GENESIS
+from bot.p3.certification import PROGRAM
 
 HELIUS_RPC_ID = "https://mainnet.helius-rpc.com/"
 READ_METHODS = frozenset(("getGenesisHash", "getTransaction",
@@ -38,7 +39,7 @@ class HeliusReadOnlyRpc:
     endpoint = HELIUS_RPC_ID
 
     def __init__(self, key, *, max_calls=10, opener=None,
-                 allow_unsigned_preflight=False):
+                 allow_unsigned_preflight=False, allow_launch_discovery=False):
         if (type(key) is not str or key == "COLLE_TA_CLE_ICI"
                 or _API_KEY.fullmatch(key) is None):
             raise ValueError("helius_api_key_missing_or_invalid")
@@ -50,6 +51,9 @@ class HeliusReadOnlyRpc:
         self._url = HELIUS_RPC_ID + "?api-key=" + quote(key, safe="")
         if type(allow_unsigned_preflight) is not bool:
             raise ValueError("explicit_unsigned_preflight_flag_required")
+        if type(allow_launch_discovery) is not bool:
+            raise ValueError('explicit_launch_discovery_flag_required')
+        self._discovery = allow_launch_discovery
         self._preflight = allow_unsigned_preflight
         self._max_calls = max_calls
         self.count = 0
@@ -59,18 +63,29 @@ class HeliusReadOnlyRpc:
             NoRedirect())
 
     @classmethod
-    def from_environment(cls, *, max_calls=10, allow_unsigned_preflight=False):
+    def from_environment(cls, *, max_calls=10, allow_unsigned_preflight=False,
+                         allow_launch_discovery=False):
         # Never fall back to any key read from a local .env.
         return cls(os.environ.get("HELIUS_API_KEY"), max_calls=max_calls,
-                   allow_unsigned_preflight=allow_unsigned_preflight)
+                   allow_unsigned_preflight=allow_unsigned_preflight,
+                   allow_launch_discovery=allow_launch_discovery)
 
     def __repr__(self):
         return "HeliusReadOnlyRpc(endpoint='mainnet.helius-rpc.com',key='REDACTED')"
 
     def __call__(self, method, params):
         if method not in READ_METHODS and not (
-                self._preflight and method in UNSIGNED_PREFLIGHT_METHODS):
+                self._preflight and method in UNSIGNED_PREFLIGHT_METHODS) and not (
+                self._discovery and method=="getSignaturesForAddress"):
             raise ValueError("helius_only_explicit_allowlisted_read_methods")
+        if method == "getSignaturesForAddress":
+            if (not self._discovery or type(params) is not list or len(params)!=2
+                    or params[0]!=PROGRAM or type(params[1]) is not dict
+                    or set(params[1])!={"limit","commitment"}
+                    or params[1].get("commitment")!="finalized"
+                    or type(params[1].get("limit")) is not int
+                    or not 1<=params[1]["limit"]<=20):
+                raise ValueError("helius_launch_discovery_requires_exact_bounded_program_page")
         if method == "simulateTransaction":
             if (type(params) is not list or len(params)!=2
                     or type(params[0]) is not str or type(params[1]) is not dict):
