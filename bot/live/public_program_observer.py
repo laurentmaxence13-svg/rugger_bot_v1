@@ -12,6 +12,7 @@ import ssl
 import sys
 import time
 from urllib.request import Request, build_opener, HTTPSHandler, ProxyHandler, HTTPRedirectHandler
+from urllib.error import HTTPError
 
 from bot.p3.certification import PROGRAM
 from bot.live.cpmm_swap import CPMM_PROGRAM
@@ -19,7 +20,7 @@ from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
 from bot.live.program_pin import _raw, _programdata_address, _details
 
 
-SECONDARY_RPC = "https://solana-rpc.publicnode.com"
+SECONDARY_RPC = "https://rpc.solanatracker.io/public"
 ALLOWED_OBSERVATION_RPCS = frozenset((PUBLIC_MAINNET_RPC, SECONDARY_RPC))
 
 
@@ -157,6 +158,7 @@ def main_pair():
     except Exception as error:
         print(json.dumps(dict(status="REFUSED",
             diagnostic_error_type=type(error).__name__,
+            http_status_code=error.code if isinstance(error, HTTPError) else None,
             provider_code_hash_agreement=False,
             live_ready_to_arm=False,
             financial_order_submitted=False), sort_keys=True))
