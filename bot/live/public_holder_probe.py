@@ -9,6 +9,7 @@ import ssl
 import sys
 import time
 from urllib.request import Request,build_opener,ProxyHandler,HTTPSHandler,HTTPRedirectHandler
+from urllib.error import HTTPError
 
 from bot.p3.certification import _decode
 from bot.p3 import launchlab
@@ -125,6 +126,7 @@ def main():
         report=find_public_ata_holder(ReadOnlyHolderRpc())
     except Exception as exc:
         report=dict(status="REFUSED",error_type=type(exc).__name__,
+                    http_status_code=exc.code if isinstance(exc,HTTPError) else None,
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"]=="PUBLIC_CANDIDATE_WALLET_AND_ATA_IDENTIFIED" else 2
