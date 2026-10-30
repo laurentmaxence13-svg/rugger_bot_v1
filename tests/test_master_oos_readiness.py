@@ -1,12 +1,11 @@
 """Regression: synthetic or survivor cohorts cannot manufacture Master edge."""
-import json
-from pathlib import Path
 import pytest
 from bot.p3.master_oos_readiness import evaluate_master_oos_readiness
 
-ROOT=Path(__file__).resolve().parents[1]
-BENCH=json.loads((ROOT/"validation/master_v2/FINAL_VALIDATION.json").read_text())
-FIXTURE=json.loads((ROOT/"validation/master_v2/COMPARISON_SUMMARY.json").read_text())
+BENCH=dict(schema="rugger-master-v2-final-validation-v1",
+           strict_market_economic_cycles=0,promotion_allowed=False,
+           new_market_observations=0)
+FIXTURE=dict(schema="master-v2-fixture-measurements-v1",data_kind="synthetic")
 
 def test_existing_real_repository_reports_are_no_go_not_automatically_promoted():
     report=evaluate_master_oos_readiness(BENCH,FIXTURE,{})
