@@ -1,9 +1,10 @@
 name: Discover one historical SOL LaunchLab migration (READ ONLY)
+# Historical fixed-payer sample returns no signatures; it is a research
+# diagnostic, not the validated migration evidence gate. The cryptographically
+# verified pinned migrations are checked by separate two-provider workflows.
+# Preserve this legacy probe for manual exploration only; do not count a
+# no-result page as a failing production gate.
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_migration_discovery.py'
-      - '.github/workflows/public-migration-readonly.yml'
   workflow_dispatch:
 
 permissions:
