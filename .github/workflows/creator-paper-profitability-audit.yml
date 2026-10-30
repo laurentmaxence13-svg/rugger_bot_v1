@@ -1,0 +1,41 @@
+name: Strict creator-cluster PAPER profitability audit (NO LIVE)
+on:
+  pull_request:
+    paths:
+      - 'bot/p3/forward_profitability_audit.py'
+      - 'tests/test_forward_profitability_audit.py'
+      - '.github/workflows/creator-paper-profitability-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  conservative-no-data-gate:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout exact source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install offline pytest only
+        run: |
+          python -m pip install --disable-pip-version-check "pytest>=8,<9"
+      - name: Falsification tests for profits, missing exits and creator duplication
+        run: |
+          python -m pytest -q tests/test_forward_profitability_audit.py
+      - name: Publish no-data zero-profit NO-GO audit
+        run: |
+          python -B -m bot.p3.forward_profitability_audit
