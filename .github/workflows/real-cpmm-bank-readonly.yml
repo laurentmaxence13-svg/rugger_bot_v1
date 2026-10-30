@@ -1,0 +1,43 @@
+name: Observe two real migrated CPMM pool banks (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/public_cpmm_pool_probe.py'
+      - 'tests/test_live_public_cpmm_pool_probe.py'
+      - '.github/workflows/real-cpmm-bank-readonly.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-real-cpmm-banks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observe-finalized-pool-bank:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared live dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Fetch public program-owned CPMM pool and vault state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.public_cpmm_pool_probe
