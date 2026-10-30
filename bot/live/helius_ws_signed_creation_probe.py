@@ -140,7 +140,12 @@ def inspect_forward_creations(report, events, rpc):
                     "v1_unknown_config_mask_bits",
                     "v1_creation_payer_not_signer",
                     "v1_instruction_or_address_count_invalid",
-                    "v1_wire_truncated"))
+                    "v1_wire_truncated",
+                    "v1_signer_header_invalid",
+                    "v1_duplicate_static_addresses",
+                    "v1_instruction_index_or_accounts_invalid",
+                    "v1_instruction_account_reference_invalid",
+                    "v1_transaction_base64_invalid"))
                 receipt["status"] = "V1_BINARY_PROOF_REFUSED"
                 receipt["refusal_phase"] = "v1_binary_ed25519"
                 receipt["refusal_code"] = (code if type(exc) is ValueError
