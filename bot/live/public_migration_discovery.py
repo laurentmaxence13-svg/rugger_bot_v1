@@ -77,7 +77,7 @@ def candidate_role_mapping(raw):
         indices=instruction.get("accounts")
         if (type(idx) is not int or not 0<=idx<len(keys)
                 or keys[idx]["pubkey"]!=PROGRAM or type(indices) is not list
-                or len(indices)!=28):
+                or len(indices) not in (28, 38)):
             continue
         try:
             if _b58_bytes(instruction["data"])!=MIGRATE_TO_CPSWAP_DISC:
