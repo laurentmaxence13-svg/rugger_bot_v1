@@ -190,3 +190,31 @@ def test_current_permissioned_rpc_signature_binding_remains_cryptographic():
     mutated["transaction"]["message"]["recentBlockhash"]=PROGRAM
     with pytest.raises(ValueError):
         verify_compiled_rpc_signatures(mutated)
+
+
+@pytest.mark.parametrize("mutation", [
+    "alter_lookup_table",
+    "alter_writable_index",
+    "alter_readonly_index",
+    "alter_loaded_address",
+    "alter_first_signature",
+])
+def test_signed_current_v0_lookup_integrity_fails_closed(mutation):
+    tx=signed_v0_current_migration()
+    tampered=deepcopy(tx)
+    message=tampered["transaction"]["message"]
+    if mutation == "alter_lookup_table":
+        message["addressTableLookups"][0]["accountKey"]=_encode(bytes([123])*32)
+    elif mutation == "alter_writable_index":
+        message["addressTableLookups"][0]["writableIndexes"][0]=81
+    elif mutation == "alter_readonly_index":
+        message["addressTableLookups"][1]["readonlyIndexes"][0]=82
+    elif mutation == "alter_loaded_address":
+        tampered["meta"]["loadedAddresses"]["readonly"][0]=_encode(bytes([124])*32)
+        with pytest.raises(ValueError):
+            verify_compiled_rpc_signatures(tampered)
+        return
+    else:
+        tampered["transaction"]["signatures"][0]=_encode(bytes([125])*64)
+    with pytest.raises(ValueError):
+        verify_compiled_rpc_signatures(tampered)
