@@ -7,6 +7,10 @@ on:
       - 'tests/test_live_helius_launchlab_cohort_probe.py'
       - '.github/workflows/helius-launchlab-sampled-creations.yml'
   workflow_dispatch:
+  # GitHub cron executes only after this workflow is merged into default branch.
+  # At most four read-only runs/day; no real orders and no paid data provider.
+  schedule:
+    - cron: '43 */6 * * *'
 
 permissions:
   contents: read
@@ -19,6 +23,7 @@ jobs:
   bounded-historical-sample:
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
       (github.event_name == 'pull_request' &&
        github.event.pull_request.head.repo.full_name == github.repository &&
        github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
