@@ -219,3 +219,33 @@ def audit_creator_paper_edge(evidence):
             "Open positions block positive signal; no imputed liquidation proceeds",
             "At least 50 verified independent holdout creators are required for review, not sufficient for LIVE"],
         all_scenarios_registered=[list(s) for s in SCENARIOS])
+
+
+def main(argv=None):
+    """Offline CLI. No input explicitly means NO market evidence, never GO."""
+    import argparse
+    from pathlib import Path
+    parser=argparse.ArgumentParser(
+        description="Creator-cluster conditional PAPER audit (NO LIVE)")
+    parser.add_argument("--input",type=Path,default=None,
+                        help="Previously registered JSON paper evidence")
+    args=parser.parse_args(argv)
+    if args.input is None:
+        evidence=dict(schema=SCHEMA,data_kind="synthetic",
+            registered_at_ms=1,registration_sha256="0"*64,
+            development_creator_ids=[],
+            full_creation_denominator_observed=False,
+            receipts_cryptographically_checked=False,
+            decisions_frozen_before_outcome=False,rows=[])
+        example_only=True
+    else:
+        evidence=json.loads(args.input.read_text(encoding="utf-8"))
+        example_only=False
+    report=audit_creator_paper_edge(evidence)
+    report["no_input_empty_example_only"]=example_only
+    print(json.dumps(report,sort_keys=True))
+    return 0
+
+
+if __name__=="__main__":
+    raise SystemExit(main())
