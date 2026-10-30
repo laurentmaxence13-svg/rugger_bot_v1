@@ -1,10 +1,8 @@
 name: Index-first prospective LaunchLab cohort (HELIUS READ ONLY)
+# Official Raydium index returned HTTP 403 from GitHub-hosted runners.
+# This experiment remains a manual diagnostic, NOT a P3 proof and NOT a
+# failing production/CI gate. Independent on-chain page checks continue.
 on:
-  pull_request:
-    paths:
-      - 'bot/p3/helius_index_prospective_cohort.py'
-      - 'tests/test_live_helius_index_prospective_cohort.py'
-      - '.github/workflows/helius-index-first-cohort.yml'
   workflow_dispatch:
 
 permissions:
