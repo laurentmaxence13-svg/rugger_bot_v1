@@ -170,3 +170,36 @@ def test_absent_compiled_creation_cannot_be_invented(monkeypatch):
     assert result["signed_creation_candidate_transactions"] == 0
     assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
     assert result["economic_edge_validated"] is False
+
+
+def test_v1_real_signed_wire_fallback_accepts_only_cryptographically_verified_outer(monkeypatch):
+    from test_live_solana_v1_readonly import signed_receipt
+    tx, sig = signed_receipt()
+    audit = ReadOnlyLogAudit(7, 10)
+    msg = dict(jsonrpc="2.0", method="logsNotification", params=dict(
+        subscription=7, result=dict(context=dict(slot=10101),
+            value=dict(signature=sig, err=None,
+                       logs=["Program log: Instruction: InitializeV2"]))))
+    assert audit.accept(msg, received_mono_ns=200000,
+                        parsed_mono_ns=200010, received_utc_ns=100000000000)
+    events = audit.events
+    class V1Rpc:
+        count = 0
+        def __call__(self, method, params):
+            self.count += 1
+            if method == "getGenesisHash":
+                return MAINNET_GENESIS
+            assert method == "getTransaction" and params[0] == sig
+            if params[1]["encoding"] == "base64":
+                return tx
+            assert params[1]["encoding"] == "json"
+            return dict(fake_tx(sig, 10101), version=1)
+    rpc = V1Rpc()
+    result = mod.inspect_forward_creations(
+        audit.report(duration_ms=1000, handshake_ms=30), events, rpc)
+    assert result["signed_creation_candidate_transactions"] == 1
+    assert result["status_counts"]["SIGNED_OUTER_CREATION_CANDIDATE"] == 1
+    assert result["distinct_creator_claims_from_signed_transactions"] == 1
+    assert rpc.count == 3
+    assert result["economically_qualified_cycles"] == 0
+    assert result["live_ready_to_arm"] is False
