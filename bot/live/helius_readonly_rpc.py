@@ -5,6 +5,7 @@ key and authenticated URL are never reported or persisted. No env/.env loading,
 private keys, transaction signing, simulation or send method is supported.
 Other callers supply only public addresses and transaction signatures.
 """
+import base64
 import json
 import os
 import re
@@ -19,6 +20,10 @@ from bot.live.readonly_plan import MAINNET_GENESIS
 HELIUS_RPC_ID = "https://mainnet.helius-rpc.com/"
 READ_METHODS = frozenset(("getGenesisHash", "getTransaction",
                           "getTokenLargestAccounts", "getMultipleAccounts"))
+UNSIGNED_PREFLIGHT_METHODS = frozenset((
+    "getLatestBlockhash", "getBlockHeight", "getBlockTime",
+    "getMinimumBalanceForRentExemption", "getFeeForMessage",
+    "simulateTransaction"))
 _API_KEY = re.compile(r"[A-Za-z0-9_-]{16,160}\Z")
 
 
@@ -32,7 +37,8 @@ class HeliusReadOnlyRpc:
 
     endpoint = HELIUS_RPC_ID
 
-    def __init__(self, key, *, max_calls=10, opener=None):
+    def __init__(self, key, *, max_calls=10, opener=None,
+                 allow_unsigned_preflight=False):
         if type(key) is not str or _API_KEY.fullmatch(key) is None:
             raise ValueError("helius_api_key_missing_or_invalid")
         if type(max_calls) is not int or not 1 <= max_calls <= 10:
@@ -41,6 +47,9 @@ class HeliusReadOnlyRpc:
         # exposes this value. The public .endpoint is always key-free.
         self._key = key
         self._url = HELIUS_RPC_ID + "?api-key=" + quote(key, safe="")
+        if type(allow_unsigned_preflight) is not bool:
+            raise ValueError("explicit_unsigned_preflight_flag_required")
+        self._preflight = allow_unsigned_preflight
         self._max_calls = max_calls
         self.count = 0
         self.started = time.monotonic()
@@ -49,16 +58,37 @@ class HeliusReadOnlyRpc:
             NoRedirect())
 
     @classmethod
-    def from_environment(cls, *, max_calls=10):
+    def from_environment(cls, *, max_calls=10, allow_unsigned_preflight=False):
         # Never fall back to any key read from a local .env.
-        return cls(os.environ.get("HELIUS_API_KEY"), max_calls=max_calls)
+        return cls(os.environ.get("HELIUS_API_KEY"), max_calls=max_calls,
+                   allow_unsigned_preflight=allow_unsigned_preflight)
 
     def __repr__(self):
         return "HeliusReadOnlyRpc(endpoint='mainnet.helius-rpc.com',key='REDACTED')"
 
     def __call__(self, method, params):
-        if method not in READ_METHODS:
-            raise ValueError("helius_only_four_allowlisted_read_methods")
+        if method not in READ_METHODS and not (
+                self._preflight and method in UNSIGNED_PREFLIGHT_METHODS):
+            raise ValueError("helius_only_explicit_allowlisted_read_methods")
+        if method == "simulateTransaction":
+            if (type(params) is not list or len(params)!=2
+                    or type(params[0]) is not str or type(params[1]) is not dict):
+                raise ValueError("helius_unsigned_simulation_shape_invalid")
+            options=params[1]
+            if (options.get("sigVerify") is not False
+                    or options.get("replaceRecentBlockhash") is not False
+                    or options.get("encoding")!="base64"
+                    or options.get("commitment")!="confirmed"
+                    or type(options.get("minContextSlot")) is not int
+                    or options["minContextSlot"]<=0):
+                raise ValueError("helius_simulation_must_be_unsigned_nonreplacing")
+            try:
+                wire=base64.b64decode(params[0],validate=True)
+            except (ValueError,base64.binascii.Error):
+                raise ValueError("helius_unsigned_wire_encoding_invalid") from None
+            # One legacy signature slot, all zero: never simulate signed orders.
+            if not 65<=len(wire)<=1232 or wire[:65] != bytes([1])+bytes(64):
+                raise ValueError("helius_unsigned_wire_only_zero_signature_required")
         if self.count >= self._max_calls or time.monotonic() - self.started > 50:
             raise ValueError("helius_readonly_budget_exceeded")
         self.count += 1
