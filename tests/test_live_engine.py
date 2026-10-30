@@ -52,6 +52,8 @@ class FakeRpc:
         self.tx = None
         self.send_error = None
         self.simulation = dict(err=None, unitsConsumed=150000, context_slot=1300)
+        self.fee_receipt = dict(value=5002,context_slot=5000)
+        self.fee_receipt_requests = []
 
     async def get_block_height(self):
         return self.height
@@ -63,7 +65,13 @@ class FakeRpc:
         return 10_000_000_000
 
     async def get_fee_for_message(self, message):
+        # Legacy compatibility for tests of the RPC adapter only. The live
+        # engine must demand get_fee_for_message_receipt instead.
         return 5002
+
+    async def get_fee_for_message_receipt(self, message, *, min_context_slot):
+        self.fee_receipt_requests.append((message,min_context_slot))
+        return deepcopy(self.fee_receipt)
 
     async def simulate_transaction(self, raw, *, sig_verify):
         assert sig_verify is False
@@ -466,5 +474,47 @@ def test_finality_token_balance_indices_reject_coercion_and_malformed_rows(tmp_p
             post.append(dict(accountIndex=float(len(keys)-1)))
         with pytest.raises(ValueError,match='canonical_token_balance_account_index_required'):
             reconcile_transaction(engine.journal.get(decision),payload)
+    finally:
+        engine.journal.close()
+
+
+
+@pytest.mark.parametrize('variant',[
+    'missing_context','stale_bank','boolean_slot','unknown_fee',
+    'zero_fee','fee_over_reserved_upper_bound'
+])
+def test_live_send_requires_exact_causal_fee_receipt_before_signing(tmp_path, variant):
+    engine,order,rpc,signer,_=configured(tmp_path)
+    try:
+        if variant=='missing_context':
+            rpc.fee_receipt={'value':5002}
+        elif variant=='stale_bank':
+            rpc.fee_receipt=dict(value=5002,context_slot=order.source_slot-1)
+        elif variant=='boolean_slot':
+            rpc.fee_receipt=dict(value=5002,context_slot=True)
+        elif variant=='unknown_fee':
+            rpc.fee_receipt=dict(value=None,context_slot=order.source_slot)
+        elif variant=='zero_fee':
+            rpc.fee_receipt=dict(value=0,context_slot=order.source_slot)
+        else:
+            rpc.fee_receipt=dict(value=order.network_fee_upper_lamports+1,
+                                 context_slot=order.source_slot)
+        decision=json.loads(order.rebuild_request_json)['decision_id']
+        with pytest.raises(ValueError,match='message_fee_unknown_noncausal_or_exceeds'):
+            run(engine.execute(decision,order))
+        assert rpc.fee_receipt_requests==[(order.transaction.message,order.source_slot)]
+        assert signer.calls==0 and rpc.send_calls==[]
+        assert engine.journal.get(decision)['state']=='SIMULATED'
+        assert engine.journal.verify_audit()
+    finally:
+        engine.journal.close()
+
+
+def test_live_send_reprices_exact_message_twice_on_fresh_causal_bank(tmp_path):
+    engine,order,rpc,_,_=configured(tmp_path)
+    try:
+        decision=json.loads(order.rebuild_request_json)['decision_id']
+        assert run(engine.execute(decision,order))['state']=='SUBMITTED'
+        assert rpc.fee_receipt_requests==[(order.transaction.message,order.source_slot)]*2
     finally:
         engine.journal.close()
