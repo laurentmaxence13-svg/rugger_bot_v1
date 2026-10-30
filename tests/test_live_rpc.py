@@ -259,4 +259,3 @@ def test_finalized_signature_discovery_is_single_bounded_page_without_fallback()
     with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
 
 
-@pytest.mark.parametrize('method',['signature_status','get_transaction','send_transaction'])
