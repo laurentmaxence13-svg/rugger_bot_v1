@@ -129,7 +129,7 @@ class SyntheticSolanaTransport:
 def test_complete_unsigned_migration_sale_uses_real_rpc_adapter_and_all_18_read_calls():
     transport=SyntheticSolanaTransport()
     rpc=SolanaRpc(transport)
-    ticks=iter((1050,1070,1100,1120,1140))
+    ticks=iter((1050,1070,1100,1120,1140,1150,1160,1170))
     r=asyncio.run(preflight_migrated_sell(
         rpc,
         program_pins=transport.program_pins,
@@ -168,3 +168,35 @@ def test_complete_unsigned_migration_sale_uses_real_rpc_adapter_and_all_18_read_
         simulateTransaction=1))
     assert sum(methods.values())==18
     assert 'sendTransaction' not in methods
+
+
+def test_unsigned_mainnet_preflight_rejects_data_that_ages_during_rpc_simulation():
+    transport=SyntheticSolanaTransport()
+    rpc=SolanaRpc(transport)
+    # The fifth timestamp starts unsigned preflight; after the final RPC
+    # simulation the bank is deliberately > 5 s old. A successful RPC result
+    # must not be classified as a fresh eligible simulation.
+    ticks=iter((1050,1070,1100,1120,1140,1150,1160,7000))
+    result=asyncio.run(preflight_migrated_sell(
+        rpc,program_pins=transport.program_pins,
+        original_launchlab_pool=OLD,migrated_cpmm_pool=POOL,
+        migration_signature=transport.signature,
+        mint=MINT,wallet=WALLET,
+        decision_id=transport.pool['decision_id'],
+        expected_endpoint_sha256=rpc.endpoint_sha256,
+        expected_genesis_hash=GENESIS,min_context_slot=1234,
+        clock_ms=lambda:next(ticks),
+        amount_in=transport.pool['amount_in'],
+        slippage_bps=transport.pool['slippage_bps'],
+        max_slippage_bps=transport.pool['max_slippage_bps'],
+        max_price_impact_bps=transport.pool['max_price_impact_bps'],
+        compute_unit_limit=transport.pool['compute_unit_limit'],
+        priority_fee_micro_lamports=transport.pool['priority_fee_micro_lamports'],
+        max_priority_fee_lamports=transport.pool['max_priority_fee_lamports']))
+    assert result['status']=='REFUSED'
+    assert result['reason']=='unsigned_simulation_failed'
+    assert result['simulation']['result']=='REFUSED'
+    assert result['simulation']['reason']=='stale_or_future_source_bank_after_simulation'
+    assert sum(k=='simulateTransaction' for k,_ in transport.calls)==1
+    assert all(k!='sendTransaction' for k,_ in transport.calls)
+    assert result['live_execution_authorized'] is False
