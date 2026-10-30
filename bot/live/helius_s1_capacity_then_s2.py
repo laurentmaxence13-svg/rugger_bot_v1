@@ -180,6 +180,13 @@ def main():
             last_rpc_method=rpc.last_method if rpc else None,
             last_rpc_error_code=rpc.last_rpc_error_code if rpc else None,
             financial_order_submitted=False,live_ready_to_arm=False)
+    if result.get("status") in ("PREDECLARED_S1_CAPACITY_SAMPLE_RECORDED", "NO_ACTIVE_POOLS_IN_PRESELECTED_PAGE",):
+        from bot.p3.readonly_evidence_archive import archive_from_github_actions
+        archive_info=archive_from_github_actions(result,kind="s1_capacity_s2")
+        if archive_info is not None:
+            print(json.dumps(dict(phase="PUBLIC_PAPER_EVIDENCE_ARTIFACT",
+                evidence_sha256=archive_info["observation_sha256"],
+                financial_order_submitted=False),sort_keys=True))
     print(json.dumps(result,sort_keys=True))
     return 0 if result["status"] in (
         "PREDECLARED_S1_CAPACITY_SAMPLE_RECORDED",
