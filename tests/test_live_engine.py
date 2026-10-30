@@ -441,3 +441,30 @@ def test_atomic_reservation_rechecks_pending_daily_spend_and_keeps_first_order(t
         journal.reserve('worker-B', now[0], **kwargs)
     assert journal.get('worker-A')['state'] == 'RESERVED'
     assert journal.get('worker-B')['state'] == 'SIMULATED'
+
+
+
+@pytest.mark.parametrize('corrupt', ['float_post', 'bool_pre', 'out_of_range_post', 'float_unrelated'])
+def test_finality_token_balance_indices_reject_coercion_and_malformed_rows(tmp_path, corrupt):
+    # An RPC response must not match an ATA using Python's 2.0 == 2 or
+    # True == 1 semantics. Even unrelated token metadata must be well-typed.
+    engine, order, rpc, _, _ = configured(tmp_path)
+    try:
+        decision=json.loads(order.rebuild_request_json)['decision_id']
+        result=run(engine.execute(decision,order))
+        payload=finalized_payload(order,result['signature'])
+        keys=payload['transaction']['message']['accountKeys']
+        base_index=keys.index(order.base_token_account)
+        post=payload['meta']['postTokenBalances']
+        if corrupt=='float_post':
+            post[0]['accountIndex']=float(base_index)
+        elif corrupt=='bool_pre':
+            payload['meta']['preTokenBalances'].append(dict(accountIndex=True))
+        elif corrupt=='out_of_range_post':
+            post[0]['accountIndex']=len(keys)
+        else:
+            post.append(dict(accountIndex=float(len(keys)-1)))
+        with pytest.raises(ValueError,match='canonical_token_balance_account_index_required'):
+            reconcile_transaction(engine.journal.get(decision),payload)
+    finally:
+        engine.journal.close()
