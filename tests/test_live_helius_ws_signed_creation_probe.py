@@ -143,6 +143,10 @@ def test_fee_payer_not_compiled_signer_rejected(monkeypatch):
     monkeypatch.setattr(mod, "compiled_launchlab_creations", fake_creations)
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 5
+    assert all(r["refusal_phase"] == "creation_payer_identity" and
+               r["refusal_code"] == "verified_compiled_creation_identity_mismatch"
+               for r in result["records"] if r["status"] ==
+               "SIGNATURE_OR_CREATION_IDENTITY_REFUSED")
     assert result["signed_creation_candidate_transactions"] == 0
 
 
