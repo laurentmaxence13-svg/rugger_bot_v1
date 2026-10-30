@@ -259,3 +259,47 @@ def test_finalized_signature_discovery_is_single_bounded_page_without_fallback()
     with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
 
 
+
+
+def test_transport_send_deduplicates_exact_signed_bytes_after_success():
+    # The authoritative journal controls retries after restart. Within one
+    # transport instance an accidental second call must never reach HTTP.
+    http=Http(('{"jsonrpc":"2.0","id":1,"result":"'+SIG+'"}').encode())
+    transport=HttpJsonRpcTransport(
+        http,endpoint='https://api.mainnet.solana.com',proxy='http://proxy:8080',
+        submission_authorizer=lambda raw:raw==RAW)
+    payload=[base64.b64encode(RAW).decode('ascii'),dict(encoding='base64')]
+    assert run(transport('sendTransaction',payload))==SIG
+    with pytest.raises(RpcError,match='Duplicate signed transaction'):
+        run(transport('sendTransaction',payload))
+    assert len(http.calls)==transport.used==1
+    assert len(transport._attempted_submission_digests)==1
+
+
+def test_transport_concurrent_duplicate_send_is_claimed_before_first_await():
+    class DelayedResponse(Response):
+        async def __aenter__(self):
+            await asyncio.sleep(0)
+            return self
+
+    class DelayedHttp(Http):
+        def post(self,*args,**kwargs):
+            self.calls.append(kwargs)
+            return DelayedResponse(self.body,self.status)
+
+    http=DelayedHttp(('{"jsonrpc":"2.0","id":1,"result":"'+SIG+'"}').encode())
+    transport=HttpJsonRpcTransport(
+        http,endpoint='https://api.mainnet.solana.com',proxy='http://proxy:8080',
+        submission_authorizer=lambda raw:raw==RAW)
+    payload=[base64.b64encode(RAW).decode('ascii'),dict(encoding='base64')]
+
+    async def scenario():
+        first=asyncio.create_task(transport('sendTransaction',payload))
+        await asyncio.sleep(0)
+        with pytest.raises(RpcError,match='Duplicate signed transaction'):
+            await transport('sendTransaction',payload)
+        assert await first==SIG
+
+    run(scenario())
+    assert len(http.calls)==transport.used==1
+    assert len(transport._attempted_submission_digests)==1
