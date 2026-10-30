@@ -166,7 +166,7 @@ def signed_v0_current_migration():
     msg["addressTableLookups"]=[dict(
         accountKey=_encode(bytes([98])*32),
         writableIndexes=list(range(len(loaded_w))),
-        readonlyIndexes=list(range(len(loaded_w), len(loaded_w)+len(loaded_r))))]
+        readonlyIndexes=list(range(len(loaded_r))))]
     tx["version"]=0
     tx["meta"]["loadedAddresses"]=dict(writable=loaded_w,readonly=loaded_r)
     exact=compiled_message_bytes(tx)
