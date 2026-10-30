@@ -300,9 +300,21 @@ class ExecutionEngine:
             raise ValueError('actual_rpc_endpoint_differs_from_authorized_endpoint')
         if await self.rpc.genesis_hash() != self.envelope.genesis_hash:
             raise ValueError('rpc_genesis_differs_from_authorized_cluster')
-        actual_fee = await self.rpc.get_fee_for_message(order.transaction.message)
-        if type(actual_fee) is not int or not 0 <= actual_fee <= order.network_fee_upper_lamports:
-            raise ValueError('message_fee_unknown_or_exceeds_reserved_upper_bound')
+        # The fee quote must come from a bank at least as recent as the
+        # prepared market-source bank. An uncontextualized getFeeForMessage
+        # result can price a message against an earlier Solana fork and must
+        # never authorize a LIVE signature or send.
+        receipt_method = getattr(self.rpc, 'get_fee_for_message_receipt', None)
+        if not callable(receipt_method):
+            raise ValueError('causal_message_fee_receipt_adapter_required')
+        fee_receipt = await receipt_method(
+            order.transaction.message, min_context_slot=order.source_slot)
+        if (type(fee_receipt) is not dict
+                or type(fee_receipt.get('context_slot')) is not int
+                or fee_receipt['context_slot'] < order.source_slot
+                or type(fee_receipt.get('value')) is not int
+                or not 0 < fee_receipt['value'] <= order.network_fee_upper_lamports):
+            raise ValueError('causal_message_fee_unknown_stale_or_above_reserved_bound')
         balance = await self.rpc.get_balance(order.user)
         now = self.clock_ms()
         risk = self.journal.risk_snapshot(at=now, wallet_balance_lamports=balance,
