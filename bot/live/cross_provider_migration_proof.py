@@ -25,7 +25,7 @@ def compare_pinned_provider_migrations(primary, secondary):
     right_matches={r["signature"]:r for r in right["results"]
                    if r["status"]=="FINALIZED_RPC_MIGRATION_CRYPTOGRAPHICALLY_MATCHED"}
     if len(left_matches)<2 or set(left_matches)!=set(right_matches):
-        raise ValueError("two_migration_proofs_from_both_providers_required")
+        raise ValueError(f"two_migration_proofs_from_both_providers_required:{len(left_matches)}:{len(right_matches)}")
     for sig in left_matches:
         if any(left_matches[sig][key]!=right_matches[sig][key]
                for key in _COMPARE_FIELDS):
@@ -50,6 +50,8 @@ def main():
             MigrationReadOnlyRpc(endpoint=SECONDARY_RPC))
     except Exception as exc:
         report=dict(status="REFUSED",error_type=type(exc).__name__,
+                    diagnostic_code=(str(exc) if str(exc).startswith("two_migration_proofs_from_both_providers_required:")
+                        else "other_refusal"),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"].startswith("TWO_RPC_PROVIDERS_AGREE") else 2
