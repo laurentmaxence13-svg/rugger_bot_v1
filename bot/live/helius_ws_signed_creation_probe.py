@@ -18,6 +18,7 @@ from bot.live.helius_launchlab_cohort_probe import RAW_OPTS, PARSED_OPTS
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.scanner.transaction_parser import find_raydium_launches
+from bot.live.compiled_launchlab import compiled_launchlab_creations
 from bot.p3.platform_admin_history import _signature
 from bot.live.helius_ws_forward_paper import _hash
 
@@ -119,7 +120,14 @@ def inspect_forward_creations(report, events, rpc):
             keyset = {key["pubkey"] for key in accounts}
             signer_set = {key["pubkey"] for key in accounts if key["signer"]}
             launches = find_raydium_launches(parsed)
-            for launch in launches:
+            raw_launches = compiled_launchlab_creations(raw)
+            key_fields = ("payer", "creator", "pool_state", "mint")
+            def identities(rows):
+                return {tuple(row[field] for field in key_fields)
+                        for row in rows}
+            if identities(launches) != identities(raw_launches):
+                raise ValueError("parsed_vs_compiled_creation_disagreement")
+            for launch in raw_launches:
                 if (not {launch["payer"], launch["creator"], launch["pool_state"],
                          launch["mint"], PROGRAM}.issubset(keyset) or
                         launch["payer"] not in signer_set):
@@ -129,11 +137,11 @@ def inspect_forward_creations(report, events, rpc):
             continue
         receipt["exact_message_sha256"] = proof["exact_message_sha256"]
         receipt["cryptographic_signature_verified"] = True
-        if launches:
+        if raw_launches:
             receipt["status"] = "SIGNED_CREATION_CANDIDATE"
             receipt["launches"] = [
                 dict(creator=v["creator"], payer=v["payer"],
-                     pool=v["pool_state"], mint=v["mint"]) for v in launches]
+                     pool=v["pool_state"], mint=v["mint"]) for v in raw_launches]
             distinct_creators.update(v["creator"] for v in launches)
         else:
             receipt["status"] = "VERIFIED_NON_CREATION"
