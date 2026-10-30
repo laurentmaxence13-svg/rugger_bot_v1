@@ -74,6 +74,7 @@ def test_forward_classification_reports_signed_candidates_without_inventing_fill
     monkeypatch.setattr(mod, "normalized_compiled_transaction",
                         fake_compiled)
     monkeypatch.setattr(mod, "find_raydium_launches", fake_creations)
+    monkeypatch.setattr(mod, "compiled_launchlab_creations", fake_creations)
     rpc = Rpc(events)
     result = mod.inspect_forward_creations(report, events, rpc)
     assert result["first_phase_captured_logs"] == 6
@@ -97,6 +98,7 @@ def test_no_creation_is_factual_result_not_rpc_failure(monkeypatch):
     monkeypatch.setattr(mod, "normalized_compiled_transaction",
                         fake_compiled)
     monkeypatch.setattr(mod, "find_raydium_launches", lambda _: [])
+    monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["signed_creation_candidate_transactions"] == 0
     assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
