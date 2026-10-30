@@ -48,12 +48,12 @@ def probe_cpmm_pools(rpc):
                pool["token_1_program"]==TOKEN_PROGRAM)
         compatibility_flags.append("".join(str(int(v)) for v in flags))
         pools.append(pool)
-    if any(code!="1111" for code in compatibility_flags):
-        raise ValueError("migrated_pools_pair_program_flags_"+
-                         "_".join(compatibility_flags))
+    if not any(code=="1111" for code in compatibility_flags):
+        raise ValueError("no_classic_SPL_SOL_pool_in_pinned_migrations")
     others=[]
-    for pool in pools:
-        others += [pool["amm_config"],pool["token_0_vault"],pool["token_1_vault"]]
+    for pool,flags in zip(pools,compatibility_flags,strict=True):
+        if flags=="1111":
+            others += [pool["amm_config"],pool["token_0_vault"],pool["token_1_vault"]]
     # Deduplicate while preserving account-bank identity; bounded to 8.
     addresses=list(dict.fromkeys(pool_ids+others))
     if len(addresses)>8:
@@ -63,7 +63,10 @@ def probe_cpmm_pools(rpc):
     bank_slot,items=_bank(second,len(addresses),first_slot)
     accounts=dict(zip(addresses,items,strict=True))
     results=[]
-    for (pool_id,mint,migration_slot),prior in zip(MIGRATED_POOLS,pools,strict=True):
+    for (pool_id,mint,migration_slot),prior,flags in zip(
+            MIGRATED_POOLS,pools,compatibility_flags,strict=True):
+        if flags!="1111":
+            continue
         pool=_pool(_account(accounts[pool_id],name="pool",
                          size=POOL_ACCOUNT_SIZE,discriminator=POOL_DISCRIMINATOR))
         for k in ("amm_config","token_0_mint","token_1_mint",
@@ -102,9 +105,11 @@ def probe_cpmm_pools(rpc):
                             trade_fee_rate_ppm=cfg["trade_fee_rate"],
                             pool_status=pool["status"],lp_supply_atomic=pool["lp_supply"]))
     return dict(schema="rugger-readonly-real-cpmm-bank-v1",
-        status="TWO_FINALIZED_CPMM_POOL_BANKS_OBSERVED",
+        status="CLASSIC_SPL_SOL_CPMM_BANK_OBSERVED",
         bank_slot=bank_slot,rpc_calls_used=getattr(rpc,"count",None),
-        pools=results,signature_and_migration_verified_in_this_probe=False,
+        pools=results,unsupported_pool_count=len(MIGRATED_POOLS)-len(results),
+        compatibility_flags=compatibility_flags,
+        signature_and_migration_verified_in_this_probe=False,
         wallet_position_verified=False,actual_sell_simulated=False,
         rpc_consensus_cryptographically_verified=False,
         financial_order_submitted=False,live_ready_to_arm=False,
@@ -120,7 +125,7 @@ def main():
                         else "generic_refusal"),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
-    return 0 if report["status"]=="TWO_FINALIZED_CPMM_POOL_BANKS_OBSERVED" else 2
+    return 0 if report["status"]=="CLASSIC_SPL_SOL_CPMM_BANK_OBSERVED" else 2
 
 if __name__=="__main__":
     sys.exit(main())
