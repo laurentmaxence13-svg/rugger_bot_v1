@@ -77,7 +77,10 @@ def verify_v1_base64_receipt(tx, *, expected_signature, expected_slot):
     for _ in range(number_ix):
         program_id, n_accounts = read(2)
         data_size = int.from_bytes(read(2), "little")
-        if program_id >= number_keys or n_accounts > number_keys:
+        # The instruction account vector may legally repeat the same
+        # address, so its length can exceed the number of unique account
+        # keys. Validate each reference below; do NOT reject by vector length.
+        if program_id >= number_keys:
             raise ValueError("v1_instruction_index_or_accounts_invalid")
         headers.append((program_id, n_accounts, data_size))
     instructions = []
