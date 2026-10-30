@@ -155,3 +155,17 @@ def test_no_initial_logs_no_rpc_transaction_lookup():
     assert result["selected_for_finalized_receipt"] == 0
     assert result["signed_creation_candidate_transactions"] == 0
     assert result["status_counts"] == {}
+
+
+def test_provider_jsonparsed_cannot_fabricate_signed_creation(monkeypatch):
+    report, events = capture()
+    monkeypatch.setattr(mod, "verify_compiled_rpc_signatures",
+                        fake_verified_crypto)
+    monkeypatch.setattr(mod, "normalized_compiled_transaction",
+                        fake_compiled)
+    monkeypatch.setattr(mod, "find_raydium_launches", fake_creations)
+    monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
+    result = mod.inspect_forward_creations(report, events, Rpc(events))
+    assert result["signed_creation_candidate_transactions"] == 0
+    assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 4
+    assert result["economic_edge_validated"] is False
