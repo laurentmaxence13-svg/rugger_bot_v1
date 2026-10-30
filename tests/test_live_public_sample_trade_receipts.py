@@ -63,3 +63,14 @@ def test_only_two_pinned_chronological_pairs_not_a_holdout():
     assert sum(s["sampled_buy_token_atomic"]==s["sampled_sell_token_atomic"]
                for s in mod.SAMPLES)==1
     assert all(s["buy_slot"]<s["sell_slot"] for s in mod.SAMPLES)
+
+
+def test_pinned_historical_pairs_do_not_get_reported_as_SOL_profit():
+    from bot.p3.quotes import SOL_MINT
+    assert len(mod.SAMPLES)==2
+    assert all(row["quote_mint"]!=SOL_MINT for row in mod.SAMPLES)
+    assert all("sampled_buy_sol_lamports" not in row for row in mod.SAMPLES)
+    assert all("sampled_sell_sol_lamports" not in row for row in mod.SAMPLES)
+    assert all(type(row["sampled_buy_quote_token_atomic"]) is int
+               and type(row["sampled_sell_quote_token_atomic"]) is int
+               for row in mod.SAMPLES)
