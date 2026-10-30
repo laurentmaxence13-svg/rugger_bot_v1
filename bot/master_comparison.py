@@ -299,7 +299,8 @@ def evaluate_acquired_comparison(acquisition,plan):
     if (type(acquisition) is not dict or acquisition.get('schema')!='p3-master-comparison-acquisition-v1'
             or type(acquisition.get('denominator')) is not list
             or acquisition.get('universe_size')!=len(acquisition['denominator'])
-            or acquisition.get('qualified_economic_cycles')!=0
+            or type(acquisition.get('qualified_economic_cycles')) is not int
+            or acquisition['qualified_economic_cycles'] < 0
             or acquisition.get('execution_verified') is not False
             or type(acquisition.get('candidates')) is not list):
         raise ValueError('Retained P3 acquisition envelope and complete universe required')
@@ -309,6 +310,11 @@ def evaluate_acquired_comparison(acquisition,plan):
         'refused_quote_observation_ids','future_observations_excluded','retained_tail','integrity','as_of_ms')})
     result['acquisition_universe']['discovery_universe_known']=acquisition.get('discovery_universe_known')
     result['acquisition_sha256']=p4._hash(acquisition)
+    # An acquisition can report positive source-qualified economic cycles.
+    # That is useful input to the paired A/B replay, but is NEVER proof of
+    # profitability, actual execution, or an independently validated edge.
+    # Do not overwrite the raw acquisition count with the replay's default 0.
+    result['acquisition_reported_qualified_economic_cycles']=acquisition['qualified_economic_cycles']
     result['acquisition_authentication_verified']=False
     return result
 
