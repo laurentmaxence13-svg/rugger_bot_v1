@@ -20,6 +20,14 @@ from bot.live.migration_rpc_json import normalized_compiled_transaction
 
 MIGRATE_TO_CPSWAP_DISC=bytes((136,92,200,103,28,218,144,140))
 REQUIRED_ACCOUNT_COUNT=28
+# Raydium's Aug/Sep 2026 permissioned CPMM migration adds ten required
+# remaining accounts after the 28 fixed slots, including permission/support
+# mint PDAs. The live deployed LaunchLab ProgramData changed no later than
+# slot 446221802, independently observed from two public RPCs on 2026-10-30.
+# An old 28-account receipt at/after this slot MUST NOT be called current.
+CURRENT_MIGRATION_FROM_SLOT=446221802
+CURRENT_REMAINING_ACCOUNT_COUNT=10
+TOKEN_2022_PROGRAM='TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
 PINNED_IDL_REVISION='e7e0c96fe77bcf6a020b84a44c47a722aac8e359'
 ROLES=(
     'payer','base_mint','quote_mint','platform_config','cpswap_program',
@@ -122,7 +130,16 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
             if raw!=MIGRATE_TO_CPSWAP_DISC:
                 continue
             references=ix.get('accounts')
-            if type(references) is not list or len(references)!=REQUIRED_ACCOUNT_COUNT:
+            if type(references) is not list:
+                continue
+            is_modern=(len(references)==REQUIRED_ACCOUNT_COUNT+
+                       CURRENT_REMAINING_ACCOUNT_COUNT)
+            is_legacy=(len(references)==REQUIRED_ACCOUNT_COUNT and
+                       slot<CURRENT_MIGRATION_FROM_SLOT)
+            # Do not accept 28-account pre-upgrade layouts after the
+            # independently observed program deployment. Additional accounts
+            # beyond the documented first 10 stay unsupported fail-closed.
+            if not (is_modern or is_legacy):
                 continue
             if any(type(i) is not int or i not in keys_by_index for i in references):
                 continue
@@ -139,9 +156,28 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
             if any(keys_by_index[references[i]]['writable'] is not True
                    for i in REQUIRED_WRITABLE_ROLES):
                 continue
-            named=dict(zip(ROLES,resolved,strict=True))
-            if any(named[role]!=address for role,address in FIXED_PROGRAMS.items()):
+            named=dict(zip(ROLES,resolved[:REQUIRED_ACCOUNT_COUNT],strict=True))
+            # In current LaunchLab, these last two fixed positions are the
+            # SPL Token program AND the Token-2022 program, respectively,
+            # regardless of whether the mint itself uses SPL classic.
+            fixed=dict(FIXED_PROGRAMS)
+            if is_modern:
+                fixed['quote_token_program']=TOKEN_2022_PROGRAM
+            if any(named[role]!=address for role,address in fixed.items()):
                 continue
+            if is_modern:
+                extra=resolved[REQUIRED_ACCOUNT_COUNT:]
+                permission=find_program_address(
+                    (b'permission',_decode(named['authority'])),
+                    program_id=CPMM_PROGRAM)[0]
+                sorted_mints=sorted((mint,SOL_MINT),key=_decode)
+                support=tuple(find_program_address(
+                    (b'support_mint',_decode(m)),program_id=CPMM_PROGRAM)[0]
+                    for m in sorted_mints)
+                if (extra[6]!=permission or tuple(extra[8:10])!=support
+                        or any(keys_by_index[references[REQUIRED_ACCOUNT_COUNT+i]]['writable']
+                               for i in (8,9))):
+                    continue
             expected=dict(
                 cpswap_authority=find_program_address(
                     (b'vault_and_lp_mint_auth_seed',),
@@ -176,15 +212,23 @@ def validate_migrate_to_cpswap_transaction(tx, *, signature, mint, launchlab_poo
                 program_id=CPMM_PROGRAM)[0]
             if cpmm_pool!=canonical_cpmm_pool and keys_by_index[references[5]]['signer'] is not True:
                 continue
+            audit_roles=dict(named)
+            if is_modern:
+                audit_roles.update({
+                    'remaining_'+str(i):value
+                    for i,value in enumerate(extra)})
             return dict(base,status='STRUCTURAL_MIGRATION_RECEIPT',
+                migration_abi=('permissioned_cpmm_2026' if is_modern
+                               else 'pre_current_deployment_legacy'),
+                current_permissioned_accounts_verified=is_modern,
                 reason=None,migration_signature=signature,migration_slot=slot,
                 migration_instruction_matches=True,
                 normalized_role_sha256=hashlib.sha256(
-                    json.dumps(named,sort_keys=True,separators=(',',':')).encode()
+                    json.dumps(audit_roles,sort_keys=True,separators=(',',':')).encode()
                 ).hexdigest(),
                 retained_transaction_sha256=raw_transaction_sha256,
                 cpswap_config=named['cpswap_config'],
-                normalized_roles=named,
+                normalized_roles=audit_roles,
                 source_transport_authenticated=False,
                 cryptographic_signatures_verified=False,
                 cpmm_pool_state_account_decoded=False,
