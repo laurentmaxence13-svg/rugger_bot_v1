@@ -192,7 +192,14 @@ def reconcile_transaction(row, payload):
         values = meta.get(name)
         if type(values) is not list:
             raise ValueError('complete_token_balances_required')
-        matches = [v for v in values if type(v) is dict and v.get('accountIndex') == base_index]
+        # Python considers 2.0 == 2 and True == 1. A malformed RPC token
+        # balance index must never identify an owned account by coercion.
+        # Validate ALL entries, including those unrelated to the base ATA.
+        if any(type(v) is not dict
+               or type(v.get('accountIndex')) is not int
+               or not 0 <= v['accountIndex'] < len(keys) for v in values):
+            raise ValueError('canonical_token_balance_account_index_required')
+        matches = [v for v in values if v['accountIndex'] == base_index]
         if len(matches) > 1:
             raise ValueError('ambiguous_position_token_balance')
         if not matches:
