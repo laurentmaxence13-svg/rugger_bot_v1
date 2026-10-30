@@ -110,6 +110,9 @@ def main():
         report=probe_cpmm_pools(PublicReadOnlyRpc())
     except Exception as exc:
         report=dict(status="REFUSED",error_type=type(exc).__name__,
+                    diagnostic_code=(str(exc) if type(exc) is ValueError
+                        and str(exc).replace("_","").isalnum() and len(str(exc))<90
+                        else "generic_refusal"),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"]=="TWO_FINALIZED_CPMM_POOL_BANKS_OBSERVED" else 2
