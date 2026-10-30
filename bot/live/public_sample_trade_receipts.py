@@ -44,10 +44,10 @@ SAMPLES=(
         buy_slot=445316568,
         sell_sig="4KHch5sx3KuL9tLsmfu8BQe6iB6uRvxEBuLCXdtDexiqVYBDWHPimeNNTU5Jzb3S7iifJdef69wCs4dYAMHtXRZ5",
         sell_slot=445316589,
-        sampled_buy_sol_lamports=80474356,
+        sampled_buy_quote_token_atomic=80474356,
         sampled_buy_token_atomic=25873956133366,
         sampled_sell_token_atomic=25359064406311,
-        sampled_sell_sol_lamports=84059924),
+        sampled_sell_quote_token_atomic=84059924),
 )
 OPTIONS=dict(encoding="json",commitment="finalized",
              maxSupportedTransactionVersion=1)
