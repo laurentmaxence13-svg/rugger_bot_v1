@@ -17,7 +17,7 @@ from bot.live.readonly_plan import MAINNET_GENESIS
 
 OPTIONS=dict(encoding="base64",commitment="confirmed",
     withContext=True,dataSlice=dict(offset=0,length=0),
-    filters=[dict(dataSize=429),dict(memcmp=dict(offset=17,bytes="1")),
+    limit=64,filters=[dict(dataSize=429),dict(memcmp=dict(offset=17,bytes="1")),
              dict(memcmp=dict(offset=237,bytes=SOL_MINT))])
 MAX_UNIVERSE=50000
 SAMPLE=12
@@ -28,13 +28,18 @@ def _h(data):
 def discover_live_pool_account_page(rpc):
     if not callable(rpc) or rpc("getGenesisHash",[])!=MAINNET_GENESIS:
         raise ValueError("wrong_mainnet_genesis")
-    result=rpc("getProgramAccounts",[PROGRAM,OPTIONS])
+    result=rpc("getProgramAccountsV2",[PROGRAM,OPTIONS])
     if type(result) is not dict or type(result.get("context")) is not dict:
         raise ValueError("program_accounts_context_missing")
     slot=result["context"].get("slot")
-    rows=result.get("value")
-    if type(slot) is not int or slot<=0 or type(rows) is not list or len(rows)>MAX_UNIVERSE:
-        raise ValueError("program_accounts_context_or_universe_cap_invalid")
+    page=result.get("value")
+    if type(page) is not dict:
+        raise ValueError("paged_program_accounts_envelope_required")
+    rows=page.get("accounts")
+    cursor=page.get("paginationKey")
+    if (type(slot) is not int or slot<=0 or type(rows) is not list
+            or len(rows)>64 or (cursor is not None and type(cursor) is not str)):
+        raise ValueError("program_accounts_context_or_page_cap_invalid")
     addresses=[]
     for row in rows:
         if type(row) is not dict or type(row.get("account")) is not dict:
@@ -53,12 +58,16 @@ def discover_live_pool_account_page(rpc):
     selected=sorted(addresses,
         key=lambda a:_h("rugger-active-scan-v1:"+str(slot)+":"+a))[:SAMPLE]
     return dict(schema="rugger-current-active-program-accounts-v1",
-        status="ACTIVE_SOL_POOLS_DISCOVERY_RECORDED",
-        program=PROGRAM,scan_slot=slot,matched_active_SOL_pools=len(addresses),
+        status="ACTIVE_SOL_POOLS_PAGE_RECORDED",
+        program=PROGRAM,scan_slot=slot,observed_active_SOL_pools_in_one_page=len(addresses),
+        all_current_active_SOL_pools_enumerated=(cursor is None),
+        further_pages_exist=(cursor is not None),
+        cursor_not_retained_or_followed=True,
         observed_universe_sha256=_h("\n".join(sorted(addresses))),
         initial_pools_before_price=selected,
         predetermined_approach="fixed_SHA256_slot_permutation_first_12",
-        source="filtered_getProgramAccounts_current_active_only",
+        source="filtered_getProgramAccountsV2_first_page_current_active_only",
+        global_uniform_sample=False,
         is_creation_universe=False, includes_inactive_or_failed_launches=False,
         survivorship_bias_present=True,creator_identity_verified=False,
         future_price_used_in_selection=False,independent_qualified_creators=0,
@@ -82,7 +91,7 @@ def main():
             last_numeric_RPC_error_code=(rpc.last_rpc_error_code if rpc else None),
             financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(result,sort_keys=True))
-    return 0 if result["status"]=="ACTIVE_SOL_POOLS_DISCOVERY_RECORDED" else 2
+    return 0 if result["status"]=="ACTIVE_SOL_POOLS_PAGE_RECORDED" else 2
 
 if __name__=="__main__":
     sys.exit(main())
