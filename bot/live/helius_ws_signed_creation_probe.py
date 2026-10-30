@@ -2,8 +2,9 @@
 
 This is an observation classifier, not a real-time trade decision engine.
 All signatures originate in an immutable, hashed, bounded log capture; a
-preexisting log hint selects at most four events before seeing tx outcomes.
-Raw compiled Solana Ed25519 bytes and parsed instruction identity must agree.
+preexisting log hint selects at most eight events before seeing tx outcomes.
+Exact compiled Solana Ed25519 bytes, not optional parsed RPC metadata,
+qualify outer LaunchLab instructions; inner instructions remain RPC claims.
 Only public data, read-only RPC. Missing receipts and failed tx remain counted.
 """
 import json
@@ -14,15 +15,14 @@ from pathlib import Path
 from bot.p3.certification import PROGRAM
 from bot.live.readonly_plan import MAINNET_GENESIS
 from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
-from bot.live.helius_launchlab_cohort_probe import RAW_OPTS, PARSED_OPTS
+from bot.live.helius_launchlab_cohort_probe import RAW_OPTS
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
 from bot.live.migration_rpc_json import normalized_compiled_transaction
-from bot.scanner.transaction_parser import find_raydium_launches
 from bot.live.compiled_launchlab import compiled_launchlab_creations
 from bot.p3.platform_admin_history import _signature
 from bot.live.helius_ws_forward_paper import _hash
 
-MAX_INSPECTIONS = 4
+MAX_INSPECTIONS = 8
 MAX_EVENTS = 100
 
 
@@ -88,27 +88,20 @@ def inspect_forward_creations(report, events, rpc):
         receipt = keyed[sig]
         try:
             raw = rpc("getTransaction", [sig, RAW_OPTS])
-            parsed = rpc("getTransaction", [sig, PARSED_OPTS])
         except ValueError as exc:
-            # A version or provider access problem must not be misread as a
-            # rejected trade. Unexpected RPC errors abort the investigation.
             if (str(exc) == "helius_rpc_envelope_refused" and
                     getattr(rpc, "last_rpc_error_code", None) == -32015):
-                receipt["status"] = "UNSUPPORTED_TX_VERSION"
+                receipt["status"] = "RAW_TX_VERSION_UNSUPPORTED"
                 continue
             raise
-        if raw is None or parsed is None:
+        if raw is None:
             receipt["status"] = "FINALIZED_RECEIPT_UNAVAILABLE"
             continue
-        if (type(raw) is not dict or type(parsed) is not dict or
+        if (type(raw) is not dict or
                 raw.get("slot") != item["slot"] or
-                parsed.get("slot") != item["slot"] or
                 type(raw.get("meta")) is not dict or
-                type(parsed.get("meta")) is not dict or
                 raw["meta"].get("err") is not None or
-                parsed["meta"].get("err") is not None or
-                raw.get("transaction", {}).get("signatures", [None])[0] != sig or
-                parsed.get("transaction", {}).get("signatures", [None])[0] != sig):
+                raw.get("transaction", {}).get("signatures", [None])[0] != sig):
             receipt["status"] = "FINALIZED_RECEIPT_MISMATCH"
             continue
         try:
@@ -119,7 +112,6 @@ def inspect_forward_creations(report, events, rpc):
             accounts = normalized["transaction"]["message"]["accountKeys"]
             keyset = {key["pubkey"] for key in accounts}
             signer_set = {key["pubkey"] for key in accounts if key["signer"]}
-            launches = find_raydium_launches(parsed)
             raw_launches = compiled_launchlab_creations(raw)
             signed_outer_only = compiled_launchlab_creations(dict(
                 raw, meta=dict(raw["meta"], innerInstructions=[])))
@@ -127,8 +119,6 @@ def inspect_forward_creations(report, events, rpc):
             def identities(rows):
                 return {tuple(row[field] for field in key_fields)
                         for row in rows}
-            if identities(launches) != identities(raw_launches):
-                raise ValueError("parsed_vs_compiled_creation_disagreement")
             for launch in raw_launches:
                 if (not {launch["payer"], launch["creator"], launch["pool_state"],
                          launch["mint"], PROGRAM}.issubset(keyset) or
@@ -162,7 +152,7 @@ def inspect_forward_creations(report, events, rpc):
         first_phase_captured_logs=len(events),
         selected_for_finalized_receipt=len(chosen),
         selected_before_receipt_lookup=True,
-        selection_rule="first_four_unfailed_logs_initialize_hint_priority_then_arrival",
+        selection_rule="first_eight_unfailed_logs_initialize_hint_priority_then_arrival",
         source_log_chain_sha256=report["signature_ledger_sha256"],
         status_counts=counts, records=records,
         signed_creation_candidate_transactions=counts.get("SIGNED_OUTER_CREATION_CANDIDATE", 0),
@@ -172,6 +162,7 @@ def inspect_forward_creations(report, events, rpc):
         real_buy_sell_trades=0, market_price_at_decision_verified=False,
         independent_rpc_provider_proof=False,
         provider_finalized_receipt_is_not_time_of_signal=True,
+        classification_uses_only_cryptographically_checked_compiled_outer_messages=True,
         confirmed_websocket_event_is_not_finalized_at_arrival=True,
         economically_qualified_cycles=0,
         net_master_edge_estimate=None,
