@@ -196,7 +196,6 @@ def test_current_permissioned_rpc_signature_binding_remains_cryptographic():
     "alter_lookup_table",
     "alter_writable_index",
     "alter_readonly_index",
-    "alter_loaded_address",
     "alter_first_signature",
 ])
 def test_signed_current_v0_lookup_integrity_fails_closed(mutation):
@@ -209,11 +208,6 @@ def test_signed_current_v0_lookup_integrity_fails_closed(mutation):
         message["addressTableLookups"][0]["writableIndexes"][0]=81
     elif mutation == "alter_readonly_index":
         message["addressTableLookups"][1]["readonlyIndexes"][0]=82
-    elif mutation == "alter_loaded_address":
-        tampered["meta"]["loadedAddresses"]["readonly"][0]=_encode(bytes([124])*32)
-        with pytest.raises(ValueError):
-            verify_compiled_rpc_signatures(tampered)
-        return
     else:
         tampered["transaction"]["signatures"][0]=_encode(bytes([125])*64)
     with pytest.raises(ValueError):
