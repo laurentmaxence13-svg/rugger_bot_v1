@@ -20,6 +20,7 @@ def test_live_engine_refuses_uncausal_or_unpriced_fee_before_signing(
         engine, _old, order, rpc, _clock, _binding = configured_cpmm(tmp_path)
         signer = engine.signer
     decision = json.loads(order.rebuild_request_json)['decision_id']
+    prior_signatures = signer.calls
     observed = []
 
     if fault == 'missing_adapter':
@@ -49,7 +50,7 @@ def test_live_engine_refuses_uncausal_or_unpriced_fee_before_signing(
         with pytest.raises(ValueError, match='causal_message_fee'):
             run(engine.execute(decision, order))
         assert not rpc.send_calls
-        assert signer.calls == 0
+        assert signer.calls == prior_signatures
         assert engine.journal.get(decision)['reserved_lamports'] == 0
         assert engine.journal.get(decision)['state'] == 'SIMULATED'
         if fault != 'missing_adapter':
@@ -67,10 +68,11 @@ def test_live_engine_accepts_source_causal_bounded_fee_receipt(tmp_path, route):
         engine, _old, order, rpc, _clock, _binding = configured_cpmm(tmp_path)
         signer = engine.signer
     decision = json.loads(order.rebuild_request_json)['decision_id']
+    prior_signatures = signer.calls
     try:
         result = run(engine.execute(decision, order))
         assert result['state'] == 'SUBMITTED'
-        assert len(rpc.send_calls) == 1 and signer.calls == 1
+        assert len(rpc.send_calls) == 1 and signer.calls == prior_signatures + 1
         assert engine.journal.verify_audit()
     finally:
         engine.journal.close()
