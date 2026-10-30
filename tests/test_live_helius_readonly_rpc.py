@@ -157,3 +157,17 @@ def test_unsigned_simulation_with_zero_signatures_is_a_read_only_rpc():
     assert rpc("simulateTransaction",args)=="test-genesis"
     assert json.loads(opener.calls[0][0].data)["method"]=="simulateTransaction"
     assert KEY not in repr(rpc)
+
+
+def test_helius_rpc_error_reports_only_numeric_code_and_method():
+    opener=Opener(result=dict(jsonrpc="2.0",id=1,
+                              error=dict(code=-32005,message="secret "+KEY)))
+    rpc=HeliusReadOnlyRpc(KEY,opener=opener,allow_launch_discovery=True)
+    with pytest.raises(ValueError,match="envelope") as raised:
+        rpc("getSignaturesForAddress",[
+            "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+            dict(limit=20,commitment="finalized")])
+    assert rpc.last_method=="getSignaturesForAddress"
+    assert rpc.last_rpc_error_code==-32005
+    assert KEY not in repr(rpc)
+    assert KEY not in str(raised.value)
