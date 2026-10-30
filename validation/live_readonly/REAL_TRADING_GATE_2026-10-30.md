@@ -76,3 +76,44 @@ not a credential, transaction permission, strategy recommendation or profit clai
 
 **Safety:** \`LIVE_READY_TO_ARM=false\`, \`LIVE_EXECUTION_VERIFIED=false\`,
 \`ECONOMIC_EDGE_VALIDATED=false\`. Do not place real orders automatically.
+
+
+## Addendum — validated after Helius secret installation
+
+The older unresolved provider/holder sections above describe **the initial
+state before Helius was configured**; the observations below supersede those
+specific archival lookup and public ATA access blockers. Financial GO remains
+**NO-GO**.
+
+1. **Two real migrations verified on two independent RPC providers.**
+   Solana public RPC and Helius returned the same signatures, slots, LaunchLab
+   and CPMM identities, canonical account graphs and exact Ed25519 compiled
+   message digests. Independent cryptographic chain consensus or an audited
+   program source build is still NOT proven.
+   [Provider comparison](https://github.com/laurentmaxence13-svg/rugger_bot_v1/actions/runs/41059267573)
+2. **A public holder's token ATA and system wallet were found through Helius**,
+   without importing any wallet secret or asserting user ownership.
+   [Public ATA inspection](https://github.com/laurentmaxence13-svg/rugger_bot_v1/actions/runs/41059267565).
+3. **A strictly unsigned mainnet CPMM SELL simulation succeeded** on the
+   classic SPL pool `DeUJRynHqYre7qDvsv2X7ohH4nCm32xB8AHJ8hs4m4Ck`:
+   - bank and simulation slot: `463294996`;
+   - hypothetical input: `100000000000` base-token atomic units;
+   - expected output: `1785940` lamports; minimum output:
+     `1768080` lamports;
+   - estimated fee-inclusive shortfall to fee-free spot: 31 basis points
+     (pool fee **plus** curve impact, not pure impact alone);
+   - reported simulation compute units: `25895`;
+   - capped network fee: `5000` lamports;
+   - signed bytes: **none**; simulated signature bytes: **all zero**;
+     RPC transport forbids transaction sending.
+   - [Unsigned SELL simulation](https://github.com/laurentmaxence13-svg/rugger_bot_v1/actions/runs/41060052471).
+
+**Still required for LIVE:** Independent code/source/pin review;
+current bank, executable route and owner-specific authorization; credible
+prospectively observed BUY→SELL cycles with complete costs; rigorous
+Master-vs-baseline out-of-sample and loss scenarios; operational crash/restart
+reconciliation and independently approved bounded microtrade. The SELL
+simulation is hypothetical and cannot establish profit or permission.
+
+**Current flags:** `LIVE_READY_TO_ARM=false`,
+`ECONOMIC_EDGE_VALIDATED=false`, `LIVE_EXECUTION_VERIFIED=false`.
