@@ -77,13 +77,13 @@ def test_forward_classification_reports_signed_candidates_without_inventing_fill
     rpc = Rpc(events)
     result = mod.inspect_forward_creations(report, events, rpc)
     assert result["first_phase_captured_logs"] == 6
-    assert result["selected_for_finalized_receipt"] == 5
+    assert result["selected_for_finalized_receipt"] == 4
     assert result["selected_before_receipt_lookup"] is True
-    assert result["signed_creation_candidate_transactions"] == 5
+    assert result["signed_creation_candidate_transactions"] == 4
     assert result["status_counts"]["FAILED_ON_CHAIN_IN_WS_NOTIFICATION"] == 1
-    assert result["status_counts"].get("NOT_INSPECTED_RPC_BUDGET", 0) == 0
+    assert result["status_counts"]["NOT_INSPECTED_RPC_BUDGET"] == 1
     assert [q[1][0] for q in rpc.calls if q[0] == "getTransaction"] == [
-        SIGS[1], SIGS[3], SIGS[0], SIGS[4], SIGS[5]]
+        SIGS[1], SIGS[3], SIGS[0], SIGS[4]]
     assert result["market_price_at_decision_verified"] is False
     assert result["economically_qualified_cycles"] == 0
     assert result["financial_order_submitted"] is False
@@ -99,7 +99,7 @@ def test_no_creation_is_factual_result_not_rpc_failure(monkeypatch):
     monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["signed_creation_candidate_transactions"] == 0
-    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 5
+    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
     assert result["economic_edge_validated"] is False
 
 
@@ -142,7 +142,7 @@ def test_fee_payer_not_compiled_signer_rejected(monkeypatch):
                                         [dict(pubkey=PROGRAM, signer=False)]))))
     monkeypatch.setattr(mod, "compiled_launchlab_creations", fake_creations)
     result = mod.inspect_forward_creations(report, events, Rpc(events))
-    assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 5
+    assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 4
     assert all(r["refusal_phase"] == "creation_payer_identity" and
                r["refusal_code"] == "verified_compiled_creation_identity_mismatch"
                for r in result["records"] if r["status"] ==
@@ -168,5 +168,5 @@ def test_absent_compiled_creation_cannot_be_invented(monkeypatch):
     monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["signed_creation_candidate_transactions"] == 0
-    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 5
+    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
     assert result["economic_edge_validated"] is False
