@@ -11,16 +11,16 @@ The Parquet sample uses ZSTD dictionary-compressed pages and typed timestamps/sl
 - `trade-event`: **100 records**, **66 Buy and 34 Sell**, across **34 pools**. It includes four explicit protocol/platform/creator/share fee fields.
 - Joined instruction→TradeEvent by signature, pool and direction: **92 matches** (**58 BUY, 34 SELL**). Source tables individually sampled: do not treat unmatched rows as invalid or trades as missing on chain.
 - Joined historical BUY→SELL with the **same payer, pool**, increasing slot, and event-receipt matches: **two pairs**. **One** has identical bought and sold atomic token units; **one** sells roughly 98.01% of the earlier bought quantity.
-- A source-sampled difference in SOL legs is not reliable realized P&L until network fees, any other transfers or trades and TradeEvent fee inclusion have been independently reconciled. Some positions may have existed before the sampled buy.
+- A source-sampled difference in quote-token atomic units is not reliable realized P&L until network fees, any other transfers or trades and TradeEvent fee inclusion have been independently reconciled. Some positions may have existed before the sampled buy.
 
 ## Sampled paired trading events (source records)
 
-| Source pair | Pool | BUY slot | SELL slot | Bought token atomic | Sold token atomic | BUY SOL reported | SELL SOL reported |
+| Source pair | Pool | Quote mint (NOT SOL) | BUY slot | SELL slot | Bought token atomic | Sold token atomic | BUY quote token atomic | SELL quote token atomic |
 |---|---|---:|---:|---:|---:|---:|---:|
-| Matched lot | `4B8fFhma9rW26qisMsb7bgwPUT1wZtV4hRt7ug8MaRbc` | 445316414 | 445316611 | 33207397256443 | 33207397256443 | 0.096987772 | 0.109827011 |
-| Partial lot | `2LGqW7dj2rQtTRwLzUBKRNgxQ5m9eD8VtJJoKToPe6zN` | 445316568 | 445316589 | 25873956133366 | 25359064406311 | 0.080474356 | 0.084059924 |
+| Matched lot | `4B8fFhma9rW26qisMsb7bgwPUT1wZtV4hRt7ug8MaRbc` | `Xs78JED6PFZxWc2wCEPspZW9kL3Se5J7L5TChKgsidH` | 445316414 | 445316611 | 33207397256443 | 33207397256443 | 96987772 | 109827011 |
+| Partial lot | `2LGqW7dj2rQtTRwLzUBKRNgxQ5m9eD8VtJJoKToPe6zN` | `4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R` | 445316568 | 445316589 | 25873956133366 | 25359064406311 | 80474356 | 84059924 |
 
-**Crypto evidence:** four pinned transactions verified independently by Helius with **exact compiled-message Ed25519 signatures, finalized source claims, exact slots, public pool account, claimed payer in the signed account set**:
+**CRITICAL CURRENCY CHECK:** Both matched BUY→SELL paths use **non-WSOL quote mints**, therefore the figures above **ARE NOT SOL**, and must never be presented as SOL P&L. The unknown quote-mint decimal scales and exchange rates prevent conversion to SOL. Among the free sample's four 100-row BUY/SELL instruction tables only **14 BUY and 11 SELL instructions** are WSOL-quoted. There are **zero same payer + pool + chronological BUY→SELL instruction pairs** in that restricted WSOL subset. The sample therefore does not demonstrate a native SOL buy/sell trajectory.\n\n**Crypto evidence:** four pinned transactions verified independently by Helius with **exact compiled-message Ed25519 signatures, finalized source claims, exact slots, public pool account, claimed payer in the signed account set**:
 https://github.com/laurentmaxence13-svg/rugger_bot_v1/actions/runs/41078730561
 
 The verification did **not** independently parse event amount log bytes or prove the transaction full net native-SOL delta. It does **not** imply a strategy decision by Rugger Bot or operator approval.
