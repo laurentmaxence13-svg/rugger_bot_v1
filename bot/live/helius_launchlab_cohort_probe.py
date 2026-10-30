@@ -119,18 +119,22 @@ def read_launchlab_creation_sample(rpc):
 
 
 def main():
+    rpc=None
     try:
         if "HELIUS_API_KEY" not in os.environ:
             raise ValueError("helius_actions_secret_required")
-        report=read_launchlab_creation_sample(
-            HeliusReadOnlyRpc.from_environment(
-                max_calls=10,allow_launch_discovery=True))
+        rpc=HeliusReadOnlyRpc.from_environment(
+            max_calls=10,allow_launch_discovery=True)
+        report=read_launchlab_creation_sample(rpc)
     except Exception as exc:
         code=str(exc)
         safe=(code if type(exc) is ValueError and len(code)<100
               and code.replace("_","").isalnum() and not code.startswith("helius_api_key")
               else type(exc).__name__)
         report=dict(status="REFUSED",reason=safe,
+                    last_rpc_method=(rpc.last_method if rpc is not None else None),
+                    last_numeric_RPC_error_code=(rpc.last_rpc_error_code if rpc is not None else None),
+                    calls_used=(rpc.count if rpc is not None else 0),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"]=="BOUNDED_HISTORICAL_SAMPLE_RECORDED" else 2
