@@ -30,4 +30,4 @@ jobs:
       - name: Ask for four unpaid quotes (no x402 client, wallet or secrets)
         run: |
           set -euo pipefail
-          python -B tools/trawl_no_payment_quote.py
+          python -B -m bot.p3.trawl_no_payment_quote
