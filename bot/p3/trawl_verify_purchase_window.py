@@ -39,13 +39,19 @@ def _latest_archive_epoch(doc):
     # Only accept documented integer fields; unknown schema cannot authorize
     # a range. Quoting an unavailable epoch would be a costly error.
     for key in ("latest_epoch","newest_epoch","archive_latest_epoch",
-                "archive_epoch","max_epoch","archived_epoch"):
+                "archive_epoch","max_epoch","archived_epoch","archive_head",
+                "epoch","end_epoch"):
         val=doc.get(key)
+        if type(val) is str and val.isdecimal() and len(val)<6:
+            val=int(val)
         if type(val) is int and MIN_POST_UPGRADE_EPOCH<=val<=1500:
             return val
-    nested=doc.get("archive")
-    if type(nested) is dict:
-        return _latest_archive_epoch(nested)
+    for key in ("archive","archive_head","head"):
+        nested=doc.get(key)
+        if type(nested) is dict:
+            found=_latest_archive_epoch(nested)
+            if found is not None:
+                return found
     return None
 
 def audit(*,opener=None,quote=quote_nonpaying):
@@ -56,6 +62,9 @@ def audit(*,opener=None,quote=quote_nonpaying):
     report=dict(schema="rugger-trawl-two-program-prepurchase-v1",
         health_http_status=200,
         health_keys=sorted(x for x in doc if type(x) is str)[:25],
+        archive_head_shape=(sorted(doc["archive_head"].keys())[:20]
+            if type(doc.get("archive_head")) is dict
+            else str(doc.get("archive_head"))[:35]),
         archive_latest_epoch=latest,
         post_upgraded_epoch_1064_floor=True,
         no_payment_sent=True,no_job_ordered=True,
