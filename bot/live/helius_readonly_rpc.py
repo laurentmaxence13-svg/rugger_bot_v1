@@ -57,6 +57,8 @@ class HeliusReadOnlyRpc:
         self._preflight = allow_unsigned_preflight
         self._max_calls = max_calls
         self.count = 0
+        self.last_method = None
+        self.last_rpc_error_code = None
         self.started = time.monotonic()
         self._opener = opener or build_opener(
             ProxyHandler({}), HTTPSHandler(context=ssl.create_default_context()),
@@ -108,6 +110,8 @@ class HeliusReadOnlyRpc:
         if self.count >= self._max_calls or time.monotonic() - self.started > 50:
             raise ValueError("helius_readonly_budget_exceeded")
         self.count += 1
+        self.last_method = method
+        self.last_rpc_error_code = None
         payload = json.dumps(
             dict(jsonrpc="2.0", id=self.count, method=method, params=params),
             sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -128,6 +132,10 @@ class HeliusReadOnlyRpc:
             reply = json.loads(raw)
         except (UnicodeDecodeError, json.JSONDecodeError):
             raise ValueError("helius_json_invalid") from None
+        if type(reply) is dict and type(reply.get("error")) is dict:
+            code=reply["error"].get("code")
+            if type(code) is int and -100_000<=code<=100_000:
+                self.last_rpc_error_code=code
         if (type(reply) is not dict or reply.get("jsonrpc") != "2.0"
                 or type(reply.get("id")) is not int or reply["id"] != self.count
                 or "error" in reply or "result" not in reply):
