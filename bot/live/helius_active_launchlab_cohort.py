@@ -15,7 +15,7 @@ import time
 from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 from bot.live.helius_active_launchlab_scan import discover_live_pool_account_page
 from bot.p3.helius_index_prospective_cohort import _bank,_hash,BUY_LAMPORTS
-from bot.p3.launchlab import _pool,addresses_from_pool,analyze_snapshot,observed_sell_projection
+from bot.p3.launchlab import _pool,addresses_from_pool,analyze_snapshot,observed_sell_projection,SnapshotEvidenceError
 from bot.p3.quotes import SOL_MINT
 from bot.p3.cohort import _uint as _checked_integer
 
@@ -184,10 +184,11 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                 code=str(exc)
                 # Only local parser/curve refusal codes are emitted. No raw
                 # HTTP body or auth material is ever exposed.
-                known_prefixes=("invalid_","unsupported_","sell_","S2_",
+                known_prefixes=("invalid_","unsupported_","sell_","S2_","s2_",
+                    "insufficient_","three_","noncanonical_",
                     "observed_","active_","pool_","vault_","invalid_curve_",
                     "curve_","quote_","base_","token_","fee_","snapshot_")
-                safe=(code if type(exc) is ValueError and len(code)<100
+                safe=(code if isinstance(exc,(ValueError,SnapshotEvidenceError)) and len(code)<100
                     and code.replace("_","").isalnum()
                     and code.startswith(known_prefixes)
                     else type(exc).__name__)
