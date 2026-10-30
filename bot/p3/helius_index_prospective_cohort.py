@@ -15,6 +15,7 @@ import ssl
 import sys
 import time
 from urllib.request import Request,build_opener,HTTPSHandler,ProxyHandler,HTTPRedirectHandler
+from urllib.error import HTTPError
 
 from bot.p3.campaign import INDEX_URL
 from bot.p3.quotes import SOL_MINT, _mint
@@ -41,10 +42,13 @@ def fetch_index(*,opener=None):
     # Exact official endpoint from existing campaign, no credentials, no cookies.
     uri=INDEX_URL+"?sort=new"
     req=Request(uri,method="GET",headers={"Accept":"application/json"})
-    with opener.open(req,timeout=8) as response:
-        if response.status!=200 or response.geturl()!=uri:
-            raise ValueError("raydium_index_status_or_redirect_refused")
-        raw=response.read(1_000_001)
+    try:
+        with opener.open(req,timeout=8) as response:
+            if response.status!=200 or response.geturl()!=uri:
+                raise ValueError("raydium_index_status_or_redirect_refused")
+            raw=response.read(1_000_001)
+    except HTTPError as exc:
+        raise ValueError("raydium_index_http_status_"+str(exc.code)) from None
     if len(raw)>1_000_000:
         raise ValueError("raydium_index_maximum_response_size_exceeded")
     data=json.loads(raw)
