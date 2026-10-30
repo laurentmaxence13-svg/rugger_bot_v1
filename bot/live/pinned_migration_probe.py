@@ -13,7 +13,10 @@ from bot.live.public_migration_discovery import (
     MigrationReadOnlyRpc, candidate_role_mapping)
 from bot.live.migration_evidence import validate_migrate_to_cpswap_transaction
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
-from bot.p3.platform_admin_history import _signature
+from bot.p3.platform_admin_history import _signature, _b58_bytes
+from bot.p3.certification import PROGRAM
+from bot.p3.quotes import SOL_MINT
+from bot.live.migration_rpc_json import normalized_compiled_transaction
 
 # Solscan Raydium treasury and migration-signer account listings; independent
 # web metadata, not proof. Each signature MUST pass finalized RPC and Ed25519.
@@ -23,6 +26,30 @@ CANDIDATES = (
     "28TDLoj9kUZQ5ADCo2JN4nidFKsB2LBBHRuW5EP4VSPxi5TYCa1htXYNNLxm6Es7r8aLGyLeW9awtuMJ9Y71TitX",
     "3zphmsVirhesYZdiq1PXpFRiKAHiW5dhUKkLEdiaMxZUKU67trTE2wJMDEg5stXfbX3tR1HJHtg7DB7ECsPueMie",
 )
+
+
+def public_migration_shape(raw):
+    """Expose only public structural hints, never raw transaction or keys."""
+    norm=normalized_compiled_transaction(raw)
+    keys=norm["transaction"]["message"]["accountKeys"]
+    hints=[]
+    for ix in norm["transaction"]["message"]["instructions"]:
+        idx=ix.get("programIdIndex")
+        if type(idx) is not int or not 0<=idx<len(keys) or keys[idx]["pubkey"]!=PROGRAM:
+            continue
+        refs=ix.get("accounts")
+        data=ix.get("data")
+        if type(refs) is not list or type(data) is not str:
+            continue
+        decoded=_b58_bytes(data)
+        quote=None
+        if len(refs)>2 and type(refs[2]) is int and 0<=refs[2]<len(keys):
+            quote=keys[refs[2]]["pubkey"]
+        hints.append(dict(account_count=len(refs),
+            instruction_prefix_hex=decoded[:8].hex(),
+            instruction_data_length=len(decoded),
+            quote_is_native_SOL=(quote==SOL_MINT)))
+    return hints[:5]
 
 def probe_pinned_migrations(rpc, candidates=CANDIDATES):
     if not callable(rpc) or type(candidates) not in (tuple,list) or not 1<=len(candidates)<=4:
@@ -53,7 +80,8 @@ def probe_pinned_migrations(rpc, candidates=CANDIDATES):
             continue
         if role is None:
             reports.append(dict(signature=sig,slot=raw["slot"],
-                                status="NOT_SUPPORTED_SOL_MIGRATION"))
+                                status="NOT_SUPPORTED_SOL_MIGRATION",
+                                launchlab_shapes=public_migration_shape(raw)))
             continue
         structural=validate_migrate_to_cpswap_transaction(
             raw,signature=sig,mint=role["mint"],
