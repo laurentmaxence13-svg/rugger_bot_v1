@@ -39,7 +39,8 @@ class HeliusReadOnlyRpc:
 
     def __init__(self, key, *, max_calls=10, opener=None,
                  allow_unsigned_preflight=False):
-        if type(key) is not str or _API_KEY.fullmatch(key) is None:
+        if (type(key) is not str or key == "COLLE_TA_CLE_ICI"
+                or _API_KEY.fullmatch(key) is None):
             raise ValueError("helius_api_key_missing_or_invalid")
         if type(max_calls) is not int or not 1 <= max_calls <= 10:
             raise ValueError("helius_readonly_call_budget_invalid")
