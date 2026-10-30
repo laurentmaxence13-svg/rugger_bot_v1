@@ -85,7 +85,7 @@ class HeliusReadOnlyRpc:
         if method not in READ_METHODS and not (
                 self._preflight and method in UNSIGNED_PREFLIGHT_METHODS) and not (
                 self._discovery and method=="getSignaturesForAddress") and not (
-                self._active_scan and method=="getProgramAccounts"):
+                self._active_scan and method in ("getProgramAccounts","getProgramAccountsV2")):
             raise ValueError("helius_only_explicit_allowlisted_read_methods")
         if method == "getProgramAccounts":
             required=[PROGRAM,dict(encoding="base64",commitment="confirmed",
@@ -95,6 +95,14 @@ class HeliusReadOnlyRpc:
                      dict(memcmp=dict(offset=237,bytes=SOL_MINT))])]
             if not self._active_scan or params!=required:
                 raise ValueError("helius_active_pool_scan_requires_exact_filtered_program_query")
+        if method == "getProgramAccountsV2":
+            required=[PROGRAM,dict(encoding="base64",commitment="confirmed",
+                withContext=True,dataSlice=dict(offset=0,length=0),limit=64,
+                filters=[dict(dataSize=429),
+                    dict(memcmp=dict(offset=17,bytes="1")),
+                    dict(memcmp=dict(offset=237,bytes=SOL_MINT))])]
+            if not self._active_scan or params!=required:
+                raise ValueError("helius_paged_active_pool_scan_exact_first_page_required")
         if method == "getSignaturesForAddress":
             if (not self._discovery or type(params) is not list or len(params)!=2
                     or params[0]!=PROGRAM or type(params[1]) is not dict
