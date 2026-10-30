@@ -88,7 +88,7 @@ def archive_from_github_actions(report, *, kind):
     now=datetime.now(timezone.utc).isoformat()
     output=build_archive(report,kind=kind,run_id=run_id,
                          commit_sha=sha,now_iso=now)
-    directory=root/".artifacts"/"paper_public_observations"
+    directory=root/"paper_artifacts"/"paper_public_observations"
     directory.mkdir(parents=True,exist_ok=True)
     target=directory/(kind+"-"+run_id+".json")
     # Refuse symlink-created escape and avoid arbitrary paths or secret files.
