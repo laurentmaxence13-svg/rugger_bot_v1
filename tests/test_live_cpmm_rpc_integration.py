@@ -46,20 +46,13 @@ def loader_pair(program_id):
 
 
 def signed_migration():
-    # Publicly known fixture secret. NEVER a live trading wallet.
-    signer=Ed25519PrivateKey.from_private_bytes(bytes([23])*32)
-    signer_pub=_encode(signer.public_key().public_bytes(
-        encoding=serialization.Encoding.Raw,
-        format=serialization.PublicFormat.Raw))
-    tx=migration()
-    tx['transaction']['message']['accountKeys'][0]['pubkey']=signer_pub
-    tx['slot']=111
-    tx=_compiled(tx)
-    tx['transaction']['message']['recentBlockhash']=_encode(bytes([7])*32)
-    signature=_encode(signer.sign(compiled_message_bytes(tx)))
-    tx['transaction']['signatures']=[signature]
+    # The PR38 financial-migration fixture uses BOTH required signatures:
+    # a fixed public test payer and a separate fixed signable CPMM pool.
+    # Reuse it rather than weakening exact Ed25519 verification.
+    from test_live_signed_migration_reference import signed_rpc_migration
+    tx,signature=signed_rpc_migration(migration())
+    tx['slot']=111  # RPC inclusion slot is not part of the signed message.
     return tx,signature
-
 
 class SyntheticSolanaTransport:
     endpoint='https://synthetic.rpc.test'
