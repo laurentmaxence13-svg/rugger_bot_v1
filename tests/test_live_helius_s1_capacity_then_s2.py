@@ -44,14 +44,15 @@ def test_only_s1_capacity_candidates_advance_to_future_bank(monkeypatch,capsys):
                 assert params[0]==pools
                 return dict(context=dict(slot=1001),
                     value=[roots[p] for p in pools])
-            if self.calls==2:
-                assert "FROZEN_POOL_PREFIX_BEFORE_S1" in capsys.readouterr().out
-                return dict(context=dict(slot=1002),
+            if self.calls in (2,3):
+                if self.calls==2:
+                    assert "FROZEN_POOL_PREFIX_BEFORE_S1" in capsys.readouterr().out
+                return dict(context=dict(slot=1000+self.calls),
                     value=[dict(S1=True) for _ in params[0]])
-            assert self.calls==3
-            assert params[1]["minContextSlot"]==1003
+            assert self.calls==4
+            assert params[1]["minContextSlot"]==1004
             assert "S1_SCREENED_SELECTION_FROZEN_BEFORE_S2" in capsys.readouterr().out
-            return dict(context=dict(slot=1003),
+            return dict(context=dict(slot=1004),
                 value=[dict(S2=True) for _ in params[0]])
     out=mod.screened_s1_capacity_then_s2(Rpc(),
                           wait_seconds=1,sleep=lambda _:None)
