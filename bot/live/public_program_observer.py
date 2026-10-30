@@ -19,13 +19,20 @@ from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
 from bot.live.program_pin import _raw, _programdata_address, _details
 
 
+SECONDARY_RPC = "https://solana-rpc.publicnode.com"
+ALLOWED_OBSERVATION_RPCS = frozenset((PUBLIC_MAINNET_RPC, SECONDARY_RPC))
+
+
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
         raise ValueError("public_rpc_redirect_forbidden")
 
 
 class PublicReadOnlyRpc:
-    def __init__(self):
+    def __init__(self, *, endpoint=PUBLIC_MAINNET_RPC):
+        if endpoint not in ALLOWED_OBSERVATION_RPCS:
+            raise ValueError("nonapproved_observation_RPC_endpoint")
+        self.endpoint = endpoint
         self.count = 0
         self.started = time.monotonic()
         self.opener = build_opener(
@@ -40,10 +47,10 @@ class PublicReadOnlyRpc:
         self.count += 1
         body = json.dumps(dict(jsonrpc="2.0", id=self.count,
             method=method, params=params), separators=(",", ":")).encode("utf-8")
-        request = Request(PUBLIC_MAINNET_RPC, data=body,
+        request = Request(self.endpoint, data=body,
             headers={"Content-Type": "application/json"}, method="POST")
         with self.opener.open(request, timeout=8) as response:
-            if response.status != 200 or response.geturl() != PUBLIC_MAINNET_RPC:
+            if response.status != 200 or response.geturl() != self.endpoint:
                 raise ValueError("unexpected_public_rpc_http_response")
             raw = response.read(6_000_001)
             if len(raw) > 6_000_000:
@@ -100,13 +107,62 @@ def observe_public_programs(rpc):
         raise ValueError("public_program_expected_five_reads")
     return dict(schema="rugger-public-mainnet-program-observation-v1",
                 status="OBSERVED_UNAPPROVED",
-                rpc_source=PUBLIC_MAINNET_RPC, genesis_hash=MAINNET_GENESIS,
+                rpc_source=getattr(rpc, "endpoint", PUBLIC_MAINNET_RPC),
+                genesis_hash=MAINNET_GENESIS,
                 rpc_requests=5, programs=observations,
                 source_build_verified=False,
                 independent_rpc_consensus_verified=False,
                 operator_pins_independently_approved=False,
                 live_ready_to_arm=False, live_execution_verified=False,
                 economic_edge_validated=False, financial_order_submitted=False)
+
+
+
+def observe_two_independent_rpc_programs(primary, secondary):
+    """Compare two vendor RPC claims; this is NOT independently verified consensus."""
+    if (getattr(primary, "endpoint", None) != PUBLIC_MAINNET_RPC
+            or getattr(secondary, "endpoint", None) != SECONDARY_RPC):
+        raise ValueError("exact_independent_public_endpoints_required")
+    left = observe_public_programs(primary)
+    right = observe_public_programs(secondary)
+    for program_id in (PROGRAM, CPMM_PROGRAM):
+        identifiers = ("programdata_address", "deployment_slot",
+                       "upgrade_authority", "programdata_sha256", "elf_sha256")
+        a, b = left["programs"][program_id], right["programs"][program_id]
+        if any(a.get(field) != b.get(field) for field in identifiers):
+            raise ValueError("public_program_independent_provider_disagreement")
+    return dict(
+        schema="rugger-cross-provider-program-observation-v1",
+        status="TWO_PUBLIC_PROVIDERS_AGREE_UNAPPROVED",
+        endpoints=[PUBLIC_MAINNET_RPC, SECONDARY_RPC],
+        requests_used=left["rpc_requests"] + right["rpc_requests"],
+        programs=left["programs"],
+        secondary_bank_slots={
+            k: v["joint_slot"] for k, v in right["programs"].items()},
+        provider_code_hash_agreement=True,
+        rpc_consensus_cryptographically_verified=False,
+        operator_pins_independently_approved=False,
+        source_build_verified=False,
+        live_ready_to_arm=False,
+        live_execution_verified=False,
+        economic_edge_validated=False,
+        financial_order_submitted=False)
+
+
+def main_pair():
+    try:
+        report = observe_two_independent_rpc_programs(
+            PublicReadOnlyRpc(endpoint=PUBLIC_MAINNET_RPC),
+            PublicReadOnlyRpc(endpoint=SECONDARY_RPC))
+    except Exception as error:
+        print(json.dumps(dict(status="REFUSED",
+            diagnostic_error_type=type(error).__name__,
+            provider_code_hash_agreement=False,
+            live_ready_to_arm=False,
+            financial_order_submitted=False), sort_keys=True))
+        return 2
+    print(json.dumps(report, sort_keys=True))
+    return 0
 
 
 def main():
