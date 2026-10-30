@@ -16,11 +16,13 @@ The Parquet sample uses ZSTD dictionary-compressed pages and typed timestamps/sl
 ## Sampled paired trading events (source records)
 
 | Source pair | Pool | Quote mint (NOT SOL) | BUY slot | SELL slot | Bought token atomic | Sold token atomic | BUY quote token atomic | SELL quote token atomic |
-|---|---|---:|---:|---:|---:|---:|---:|
+|---|---|---|---:|---:|---:|---:|---:|---:|
 | Matched lot | `4B8fFhma9rW26qisMsb7bgwPUT1wZtV4hRt7ug8MaRbc` | `Xs78JED6PFZxWc2wCEPspZW9kL3Se5J7L5TChKgsidH` | 445316414 | 445316611 | 33207397256443 | 33207397256443 | 96987772 | 109827011 |
 | Partial lot | `2LGqW7dj2rQtTRwLzUBKRNgxQ5m9eD8VtJJoKToPe6zN` | `4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R` | 445316568 | 445316589 | 25873956133366 | 25359064406311 | 80474356 | 84059924 |
 
-**CRITICAL CURRENCY CHECK:** Both matched BUY→SELL paths use **non-WSOL quote mints**, therefore the figures above **ARE NOT SOL**, and must never be presented as SOL P&L. The unknown quote-mint decimal scales and exchange rates prevent conversion to SOL. Among the free sample's four 100-row BUY/SELL instruction tables only **14 BUY and 11 SELL instructions** are WSOL-quoted. There are **zero same payer + pool + chronological BUY→SELL instruction pairs** in that restricted WSOL subset. The sample therefore does not demonstrate a native SOL buy/sell trajectory.\n\n**Crypto evidence:** four pinned transactions verified independently by Helius with **exact compiled-message Ed25519 signatures, finalized source claims, exact slots, public pool account, claimed payer in the signed account set**:
+**CRITICAL CURRENCY CHECK:** Both matched BUY→SELL paths use **non-WSOL quote mints**, therefore the figures above **ARE NOT SOL**, and must never be presented as SOL P&L. The unknown quote-mint decimal scales and exchange rates prevent conversion to SOL. Among the free sample's four 100-row BUY/SELL instruction tables only **14 BUY and 11 SELL instructions** are WSOL-quoted. There are **zero same payer + pool + chronological BUY→SELL instruction pairs** in that restricted WSOL subset. The sample therefore does not demonstrate a native SOL buy/sell trajectory.
+
+**Crypto evidence:** four pinned transactions verified independently by Helius with **exact compiled-message Ed25519 signatures, finalized source claims, exact slots, public pool account, claimed payer in the signed account set**:
 https://github.com/laurentmaxence13-svg/rugger_bot_v1/actions/runs/41078730561
 
 The verification did **not** independently parse event amount log bytes or prove the transaction full net native-SOL delta. It does **not** imply a strategy decision by Rugger Bot or operator approval.
