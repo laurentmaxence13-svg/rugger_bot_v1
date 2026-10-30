@@ -18,13 +18,13 @@ class Fake:
     def __call__(self,method,params):
         self.count+=1
         if method=="getGenesisHash":return self.chain
-        assert method=="getProgramAccounts" and params==[PROGRAM,s.OPTIONS]
-        return dict(context=dict(slot=463400000),value=self.rows)
+        assert method=="getProgramAccountsV2" and params==[PROGRAM,s.OPTIONS]
+        return dict(context=dict(slot=463400000),value=dict(accounts=self.rows,paginationKey=None))
 
 def test_never_promote_active_survivors_as_independent_creation_universe():
     out=s.discover_live_pool_account_page(Fake())
-    assert out["status"]=="ACTIVE_SOL_POOLS_DISCOVERY_RECORDED"
-    assert out["matched_active_SOL_pools"]==3
+    assert out["status"]=="ACTIVE_SOL_POOLS_PAGE_RECORDED"
+    assert out["observed_active_SOL_pools_in_one_page"]==3
     assert out["survivorship_bias_present"] is True
     assert out["is_creation_universe"] is False
     assert out["master_edge_validated"] is False
@@ -57,11 +57,11 @@ def test_helius_method_requires_exact_fixed_scan_and_optin():
     opener=Opener()
     rpc=HeliusReadOnlyRpc(KEY,opener=opener)
     with pytest.raises(ValueError,match="allowlisted"):
-        rpc("getProgramAccounts",[PROGRAM,s.OPTIONS])
+        rpc("getProgramAccountsV2",[PROGRAM,s.OPTIONS])
     opted=HeliusReadOnlyRpc(KEY,opener=opener,allow_active_pool_scan=True)
     for params in ([PROGRAM,dict(s.OPTIONS,filters=[])],
                    [PROGRAM,dict(s.OPTIONS,dataSlice=dict(offset=0,length=429))],
                    ["random-program",s.OPTIONS]):
-        with pytest.raises(ValueError,match="filtered"):
-            opted("getProgramAccounts",params)
+        with pytest.raises(ValueError,match="page"):
+            opted("getProgramAccountsV2",params)
     assert opener.calls==[]
