@@ -37,6 +37,8 @@ def test_bank_decoder_and_hypothetical_sizes(monkeypatch):
     s2["sol_reserve_lamports"]+=500_000_000
     output=conditional_markouts(s1,s2,first_slot=1234,second_slot=1235,
                                 registered_before_s2=True)
+    assert output["observed_pool_state_changed"] is True
+    assert output["observed_independent_market_transition_count"]==1
     assert len(output["results"])==len(ENTRY_LAMPORTS)==3
     assert all(row["execution_verified"] is False for row in output["results"])
     assert output["completed_actual_buy_sell_cycles"]==0
@@ -111,6 +113,9 @@ def test_s2_wait_is_registered_before_future_bank(monkeypatch,capsys):
     rpc=Fake()
     out=observe_prospective_two_banks(rpc,wait_seconds=1,sleep=lambda n:None)
     assert out["first_slot"]==301 and out["second_slot"]==303
+    assert out["status"]=="UNCHANGED_BANK_FRICTION_ONLY"
+    assert out["observed_pool_state_changed"] is False
+    assert out["observed_independent_market_transition_count"]==0
     assert out["rpc_calls_used"]==4
     assert rpc.events==["getGenesisHash","getMultipleAccounts",
                          "getMultipleAccounts","getMultipleAccounts"]
