@@ -43,9 +43,13 @@ def verify_two_wsol_legs(rpc):
         proof=verify_compiled_rpc_signatures(tx)
         keys=normalized_compiled_transaction(tx)["transaction"]["message"]["accountKeys"]
         found={x["pubkey"] for x in keys}
-        if not ({leg["pool"],leg["payer"],SOL_MINT,PROGRAM}.issubset(found)
-                and any(k["pubkey"]==leg["payer"] and k["signer"] for k in keys)):
-            raise ValueError("WSOL_quoted_leg_required_keys_or_payer_signer_missing")
+        required=(("pool",leg["pool"]),("payer",leg["payer"]),
+                  ("quote_mint",SOL_MINT),("program",PROGRAM))
+        missing=[name for name,value in required if value not in found]
+        if missing:
+            raise ValueError("WSOL_"+leg["kind"]+"_missing_"+missing[0])
+        if not any(k["pubkey"]==leg["payer"] and k["signer"] for k in keys):
+            raise ValueError("WSOL_"+leg["kind"]+"_payer_not_signer")
         if proof.get("cryptographic_signatures_verified") is not True:
             raise ValueError("WSOL_quoted_leg_Ed25519_unverified")
         verified.append(dict(kind=leg["kind"],signature=leg["signature"],
