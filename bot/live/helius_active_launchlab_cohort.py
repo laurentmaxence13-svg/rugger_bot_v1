@@ -134,8 +134,19 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                     conditional_gross_markout_lamports=received-BUY_LAMPORTS,
                     own_network_fee_known=False,
                     execution_verified=False,strict_economic_cycle_qualified=False)
-            except (ValueError,KeyError,TypeError,AttributeError):
+            except (ValueError,KeyError,TypeError,AttributeError) as exc:
+                code=str(exc)
+                # Only local parser/curve refusal codes are emitted. No raw
+                # HTTP body or auth material is ever exposed.
+                known_prefixes=("invalid_","unsupported_","sell_","S2_",
+                    "observed_","active_","pool_","vault_","invalid_curve_",
+                    "curve_","quote_","base_","token_","fee_","snapshot_")
+                safe=(code if type(exc) is ValueError and len(code)<100
+                    and code.replace("_","").isalnum()
+                    and code.startswith(known_prefixes)
+                    else type(exc).__name__)
                 rec["s2_refusal"]="insufficient_supported_real_S2_exit_evidence"
+                rec["s2_refusal_diagnostic"]=safe
     return dict(schema="rugger-onchain-active-survivor-S1S2-v1",
         status="ACTIVE_SURVIVOR_PROSPECTIVE_OBSERVATION_COMPLETE",
         registration_sha256=registration_sha256,
