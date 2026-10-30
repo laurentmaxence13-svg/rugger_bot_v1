@@ -145,6 +145,7 @@ def conditional_markouts(s1,s2,*,first_slot,second_slot,registered_before_s2):
             or s1["pool"]!=POOL or s2["pool"]!=POOL
             or s1["mint"]!=MINT or s2["mint"]!=MINT):
         raise ValueError("cpmm_noncausal_or_inconsistent_two_bank_comparison")
+    input_changed=_jsonhash(s1)!=_jsonhash(s2)
     results=[]
     for budget in ENTRY_LAMPORTS:
         buy=_quote(s1,"BUY",budget)
@@ -173,7 +174,10 @@ def conditional_markouts(s1,s2,*,first_slot,second_slot,registered_before_s2):
                 execution_verified=False,strict_economic_cycle_qualified=False,
                 profit_validated=False))
     return dict(schema="rugger-prospective-cpmm-markout-v1",
-        status="DESCRIPTIVE_TWO_BANK_HYPOTHETICAL_MARKOUT",
+        status=("DESCRIPTIVE_TWO_BANK_HYPOTHETICAL_MARKOUT" if input_changed
+                else "UNCHANGED_BANK_FRICTION_ONLY"),
+        observed_pool_state_changed=input_changed,
+        observed_independent_market_transition_count=(1 if input_changed else 0),
         pool=POOL,mint=MINT,
         first_slot=first_slot,second_slot=second_slot,
         s1_input_sha256=_jsonhash(s1),s2_input_sha256=_jsonhash(s2),
@@ -239,7 +243,9 @@ def main():
                     financial_order_submitted=False,
                     live_ready_to_arm=False,economic_edge_validated=False)
     print(json.dumps(report,sort_keys=True))
-    return 0 if report.get("status")=="DESCRIPTIVE_TWO_BANK_HYPOTHETICAL_MARKOUT" else 2
+    return 0 if report.get("status") in (
+        "DESCRIPTIVE_TWO_BANK_HYPOTHETICAL_MARKOUT",
+        "UNCHANGED_BANK_FRICTION_ONLY") else 2
 
 
 if __name__=="__main__":
