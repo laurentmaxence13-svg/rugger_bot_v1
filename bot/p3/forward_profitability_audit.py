@@ -55,7 +55,7 @@ def _arm(arm):
     return dict(net_lamports=receipts-spend-costs,
                 closed=(status in ("CLOSED","NO_TRADE")),
                 open=(status=="OPEN"),
-                invested_lamports=spend,
+                invested_lamports=spend,additional_cost_lamports=costs,
                 paper_quote_not_actual_fill=action=="BUY")
 
 def _record(value,registered_at_ms):
@@ -141,7 +141,7 @@ def audit_creator_paper_edge(evidence):
         by_opportunity[key][scenario]=row
         by_scenario[scenario][key]=row
     creators=set()
-    missing=0;inconsistent=0
+    missing=0;inconsistent=0;invalid_fee_stress=0
     for items in by_opportunity.values():
         founders={x["creator_id"] for x in items.values()}
         signatures={x["signed_creation_sha256"] for x in items.values()}
@@ -150,6 +150,15 @@ def audit_creator_paper_edge(evidence):
             inconsistent+=1
         creators.update(founders)
         if len(items)!=len(SCENARIOS):missing+=1
+        for delay in (0,250):
+            lower,higher=items.get((1,delay)),items.get((2,delay))
+            if lower is None or higher is None:continue
+            for arm in ("master","reference"):
+                if (lower[arm]["paper_quote_not_actual_fill"]
+                        and higher[arm]["paper_quote_not_actual_fill"]
+                        and higher[arm]["additional_cost_lamports"]<
+                            lower[arm]["additional_cost_lamports"]):
+                    invalid_fee_stress+=1
     overlap=creators.intersection(developers)
     scenario_results={}
     seed_base=int(_sha(evidence),16)
@@ -169,7 +178,7 @@ def audit_creator_paper_edge(evidence):
             open_arm_positions=opened,closed_or_abstained_arm_positions=closed,
             complete_zero_open=opened==0)
     comparable=(bool(parsed) and len(creators)>=MIN_CREATORS and missing==0
-                and inconsistent==0 and not overlap
+                and inconsistent==0 and invalid_fee_stress==0 and not overlap
                 and evidence["full_creation_denominator_observed"]
                 and evidence["receipts_cryptographically_checked"]
                 and evidence["decisions_frozen_before_outcome"])
@@ -192,6 +201,7 @@ def audit_creator_paper_edge(evidence):
         holdout_creator_overlap_count=len(overlap),
         opportunities_missing_scenario=missing,
         opportunities_with_inconsistent_identity_or_tape=inconsistent,
+        fee_stress_cost_monotonicity_violations=invalid_fee_stress,
         scenarios=scenario_results,
         conditional_positive_every_scenario=positive,
         independently_authenticated_source_proof=False,
