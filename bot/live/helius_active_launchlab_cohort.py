@@ -17,9 +17,48 @@ from bot.live.helius_active_launchlab_scan import discover_live_pool_account_pag
 from bot.p3.helius_index_prospective_cohort import _bank,_hash,BUY_LAMPORTS
 from bot.p3.launchlab import _pool,addresses_from_pool,analyze_snapshot,observed_sell_projection
 from bot.p3.quotes import SOL_MINT
+from bot.p3.cohort import _uint as _checked_integer
 
 MAX_SELECTED=3
 WAIT_SECONDS=12
+
+
+def _canonical_uint(value):
+    """Rehydrate exact JSON-safe SDK integers; reject non-canonical strings."""
+    if type(value) is str:
+        if not value.isdecimal() or str(int(value)) != value:
+            raise ValueError("noncanonical_snapshot_integer")
+    return _checked_integer(value)
+
+
+def _followup_sell_from_snapshot(analysis,exact_quantity):
+    """Project only when identity/permissions remain valid at the S2 bank.
+
+    analyze_snapshot returns _json_safe numeric fields as strings. The curve
+    routine intentionally requires true integers; rehydrate each explicit
+    quantity with lossless, bounded validation before calling it.
+    """
+    if (type(analysis) is not dict or analysis.get("risk_flags") != []
+            or analysis.get("evidence_profile") != "published_metadata_v1"):
+        raise ValueError("s2_snapshot_risk_flags_or_schema_invalid")
+    facts=analysis["facts"]
+    pool=facts["pool"];cfg=facts["config"];platform=facts["platform"]
+    status=_canonical_uint(pool["status"])
+    if status != 0:
+        raise ValueError("s2_pool_not_active")
+    numeric_pool=dict(pool)
+    for key in ("virtual_a","virtual_b","real_a","real_b",
+                "protocol_fee_accrued","platform_fee_accrued","status"):
+        numeric_pool[key]=_canonical_uint(pool[key])
+    return observed_sell_projection(numeric_pool,
+        input_token_atomic=_canonical_uint(exact_quantity),
+        fee_rates_ppm=tuple(_canonical_uint(rate) for rate in (
+            cfg["trade_fee_rate_ppm"],platform["platform_fee_rate_ppm"],
+            platform["creator_fee_rate_ppm"])),
+        quote_vault_lamports=_canonical_uint(facts["quote_vault"]["amount_atomic"]),
+        curve_type=_canonical_uint(cfg["curve_type"]),
+        share_fee_rate_ppm=_canonical_uint(facts.get("share_fee_assumption_ppm","0")))
+
 
 def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep):
     if not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20:
@@ -131,20 +170,15 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                     [x for x in analysis.get("blocking_reasons",[])
                      if type(x) is str and len(x)<=85
                      and x.replace("_","").isalnum()][:15])
-                if observed_flags!=[] or pool["status"]!=0:
+                if observed_flags!=[]:
                     raise ValueError("S2_permissions_or_active_status_invalid")
-                sell=observed_sell_projection(pool,
-                    input_token_atomic=int(quantity),
-                    fee_rates_ppm=(config["trade_fee_rate_ppm"],
-                        platform["platform_fee_rate_ppm"],
-                        platform["creator_fee_rate_ppm"]),
-                    quote_vault_lamports=int(f["quote_vault"]["amount_atomic"]),
-                    curve_type=config["curve_type"])
+                sell=_followup_sell_from_snapshot(analysis,quantity)
                 received=int(sell["output_lamports"])
                 rec.update(s2_slot=bank2_slot,s2_analysis_sha256=_hash(analysis),
                     conditional_sell_lamports=received,
                     conditional_gross_markout_lamports=received-BUY_LAMPORTS,
                     own_network_fee_known=False,
+                    projection_scope="exact_S1_modeled_quantity_against_S2_observed_reserves",
                     execution_verified=False,strict_economic_cycle_qualified=False)
             except (ValueError,KeyError,TypeError,AttributeError) as exc:
                 code=str(exc)
