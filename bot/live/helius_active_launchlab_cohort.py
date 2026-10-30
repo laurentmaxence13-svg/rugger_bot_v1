@@ -119,7 +119,19 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                     compute_projection=False)
                 f=analysis["facts"]
                 pool=f["pool"];config=f["config"];platform=f["platform"]
-                if analysis.get("risk_flags")!=[] or pool["status"]!=0:
+                # Distinguish genuine pool migration/close from a decoder
+                # security refusal; NEVER waive a risk flag to produce profit.
+                observed_flags=analysis.get("risk_flags")
+                rec["s2_pool_status"]=pool.get("status")
+                rec["s2_risk_flags"]=(
+                    [flag for flag in observed_flags if type(flag) is str
+                     and len(flag)<=85 and flag.replace("_","").isalnum()][:12]
+                    if type(observed_flags) is list else ["unreadable_risk_flags"])
+                rec["s2_blocking_reasons"]=(
+                    [x for x in analysis.get("blocking_reasons",[])
+                     if type(x) is str and len(x)<=85
+                     and x.replace("_","").isalnum()][:15])
+                if observed_flags!=[] or pool["status"]!=0:
                     raise ValueError("S2_permissions_or_active_status_invalid")
                 sell=observed_sell_projection(pool,
                     input_token_atomic=int(quantity),
