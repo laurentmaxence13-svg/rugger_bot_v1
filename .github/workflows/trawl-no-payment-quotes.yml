@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'tools/trawl_no_payment_quote.py'
+      - 'bot/p3/trawl_no_payment_quote.py'
       - 'tests/test_trawl_no_payment_quote.py'
       - '.github/workflows/trawl-no-payment-quotes.yml'
   workflow_dispatch:
