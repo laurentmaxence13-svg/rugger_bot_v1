@@ -6,6 +6,7 @@ owner envelope. Timeouts have unknown submission outcome and are never retried.
 """
 import asyncio
 import base64
+import hashlib
 import time
 from urllib.parse import urlsplit
 
@@ -73,6 +74,9 @@ class HttpJsonRpcTransport:
         self.method_trace = []
         self.deadline = time.monotonic() + max_elapsed_seconds
         self.submission_authorizer = submission_authorizer
+        # Claim signed bytes before the first await and retain after uncertain outcomes.
+        # Cross-restart deduplication belongs to the persistent execution journal.
+        self._attempted_submission_digests = set()
         self.stopped = False
 
     async def __call__(self, method, params):
@@ -90,6 +94,12 @@ class HttpJsonRpcTransport:
         remaining = self.deadline-time.monotonic()
         if self.stopped or self.used >= self.max_requests or remaining <= 0:
             raise RpcError('Transport stopped or budget exhausted')
+        if method == 'sendTransaction':
+            # No second transmission of these exact signed bytes on this transport.
+            digest = hashlib.sha256(raw).digest()
+            if digest in self._attempted_submission_digests:
+                raise RpcError('Duplicate signed transaction transmission forbidden')
+            self._attempted_submission_digests.add(digest)
         self.used += 1
         request_id = self.used
         trace_entry=dict(ordinal=request_id,method=method,outcome='attempted')
