@@ -97,3 +97,42 @@ def test_prohibited_wait_and_missing_rpc_refused():
         mod.screened_s1_capacity_then_s2(None)
     with pytest.raises(ValueError):
         mod.screened_s1_capacity_then_s2(lambda *_:None,wait_seconds=1000)
+
+
+def test_s1_sell_failure_is_categorized_without_fabricated_non_sellability(monkeypatch):
+    pools, roots = setup_pools(monkeypatch, 1)
+    monkeypatch.setattr(mod, "analyze_snapshot", lambda *args, **kw: dict(
+        risk_flags=[], evidence_profile="published_metadata_v1",
+        conditional_projection=dict(buy_output_atomic="100")))
+    from bot.p3.launchlab import SnapshotEvidenceError
+
+    def impossible_at_prebuy_bank(*args, **kw):
+        raise SnapshotEvidenceError(
+            "sell_exceeds_observed_outstanding_curve_tokens")
+    monkeypatch.setattr(mod, "_followup_sell_from_snapshot",
+                        impossible_at_prebuy_bank)
+
+    class Rpc:
+        count = 0
+        def __init__(self):
+            self.calls = 0
+        def __call__(self, method, params):
+            self.calls += 1
+            if self.calls == 1:
+                return dict(context=dict(slot=1001),
+                            value=[roots[p] for p in params[0]])
+            return dict(context=dict(slot=1002),
+                        value=[dict(S1=True) for _ in params[0]])
+
+    report = mod.screened_s1_capacity_then_s2(
+        Rpc(), wait_seconds=1, sleep=lambda _: None)
+    assert report["S1_capacity_count"] == 0
+    assert report["selected_for_S2"] == 0
+    row = report["results"][0]
+    assert row["S1_capacity_reason"] == (
+        "sell_exceeds_observed_outstanding_curve_tokens")
+    assert row["S1_sell_quote_scope"] == (
+        "PRE_BUY_BANK_NOT_A_POST_BUY_EXECUTABLE_SELL")
+    assert row["S1_refusal_does_not_prove_real_exit_impossible"] is True
+    assert report["real_buy_sell_trades"] == 0
+    assert report["live_ready_to_arm"] is False
