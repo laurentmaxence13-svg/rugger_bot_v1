@@ -19,10 +19,11 @@ from bot.live.helius_launchlab_cohort_probe import RAW_OPTS
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.live.compiled_launchlab import compiled_launchlab_creations
+from bot.live.solana_v1_readonly import verify_v1_base64_receipt
 from bot.p3.platform_admin_history import _signature
 from bot.live.helius_ws_forward_paper import _hash
 
-MAX_INSPECTIONS = 8
+MAX_INSPECTIONS = 4
 MAX_EVENTS = 100
 
 
@@ -104,6 +105,47 @@ def inspect_forward_creations(report, events, rpc):
                 raw.get("transaction", {}).get("signatures", [None])[0] != sig):
             receipt["status"] = "FINALIZED_RECEIPT_MISMATCH"
             continue
+        if type(raw.get("version")) is int and raw["version"] == 1:
+            # v1 uses a different signed wire structure. Never force the
+            # legacy/v0 reserializer onto v1 or treat a provider parser's
+            # account claims as cryptographic proof.
+            try:
+                encoded = rpc("getTransaction", [sig, dict(
+                    encoding="base64", commitment="finalized",
+                    maxSupportedTransactionVersion=1)])
+                v1 = verify_v1_base64_receipt(
+                    encoded, expected_signature=sig,
+                    expected_slot=item["slot"])
+                receipt["exact_message_sha256"] = v1["exact_message_sha256"]
+                receipt["cryptographic_signature_verified"] = True
+                receipt["version"] = 1
+                if v1["launched_candidates"]:
+                    if any(x["payer"] not in v1["signer_public_keys"]
+                           for x in v1["launched_candidates"]):
+                        raise ValueError("v1_creation_payer_not_signer")
+                    receipt["status"] = "SIGNED_OUTER_CREATION_CANDIDATE"
+                    receipt["launches"] = v1["launched_candidates"]
+                    distinct_creators.update(
+                        x["creator"] for x in v1["launched_candidates"])
+                else:
+                    receipt["status"] = "VERIFIED_NON_CREATION"
+            except (ValueError, KeyError, TypeError, IndexError) as exc:
+                code = str(exc)
+                allowlisted = frozenset((
+                    "v1_exact_ed25519_message_invalid",
+                    "v1_signature_tail_length_invalid",
+                    "v1_wire_prefix_or_length_invalid",
+                    "v1_rpc_receipt_version_slot_or_status_invalid",
+                    "v1_expected_first_signature_mismatch",
+                    "v1_unknown_config_mask_bits",
+                    "v1_creation_payer_not_signer",
+                    "v1_instruction_or_address_count_invalid",
+                    "v1_wire_truncated"))
+                receipt["status"] = "V1_BINARY_PROOF_REFUSED"
+                receipt["refusal_phase"] = "v1_binary_ed25519"
+                receipt["refusal_code"] = (code if type(exc) is ValueError
+                    and code in allowlisted else "OTHER_" + type(exc).__name__)
+            continue
         verification_phase = "ed25519_message"
         try:
             proof = verify_compiled_rpc_signatures(raw)
@@ -179,7 +221,7 @@ def inspect_forward_creations(report, events, rpc):
         first_phase_captured_logs=len(events),
         selected_for_finalized_receipt=len(chosen),
         selected_before_receipt_lookup=True,
-        selection_rule="first_eight_unfailed_logs_initialize_hint_priority_then_arrival",
+        selection_rule="first_four_unfailed_logs_initialize_hint_priority_then_arrival",
         source_log_chain_sha256=report["signature_ledger_sha256"],
         status_counts=counts, records=records,
         signed_creation_candidate_transactions=counts.get("SIGNED_OUTER_CREATION_CANDIDATE", 0),
