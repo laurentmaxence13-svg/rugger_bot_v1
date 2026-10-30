@@ -21,10 +21,10 @@ from bot.live.migration_rpc_json import normalized_compiled_transaction
 # Solscan Raydium treasury and migration-signer account listings; independent
 # web metadata, not proof. Each signature MUST pass finalized RPC and Ed25519.
 CANDIDATES = (
-    "4dVjRdwd6UGTuCyJviznUKeF6m7qiezaAg7mQY7uTvp8FABVBrnWLaJ1ssaq7yjXGRxA7xKVJv8Ldegpwm5HMqX",
+    "59W98YE2XhgmVj2wXgpMFrGmypcyQL4iZMx9wJjGVBB3h3Db4cgjGAzGBrewNS6cB7YmLweat74CcnWZPhRgRXtR",
     "25efs9qYjtUNmJDQkfFTFCffhaqYXhtx9u6coHWVmB7efH7E3xi7Swix9whtCjJpQhWB5n5A4KYFeHwzKFj44Bhk",
-    "28TDLoj9kUZQ5ADCo2JN4nidFKsB2LBBHRuW5EP4VSPxi5TYCa1htXYNNLxm6Es7r8aLGyLeW9awtuMJ9Y71TitX",
-    "3zphmsVirhesYZdiq1PXpFRiKAHiW5dhUKkLEdiaMxZUKU67trTE2wJMDEg5stXfbX3tR1HJHtg7DB7ECsPueMie",
+    "mw3hepwWEb2z1ZnnQPuqisjojFTCuEoQ8BfYLEMtxauJZkxdTg8tL9Byr2CHenpRgyFxwafvM7PyRR7m3RaYQZh",
+    "36tsFYZwCKPNgPhHuE8xLj7tiUXxYgUqdE4TkcjGQtpRVW2hK6dCS1zJMQAh3E36B9Jry5if4bNhaGQHpD83wGRJ",
 )
 
 
