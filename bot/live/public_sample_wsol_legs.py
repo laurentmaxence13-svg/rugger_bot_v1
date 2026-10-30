@@ -48,18 +48,25 @@ def verify_two_wsol_legs(rpc):
         missing=[name for name,value in required if value not in found]
         if missing:
             raise ValueError("WSOL_"+leg["kind"]+"_missing_"+missing[0])
-        if not any(k["pubkey"]==leg["payer"] and k["signer"] for k in keys):
-            raise ValueError("WSOL_"+leg["kind"]+"_payer_not_signer")
+        # In a public instruction account list, payer can be a non-signer
+        # while a separate authority signs the transaction. Preserve that
+        # fact explicitly; do NOT upgrade a payer to an owner or signer.
+        payer_is_transaction_signer=any(
+            k["pubkey"]==leg["payer"] and k["signer"] for k in keys)
         if proof.get("cryptographic_signatures_verified") is not True:
             raise ValueError("WSOL_quoted_leg_Ed25519_unverified")
         verified.append(dict(kind=leg["kind"],signature=leg["signature"],
             slot=leg["slot"],pool=leg["pool"],quote_mint=SOL_MINT,
-            signer=leg["payer"],exact_message_sha256=proof["exact_message_sha256"],
+            instruction_payer=leg["payer"],
+            instruction_payer_is_transaction_signer=payer_is_transaction_signer,
+            signer_or_owner_relation_unverified=not payer_is_transaction_signer,
+            exact_message_sha256=proof["exact_message_sha256"],
             signed_transaction_verified=True))
     return dict(schema="rugger-free-sample-Wsol-trade-legs-v1",
         status="TWO_DISCONNECTED_WSOL_LEGS_CRYPTOGRAPHICALLY_VERIFIED",
         verified_legs=verified,
         same_pool_but_different_payer=True,
+        payer_may_be_different_from_signed_authority=True,
         sell_slot_precedes_sample_buy_slot=True,
         same_payer_causal_buy_sell_cycle_proven=False,
         amounts_and_event_data_independently_reconciled=False,
