@@ -104,28 +104,55 @@ def inspect_forward_creations(report, events, rpc):
                 raw.get("transaction", {}).get("signatures", [None])[0] != sig):
             receipt["status"] = "FINALIZED_RECEIPT_MISMATCH"
             continue
+        verification_phase = "ed25519_message"
         try:
             proof = verify_compiled_rpc_signatures(raw)
             if proof.get("cryptographic_signatures_verified") is not True:
                 raise ValueError("cryptographic_signature_missing")
+            verification_phase = "compiled_account_graph"
             normalized = normalized_compiled_transaction(raw)
             accounts = normalized["transaction"]["message"]["accountKeys"]
             keyset = {key["pubkey"] for key in accounts}
             signer_set = {key["pubkey"] for key in accounts if key["signer"]}
+            verification_phase = "compiled_creation_instructions"
             raw_launches = compiled_launchlab_creations(raw)
+            verification_phase = "outer_signed_creation_instructions"
             signed_outer_only = compiled_launchlab_creations(dict(
                 raw, meta=dict(raw["meta"], innerInstructions=[])))
             key_fields = ("payer", "creator", "pool_state", "mint")
             def identities(rows):
                 return {tuple(row[field] for field in key_fields)
                         for row in rows}
+            verification_phase = "creation_payer_identity"
             for launch in raw_launches:
                 if (not {launch["payer"], launch["creator"], launch["pool_state"],
                          launch["mint"], PROGRAM}.issubset(keyset) or
                         launch["payer"] not in signer_set):
                     raise ValueError("verified_compiled_creation_identity_mismatch")
-        except (ValueError, KeyError, IndexError, TypeError, AttributeError):
+        except (ValueError, KeyError, IndexError, TypeError, AttributeError) as error:
+            # Fixed categorical reason codes only, never raw RPC bodies,
+            # exception representations, endpoint URLs or provider secrets.
+            allowlisted = frozenset((
+                "unsupported_transaction_message_or_header",
+                "compiled_creation_inner_group_invalid",
+                "compiled_creation_indices_invalid",
+                "compiled_creation_outer_instructions_invalid",
+                "raw_compiled_message_header_required",
+                "unsupported_transaction_message_version",
+                "compiled_creation_transaction_required",
+                "compiled_creation_instruction_invalid",
+                "parsed_vs_compiled_creation_disagreement",
+                "verified_compiled_creation_identity_mismatch",
+                "historical_transaction_Ed25519_signature_invalid",
+                "serialized_Solana_message_packet_limit",
+                "compiled_instruction_index_invalid",
+                "compiled_account_key_not_base58_string"))
+            code = str(error)
             receipt["status"] = "SIGNATURE_OR_CREATION_IDENTITY_REFUSED"
+            receipt["refusal_phase"] = verification_phase
+            receipt["refusal_code"] = (
+                code if type(error) is ValueError and code in allowlisted
+                else "OTHER_" + type(error).__name__)
             continue
         receipt["exact_message_sha256"] = proof["exact_message_sha256"]
         receipt["cryptographic_signature_verified"] = True
