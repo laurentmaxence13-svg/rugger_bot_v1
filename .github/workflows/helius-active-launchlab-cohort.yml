@@ -26,6 +26,7 @@ jobs:
     env:
       RUGGER_NO_DOTENV: '1'
       PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_WRITE_PUBLIC_EVIDENCE: '1'
     steps:
       - name: Checkout read-only source without credentials
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -48,3 +49,12 @@ jobs:
           set -euo pipefail
           git rev-parse HEAD
           python -B -m bot.live.helius_active_launchlab_cohort
+
+      - name: Archive public PAPER observations for later deduplication
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: paper-active-survivor-cohort-${{ github.run_id }}
+          path: paper_artifacts/paper_public_observations/*.json
+          if-no-files-found: warn
+          retention-days: 30
