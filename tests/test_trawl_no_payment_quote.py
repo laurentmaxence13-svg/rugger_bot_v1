@@ -3,7 +3,7 @@ import io
 import json
 from urllib.error import HTTPError
 import pytest
-from tools.trawl_no_payment_quote import quote_nonpaying,PRESETS,HOST
+from bot.p3.trawl_no_payment_quote import quote_nonpaying,PRESETS,HOST
 
 
 def make_error(code, body):
