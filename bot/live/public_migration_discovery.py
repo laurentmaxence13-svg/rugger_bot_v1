@@ -14,6 +14,7 @@ import ssl
 import sys
 
 from bot.live.readonly_plan import MAINNET_GENESIS, PUBLIC_MAINNET_RPC
+from bot.live.public_program_observer import SECONDARY_RPC
 from bot.p3.certification import PROGRAM
 from bot.p3.quotes import SOL_MINT
 from bot.p3.platform_admin_history import _signature, _b58_bytes
@@ -33,7 +34,10 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 class MigrationReadOnlyRpc:
-    def __init__(self):
+    def __init__(self, *, endpoint=PUBLIC_MAINNET_RPC):
+        if endpoint not in (PUBLIC_MAINNET_RPC, SECONDARY_RPC):
+            raise ValueError('unapproved_readonly_rpc_endpoint')
+        self.endpoint = endpoint
         self.count = 0
         self.started = time.monotonic()
         self.opener = build_opener(
@@ -49,10 +53,10 @@ class MigrationReadOnlyRpc:
         self.count += 1
         payload = json.dumps(dict(jsonrpc="2.0", id=self.count,
             method=method, params=params), separators=(",", ":")).encode()
-        request = Request(PUBLIC_MAINNET_RPC, data=payload,
+        request = Request(self.endpoint, data=payload,
             headers={"Content-Type":"application/json"}, method="POST")
         with self.opener.open(request, timeout=8) as response:
-            if response.status != 200 or response.geturl()!=PUBLIC_MAINNET_RPC:
+            if response.status != 200 or response.geturl()!=self.endpoint:
                 raise ValueError("public_migration_RPC_refused")
             raw=response.read(6_000_001)
             if len(raw)>6_000_000:
