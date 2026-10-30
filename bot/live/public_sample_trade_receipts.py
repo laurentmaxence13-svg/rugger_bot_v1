@@ -7,7 +7,8 @@ checks the raw compiled Ed25519 message and both role keys; it does NOT
 independently decode/reconcile the Parquet TradeEvent amounts, demonstrate
 net profits, cover other missing trades, authorize a wallet or place orders.
 
-The sample covers only a short period and is selected AFTER known results;
+Both historical examples use non-WSOL quote mints: *neither* is a native SOL
+profit/loss example. The sample covers only a short period and is selected AFTER known results;
 it is *not* a prospective strategy/holdout evaluation.
 """
 import json
@@ -18,24 +19,27 @@ from bot.live.readonly_plan import MAINNET_GENESIS
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
 from bot.p3.certification import PROGRAM
+from bot.p3.quotes import SOL_MINT
 
 SAMPLES=(
     dict(
         label="exact_token_amount_pair",
         pool="4B8fFhma9rW26qisMsb7bgwPUT1wZtV4hRt7ug8MaRbc",
         payer="REDBUtdAjot2V6abs2pojT9BiRUdC1NuUpi8QSfrMVt",
+        quote_mint="Xs78JED6PFZxWc2wCEPspZW9kL3Se5J7L5TChKgsidH",
         buy_sig="qgYuaN1kHVcv43ZcGvnyJndrZCwzrCVjFQPVhEBJBeKmSWCj9e1x7CatrVZrctikBVAx84zZArx5eU4hcbn3mMk",
         buy_slot=445316414,
         sell_sig="2QUUw3Z68pXZWp52ZtYrSULhnB1gopbPNt5DvEzPG342gqhtURwJipKiKKbjYfr27QKxzGbNLDNZikPLHEhXoWap",
         sell_slot=445316611,
-        sampled_buy_sol_lamports=96987772,
+        sampled_buy_quote_token_atomic=96987772,
         sampled_buy_token_atomic=33207397256443,
         sampled_sell_token_atomic=33207397256443,
-        sampled_sell_sol_lamports=109827011),
+        sampled_sell_quote_token_atomic=109827011),
     dict(
         label="partial_token_amount_pair",
         pool="2LGqW7dj2rQtTRwLzUBKRNgxQ5m9eD8VtJJoKToPe6zN",
         payer="4MunitMby28PuCDKR996X6r8gVMSoZ2ew57E515jzwPp",
+        quote_mint="4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
         buy_sig="4Yp2YbyVv61vzHGyeRK4pUrFPXDRdiTTPWbezJZBf4pEdguCMXH9SbQfAmvNq1Qybfi6NcDXwX4EudaGq2fHCwtn",
         buy_slot=445316568,
         sell_sig="4KHch5sx3KuL9tLsmfu8BQe6iB6uRvxEBuLCXdtDexiqVYBDWHPimeNNTU5Jzb3S7iifJdef69wCs4dYAMHtXRZ5",
@@ -68,9 +72,9 @@ def verify_public_sample_receipts(rpc):
             verified=verify_compiled_rpc_signatures(tx)
             normalized=normalized_compiled_transaction(tx)
             keys=normalized["transaction"]["message"]["accountKeys"]
-            if not ({sample["pool"],sample["payer"],PROGRAM}
+            if not ({sample["pool"],sample["payer"],sample["quote_mint"],PROGRAM}
                     .issubset({r["pubkey"] for r in keys})):
-                raise ValueError("public_sample_pool_payer_or_program_missing")
+                raise ValueError("public_sample_pool_payer_quote_or_program_missing")
             if not any(k["pubkey"]==sample["payer"] and k["signer"] for k in keys):
                 raise ValueError("sample_claimed_payer_not_transaction_signer")
             if verified["cryptographic_signatures_verified"] is not True:
@@ -79,6 +83,7 @@ def verify_public_sample_receipts(rpc):
                 signature=sig,slot=slot,
                 exact_message_sha256=verified["exact_message_sha256"],
                 account_pool_present=True,claimed_payer_signer=True,
+                quote_mint=sample["quote_mint"],sol_quoted=(sample["quote_mint"]==SOL_MINT),
                 source_provider_claim_finalized=True,
                 compiled_message_ed25519_verified=True))
     return dict(schema="rugger-four-sampled-buy-sell-receipts-v1",
@@ -86,6 +91,8 @@ def verify_public_sample_receipts(rpc):
         verified_receipts=results,
         claimed_historical_pair_count=2,
         exact_token_amount_pair_count=1,
+        sampled_quote_tokens_are_not_SOL=True,
+        native_SOL_trading_pairs_in_verified_sample=0,
         sampled_data_status="from_nonrepresentative_free_Parquet_subset",
         sampled_TradeEvent_amounts_independently_decoded_from_logs=False,
         sampled_buy_and_sell_token_transfers_independently_reconciled=False,
