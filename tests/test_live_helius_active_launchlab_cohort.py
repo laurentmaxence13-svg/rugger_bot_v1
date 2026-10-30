@@ -85,3 +85,50 @@ def test_missing_rpc_and_unbounded_wait_refused_before_any_network():
         a.observe_active_survivor_cohort(None)
     with pytest.raises(ValueError):
         a.observe_active_survivor_cohort(lambda *_:None,wait_seconds=400)
+
+
+def valid_s2_json_safe_snapshot():
+    # analyze_snapshot serializes every on-chain integer to decimal text.
+    return dict(evidence_profile="published_metadata_v1",risk_flags=[],
+        facts=dict(pool=dict(status="0",mint_b=SOL_MINT,
+                virtual_a="1000000000000",real_a="700000000000",
+                virtual_b="3000000000",real_b="1000000000",
+                protocol_fee_accrued="0",platform_fee_accrued="0"),
+            config=dict(curve_type="0",trade_fee_rate_ppm="2500"),
+            platform=dict(platform_fee_rate_ppm="500",
+                          creator_fee_rate_ppm="0"),
+            quote_vault=dict(amount_atomic="2000000000"),
+            share_fee_assumption_ppm="0"))
+
+
+def test_real_json_safe_s2_status_string_zero_is_accepted_for_modelled_exit():
+    s2=valid_s2_json_safe_snapshot()
+    quote=a._followup_sell_from_snapshot(s2,"10000000000")
+    assert quote["kind"]=="observed_state_conditional_sell_estimate"
+    assert int(quote["output_lamports"])>0
+    assert quote["position_acquired"] is False
+    assert quote["execution_verified"] is False
+
+
+@pytest.mark.parametrize("bad_field,bad_value",[
+    (("facts","pool","status"),"00"),
+    (("facts","pool","status"),"1"),
+    (("facts","pool","status"),"0.0"),
+    (("facts","pool","real_a"),"0.5"),
+    (("facts","config","trade_fee_rate_ppm"),"unknown"),
+    (("facts","quote_vault","amount_atomic"),"-100")])
+def test_s2_rehydration_strictly_rejects_invalid_status_or_decimal(
+        bad_field,bad_value):
+    snapshot=valid_s2_json_safe_snapshot()
+    obj=snapshot
+    for key in bad_field[:-1]:obj=obj[key]
+    obj[bad_field[-1]]=bad_value
+    with pytest.raises(ValueError):
+        a._followup_sell_from_snapshot(snapshot,"10000000000")
+
+
+def test_s2_risk_flag_never_bypassed_even_with_active_status():
+    s2=valid_s2_json_safe_snapshot()
+    s2["risk_flags"]=["freeze_authority_present"]
+    with pytest.raises(ValueError,match="risk"):
+        a._followup_sell_from_snapshot(s2,"10000000000")
