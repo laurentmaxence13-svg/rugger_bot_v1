@@ -105,12 +105,13 @@ class ReadOnlyLogAudit:
                      on_chain_transaction_failed=tx["err"] is not None,
                      reception_utc_ns=received_utc_ns,
                      reception_monotonic_ns=received_mono_ns,
-                     local_parse_elapsed_ns=parsed_mono_ns-received_mono_ns,
+                     local_parse_elapsed_ns=None,
                      classification="UNCLASSIFIED_PROGRAM_LOG_NOT_LAUNCH_PROOF",
                      filled=False)
+        event["local_parse_elapsed_ns"] = max(0, time.monotonic_ns()-received_mono_ns)
         self.events.append(event)
         self.chain = _hash(dict(previous=self.chain, event=event))
-        self.processing_ns.append(parsed_mono_ns-received_mono_ns)
+        self.processing_ns.append(event['local_parse_elapsed_ns'])
         self.failed_on_chain += int(event["on_chain_transaction_failed"])
         if self.first_receiver_mono_ns is None:
             self.first_receiver_mono_ns = received_mono_ns
@@ -179,10 +180,9 @@ async def observe(seconds, maximum, api_key):
                 continue
             received_mono_ns = time.monotonic_ns()
             received_utc_ns = time.time_ns()
-            parsed_mono_ns = time.monotonic_ns()
             audit.accept(message, received_mono_ns=received_mono_ns,
                          received_utc_ns=received_utc_ns,
-                         parsed_mono_ns=parsed_mono_ns)
+                         parsed_mono_ns=time.monotonic_ns())
     return audit.report(duration_ms=(time.monotonic_ns()-start)//1_000_000,
                         handshake_ms=handshake), audit.events
 
