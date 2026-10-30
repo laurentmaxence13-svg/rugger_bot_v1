@@ -101,7 +101,13 @@ class ReadOnlyLogAudit:
         if len(self.events) >= self.maximum:
             raise ValueError("bounded_event_cap_reached")
         self.seen.add(signature)
+        # A provider log string is only a discovery hint. User programs can
+        # emit similar strings, so it can never certify a creation.
+        hint = any(type(line) is str and
+                   line.startswith("Program log: Instruction: Initialize")
+                   for line in tx["logs"])
         event = dict(signature=signature, slot=slot,
+                     untrusted_initialize_log_hint=hint,
                      on_chain_transaction_failed=tx["err"] is not None,
                      reception_utc_ns=received_utc_ns,
                      reception_monotonic_ns=received_mono_ns,
