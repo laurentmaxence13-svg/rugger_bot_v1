@@ -65,6 +65,11 @@ class FakeRpc:
     async def get_fee_for_message(self, message):
         return 5002
 
+    async def get_fee_for_message_receipt(self, message, *, min_context_slot):
+        # Explicit isolated bank context; subclasses can inject stale banks.
+        fee = await self.get_fee_for_message(message)
+        return dict(value=fee, context_slot=min_context_slot)
+
     async def simulate_transaction(self, raw, *, sig_verify):
         assert sig_verify is False
         assert raw[1:65] == bytes(64)
