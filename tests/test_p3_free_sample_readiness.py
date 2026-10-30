@@ -1,16 +1,31 @@
 """Real free sample NO-GO must survive attempts to label selected winners."""
 import copy
-import json
-from pathlib import Path
 import pytest
 from bot.p3.free_sample_readiness import evaluate_data_source_readiness
 
-ROOT = Path(__file__).resolve().parents[1]
-SOURCE = (ROOT / "validation/live_readonly/FREE_PARQUET_P3P4_GATE_2026-10-30.json")
+# This fixture deliberately carries only a small VERIFIED summary because the
+# isolated regression job does not copy validation/ datasets or raw Parquet.
+# The audited JSON and ZIP SHA remain in validation/live_readonly/ in the PR.
+def verified_sample_summary():
+    return dict(
+        schema="rugger-free-Parquet-prepurchase-readiness-v1",
+        sample_version="2026-09-08-v4",
+        manifest_files_sha256_verified=23,
+        distinct_creator_claims=76,
+        wsol_instruction_event_matched={"buy":2,"sell":0},
+        historical_pairs_wsol=0,
+        full_creation_denominator_verified=False,
+        complete_wallet_history_verified=False,
+        after_migration_CPMM_swaps_present=False,
+        all_fees_reconciled=False,
+        at_decision_master_reference_observed=False,
+        creator_disjoint_holdout_50_verified=False,
+        source_trades_are_independent_short_per_table_samples=True,
+    )
 
 
 def test_audited_free_sample_has_zero_qualified_Sol_cycle():
-    source = json.loads(SOURCE.read_text(encoding="utf-8"))
+    source = verified_sample_summary()
     report = evaluate_data_source_readiness(source)
     assert report["source_integrity_verified_files"] == 23
     assert report["raw_sampled_wsol_event_matches"] == {"buy": 2, "sell": 0}
@@ -23,7 +38,7 @@ def test_audited_free_sample_has_zero_qualified_Sol_cycle():
 
 
 def test_hundred_creators_and_observed_wsol_pairs_are_not_an_edge():
-    source = json.loads(SOURCE.read_text(encoding="utf-8"))
+    source = verified_sample_summary()
     source.update(distinct_creator_claims=1000,historical_pairs_wsol=300)
     source["wsol_instruction_event_matched"]={"buy":1000,"sell":1000}
     report = evaluate_data_source_readiness(source)
@@ -33,7 +48,7 @@ def test_hundred_creators_and_observed_wsol_pairs_are_not_an_edge():
 
 
 def test_even_complete_tape_has_to_be_replayed_and_externally_audited():
-    source = json.loads(SOURCE.read_text(encoding="utf-8"))
+    source = verified_sample_summary()
     source.update(
         full_creation_denominator_verified=True,
         complete_wallet_history_verified=True,
