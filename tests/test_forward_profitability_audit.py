@@ -180,3 +180,14 @@ def test_bootstrap_is_reproducible_and_inputs_remain_unmodified():
     assert first==audit(data)
     assert data==before
     assert all(v["opportunities"]==60 for v in first["scenarios"].values())
+
+
+def test_fee_double_stress_must_not_reduce_additional_cost():
+    data=sample(kind="prospective_market_paper")
+    for row in data["rows"]:
+        if row["fee_multiplier"]==2 and row["opportunity_id"]=="mint-0":
+            row["master"]["additional_cost_lamports"]=0
+    result=audit(data)
+    assert result["fee_stress_cost_monotonicity_violations"]==2
+    assert result["conditional_positive_every_scenario"] is False
+    assert result["status"]=="NO_GO_REAL_PROFITABILITY_NOT_PROVEN"
