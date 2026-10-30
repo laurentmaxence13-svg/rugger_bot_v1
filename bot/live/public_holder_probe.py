@@ -5,6 +5,7 @@ account-bank reads. A discovered address belongs to an unrelated public owner,
 and must NEVER be treated as consent to transact or as user-owned inventory.
 """
 import json
+import os
 import ssl
 import sys
 import time
@@ -15,6 +16,7 @@ from bot.p3.certification import _decode
 from bot.p3 import launchlab
 from bot.live.route import TOKEN_PROGRAM,SYSTEM_PROGRAM,associated_token_address
 from bot.live.readonly_plan import MAINNET_GENESIS,PUBLIC_MAINNET_RPC
+from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 
 MINT="56RC8gxeW2m8gDWZz3MXGjF9DikgP6DTo1PyBox5rray"
 MIGRATION_SLOT=458932584
@@ -123,10 +125,14 @@ def find_public_ata_holder(rpc):
 
 def main():
     try:
-        report=find_public_ata_holder(ReadOnlyHolderRpc())
+        rpc=(HeliusReadOnlyRpc.from_environment(max_calls=4)
+             if "HELIUS_API_KEY" in os.environ else ReadOnlyHolderRpc())
+        report=find_public_ata_holder(rpc)
     except Exception as exc:
         report=dict(status="REFUSED",error_type=type(exc).__name__,
                     http_status_code=exc.code if isinstance(exc,HTTPError) else None,
+                    diagnostic_code=(str(exc) if str(exc).startswith("helius_")
+                                     else "read_only_lookup_unavailable"),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"]=="PUBLIC_CANDIDATE_WALLET_AND_ATA_IDENTIFIED" else 2
