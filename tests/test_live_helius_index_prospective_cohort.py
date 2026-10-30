@@ -2,7 +2,7 @@
 from copy import deepcopy
 import json
 import pytest
-from bot.live import helius_index_prospective_cohort as c
+from bot.p3 import helius_index_prospective_cohort as c
 from bot.live.readonly_plan import MAINNET_GENESIS
 from bot.p3.quotes import SOL_MINT
 from bot.p3.certification import _encode
