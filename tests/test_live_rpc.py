@@ -39,17 +39,6 @@ def test_simulation_causal_slot_is_retained_and_old_or_missing_slot_refused():
     with pytest.raises(RpcError):run(SolanaRpc(t).simulate_transaction(RAW,sig_verify=False))
 
 
-def test_finalized_signature_discovery_is_single_bounded_page_without_fallback():
-    t=Transport([dict(signature=SIG,slot=123,err=None)])
-    result=run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
-    assert result[0]['signature']==SIG
-    assert t.calls==[('getSignaturesForAddress',[KEY,dict(limit=2,commitment='finalized')])]
-    for limit in (True,0,1001,2.0):
-        with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=limit))
-    t.result=[dict(signature='bad',slot=123,err=None)]
-    with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
-
-
 @pytest.mark.parametrize('method',['signature_status','get_transaction','send_transaction'])
 def test_invalid_signature_identity_is_sanitized_rpc_error(method):
     t=Transport('bad')
@@ -172,3 +161,102 @@ def test_financial_payload_rechecks_gate_after_connection_delay():
     admitted[0]=True
     run(payload.write(Writer()))
     assert written==[b'public-test-json']
+
+
+def test_rpc_get_block_time_is_exact_positive_source_epoch_not_caller_guess():
+    rpc=Transport(1793295100)
+    assert run(SolanaRpc(rpc).get_block_time(1235))==1793295100
+    assert rpc.calls==[('getBlockTime',[1235])]
+
+
+@pytest.mark.parametrize('invalid',[None,False,True,0,-1,1.5,'1793295100',2**64])
+def test_rpc_get_block_time_missing_or_untyped_fails_closed(invalid):
+    t=Transport(invalid)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_block_time(1235))
+
+
+@pytest.mark.parametrize('invalid',[None,True,0,-1,'1235'])
+def test_rpc_get_block_time_rejects_noninteger_source_slot_without_request(invalid):
+    t=Transport(1793295100)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_block_time(invalid))
+    assert t.calls==[]
+
+
+def test_fee_receipt_requests_message_at_or_after_blockhash_bank_and_retains_context():
+    t=Transport(dict(context=dict(slot=400),value=5000))
+    result=run(SolanaRpc(t).get_fee_for_message_receipt(b'compiled-test-message',
+                                                         min_context_slot=399))
+    assert result==dict(context_slot=400,value=5000)
+    assert t.calls==[('getFeeForMessage',[
+        base64.b64encode(b'compiled-test-message').decode(),
+        dict(commitment='confirmed',minContextSlot=399)])]
+
+
+@pytest.mark.parametrize('reply',[
+    dict(context=dict(slot=399),value=5000),
+    dict(context=dict(slot=True),value=5000),
+    dict(context=dict(slot=400),value=None),
+    dict(context=dict(slot=400),value=0),
+    dict(context=dict(slot=400),value=-1),
+    dict(context=dict(slot=400),value='5000'),
+    dict(value=5000),
+    dict(context=None,value=5000),
+    True,
+])
+def test_fee_receipt_invalid_or_older_bank_always_refused(reply):
+    t=Transport(reply)
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_fee_for_message_receipt(b'compiled-test-message',
+                                                      min_context_slot=400))
+
+
+@pytest.mark.parametrize('invalid',[True,0,-1,'400',None])
+def test_fee_receipt_invalid_floor_fails_before_transport(invalid):
+    t=Transport(dict(context=dict(slot=400),value=5000))
+    with pytest.raises(RpcError):
+        run(SolanaRpc(t).get_fee_for_message_receipt(b'message',
+                                                      min_context_slot=invalid))
+    assert t.calls==[]
+
+
+
+def test_rpc_method_trace_has_only_number_method_and_outcome_even_on_http_failure():
+    http=Http(b'RPC SECRET private_wallet_token',status=429)
+    transport=HttpJsonRpcTransport(http,endpoint='https://api.mainnet.solana.com',
+                                   proxy='http://proxy:8080')
+    with pytest.raises(RpcError):
+        run(transport('getGenesisHash',[]))
+    assert transport.method_trace==[
+        dict(ordinal=1,method='getGenesisHash',outcome='failed')]
+    assert 'SECRET' not in str(transport.method_trace)
+    assert 'proxy' not in str(transport.method_trace)
+    assert transport.used==1
+    assert transport.stopped is True
+
+
+def test_rpc_method_trace_preserves_request_order_and_never_logs_params():
+    http=Http(b'{"jsonrpc":"2.0","id":1,"result":999}')
+    transport=HttpJsonRpcTransport(http,endpoint='https://api.mainnet.solana.com',
+                                   proxy='http://proxy:8080',max_requests=1)
+    assert run(transport('getBlockHeight',[dict(private_arg='DO_NOT_LOG')]))==999
+    assert transport.method_trace==[
+        dict(ordinal=1,method='getBlockHeight',outcome='success')]
+    assert 'DO_NOT_LOG' not in str(transport.method_trace)
+    with pytest.raises(RpcError):
+        run(transport('getBlockHeight',[dict(private_arg='SECRET')]))
+    assert len(transport.method_trace)==1
+
+def test_finalized_signature_discovery_is_single_bounded_page_without_fallback():
+    t=Transport([dict(signature=SIG,slot=123,err=None)])
+    result=run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
+    assert result[0]['signature']==SIG
+    assert t.calls==[('getSignaturesForAddress',[KEY,dict(limit=2,commitment='finalized')])]
+    for limit in (True,0,1001,2.0):
+        with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=limit))
+    t.result=[dict(signature='bad',slot=123,err=None)]
+    with pytest.raises(RpcError):run(SolanaRpc(t).get_signatures_for_address(KEY,limit=2))
+
+
+@pytest.mark.parametrize('method',['signature_status','get_transaction','send_transaction'])
