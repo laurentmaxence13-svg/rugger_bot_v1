@@ -138,7 +138,8 @@ async def preflight_migrated_sell(
     simulated=await check_unsigned_order(
         rpc,order,expected_genesis_hash=expected_genesis_hash,
         expected_endpoint_sha256=expected_endpoint_sha256,
-        now_ms=now,max_bank_age_ms=max_bank_age_ms)
+        now_ms=now,max_bank_age_ms=max_bank_age_ms,
+        clock_ms=clock_ms)
     # A wrapper or RPC provider must not replace the exact simulation
     # receipt with a successful boolean. Bind the receipt to the serialized
     # message already frozen by the full bank route builder.
