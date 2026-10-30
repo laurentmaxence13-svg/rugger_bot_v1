@@ -121,6 +121,8 @@ def inspect_forward_creations(report, events, rpc):
             signer_set = {key["pubkey"] for key in accounts if key["signer"]}
             launches = find_raydium_launches(parsed)
             raw_launches = compiled_launchlab_creations(raw)
+            signed_outer_only = compiled_launchlab_creations(dict(
+                raw, meta=dict(raw["meta"], innerInstructions=[])))
             key_fields = ("payer", "creator", "pool_state", "mint")
             def identities(rows):
                 return {tuple(row[field] for field in key_fields)
@@ -138,11 +140,18 @@ def inspect_forward_creations(report, events, rpc):
         receipt["exact_message_sha256"] = proof["exact_message_sha256"]
         receipt["cryptographic_signature_verified"] = True
         if raw_launches:
-            receipt["status"] = "SIGNED_CREATION_CANDIDATE"
+            # Outer instructions are covered by the Ed25519-signed message.
+            # Inner instructions exist only in provider-supplied RPC metadata.
+            outer_keys = identities(signed_outer_only)
+            receipt["status"] = (
+                "SIGNED_OUTER_CREATION_CANDIDATE"
+                if identities(raw_launches).issubset(outer_keys) else
+                "INNER_RPC_ATTESTED_CREATION_CANDIDATE")
             receipt["launches"] = [
                 dict(creator=v["creator"], payer=v["payer"],
                      pool=v["pool_state"], mint=v["mint"]) for v in raw_launches]
-            distinct_creators.update(v["creator"] for v in launches)
+            if receipt["status"] == "SIGNED_OUTER_CREATION_CANDIDATE":
+                distinct_creators.update(v["creator"] for v in raw_launches)
         else:
             receipt["status"] = "VERIFIED_NON_CREATION"
     counts = {}
@@ -156,7 +165,8 @@ def inspect_forward_creations(report, events, rpc):
         selection_rule="first_four_unfailed_logs_initialize_hint_priority_then_arrival",
         source_log_chain_sha256=report["signature_ledger_sha256"],
         status_counts=counts, records=records,
-        signed_creation_candidate_transactions=counts.get("SIGNED_CREATION_CANDIDATE", 0),
+        signed_creation_candidate_transactions=counts.get("SIGNED_OUTER_CREATION_CANDIDATE", 0),
+        inner_rpc_only_candidate_transactions=counts.get("INNER_RPC_ATTESTED_CREATION_CANDIDATE", 0),
         distinct_creator_claims_from_signed_transactions=len(distinct_creators),
         independently_verified_economic_creators=0,
         real_buy_sell_trades=0, market_price_at_decision_verified=False,
