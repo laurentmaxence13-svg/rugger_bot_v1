@@ -106,8 +106,18 @@ def main():
         report=asyncio.run(simulate_public_cpmm_sell())
     except Exception as exc:
         # Catch errors without displaying key-bearing HTTP URLs or inputs.
+        msg=str(exc)
+        # Only internally prefixed short diagnostic identifiers, never URLs,
+        # raw RPC data, account identities or API credentials.
+        allowed_prefixes=("helius_","cpmm_","CPMM_","RPC_","public_",
+                          "stale_","unsigned_","invalid_","source_",
+                          "wallet_","user_","simulation_","bank_",
+                          "token_","unexpected_","fee_")
+        safe_code=(msg if len(msg)<95 and msg.isascii()
+                   and msg.replace("_","").isalnum()
+                   and msg.startswith(allowed_prefixes) else "opaque_refusal")
         report=dict(status="REFUSED",phase="read_only_preflight",
-            diagnostic_type=type(exc).__name__,
+            diagnostic_type=type(exc).__name__,diagnostic_code=safe_code,
             financial_order_submitted=False,live_ready_to_arm=False,
             economic_edge_validated=False)
     print(json.dumps(report,sort_keys=True))
