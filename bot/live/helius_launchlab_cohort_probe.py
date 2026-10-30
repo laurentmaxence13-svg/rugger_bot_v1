@@ -25,7 +25,7 @@ from bot.scanner.transaction_parser import find_raydium_launches
 PAGE_LIMIT=20
 BODY_LIMIT=4
 RAW_OPTS=dict(encoding="json",commitment="finalized",
-              maxSupportedTransactionVersion=0)
+              maxSupportedTransactionVersion=1)
 PARSED_OPTS=dict(encoding="jsonParsed",commitment="finalized",
                  maxSupportedTransactionVersion=0)
 
@@ -64,8 +64,19 @@ def read_launchlab_creation_sample(rpc):
     creators=set()
     for row in chosen:
         sig=row["signature"];slot=row["slot"]
-        raw=rpc("getTransaction",[sig,RAW_OPTS])
-        parsed=rpc("getTransaction",[sig,PARSED_OPTS])
+        try:
+            raw=rpc("getTransaction",[sig,RAW_OPTS])
+            parsed=rpc("getTransaction",[sig,PARSED_OPTS])
+        except ValueError as exc:
+            # -32015 means the selected version could not be served under
+            # this client's explicit max-version request. Do not silently
+            # ignore unrelated errors (rate limiting, auth, TLS, malformed).
+            if (str(exc)=="helius_rpc_envelope_refused"
+                    and getattr(rpc,"last_rpc_error_code",None)==-32015):
+                report.append(dict(signature=sig,
+                    status="UNSUPPORTED_TRANSACTION_VERSION"))
+                continue
+            raise
         if raw is None or parsed is None:
             report.append(dict(signature=sig,status="TRANSACTION_NOT_AVAILABLE"))
             continue
