@@ -15,8 +15,10 @@ from bot.live.migration_evidence import (
     CURRENT_MIGRATION_FROM_SLOT, TOKEN_2022_PROGRAM,
     validate_migrate_to_cpswap_transaction)
 from test_live_migration_evidence import migration, SIG, MINT, OLD, NEW
-from test_live_signed_migration_reference import signed_rpc_migration
-from bot.live.solana_signatures import verify_compiled_rpc_signatures
+from test_live_signed_migration_reference import _TEST_PAYER, _TEST_POOL
+from cryptography.hazmat.primitives import serialization
+from bot.live.solana_signatures import (
+    compiled_message_bytes, verify_compiled_rpc_signatures)
 
 
 def modern_migration():
@@ -119,11 +121,67 @@ def test_current_permissioned_abi_invalid_accounts_fail_closed(change):
     assert assess(tx)["status"] == "UNKNOWN", change
 
 
-def test_current_permissioned_rpc_signature_binding_remains_cryptographic():
-    tx, signature = signed_rpc_migration(modern_migration())
-    assert assess(tx)["status"] == "STRUCTURAL_MIGRATION_RECEIPT"
+def signed_v0_current_migration():
+    # Full 38-account messages exceed the legacy static-keys size budget.
+    # Model the actual v0/ALT encoding instead of weakening wire limits.
+    parsed=modern_migration()
+    tx=deepcopy(parsed)
+    msg=tx["transaction"]["message"]
+    ix=msg["instructions"][0]
+    original=msg["accountKeys"]
+    names=[record["pubkey"] for record in original]
+    role_names=[names[index] for index in ix["accounts"]]
+    program=names[ix["programIdIndex"]]
+    # The 10 remaining roles are read/writable as dictated by the source
+    # accounts. Compress them into one synthetic public address table.
+    selected=set(role_names[28:])
+    ordered=sorted((item for item in original if item["pubkey"] not in selected),
+                   key=lambda k:(not k["signer"],not k["writable"]))
+    loaded_w=[item["pubkey"] for item in original
+              if item["pubkey"] in selected and item["writable"]]
+    loaded_r=[item["pubkey"] for item in original
+              if item["pubkey"] in selected and not item["writable"]]
+    static=[item["pubkey"] for item in ordered]
+    all_keys=static+loaded_w+loaded_r
+    assert len(set(all_keys))==len(all_keys)
+    msg["header"]=dict(
+        numRequiredSignatures=sum(item["signer"] for item in ordered),
+        numReadonlySignedAccounts=sum(item["signer"] and not item["writable"]
+                                      for item in ordered),
+        numReadonlyUnsignedAccounts=sum(not item["signer"] and not item["writable"]
+                                        for item in ordered))
+    assert msg["header"]["numRequiredSignatures"]==2
+    ix["accounts"]=[all_keys.index(name) for name in role_names]
+    ix["programIdIndex"]=all_keys.index(program)
+    payer=_encode(_TEST_PAYER.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw))
+    pool=_encode(_TEST_POOL.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw))
+    assert static[1]==NEW and pool==NEW
+    static[0]=payer
+    msg["accountKeys"]=static
+    msg["recentBlockhash"]=_encode(bytes([7])*32)
+    msg["addressTableLookups"]=[dict(
+        accountKey=_encode(bytes([98])*32),
+        writableIndexes=list(range(len(loaded_w))),
+        readonlyIndexes=list(range(len(loaded_r))))]
+    tx["version"]=0
+    tx["meta"]["loadedAddresses"]=dict(writable=loaded_w,readonly=loaded_r)
+    exact=compiled_message_bytes(tx)
+    tx["transaction"]["signatures"]=[
+        _encode(_TEST_PAYER.sign(exact)),
+        _encode(_TEST_POOL.sign(exact))]
     assert verify_compiled_rpc_signatures(tx)["cryptographic_signatures_verified"]
-    mutated = deepcopy(tx)
-    mutated["transaction"]["message"]["recentBlockhash"] = PROGRAM
+    return tx
+
+
+def test_current_permissioned_rpc_signature_binding_remains_cryptographic():
+    tx=signed_v0_current_migration()
+    assert assess(tx)["status"]=="STRUCTURAL_MIGRATION_RECEIPT"
+    assert verify_compiled_rpc_signatures(tx)["cryptographic_signatures_verified"]
+    mutated=deepcopy(tx)
+    mutated["transaction"]["message"]["recentBlockhash"]=PROGRAM
     with pytest.raises(ValueError):
         verify_compiled_rpc_signatures(mutated)
