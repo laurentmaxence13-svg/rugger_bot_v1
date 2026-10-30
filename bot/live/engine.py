@@ -143,6 +143,24 @@ def reconcile_transaction(row, payload):
         raise ValueError('complete_native_balances_required')
     for value in before + after:
         uint(value)
+    # RPC token-balance entries are indexed into the exact signed message.
+    # Reject boolean indices (bool is an int subclass), duplicates, records
+    # outside that message and malformed irrelevant entries. A forged extra
+    # entry must not be silently ignored merely because the position's own
+    # token-balance entry happens to be present and valid.
+    for label in ('preTokenBalances', 'postTokenBalances'):
+        token_entries = meta.get(label)
+        if type(token_entries) is not list:
+            raise ValueError('complete_token_balances_required')
+        observed_indices = set()
+        for entry in token_entries:
+            if type(entry) is not dict:
+                raise ValueError('finalized_token_balance_entry_invalid')
+            index = entry.get('accountIndex')
+            if (type(index) is not int or not 0 <= index < len(keys)
+                    or index in observed_indices):
+                raise ValueError('finalized_token_balance_account_index_invalid')
+            observed_indices.add(index)
     fee = uint(meta.get('fee'))
     if fee > order['network_fee_upper_lamports']:
         raise ValueError('actual_fee_exceeds_reserved_upper_bound')
