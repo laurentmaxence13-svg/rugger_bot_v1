@@ -120,3 +120,27 @@ def test_unsigned_or_unapproved_launch_discovery_cannot_query_helius(monkeypatch
             permitted("getSignaturesForAddress",[
                 addr,dict(limit=limit,commitment=finality)])
     assert opener.calls==[]
+
+
+@pytest.mark.parametrize("rpc_error_code,should_keep_as_unknown",[
+    (-32015,True),(-32602,False),(-32005,False)])
+def test_unsupported_transaction_version_is_an_explicit_sample_refusal(
+        rpc_error_code,should_keep_as_unknown):
+    class Unsupported(Fake):
+        last_rpc_error_code=None
+        def __call__(self,method,params):
+            if method=="getTransaction":
+                self.count+=1
+                self.methods.append(method)
+                self.last_rpc_error_code=rpc_error_code
+                raise ValueError("helius_rpc_envelope_refused")
+            return super().__call__(method,params)
+    rpc=Unsupported()
+    if should_keep_as_unknown:
+        out=c.read_launchlab_creation_sample(rpc)
+        assert out["records"][0]["status"]=="UNSUPPORTED_TRANSACTION_VERSION"
+        assert out["signed_creation_candidates"]==0
+        assert out["master_vs_reference_edge_validated"] is False
+    else:
+        with pytest.raises(ValueError,match="envelope"):
+            c.read_launchlab_creation_sample(rpc)
