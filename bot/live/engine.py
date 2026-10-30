@@ -288,9 +288,18 @@ class ExecutionEngine:
             raise ValueError('actual_rpc_endpoint_differs_from_authorized_endpoint')
         if await self.rpc.genesis_hash() != self.envelope.genesis_hash:
             raise ValueError('rpc_genesis_differs_from_authorized_cluster')
-        actual_fee = await self.rpc.get_fee_for_message(order.transaction.message)
-        if type(actual_fee) is not int or not 0 <= actual_fee <= order.network_fee_upper_lamports:
-            raise ValueError('message_fee_unknown_or_exceeds_reserved_upper_bound')
+        # Preflight alone is not financial admission: reprice the EXACT
+        # signed message against a bank no older than its market source.
+        # A raw fee integer without its causal RPC context cannot authorize
+        # a real send, even if it falls below the reserved maximum.
+        fee_receipt = await self.rpc.get_fee_for_message_receipt(
+            order.transaction.message,min_context_slot=order.source_slot)
+        if (type(fee_receipt) is not dict
+                or type(fee_receipt.get('context_slot')) is not int
+                or fee_receipt['context_slot'] < order.source_slot
+                or type(fee_receipt.get('value')) is not int
+                or not 0 < fee_receipt['value'] <= order.network_fee_upper_lamports):
+            raise ValueError('message_fee_unknown_noncausal_or_exceeds_reserved_upper_bound')
         balance = await self.rpc.get_balance(order.user)
         now = self.clock_ms()
         risk = self.journal.risk_snapshot(at=now, wallet_balance_lamports=balance,
