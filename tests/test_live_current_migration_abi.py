@@ -163,10 +163,15 @@ def signed_v0_current_migration():
     static[0]=payer
     msg["accountKeys"]=static
     msg["recentBlockhash"]=_encode(bytes([7])*32)
-    msg["addressTableLookups"]=[dict(
-        accountKey=_encode(bytes([98])*32),
-        writableIndexes=list(range(len(loaded_w))),
-        readonlyIndexes=list(range(len(loaded_r))))]
+    # Distinct synthetic lookup tables have independent address indices.
+    # This avoids duplicating an index within a single table while keeping
+    # the RPC concatenation order writable followed by readonly.
+    msg["addressTableLookups"]=[
+        dict(accountKey=_encode(bytes([98])*32),
+             writableIndexes=list(range(len(loaded_w))),readonlyIndexes=[]),
+        dict(accountKey=_encode(bytes([99])*32),
+             writableIndexes=[],readonlyIndexes=list(range(len(loaded_r)))),
+    ]
     tx["version"]=0
     tx["meta"]["loadedAddresses"]=dict(writable=loaded_w,readonly=loaded_r)
     exact=compiled_message_bytes(tx)
