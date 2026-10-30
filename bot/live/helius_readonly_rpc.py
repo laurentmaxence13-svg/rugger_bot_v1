@@ -17,6 +17,7 @@ from urllib.error import HTTPError, URLError
 
 from bot.live.readonly_plan import MAINNET_GENESIS
 from bot.p3.certification import PROGRAM
+from bot.p3.quotes import SOL_MINT
 
 HELIUS_RPC_ID = "https://mainnet.helius-rpc.com/"
 READ_METHODS = frozenset(("getGenesisHash", "getTransaction",
@@ -39,7 +40,8 @@ class HeliusReadOnlyRpc:
     endpoint = HELIUS_RPC_ID
 
     def __init__(self, key, *, max_calls=10, opener=None,
-                 allow_unsigned_preflight=False, allow_launch_discovery=False):
+                 allow_unsigned_preflight=False, allow_launch_discovery=False,
+                 allow_active_pool_scan=False):
         if (type(key) is not str or key == "COLLE_TA_CLE_ICI"
                 or _API_KEY.fullmatch(key) is None):
             raise ValueError("helius_api_key_missing_or_invalid")
@@ -53,6 +55,9 @@ class HeliusReadOnlyRpc:
             raise ValueError("explicit_unsigned_preflight_flag_required")
         if type(allow_launch_discovery) is not bool:
             raise ValueError('explicit_launch_discovery_flag_required')
+        if type(allow_active_pool_scan) is not bool:
+            raise ValueError('explicit_active_pool_scan_flag_required')
+        self._active_scan = allow_active_pool_scan
         self._discovery = allow_launch_discovery
         self._preflight = allow_unsigned_preflight
         self._max_calls = max_calls
@@ -66,11 +71,12 @@ class HeliusReadOnlyRpc:
 
     @classmethod
     def from_environment(cls, *, max_calls=10, allow_unsigned_preflight=False,
-                         allow_launch_discovery=False):
+                         allow_launch_discovery=False,allow_active_pool_scan=False):
         # Never fall back to any key read from a local .env.
         return cls(os.environ.get("HELIUS_API_KEY"), max_calls=max_calls,
                    allow_unsigned_preflight=allow_unsigned_preflight,
-                   allow_launch_discovery=allow_launch_discovery)
+                   allow_launch_discovery=allow_launch_discovery,
+                   allow_active_pool_scan=allow_active_pool_scan)
 
     def __repr__(self):
         return "HeliusReadOnlyRpc(endpoint='mainnet.helius-rpc.com',key='REDACTED')"
@@ -78,8 +84,17 @@ class HeliusReadOnlyRpc:
     def __call__(self, method, params):
         if method not in READ_METHODS and not (
                 self._preflight and method in UNSIGNED_PREFLIGHT_METHODS) and not (
-                self._discovery and method=="getSignaturesForAddress"):
+                self._discovery and method=="getSignaturesForAddress") and not (
+                self._active_scan and method=="getProgramAccounts"):
             raise ValueError("helius_only_explicit_allowlisted_read_methods")
+        if method == "getProgramAccounts":
+            required=[PROGRAM,dict(encoding="base64",commitment="confirmed",
+                 withContext=True,dataSlice=dict(offset=0,length=0),
+                 filters=[dict(dataSize=429),
+                     dict(memcmp=dict(offset=17,bytes="1")),
+                     dict(memcmp=dict(offset=237,bytes=SOL_MINT))])]
+            if not self._active_scan or params!=required:
+                raise ValueError("helius_active_pool_scan_requires_exact_filtered_program_query")
         if method == "getSignaturesForAddress":
             if (not self._discovery or type(params) is not list or len(params)!=2
                     or params[0]!=PROGRAM or type(params[1]) is not dict
