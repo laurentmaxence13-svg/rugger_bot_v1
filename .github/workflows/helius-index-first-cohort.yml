@@ -1,0 +1,50 @@
+name: Index-first prospective LaunchLab cohort (HELIUS READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'bot/p3/helius_index_prospective_cohort.py'
+      - 'tests/test_live_helius_index_prospective_cohort.py'
+      - '.github/workflows/helius-index-first-cohort.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-index-cohort-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frozen-index-selection-before-market-outcomes:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout immutable SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install pinned repository dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Select cohort from Raydium index before source accounts and S2
+        shell: bash
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.p3.helius_index_prospective_cohort
