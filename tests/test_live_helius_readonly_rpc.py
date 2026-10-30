@@ -101,3 +101,59 @@ def test_environment_reads_only_explicit_helius_secret(monkeypatch):
     rpc = HeliusReadOnlyRpc.from_environment()
     assert rpc.endpoint == HELIUS_RPC_ID
     assert KEY not in repr(rpc)
+
+
+def test_unsigned_simulation_requires_explicit_opt_in():
+    import base64
+    wire=bytes([1])+bytes(64)+bytes([2])*70
+    payload=[base64.b64encode(wire).decode(),dict(
+        encoding="base64",sigVerify=False,replaceRecentBlockhash=False,
+        commitment="confirmed",minContextSlot=100)]
+    opener=Opener()
+    rpc=HeliusReadOnlyRpc(KEY,opener=opener)
+    with pytest.raises(ValueError,match="allowlisted"):
+        rpc("simulateTransaction",payload)
+    assert opener.calls==[]
+
+
+def test_unsigned_simulation_rejects_nonzero_signatures_before_http():
+    import base64
+    wire=bytes([1])+bytes([42])*64+bytes([2])*70
+    payload=[base64.b64encode(wire).decode(),dict(
+        encoding="base64",sigVerify=False,replaceRecentBlockhash=False,
+        commitment="confirmed",minContextSlot=100)]
+    opener=Opener()
+    rpc=HeliusReadOnlyRpc(KEY,opener=opener,allow_unsigned_preflight=True)
+    with pytest.raises(ValueError,match="zero_signature"):
+        rpc("simulateTransaction",payload)
+    assert opener.calls==[]
+
+
+def test_unsigned_simulation_never_allows_signature_verify_or_blockhash_replacement():
+    import base64
+    wire=bytes([1])+bytes(64)+bytes([2])*70
+    args=[base64.b64encode(wire).decode(),dict(
+        encoding="base64",sigVerify=False,replaceRecentBlockhash=False,
+        commitment="confirmed",minContextSlot=100)]
+    opener=Opener()
+    rpc=HeliusReadOnlyRpc(KEY,opener=opener,allow_unsigned_preflight=True)
+    for option,value in (("sigVerify",True),("replaceRecentBlockhash",True),
+                         ("minContextSlot",0)):
+        mutated=[args[0],dict(args[1])]
+        mutated[1][option]=value
+        with pytest.raises(ValueError,match="nonreplacing"):
+            rpc("simulateTransaction",mutated)
+    assert opener.calls==[]
+
+
+def test_unsigned_simulation_with_zero_signatures_is_a_read_only_rpc():
+    import base64
+    wire=bytes([1])+bytes(64)+bytes([2])*70
+    args=[base64.b64encode(wire).decode(),dict(
+        encoding="base64",sigVerify=False,replaceRecentBlockhash=False,
+        commitment="confirmed",minContextSlot=100)]
+    opener=Opener()
+    rpc=HeliusReadOnlyRpc(KEY,opener=opener,allow_unsigned_preflight=True)
+    assert rpc("simulateTransaction",args)=="test-genesis"
+    assert json.loads(opener.calls[0][0].data)["method"]=="simulateTransaction"
+    assert KEY not in repr(rpc)
