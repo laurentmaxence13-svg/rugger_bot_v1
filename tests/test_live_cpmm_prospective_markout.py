@@ -104,15 +104,15 @@ def test_s2_wait_is_registered_before_future_bank(monkeypatch,capsys):
             self.count+=1;self.events.append(method)
             if method=="getGenesisHash":return MAINNET_GENESIS
             if self.count==2:
-                return dict(context=dict(slot=300),value=[p["accounts"][p["pool_address"]]])
+                return dict(context=dict(slot=458932885),value=[p["accounts"][p["pool_address"]]])
             if self.count==3:
-                return dict(context=dict(slot=301),value=[p["accounts"][k] for k in keys])
-            assert self.count==4 and params[1]["minContextSlot"]==302
+                return dict(context=dict(slot=458932886),value=[p["accounts"][k] for k in keys])
+            assert self.count==4 and params[1]["minContextSlot"]==458932887
             assert "REGISTERED_BEFORE_S2" in capsys.readouterr().out
-            return dict(context=dict(slot=303),value=[p["accounts"][k] for k in keys])
+            return dict(context=dict(slot=458932888),value=[p["accounts"][k] for k in keys])
     rpc=Fake()
     out=observe_prospective_two_banks(rpc,wait_seconds=1,sleep=lambda n:None)
-    assert out["first_slot"]==301 and out["second_slot"]==303
+    assert out["first_slot"]==458932886 and out["second_slot"]==458932888
     assert out["status"]=="UNCHANGED_BANK_FRICTION_ONLY"
     assert out["observed_pool_state_changed"] is False
     assert out["observed_independent_market_transition_count"]==0
