@@ -10,13 +10,15 @@ from bot.live.public_program_observer import SECONDARY_RPC
 from bot.live.readonly_plan import PUBLIC_MAINNET_RPC
 from bot.live.public_migration_discovery import MigrationReadOnlyRpc
 from bot.live.pinned_migration_probe import probe_pinned_migrations
+from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc, HELIUS_RPC_ID
+import os
 
 _COMPARE_FIELDS=("signature","slot","mint","launchlab_pool","cpmm_pool",
                  "migration_abi","signed_message_sha256","structural_role_sha256")
 
 def compare_pinned_provider_migrations(primary, secondary):
     if (getattr(primary,"endpoint",None)!=PUBLIC_MAINNET_RPC
-            or getattr(secondary,"endpoint",None)!=SECONDARY_RPC):
+            or getattr(secondary,"endpoint",None) not in (SECONDARY_RPC,HELIUS_RPC_ID)):
         raise ValueError("exact_two_approved_independent_RPC_endpoints_required")
     left=probe_pinned_migrations(primary)
     right=probe_pinned_migrations(secondary)
@@ -34,7 +36,7 @@ def compare_pinned_provider_migrations(primary, secondary):
             raise ValueError("cross_provider_signed_migration_evidence_disagreement")
     return dict(schema="rugger-cross-provider-mainnet-migration-v1",
         status="TWO_RPC_PROVIDERS_AGREE_ON_TWO_SIGNED_SOL_MIGRATIONS",
-        endpoints=(PUBLIC_MAINNET_RPC,SECONDARY_RPC),
+        endpoints=(PUBLIC_MAINNET_RPC,secondary.endpoint),
         rpc_calls_used=left["calls_used"]+right["calls_used"],
         verified_migrations=[{key:left_matches[sig][key] for key in _COMPARE_FIELDS}
                              for sig in sorted(left_matches)],
@@ -49,11 +51,12 @@ def main():
     try:
         report=compare_pinned_provider_migrations(
             MigrationReadOnlyRpc(endpoint=PUBLIC_MAINNET_RPC),
-            MigrationReadOnlyRpc(endpoint=SECONDARY_RPC))
+            (HeliusReadOnlyRpc.from_environment() if "HELIUS_API_KEY" in os.environ
+             else MigrationReadOnlyRpc(endpoint=SECONDARY_RPC)))
     except Exception as exc:
         report=dict(status="REFUSED",error_type=type(exc).__name__,
                     diagnostic_code=(str(exc) if str(exc).startswith("two_migration_proofs_from_both_providers_required:")
-                        else "other_refusal"),
+                        or str(exc).startswith("helius_") else "other_refusal"),
                     financial_order_submitted=False,live_ready_to_arm=False)
     print(json.dumps(report,sort_keys=True))
     return 0 if report["status"].startswith("TWO_RPC_PROVIDERS_AGREE") else 2
