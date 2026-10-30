@@ -13,7 +13,7 @@ from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 from bot.live.helius_active_launchlab_scan import discover_live_pool_account_page
 from bot.live.helius_active_launchlab_cohort import _followup_sell_from_snapshot
 from bot.p3.helius_index_prospective_cohort import _bank, _hash, BUY_LAMPORTS
-from bot.p3.launchlab import _pool, addresses_from_pool, analyze_snapshot
+from bot.p3.launchlab import _pool, addresses_from_pool, analyze_snapshot, SnapshotEvidenceError
 from bot.p3.quotes import SOL_MINT
 
 MAX_CANDIDATES=12
@@ -93,8 +93,22 @@ def screened_s1_capacity_then_s2(rpc, *, sleep=time.sleep, wait_seconds=WAIT_SEC
                     item["S1_sell_lamports"]=output["output_lamports"]
                     s1_eligible.append(dict(row,quantity=quantity,
                           S1_slot=bank_slot))
-            except (ValueError,TypeError,KeyError,AttributeError):
-                item["S1_capacity_reason"]="no_observed_exact_lot_sell_capacity"
+            except (ValueError,TypeError,KeyError,AttributeError) as error:
+                # Quotes against a PRE-BUY bank. A hypothetical purchase
+                # would change inventory; this refusal is NOT proof that a
+                # post-purchase position could never be sold.
+                reason=str(error) if isinstance(error,SnapshotEvidenceError) else ""
+                allowed=frozenset((
+                    "sell_exceeds_observed_outstanding_curve_tokens",
+                    "observed_exit_liquidity_insufficient",
+                    "invalid_curve_reserves",
+                    "active_constant_product_native_SOL_required",
+                    "sell_output_rounds_to_zero"))
+                item["S1_capacity_reason"]=(
+                    reason if reason in allowed else
+                    "no_observed_exact_lot_sell_capacity")
+                item["S1_sell_quote_scope"]="PRE_BUY_BANK_NOT_A_POST_BUY_EXECUTABLE_SELL"
+                item["S1_refusal_does_not_prove_real_exit_impossible"]=True
             observed.append(item)
     selected=[];seen_creator=set()
     for row in s1_eligible:
