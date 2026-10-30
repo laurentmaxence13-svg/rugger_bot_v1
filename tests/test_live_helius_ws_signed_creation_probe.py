@@ -81,7 +81,7 @@ def test_forward_classification_reports_signed_candidates_without_inventing_fill
     assert result["selected_before_receipt_lookup"] is True
     assert result["signed_creation_candidate_transactions"] == 5
     assert result["status_counts"]["FAILED_ON_CHAIN_IN_WS_NOTIFICATION"] == 1
-    assert result["status_counts"]["NOT_INSPECTED_RPC_BUDGET"] == 0
+    assert result["status_counts"].get("NOT_INSPECTED_RPC_BUDGET", 0) == 0
     assert [q[1][0] for q in rpc.calls if q[0] == "getTransaction"] == [
         SIGS[1], SIGS[3], SIGS[0], SIGS[4], SIGS[5]]
     assert result["market_price_at_decision_verified"] is False
