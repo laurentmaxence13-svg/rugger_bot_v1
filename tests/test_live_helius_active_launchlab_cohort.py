@@ -30,8 +30,8 @@ def test_three_creators_are_frozen_before_S1_and_S2(monkeypatch,capsys):
             risk_flags=[],blocking_reasons=[],conditional_projection=
             (dict(buy_output_atomic="500") if compute_projection else None))
     monkeypatch.setattr(a,"analyze_snapshot",analyze)
-    monkeypatch.setattr(a,"observed_sell_projection",
-        lambda pool,**kwargs:dict(output_lamports="9000000"))
+    monkeypatch.setattr(a,"_followup_sell_from_snapshot",
+        lambda analysis,quantity:dict(output_lamports="9000000"))
     # Discover mock consumes two calls, but the contract still uses shared RPC
     # for roots, S1 and S2: exact bank slots are verified by the real helper.
     class Rpc:
