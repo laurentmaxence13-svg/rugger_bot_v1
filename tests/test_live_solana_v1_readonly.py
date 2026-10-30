@@ -12,7 +12,7 @@ from bot.scanner.transaction_parser import _CREATE_DISCRIMINATORS
 
 
 def signed_receipt(*, tamper=False, unknown_mask=False, extra_byte=False,
-                   no_create=False):
+                   no_create=False, repeated_accounts=False):
     key = Ed25519PrivateKey.from_private_bytes(bytes([42]) * 32)
     payer = key.public_key().public_bytes(
         serialization.Encoding.Raw, serialization.PublicFormat.Raw)
@@ -31,8 +31,11 @@ def signed_receipt(*, tamper=False, unknown_mask=False, extra_byte=False,
         message += struct.pack("<I", 100000)
         message += struct.pack("<I", 65536)
     # program index 1; accounts at ids 0,2,3,4,5,6,7
-    message += bytes([1, 7]) + struct.pack("<H", len(instruction_data))
-    message += bytes([0, 2, 3, 4, 5, 6, 7]) + instruction_data
+    refs = [0, 2, 3, 4, 5, 6, 7]
+    if repeated_accounts:
+        refs += [2, 0, 6]
+    message += bytes([1, len(refs)]) + struct.pack("<H", len(instruction_data))
+    message += bytes(refs) + instruction_data
     signature = key.sign(bytes(message))
     wire = bytes(message) + signature + (b"\x00" if extra_byte else b"")
     if tamper:
@@ -94,3 +97,13 @@ def test_signature_slot_version_and_finality_guard():
     with pytest.raises(ValueError, match="slot_or_status_invalid"):
         mod.verify_v1_base64_receipt(bad, expected_signature=sig,
                                       expected_slot=10101)
+
+
+def test_v1_can_repeat_accounts_more_times_than_unique_keys():
+    # 10 references to only 8 unique keys: valid compiled instruction.
+    tx, sig = signed_receipt(repeated_accounts=True)
+    result = mod.verify_v1_base64_receipt(
+        tx, expected_signature=sig, expected_slot=10101)
+    assert len(result["account_keys"]) == 8
+    assert len(result["launched_candidates"]) == 1
+    assert result["compiled_outer_instructions"] == 1
