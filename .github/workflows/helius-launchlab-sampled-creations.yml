@@ -1,0 +1,51 @@
+name: Sample signed LaunchLab creation candidates (HELIUS READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/helius_launchlab_cohort_probe.py'
+      - 'bot/live/helius_readonly_rpc.py'
+      - 'tests/test_live_helius_launchlab_cohort_probe.py'
+      - '.github/workflows/helius-launchlab-sampled-creations.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-helius-launch-sample-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bounded-historical-sample:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout immutable commit without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Read 1 page and at most 4 signed historical transaction pairs
+        shell: bash
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.helius_launchlab_cohort_probe
