@@ -44,7 +44,12 @@ def probe_cpmm_pools(rpc):
         if ({pool["token_0_mint"],pool["token_1_mint"]}!={mint,SOL_MINT}
                 or pool["token_0_program"]!=TOKEN_PROGRAM
                 or pool["token_1_program"]!=TOKEN_PROGRAM):
-            raise ValueError("migrated_pool_is_not_classic_SPL_SOL_pair")
+            flags=(mint in (pool["token_0_mint"],pool["token_1_mint"]),
+                   SOL_MINT in (pool["token_0_mint"],pool["token_1_mint"]),
+                   pool["token_0_program"]==TOKEN_PROGRAM,
+                   pool["token_1_program"]==TOKEN_PROGRAM)
+            raise ValueError("migrated_pool_pair_program_flags_"+
+                             "".join(str(int(v)) for v in flags))
         pools.append(pool)
     others=[]
     for pool in pools:
