@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'tools/master_prospective_gate.py'
+      - 'bot/p3/signed_creation_forward_bank.py'
+      - 'tests/test_signed_creation_forward_bank.py'
       - 'tests/test_master_prospective_gate.py'
       - '.github/workflows/master-prospective-evidence.yml'
   workflow_dispatch:
@@ -33,6 +35,7 @@ jobs:
       - name: Adversarial no-invented-profit checks
         run: |
           python -m unittest discover -s tests -p test_master_prospective_gate.py -v
+          python -m unittest discover -s tests -p test_signed_creation_forward_bank.py -v
       - name: Missing data must be reported honestly
         run: |
           python -B tools/master_prospective_gate.py --output /tmp/master_no_data_gate.json
@@ -76,6 +79,14 @@ jobs:
         run: |
           sleep 8
           python -B -m bot.live.helius_ws_signed_creation_probe
+      - name: Freeze paired Master/reference decisions on signed creations before later S2 state
+        id: forward
+        if: steps.creations.outcome == 'success'
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.p3.signed_creation_forward_bank
       - name: Publish conservative reproducible progress report
         if: always()
         run: |
@@ -92,5 +103,6 @@ jobs:
             paper_artifacts/paper_helius_log_stream.json
             paper_artifacts/paper_helius_verified_creations.json
             paper_artifacts/master_prospective_gate.json
+            paper_artifacts/paper_signed_creations_asof_banks.json
           if-no-files-found: warn
           retention-days: 30
