@@ -1,0 +1,23 @@
+# READ ONLY / PAPER ONLY. Query successful LaunchLab creation and migration instructions.
+# No narrow 9-second window. Filter out sell_exact_in and TradeEvent.
+query RuggerBot_LaunchLab_Lifecycles {
+  Solana(dataset: realtime) {
+    Instructions(
+      limit: {count: 200}
+      orderBy: {descending: Block_Slot}
+      where: {
+        Instruction: {
+          Program: {
+            Address: {is: "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"}
+            Method: {in: ["initialize_v2", "initialize_with_token_2022", "migrate_to_cpswap", "migrate_to_amm"]}
+          }
+        }
+        Transaction: {Result: {Success: true}}
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction { Index Program {Method AccountNames} Accounts {Address} }
+    }
+  }
+}
