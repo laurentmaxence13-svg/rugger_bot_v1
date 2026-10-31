@@ -45,6 +45,7 @@ jobs:
           python -m pytest -q tests/test_live_helius_ws_forward_paper.py tests/test_live_helius_ws_signed_creation_probe.py
           python -m pytest -q tests/test_live_helius_launchlab_cohort_probe.py tests/test_live_solana_v1_readonly.py
           python -m pytest -q tests/test_live_helius_early_signed_s1s2.py
+          python -m unittest discover -s tests -p test_conditional_market_markout.py -v
       - name: Missing data must be reported honestly
         run: |
           python -B tools/master_prospective_gate.py --output /tmp/master_no_data_gate.json
@@ -103,6 +104,12 @@ jobs:
             --capture paper_artifacts/paper_helius_log_stream.json \
             --verified paper_artifacts/paper_helius_verified_creations.json \
             --output paper_artifacts/master_prospective_gate.json
+      - name: Audit causal S1/S2 conditional market markouts (not filled PnL)
+        if: steps.forward.outcome == 'success'
+        run: |
+          python -B -m bot.p3.conditional_market_markout \
+            --input paper_artifacts/paper_signed_creations_asof_banks.json \
+            --output paper_artifacts/conditional_signed_bank_markouts.json
       - name: Retain only public observations, no secrets or wallet data
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -113,6 +120,7 @@ jobs:
             paper_artifacts/paper_helius_verified_creations.json
             paper_artifacts/master_prospective_gate.json
             paper_artifacts/paper_signed_creations_asof_banks.json
+            paper_artifacts/conditional_signed_bank_markouts.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -193,11 +201,19 @@ jobs:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           python -B -m bot.live.helius_early_signed_s1s2
+      - name: Audit causal early S1/S2 conditional markouts (not filled PnL)
+        if: steps.early.outcome == 'success'
+        run: |
+          python -B -m bot.p3.conditional_market_markout \
+            --input paper_artifacts/helius_early_signed_s1_s2.json \
+            --output paper_artifacts/conditional_early_markouts.json
       - name: Keep bounded public early records; no keys or signed trades
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: master-early-confirmed-evidence-${{ github.run_id }}
-          path: paper_artifacts/helius_early_signed_s1_s2.json
+          path: |
+            paper_artifacts/helius_early_signed_s1_s2.json
+            paper_artifacts/conditional_early_markouts.json
           if-no-files-found: warn
           retention-days: 30
