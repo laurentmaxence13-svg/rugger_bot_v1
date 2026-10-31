@@ -70,6 +70,12 @@ class CausalMarkoutTests(unittest.TestCase):
         self.assertEqual(out["denominator_observations"],1)
         self.assertEqual(out["independently_identified_model_opportunities"],0)
 
+    def test_github_early_artifact_wrapper_keeps_ledger_hash_scope(self):
+        source=self.early()
+        out=audit_report({"events":[],"report":source})
+        self.assertEqual(out["independently_identified_model_opportunities"],1)
+        self.assertEqual(len(out["source_sha256"]),64)
+
     def test_signed_creator_bank_schema(self):
         src=self.early();r=src["attempts"][0]
         r["cryptographic_creation"]=True
