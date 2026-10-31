@@ -104,6 +104,68 @@ class SignedForwardBankTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"incorrect_mainnet_genesis"):
             signed_creator_asof_paper(c,v,lambda method,params:"bad-genesis")
     
+    def test_signed_creator_s1_frozen_before_s2_and_no_profit_promotion(self):
+        from unittest.mock import patch
+        import bot.p3.signed_creation_forward_bank as m
+        from bot.p3.certification import _encode
+        from bot.p3.quotes import SOL_MINT
+        from bot.live.readonly_plan import MAINNET_GENESIS
+        c,v=signed_pair()
+        def addr(n):return _encode(bytes([n])*32)
+        graph=dict(pool=POOL,config=addr(31),platform=addr(32),
+                   mint_a=MINT,mint_b=SOL_MINT,vault_a=addr(33),vault_b=addr(34))
+        frozen={"yes":False}
+        def snap(accounts,**kw):
+            if kw.get("compute_projection") is False:
+                return dict(evidence_profile="published_metadata_v1",blocking_reasons=[],
+                    risk_flags=[],facts=dict(pool=dict(status=0),config=dict(
+                    trade_fee_rate_ppm=2500,curve_type=0),platform=dict(
+                    platform_fee_rate_ppm=0,creator_fee_rate_ppm=0),
+                    quote_vault=dict(amount_atomic="1000000000")))
+            return dict(evidence_profile="published_metadata_v1",
+                blocking_reasons=[],risk_flags=[],
+                conditional_projection=dict(buy_output_atomic="200"))
+        class Rpc:
+            def __init__(self):self.count=0
+            def __call__(self,method,params):
+                self.count+=1
+                if self.count==1:
+                    self_test.assertEqual(method,"getGenesisHash")
+                    return MAINNET_GENESIS
+                self_test.assertEqual(method,"getMultipleAccounts")
+                if self.count==2:return dict(context=dict(slot=463809742),
+                                              value=[dict(root=1)])
+                if self.count==3:return dict(context=dict(slot=463809743),
+                    value=[dict(state="S1") for _ in params[0]])
+                self_test.assertTrue(frozen["yes"])
+                self_test.assertEqual(self.count,4)
+                self_test.assertEqual(params[1]["minContextSlot"],463809744)
+                return dict(context=dict(slot=463809744),
+                    value=[dict(state="S2") for _ in params[0]])
+        self_test=self
+        def stop_before_s2(seconds):
+            self.assertEqual(seconds,1)
+            frozen["yes"]=True
+        with (patch.object(m,"addresses_from_pool",return_value=graph),
+              patch.object(m,"analyze_snapshot",side_effect=snap),
+              patch.object(m,"observed_sell_projection",return_value=dict(
+                 output_lamports="900000000"))):
+            result=m.signed_creator_asof_paper(c,v,Rpc(),
+                sleep=stop_before_s2,clock_ms=lambda:1793475669400,
+                delay_seconds=1)
+        self.assertEqual(result["status"],
+            "TWO_CLOCK_MODEL_CAPTURE_COMPLETE_NOT_PROFITABILITY")
+        row=result["observations"][0]
+        self.assertTrue(result["freeze_completed_before_S2"])
+        self.assertEqual(row["frozen_decision_before_S2"]["reference_action"],
+            "WAIT_FOR_FEATURES")
+        self.assertNotEqual(row["frozen_decision_before_S2"]["master_action"],"ENTER")
+        self.assertEqual(row["s1_to_s2_conditional_curve_markout_lamports"],
+            "-100000000")
+        self.assertIsNone(result["master_net_pnl_lamports"])
+        self.assertIsNone(result["comparative_master_edge_lamports"])
+        self.assertFalse(result["promotion_allowed"])
+
     def test_master_missing_features_is_actual_blocking_policy(self):
         from bot.master_decision import MasterDecisionOrchestrator
         from tools.master_prospective_gate import _sha
