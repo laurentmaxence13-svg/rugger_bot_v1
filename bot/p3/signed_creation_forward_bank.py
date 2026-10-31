@@ -109,13 +109,30 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
     root_slot, root_accounts = _bank(rpc,[c["pool"] for c in candidates],root_floor)
     supported = []
     for c in candidates:
-        row=dict(c,root_slot=root_slot)
+        row=dict(c,root_slot=root_slot,
+                 creation_to_root_slot_gap=root_slot-c["source_slot"])
+        account=root_accounts.get(c["pool"])
         try:
-            graph=addresses_from_pool(root_accounts[c["pool"]],c["mint"],c["pool"])
-            if graph["mint_b"]!=SOL_MINT or len(set(graph.values()))!=7:
-                raise ValueError("not_unique_seven_account_SOL_graph")
+            if account is None:
+                row["root_refusal"]="pool_account_not_available"
+                raise ValueError("absent_root")
+            graph=addresses_from_pool(account,c["mint"],c["pool"])
+            if graph["mint_b"]!=SOL_MINT:
+                row["root_refusal"]="non_native_SOL_quote_mint"
+                raise ValueError("not_SOL_quoted")
+            if len(set(graph.values()))!=7:
+                row["root_refusal"]="duplicate_required_seven_account_graph"
+                raise ValueError("duplicate_accounts")
             row["graph"]=graph;supported.append(row)
-        except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
+        except SnapshotEvidenceError as error:
+            code=str(error)
+            allowed=frozenset(("pool_owner_or_executable_invalid",
+                "pool_encoding_invalid", "pool_unsupported_layout_length",
+                "pool_base_mint_mismatch", "invalid_public_address"))
+            row["root_refusal"]=code if code in allowed else "unqualified_root_pool_layout"
+            row["refusal"]="invalid_root_account_or_non_SOL_pool"
+        except (ValueError,KeyError,TypeError):
+            row.setdefault("root_refusal","root_pool_graph_refused")
             row["refusal"]="invalid_root_account_or_non_SOL_pool"
         report["observations"].append(row)
     keys=list(dict.fromkeys(key for row in supported for key in row["graph"].values()))
