@@ -1,20 +1,9 @@
 name: Prospective Master/Reference PAPER evidence (NO LIVE)
+# Heavy onchain experiments are opt-in. PR code pushes do not execute them.
+# On this research PR, add label 'run-master-evidence' to run once.
 on:
   pull_request:
-    paths:
-      - 'tools/master_prospective_gate.py'
-      - 'bot/live/helius_ws_forward_paper.py'
-      - 'bot/live/helius_early_signed_s1s2.py'
-      - 'tests/test_live_helius_early_signed_s1s2.py'
-      - 'bot/live/helius_ws_signed_creation_probe.py'
-      - 'bot/live/helius_launchlab_cohort_probe.py'
-      - 'tests/test_live_helius_launchlab_cohort_probe.py'
-      - 'tests/test_live_helius_ws_forward_paper.py'
-      - 'tests/test_live_helius_ws_signed_creation_probe.py'
-      - 'bot/p3/signed_creation_forward_bank.py'
-      - 'tests/test_signed_creation_forward_bank.py'
-      - 'tests/test_master_prospective_gate.py'
-      - '.github/workflows/master-prospective-evidence.yml'
+    types: [labeled]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +15,12 @@ concurrency:
 
 jobs:
   strict-offline-contract:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-master-evidence' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 4
     env:
