@@ -144,3 +144,40 @@ def test_unsupported_transaction_version_is_an_explicit_sample_refusal(
     else:
         with pytest.raises(ValueError,match="envelope"):
             c.read_launchlab_creation_sample(rpc)
+
+
+
+@pytest.mark.parametrize("fixture,expected",[
+    ({}, "SIGNED_CREATION_CANDIDATE"),
+    ({"no_create":True}, "VERIFIED_NON_CREATION"),
+    ({"tamper":True}, "SIGNATURE_OR_CREATION_REJECTED"),
+])
+def test_historical_v1_exact_signed_wire_no_legacy_jsonparsed_loss(fixture,expected):
+    from test_live_solana_v1_readonly import signed_receipt
+    v1,sig=signed_receipt(**fixture)
+    class V1ReadOnly:
+        def __init__(self):self.count=0;self.calls=[]
+        def __call__(self,method,params):
+            self.count+=1;self.calls.append(method)
+            assert self.count<=10
+            if method=="getGenesisHash":return MAINNET_GENESIS
+            if method=="getSignaturesForAddress":
+                return [dict(signature=sig,slot=10101,err=None)]
+            assert method=="getTransaction"
+            assert params[0]==sig
+            if params[1]["encoding"]=="json":
+                return dict(version=1,slot=10101,meta=dict(err=None),
+                            transaction=dict(signatures=[sig]))
+            assert params[1]["encoding"]=="base64"
+            assert params[1]["maxSupportedTransactionVersion"]==1
+            return v1
+    rpc=V1ReadOnly()
+    out=c.read_launchlab_creation_sample(rpc)
+    assert out["records"][0]["status"]==expected
+    assert out["records"][0].get("version")==1
+    assert out["signed_creation_candidates"]==(1 if expected=="SIGNED_CREATION_CANDIDATE" else 0)
+    assert out["independent_creators_economically_qualified"]==0
+    assert out["actual_buy_sell_cycles"]==0
+    assert out["financial_order_submitted"] is False
+    assert rpc.calls==["getGenesisHash","getSignaturesForAddress",
+                       "getTransaction","getTransaction"]
