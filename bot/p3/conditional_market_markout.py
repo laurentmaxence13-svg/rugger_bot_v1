@@ -54,6 +54,8 @@ def _source_row(row, schema, index):
                 reference_executed_pnl_lamports=None)
     freeze = row.get(freeze_key)
     if type(freeze) is not dict:
+        item["reason"] = (row.get("refusal") or row.get("root_refusal") or
+                          row.get("status") or "no_frozen_S1_decision")
         return item
     if schema == "rugger-early-confirmed-signed-S1S2-paper-v1":
         if len(row.get("signed_outer_creations", [])) != 1 or freeze.get("future_S2_consumed") is not False:
@@ -124,6 +126,12 @@ def _source_row(row, schema, index):
 
 
 def audit_report(source):
+    original = source
+    # Early GitHub artifact stores {events, report}; signed bank is raw report.
+    if type(source) is dict and set(source) == {"events", "report"}:
+        if type(source["events"]) is not list:
+            raise ValueError("invalid_capture_wrapper_events")
+        source = source["report"]
     if type(source) is not dict or source.get("schema") not in SUPPORTED:
         raise ValueError("unsupported_capture_schema")
     if (source.get("financial_order_submitted") is not False or
@@ -154,7 +162,7 @@ def audit_report(source):
         seen_signatures.add(item["signature"])
         results.append(item)
     count = sum(r["qualification"] == "CONDITIONAL_MODEL_ONLY" for r in results)
-    canonical = json.dumps(source, sort_keys=True, ensure_ascii=True, allow_nan=False).encode("utf8")
+    canonical = json.dumps(original, sort_keys=True, ensure_ascii=True, allow_nan=False).encode("utf8")
     return dict(schema="rugger-prospective-conditional-markout-audit-v1",
         source_schema=schema,
         source_sha256=hashlib.sha256(canonical).hexdigest(),
