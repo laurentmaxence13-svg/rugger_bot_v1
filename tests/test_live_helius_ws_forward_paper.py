@@ -104,3 +104,36 @@ def test_no_live_financial_execution_calls_in_subscribe_contract():
     assert "sendTransaction" not in serialized
     assert "simulateTransaction" not in serialized
     assert "wallet" not in serialized
+
+
+def test_success_only_retention_preserves_failed_denominator_and_hash():
+    a=mod.ReadOnlyLogAudit(7,2,successful_only=True)
+    assert not a.accept(message(SIG_A,slot=100,error={"InstructionError":[0]}),
+                        received_mono_ns=100,parsed_mono_ns=101,received_utc_ns=1000)
+    assert not a.accept(message(SIG_A,slot=100,error={"InstructionError":[0]}),
+                        received_mono_ns=102,parsed_mono_ns=103,received_utc_ns=1001)
+    assert a.accept(message(SIG_B,slot=101,logs=["Program log: Instruction: InitializeV2"]),
+                    received_mono_ns=104,parsed_mono_ns=105,received_utc_ns=1002)
+    r=a.report(duration_ms=1000,handshake_ms=10)
+    assert r["events_received_unique"]==1
+    assert r["unique_valid_notifications_seen"]==2
+    assert r["discarded_failed_notifications"]==1
+    assert r["onchain_failed_transactions_in_notifications"]==1
+    assert r["duplicates_ignored"]==1
+    assert r["retention_policy"]=="successful_only_with_failed_denominator"
+    assert len(r["signature_ledger_sha256"])==64
+    assert a.events[0]["signature"]==SIG_B
+    assert a.events[0]["untrusted_initialize_log_hint"] is True
+    from bot.live.helius_ws_signed_creation_probe import _verify_capture
+    _verify_capture(r,a.events)
+    assert r["financial_order_submitted"] is False
+
+
+def test_default_capture_still_retains_failed_notification():
+    a=mod.ReadOnlyLogAudit(7,2)
+    assert a.accept(message(SIG_A,error={"InstructionError":[0]}),
+                    received_mono_ns=100,parsed_mono_ns=101,received_utc_ns=1000)
+    r=a.report(duration_ms=1000,handshake_ms=10)
+    assert r["retention_policy"]=="all_notifications"
+    assert r["discarded_failed_notifications"]==0
+    assert r["onchain_failed_transactions_in_notifications"]==1
