@@ -23,7 +23,7 @@ def swap(slot, buy_token, price):
                 'Currency': {'MintAddress': mint, 'Symbol': 'TKN', 'Decimals': 6}}
     return {
         'Block': {'Slot': str(slot),
-                  'Time': '2026-10-31T18:29:%02dZ' % (slot - 100)},
+                  'Time': '2026-10-31T18:29:%02dZ' % (slot - 90)},
         'Transaction': {'Signature': 'signature-' + str(slot), 'Signer': 'signer-A'},
         'Trade': {
             'Dex': {'ProtocolName': 'raydium_launchpad', 'ProgramAddress': PROGRAM},
