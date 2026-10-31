@@ -233,8 +233,15 @@ def main():
         return 0
     except Exception as error:
         # No URLs, RPC errors or private client content in diagnostics.
+        trace=error.__traceback__
+        last_site=None
+        while trace is not None:
+            last_site=dict(function=trace.tb_frame.f_code.co_name,
+                           line=trace.tb_lineno,
+                           module=trace.tb_frame.f_globals.get("__name__","unknown"))
+            trace=trace.tb_next
         print(json.dumps(dict(status="REFUSED",
-            safe_error_class=type(error).__name__,
+            safe_error_class=type(error).__name__,safe_last_site=last_site,
             financial_order_submitted=False,live_ready_to_arm=False)))
         return 2
 
