@@ -3,7 +3,28 @@ import copy
 import unittest
 
 from bot.p3.signed_creation_forward_bank import (_select, signed_creator_asof_paper)
-from tests.test_master_prospective_gate import capture, verification
+from tools.master_prospective_gate import _sha
+
+
+def capture():
+    e={"signature":"2"*88,"slot":463809741,"reception_utc_ns":1793475669308381840,
+       "reception_monotonic_ns":1234567,"untrusted_initialize_log_hint":True,
+       "on_chain_transaction_failed":False,"filled":False}
+    return {"events":[e],"report":{"schema":"rugger-helius-program-log-forward-paper-v1",
+           "events_received_unique":1,"signature_ledger_sha256":_sha({"previous":"0"*64,"event":e}),
+           "financial_order_submitted":False}}
+
+
+def verification(c):
+    return {"schema":"rugger-mainnet-forward-captured-creation-check-v1",
+        "source_log_chain_sha256":c["report"]["signature_ledger_sha256"],
+        "first_phase_captured_logs":1,"status":"CAPTURE_VERIFIED_AND_RPC_INSPECTED",
+        "signed_creation_candidate_transactions":1,
+        "distinct_creator_claims_from_signed_transactions":1,
+        "financial_order_submitted":False,
+        "records":[{"signature":c["events"][0]["signature"],
+                    "status":"SIGNED_OUTER_CREATION_CANDIDATE"}]}
+
 
 MINT="5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"
 POOL="EwZxoy5QpQBxo13AHp9fvh11f49CanyFJXXmpSjVtpbP"
