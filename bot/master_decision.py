@@ -252,7 +252,8 @@ class MasterDecisionOrchestrator:
         if not capital_ok:blocked.append('capital_or_loss_limits_unavailable_or_reached')
         if extras is None:blocked.append('additional_costs_unknown')
         if evidence is None:blocked.append('qualified_past_edge_evidence_unavailable')
-        bank=frame.get('bank_state',{})
+        supplied_bank=frame.get('bank_state')
+        bank=supplied_bank if type(supplied_bank) is dict else {}
         source_qualified=assessment['bank_available'] and all(bank.get(k) is True for k in
             ('identity_qualified','supply_verified','creation_verified'))
         if not source_qualified:blocked.append('source_identity_supply_creation_unqualified')
