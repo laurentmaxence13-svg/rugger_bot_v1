@@ -1,18 +1,9 @@
 name: Bounded LaunchLab WebSocket forward PAPER probe (NO LIVE)
+# Explicit experiment only; never spend runner minutes on every PR update.
+# Label this PR 'run-ws-probe' to request a run; no orders are sent.
 on:
   pull_request:
-    paths:
-      - 'bot/live/helius_ws_forward_paper.py'
-      - 'tests/test_live_helius_ws_forward_paper.py'
-      - 'bot/live/helius_ws_signed_creation_probe.py'
-      - 'bot/live/compiled_launchlab.py'
-      - 'bot/live/solana_v1_readonly.py'
-      - 'tests/test_live_solana_v1_readonly.py'
-      - 'tests/test_live_compiled_launchlab.py'
-      - 'tests/test_live_helius_ws_signed_creation_probe.py'
-      - 'bot/live/helius_s1_capacity_then_s2.py'
-      - 'tests/test_live_helius_s1_capacity_then_s2.py'
-      - '.github/workflows/helius-ws-forward-paper.yml'
+    types: [labeled]
   workflow_dispatch:
 
 permissions:
@@ -27,6 +18,8 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-ws-probe' &&
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 3
@@ -54,6 +47,8 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-ws-probe' &&
        github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 3
