@@ -77,13 +77,13 @@ def test_forward_classification_reports_signed_candidates_without_inventing_fill
     rpc = Rpc(events)
     result = mod.inspect_forward_creations(report, events, rpc)
     assert result["first_phase_captured_logs"] == 6
-    assert result["selected_for_finalized_receipt"] == 4
+    assert result["selected_for_finalized_receipt"] == 5
     assert result["selected_before_receipt_lookup"] is True
-    assert result["signed_creation_candidate_transactions"] == 4
+    assert result["signed_creation_candidate_transactions"] == 5
     assert result["status_counts"]["FAILED_ON_CHAIN_IN_WS_NOTIFICATION"] == 1
-    assert result["status_counts"]["NOT_INSPECTED_RPC_BUDGET"] == 1
+    assert result["status_counts"].get("NOT_INSPECTED_RPC_BUDGET", 0) == 0
     assert [q[1][0] for q in rpc.calls if q[0] == "getTransaction"] == [
-        SIGS[1], SIGS[3], SIGS[0], SIGS[4]]
+        SIGS[1], SIGS[3], SIGS[0], SIGS[4], SIGS[5]]
     assert result["market_price_at_decision_verified"] is False
     assert result["economically_qualified_cycles"] == 0
     assert result["financial_order_submitted"] is False
@@ -99,7 +99,7 @@ def test_no_creation_is_factual_result_not_rpc_failure(monkeypatch):
     monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["signed_creation_candidate_transactions"] == 0
-    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
+    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 5
     assert result["economic_edge_validated"] is False
 
 
@@ -142,7 +142,7 @@ def test_fee_payer_not_compiled_signer_rejected(monkeypatch):
                                         [dict(pubkey=PROGRAM, signer=False)]))))
     monkeypatch.setattr(mod, "compiled_launchlab_creations", fake_creations)
     result = mod.inspect_forward_creations(report, events, Rpc(events))
-    assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 4
+    assert result["status_counts"]["SIGNATURE_OR_CREATION_IDENTITY_REFUSED"] == 5
     assert all(r["refusal_phase"] == "creation_payer_identity" and
                r["refusal_code"] == "verified_compiled_creation_identity_mismatch"
                for r in result["records"] if r["status"] ==
@@ -168,7 +168,7 @@ def test_absent_compiled_creation_cannot_be_invented(monkeypatch):
     monkeypatch.setattr(mod, "compiled_launchlab_creations", lambda _: [])
     result = mod.inspect_forward_creations(report, events, Rpc(events))
     assert result["signed_creation_candidate_transactions"] == 0
-    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 4
+    assert result["status_counts"]["VERIFIED_NON_CREATION"] == 5
     assert result["economic_edge_validated"] is False
 
 
@@ -203,3 +203,35 @@ def test_v1_real_signed_wire_fallback_accepts_only_cryptographically_verified_ou
     assert rpc.count == 3
     assert result["economically_qualified_cycles"] == 0
     assert result["live_ready_to_arm"] is False
+
+
+def test_eight_preselected_v1_double_receipts_respect_ten_call_budget(monkeypatch):
+    report, events = capture()
+    # All six are no-failure observations after dropping the single failed
+    # websocket notification from the selection pool.
+    class VersionOneRpc:
+        def __init__(self):
+            self.count=0
+            self.last_rpc_error_code=None
+        def __call__(self,method,params):
+            self.count+=1
+            assert self.count<=10
+            if method=="getGenesisHash":return MAINNET_GENESIS
+            assert method=="getTransaction"
+            row=next(x for x in events if x["signature"]==params[0])
+            if params[1]["encoding"]=="json":
+                return dict(fake_tx(params[0],row["slot"]),version=1)
+            return {"unused_mock_wire":True}
+    monkeypatch.setattr(mod,"verify_v1_base64_receipt",lambda wire,**kwargs:
+        dict(exact_message_sha256="d"*64,
+             signer_public_keys=[KEYS[0]],
+             launched_candidates=[]))
+    rpc=VersionOneRpc()
+    out=mod.inspect_forward_creations(report,events,rpc)
+    assert out["selected_for_finalized_receipt"]==4
+    assert out["inspection_candidates_preselected"]==5
+    assert out["uninspected_due_to_rpc_budget"]==1
+    assert out["status_counts"]["NOT_INSPECTED_RPC_BUDGET"]==1
+    assert out["status_counts"]["VERIFIED_NON_CREATION"]==4
+    assert rpc.count==9
+    assert out["financial_order_submitted"] is False
