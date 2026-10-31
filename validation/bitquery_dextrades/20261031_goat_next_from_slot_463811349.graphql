@@ -1,0 +1,37 @@
+# Cursor follows 97-row observation ending at slot 463811349 (2026-10-31 19:46:53 UTC).
+# Keep GE (not GT) and deduplicate (signature + instruction) to avoid losing same-slot trades.
+# Collect both token directions on any venue; owner address helps validate signer attribution.
+query RuggerBot_GOAT_NextWindow {
+  Solana(dataset: realtime) {
+    DEXTrades(
+      limit: {count: 200}
+      orderBy: {ascending: Block_Slot}
+      where: {
+        Block: {Slot: {ge: "463811349"}}
+        Transaction: {Result: {Success: true}}
+        any: [
+          {Trade: {Buy: {Currency: {MintAddress: {is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"}}}}},
+          {Trade: {Sell: {Currency: {MintAddress: {is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"}}}}}
+        ]
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction {ExternalSeqNumber InternalSeqNumber}
+      Trade {
+        Dex {ProtocolName ProgramAddress}
+        Market {MarketAddress}
+        Buy {
+          Amount
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+        Sell {
+          Amount
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+      }
+    }
+  }
+}
