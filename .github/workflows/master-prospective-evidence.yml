@@ -1,0 +1,96 @@
+name: Prospective Master/Reference PAPER evidence (NO LIVE)
+on:
+  pull_request:
+    paths:
+      - 'tools/master_prospective_gate.py'
+      - 'tests/test_master_prospective_gate.py'
+      - '.github/workflows/master-prospective-evidence.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-prospective-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  strict-offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout submitted commit without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Adversarial no-invented-profit checks
+        run: |
+          python -m unittest discover -s tests -p test_master_prospective_gate.py -v
+      - name: Missing data must be reported honestly
+        run: |
+          python -B tools/master_prospective_gate.py --output /tmp/master_no_data_gate.json
+
+  bounded-public-mainnet-observation:
+    needs: strict-offline-contract
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout source with credentials removed
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Read-only WebSocket dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Bound real LaunchLab log observation to 45 seconds
+        id: logs
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_ws_forward_paper --seconds 45 --max-events 100
+      - name: Verify finalized signed creation evidence, never infer a market fill
+        id: creations
+        if: steps.logs.outcome == 'success'
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          sleep 8
+          python -B -m bot.live.helius_ws_signed_creation_probe
+      - name: Publish conservative reproducible progress report
+        if: always()
+        run: |
+          python -B tools/master_prospective_gate.py \
+            --capture paper_artifacts/paper_helius_log_stream.json \
+            --verified paper_artifacts/paper_helius_verified_creations.json \
+            --output paper_artifacts/master_prospective_gate.json
+      - name: Retain only public observations, no secrets or wallet data
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-prospective-observation-${{ github.run_id }}
+          path: |
+            paper_artifacts/paper_helius_log_stream.json
+            paper_artifacts/paper_helius_verified_creations.json
+            paper_artifacts/master_prospective_gate.json
+          if-no-files-found: warn
+          retention-days: 30
