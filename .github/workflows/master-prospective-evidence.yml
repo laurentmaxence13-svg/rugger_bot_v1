@@ -4,6 +4,8 @@ on:
     paths:
       - 'tools/master_prospective_gate.py'
       - 'bot/live/helius_ws_forward_paper.py'
+      - 'bot/live/helius_early_signed_s1s2.py'
+      - 'tests/test_live_helius_early_signed_s1s2.py'
       - 'bot/live/helius_ws_signed_creation_probe.py'
       - 'bot/live/helius_launchlab_cohort_probe.py'
       - 'tests/test_live_helius_launchlab_cohort_probe.py'
@@ -47,6 +49,7 @@ jobs:
           python -m unittest discover -s tests -p test_signed_creation_forward_bank.py -v
           python -m pytest -q tests/test_live_helius_ws_forward_paper.py tests/test_live_helius_ws_signed_creation_probe.py
           python -m pytest -q tests/test_live_helius_launchlab_cohort_probe.py tests/test_live_solana_v1_readonly.py
+          python -m pytest -q tests/test_live_helius_early_signed_s1s2.py
       - name: Missing data must be reported honestly
         run: |
           python -B tools/master_prospective_gate.py --output /tmp/master_no_data_gate.json
@@ -158,5 +161,47 @@ jobs:
         with:
           name: master-independent-historical-creators-${{ github.run_id }}
           path: paper_artifacts/paper_public_observations/*.json
+          if-no-files-found: warn
+          retention-days: 30
+
+
+  early-confirmed-prospective-sensor:
+    # Keep after both finalized collectors to avoid key rate contention;
+    # this independent 45s run performs the confirmed probe DURING its stream.
+    needs: [strict-offline-contract, independent-finalized-creation-discovery]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout immutable public PAPER research source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared read-only dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Confirmed creation immediate S1 + frozen PAPER refusal before S2
+        id: early
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_early_signed_s1s2
+      - name: Keep bounded public early records; no keys or signed trades
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-early-confirmed-evidence-${{ github.run_id }}
+          path: paper_artifacts/helius_early_signed_s1_s2.json
           if-no-files-found: warn
           retention-days: 30
