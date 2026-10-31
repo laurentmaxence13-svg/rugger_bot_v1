@@ -91,6 +91,7 @@ def inspect_one_hint_early(event,rpc,*,sleep=time.sleep,clock_ms=lambda: time.ti
     rec=dict(signature=sig,source_slot=slot,
         event_received_at_ms=event["reception_utc_ns"]//1000000,
         early_probe_started_at_ms=at,receipt_commitment="confirmed",
+        confirmed_receipt_retry_count=0,
         discovery_log_hint=event["untrusted_initialize_log_hint"],
         source_log_is_only_untrusted_discovery=True,financial_order_submitted=False,
         finality_verified=False,economic_execution_verified=False,
@@ -103,6 +104,14 @@ def inspect_one_hint_early(event,rpc,*,sleep=time.sleep,clock_ms=lambda: time.ti
         raw=rpc("getTransaction",[sig,dict(
             encoding="json",commitment="confirmed",
             maxSupportedTransactionVersion=1)])
+        if raw is None and rpc.count<=MAX_RPC-6:
+            # One bounded retry for the observed signature; the independent
+            # WebSocket reader continues receiving events during this delay.
+            sleep(0.6)
+            rec["confirmed_receipt_retry_count"]=1
+            raw=rpc("getTransaction",[sig,dict(
+                encoding="json",commitment="confirmed",
+                maxSupportedTransactionVersion=1)])
         if raw is None:
             rec["status"]="CONFIRMED_RECEIPT_NOT_YET_AVAILABLE"
             return rec
@@ -243,7 +252,7 @@ async def bounded_early_capture(*,seconds=45,max_events=100,rpc=None,key=None):
         hint=row.get("untrusted_initialize_log_hint") is True
         if hint and hint_count<MAX_EXPLICIT_HINTS:
             hint_count+=1;reason="untrusted_initialize_hint"
-        elif fallback_count<MAX_FALLBACK:
+        elif not hint and fallback_count<MAX_FALLBACK:
             fallback_count+=1;reason="first_successful_log_no_required_hint"
         else:
             return
