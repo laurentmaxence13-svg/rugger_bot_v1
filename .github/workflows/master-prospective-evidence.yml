@@ -166,13 +166,14 @@ jobs:
 
 
   early-confirmed-prospective-sensor:
-    # Keep after both finalized collectors to avoid key rate contention;
-    # this independent 45s run performs the confirmed probe DURING its stream.
+    # Wait for historical discovery to finish, but do not suppress independent
+    # early evidence because optional historical RPC/artifact collection failed.
     needs: [strict-offline-contract, independent-finalized-creation-discovery]
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      always() && needs.strict-offline-contract.result == 'success' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     timeout-minutes: 4
     env:
