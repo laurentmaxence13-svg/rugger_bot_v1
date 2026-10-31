@@ -114,3 +114,46 @@ jobs:
             paper_artifacts/paper_signed_creations_asof_banks.json
           if-no-files-found: warn
           retention-days: 30
+
+
+  independent-finalized-creation-discovery:
+    # This is a historical discovery ledger, NEVER a prospective as-of entry.
+    # Keep it after forward observation to avoid concurrent Helius quota pressure.
+    needs: [strict-offline-contract, bounded-public-mainnet-observation]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_WRITE_PUBLIC_EVIDENCE: '1'
+    steps:
+      - name: Checkout public research source only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Declare verified cryptographic dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Independently inspect finalized historical LaunchLab creator candidates
+        id: historical
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_launchlab_cohort_probe
+      - name: Archive public read-only historical sample including source gaps
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-independent-historical-creators-${{ github.run_id }}
+          path: paper_artifacts/paper_public_observations/*.json
+          if-no-files-found: warn
+          retention-days: 30
