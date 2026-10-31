@@ -104,6 +104,21 @@ class SignedForwardBankTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"incorrect_mainnet_genesis"):
             signed_creator_asof_paper(c,v,lambda method,params:"bad-genesis")
     
+    def test_signed_creator_pool_absence_keeps_slot_gap_and_explicit_refusal(self):
+        from unittest.mock import patch
+        import bot.p3.signed_creation_forward_bank as m
+        from bot.live.readonly_plan import MAINNET_GENESIS
+        c,v=signed_pair()
+        with patch.object(m,"_bank",return_value=(c["events"][0]["slot"]+213,{POOL:None})):
+            r=m.signed_creator_asof_paper(c,v,
+                lambda method,params:MAINNET_GENESIS)
+        self.assertEqual(r["status"],"NO_VALID_POOL_ACCOUNT_GRAPHS")
+        self.assertEqual(r["observations"][0]["root_refusal"],
+                         "pool_account_not_available")
+        self.assertEqual(r["observations"][0]["creation_to_root_slot_gap"],213)
+        self.assertEqual(r["qualified_market_cycles"],0)
+        self.assertIsNone(r["master_net_pnl_lamports"])
+
     def test_signed_creator_s1_frozen_before_s2_and_no_profit_promotion(self):
         from unittest.mock import patch
         import bot.p3.signed_creation_forward_bank as m
