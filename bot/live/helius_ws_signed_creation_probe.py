@@ -23,7 +23,7 @@ from bot.live.solana_v1_readonly import verify_v1_base64_receipt
 from bot.p3.platform_admin_history import _signature
 from bot.live.helius_ws_forward_paper import _hash
 
-MAX_INSPECTIONS = 4
+MAX_INSPECTIONS = 8
 MAX_EVENTS = 100
 
 
@@ -84,9 +84,20 @@ def inspect_forward_creations(report, events, rpc):
                     "NOT_INSPECTED_RPC_BUDGET")))
     keyed = {item["signature"]: item for item in records}
     distinct_creators = set()
+    inspected = 0
     for item in chosen:
         sig = item["signature"]
         receipt = keyed[sig]
+        # Reserve capacity for a version-1 JSON+binary proof pair. RPC
+        # calls after this point must never exceed the explicit call cap.
+        # A missing call-count API is refused rather than silently unbounded.
+        used = getattr(rpc, 'count', None)
+        if type(used) is not int or used < 0:
+            raise ValueError('verified_rpc_call_budget_missing')
+        if used > 8:
+            receipt['status'] = 'NOT_INSPECTED_RPC_BUDGET'
+            continue
+        inspected += 1
         try:
             raw = rpc("getTransaction", [sig, RAW_OPTS])
         except ValueError as exc:
@@ -224,9 +235,11 @@ def inspect_forward_creations(report, events, rpc):
     return dict(schema="rugger-mainnet-forward-captured-creation-check-v1",
         status="CAPTURE_VERIFIED_AND_RPC_INSPECTED",
         first_phase_captured_logs=len(events),
-        selected_for_finalized_receipt=len(chosen),
+        selected_for_finalized_receipt=inspected,
+        inspection_candidates_preselected=len(chosen),
+        uninspected_due_to_rpc_budget=len(chosen)-inspected,
         selected_before_receipt_lookup=True,
-        selection_rule="first_four_unfailed_logs_initialize_hint_priority_then_arrival",
+        selection_rule="first_eight_unfailed_logs_initialize_hint_priority_then_arrival_budget_aware",
         source_log_chain_sha256=report["signature_ledger_sha256"],
         status_counts=counts, records=records,
         signed_creation_candidate_transactions=counts.get("SIGNED_OUTER_CREATION_CANDIDATE", 0),
@@ -257,7 +270,7 @@ def main():
         contents = json.loads(target.read_text(encoding="utf-8"))
         if type(contents) is not dict:
             raise ValueError("capture_envelope_invalid")
-        rpc = HeliusReadOnlyRpc.from_environment(max_calls=9)
+        rpc = HeliusReadOnlyRpc.from_environment(max_calls=10)
         report = inspect_forward_creations(contents["report"], contents["events"], rpc)
         result = root / "paper_artifacts" / "paper_helius_verified_creations.json"
         result.write_text(json.dumps(report, sort_keys=True) + "\n", encoding="utf-8")
