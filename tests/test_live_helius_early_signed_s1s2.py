@@ -40,7 +40,8 @@ class FakeRpc:
 
 def test_early_hint_without_confirmed_receipt_cannot_invent_price():
     rpc=FakeRpc(present=False)
-    out=m.inspect_one_hint_early(event(),rpc,clock_ms=lambda:1793475669500)
+    out=m.inspect_one_hint_early(event(),rpc,clock_ms=lambda:1793475669500,
+        sleep=lambda _:None)
     assert out["status"]=="CONFIRMED_RECEIPT_NOT_YET_AVAILABLE"
     assert "s1_slot" not in out
     assert out["qualified_master_cycle"] is False
@@ -169,4 +170,47 @@ def test_background_stream_records_preselected_hints_without_trading():
     assert result["qualified_economic_cycles"]==0
     assert result["master_net_pnl_lamports"] is None
     assert result["financial_order_submitted"] is False
-    assert rpc.count==3  # genesis and two confirmed receipt reads
+    assert rpc.count==5  # genesis and two confirmed reads per observed hint
+
+
+
+def test_nonhint_successful_logs_are_eligible_only_for_cryptographic_probe():
+    rpc=FakeRpc(present=False)
+    async def no_hints(seconds,maximum,key,*,successful_only,on_retained):
+        for n in (7,8,9):
+            row=dict(event(_encode(bytes([n])*64)),
+                     untrusted_initialize_log_hint=False)
+            on_retained(row)
+        return dict(events_received_unique=3,
+                    signature_ledger_sha256="a"*64),[]
+    with patch.object(m,"observe",side_effect=no_hints):
+        out,_=asyncio.run(m.bounded_early_capture(
+            seconds=10,max_events=100,rpc=rpc,key="test-only"))
+    assert len(out["selected"])==2
+    assert len(out["attempts"])==2
+    assert all(x["selection_reason"]=="first_successful_log_no_required_hint"
+               for x in out["selected"])
+    assert all(x["status"]=="CONFIRMED_RECEIPT_NOT_YET_AVAILABLE"
+               for x in out["attempts"])
+    assert out["qualified_economic_cycles"]==0
+    assert out["master_net_pnl_lamports"] is None
+    assert out["financial_order_submitted"] is False
+
+
+def test_one_bounded_retry_does_not_turn_unavailable_receipt_into_profit():
+    class RetryRpc:
+        count=0
+        def __call__(self,method,args):
+            self.count+=1
+            assert self.count<=2
+            return None
+    rpc=RetryRpc()
+    pauses=[]
+    row=dict(event(),untrusted_initialize_log_hint=False)
+    result=m.inspect_one_hint_early(row,rpc,sleep=lambda s:pauses.append(s))
+    assert pauses==[0.6]
+    assert result["confirmed_receipt_retry_count"]==1
+    assert result["status"]=="CONFIRMED_RECEIPT_NOT_YET_AVAILABLE"
+    assert result["discovery_log_hint"] is False
+    assert result["master_net_pnl_lamports"] is None
+    assert rpc.count==2
