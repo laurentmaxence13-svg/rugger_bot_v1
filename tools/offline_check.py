@@ -23,7 +23,9 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
         if relative.is_absolute() or ".." in relative.parts:
             raise SystemExit("Unsafe source path")
         if relative.parts[0] not in ("bot", "tests"):
-            continue
+            # Explicit audit-only allowlist; do not import arbitrary tools, secrets or config.
+            if relative.as_posix() != "tools/bitquery_dextrades_markout.py":
+                continue
         if relative.parts[:2] in (("bot", "bot"), ("tests", "tests")):
             continue
         if relative.suffix not in (".py", ".json"):
