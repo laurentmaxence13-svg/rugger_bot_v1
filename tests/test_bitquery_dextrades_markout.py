@@ -2,9 +2,17 @@
 import unittest
 from decimal import Decimal
 
-from tools.bitquery_dextrades_markout import (
-    BUY, SELL, make_report, parse_rows, WSOL, PROGRAMS,
-)
+from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
+
+# The isolated CI runner does not add the repo root to sys.path.
+module_path = Path(__file__).resolve().parents[1] / 'tools' / 'bitquery_dextrades_markout.py'
+spec = spec_from_file_location('rugger_bitquery_dextrades_markout', module_path)
+module = module_from_spec(spec)
+spec.loader.exec_module(module)
+BUY, SELL = module.BUY, module.SELL
+make_report, parse_rows = module.make_report, module.parse_rows
+WSOL, PROGRAMS = module.WSOL, module.PROGRAMS
 
 MINT = 'DoNotUseThisAsATokenMint0000000000000000000001'
 POOL = 'SyntheticPoolResearchOnly'
