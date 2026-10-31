@@ -26,6 +26,8 @@ from bot.p3.quotes import SOL_MINT
 from bot.master_decision import MasterDecisionOrchestrator
 
 MAX_HINTS=4
+MAX_FALLBACK=2
+MAX_EXPLICIT_HINTS=2
 MAX_RPC=10
 S2_DELAY_SECONDS=5
 OUTPUT="paper_artifacts/helius_early_signed_s1_s2.json"
@@ -77,18 +79,19 @@ def signed_receipt_proof(raw, signature, slot, rpc, *, commitment):
 
 
 def inspect_one_hint_early(event,rpc,*,sleep=time.sleep,clock_ms=lambda: time.time_ns()//1000000):
-    """Use the observed event, never future prices, to select this read-only probe."""
+    """Use the received successful event, never future prices, to select this probe."""
     if (type(event) is not dict or
             event.get("on_chain_transaction_failed") is not False or
-            event.get("untrusted_initialize_log_hint") is not True or
+            type(event.get("untrusted_initialize_log_hint")) is not bool or
             type(event.get("slot")) is not int or event["slot"]<=0):
-        raise ValueError("early_selection_requires_successful_capture_hint")
+        raise ValueError("early_selection_requires_successful_captured_event")
     from bot.p3.platform_admin_history import _signature
     sig=_signature(event.get("signature"));slot=event["slot"]
     at=clock_ms()
     rec=dict(signature=sig,source_slot=slot,
         event_received_at_ms=event["reception_utc_ns"]//1000000,
         early_probe_started_at_ms=at,receipt_commitment="confirmed",
+        discovery_log_hint=event["untrusted_initialize_log_hint"],
         source_log_is_only_untrusted_discovery=True,financial_order_submitted=False,
         finality_verified=False,economic_execution_verified=False,
         qualified_master_cycle=False,master_net_pnl_lamports=None,
@@ -231,12 +234,23 @@ async def bounded_early_capture(*,seconds=45,max_events=100,rpc=None,key=None):
     queue=asyncio.Queue(maxsize=MAX_HINTS)
     records=[]
     selection=[]
+    fallback_count=0
+    hint_count=0
     def enqueue(row):
-        if (len(selection)<MAX_HINTS and row.get("untrusted_initialize_log_hint")
-                and not row.get("on_chain_transaction_failed")):
-            selection.append(dict(signature=row["signature"],slot=row["slot"],
-                received_at_ms=row["reception_utc_ns"]//1000000))
-            queue.put_nowait(row)
+        nonlocal fallback_count,hint_count
+        if len(selection)>=MAX_HINTS or row.get("on_chain_transaction_failed"):
+            return
+        hint=row.get("untrusted_initialize_log_hint") is True
+        if hint and hint_count<MAX_EXPLICIT_HINTS:
+            hint_count+=1;reason="untrusted_initialize_hint"
+        elif fallback_count<MAX_FALLBACK:
+            fallback_count+=1;reason="first_successful_log_no_required_hint"
+        else:
+            return
+        selection.append(dict(signature=row["signature"],slot=row["slot"],
+            received_at_ms=row["reception_utc_ns"]//1000000,
+            selection_reason=reason))
+        queue.put_nowait(row)
     async def worker():
         while True:
             row=await queue.get()
@@ -262,7 +276,7 @@ async def bounded_early_capture(*,seconds=45,max_events=100,rpc=None,key=None):
             await queue.put(None)
         await task
     return dict(schema="rugger-early-confirmed-signed-S1S2-paper-v1",
-        selection_rule="first_four_successful_initialize_log_hints_as_received",
+        selection_rule="first_two_successful_fallback_and_two_initialize_hints_as_received",
         selected_before_rpc=len(selection),selected=selection,
         attempts=records,forward_log_report=report,
         forward_log_sha256=report["signature_ledger_sha256"],
