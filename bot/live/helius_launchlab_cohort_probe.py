@@ -19,6 +19,7 @@ from bot.p3.platform_admin_history import _signature
 from bot.live.readonly_plan import MAINNET_GENESIS
 from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
+from bot.live.solana_v1_readonly import verify_v1_base64_receipt
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.scanner.transaction_parser import find_raydium_launches
 
@@ -66,6 +67,41 @@ def read_launchlab_creation_sample(rpc):
         sig=row["signature"];slot=row["slot"]
         try:
             raw=rpc("getTransaction",[sig,RAW_OPTS])
+            # A v1 JSON message cannot be parsed with the legacy jsonParsed
+            # max-version-zero request. Verify the exact binary Ed25519 wire
+            # instead, within the same two-read-per-candidate RPC budget.
+            if type(raw) is dict and raw.get("version")==1:
+                wire=rpc("getTransaction",[sig,dict(
+                    encoding="base64",commitment="finalized",
+                    maxSupportedTransactionVersion=1)])
+                if wire is None:
+                    report.append(dict(signature=sig,
+                        status="TRANSACTION_NOT_AVAILABLE"))
+                    continue
+                try:
+                    proof=verify_v1_base64_receipt(
+                        wire,expected_signature=sig,expected_slot=slot)
+                    launches=proof["launched_candidates"]
+                    if any(x["payer"] not in proof["signer_public_keys"]
+                           for x in launches):
+                        raise ValueError("v1_creation_payer_not_signer")
+                    if launches:
+                        creators.update(x["creator"] for x in launches)
+                        report.append(dict(signature=sig,
+                            status="SIGNED_CREATION_CANDIDATE",slot=slot,
+                            exact_message_sha256=proof["exact_message_sha256"],
+                            version=1,
+                            launches=[dict(mint=x["mint"],creator=x["creator"],
+                                pool=x["pool"]) for x in launches]))
+                    else:
+                        report.append(dict(signature=sig,
+                            status="VERIFIED_NON_CREATION",slot=slot,
+                            exact_message_sha256=proof["exact_message_sha256"],
+                            version=1))
+                except (ValueError,TypeError,KeyError,IndexError,AttributeError):
+                    report.append(dict(signature=sig,
+                        status="SIGNATURE_OR_CREATION_REJECTED",version=1))
+                continue
             parsed=rpc("getTransaction",[sig,PARSED_OPTS])
         except ValueError as exc:
             # -32015 means the selected version could not be served under
