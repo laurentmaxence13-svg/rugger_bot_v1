@@ -1,5 +1,6 @@
 """No-network / no-wallet regression tests for DEXTrades observed-markout audit."""
 import unittest
+from decimal import Decimal
 
 from tools.bitquery_dextrades_markout import (
     BUY, SELL, make_report, parse_rows, WSOL, PROGRAMS,
@@ -12,7 +13,7 @@ POOL = 'SyntheticPoolResearchOnly'
 def event(event_id, slot, second, direction, price, pool=POOL):
     """Synthetic equal-quantity swaps; price is WSOL per token."""
     token_amount = '100'
-    wsol_amount = str(price * 100)
+    wsol_amount = str(Decimal(str(price)) * Decimal('100'))
     buy = direction == BUY
     return {
         'event_id': event_id,
