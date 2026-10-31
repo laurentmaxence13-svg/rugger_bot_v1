@@ -104,6 +104,21 @@ class SignedForwardBankTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,"incorrect_mainnet_genesis"):
             signed_creator_asof_paper(c,v,lambda method,params:"bad-genesis")
     
+    def test_master_missing_features_is_actual_blocking_policy(self):
+        from bot.master_decision import MasterDecisionOrchestrator
+        from tools.master_prospective_gate import _sha
+        at=1793475669309
+        frame=dict(id="unknown-s1-"+_sha([MINT,at]),mint=MINT,pool=POOL,
+            creator=CREATOR,detected_at_ms=at-1000,
+            available_at_ms=at,source_slot=463809850,
+            slot_available_at_ms=at,data_kind="market_observation",
+            features=None,features_available_at_ms=None,health=None,
+            independent_buyers=None,bank_state=None)
+        result=MasterDecisionOrchestrator().evaluate(frame,[],inventory=None,
+            health=None,capital=None)
+        self.assertNotEqual(result["action"],"ENTER")
+        self.assertIn("features_unknown",result["reasons"])
+
     def test_no_sleep_for_empty_cohort(self):
         c,v=signed_pair()
         v["records"][0]["status"]="VERIFIED_NON_CREATION"
