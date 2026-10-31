@@ -51,13 +51,17 @@ def _percentile(values, percent):
 
 class ReadOnlyLogAudit:
     """Bounded, deterministic parser; signature IDs are public, not wallets."""
-    def __init__(self, subscription, maximum):
+    def __init__(self, subscription, maximum, *, successful_only=False):
         if type(subscription) is not int or subscription < 0:
             raise ValueError("invalid_subscription")
         if type(maximum) is not int or not 1 <= maximum <= 200:
             raise ValueError("invalid_event_cap")
+        if type(successful_only) is not bool:
+            raise ValueError("explicit_success_retention_flag_required")
         self.subscription = subscription
         self.maximum = maximum
+        self.successful_only = successful_only
+        self.discarded_failed_notifications = 0
         self.events = []
         self.seen = set()
         self.duplicates = 0
@@ -101,6 +105,10 @@ class ReadOnlyLogAudit:
         if len(self.events) >= self.maximum:
             raise ValueError("bounded_event_cap_reached")
         self.seen.add(signature)
+        if self.successful_only and tx["err"] is not None:
+            self.discarded_failed_notifications += 1
+            self.failed_on_chain += 1
+            return False
         # A provider log string is only a discovery hint. User programs can
         # emit similar strings, so it can never certify a creation.
         hint = any(type(line) is str and
@@ -133,6 +141,12 @@ class ReadOnlyLogAudit:
             source_program=PROGRAM, source_commitment="confirmed",
             observation_scope="program_logs_not_verified_new_token_creations",
             events_received_unique=len(self.events),
+            retention_policy=("successful_only_with_failed_denominator" if self.successful_only
+                              else "all_notifications"),
+            unique_valid_notifications_seen=len(self.seen),
+            discarded_failed_notifications=self.discarded_failed_notifications,
+            unretained_successful_notifications=0,
+            websocket_gaps_excluded_from_denominator_unknown=True,
             duplicates_ignored=self.duplicates, invalid_notifications=self.invalid,
             onchain_failed_transactions_in_notifications=self.failed_on_chain,
             signature_ledger_sha256=self.chain,
@@ -154,7 +168,7 @@ class ReadOnlyLogAudit:
                          "No hypothetical BUY/SELL fill or PnL"])
 
 
-async def observe(seconds, maximum, api_key):
+async def observe(seconds, maximum, api_key, *, successful_only=False):
     """One bounded subscription, public message only, no secret emitted."""
     from websockets.asyncio.client import connect
     if type(seconds) is not int or not 10 <= seconds <= 60:
@@ -173,9 +187,10 @@ async def observe(seconds, maximum, api_key):
         ack = await asyncio.wait_for(socket.recv(), timeout=8)
         subscription = parse_subscription_ack(ack)
         handshake = max(0, (time.monotonic_ns()-start)//1_000_000)
-        audit = ReadOnlyLogAudit(subscription, maximum)
+        audit = ReadOnlyLogAudit(subscription, maximum, successful_only=successful_only)
         deadline = time.monotonic_ns() + seconds*1_000_000_000
-        while len(audit.events) < maximum:
+        raw_valid_cap = 4000
+        while len(audit.events) < maximum and len(audit.seen) < raw_valid_cap:
             remaining = (deadline-time.monotonic_ns())/1_000_000_000
             if remaining <= 0:
                 break
@@ -189,18 +204,24 @@ async def observe(seconds, maximum, api_key):
             audit.accept(message, received_mono_ns=received_mono_ns,
                          received_utc_ns=received_utc_ns,
                          parsed_mono_ns=time.monotonic_ns())
-    return audit.report(duration_ms=(time.monotonic_ns()-start)//1_000_000,
-                        handshake_ms=handshake), audit.events
+    report = audit.report(duration_ms=(time.monotonic_ns()-start)//1_000_000,
+                          handshake_ms=handshake)
+    report["bounded_raw_notification_cap"] = 4000
+    report["raw_cap_reached"] = len(audit.seen) >= 4000
+    report["retention_hit_100_before_horizon"] = len(audit.events) >= maximum
+    return report, audit.events
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seconds", type=int, default=25)
     parser.add_argument("--max-events", type=int, default=100)
+    parser.add_argument("--successful-only", action="store_true")
     args = parser.parse_args(argv)
     try:
         report, events = asyncio.run(observe(
-            args.seconds, args.max_events, os.environ.get("HELIUS_API_KEY")))
+            args.seconds, args.max_events, os.environ.get("HELIUS_API_KEY"),
+            successful_only=args.successful_only))
         # Persist bounded public IDs and timestamps, never provider credentials.
         if os.environ.get("GITHUB_ACTIONS") == "true":
             root = Path(os.environ["GITHUB_WORKSPACE"]).resolve(strict=True)
