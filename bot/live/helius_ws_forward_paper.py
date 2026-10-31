@@ -168,7 +168,7 @@ class ReadOnlyLogAudit:
                          "No hypothetical BUY/SELL fill or PnL"])
 
 
-async def observe(seconds, maximum, api_key, *, successful_only=False):
+async def observe(seconds, maximum, api_key, *, successful_only=False, on_retained=None):
     """One bounded subscription, public message only, no secret emitted."""
     from websockets.asyncio.client import connect
     if type(seconds) is not int or not 10 <= seconds <= 60:
@@ -177,6 +177,8 @@ async def observe(seconds, maximum, api_key, *, successful_only=False):
         raise ValueError("invalid_maximum")
     if type(api_key) is not str or not re.fullmatch(r"[A-Za-z0-9_-]{10,256}", api_key):
         raise ValueError("invalid_provider_secret")
+    if on_retained is not None and not callable(on_retained):
+        raise ValueError("retained_callback_must_be_callable")
     # Fixed official host; secret never printed or embedded in reports.
     endpoint = "wss://" + _ENDPOINT_HOST + "/?api-key=" + api_key
     start = time.monotonic_ns()
@@ -201,9 +203,13 @@ async def observe(seconds, maximum, api_key, *, successful_only=False):
                 continue
             received_mono_ns = time.monotonic_ns()
             received_utc_ns = time.time_ns()
-            audit.accept(message, received_mono_ns=received_mono_ns,
-                         received_utc_ns=received_utc_ns,
-                         parsed_mono_ns=time.monotonic_ns())
+            retained=audit.accept(message, received_mono_ns=received_mono_ns,
+                                  received_utc_ns=received_utc_ns,
+                                  parsed_mono_ns=time.monotonic_ns())
+            if retained and on_retained is not None:
+                # Caller may only enqueue the already immutable public event;
+                # expensive RPC processing must not block this websocket loop.
+                on_retained(dict(audit.events[-1]))
     report = audit.report(duration_ms=(time.monotonic_ns()-start)//1_000_000,
                           handshake_ms=handshake)
     report["bounded_raw_notification_cap"] = 4000
