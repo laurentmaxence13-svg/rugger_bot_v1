@@ -121,12 +121,20 @@ def venue_audit(events, *, expected_tail):
         plausible_gap = bool(stage == "launchlab_curve_active_status_observed"
             and initial_refused)
         curve_diagnostics=curve_exit_diagnostics(events,mint)
+        # Missing follow-up banks, insufficient observed curve circulation and
+        # unsupported layouts remain distinct. Do not aggregate them into
+        # a misleading claim of market illiquidity.
+        reasons=Counter(item.get('reason','reason_unknown') for item in curve_diagnostics
+                        if item.get('curve_estimate_available') is not True)
+        if not curve_diagnostics:
+            reasons['no_projected_inventory_or_curve_diagnostic']=1
         counts[stage]+=1
         cases.append(dict(ordinal=ordinal,mint=mint,stage=stage,
             stage_observations=stages,trade_api_sell_observations=responses,
             trade_api_refusal_counts=dict(sorted(failures.items())),
             active_curve_trade_api_coverage_gap_plausible=plausible_gap,
             observed_curve_sell_diagnostics=curve_diagnostics,
+            observed_curve_sell_unqualified_reasons=dict(sorted(reasons.items())),
             observed_curve_sell_estimates=sum(1 for item in curve_diagnostics
                  if item.get('curve_estimate_available') is True),
             trade_api_refusal_proves_onchain_illiquidity=False,
@@ -138,6 +146,9 @@ def venue_audit(events, *, expected_tail):
             c["active_curve_trade_api_coverage_gap_plausible"] for c in cases),
         trade_api_refusal_proves_onchain_illiquidity=False,
         observed_curve_sell_estimates=sum(c['observed_curve_sell_estimates'] for c in cases),
+        observed_curve_sell_unqualified_reason_counts=dict(sorted(
+            sum((Counter(c['observed_curve_sell_unqualified_reasons']) for c in cases),
+                Counter()).items())),
         curve_sell_basis='observed_bank_conditional_without_projected_own_buy_not_executable',
         venue_aware_executable_cycle_count=0,
         strategy_profitability_verified=False,live_ready_to_arm=False,
@@ -159,6 +170,7 @@ def replay(db_path, output_path):
         active_curve_trade_api_coverage_gap_candidates=report[
             "active_curve_trade_api_coverage_gap_candidates"],
         observed_curve_sell_estimates=report['observed_curve_sell_estimates'],
+        observed_curve_sell_unqualified_reason_counts=report['observed_curve_sell_unqualified_reason_counts'],
         venue_aware_executable_cycle_count=0,
         strategy_profitability_verified=False)
 
