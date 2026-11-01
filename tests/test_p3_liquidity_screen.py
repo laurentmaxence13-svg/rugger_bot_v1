@@ -1,5 +1,5 @@
 """Offline adversarial tests: a route quote is not a fill or executable sale."""
-import copy
+import json
 
 import pytest
 
@@ -7,6 +7,7 @@ from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
 from bot.p3.quotes import SOL_MINT
 from bot.p3.prospective_report import build_prospective_report
 from test_p3_prospective_report import corpus
+from tools.p3_replay_liquidity_gate import replay
 
 MINT = "TokenTestMint"
 
@@ -101,3 +102,21 @@ def test_old_report_without_initial_screen_remains_unqualified(tmp_path):
         "admission_reasons"]
     assert report["settled_positions"]==0
     assert report["net_pnl_sol"] is None
+
+
+def test_existing_capture_replay_is_read_only_and_never_invents_profit(tmp_path):
+    plan,events,tail=corpus(tmp_path,refused=True)
+    source=tmp_path/"corpus.sqlite"
+    before=source.read_bytes()
+    plan_path=tmp_path/"plan.json"
+    plan_path.write_text(json.dumps(plan),encoding="utf-8")
+    output=tmp_path/"screen-report.json"
+    summary=replay(plan_path,source,output)
+    assert summary["selected_tokens"]==3
+    assert summary["initial_full_exit_routes_quoted"]==0
+    assert summary["recorded_liquidity_gates"]==0
+    assert summary["economic_verdict"]=="INSUFFICIENT DATA"
+    assert source.read_bytes()==before
+    assert json.loads(output.read_text())["net_pnl_sol"] is None
+    with pytest.raises(ValueError,match="new JSON report"):
+        replay(plan_path,source,output)
