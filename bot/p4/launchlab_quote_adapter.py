@@ -55,6 +55,11 @@ def asof_launchlab_quote(*,analysis,source_event,mint,pool,side,
     if source_pool.get("mint_a")!=mint or status!=0:
         raise ValueError("active_source_mint_and_curve_required")
     source_pool["status"]=status
+    for key in ("protocol_fee_accrued","platform_fee_accrued"):
+        value=_u64(source_pool.get(key))
+        if value is None:
+            raise ValueError("observed_curve_accrued_fee_invalid")
+        source_pool[key]=value
     if side=="BUY":
         model=constant_product_projection(
             source_pool,input_lamports=amount,
