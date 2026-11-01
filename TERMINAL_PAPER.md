@@ -36,3 +36,14 @@ Le tableau de bord n'allume pas LIVE. Il n'achète ni ne vend aucun token. Il ne
     py -m compileall -q bot/dashboard
 
 Un fichier GitHub Actions dédié effectue ces vérifications et importe Streamlit en environnement isolé. Les preuves restent des JSON locaux et ne sont pas téléchargées vers le serveur du développeur.
+
+
+## Connexion directe au moteur PAPER déjà présent
+
+Le terminal lit automatiquement **data/rugger_bot.db en lecture seule** : les tokens, les cours USD réellement enregistrés dans paper_prices, les décisions dans paper_decisions, les positions simulées ouvertes et les clôtures dans paper_trades. Il lit aussi le rapport **data/paper_engine_report.json**.
+
+Pour actualiser l'écran à mesure que le moteur enregistre de nouvelles données : laisser tourner le scanner et **START_PAPER_ENGINE.bat** dans leurs propres fenêtres, ouvrir le terminal dans une autre fenêtre, puis activer **Recharger les preuves toutes les 10 s**. Le terminal ne démarre lui-même aucun appel Helius, aucun trading réel, aucune transaction et ne modifie jamais la base.
+
+Les positions de ce moteur ancien sont marquées **PAPER_ENGINE** ou **SHADOW_BASELINE** ; elles ne sont **pas des trades Master**, et leur P&L issu de prix USD n'est pas une preuve de rentabilité réelle en SOL. L'onglet **Prix USD observés** montre les points de prix stockés (courbe horodatée, sans fabriquer de bougies ou un prix exécutable).
+
+Si les fichiers ne sont pas encore présents, le terminal reste vide et explicite. Le mode démonstration n'affiche que des exemples entièrement fictifs.
