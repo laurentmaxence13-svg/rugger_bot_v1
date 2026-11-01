@@ -19,7 +19,7 @@ SCHEMA="rugger-prospective-multi-window-campaign-v1"
 CAPTURE_SCHEMA="rugger-early-confirmed-signed-S1S2-paper-v1"
 MAX_WINDOWS=6
 MAX_SECONDS=60
-MAX_EVENTS=100
+MAX_EVENTS=200
 
 
 def _canonical(value):
