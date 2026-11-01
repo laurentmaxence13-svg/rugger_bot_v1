@@ -1,0 +1,45 @@
+name: Verify two Raydium index-selected outer signed creators (NO LIVE)
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+jobs:
+  exact-finalized-creation-proof:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-index-creator-proof' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared read-only dependencies and tests
+        run: python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Adversarial Ed25519 index-creation proof controls
+        run: python -m pytest -q tests/test_live_helius_pinned_index_creators.py
+      - name: Check two pinned public creation receipts and exact signed identities
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: python -B -m bot.live.helius_pinned_index_creators
+      - name: Archive public proof; no private keys, wallet or orders
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: verified-index-creator-proof-${{ github.run_id }}
+          path: paper_artifacts/pinned_index_signed_proof_${{ github.run_id }}.json
+          retention-days: 14
+          if-no-files-found: warn
