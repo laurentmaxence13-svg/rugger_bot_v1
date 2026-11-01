@@ -152,3 +152,27 @@ def test_no_synthetic_fills_from_positive_conditional_markout():
     assert x["actual_master_net_pnl_lamports"] is None
     assert x["actual_reference_net_pnl_lamports"] is None
     assert x["qualified_master_reference_holdout_cycles"]==0
+
+
+
+def test_source_hashed_signed_identity_rows_are_retained_for_cross_provider_join():
+    x=audit_campaigns([fixture(11),fixture(12,signature="another",creator="creator",
+                               mint="newMint",pool="newPool")])
+    assert x["unique_signed_creation_signatures"]==2
+    assert x["unique_signed_mint_pool_pairs"]==2
+    assert x["unique_signed_creator_claims"]==1
+    assert x["source_signed_creation_rows"]==[
+        dict(signature="another",creator="creator",mint="newMint",
+             pool="newPool",first_observed_run_id=12),
+        dict(signature="sig",creator="creator",mint="mint",
+             pool="pool",first_observed_run_id=11)]
+    assert x["independently_reverified_finalized_signed_creator_count"]==0
+
+
+def test_duplicate_same_signed_signature_does_not_multiply_source_rows():
+    a=fixture(11)
+    b=fixture(12)
+    x=audit_campaigns([a,b])
+    assert x["unique_signed_creation_signatures"]==1
+    assert len(x["source_signed_creation_rows"])==1
+    assert x["unique_signed_creator_claims"]==1
