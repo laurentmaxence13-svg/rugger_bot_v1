@@ -184,8 +184,12 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         # Follow-up and partial quotes cannot retroactively pass this gate.
         receipts = [e for e in candidate_events if e.get('kind') == 'checkpoint'
                     and e.get('outcome') == 'initial_full_exit_liquidity_screen']
-        if receipts and len(receipts) != len(inventories):
-            raise ValueError('Initial full-exit screen receipts must cover every projected inventory')
+        if receipts:
+            receipt_buy_ids=[e.get('payload',{}).get('buy_observation_id') for e in receipts]
+            if (len(receipts) != len(inventories)
+                    or len(set(receipt_buy_ids)) != len(receipts)
+                    or set(receipt_buy_ids) != set(inventories)):
+                raise ValueError('Initial full-exit screen receipts must cover every projected inventory')
         screens = []
         for inv in inventories.values():
             buy_id = inv['buy_observation_id']
@@ -202,8 +206,12 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
             if registered:
                 receipt = registered[0]
                 if (len(registered) != 1 or receipt.get('payload') != screen
-                        or (chosen is not None and (chosen['id'] >= receipt['id']
-                             or chosen['available_at_ms'] > receipt['available_at_ms']))):
+                        or receipt['id'] <= inv['checkpoint_id']
+                        or receipt['available_at_ms'] < by_id[inv['checkpoint_id']]['available_at_ms']
+                        or (chosen is not None and (
+                            chosen['id'] <= inv['checkpoint_id']
+                            or chosen['id'] >= receipt['id']
+                            or chosen['available_at_ms'] > receipt['available_at_ms']))):
                     raise ValueError('Initial full-exit screen receipt differs from observed quote')
             screens.append(dict(screen,gate_recorded=bool(registered)))
         full, partial, refused, unattempted, errors, unavailable_other = [], [], [], [], [], []
