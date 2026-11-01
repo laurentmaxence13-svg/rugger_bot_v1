@@ -56,8 +56,8 @@ def test_real_verifier_and_real_signed_selector_no_creation_stays_no_trade(tmp_p
     assert summary["financial_order_submitted"] is False
     assert summary["master_net_pnl_lamports"] is None
     assert sorted(p.name for p in folder.iterdir())==[
-        "finalized_creation_proof.json","paired_signed_master_paper.json",
-        "signed_log_capture.json","summary.json"]
+        "finalized_creation_proof.json","paired_paper_portfolio.json",
+        "paired_signed_master_paper.json","signed_log_capture.json","summary.json"]
     assert all(SECRET not in path.read_text() for path in folder.iterdir())
     assert json.loads((folder/"summary.json").read_text())==summary
     with pytest.raises(ValueError,match="fresh_unoccupied"):
