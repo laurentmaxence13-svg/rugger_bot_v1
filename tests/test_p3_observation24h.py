@@ -26,7 +26,7 @@ def test_preflight_never_claims_exact_24h_profitability():
     info=preflight(revision=REV)
     assert info["status_for_exact_master_profitability"]==COMPARISON_GATE
     assert len(info["missing_profitability_evidence"])>=7
-    assert info["24h_collection_started"] is False
+    assert info["collection_24h_started"] is False
     assert info["provider_usage_billing_unverified"] is True
     plan=preregistration(start_ms=START,revision=REV)
     assert plan["deadline_at_ms"]-START==24*3600*1000
