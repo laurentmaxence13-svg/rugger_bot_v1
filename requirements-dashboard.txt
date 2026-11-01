@@ -1,2 +1,5 @@
-# Optional read-only local dashboard. Core bot requirements stay unchanged.
+# Dedicated, read-only dashboard environment; do not change core bot dependencies.
+# Pin native packages to versions verified by Windows UI rendering (3.12/3.13).
 streamlit>=1.39,<2
+pandas==2.3.3
+numpy==2.3.4

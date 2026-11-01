@@ -30,6 +30,9 @@ def table(rows,columns):
 
 
 def charts(cycles):
+    # Never import compiled chart dependencies when there are no PAPER cycles.
+    if not cycles:
+        return
     import pandas as pd
     for arm in sorted({r["strategie"] for r in cycles}):
         rows=[r for r in cycles if r["strategie"]==arm]

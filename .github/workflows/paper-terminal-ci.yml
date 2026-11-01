@@ -69,15 +69,19 @@ jobs:
   windows-paper-start:
     runs-on: windows-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
     steps:
       - name: Checkout same commit on Windows
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Set up Windows Python 3.12
+      - name: Set up Windows Python ${{ matrix.python-version }}
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - name: Execute the Windows BAT entrypoint and verify Streamlit HTTP health twice
         shell: powershell
         run: |
@@ -92,6 +96,11 @@ jobs:
           }
           Write-Host $repeat
           Write-Host "WINDOWS_REPEAT_START_WITHOUT_REINSTALL_VERIFIED"
+      - name: Verify compiled pandas and actually render empty + synthetic UI
+        shell: powershell
+        run: |
+          & ".\.venv-dashboard\Scripts\python.exe" -m unittest discover -s tests -p test_dashboard_app_smoke.py -v
+          if ($LASTEXITCODE -ne 0) { throw "Windows UI rendering failed" }
       - name: Print redacted diagnostics on Windows failure
         if: failure()
         shell: powershell
