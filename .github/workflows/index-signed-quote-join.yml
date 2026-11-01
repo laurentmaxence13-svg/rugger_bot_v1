@@ -36,7 +36,7 @@ jobs:
       - name: Test offline signed identity and quote evidence invariants
         run: |
           python -m pip install --disable-pip-version-check 'pytest>=8,<10'
-          python -m pytest -q tests/test_index_proof_quote_join.py tests/test_index_crossrun_dedup.py tests/test_index_universe_overlap.py tests/test_p4_paired_research_ledger.py
+          python -m pytest -q tests/test_index_proof_quote_join.py tests/test_index_crossrun_dedup.py tests/test_index_universe_overlap.py tests/test_p4_paired_research_ledger.py tests/test_signed_creator_cost_upper_bound.py
       - name: Fetch the two existing PUBLIC immutable GitHub Actions archives only
         run: |
           mkdir -p paper_artifacts/p3_index paper_artifacts/p3_index_prior paper_artifacts/p3_signed
@@ -61,6 +61,11 @@ jobs:
           python -B -m bot.p3.index_universe_overlap \
             --reports paper_artifacts/p3_index_prior/index_first_report.json paper_artifacts/p3_index/index_first_report.json \
             --output paper_artifacts/index_universe_overlap.json
+      - name: Report one-sided costs upper bound without inventing Master profitability
+        run: |
+          python -B -m bot.p3.signed_creator_cost_upper_bound \
+            --join paper_artifacts/index_signed_and_quotes_join.json \
+            --output paper_artifacts/index_cost_upper_bound.json
       - name: Archive only conservative joined public evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -69,5 +74,6 @@ jobs:
           path: |
             paper_artifacts/index_signed_and_quotes_join.json
             paper_artifacts/index_universe_overlap.json
+            paper_artifacts/index_cost_upper_bound.json
           if-no-files-found: warn
           retention-days: 30
