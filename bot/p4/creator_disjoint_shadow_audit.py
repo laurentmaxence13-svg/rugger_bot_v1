@@ -108,11 +108,29 @@ def audit_creator_disjoint_shadow(records,protocol):
         per_creator[creator]=group
         trace=record["engine_trace"]
         if trace is not None:
+            # A self-reported "engines called" Boolean is not a sufficient
+            # provenance check. Bind every claimed decision, input receipt and
+            # strategy scope to the immutable pre-outcome frozen case.
             if (type(trace) is not dict or trace.get("schema")!="rugger-real-engines-frozen-shadow-intents-v1"
                     or trace.get("actual_engines_called_before_outcome") is not True
                     or trace.get("frozen_pair")!=frozen
-                    or trace.get("financial_order_submitted") is not False):
-                raise ValueError("engine_trace_must_match_frozen_pair")
+                    or trace.get("common_feature_frame_hash")!=case["feature_receipt_sha256"]
+                    or trace.get("original_master_action") not in ("ENTER","WAIT","NO_TRADE")
+                    or {"ENTER":"ENTER","WAIT":"WAIT","NO_TRADE":"REJECT"}.get(
+                        trace.get("original_master_action"))!=case["master_action"]
+                    or type(trace.get("original_reference_enter_intent")) is not bool
+                    or ("ENTER" if trace["original_reference_enter_intent"] else "WAIT")!=case["reference_action"]
+                    or not _hex(trace.get("master_decision_sha256"))
+                    or not _hex(trace.get("reference_intent_sha256"))
+                    or trace.get("reference_decision_scope")!="scorer_intent_without_operational_admission"
+                    or trace.get("master_decision_scope")!="actual_master_shadow_full_evidence_and_capital_gate"
+                    or trace.get("source_signed_creator_verified") is not case["signed_creator_verified"]
+                    or trace.get("source_provider_price_clock_verified") is not case["source_clock_verified"]
+                    or trace.get("no_independent_executable_orders") is not True
+                    or trace.get("prospective_strategy_profitability_verified") is not False
+                    or trace.get("financial_order_submitted") is not False
+                    or trace.get("live_ready_to_arm") is not False):
+                raise ValueError("engine_trace_must_match_frozen_pair_and_causal_input")
         followup=record["followup"]
         scored=score_pair(frozen,followup) if followup is not None else None
         if followup is not None:
@@ -148,6 +166,11 @@ def audit_creator_disjoint_shadow(records,protocol):
         rows.append(dict(index=idx,creator=creator,mint=case["mint"],pool=case["pool"],
             split=group,decision_at_ms=at,freeze_sha256=frozen["freeze_sha256"],
             master_action=actions["master"],reference_action=actions["reference"],
+            action_pair_class=(
+                "BOTH_ENTER" if actions["master"]=="ENTER" and actions["reference"]=="ENTER"
+                else "MASTER_ONLY_ENTER" if actions["master"]=="ENTER"
+                else "REFERENCE_ONLY_ENTER" if actions["reference"]=="ENTER"
+                else "BOTH_ABSTAIN"),
             engine_adapter_trace_present=trace is not None,
             signed_creator_verified=case["signed_creator_verified"],
             decision_source_clock_self_attested=case["source_clock_verified"],
@@ -175,8 +198,28 @@ def audit_creator_disjoint_shadow(records,protocol):
         # Complete-case sums are selection-biased if missing followups exist.
         # Never use these sums to certify a winner.
         conditional_complete_case_sum=sum(r["conditional_model_master_minus_reference_lamports"] for r in complete)
+        # This is a *sensitivity threshold*, not an imputation. With U unknown
+        # comparisons, the aggregate would turn strictly positive only if
+        # their unknown mean exceeds this threshold. No finite bound on
+        # unknown outcomes or unverified provider fees is asserted.
+        unknown_count=len(unknown)
+        minimum_unknown_mean_for_positive_total=(
+            (-conditional_complete_case_sum)//unknown_count+1
+            if unknown_count else None)
+        action_counts={name:sum(r["action_pair_class"]==name for r in subset)
+            for name in ("BOTH_ENTER","MASTER_ONLY_ENTER",
+                         "REFERENCE_ONLY_ENTER","BOTH_ABSTAIN")}
         summaries[split]=dict(
             creator_groups_claimed=len(groups),
+            frozen_action_pair_counts=action_counts,
+            frozen_action_disagreements=(
+                action_counts["MASTER_ONLY_ENTER"]+action_counts["REFERENCE_ONLY_ENTER"]),
+            hypothetical_entry_notional_master_minus_reference_lamports=sum(
+                r["master_hypothetical_entry_notional_lamports"]-
+                r["reference_hypothetical_entry_notional_lamports"] for r in subset),
+            missing_edge_is_unbounded_without_fee_and_exit_assumptions=bool(unknown_count),
+            minimum_mean_unknown_edge_for_strictly_positive_conditional_total_lamports=(
+                minimum_unknown_mean_for_positive_total),
             # A Boolean in the supplied case is NOT an independently
             # revalidated Ed25519 receipt. Preserve the legacy field for
             # compatibility, but do not use it for the verified threshold.
