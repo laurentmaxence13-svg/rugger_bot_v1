@@ -33,7 +33,7 @@ def read_paper_db(path):
     if (not source.is_file() or source.is_symlink()
             or source.suffix.lower() not in (".db",".sqlite",".sqlite3")):
         return result
-    uri="file:"+quote(str(source.resolve()),safe="/:")+"?mode=ro"
+    uri="file:"+quote(source.resolve().as_posix(),safe="/:")+"?mode=ro"
     # SQLite allows concurrent reads while the existing PAPER engine writes.
     with sqlite3.connect(uri,uri=True,timeout=1) as con:
         con.execute("PRAGMA query_only=ON")
