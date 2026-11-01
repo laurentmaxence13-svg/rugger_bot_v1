@@ -1,11 +1,8 @@
 name: Helius active-survivor LaunchLab S1-S2 cohort (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/helius_active_launchlab_cohort.py'
-      - 'tests/test_live_helius_active_launchlab_cohort.py'
-      - '.github/workflows/helius-active-launchlab-cohort.yml'
   workflow_dispatch:
+  pull_request:
+    types: [labeled]
 
 permissions:
   contents: read
@@ -19,8 +16,9 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-active-survivor' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
@@ -41,6 +39,10 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Validate active-survivor limits, fake PnL refusals and read-only contracts
+        run: |
+          python -m pip install --disable-pip-version-check 'pytest>=8,<10'
+          python -m pytest -q tests/test_live_helius_active_launchlab_cohort.py tests/test_live_helius_active_launchlab_scan.py
       - name: Observe frozen 3-creator candidate sample at S1 then S2 with NO orders
         shell: bash
         env:
