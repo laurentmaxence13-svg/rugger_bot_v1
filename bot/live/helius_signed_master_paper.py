@@ -24,13 +24,13 @@ import sys
 
 from bot.analyser.artifacts import atomic_write_json
 from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
-from bot.live.helius_ws_forward_paper import observe
+from bot.live.helius_horizon_sampler import observe_horizon
 from bot.live.helius_ws_signed_creation_probe import inspect_forward_creations
 from bot.p3.signed_creation_forward_bank import signed_creator_asof_paper
 from bot.p4.live_like_paper_ledger import PaperLedger,freeze_decision
 
 SCHEMA="rugger-helius-signed-master-paper-integration-v1"
-MAX_LOG_EVENTS=100  # retain full log denominator; verifier caps proof lookups at 10
+MAX_LOG_EVENTS=100  # stratified over full bounded horizon; raw denominator separately retained
 VERIFY_RPC_CAP=10
 BANK_RPC_CAP=5
 
@@ -40,7 +40,7 @@ def _digest(value):
                 allow_nan=False).encode("utf-8")).hexdigest()
 
 
-def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
+def run_pipeline(*,seconds, output_dir, api_key, observer=observe_horizon,
                  verifier=inspect_forward_creations,
                  strategy=signed_creator_asof_paper,
                  rpc_factory=HeliusReadOnlyRpc):
@@ -70,6 +70,9 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
     captured=dict(report=log_report,events=events)
     log_sha=save("signed_log_capture.json",captured)
 
+    # Selection covers the full bounded observation horizon, not the first
+    # 100 invocations. The selected source chain is independently checked
+    # below; unselected log counts remain explicit in capture metadata.
     # Transaction receipts are fetched strictly *after* capture. No future
     # outcome is ever treated as a feature at notification arrival.
     read_rpc=rpc_factory(api_key,max_calls=VERIFY_RPC_CAP)
