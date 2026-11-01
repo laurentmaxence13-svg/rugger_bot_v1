@@ -146,7 +146,9 @@ def test_fail_closed_when_report_falsifies_trade_or_budget(tmp_path):
         capture_window(root,p,0,run=dishonest,now_ms=START+1000)
 
 
-def test_no_backfill_on_resume_after_crash_or_prior_source_window(tmp_path):
+def test_no_backfill_on_resume_after_crash_or_prior_source_window(tmp_path,monkeypatch):
+    monkeypatch.setattr("bot.p3.observation24h.subprocess.check_output",
+                        lambda *a,**k: REV)
     root,p=setup(tmp_path)
     _,plan_path,db_path,report_path=_window_files(root,0)
     plan_path.parent.mkdir(parents=True,exist_ok=False)
