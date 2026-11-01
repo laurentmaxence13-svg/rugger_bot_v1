@@ -187,6 +187,8 @@ def replay(db,output):
         conditional_curve_markouts=report["conditional_curve_markouts"],
         conditional_curve_markout_refusals=report["conditional_curve_markout_refusals"],
         fixed_size_curve_markouts=report["fixed_size_curve_sensitivity"]["conditional_only_size_markouts"],
+        pre_followup_size_grids_verified=report["fixed_size_curve_sensitivity"]["pre_followup_size_grids_verified"],
+        fixed_size_grid_retrospective_only=report["fixed_size_curve_sensitivity"]["historical_replay_not_prospective_preadmission"],
         fixed_size_curve_blockers=report["fixed_size_curve_sensitivity"]["blocked_size_reasons"],
         frozen_sizes_sol=[f"{x/1e9:.2f}" for x in report["fixed_size_curve_sensitivity"]["size_grid_lamports"]],
         conditional_markouts=[dict(
