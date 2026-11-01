@@ -154,6 +154,12 @@ def evaluate_probe(research):
             conditional_S2_sell_lamports=None,
             conditional_markout_before_extra_costs_lamports=None,
             extra_cost_scenarios=[],
+            own_buy_overlay_sell_lamports=None,
+            own_buy_overlay_delta_before_extra_costs_lamports=None,
+            own_buy_overlay_cost_scenarios=[],
+            own_buy_overlay_status="NOT_QUALIFIED",
+            own_buy_overlay_refusal=None,
+            own_buy_overlay_path_dependent_not_executable=True,
             model_only_executable_buy_sell_not_verified=True,
             true_Master_net_pnl_lamports=None,
             true_reference_net_pnl_lamports=None,
@@ -187,7 +193,39 @@ def evaluate_probe(research):
                 own_buy_not_reflected_in_real_future_source_bank=True,
                 source_quote_not_independently_executable=True,
                 source_snapshot_risk_flags=row.get("s2_risk_flags"))
+        # The untouched real S2 bank does not contain our imaginary S1
+        # purchase. Show the own-buy-adjusted overlay separately. Its price
+        # depends on an unknowable future swap trajectory; no fill is asserted.
+        if (sized and p["hypothetical_research_probe_action"]==
+                "ENTER_CONDITIONAL_MODEL" and
+                sized.get("s1_exact_buy_quantity_atomic")==
+                p["hypothetical_probe_token_quantity_atomic"]):
+            overlay_lamports=sized.get("s2_own_buy_overlay_sell_lamports")
+            if (type(overlay_lamports) is str and overlay_lamports.isdecimal()
+                    and sized.get("s2_own_buy_overlay_status")==
+                    "MODEL_CONDITIONAL_NOT_EXECUTABLE"):
+                amount=int(overlay_lamports)
+                delta=amount-SIZING_LAMPORTS
+                if str(delta)!=sized.get(
+                        "s2_own_buy_overlay_delta_before_extra_costs_lamports"):
+                    raise ValueError("S2_own_buy_overlay_markout_inconsistent")
+                item.update(
+                    own_buy_overlay_status="CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY",
+                    own_buy_overlay_sell_lamports=overlay_lamports,
+                    own_buy_overlay_delta_before_extra_costs_lamports=str(delta),
+                    own_buy_overlay_cost_scenarios=[
+                        dict(assumed_extra_cost_lamports=str(cost),
+                             conditional_net_lamports=str(delta-cost),
+                             conditional_net_SOL=str((delta-cost)/1_000_000_000))
+                        for cost in COST_STRESS_LAMPORTS],
+                    own_buy_overlay_model_sha256=sized.get(
+                        "s2_own_buy_overlay_receipt_sha256"))
+            else:
+                item["own_buy_overlay_refusal"]=sized.get(
+                    "s2_own_buy_overlay_refusal","missing_or_unqualified_overlay")
         cases.append(item)
+    overlay_quoted=sum(row["own_buy_overlay_status"]==
+        "CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY" for row in cases)
     quoted=sum(row["status"]=="CONDITIONAL_MODEL_ROUNDTRIP_NOT_FILL"
                for row in cases)
     return dict(schema=SCHEMA,
@@ -199,6 +237,9 @@ def evaluate_probe(research):
         original_selection_sha256=research["registration_sha256"],
         frozen_before_followup_SHA256=_hash(frozen),
         exact_model_roundtrips=quoted,number_of_frozen_cases=len(cases),
+        own_buy_overlay_conditional_models=overlay_quoted,
+        own_buy_overlay_uses_unobserved_counterfactual_reserves=True,
+        own_buy_overlay_master_trades_executed=0,
         rejected_or_censored_models=len(cases)-quoted,
         size_lamports=SIZING_LAMPORTS,initial_cash_lamports=DEFAULT_CAPITAL_LAMPORTS,
         simulated_model_probe_not_actual_Master_strategy=True,
@@ -269,6 +310,8 @@ def main(argv=None):
             selected=result.get("source_evidence",{}).get("selected_count",0),
             source_slots=[report.get("S1_source_slot"),report.get("S2_source_slot")],
             conditional_model_roundtrips=report.get("exact_model_roundtrips",0),
+            path_dependent_own_buy_overlay_models=report.get(
+                "own_buy_overlay_conditional_models",0),
             actual_Master_full_cycles=0,Master_net_pnl=None,
             no_real_orders=True,artifact_sha256=hashlib.sha256(
             args.output.read_bytes()).hexdigest()),sort_keys=True))
