@@ -1,9 +1,9 @@
 """Cross-run Helius LaunchLab cohort audit from immutable PAPER campaign archives.
 
 No RPC, no wallet, no order. Every window is rehashed via the existing funnel.
-Creator-level train/holdout assignment is deterministic BEFORE outcomes, but
-only independently replayed finalized receipts could satisfy a verified
-holdout threshold. A self-asserted flag is never enough.
+Creator-level train/holdout assignment uses no outcomes but is applied
+RETROSPECTIVELY to these archived runs. It is not a time-anchored precommit.
+Only independently replayed finalized receipts can satisfy a verified holdout. A self-asserted flag is never enough.
 """
 import argparse
 from collections import Counter
@@ -96,7 +96,7 @@ def audit_campaigns(campaigns):
                 message_hashes[(mint,pool)]=creator
                 if creator not in creators:
                     # No outcome, quote, future S2 or strategy decision enters
-                    # the split; same creator always lands in the same arm.
+                    # the deterministic split; retrospective != preregistered.
                     bucket=int(hashlib.sha256(creator.encode()).hexdigest(),16)%HOLDOUT_MODULUS
                     creators[creator]=dict(split=("HOLDOUT" if bucket==HOLDOUT_BUCKET
                                                    else "DEVELOPMENT"),
@@ -127,7 +127,8 @@ def audit_campaigns(campaigns):
         unique_signed_creator_claims=len(creators),
         unique_signed_mint_pool_pairs=len(message_hashes),
         signed_outer_creation_claim_observations=counts["signed_outer_creation_claim_observations"],
-        creator_level_holdout_precommitted="sha256(creator_pubkey) mod 5 == 0",
+        creator_level_holdout_rule="sha256(creator_pubkey) mod 5 == 0",
+        holdout_rule_registered_before_source_observations=False,
         creator_split_counts=dict(sorted(Counter(x["split"] for x in creators.values()).items())),
         creator_split_assignments_sha256=_digest(dict(sorted(creators.items()))),
         creator_ids_public=sorted(creators),
