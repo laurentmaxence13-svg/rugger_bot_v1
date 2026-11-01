@@ -97,7 +97,7 @@ def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sn
             or type(features_at) is not int or not 0<features_at<=at
             or type(source_clock) is not bool or type(signed) is not bool
             or type(frame.get("slot_available_at_ms")) is not int
-            or frame["slot_available_at_ms"]>at
+            or not 0<frame["slot_available_at_ms"]<=at
             or not all(type(frame.get(key)) is str and frame[key]
                        for key in ("id","mint","pool","creator"))
             or len(history)>32):
@@ -113,10 +113,15 @@ def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sn
                 or prior["source_slot"]>slot
                 or prior["source_slot"]<previous_slot
                 or type(prior.get("slot_available_at_ms")) is not int
-                or prior["slot_available_at_ms"]>prior["available_at_ms"]
+                or not 0<prior["slot_available_at_ms"]<=prior["available_at_ms"]
                 or type(prior.get("features_available_at_ms")) is not int
-                or prior["features_available_at_ms"]>prior["available_at_ms"]):
+                or not 0<prior["features_available_at_ms"]<=prior["available_at_ms"]):
             raise ValueError("noncausal_historical_source_clock")
+        # Scorer history must belong to the same mint, pool and signer.
+        # Mixing a different token's future trajectory into this prefix
+        # would break attribution even if its timestamps were old.
+        if any(prior.get(key)!=frame[key] for key in ("mint","pool","creator")):
+            raise ValueError("cross_asset_or_creator_history_refused")
         previous_at=prior["available_at_ms"]
         previous_slot=prior["source_slot"]
     # A frozen receipt hash is not a cryptographic attestation of market
