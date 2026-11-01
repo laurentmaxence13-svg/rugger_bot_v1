@@ -154,10 +154,13 @@ def replay_events(events, *, expected_tail):
         seen.add(row["mint"])
         related=[e for e in events if e.get("mint")==row["mint"]]
         cases.append(conditional_curve_case(related,row))
+    from bot.p3.curve_size_grid import sized_summary
+    size_sensitivity=sized_summary(events,rows)
     reasons=Counter(c["reason"] for c in cases
                     if c["status"]!="CONDITIONAL_CURVE_MARKOUT_ONLY")
     return dict(schema=SCHEMA,verified_tail_sha256=expected_tail,
         selected_tokens=len(rows),
+        fixed_size_curve_sensitivity=size_sensitivity,
         conditional_curve_markouts=sum(c["status"]=="CONDITIONAL_CURVE_MARKOUT_ONLY"
                                       for c in cases),
         conditional_curve_markout_refusals=dict(sorted(reasons.items())),
@@ -183,6 +186,9 @@ def replay(db,output):
     return dict(output=str(out),selected_tokens=report["selected_tokens"],
         conditional_curve_markouts=report["conditional_curve_markouts"],
         conditional_curve_markout_refusals=report["conditional_curve_markout_refusals"],
+        fixed_size_curve_markouts=report["fixed_size_curve_sensitivity"]["conditional_only_size_markouts"],
+        fixed_size_curve_blockers=report["fixed_size_curve_sensitivity"]["blocked_size_reasons"],
+        frozen_sizes_sol=[f"{x/1e9:.2f}" for x in report["fixed_size_curve_sensitivity"]["size_grid_lamports"]],
         conditional_markouts=[dict(
             mint=c["mint"],
             s1_quantity_atomic=c["curve_s1_buy_quantity_atomic"],
