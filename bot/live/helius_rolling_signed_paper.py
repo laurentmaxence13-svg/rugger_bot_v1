@@ -170,10 +170,13 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
         nonlocal stop
         if not audit.events:
             return
-        if (manifest["rpc_used_or_reserved_upper_bound"]
-                +queue.qsize()*MAX_RPC_PER_CHUNK+MAX_RPC_PER_CHUNK
+        if (manifest["rpc_used_or_reserved_upper_bound"]+MAX_RPC_PER_CHUNK
                 >rpc_call_cap):
             manifest["status"]="HALTED_PROVIDER_CALL_CAP"
+            manifest["websocket_gaps"].append(dict(
+                started_at_ms=now_ms(),reason="unverified_events_after_request_cap",
+                lost_accepted_event_count=len(audit.events),
+                unknown_missed_transactions=True))
             stop=True
             return
         idx=len(manifest["windows"])
@@ -201,6 +204,7 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
     try:
         while time.monotonic()<deadline and not stop:
             gap_start=now_ms()
+            audit=None
             try:
                 async with websocket_factory(endpoint,open_timeout=10,close_timeout=3,
                         ping_interval=15,max_size=262144,compression=None) as socket:
@@ -246,7 +250,12 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
                             audit=ReadOnlyLogAudit(sub,CHUNK_MAX_EVENTS)
                             window_start=time.monotonic_ns()
                     await add_batch(audit,window_start,handshake_ms)
-            except (Exception) as error:
+            except Exception as error:
+                # A socket break must not silently erase the last retained
+                # evidence batch that had not yet reached its 30s boundary.
+                if "audit" in locals() and audit is not None and audit.events:
+                    await add_batch(audit,window_start,handshake_ms)
+                    audit=None
                 reconnects+=1
                 manifest["websocket_gaps"].append(dict(
                     started_at_ms=gap_start,end_at_ms=now_ms(),
