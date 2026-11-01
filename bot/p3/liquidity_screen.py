@@ -82,3 +82,16 @@ def initial_full_exit_liquidity_screen(*, mint, acquired_atomic,
     result["initial_full_exit_route_quoted"] = True
     result["reason"] = "full_size_route_quoted_not_executed"
     return result
+
+
+def recorded_initial_full_exit_route_passed(screen):
+    """Only a recorded initial full-size quote passes this *route* prerequisite.
+
+    This must never be interpreted as PAPER entry admission or an executed sale.
+    """
+    return (type(screen) is dict
+            and screen.get("gate_recorded") is True
+            and screen.get("initial_full_exit_route_quoted") is True
+            and screen.get("quote_only") is True
+            and screen.get("paper_entry_admitted") is False
+            and screen.get("exit_execution_verified") is False)
