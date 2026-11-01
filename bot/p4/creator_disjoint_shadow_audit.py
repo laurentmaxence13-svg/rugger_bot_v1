@@ -13,7 +13,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from bot.p4.paired_research_ledger import SCHEMA, score_pair, _sha
+from bot.p4.paired_research_ledger import SCHEMA, freeze_pair, score_pair, _sha
 
 REPORT_SCHEMA="rugger-creator-disjoint-shadow-audit-v1"
 PROTOCOL_SCHEMA="rugger-creator-disjoint-prospective-protocol-v1"
@@ -67,6 +67,15 @@ def _frozen_ok(frozen,protocol):
     if not _hex(sha) or sha!=_sha({k:v for k,v in frozen.items() if k!="freeze_sha256"}):
         raise ValueError("frozen_decision_digest_mismatch")
     case=frozen["research_case"]
+    # A digest proves integrity only, not that the original freeze obeyed
+    # causal constraints. Re-run the canonical phase-1 constructor on every
+    # imported artifact, including records with NO follow-up.
+    try:
+        canonical=freeze_pair(case)
+    except (ValueError,TypeError,KeyError) as exc:
+        raise ValueError("frozen_decision_payload_not_causal") from exc
+    if canonical!=frozen:
+        raise ValueError("noncanonical_or_forged_preoutcome_freeze")
     if _int(case.get("asof_ms"),"decision_clock",1)<=protocol["registered_at_ms"]:
         raise ValueError("decision_predates_registered_holdout_protocol")
     if case.get("master_action") not in ("ENTER","WAIT","REJECT") or case.get("reference_action") not in ("ENTER","WAIT","REJECT"):
