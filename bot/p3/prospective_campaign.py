@@ -20,6 +20,7 @@ from bot.p3.collect import (RPC_URL, _rpc, _environment_proxy, now_ms,
                             ReadOnlyPolicyError)
 from bot.p3.inventory_provider import NativeInventoryQuoteProvider
 from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
+from bot.p3.live_like_master_shadow import freeze_shadow_candidates
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot
 from bot.p3.exit_qualification import inventory_from_buy
 from bot.p3.quotes import RaydiumQuoteClient, SOL_MINT
@@ -270,6 +271,14 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
                     inventory_buy_observation_id=inv['buy_observation_id'],prospective_ordinal=row['ordinal'],
                     diagnostic_only=True)
                 _record_quote(append,quote,'sell',request_id)
+        # Run the ACTUAL frozen Master and reference scorers on the S1
+        # informational prefix, with missing features left missing. Commit
+        # decisions before ANY follow-up bank is requested; never retrofit
+        # P4 decisions after observing a subsequent price.
+        decision_time=now_ms()
+        freeze_shadow_candidates(
+            store,rows,initial,discovered_at_ms=received,
+            decision_at_ms=decision_time,append=append)
         if initial_slot is not None and inventories:
             delay=max(0,15000000000-(time.monotonic_ns()-snapshot_completed))/1e9
             await asyncio.sleep(delay)
