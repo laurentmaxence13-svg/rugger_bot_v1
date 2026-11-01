@@ -16,6 +16,7 @@ from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 from bot.live.helius_active_launchlab_scan import discover_live_pool_account_page
 from bot.p3.helius_index_prospective_cohort import _bank,_hash,BUY_LAMPORTS
 from bot.p3.launchlab import _pool,addresses_from_pool,analyze_snapshot,observed_sell_projection,SnapshotEvidenceError
+from bot.p3.own_buy_s2_overlay import own_buy_s2_overlay
 from bot.p3.quotes import SOL_MINT
 from bot.p3.cohort import _uint as _checked_integer
 
@@ -294,9 +295,35 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                             row["economic_cycle_qualified"]=False
                         except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
                             row["s2_refusal"]="exact_lot_S2_curve_or_capacity_refused"
+                        # Independent sensitivity, never used as a Master
+                        # decision or an independently executable SELL quote.
+                        # The S1 LOT and buy size were registered before S2.
+                        try:
+                            overlay=own_buy_s2_overlay(
+                                s1_analysis=by_mint[item["mint"]],
+                                s2_analysis=s2,
+                                input_lamports=_canonical_uint(row["entry_lamports"]),
+                                expected_mint=item["mint"],expected_pool=item["pool"])
+                            if overlay["paper_bought_tokens_atomic"]!=qty:
+                                raise ValueError("precommitted_S1_token_lot_changed")
+                            row["s2_own_buy_overlay_status"]="MODEL_CONDITIONAL_NOT_EXECUTABLE"
+                            row["s2_own_buy_overlay_sell_lamports"]=overlay[
+                                "overlay_S2_sell_lamports"]
+                            row["s2_own_buy_overlay_delta_before_extra_costs_lamports"]=overlay[
+                                "overlay_S2_delta_before_extra_costs_lamports"]
+                            row["s2_own_buy_overlay_receipt_sha256"]=_hash(overlay)
+                            row["s2_own_buy_overlay_source_observed_sell_refusal"]=overlay[
+                                "untouched_S2_bank_sell_refusal"]
+                            row["s2_own_buy_overlay_execution_verified"]=False
+                        except (SnapshotEvidenceError,ValueError,KeyError,TypeError) as exc:
+                            error=str(exc)
+                            row["s2_own_buy_overlay_refusal"]=(
+                                error if error.replace("_","").isalnum() and
+                                len(error)<=100 else "unqualified_counterfactual_overlay")
                 except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
                     for row in ladder:
                         row["s2_refusal"]="S2_bank_or_identity_unqualified"
+                        row["s2_own_buy_overlay_refusal"]="S2_bank_or_identity_unqualified"
     return dict(schema="rugger-onchain-active-survivor-S1S2-v1",
         status="ACTIVE_SURVIVOR_PROSPECTIVE_OBSERVATION_COMPLETE",
         registration_sha256=registration_sha256,
