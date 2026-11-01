@@ -126,6 +126,16 @@ def audit_campaigns(campaigns):
         cross_run_repeated_event_observations=counts["cross_run_repeated_event"],
         unique_signed_creator_claims=len(creators),
         unique_signed_mint_pool_pairs=len(message_hashes),
+        # Public, source-hashed identities are retained so the independent
+        # finalized proof archive can detect a reused signature or pool with
+        # a conflicting identity. These are upstream assertions, not a fresh
+        # Ed25519 replay and not independently verified wallet ownership.
+        unique_signed_creation_signatures=len(mint_pool),
+        source_signed_creation_rows=[
+            dict(signature=sig,creator=identity[0],mint=identity[1],pool=identity[2],
+                 first_observed_run_id=signatures[sig])
+            for sig,identity in sorted(mint_pool.items())
+        ],
         signed_outer_creation_claim_observations=counts["signed_outer_creation_claim_observations"],
         creator_level_holdout_rule="sha256(creator_pubkey) mod 5 == 0",
         holdout_rule_registered_before_source_observations=False,
