@@ -89,3 +89,26 @@ def test_duplicate_selected_mint_is_not_independent_sample():
     a["selection"]["records"].append(copy.deepcopy(a["selection"]["records"][0]))
     with pytest.raises(ValueError,match="duplicate_or_invalid"):
         join_signed_index_quotes(a,b,c)
+
+
+def test_two_signed_launches_from_same_creator_count_one_independent_group():
+    a,b,c=fixtures()
+    row=copy.deepcopy(a["selection"]["records"][0])
+    row["source_row"]["mint"]="mint-two"
+    row["source_row"]["pool"]="pool-two"
+    a["selection"]["records"].append(row)
+    a["selection"]["selected_count"]=2
+    quote=copy.deepcopy(b["rows"][0]);quote["mint"]="mint-two"
+    b["rows"].append(quote)
+    proof=copy.deepcopy(c["records"][0]);proof["mint"]="mint-two"
+    proof["pool"]="pool-two";proof["signature"]="sig-two"
+    proof["signed_outer_creations"][0]["mint"]="mint-two"
+    proof["signed_outer_creations"][0]["pool"]="pool-two"
+    c["records"].append(proof)
+    result=join_signed_index_quotes(a,b,c)
+    assert result["selected_creator_claims"]==2
+    assert result["selected_distinct_provider_claimed_creator_ids"]==1
+    assert result["authenticated_selected_creation_count"]==2
+    assert result["cryptographically_authenticated_selected_creators"]==1
+    assert result["matched_full_lot_quote_scenarios"]==2
+    assert result["market_profitability_verified"] is False
