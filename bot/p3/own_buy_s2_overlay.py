@@ -45,13 +45,32 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         raise ValueError("nonzero_predeclared_lot_and_mint_required")
     if type(expected_pool) is not str or not expected_pool:
         raise ValueError("source_pool_address_required")
-    for bank in (s1_analysis,s2_analysis):
+    incomplete_pdas=[]
+    for phase,bank in (("S1",s1_analysis),("S2",s2_analysis)):
         if (bank.get("pool_address")!=expected_pool or
                 bank.get("mint")!=expected_mint or
                 bank.get("evidence_profile")!="published_metadata_v1" or
-                bank.get("identity_status")!="owner_layout_relations_and_supplied_pins_checked" or
-                bank.get("facts",{}).get("program_derived_addresses_verified") is not True):
+                bank.get("identity_status")!="owner_layout_relations_and_supplied_pins_checked"):
             raise ValueError("source_pool_or_mint_or_identity_unverified")
+        # Published metadata can certify the account owners, exact pinned
+        # discriminators and several PDAs, while a historical platform_admin
+        # seed is no longer retained. Research-only conditional pricing may
+        # use such a risk-free decoded bank; it MUST disclose the incomplete
+        # PDA proof and NEVER turn it into executable trade qualification.
+        proof=bank.get("facts",{}).get("identity_certification")
+        if (type(proof) is not dict or
+                proof.get("schema")!="p3-launchlab-identity-certification-v1" or
+                proof.get("account_discriminators_verified") is not True or
+                proof.get("program_derived_addresses_partially_verified") is not True or
+                type(proof.get("checks")) is not list or
+                any(type(row) is not dict or
+                    row.get("status") not in ("PASS","UNKNOWN")
+                    for row in proof["checks"])):
+            raise ValueError("published_identity_certificate_insufficient_for_research")
+        incomplete_pdas.extend(
+            phase+":"+str(row["name"]) for row in proof["checks"]
+            if row.get("status")=="UNKNOWN" and
+            type(row.get("name")) is str)
     if (s1_analysis["facts"].get("addresses")!=s2_analysis["facts"].get("addresses")
             or type(s1_analysis["facts"].get("addresses")) is not dict):
         raise ValueError("source_seven_account_graph_changed")
@@ -131,6 +150,9 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         overlay_S2_delta_before_extra_costs_lamports=str(proceed-amount),
         observation_is_a_two_bank_real_source=True,
         counterfactual_reserves_are_not_observed=True,
+        published_identity_incomplete_PDA_checks=sorted(set(incomplete_pdas)),
+        partial_PDA_certification_accepted_for_research_only=True,
+        full_chain_creation_proof_not_established=True,
         intervening_swaps_repriced_under_own_buy=False,
         original_migration_and_token_program_verified=False,
         provider_executable_buy_quote_verified=False,
