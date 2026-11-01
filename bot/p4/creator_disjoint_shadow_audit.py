@@ -181,6 +181,13 @@ def audit_creator_disjoint_shadow(records,protocol):
                 else "REFERENCE_ONLY_ENTER" if actions["reference"]=="ENTER"
                 else "BOTH_ABSTAIN"),
             engine_adapter_trace_present=trace is not None,
+            # The reference is a score intent; the Master applies its full
+            # health, evidence and capital admission gates. Treating their
+            # raw action disagreement as comparable executable orders is a
+            # category error, even with complete indicative exit quotes.
+            master_reference_operational_admission_matched=False,
+            reference_operational_admission_verified=False,
+            candidate_conditional_edge_is_not_executable_policy_edge=True,
             signed_creator_verified=case["signed_creator_verified"],
             decision_source_clock_self_attested=case["source_clock_verified"],
             quote_source_clock_self_attested=(
@@ -223,6 +230,10 @@ def audit_creator_disjoint_shadow(records,protocol):
             frozen_action_pair_counts=action_counts,
             frozen_action_disagreements=(
                 action_counts["MASTER_ONLY_ENTER"]+action_counts["REFERENCE_ONLY_ENTER"]),
+            # This can only be >0 after both policies receive the same
+            # operational admission checks, not merely matching feature rows.
+            operationally_comparable_action_pairs=0,
+            reference_operationally_admitted_enter_intents=0,
             hypothetical_entry_notional_master_minus_reference_lamports=sum(
                 r["master_hypothetical_entry_notional_lamports"]-
                 r["reference_hypothetical_entry_notional_lamports"] for r in subset),
@@ -260,6 +271,8 @@ def audit_creator_disjoint_shadow(records,protocol):
         source_protocol_registration_externally_verified=False,
         complete_creation_denominator_externally_verified=False,
         creator_signature_proofs_independently_revalidated=False,
+        reference_only_scorer_intent_not_executable_order=True,
+        operationally_comparable_master_reference_cycles=0,
         creator_split_deterministic_and_disjoint=True,
         total_cases_including_missing=len(rows),
         unique_claimed_creators=len(per_creator),
