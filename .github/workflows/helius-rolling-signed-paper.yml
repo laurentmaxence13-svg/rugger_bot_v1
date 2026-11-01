@@ -17,7 +17,7 @@ jobs:
   bounded-mainnet-rolling-pilot:
     if: >-
       github.event.action == 'labeled' &&
-      github.event.label.name == 'run-helius-rolling-once' &&
+      github.event.label.name == 'run-helius-rolling-phase2-once' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 6
@@ -42,14 +42,14 @@ jobs:
           python -m pytest -q tests/test_helius_rolling_signed_paper.py tests/test_p4_live_like_paper_ledger.py
           python -m pytest -q tests/test_p4_launchlab_quote_adapter.py tests/test_p4_cpmm_quote_adapter.py
           python -m pytest -q tests/test_p4_signed_cpmm_migration.py tests/test_p4_native_asof_signal_bridge.py
-      - name: Observe 90 seconds actual signed events with bounded Helius credits
+      - name: Observe 180 seconds actual signed events with bounded Helius credits
         id: live
         continue-on-error: true
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           python -B -m bot.live.helius_rolling_signed_paper \
-            --network --duration-seconds 90 --rpc-call-cap 45 \
+            --network --duration-seconds 180 --rpc-call-cap 90 \
             --output-dir paper_artifacts/rolling_signed_paper_${{ github.run_id }}
       - name: Archive read-only source receipts, signed proof and refusal diagnostics
         if: always()
