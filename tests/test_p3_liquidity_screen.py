@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
+from bot.p3.liquidity_screen import (initial_full_exit_liquidity_screen,
+                                     recorded_initial_full_exit_route_passed)
 from bot.p3.quotes import SOL_MINT
 from bot.p3.prospective_report import build_prospective_report
 from test_p3_prospective_report import corpus
@@ -120,3 +121,22 @@ def test_existing_capture_replay_is_read_only_and_never_invents_profit(tmp_path)
     assert json.loads(output.read_text())["net_pnl_sol"] is None
     with pytest.raises(ValueError,match="new JSON report"):
         replay(plan_path,source,output)
+
+
+def test_only_recorded_initial_full_exit_route_can_pass_projection_prerequisite():
+    result=screen(event())
+    # The quoted route has not been recorded as an immutable checkpoint yet.
+    assert not recorded_initial_full_exit_route_passed(result)
+    recorded=dict(result,gate_recorded=True)
+    assert recorded_initial_full_exit_route_passed(recorded)
+    for field,value in (
+            ("gate_recorded",False),
+            ("initial_full_exit_route_quoted",False),
+            ("quote_only",False),
+            ("paper_entry_admitted",True),
+            ("exit_execution_verified",True)):
+        changed=dict(recorded,**{field:value})
+        assert not recorded_initial_full_exit_route_passed(changed)
+    refused=screen(event(outcome="unavailable",
+                        response={"success":False,"msg":"INSUFFICIENT_LIQUIDITY"}))
+    assert not recorded_initial_full_exit_route_passed(dict(refused,gate_recorded=True))
