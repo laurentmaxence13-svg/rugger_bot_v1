@@ -103,3 +103,40 @@ def test_future_historical_feature_clock_rejected():
     prior=frame();prior["features_available_at_ms"]=x["available_at_ms"]
     with pytest.raises(ValueError,match="noncausal_historical_source_clock"):
         freeze_real_master_reference(x,[prior])
+
+
+
+def test_nested_future_provider_quote_availability_rejected():
+    x=frame()
+    x["features"]["provider_quote"]={"quote_available_at_ms":x["available_at_ms"]+1,
+                                      "price":123}
+    with pytest.raises(ValueError,match="nested_future_availability_clock"):
+        freeze_real_master_reference(x)
+
+
+def test_nested_future_provider_quote_slot_rejected():
+    x=frame()
+    x["features"]["provider_quote"]={"quote_slot":x["source_slot"]+1,
+                                      "price":123}
+    with pytest.raises(ValueError,match="nested_future_source_slot"):
+        freeze_real_master_reference(x)
+
+
+def test_nested_future_history_quote_rejected_against_its_own_past_clock():
+    x=frame();x["available_at_ms"]+=3000;x["source_slot"]+=3
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    past=frame()
+    past["features"]["provider_quote"]={"observed_at_ms":past["available_at_ms"]+1}
+    with pytest.raises(ValueError,match="nested_future_availability_clock"):
+        freeze_real_master_reference(x,[past])
+
+
+def test_nested_future_history_slot_rejected_even_if_before_current_slot():
+    x=frame();x["available_at_ms"]+=3000;x["source_slot"]+=3
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    past=frame()
+    past["features"]["provider_quote"]={"context_slot":past["source_slot"]+1}
+    with pytest.raises(ValueError,match="nested_future_source_slot"):
+        freeze_real_master_reference(x,[past])
