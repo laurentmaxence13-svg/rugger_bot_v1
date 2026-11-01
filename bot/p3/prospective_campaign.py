@@ -21,6 +21,7 @@ from bot.p3.collect import (RPC_URL, _rpc, _environment_proxy, now_ms,
 from bot.p3.inventory_provider import NativeInventoryQuoteProvider
 from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
 from bot.p3.live_like_master_shadow import freeze_shadow_candidates
+from bot.p3.curve_size_grid import freeze_size_grid_at_s1
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot
 from bot.p3.exit_qualification import inventory_from_buy
 from bot.p3.quotes import RaydiumQuoteClient, SOL_MINT
@@ -279,6 +280,20 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
         freeze_shadow_candidates(
             store,rows,initial,discovered_at_ms=received,
             decision_at_ms=decision_time,append=append)
+        # Freeze four fixed LaunchLab S1-only quantities for EVERY selected
+        # candidate before consulting follow-up S2. No Raydium Trade API buy
+        # inventory is used for these conditional curve models.
+        for row in rows:
+            bank=initial.get(row['mint'])
+            if bank is None:
+                continue
+            frozen_grid=freeze_size_grid_at_s1(
+                analysis=bank['analysis'],mint=row['mint'],
+                ordinal=row['ordinal'],
+                snapshot_observation_id=bank['snapshot_observation_id'],
+                source_slot=bank['context_slot'])
+            append('checkpoint',received_at_ms=now_ms(),mint=row['mint'],
+                outcome='initial_curve_size_grid_frozen',payload=frozen_grid)
         if initial_slot is not None and inventories:
             delay=max(0,15000000000-(time.monotonic_ns()-snapshot_completed))/1e9
             await asyncio.sleep(delay)
