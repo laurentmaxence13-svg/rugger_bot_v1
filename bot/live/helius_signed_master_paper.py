@@ -29,7 +29,7 @@ from bot.live.helius_ws_signed_creation_probe import inspect_forward_creations
 from bot.p3.signed_creation_forward_bank import signed_creator_asof_paper
 
 SCHEMA="rugger-helius-signed-master-paper-integration-v1"
-MAX_LOG_EVENTS=4  # 1 genesis + up to 4*2 finalized receipt calls <=10
+MAX_LOG_EVENTS=100  # retain full log denominator; verifier caps proof lookups at 10
 VERIFY_RPC_CAP=10
 BANK_RPC_CAP=5
 
