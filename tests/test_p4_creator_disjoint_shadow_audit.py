@@ -345,3 +345,34 @@ def test_all_conditional_rows_do_not_invent_unknown_mean_or_real_profit():
     assert stats["missing_edge_is_unbounded_without_fee_and_exit_assumptions"] is False
     assert stats["all_cases_conditional_edge_sum_lamports"]==9_985_000
     assert result["empirical_net_master_advantage_verified"] is False
+
+
+def test_rehashed_future_feature_clock_cannot_bypass_causal_freeze_without_followup():
+    from bot.p4.paired_research_ledger import _sha
+    row=case()
+    frozen=row["frozen_pair"]
+    frozen["research_case"]["features_available_at_ms"]=frozen["research_case"]["asof_ms"]+1
+    frozen["freeze_sha256"]=_sha({k:v for k,v in frozen.items() if k!="freeze_sha256"})
+    with pytest.raises(ValueError,match="frozen_decision_payload_not_causal"):
+        audit_creator_disjoint_shadow([row],protocol())
+
+
+def test_rehashed_noncanonical_freeze_cannot_claim_engine_independence():
+    from bot.p4.paired_research_ledger import _sha
+    row=case()
+    frozen=row["frozen_pair"]
+    frozen["decision_engines_independently_verified"]=True
+    frozen["freeze_sha256"]=_sha({k:v for k,v in frozen.items() if k!="freeze_sha256"})
+    with pytest.raises(ValueError,match="noncanonical_or_forged"):
+        audit_creator_disjoint_shadow([row],protocol())
+
+
+def test_rehashed_future_source_clock_and_missing_followup_still_rejected():
+    from bot.p4.paired_research_ledger import _sha
+    row=case()
+    frozen=row["frozen_pair"]
+    frozen["research_case"]["source_slot"]=-1
+    frozen["asof_slot"]=-1
+    frozen["freeze_sha256"]=_sha({k:v for k,v in frozen.items() if k!="freeze_sha256"})
+    with pytest.raises(ValueError,match="frozen_decision_payload_not_causal"):
+        audit_creator_disjoint_shadow([row],protocol())
