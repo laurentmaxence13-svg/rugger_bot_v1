@@ -160,7 +160,13 @@ def audit_creator_disjoint_shadow(records,protocol):
         # Never use these sums to certify a winner.
         conditional_complete_case_sum=sum(r["conditional_model_master_minus_reference_lamports"] for r in complete)
         summaries[split]=dict(
-            creator_groups_claimed=len(groups),creator_groups_signed_verified=len(signed),
+            creator_groups_claimed=len(groups),
+            # A Boolean in the supplied case is NOT an independently
+            # revalidated Ed25519 receipt. Preserve the legacy field for
+            # compatibility, but do not use it for the verified threshold.
+            creator_groups_signed_verified=len(signed),
+            creator_groups_signed_self_attested=len(signed),
+            creator_groups_independently_verified=0,
             distinct_pool_pairs=len(subset),frozen_engine_traces=sum(r["engine_adapter_trace_present"] for r in subset),
             cases_with_complete_conditional_model_edge=len(complete),
             cases_with_unknown_model_edge=len(unknown),
@@ -179,6 +185,8 @@ def audit_creator_disjoint_shadow(records,protocol):
         protocol_sha256=_sha(protocol),
         source_records_sha256=_sha(records),
         source_protocol_registration_externally_verified=False,
+        complete_creation_denominator_externally_verified=False,
+        creator_signature_proofs_independently_revalidated=False,
         creator_split_deterministic_and_disjoint=True,
         total_cases_including_missing=len(rows),
         unique_claimed_creators=len(per_creator),
@@ -186,8 +194,9 @@ def audit_creator_disjoint_shadow(records,protocol):
         splits=summaries,rows=rows,
         holdout_minimum_claimed_creator_groups_reached=(
             holdout["creator_groups_claimed"]>=protocol["minimum_holdout_creators"]),
-        holdout_minimum_verified_creator_groups_reached=(
-            holdout["creator_groups_signed_verified"]>=protocol["minimum_holdout_creators"]),
+        holdout_minimum_signed_self_attested_creator_groups_reached=(
+            holdout["creator_groups_signed_self_attested"]>=protocol["minimum_holdout_creators"]),
+        holdout_minimum_verified_creator_groups_reached=False,
         independently_verified_executed_economic_cycles=0,
         qualified_holdout_economic_cycles_requirement_reached=False,
         empirical_net_master_advantage_verified=False,
