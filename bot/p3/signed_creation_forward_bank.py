@@ -14,6 +14,7 @@ import sys
 import time
 
 from bot.master_decision import MasterDecisionOrchestrator
+from bot.p4.native_asof_signal_bridge import native_asof_bank
 from bot.p3.helius_index_prospective_cohort import _bank, _hash
 from bot.p3.launchlab import (SnapshotEvidenceError, addresses_from_pool,
                               analyze_snapshot, observed_sell_projection)
@@ -153,11 +154,21 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
                 input_lamports=PAPER_BUY_LAMPORTS,evidence_profile="published_metadata_v1")
             row["s1_analysis_hash_sha256"]=_hash(a)
             row["s1_blocking_reasons"]=a.get("blocking_reasons")
+            try:
+                row["native_sol_asof_signal"]=native_asof_bank(
+                    analysis=a,mint=row["mint"],creator=row["creator"],
+                    pool=row["pool"],source_slot=s1slot,available_at_ms=s1at)
+                row["native_sol_signal_status"]="SOURCE_NATIVE_SOL_PRICE_OBSERVED"
+            except (ValueError,KeyError,TypeError):
+                row["native_sol_asof_signal"]=None
+                row["native_sol_signal_status"]="NATIVE_SOL_CURVE_SIGNAL_UNQUALIFIED"
             projection=a.get("conditional_projection")
             row["s1_buy_model"]=deepcopy(projection) if type(projection) is dict else None
         except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
             row["s1_refusal"]="unsupported_or_invalid_seven_account_bank"
             row["s1_buy_model"]=None
+            row["native_sol_asof_signal"]=None
+            row["native_sol_signal_status"]="SOURCE_BANK_NOT_QUALIFIED"
         # No features/operational health/source clocked quote. Actual frozen
         # reference engine cannot signal BUY; actual Master policy must evaluate
         # the same facts and refuse, rather than fabricating an ENTER.
