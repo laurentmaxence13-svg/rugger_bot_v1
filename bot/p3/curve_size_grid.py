@@ -134,7 +134,32 @@ def sized_summary(events,candidates):
     cases=[]
     for row in candidates:
         subset=[e for e in events if e.get("mint")==row["mint"]]
+        initial,issue=_bank_analysis(subset,row["mint"],"initial")
+        receipts=[e for e in subset if e.get("kind")=="checkpoint"
+                  and e.get("outcome")=="initial_curve_size_grid_frozen"]
+        if len(receipts)>1:
+            raise ValueError("Duplicated pre-followup S1 size-grid receipt")
+        preregistered=False
+        if receipts:
+            if issue is not None:
+                raise ValueError("Size grid registered without qualified initial S1")
+            source_id=initial["payload"].get("snapshot_observation_id")
+            if type(source_id) is not int:
+                raise ValueError("Frozen S1 bank observation ID missing")
+            expected=freeze_size_grid_at_s1(
+                analysis=initial["payload"]["analysis"],mint=row["mint"],
+                ordinal=row["ordinal"],snapshot_observation_id=source_id,
+                source_slot=initial["source_slot"])
+            receipt=receipts[0]
+            if (receipt["payload"]!=expected or receipt["id"]<=initial["id"]
+                    or receipt["available_at_ms"]<initial["available_at_ms"]
+                    or any(e.get("kind")=="candidate_decision"
+                           and e.get("payload",{}).get("probe_phase")=="followup"
+                           and e["id"]<=receipt["id"] for e in subset)):
+                raise ValueError("Pre-followup curve-size grid evidence mismatch")
+            preregistered=True
         cases.append(dict(ordinal=row["ordinal"],mint=row["mint"],
+            pre_followup_size_grid_frozen_verified=preregistered,
             predetermined_size_grid=sized_s1s2_cases(subset,row)))
     counts=Counter()
     for case in cases:
@@ -148,9 +173,12 @@ def sized_summary(events,candidates):
         conditional_only_size_markouts=sum(
             row["status"]=="CONDITIONAL_CURVE_MARKOUT_ONLY"
             for c in cases for row in c["predetermined_size_grid"]),
+        pre_followup_size_grids_verified=sum(
+            c["pre_followup_size_grid_frozen_verified"] for c in cases),
         blocked_size_reasons=dict(sorted(counts.items())),
         no_winner_selected=True,
-        historical_replay_not_prospective_preadmission=True,
+        historical_replay_not_prospective_preadmission=(
+            not all(c["pre_followup_size_grid_frozen_verified"] for c in cases)),
         no_executable_trades=True,
         master_reference_actual_net_lamports=None,
         proven_profitability=False,cases=cases)
