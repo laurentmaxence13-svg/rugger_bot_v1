@@ -19,6 +19,7 @@ from bot.p3.collect import (RPC_URL, _rpc, _environment_proxy, now_ms,
                             _record_quote, _quote_with_cancellation_receipt, capture_transaction,
                             ReadOnlyPolicyError)
 from bot.p3.inventory_provider import NativeInventoryQuoteProvider
+from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot
 from bot.p3.exit_qualification import inventory_from_buy
 from bot.p3.quotes import RaydiumQuoteClient, SOL_MINT
@@ -250,6 +251,14 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
                 observation_metadata={'probe_phase':'initial','exit_scope':'full_expected',
                     'inventory_buy_observation_id':inv['buy_observation_id'],'prospective_ordinal':row['ordinal']})
             event=context['sell_observation'] if context else None
+            # Record a fail-closed full-inventory route screen BEFORE any partial
+            # diagnostic or later follow-up. This does not admit or acquire a
+            # PAPER position; later information must never retroactively pass it.
+            screen=initial_full_exit_liquidity_screen(
+                mint=mint,acquired_atomic=inv['acquired_atomic'],
+                buy_observation_id=inv['buy_observation_id'],sell_event=event)
+            append('checkpoint',received_at_ms=now_ms(),mint=mint,
+                outcome='initial_full_exit_liquidity_screen',payload=screen)
             if (event and event['outcome']=='unavailable' and event.get('reason')=='provider_rejected'
                     and int(inv['partial_diagnostic_atomic'])>0):
                 # Fixed BEFORE the full response; no inventory is resized or settled.
