@@ -39,7 +39,10 @@ def sample_analysis(phase, *, projected=True, status="0", outstanding="200000"):
 def journal(tmp_path,*,no_projection=False,no_s2=False,s2_status="0",
             s2_outstanding="200000",out_of_order=False):
     path=tmp_path/"campaign.sqlite"
-    with CaptureStore(path,clock_ms=lambda:9999) as store:
+    # Keep synthetic receipt availability ordered: CaptureStore uses the max
+    # of receipt and ingestion clock, so a fixed future clock would flatten
+    # S1/S2 into the same availability timestamp.
+    with CaptureStore(path,clock_ms=lambda:100) as store:
         def append(kind,**kwargs):
             return store.append(kind,provenance="synthetic",**kwargs)
         append("checkpoint",received_at_ms=1000,
