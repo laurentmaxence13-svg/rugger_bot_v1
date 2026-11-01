@@ -280,10 +280,12 @@ class PaperState:
                     and s["realized_today_sol"] > -MAX_DAILY_LOSS_SOL
                     and s["cash_sol"] >= STAKE_SOL):
                 active_mints = {v["mint"] for v in s["positions"]}
+                recent_exits = {v["mint"] for v in s["closed"]
+                                if at_ms - v.get("closed_ms",0) < 180000}
                 for mint, q in sorted(quotes.items(),
                                        key=lambda x:(-x[1]["liquidity_usd"],x[0])):
                     obs = observed.get(mint)
-                    if (mint in active_mints or not obs or obs["samples"] < 2
+                    if (mint in active_mints or mint in recent_exits or not obs or obs["samples"] < 2
                             or obs["pair"] != q.get("pair")
                             or q["liquidity_usd"] < MIN_LIQUIDITY_USD):
                         continue
