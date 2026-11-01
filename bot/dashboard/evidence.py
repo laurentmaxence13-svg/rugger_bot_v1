@@ -120,8 +120,11 @@ def parse_documents(documents):
         if key in seen:
             continue
         seen.add(key)
+        status=doc.get("status")
+        if schema==PROBE and type(doc.get("paper_model_report")) is dict:
+            status=doc["paper_model_report"].get("status",status)
         out["sources"].append(dict(fichier=name,schema=schema,
-            statut=str(doc.get("status") or "SOURCE_VALIDEE"),
+            statut=str(status or "SOURCE_VALIDEE"),
             trading_live="NON",donnees_verifiees="selon source"))
         if schema==LEDGER:
             _ledger(doc,name,out)
@@ -191,7 +194,12 @@ def _ledger(doc,name,out):
 
 
 def _probe(doc,name,out):
-    cases=doc.get("cases",[])
+    # The network runner wraps the actual probe report in paper_model_report.
+    # Reading only the top level would silently hide every real S1/S2 sample.
+    report=doc.get("paper_model_report",doc)
+    if type(report) is not dict:
+        return
+    cases=report.get("cases",[])
     if type(cases) is not list:
         return
     for c in cases:
