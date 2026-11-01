@@ -88,6 +88,7 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
     if i2["quote_vault_lamports"]+net_in>=2**64:
         raise ValueError("overlay_quote_vault_u64_overflow")
     pool=dict(p2)
+    pool["status"]=_u64(p2.get("status"))
     for key in FEE_ACCRUAL_KEYS:
         pool[key]=_u64(p2.get(key))
     pool["real_a"]+=bought
@@ -98,7 +99,8 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
     observed_reason=None
     try:
         exact=observed_sell_projection(
-            dict(p2,**{k:pool[k] for k in FEE_ACCRUAL_KEYS}),
+            dict(p2,status=pool["status"],
+                 **{k:pool[k] for k in FEE_ACCRUAL_KEYS}),
             input_token_atomic=bought,
             fee_rates_ppm=i2["fee_rates_ppm"],
             quote_vault_lamports=i2["quote_vault_lamports"],
