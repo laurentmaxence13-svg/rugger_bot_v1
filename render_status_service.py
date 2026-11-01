@@ -12,10 +12,14 @@ import threading
 from urllib.parse import urlsplit
 
 from bot.ops.render_paper_engine import PaperState, run_public_worker
+from bot.ops.render_readonly_service import Observer as SignedHeliusObserver
 
 os.environ["RUGGER_NO_DOTENV"]="1"
 os.environ["RUGGER_LIVE_ENABLED"]="0"
 STORE=PaperState()
+# This observer reads signed LaunchLab evidence only. It never signs or trades.
+# It is OFF unless explicitly enabled and supplied a Helius key via Render secrets.
+SIGNED_SOURCE=SignedHeliusObserver()
 STOP=threading.Event()
 
 PAGE = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8">
@@ -49,6 +53,11 @@ a{color:#8bbcff}.warn{border-left:3px solid #f4bc59;padding-left:12px;color:#dbb
 </section>
 <section class="card"><h2>Décisions du véritable Master</h2><p class="note warn">Les données DexScreener ne valident pas les créateurs, la liquidité exécutable ou les frais : le Master doit refuser toute entrée non qualifiée. Aucun trade PAPER expérimental n'est attribué au Master.</p>
 <div style="overflow:auto"><table><thead><tr><th>Token</th><th>Décision</th><th>Pourquoi</th></tr></thead><tbody id="master"><tr><td colspan="3">En attente d'observations</td></tr></tbody></table></div></section>
+<section class="card"><h2>Créations LaunchLab vérifiées · Helius</h2>
+<div class="note warn">Observateur de signatures publiques, distinct des profils promotionnels DexScreener. Désactivé sans activation explicite et clé Helius côté serveur. Les captures ne constituent ni des entrées du Master, ni des transactions PAPER.</div>
+<div class="metric" style="font-size:19px" id="helius-state">État : chargement…</div>
+<div class="note" id="helius-counts">Aucune preuve récupérée pour le moment.</div>
+<div class="note"><a href="/api/helius">Statut Helius vérifiable (JSON)</a></div></section>
 <section class="card"><h2>Positions du moteur PAPER expérimental</h2>
 <div class="note">Entrées de 0,05 SOL ; sortie à +8 %, -6 % ou 90 secondes ; frais hypothétiques 1 % par côté + 0,00001 SOL par côté. Prix indicatifs, pas de transaction blockchain.</div>
 <div style="overflow:auto"><table><thead><tr><th>Token</th><th>Mise</th><th>Quantité virtuelle</th><th>État</th></tr></thead><tbody id="positions"><tr><td colspan="4">Aucune position</td></tr></tbody></table></div></section>
@@ -68,6 +77,15 @@ el('total').textContent=fmt(total,6)+' SOL';el('cash').textContent=fmt(d.cash_so
 el('closed').textContent=(d.closed||[]).length;const realized=(d.closed||[]).reduce((a,x)=>a+Number(x.pnl_sol||0),0);el('realized').textContent='P&L PAPER réalisé (modélisé) : '+fmt(realized,6)+' SOL';
 const age=d.service?.last_source_age_seconds;el('health').textContent=d.service?.source_fresh?'Marché observé · '+age+' s':d.last_error?'Données : '+d.last_error:'En attente du marché';
 el('source').textContent='Source : profils promotionnels DexScreener, paires SOL publiques · '+(d.polls||0)+' cycles · dernière observation : '+(age===null?'—':age+' secondes')+'. Ni univers complet des créations ni devis exécutables.';
+try{const hr=await fetch('/api/helius',{cache:'no-store'});if(!hr.ok)throw Error('HTTP '+hr.status);
+const h=await hr.json(),s=h.last_summary||{};
+el('helius-state').textContent='Source Helius : '+(h.observer_status||'INCONNU');
+el('helius-counts').textContent='Captures : '+(h.cycle_count||0)+
+' · créations signées confirmées : '+(s.crypto_signed_creation_transactions??'—')+
+' · décisions S1 figées : '+(s.frozen_S1_decisions??'—')+
+' · positions Master exécutées : 0'+
+(h.last_safe_error_class?' · erreur : '+h.last_safe_error_class:'');
+}catch(err){el('helius-state').textContent='Observateur Helius inaccessible : '+String(err.message||err)}
 rows('master',(d.master_shadow||[]).map(x=>[x.mint?.slice(0,11)+'…',x.action,(x.reasons||[]).slice(0,3).join(', ')||x.reason||'—']),3);
 rows('positions',pos.map(x=>[x.symbol||x.mint.slice(0,10),fmt(x.spent_sol,4)+' SOL',fmt(x.quantity,2),'OUVERTE']),4);
 rows('market',(d.candidates||[]).slice(0,12).map(x=>[x.symbol+' · '+x.mint.slice(0,8),x.dex,fmt(x.price_sol,10),fmt(x.liquidity_usd,0)]),4);
@@ -85,6 +103,9 @@ class Handler(BaseHTTPRequestHandler):
             mime="text/html; charset=utf-8"
         elif path == "/healthz":
             data=b'{"status":"up","financial_order_submitted":false}'
+            mime="application/json"
+        elif path == "/api/helius":
+            data=json.dumps(SIGNED_SOURCE.snapshot(),allow_nan=False).encode("utf-8")
             mime="application/json"
         elif path == "/api/status":
             data=json.dumps(STORE.snapshot(),allow_nan=False).encode("utf-8")
@@ -124,7 +145,14 @@ def main():
     background=threading.Thread(target=run_public_worker,args=(STORE,),
                                 name="rugger-public-paper-observer",daemon=True)
     background.start()
-    ThreadingHTTPServer(("0.0.0.0",int(raw)),Handler).serve_forever()
+    server=ThreadingHTTPServer(("0.0.0.0",int(raw)),Handler)
+    if SIGNED_SOURCE.settings["enabled"]:
+        SIGNED_SOURCE.start()
+    try:
+        server.serve_forever()
+    finally:
+        SIGNED_SOURCE.stop()
+        server.server_close()
 
 
 if __name__=="__main__":
