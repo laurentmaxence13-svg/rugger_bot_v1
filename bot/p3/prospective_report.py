@@ -106,7 +106,8 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         raise ValueError('At most one immutable prospective prefix is permitted')
     candidate_observations = [e for e in events if e.get('kind') in
         ('pool_snapshot','quote_attempt','candidate_decision','launch','transaction')
-        or e.get('outcome') in ('projected_inventory_fixed','initial_full_exit_liquidity_screen')]
+        or e.get('outcome') in ('projected_inventory_fixed','initial_full_exit_liquidity_screen',
+                                               'master_reference_frozen_pre_followup','shadow_unavailable')]
     prefix = prefixes[0] if prefixes else None
     if prefix is None:
         errors = [e for e in events if e.get('kind') == 'request' and
@@ -181,6 +182,34 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
                 raise ValueError('Duplicate inventory fixation would inflate projected entries')
             inventories[buy_id] = dict(acquired_atomic=str(acquired),minimum_atomic=str(minimum),
                 checkpoint_id=e['id'],buy_observation_id=buy_id)
+        # The *actual* Master and the reference were run and frozen during S1
+        # when such a receipt exists. Never backfill from a future S2 price.
+        shadow_events=[e for e in candidate_events if e.get('kind') == 'checkpoint'
+                       and e.get('outcome') in (
+                           'master_reference_frozen_pre_followup','shadow_unavailable')]
+        if len(shadow_events)>1:
+            raise ValueError('At most one frozen Master/reference shadow receipt per candidate')
+        shadow=shadow_events[0] if shadow_events else None
+        if shadow is not None:
+            body=shadow.get('payload',{})
+            if (body.get('selected_ordinal')!=selected['ordinal']
+                    or body.get('mint')!=mint or body.get('financial_order_submitted') is not False
+                    or body.get('conditional_net_pnl_lamports') is not None):
+                raise ValueError('Invalid frozen shadow receipt')
+            if any(e.get('kind')=='candidate_decision'
+                    and e.get('payload',{}).get('probe_phase')=='followup'
+                    and e['id']<shadow['id'] for e in candidate_events):
+                raise ValueError('Master/reference S1 receipt was created after a follow-up decision')
+            if shadow['outcome']=='master_reference_frozen_pre_followup':
+                pair=body.get('actual_master_reference')
+                if (type(pair) is not dict or pair.get('actual_engines_called_before_outcome') is not True
+                        or pair.get('frozen_pair',{}).get('phase')!='FROZEN_PRE_OUTCOME'
+                        or pair.get('frozen_pair',{}).get('future_prices_consumed') is not False
+                        or body.get('source_creator_verified') is not False
+                        or body.get('complete_signal_features_available') is not False
+                        or body.get('master_action')=='ENTER'
+                        or body.get('reference_action')=='ENTER'):
+                    raise ValueError('Unqualified strategy entry or future outcome in frozen shadow')
         # Replay initial full-size screens from retained event evidence.
         # Follow-up and partial quotes cannot retroactively pass this gate.
         receipts = [e for e in candidate_events if e.get('kind') == 'checkpoint'
@@ -270,6 +299,14 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         cases.append(dict(ordinal=selected['ordinal'],mint=mint,pool=selected['pool'],
             creator_claim=selected.get('creator',selected.get('creator_claim')),
             analyzed=bool(analyses),projected_entries=list(inventories.values()),
+            live_like_master_shadow=dict(
+                state=shadow['outcome'] if shadow else 'not_recorded',
+                receipt_id=shadow['id'] if shadow else None,
+                master_action=shadow['payload'].get('master_action') if shadow else None,
+                reference_action=shadow['payload'].get('reference_action') if shadow else None,
+                actual_engines_called=bool(shadow and shadow['outcome']==
+                    'master_reference_frozen_pre_followup'),
+                net_pnl_lamports=None),
             initial_full_exit_liquidity_screens=screens,
             initial_full_exit_route_quoted=sum(s['initial_full_exit_route_quoted'] for s in screens),
             initial_full_exit_gates_recorded=sum(s['gate_recorded'] for s in screens),
@@ -305,6 +342,15 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
          initial_full_exit_route_quoted=sum(c['initial_full_exit_route_quoted'] for c in cases),
          initial_full_exit_gates_recorded=sum(c['initial_full_exit_gates_recorded'] for c in cases),
          initial_full_exit_screen_scope='initial_quote_only_not_fills_or_executable_approval',
+         frozen_actual_master_reference_candidates=sum(c['live_like_master_shadow']['actual_engines_called'] for c in cases),
+         shadow_master_action_counts=dict(Counter(
+             c['live_like_master_shadow']['master_action'] for c in cases
+             if c['live_like_master_shadow']['master_action'] is not None)),
+         shadow_reference_action_counts=dict(Counter(
+             c['live_like_master_shadow']['reference_action'] for c in cases
+             if c['live_like_master_shadow']['reference_action'] is not None)),
+         shadow_master_minus_reference_net_lamports=None,
+         shadow_comparison_scope='actual_scorers_on_S1_without_signed_creator_or_complete_features_not_fills',
         full_sell_quotes=sum(len(c['full_sell_quote_ids']) for c in cases),
         partial_sell_quotes=sum(len(c['partial_sell_quote_ids']) for c in cases),
         refused_sell_quotes=sum(len(c['refused_sell_quote_ids']) for c in cases),
