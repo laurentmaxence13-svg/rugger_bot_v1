@@ -56,7 +56,7 @@ def asof_launchlab_quote(*,analysis,source_event,mint,pool,side,
         raise ValueError("active_source_mint_and_curve_required")
     source_pool["status"]=status
     for key in ("protocol_fee_accrued","platform_fee_accrued"):
-        value=_u64(source_pool.get(key))
+        value=_u64(source_pool.get(key),key)
         if value is None:
             raise ValueError("observed_curve_accrued_fee_invalid")
         source_pool[key]=value
