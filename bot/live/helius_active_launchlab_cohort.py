@@ -61,8 +61,8 @@ def _followup_sell_from_snapshot(analysis,exact_quantity):
         share_fee_rate_ppm=_canonical_uint(facts.get("share_fee_assumption_ppm","0")))
 
 
-def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False):
-    if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool):
+def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False,prefer_root_activity=False):
+    if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool or type(prefer_root_activity) is not bool):
         raise ValueError("active_readonly_cohort_bounds_required")
     scan=discover_live_pool_account_page(rpc)
     candidates=scan["initial_pools_before_price"]
@@ -78,6 +78,10 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
             mint=pool["mint_a"];creator=pool["creator"]
             if pool["mint_b"]!=SOL_MINT or pool["status"]!=0:
                 verdict="not_active_SOL_pool"
+            elif (prefer_root_activity and
+                  (type(pool.get("real_a")) is not int or pool["real_a"]<=0
+                   or type(pool.get("real_b")) is not int or pool["real_b"]<=0)):
+                verdict="no_observed_root_outstanding_tokens_and_SOL_reserve"
             elif creator in seen_creator or mint in seen_mint:
                 verdict="duplicate_creator_or_mint"
             elif len(selected)>=MAX_SELECTED:
@@ -104,6 +108,8 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         denominator=denominator,entry_lamports=BUY_LAMPORTS,
         sample_scope="first_v2_page_active_survivors_only",
         no_frozen_trade_decisions=True,
+        root_activity_filter_preregistered=prefer_root_activity,
+        root_activity_filter="real_a_positive_and_real_b_positive_only_before_S1" if prefer_root_activity else "none",
         global_creation_universe_representative=False)
     registration_sha256=_hash(registration)
     print(json.dumps(dict(phase="FROZEN_ACTIVE_SURVIVOR_SELECTION_BEFORE_S1",
@@ -262,6 +268,7 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         no_historical_survivor_bias_control=True,
         master_vs_reference_edge_demonstrated=False,
         research_size_ladder_enabled=research_ladder,
+        root_activity_filter_enabled=prefer_root_activity,
         research_size_ladder_lamports=list(RESEARCH_LADDER_LAMPORTS) if research_ladder else None,
         research_sizes_are_not_independent_creators=True,
         live_ready_to_arm=False,financial_order_submitted=False,
@@ -271,6 +278,7 @@ def main():
     import argparse
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--research-size-ladder",action="store_true")
+    parser.add_argument("--prefer-root-activity",action="store_true")
     args=parser.parse_args()
     rpc=None
     try:
@@ -278,7 +286,8 @@ def main():
             raise ValueError("helius_secret_required")
         rpc=HeliusReadOnlyRpc.from_environment(max_calls=6,
                                            allow_active_pool_scan=True)
-        report=observe_active_survivor_cohort(rpc,research_ladder=args.research_size_ladder)
+        report=observe_active_survivor_cohort(rpc,research_ladder=args.research_size_ladder,
+            prefer_root_activity=args.prefer_root_activity)
     except Exception as exc:
         code=str(exc)
         safe=code if type(exc) is ValueError and len(code)<100 and code.replace("_","").isalnum() else type(exc).__name__
