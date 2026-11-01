@@ -80,3 +80,81 @@ def test_live_trade_or_profitable_assertion_refused():
     p=prospective();p["market_profitability_verified"]=True
     with pytest.raises(ValueError,match="strict_readonly"):
         reconcile(pinned(),p)
+
+
+
+def with_signed_rows(creators=("c",),signatures=None,mints=None,pools=None):
+    p=prospective(creators)
+    sigs=signatures or tuple("prospectiveSig"+str(i) for i in range(len(creators)))
+    mints=mints or tuple("prospectiveMint"+str(i) for i in range(len(creators)))
+    pools=pools or tuple("prospectivePool"+str(i) for i in range(len(creators)))
+    p["source_signed_creation_rows"]=[
+        dict(signature=sigs[i],creator=creator,mint=mints[i],pool=pools[i],
+             first_observed_run_id=41266654485)
+        for i,creator in enumerate(creators)]
+    p["unique_signed_creation_signatures"]=len(creators)
+    p["unique_signed_mint_pool_pairs"]=len(set(zip(mints,pools)))
+    return p
+
+
+def test_new_cross_source_signature_and_pool_identity_audit_has_zero_overlap():
+    x=reconcile(pinned(),with_signed_rows())
+    assert x["cross_source_signed_creation_identity_rows_available"] is True
+    assert x["overlapping_signed_creation_signatures"]==0
+    assert x["overlapping_signed_mint_pool_pairs"]==0
+    assert x["independently_replayed_ed25519_proofs_in_this_join"]==0
+
+
+def test_matching_exact_signed_creation_is_one_creator_not_new_independent():
+    p=with_signed_rows(("a",),signatures=("sig0",),
+                       mints=("mint0",),pools=("pool0",))
+    x=reconcile(pinned(),p)
+    assert x["overlapping_signed_creation_signatures"]==1
+    assert x["overlapping_signed_mint_pool_pairs"]==1
+    assert x["unique_creator_ids_across_two_sources"]==2
+
+
+def test_reused_signature_with_different_identity_fails_closed():
+    p=with_signed_rows(("c",),signatures=("sig0",))
+    with pytest.raises(ValueError,match="signed_signature_identity_conflict"):
+        reconcile(pinned(),p)
+
+
+def test_reused_pool_with_different_creator_fails_closed():
+    p=with_signed_rows(("c",),mints=("mint0",),pools=("pool0",))
+    with pytest.raises(ValueError,match="signed_pool_creator_conflict"):
+        reconcile(pinned(),p)
+
+
+def test_partial_signature_identity_rows_refused():
+    p=with_signed_rows()
+    p["unique_signed_creation_signatures"]=2
+    with pytest.raises(ValueError,match="complete_source_signed_creation_identity_rows"):
+        reconcile(pinned(),p)
+
+
+def test_creator_rows_cannot_invent_new_signed_identity():
+    p=with_signed_rows()
+    p["source_signed_creation_rows"][0]["creator"]="unknown"
+    with pytest.raises(ValueError,match="signed_source_rows_do_not_reconcile"):
+        reconcile(pinned(),p)
+
+
+def test_same_source_signature_repeated_is_not_two_creations():
+    p=with_signed_rows(("c","d"),signatures=("repeat","repeat"))
+    with pytest.raises(ValueError,match="duplicate_or_invalid_signed_source_identity"):
+        reconcile(pinned(),p)
+
+
+def test_source_rows_with_unregistered_extra_field_refused():
+    p=with_signed_rows()
+    p["source_signed_creation_rows"][0]["realized_profit"]=999
+    with pytest.raises(ValueError,match="exact_signed_source_identity"):
+        reconcile(pinned(),p)
+
+
+def test_missing_source_signed_rows_not_claimed_verified():
+    x=reconcile(pinned(),prospective())
+    assert x["cross_source_signed_creation_identity_rows_available"] is False
+    assert x["overlapping_signed_creation_signatures"] is None
+    assert x["overlapping_signed_mint_pool_pairs"] is None
