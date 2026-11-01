@@ -15,12 +15,12 @@ jobs:
   prospectively-frozen-sol-market:
     if: >-
       github.event.action == 'labeled' &&
-      github.event.label.name == 'run-sol-paper-cycle-once' &&
+      github.event.label.name == 'run-sol-paper-own-buy-overlay-once' &&
       github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
       matrix:
-        sample_page: [1, 2, 3]
+        sample_page: [0, 2, 3, 4]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
