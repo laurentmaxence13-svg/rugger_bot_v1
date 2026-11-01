@@ -174,6 +174,12 @@ class SignedForwardBankTest(unittest.TestCase):
         self.assertTrue(result["freeze_completed_before_S2"])
         self.assertEqual(row["frozen_decision_before_S2"]["reference_action"],
             "WAIT_FOR_FEATURES")
+        self.assertEqual(len(row["frozen_decision_before_S2"][
+            "reference_full_decision_sha256"]),64)
+        self.assertEqual(row["asof_feature_evidence_audit"]["status"],
+            "UNQUALIFIED_NATIVE_S1_BANK")
+        self.assertEqual(row["frozen_decision_before_S2"]["source_feature_missing"],
+            ["native_SOL_bank_not_qualified"])
         self.assertNotEqual(row["frozen_decision_before_S2"]["master_action"],"ENTER")
         self.assertEqual(row["s1_to_s2_conditional_curve_markout_lamports"],
             "-100000000")
