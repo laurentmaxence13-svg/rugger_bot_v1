@@ -41,7 +41,8 @@ def source_quote(data):
     """Strict exact-lot, fully costed, independently timestamped observation."""
     if type(data) is not dict or set(data)!={
         "id","mint","pool","venue","side","input_atomic","output_atomic",
-        "source_slot","available_at_ms","source_observation_sha256",
+        "source_slot","available_at_ms","source_produced_at_ms",
+        "source_observation_sha256",
         "provenance","network_and_priority_fee_lamports",
         "account_creation_fee_lamports","failed_attempt_fee_lamports",
         "migration_proof"}:
@@ -51,8 +52,11 @@ def source_quote(data):
         raise ValueError("phase_and_side_required")
     if data["provenance"] not in PROVENANCES:
         raise ValueError("exact_price_source_class_required")
-    for k in ("source_slot","available_at_ms","input_atomic","output_atomic"):
+    for k in ("source_slot","available_at_ms","source_produced_at_ms",
+              "input_atomic","output_atomic"):
         integer(data[k],k,1)
+    if data["source_produced_at_ms"]>data["available_at_ms"]:
+        raise ValueError("quote_source_clock_after_availability")
     for k in ("network_and_priority_fee_lamports",
               "account_creation_fee_lamports","failed_attempt_fee_lamports"):
         integer(data[k],k)
@@ -84,12 +88,14 @@ def freeze_decision(case):
     """Immutable before-future-decision receipt; both arms included at once."""
     required={"id","mint","creator","pool","source_slot","available_at_ms",
               "decisions","signed_creator_verified","asof_features_verified",
-              "source_quote_clock_verified","policy_sha256"}
+              "source_quote_clock_verified","policy_sha256",
+              "entry_size_lamports"}
     if type(case) is not dict or set(case)!=required:
         raise ValueError("exact_frozen_decision_case_required")
     for k in ("id","mint","creator","pool"):address(case[k],k)
     integer(case["source_slot"],"source_slot",1)
     integer(case["available_at_ms"],"decision_at_ms",1)
+    integer(case["entry_size_lamports"],"entry_size_lamports",1)
     if (type(case["decisions"]) is not dict
             or set(case["decisions"])!=set(ARMS)
             or any(case["decisions"][k] not in ACTS for k in ARMS)):
@@ -168,7 +174,9 @@ class PaperLedger:
                 or q["available_at_ms"]<case["available_at_ms"]+self.config["min_delay_ms"]
                 or q["available_at_ms"]<self._last_time
                 or q["available_at_ms"]-case["available_at_ms"]>
-                   24*3600*1000):
+                   24*3600*1000
+                or q["available_at_ms"]-q["source_produced_at_ms"]>
+                   self.config["max_source_age_ms"]):
             raise ValueError("stale_or_noncausal_market_quote")
         state=self.ledger[arm]
         if case["decisions"][arm]!="ENTER":
@@ -180,6 +188,8 @@ class PaperLedger:
             if q["pool"]!=case["pool"] or q["venue"]!="LAUNCHLAB_CURVE" or q["migration_proof"] is not None:
                 raise ValueError("entry_requires_original_launchlab_curve")
             spend=q["input_atomic"]
+            if spend!=case["entry_size_lamports"]:
+                raise ValueError("entry_size_not_equal_to_frozen_decision")
             costs=sum(q[k] for k in ("network_and_priority_fee_lamports",
                     "account_creation_fee_lamports","failed_attempt_fee_lamports"))
             if spend+costs>state["cash_lamports"]:
