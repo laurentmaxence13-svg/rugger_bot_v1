@@ -84,15 +84,17 @@ def fake_subprocess_with_good_artifacts(*,used=8,selected=0,stop=None):
 
 def test_capture_window_records_verified_budget_and_no_trading(tmp_path):
     root,p=setup(tmp_path)
+    # A fabricated test journal without a frozen prefix must be a SOURCE_GAP,
+    # never a full market capture with invented creator evidence.
     w=capture_window(root,p,0,run=fake_subprocess_with_good_artifacts(
-        used=8,selected=3),now_ms=START+1000)
-    assert w["state"]=="CAPTURED" and w["requests_used"]==8
+        used=8,selected=0),now_ms=START+1000)
+    assert w["state"]=="SOURCE_GAP" and w["requests_used"]==8
     assert w["request_usage_exact"] is True
     assert w["financial_order_submitted"] is False
     p["windows"].append(w);p["actual_requests_used"]=8
     assert verify_session(root,p)==8
     result=aggregate(root,p)
-    assert result["window_counts"]["CAPTURED"]==1
+    assert result["window_counts"]["SOURCE_GAP"]==1
     assert result["total_requests_confirmed"]==8
     assert result["net_pnl_master_lamports"] is None
     assert result["master_minus_reference_net_lamports"] is None
