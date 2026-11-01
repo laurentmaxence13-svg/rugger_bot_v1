@@ -97,11 +97,23 @@ if (Test-Path -LiteralPath $pythonVenv) {
 }
 
 Write-Host 'Verification des dependances Streamlit...'
-& $pythonVenv -c 'import streamlit; import pandas; print("Streamlit", streamlit.__version__)' 2>$null
+# importlib.find_spec never prints a missing-package traceback. On Windows
+# PowerShell 5.1, redirected stderr from "import streamlit" was being promoted
+# to a terminating NativeCommandError *before* the pip install could run.
+& $pythonVenv -c 'import importlib.util,sys; sys.exit(0 if all(importlib.util.find_spec(x) is not None for x in ("streamlit","pandas")) else 1)'
 if ($LASTEXITCODE -ne 0) {
     Write-Host 'Installation des dependances (premier lancement uniquement)...'
-    & $pythonVenv -m pip install --disable-pip-version-check -r (Join-Path $root 'requirements-dashboard.txt')
-    if ($LASTEXITCODE -ne 0) {
+    # PowerShell 5.1 treats stderr from native executables as an ErrorRecord;
+    # pip may use stderr even for ordinary progress and warnings.
+    $previousErrorAction = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $pythonVenv -m pip install --disable-pip-version-check -r (Join-Path $root 'requirements-dashboard.txt')
+        $installExitCode = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previousErrorAction
+    }
+    if ($installExitCode -ne 0) {
         throw 'Installation Streamlit impossible. Verifie la connexion Internet et copie l erreur pip visible ci-dessus.'
     }
 }
