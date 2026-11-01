@@ -135,6 +135,15 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         quote_vault_lamports=i2["quote_vault_lamports"]+net_in,
         curve_type=0,share_fee_rate_ppm=i2["share_fee_rate_ppm"])
     proceed=int(overlay["output_lamports"])
+    # A flat S1/S2 bank only measures curve friction. Reporting it as
+    # observed market momentum would manufacture a trading opportunity.
+    deltas=dict(
+        real_a_atomic=str(p2["real_a"]-p1["real_a"]),
+        real_b_lamports=str(p2["real_b"]-p1["real_b"]),
+        base_vault_atomic=str(i2["base_vault_atomic"]-i1["base_vault_atomic"]),
+        quote_vault_lamports=str(
+            i2["quote_vault_lamports"]-i1["quote_vault_lamports"]))
+    market_activity_observed=any(int(x)!=0 for x in deltas.values())
     return dict(schema="p3-own-buy-adjusted-S2-sensitivity-v1",
         source_mint=expected_mint,source_pool=expected_pool,
         S1_slot=s1_analysis["context_slot"],S2_slot=s2_analysis["context_slot"],
@@ -148,6 +157,9 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         hypothetical_own_buy_added_real_b_lamports=str(net_in),
         overlay_S2_sell_lamports=str(proceed),
         overlay_S2_delta_before_extra_costs_lamports=str(proceed-amount),
+        observed_S1_to_S2_reserve_deltas=deltas,
+        source_curve_reserve_activity_observed=market_activity_observed,
+        observed_market_change_not_inferred_from_fees=True,
         observation_is_a_two_bank_real_source=True,
         counterfactual_reserves_are_not_observed=True,
         published_identity_incomplete_PDA_checks=sorted(set(incomplete_pdas)),
