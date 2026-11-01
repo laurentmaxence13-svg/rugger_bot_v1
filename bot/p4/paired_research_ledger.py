@@ -118,7 +118,10 @@ def score_pair(frozen,outcome):
         action=case[arm+"_action"]
         if action!="ENTER":
             state="NO_POSITION_POLICY_ABSTAINED"
-            projection=None
+            # Abstaining incurs no entry, exit or failure costs for this
+            # hypothetical position. Its conditional *incremental* P&L is
+            # exactly zero; this is not a realized trading profit.
+            projection=0
         elif status=="FULL_QUOTE":
             state="HYPOTHETICAL_FULL_EXIT_QUOTE_NOT_FILLED"
             projection=conditional_net
@@ -135,12 +138,15 @@ def score_pair(frozen,outcome):
             unrealized_open_position_pnl_lamports=None,
             capital_at_risk_real_lamports=0,
             hypothetical_inventory_is_not_real=True)
-    # The pair can only compare modelled choices, never claim valid strategy
-    # advantage without independently verified source clocks and engines.
-    candidate_model_edge=None
-    if all(results[a]["conditional_net_if_all_costs_provided_lamports"] is not None for a in ARMS):
-        candidate_model_edge=(results["master"]["conditional_net_if_all_costs_provided_lamports"]-
-                              results["reference"]["conditional_net_if_all_costs_provided_lamports"])
+    # Distinguish a genuine conditional comparison of ENTER versus WAIT
+    # from the older BOTH-ENTER-only diagnostic. Unpriced ENTER remains
+    # censored, not a zero loss. Neither metric establishes actual edge.
+    arm_pnl={arm:results[arm]["conditional_net_if_all_costs_provided_lamports"]
+             for arm in ARMS}
+    conditional_pair_edge=(arm_pnl["master"]-arm_pnl["reference"]
+        if all(v is not None for v in arm_pnl.values()) else None)
+    candidate_model_edge=(conditional_pair_edge
+        if all(case[arm+"_action"]=="ENTER" for arm in ARMS) else None)
     return dict(schema=SCHEMA,phase="SCORED_PAPER_FOLLOWUP",
         freeze_sha256=digest,outcome_sha256=_sha(outcome),
         source_quote_time_validated=outcome["provider_quote_source_clock_verified"],
@@ -149,6 +155,12 @@ def score_pair(frozen,outcome):
         nonnegative_extra_costs_upper_bound_lamports=pre_cost_delta,
         conditional_cost_adjusted_delta_lamports=conditional_net,
         candidate_both_enter_illustrative_delta_lamports=candidate_model_edge,
+        conditional_modelled_master_minus_reference_lamports=conditional_pair_edge,
+        comparison_censored_due_to_unknown_enter_costs_or_exit=(
+            conditional_pair_edge is None),
+        decision_arms_with_hypothetical_entries=sum(
+            case[arm+"_action"]=="ENTER" for arm in ARMS),
+        conditional_comparison_is_not_realized_pnl=True,
         source_decision_clock_verified=case["source_clock_verified"],
         signed_creator_verified=case["signed_creator_verified"],
         independent_scoring_engines_verified=False,
