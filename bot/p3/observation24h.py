@@ -133,6 +133,8 @@ def _validate_window(root,w,revision):
             raise ValueError("interrupted_request_usage_must_reserve_worst_case")
         return
     folder=root/"windows"/f"{index:03d}"
+    if folder.is_symlink():
+        raise ValueError("symlink_window_directory_refused")
     plan_path=folder/"plan.json";db_path=folder/"capture.sqlite";report_path=folder/"report.json"
     if any(p.is_symlink() or not p.is_file() for p in (plan_path,db_path,report_path)):
         raise ValueError("missing_or_symlinked_capture_files")
@@ -145,8 +147,20 @@ def _validate_window(root,w,revision):
         raise ValueError("window_source_revision_or_protocol_mismatch")
     validate_plan(plan)
     report=json.loads(report_path.read_text(encoding="utf-8"))
+    model_path=folder/"conditional_models.json"
+    if w.get("curve_model_sha256") is not None:
+        if (model_path.is_symlink() or not model_path.is_file()
+                or _file_sha(model_path)!=w["curve_model_sha256"]):
+            raise ValueError("conditional_curve_model_artifact_tampered")
     with CaptureStore(db_path,readonly=True) as store:
         tail=store.verify_integrity()
+    if w.get("curve_model_sha256") is not None:
+        research=json.loads(model_path.read_text(encoding="utf-8"))
+        if (research.get("verified_tail_sha256")!=tail
+                or research.get("economic_profitability_verified") is not False
+                or research.get("realized_net_pnl_lamports") is not None
+                or research.get("qualified_executable_cycles")!=0):
+            raise ValueError("conditional_model_wrong_provenance")
     if (tail!=report.get("tail_hash") or w.get("tail_hash")!=tail
             or type(report.get("requests_used")) is not int
             or not 0<=report["requests_used"]<=MAX_REQUESTS_PER_WINDOW
@@ -235,6 +249,7 @@ def capture_window(root,manifest,i,*,run=subprocess.run,now_ms=None):
     report=json.loads(report_path.read_text(encoding="utf-8"))
     with CaptureStore(db_path,readonly=True) as journal:
         tail=journal.verify_integrity()
+        captured_events=journal.events()
     if (tail!=report.get("tail_hash")
             or report.get("source_revision")!=manifest["source_revision"]
             or report.get("plan_sha256")!=_digest(plan)
@@ -245,7 +260,23 @@ def capture_window(root,manifest,i,*,run=subprocess.run,now_ms=None):
             or report.get("net_pnl_sol") is not None
             or report.get("settled_positions")!=0):
         raise ValueError("provider_capture_or_report_integrity_failure")
+    # Retain the complete model denominator and all reasons, not merely
+    # favorable models. Never convert a modeled delta into actual PAPER P&L.
+    from bot.p3.curve_cycle_shadow import replay_events
+    model=None
+    if report.get("selected_corpus_size",0)>0:
+        model=replay_events(captured_events,expected_tail=tail)
+        audit_path=folder/"conditional_models.json"
+        atomic_write_json(audit_path,model,sort_keys=True,allow_nan=False)
     return dict(index=i,
+        curve_model_sha256=(_file_sha(folder/"conditional_models.json")
+            if model is not None else None),
+        conditional_size_models_calculable=(
+            model["fixed_size_curve_sensitivity"]["conditional_only_size_markouts"]
+            if model is not None else None),
+        pre_followup_size_grid_receipts_verified=(
+            model["fixed_size_curve_sensitivity"]["pre_followup_size_grids_verified"]
+            if model is not None else None),
         state="SOURCE_GAP" if report.get("stop_reason") is not None
               or report.get("selected_corpus_size")==0 else "CAPTURED",
         stop_reason=report.get("stop_reason"),
@@ -268,12 +299,24 @@ def aggregate(root,manifest):
     arms={"master":{},"reference":{}}
     seen_mints=set();creator_claims=set()
     frozen=0
+    model_size_trials=0
+    model_size_calculable=0
+    model_failure_reasons={}
+    frozen_grid_count=0
     for w in manifest["windows"]:
         if w["state"] not in ("CAPTURED","SOURCE_GAP"):
             continue
         _,_,_,file=_window_files(root,w["index"])
         report=json.loads(file.read_text(encoding="utf-8"))
         frozen+=report.get("frozen_actual_master_reference_candidates",0)
+        if w.get("curve_model_sha256") is not None:
+            model=json.loads((file.parent/"conditional_models.json").read_text(encoding="utf-8"))
+            sensitivity=model["fixed_size_curve_sensitivity"]
+            model_size_trials+=sensitivity["assessed_sizes"]
+            model_size_calculable+=sensitivity["conditional_only_size_markouts"]
+            frozen_grid_count+=sensitivity["pre_followup_size_grids_verified"]
+            for code,n in sensitivity["blocked_size_reasons"].items():
+                model_failure_reasons[code]=model_failure_reasons.get(code,0)+n
         for c in report["cases"]:
             seen_mints.add(c["mint"])
             claim=c.get("creator_claim")
@@ -295,6 +338,11 @@ def aggregate(root,manifest):
         unique_creator_claims_UNVERIFIED=len(creator_claims),
         creator_identity_independence_certified=False,
         frozen_actual_master_reference_s1_decisions=frozen,
+        frozen_S1_size_grid_receipts_verified=frozen_grid_count,
+        theoretical_S1_S2_curve_size_trials=model_size_trials,
+        theoretical_S1_S2_curve_exit_calculable=model_size_calculable,
+        theoretical_S1_S2_curve_failures=dict(sorted(model_failure_reasons.items())),
+        theoretical_model_delta_not_realized_profit=True,
         master_actions=arms["master"],reference_actions=arms["reference"],
         sampled_not_continuous=True,no_authenticated_continuous_signed_creation_stream=True,
         no_complete_migration_or_cpmm_exit_tracking=True,
