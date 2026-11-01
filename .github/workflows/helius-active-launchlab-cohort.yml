@@ -42,7 +42,7 @@ jobs:
       - name: Validate active-survivor limits, fake PnL refusals and read-only contracts
         run: |
           python -m pip install --disable-pip-version-check 'pytest>=8,<10'
-          python -m pytest -q tests/test_live_helius_active_launchlab_cohort.py tests/test_live_helius_active_launchlab_scan.py tests/test_live_helius_active_size_ladder.py
+          python -m pytest -q tests/test_live_helius_active_launchlab_cohort.py tests/test_live_helius_active_launchlab_scan.py tests/test_live_helius_active_size_ladder.py tests/test_live_helius_active_root_activity.py
       - name: Observe frozen 3-creator candidate sample at S1 then S2 with NO orders
         shell: bash
         env:
@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
           git rev-parse HEAD
-          python -B -m bot.live.helius_active_launchlab_cohort --research-size-ladder
+          python -B -m bot.live.helius_active_launchlab_cohort --research-size-ladder --prefer-root-activity
 
       - name: Archive public PAPER observations for later deduplication
         if: always()
