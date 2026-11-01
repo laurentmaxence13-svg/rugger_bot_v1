@@ -1,5 +1,12 @@
 # Rugger Bot V1 — scanner Solana en simulation
 
+
+## Nouveau : terminal PAPER visuel — double clic Windows
+
+Le terminal local est accessible sur **http://localhost:8501** après avoir double-cliqué sur **LANCER_TERMINAL_PAPER.bat**. Il lit la base PAPER existante **data/rugger_bot.db** en lecture seule (positions, décisions, prix USD des memecoins), surveille les nouvelles observations et accepte les archives de simulations Helius GitHub Actions. Mode démonstration entièrement fictif disponible.
+
+Les trades de l'ancien moteur PAPER, les décisions du Master et les projections hypothétiques S1/S2 sont affichés séparément. Aucun achat réel, aucune clé de wallet et aucune preuve de rentabilité Master ne sont impliqués. **[Guide d'installation et d'utilisation](TERMINAL_PAPER.md)**.
+
 Cette V1 ne peut ni acheter ni vendre. Elle ne contient aucun code de signature de transaction.
 
 ## Préparation des données P3
