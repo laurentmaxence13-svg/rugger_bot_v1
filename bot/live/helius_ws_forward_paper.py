@@ -49,6 +49,48 @@ def _percentile(values, percent):
     return round(ranked[index] / 1_000_000, 4)
 
 
+def _launchlab_initialize_hint(logs):
+    """Untrusted discovery hint scoped to LaunchLab's invocation.
+
+    A nested token/ATA Initialize log must not trigger a LaunchLab creation
+    probe. Even a true hint NEVER certifies a token creation or economic fill.
+    """
+    names = frozenset((
+        "Initialize", "InitializeV2",
+        "InitializeWithToken2022", "InitializeWithToken_2022"))
+    stack = []
+    scoped = False
+    for line in logs:
+        if type(line) is not str:
+            continue
+        if line.startswith("Program ") and " invoke [" in line:
+            left, _, right = line.partition(" invoke [")
+            program = left[len("Program "):]
+            depth = right.partition("]")[0]
+            if (program and depth.isascii() and depth.isdigit()
+                    and int(depth) > 0 and int(depth) <= 32):
+                n = int(depth)
+                stack = stack[:n - 1]
+                if len(stack) == n - 1:
+                    stack.append(program)
+                    scoped = True
+                else:
+                    stack = []
+                    scoped = True
+            continue
+        if line.startswith("Program ") and (line.endswith(" success") or " failed:" in line):
+            program = line[len("Program "):].split(" ", 1)[0]
+            if stack and program == stack[-1]:
+                stack.pop()
+            continue
+        if not line.startswith("Program log: Instruction: "):
+            continue
+        name = line[len("Program log: Instruction: "):]
+        if name in names and ((stack and stack[-1] == PROGRAM) or not scoped):
+            return True
+    return False
+
+
 class ReadOnlyLogAudit:
     """Bounded, deterministic parser; signature IDs are public, not wallets."""
     def __init__(self, subscription, maximum, *, successful_only=False):
@@ -111,9 +153,7 @@ class ReadOnlyLogAudit:
             return False
         # A provider log string is only a discovery hint. User programs can
         # emit similar strings, so it can never certify a creation.
-        hint = any(type(line) is str and
-                   line.startswith("Program log: Instruction: Initialize")
-                   for line in tx["logs"])
+        hint = _launchlab_initialize_hint(tx["logs"])
         event = dict(signature=signature, slot=slot,
                      untrusted_initialize_log_hint=hint,
                      on_chain_transaction_failed=tx["err"] is not None,
