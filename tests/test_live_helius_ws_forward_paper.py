@@ -139,3 +139,51 @@ def test_default_capture_still_retains_failed_notification():
     assert r["retention_policy"]=="all_notifications"
     assert r["discarded_failed_notifications"]==0
     assert r["onchain_failed_transactions_in_notifications"]==1
+
+
+def test_initialize_hint_is_scoped_to_launchlab_invocation_not_nested_token_program():
+    token="TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    logs=[
+        f"Program {PROGRAM} invoke [1]",
+        f"Program {token} invoke [2]",
+        "Program log: Instruction: Initialize",
+        f"Program {token} success",
+        f"Program {PROGRAM} success",
+    ]
+    assert mod._launchlab_initialize_hint(logs) is False
+    real=[
+        "Program Other11111111111111111111111111111111 invoke [1]",
+        f"Program {PROGRAM} invoke [2]",
+        "Program log: Instruction: InitializeV2",
+        f"Program {PROGRAM} success",
+        "Program Other11111111111111111111111111111111 success",
+    ]
+    assert mod._launchlab_initialize_hint(real) is True
+    unscoped=["Program log: Instruction: InitializeV2"]
+    assert mod._launchlab_initialize_hint(unscoped) is True
+
+
+def test_initialize_hint_does_not_trigger_on_other_launchlab_instructions():
+    logs=[
+        f"Program {PROGRAM} invoke [1]",
+        "Program log: Instruction: BuyExactIn",
+        f"Program {PROGRAM} success",
+    ]
+    assert mod._launchlab_initialize_hint(logs) is False
+    logs[1]="Program log: Instruction: InitializeAUnrelatedVariant"
+    assert mod._launchlab_initialize_hint(logs) is False
+
+
+def test_hinted_events_dont_claim_creation_or_economic_fill():
+    audit=mod.ReadOnlyLogAudit(7,5)
+    logs=[
+        f"Program {PROGRAM} invoke [1]",
+        "Program log: Instruction: InitializeV2",
+        f"Program {PROGRAM} success",
+    ]
+    assert audit.accept(message(SIG_A,logs=logs),received_mono_ns=1,
+                        parsed_mono_ns=2,received_utc_ns=3)
+    event=audit.events[0]
+    assert event["untrusted_initialize_log_hint"] is True
+    assert event["classification"]=="UNCLASSIFIED_PROGRAM_LOG_NOT_LAUNCH_PROOF"
+    assert event["filled"] is False
