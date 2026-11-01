@@ -9,6 +9,7 @@ ROOT=Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0,str(ROOT))
 from bot.dashboard.evidence import load_local,load_uploaded,parse_documents,synthetic_demo
+from bot.dashboard.local_db import read_paper_db
 
 
 def money(x,sign=False):
@@ -30,7 +31,7 @@ def table(rows,columns):
 
 def charts(cycles):
     import pandas as pd
-    for arm in ("MASTER","RÉFÉRENCE"):
+    for arm in sorted({r["strategie"] for r in cycles}):
         rows=[r for r in cycles if r["strategie"]==arm]
         if rows:
             values=[0.0]
@@ -46,17 +47,20 @@ def render_data(data,demo):
         st.error("DÉMONSTRATION SYNTHÉTIQUE — toutes les opérations présentées sont inventées.")
     else:
         st.warning("PAPER ONLY — aucune opération financière réelle. Les scénarios S1/S2 ne sont pas des trades du Master.")
-    sources=sorted({r["source"] for key in ("cycles","decisions","projections")
-                    for r in data[key]})
+    sources=sorted({r["source"] for key in ("cycles","decisions","projections","positions","prices")
+                    for r in data.get(key,[])})
     with st.expander("Filtres",expanded=False):
         selected=set(st.multiselect("Sources",sources,default=sources))
-        arms=st.multiselect("Moteurs",["MASTER","RÉFÉRENCE"],
-                            default=["MASTER","RÉFÉRENCE"])
+        options=["MASTER","RÉFÉRENCE","PAPER_ENGINE","SHADOW_BASELINE"]
+        arms=st.multiselect("Moteurs",options,default=options)
     cycles=[r for r in data["cycles"] if r["source"] in selected
             and r["strategie"] in arms]
     decisions=[r for r in data["decisions"] if r["source"] in selected
                and r["strategie"] in arms]
     projections=[r for r in data["projections"] if r["source"] in selected]
+    positions=[r for r in data.get("positions",[]) if r["source"] in selected
+               and r["strategie"] in arms]
+    prices=[r for r in data.get("prices",[]) if r["source"] in selected]
     master=[r for r in cycles if r["strategie"]=="MASTER"]
     a,b,c,d=st.columns(4)
     a.metric("Capital PAPER initial de référence","10 SOL")
@@ -65,17 +69,17 @@ def render_data(data,demo):
     d.metric("P&L Master PAPER clos",money(
         round(sum(r["resultat_net_sol"] for r in master),9),True) if master else "—")
     st.caption("Plusieurs captures ne constituent pas nécessairement un seul portefeuille continu. Aucun solde total multi-session n'est inventé.")
-    t1,t2,t3,t4=st.tabs(["Décisions du bot","Portefeuille / Trades PAPER",
-                        "Scénarios memecoins","Sources / Qualification"])
+    t1,t2,t3,t4,t5=st.tabs(["Décisions du bot","Portefeuille / Trades PAPER",
+                        "Scénarios S1/S2","Prix USD observés","Sources / Qualification"])
     with t1:
-        st.subheader("Décisions Master et référence")
+        st.subheader("Décisions du bot : Master, référence et moteur PAPER local")
         st.caption("Les décisions de marché sont gelées à S1. WAIT, REJECT et ENTER ne prouvent pas un ordre exécuté.")
         table([dict(Fichier=r["source"],Token=short(r["mint"]),Moteur=r["strategie"],
                     Décision=r["decision"],Slot=r.get("slot"),
                     Preuve=r["preuve"]) for r in reversed(decisions)],
               ["Fichier","Token","Moteur","Décision","Slot","Preuve"])
     with t2:
-        st.subheader("Positions clôturées, issues exclusivement du ledger PAPER")
+        st.subheader("Positions closes du registre PAPER / moteur local")
         st.caption("Les gains/pertes sont des simulations et ne doivent pas être confondus avec un rendement exécutable sur Solana.")
         table([dict(Fichier=r["source"],Token=short(r["mint"]),Moteur=r["strategie"],
                     Achat_SOL=r["entree_sol"],Vente_SOL=r["sortie_sol"],
@@ -83,6 +87,11 @@ def render_data(data,demo):
                     Qualité=r["qualification"]) for r in cycles],
               ["Fichier","Token","Moteur","Achat_SOL","Vente_SOL",
                "Frais_SOL","PnL_net_SOL","Qualité"])
+        st.subheader("Positions PAPER ouvertes (base locale)")
+        table([dict(Token=short(r["mint"]),Moteur=r["strategie"],
+                    Mise_SOL=r["capital_sol"],Prix_entree_USD=r["entree_usd"],
+                    Statut=r["statut"]) for r in positions],
+              ["Token","Moteur","Mise_SOL","Prix_entree_USD","Statut"])
         charts(cycles)
     with t3:
         st.subheader("Hypothèses S1–S2, jamais des ordres")
@@ -105,6 +114,21 @@ def render_data(data,demo):
         else:
             st.info("Aucune projection S1/S2 admissible dans les preuves sélectionnées.")
     with t4:
+        st.subheader("Prix USD réellement observés par le moteur PAPER local")
+        st.caption("Points sauvegardés par le scanner papier (source du rapport local). Ce ne sont pas des prix exécutables. Pas de bougies inventées.")
+        mints=sorted({r["mint"] for r in prices})
+        if mints:
+            mint=st.selectbox("Token (mint)",mints,key="price_mint")
+            rows=sorted((r for r in prices if r["mint"]==mint),
+                        key=lambda r:r["utc_timestamp"])
+            import pandas as pd
+            df=pd.DataFrame(rows)
+            df["Date UTC"]=pd.to_datetime(df["utc_timestamp"],unit="s",utc=True)
+            st.line_chart(df.set_index("Date UTC"),y="prix_usd",height=320)
+            st.caption(f"{len(rows)} point(s) locaux ; source DexScreener ou fournisseur indiqué par le moteur, non vérifiée comme exécutable.")
+        else:
+            st.info("Pas encore de points de prix. Démarrer START_PAPER_ENGINE.bat et le scanner pour alimenter data/rugger_bot.db, ou importer une capture Helius S1/S2.")
+    with t5:
         st.subheader("Provenance et données disponibles")
         table(data["sources"],["fichier","schema","statut","trading_live","donnees_verifiees"])
         table(data["summary"],["source","information","valeur"])
@@ -128,6 +152,7 @@ def main():
         st.header("Pilotage du terminal")
         demo=st.toggle("Démo entièrement fictive",value=False)
         folder=st.text_input("Dossier des preuves JSON","paper_artifacts",disabled=demo)
+        db=st.text_input("Base PAPER locale (lecture seule)","data/rugger_bot.db",disabled=demo)
         uploads=st.file_uploader("Importer ZIP GitHub Actions ou JSON",
             type=["json","zip"],accept_multiple_files=True,disabled=demo)
         autorefresh=st.toggle("Recharger les preuves toutes les 10 s",
@@ -154,7 +179,17 @@ def main():
                 imported.extend(load_uploaded(uploaded.name,uploaded.getvalue()))
             except (ValueError,RuntimeError) as exc:
                 st.error(f"Impossible d'importer {uploaded.name}: {exc}")
-        data=parse_documents(local+imported)
+        legacy=load_local(ROOT/"data")
+        data=parse_documents(local+legacy+imported)
+        db_path=Path(db).expanduser()
+        if not db_path.is_absolute():
+            db_path=ROOT/db_path
+        try:
+            view=read_paper_db(db_path)
+            for key,items in view.items():
+                data[key].extend(items)
+        except Exception as exc:
+            st.warning("Base locale non lisible en lecture seule : "+type(exc).__name__)
         st.caption(f"{len(data['sources'])} source(s) reconnue(s) · "
                    f"{len(local)} fichier(s) local(aux) · "
                    f"{len(imported)} fichier(s) importé(s)")
