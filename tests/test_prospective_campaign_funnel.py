@@ -144,3 +144,36 @@ def test_signed_creation_claims_count_unique_signatures(tmp_path):
     out=funnel(summary,items)
     assert out["unique_signed_creation_signature_claims"]==2
     assert out["verified_signed_creator_claims"]==2
+
+
+
+def test_new_capture_window_clocks_present_but_not_authenticated(tmp_path):
+    summary,items=fixtures(tmp_path)
+    out=funnel(summary,items)
+    assert out["local_capture_clock_provided"] is True
+    assert out["local_capture_clock_independently_authenticated"] is False
+    assert summary["local_capture_clock_is_not_external_git_or_provider_proof"] is True
+    assert all(w["capture_clock_authentication"]=="local_wall_clock_unverified"
+               for w in summary["windows"])
+
+
+def test_reversed_local_capture_windows_are_refused(tmp_path):
+    summary,items=fixtures(tmp_path)
+    summary["windows"][1]["capture_started_local_ms"]=(
+        summary["windows"][0]["capture_completed_local_ms"]-1)
+    with pytest.raises(ValueError,match="local_capture_clock_order"):
+        funnel(summary,items)
+
+
+def test_unregistered_partial_local_capture_clock_refused(tmp_path):
+    summary,items=fixtures(tmp_path)
+    del summary["local_capture_clock_is_not_external_git_or_provider_proof"]
+    with pytest.raises(ValueError,match="unregistered_partial_local_capture_clock"):
+        funnel(summary,items)
+
+
+def test_local_wall_clock_cannot_claim_external_authentication(tmp_path):
+    summary,items=fixtures(tmp_path)
+    summary["windows"][0]["capture_clock_authentication"]="provider_finalized"
+    with pytest.raises(ValueError,match="local_capture_clock_order_or_provenance"):
+        funnel(summary,items)
