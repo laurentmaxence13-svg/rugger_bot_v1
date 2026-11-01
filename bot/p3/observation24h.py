@@ -89,7 +89,7 @@ def preflight(*,revision,max_total_requests=960):
             "creator_disjoint_out_of_sample_statistical_power"],
         status_for_exact_master_profitability=COMPARISON_GATE,
         no_live_trades=True,provider_usage_billing_unverified=True,
-        24h_collection_started=False,source_revision=p["source_revision"])
+        collection_24h_started=False,source_revision=p["source_revision"])
 
 
 def _root_guard(root):
