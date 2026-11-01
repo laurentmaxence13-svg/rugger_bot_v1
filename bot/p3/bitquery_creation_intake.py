@@ -185,3 +185,52 @@ def verify_bitquery_candidates(report,rpc,*,selection_limit=MAX_VERIFY):
         qualified_economic_cycles=0,master_net_pnl_lamports=None,
         reference_net_pnl_lamports=None,financial_order_submitted=False,
         live_ready_to_arm=False)
+
+
+def main(argv=None):
+    """Convert one Bitquery export to immutable discovery plus optional proof."""
+    import argparse
+    import os
+    from pathlib import Path
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--input",type=Path,required=True)
+    parser.add_argument("--output",type=Path,required=True)
+    parser.add_argument("--verify-signed-receipts",action="store_true")
+    parser.add_argument("--verified-output",type=Path)
+    args=parser.parse_args(argv)
+    if args.input.resolve()==args.output.resolve():
+        parser.error("input_and_output_must_differ")
+    if args.verify_signed_receipts and (
+        args.verified_output is None or not os.environ.get("HELIUS_API_KEY")):
+        parser.error("signed_proof_requires_output_and_existing_helius_secret")
+    if args.verified_output and (
+        args.verified_output.resolve() in (args.input.resolve(),args.output.resolve())):
+        parser.error("proof_output_must_be_distinct")
+    if args.input.stat().st_size>3_000_000:
+        parser.error("bitquery_export_exceeded_bounded_input")
+    payload=json.loads(args.input.read_text(encoding="utf-8"))
+    report=parse_bitquery_creation_response(payload)
+    args.output.parent.mkdir(parents=True,exist_ok=True)
+    with args.output.open("x",encoding="utf-8") as out:
+        out.write(json.dumps(report,sort_keys=True,allow_nan=False)+"\n")
+    if args.verify_signed_receipts:
+        from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
+        rpc=HeliusReadOnlyRpc.from_environment(max_calls=10)
+        proof=verify_bitquery_candidates(report,rpc)
+        args.verified_output.parent.mkdir(parents=True,exist_ok=True)
+        with args.verified_output.open("x",encoding="utf-8") as out:
+            out.write(json.dumps(proof,sort_keys=True,allow_nan=False)+"\n")
+        print(json.dumps(dict(status="SIGNED_IDENTITY_RECONCILED",
+            discovered=report["candidates"],cryptographically_verified=proof["verified_signed_creations"],
+            asof_entry_quotes_available=False,
+            master_net_pnl_lamports=None,financial_order_submitted=False)))
+    else:
+        print(json.dumps(dict(status="BITQUERY_HINTS_ONLY_NOT_SIGNED",
+            discovered=report["candidates"],cryptographically_verified=0,
+            asof_entry_quotes_available=False,
+            master_net_pnl_lamports=None,financial_order_submitted=False)))
+    return 0
+
+
+if __name__=="__main__":
+    raise SystemExit(main())
