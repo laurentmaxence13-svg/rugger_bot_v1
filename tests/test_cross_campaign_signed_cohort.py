@@ -176,3 +176,24 @@ def test_duplicate_same_signed_signature_does_not_multiply_source_rows():
     assert x["unique_signed_creation_signatures"]==1
     assert len(x["source_signed_creation_rows"])==1
     assert x["unique_signed_creator_claims"]==1
+
+
+
+def test_full_denominator_counts_distinct_inspected_not_only_signed():
+    a=fixture(11)
+    b=fixture(12,signature="other",creator="anotherCreator",
+              mint="otherMint",pool="otherPool")
+    x=audit_campaigns([a,b])
+    assert x["unique_observed_event_signatures"]==2
+    assert x["unique_inspected_event_signatures"]==2
+    assert x["uninspected_unique_event_signatures"]==0
+    assert x["unique_inspected_signed_creation_signatures"]==2
+    assert x["uninspected_events_are_not_verified_non_creations"] is True
+
+
+def test_repeated_inspected_signature_not_inflated_across_campaigns():
+    x=audit_campaigns([fixture(11),fixture(12)])
+    assert x["total_observed_event_rows"]==2
+    assert x["unique_observed_event_signatures"]==1
+    assert x["unique_inspected_event_signatures"]==1
+    assert x["unique_inspected_signed_creation_signatures"]==1
