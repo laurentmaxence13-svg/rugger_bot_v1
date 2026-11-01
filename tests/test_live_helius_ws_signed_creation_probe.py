@@ -235,3 +235,29 @@ def test_eight_preselected_v1_double_receipts_respect_ten_call_budget(monkeypatc
     assert out["status_counts"]["VERIFIED_NON_CREATION"]==4
     assert rpc.count==9
     assert out["financial_order_submitted"] is False
+
+
+def test_stratified_receipt_sample_uses_whole_websocket_window_not_first_eight(monkeypatch):
+    audit=ReadOnlyLogAudit(7,100)
+    for n in range(40):
+        sig=_encode(bytes([n+20])*64)
+        msg=dict(jsonrpc="2.0",method="logsNotification",
+            params=dict(subscription=7,result=dict(
+                context=dict(slot=3000+n),
+                value=dict(signature=sig,err=None,logs=["Program log: no hint"]))))
+        assert audit.accept(msg,received_mono_ns=1000000+n,
+            received_utc_ns=200000000000+n,parsed_mono_ns=1000001+n)
+    report=audit.report(duration_ms=30000,handshake_ms=10)
+    events=audit.events
+    monkeypatch.setattr(mod,"verify_compiled_rpc_signatures",fake_verified_crypto)
+    monkeypatch.setattr(mod,"normalized_compiled_transaction",fake_compiled)
+    monkeypatch.setattr(mod,"compiled_launchlab_creations",lambda _:[])
+    result=mod.inspect_forward_creations(report,events,Rpc(events))
+    selected={x["slot"] for x in result["records"]
+              if x["status"]=="VERIFIED_NON_CREATION"}
+    assert len(selected)==8
+    assert min(selected)>3000
+    assert max(selected)>3030
+    assert result["status_counts"]["NOT_INSPECTED_RPC_BUDGET"]==32
+    assert result["selection_rule"]=="initialize_hints_first_then_preoutcome_time_stratified_eight_finalized_receipts"
+    assert result["financial_order_submitted"] is False
