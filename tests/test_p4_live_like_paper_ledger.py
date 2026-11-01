@@ -14,6 +14,7 @@ def freeze(master="ENTER",reference="ENTER",**overrides):
     case=dict(id="frozen-1",mint=MINT,creator="verified-signed-creator",
         pool=POOL,source_slot=100,available_at_ms=1000,
         decisions={"master":master,"reference":reference},
+        entry_size_lamports=100_000_000,
         signed_creator_verified=True,asof_features_verified=True,
         source_quote_clock_verified=True,policy_sha256="a"*64)
     case.update(overrides)
@@ -26,7 +27,8 @@ def quote(side,*,id="source-1",pool=POOL,venue="LAUNCHLAB_CURVE",
           proof=None):
     return dict(id=id,mint=MINT,pool=pool,venue=venue,side=side,
         input_atomic=input,output_atomic=output,source_slot=slot,
-        available_at_ms=available,source_observation_sha256="b"*64,
+        available_at_ms=available,source_produced_at_ms=available,
+        source_observation_sha256="b"*64,
         provenance=provenance,
         network_and_priority_fee_lamports=network_fee,
         account_creation_fee_lamports=ata,
@@ -137,7 +139,7 @@ def test_future_decision_without_verified_creator_or_features_cannot_enter():
 
 def test_open_inventory_censored_not_hidden_as_zero_and_no_repeated_buy():
     engine=PaperLedger(capital_lamports=100_000_000)
-    engine.register(freeze())
+    engine.register(freeze(entry_size_lamports=99_000_000))
     engine.quote("frozen-1","master","BUY",quote("BUY",input=99_000_000))
     report=engine.snapshot()
     assert report["accounts"]["master"]["open_positions"]==1
