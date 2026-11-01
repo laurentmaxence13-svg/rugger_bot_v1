@@ -20,6 +20,7 @@ from urllib.request import Request, urlopen
 SOL_MINT = "So11111111111111111111111111111111111111112"
 PROFILE_URL = "https://api.dexscreener.com/token-profiles/latest/v1"
 PRICE_URL = "https://api.dexscreener.com/tokens/v1/solana/"
+PAIR_FALLBACK_URL = "https://api.dexscreener.com/token-pairs/v1/solana/"
 INITIAL_SOL = 10.0
 STAKE_SOL = 0.05
 BUY_FRICTION = 0.01
@@ -57,7 +58,9 @@ def _mint(value):
 def _fetch_json(url):
     if not (url == PROFILE_URL or
             url.startswith(PRICE_URL) and len(url) < 1600 and
-            all(_mint(m) for m in url[len(PRICE_URL):].split(","))):
+            all(_mint(m) for m in url[len(PRICE_URL):].split(",")) or
+            url.startswith(PAIR_FALLBACK_URL) and
+            _mint(url[len(PAIR_FALLBACK_URL):])):
         raise ValueError("unexpected_public_data_endpoint")
     req = Request(url, headers={"Accept": "application/json",
                                 "User-Agent": "RuggerResearchPaper/1.0"})
@@ -356,17 +359,50 @@ def master_diagnostics(quotes, *, clock=now_ms):
 
 
 def observe_public_cycle(state, *, fetch=_fetch_json, clock=now_ms):
-    """One real HTTP observation cycle; all API results remain untrusted."""
-    profiles=select_profiles(fetch(PROFILE_URL))
-    if not profiles:
-        state.error("NO_PUBLIC_SOLANA_PROFILES")
+    """One public-market cycle, protecting EXISTING positions on discovery gaps.
+
+    Discovery is at most once per 6 price cycles; known and open mints are
+    always re-quoted, even when profile discovery is inaccessible. A backup
+    public token-pairs endpoint is tried for one open position if the grouped
+    price endpoint fails. Neither endpoint proves an executable sell quote.
+    """
+    snapshot=state.snapshot()
+    tracked=list(dict.fromkeys(
+        [p["mint"] for p in snapshot.get("positions",[]) if _mint(p.get("mint"))]+
+        [m for m in snapshot.get("observations",{}) if _mint(m)]))
+    # Avoid re-fetching promotional discovery on every price update: such
+    # endpoints are rate limited and their profile lists fluctuate.
+    refresh=(snapshot.get("polls",0) % 6 == 0) or not tracked
+    if refresh:
+        try:
+            profiles=select_profiles(fetch(PROFILE_URL))
+        except Exception:
+            # Only public discovery; missing data stay missing. A known open
+            # position is still re-priced if the source remains reachable.
+            profiles=[]
+        tracked=list(dict.fromkeys(tracked+profiles[:15]))
+    tracked=tracked[:MAX_TRACKED]
+    if not tracked:
+        state.error("NO_DISCOVERY_AND_NO_TRACKED_TOKEN")
         return
-    # Profiles can rotate; retaining previous candidates prevents churn from
-    # stopping consecutive price observations. No future data selects entries.
-    previous=state.snapshot().get("observations",{})
-    tracked=list(dict.fromkeys(profiles[:15] + list(previous)[:10]))[:MAX_TRACKED]
-    payload=fetch(PRICE_URL + ",".join(tracked))
-    prices=select_sol_pairs(payload,set(tracked))
+    try:
+        payload=fetch(PRICE_URL + ",".join(tracked))
+        prices=select_sol_pairs(payload,set(tracked))
+    except Exception as price_error:
+        positions=snapshot.get("positions",[])
+        if not positions:
+            state.error("GROUP_PRICE_UNAVAILABLE_"+type(price_error).__name__)
+            return
+        mint=positions[0].get("mint")
+        if not _mint(mint):
+            state.error("INVALID_OPEN_POSITION_MINT")
+            return
+        try:
+            payload=fetch(PAIR_FALLBACK_URL+mint)
+            prices=select_sol_pairs(payload,{mint})
+        except Exception as fallback_error:
+            state.error("BOTH_PRICE_SOURCES_UNAVAILABLE_"+type(fallback_error).__name__)
+            return
     if not prices:
         state.error("NO_LIQUID_SOL_PAIRS_FROM_PROVIDER")
         return
