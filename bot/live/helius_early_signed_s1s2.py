@@ -308,7 +308,7 @@ def main():
         print(json.dumps(dict(schema=report["schema"],
             retained=report["forward_log_report"]["events_received_unique"],
             hinted=len(report["selected"]),attempts=len(report["attempts"]),
-            signed=sum("signed_outer_creations" in x for x in report["attempts"]),
+            signed=sum(bool(x.get("signed_outer_creations")) for x in report["attempts"]),
             frozen=sum("frozen_pre_S2" in x for x in report["attempts"]),
             slots=[dict(creation=x["source_slot"],s1=x.get("s1_slot"),
                         gap=x.get("creation_to_root_slot_gap"),
