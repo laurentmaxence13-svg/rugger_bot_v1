@@ -1,7 +1,8 @@
 """Same-source predeclared LaunchLab sizing, no AMM leakage or winner choice."""
 from copy import deepcopy
 
-from bot.p3.curve_size_grid import FROZEN_SIZES_LAMPORTS,sized_s1s2_cases,sized_summary
+from bot.p3.curve_size_grid import (FROZEN_SIZES_LAMPORTS,sized_s1s2_cases,
+                                    sized_summary,freeze_size_grid_at_s1)
 from bot.p3.quotes import SOL_MINT
 
 
@@ -103,3 +104,46 @@ def test_sizing_does_not_depend_on_S2_outcome_before_freezing_S1():
            r["size_lamports"] for r in newer]
     assert old[3]["status"]=="UNQUALIFIED"
     assert newer[3]["status"]=="CONDITIONAL_CURVE_MARKOUT_ONLY"
+
+
+def test_s1_frozen_grid_receipt_precedes_followup_and_replays_identically():
+    row=dict(ordinal=0,mint="fixture-mint")
+    initial,followup=source()
+    initial["payload"]["analysis"]["context_slot"]=initial["source_slot"]
+    initial["payload"]["snapshot_observation_id"]=42
+    initial["id"]=1
+    initial["available_at_ms"]=10000
+    followup["id"]=3
+    followup["available_at_ms"]=10100
+    frozen=freeze_size_grid_at_s1(
+        analysis=initial["payload"]["analysis"],
+        mint="fixture-mint",ordinal=0,
+        snapshot_observation_id=42,source_slot=100)
+    assert len(frozen["frozen_buy_models"])==4
+    assert all(c["size_lamports"]==size for size,c in zip(
+        FROZEN_SIZES_LAMPORTS,frozen["frozen_buy_models"]))
+    assert all(c["buy_quantity_atomic"] is not None for c in frozen["frozen_buy_models"])
+    checkpoint=dict(id=2,kind="checkpoint",mint="fixture-mint",
+        outcome="initial_curve_size_grid_frozen",
+        available_at_ms=10050,payload=frozen)
+    report=sized_summary([initial,checkpoint,followup],[row])
+    assert report["pre_followup_size_grids_verified"]==1
+    assert report["historical_replay_not_prospective_preadmission"] is False
+    # Tampering with buy quantity must not pass audit.
+    altered=deepcopy(checkpoint)
+    altered["payload"]["frozen_buy_models"][0]["buy_quantity_atomic"]="999"
+    import pytest
+    with pytest.raises(ValueError,match="evidence mismatch"):
+        sized_summary([initial,altered,followup],[row])
+    future=deepcopy(checkpoint)
+    future["id"]=4
+    with pytest.raises(ValueError,match="evidence mismatch"):
+        sized_summary([initial,future,followup],[row])
+
+
+def test_legacy_capture_grid_is_retroactive_sensitivity_not_frozen_strategy():
+    row=dict(ordinal=0,mint="fixture-mint")
+    report=sized_summary(source(),[row])
+    assert report["pre_followup_size_grids_verified"]==0
+    assert report["historical_replay_not_prospective_preadmission"] is True
+    assert report["master_reference_actual_net_lamports"] is None
