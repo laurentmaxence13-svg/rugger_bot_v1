@@ -199,3 +199,54 @@ def test_self_attested_creator_flags_cannot_satisfy_verified_holdout_threshold()
     assert result["creator_signature_proofs_independently_revalidated"] is False
     assert result["complete_creation_denominator_externally_verified"] is False
     assert result["empirical_net_master_advantage_verified"] is False
+
+
+
+def test_censored_entry_capital_not_discarded_when_master_enter_reference_wait():
+    open_case=case()
+    open_case["followup"]=followup(exit_kind="OPEN_UNPRICED")
+    missing_case=case(1)
+    resolved_case=case(2)
+    resolved_case["followup"]=followup(2)
+    x=audit_creator_disjoint_shadow([open_case,missing_case,resolved_case],protocol())
+    assert sum(s["master_modelled_entry_notional_lamports"]
+               for s in x["splits"].values())==300_000_000
+    assert sum(s["master_censored_entry_notional_lamports"]
+               for s in x["splits"].values())==200_000_000
+    assert sum(s["reference_modelled_entry_notional_lamports"]
+               for s in x["splits"].values())==0
+    assert sum(s["reference_censored_entry_notional_lamports"]
+               for s in x["splits"].values())==0
+    assert x["actual_master_minus_reference_net_pnl_lamports"] is None
+
+
+def test_both_enter_censored_exposure_is_reported_for_both_arms():
+    r=case(reference="ENTER")
+    r["followup"]=followup(exit_kind="FAILED_EXIT")
+    x=audit_creator_disjoint_shadow([r],protocol())
+    row=x["rows"][0]
+    assert row["master_censored_entry_notional_lamports"]==100_000_000
+    assert row["reference_censored_entry_notional_lamports"]==100_000_000
+    assert row["conditional_model_master_minus_reference_lamports"] is None
+
+
+def test_full_exit_quote_without_costs_still_censors_entry_exposure():
+    r=case()
+    r["followup"]=followup(fees=None)
+    x=audit_creator_disjoint_shadow([r],protocol())
+    row=x["rows"][0]
+    assert row["complete_exit_quote_but_missing_costs"] is True
+    assert row["master_censored_entry_notional_lamports"]==100_000_000
+    assert sum(s["complete_exit_quote_but_missing_costs"]
+               for s in x["splits"].values())==1
+    assert x["empirical_net_master_advantage_verified"] is False
+
+
+def test_wait_wait_never_creates_censored_exposure():
+    r=case(master="WAIT",reference="WAIT")
+    x=audit_creator_disjoint_shadow([r],protocol())
+    row=x["rows"][0]
+    assert row["master_hypothetical_entry_notional_lamports"]==0
+    assert row["reference_hypothetical_entry_notional_lamports"]==0
+    assert row["master_censored_entry_notional_lamports"]==0
+    assert row["reference_censored_entry_notional_lamports"]==0
