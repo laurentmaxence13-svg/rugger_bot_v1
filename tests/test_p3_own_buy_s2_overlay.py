@@ -59,6 +59,9 @@ def test_own_buy_overlay_can_quote_when_untouched_observed_s2_lacks_owned_tokens
         int(p["overlay_S2_sell_lamports"])-AMOUNT)
     assert p["observation_is_a_two_bank_real_source"] is True
     assert p["counterfactual_reserves_are_not_observed"] is True
+    assert p["observed_S1_to_S2_reserve_deltas"]["real_a_atomic"]=="-9000000000000"
+    assert p["source_curve_reserve_activity_observed"] is True
+    assert p["observed_market_change_not_inferred_from_fees"] is True
     assert p["published_identity_incomplete_PDA_checks"]==[
         "S1:platform_pda","S2:platform_pda"]
     assert p["partial_PDA_certification_accepted_for_research_only"] is True
@@ -80,6 +83,9 @@ def test_two_models_are_reported_separately_when_both_support_exact_sell():
     assert int(p["overlay_S2_sell_lamports"])>0
     assert int(p["overlay_S2_sell_lamports"])!=int(
         p["untouched_S2_bank_exact_lot_sell_lamports"])
+    assert p["source_curve_reserve_activity_observed"] is False
+    assert all(value=="0" for value in
+               p["observed_S1_to_S2_reserve_deltas"].values())
 
 
 @pytest.mark.parametrize("kind",[
