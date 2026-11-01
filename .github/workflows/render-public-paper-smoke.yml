@@ -1,0 +1,65 @@
+name: Render live PAPER public-source verification (NO ORDERS)
+on:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+jobs:
+  verify-live-public-status:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'run-render-paper-smoke-once' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: GET public read-only Render status; no repo credentials
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.request
+          from urllib.error import URLError, HTTPError
+          url='https://rugger-master-readonly.onrender.com/api/status'
+          last=None
+          for attempt in range(5):
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(
+                      url,headers={'Accept':'application/json',
+                                   'User-Agent':'RuggerNoOrderSmoke/1.0'}),timeout=35) as r:
+                      if r.status!=200:raise RuntimeError('render_status_not_200')
+                      raw=r.read(300001)
+                  if len(raw)>300000:raise RuntimeError('unexpected_status_size')
+                  state=json.loads(raw)
+                  meta=state.get('service',{})
+                  if (meta.get('financial_order_submitted') is not False or
+                      meta.get('live_trading_enabled') is not False or
+                      meta.get('master_trades_executed') is not False):
+                      raise RuntimeError('unsafe_financial_state')
+                  print(json.dumps({
+                      'service_http':'OK',
+                      'schema':state.get('schema'),
+                      'polls':state.get('polls'),
+                      'last_error':state.get('last_error'),
+                      'last_success_ms':state.get('last_success_ms'),
+                      'candidate_count':len(state.get('candidates',[])),
+                      'master_shadow_count':len(state.get('master_shadow',[])),
+                      'paper_open':len(state.get('positions',[])),
+                      'paper_closed':len(state.get('closed',[])),
+                      'real_orders':False,
+                      'financial_orders_disabled':True},sort_keys=True),flush=True)
+                  if state.get('last_success_ms') is None:
+                      raise RuntimeError('NO_VERIFIED_PUBLIC_MARKET_OBSERVATION')
+                  if not state.get('candidates'):
+                      raise RuntimeError('EMPTY_MARKET_CANDIDATES')
+                  break
+              except (URLError,HTTPError,TimeoutError,ValueError,RuntimeError) as error:
+                  last=type(error).__name__+":"+str(error)[:100]
+                  print('PUBLIC_READBACK_NOT_READY',attempt+1,last,flush=True)
+                  if attempt==4:raise
+                  time.sleep(12)
+          PY
