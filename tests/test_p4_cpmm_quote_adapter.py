@@ -124,3 +124,18 @@ def test_precommitted_master_paper_position_exits_on_signed_cpmm_quote():
     assert summary["policy_paired_model_net_edge_lamports"]==(
         summary["accounts"]["master"]["complete_cycle_net_pnl_lamports"])
     assert summary["actual_sol_spent"]==0 and summary["exact_live_profitability_verified"] is False
+
+
+def test_cpmm_combined_input_fee_ceil_once_on_small_lot():
+    # For 101 atoms, trade and creator independent ceil would cost 2 atoms;
+    # the verified Raydium combined fee is exactly ceil(101*3500/1e6) = 1.
+    result=cpmm_sell_source_quote(
+        bank=bank(trade=2500,creator=1000),mint=MINT,
+        curve_pool=OLD_POOL,token_amount_atomic=101,
+        migration=migration(),network_and_priority_fee_lamports=5000,
+        account_creation_fee_lamports=0,failed_attempt_fee_lamports=0)
+    parts=result["fee_details"]
+    assert int(parts["swap_trade_fee_token_atomic"])+int(
+        parts["creator_fee_token_atomic"])==1
+    assert result["paper_quote"]["output_atomic"]>0
+    assert result["actual_transaction_executed"] is False
