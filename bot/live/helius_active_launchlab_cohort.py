@@ -144,6 +144,10 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                 by_mint[row["mint"]]=analysis
                 rec["s1_analysis_sha256"]=_hash(analysis)
                 rec["s1_blocking_reasons"]=analysis["blocking_reasons"]
+                if research_ladder and analysis.get("risk_flags")==[]:
+                    # Decoded public chain facts and raw-account digests are
+                    # archived for replay; no RPC URL, API key or signer.
+                    rec["s1_decoded_public_bank_replay"]=analysis
                 # Preserve public raw identity diagnostics even if the risk
                 # gate refuses every speculative entry. A supply mismatch is
                 # NOT automatically a valid burned-mint reconciliation.
@@ -282,6 +286,9 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                         context_slot=bank2_slot,expected_mint=item["mint"],pool_address=item["pool"],
                         input_lamports=BUY_LAMPORTS,evidence_profile="published_metadata_v1",
                         compute_projection=False)
+                    if s2.get("risk_flags")==[]:
+                        rec["s2_decoded_public_bank_replay"]=s2
+                        rec["s2_decoded_public_bank_sha256"]=_hash(s2)
                     for row in ladder:
                         qty=row["s1_exact_buy_quantity_atomic"]
                         if qty is None:
@@ -312,6 +319,10 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                             row["s2_own_buy_overlay_delta_before_extra_costs_lamports"]=overlay[
                                 "overlay_S2_delta_before_extra_costs_lamports"]
                             row["s2_own_buy_overlay_receipt_sha256"]=_hash(overlay)
+                            row["s2_own_buy_overlay_source_reserve_deltas"]=overlay[
+                                "observed_S1_to_S2_reserve_deltas"]
+                            row["s2_own_buy_overlay_source_curve_activity_observed"]=overlay[
+                                "source_curve_reserve_activity_observed"]
                             row["s2_own_buy_overlay_source_observed_sell_refusal"]=overlay[
                                 "untouched_S2_bank_sell_refusal"]
                             row["s2_own_buy_overlay_execution_verified"]=False
