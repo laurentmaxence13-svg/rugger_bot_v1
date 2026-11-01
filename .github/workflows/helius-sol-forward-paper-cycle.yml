@@ -15,7 +15,7 @@ jobs:
   prospectively-frozen-sol-market:
     if: >-
       github.event.action == 'labeled' &&
-      github.event.label.name == 'run-sol-paper-own-buy-overlay-once' &&
+      github.event.label.name == 'run-sol-paper-research-pda-phase4-once' &&
       github.event.pull_request.head.repo.full_name == github.repository
     strategy:
       fail-fast: false
