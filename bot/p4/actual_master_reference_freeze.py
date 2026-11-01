@@ -64,7 +64,11 @@ def _reject_nested_unavailable_clocks(value,*,at_ms,source_slot,depth=0):
                      "slot_available_at_ms","observed_at_ms","received_at_ms",
                      "source_available_at_ms","quote_available_at_ms",
                      "price_available_at_ms","source_time_ms",
-                     "sourcetimems","quote_source_time_ms"):
+                     "sourcetimems","quote_source_time_ms",
+                     "detected_at_ms","creation_observed_at_ms",
+                     "quote_received_at_ms","response_received_at_ms",
+                     "provider_received_at_ms","last_trade_time_ms",
+                     "event_time_ms","block_time_ms"):
                 if type(item) is not int or item<=0 or item>at_ms:
                     raise ValueError("nested_future_availability_clock")
             if k in ("source_slot","context_slot","quote_slot",
@@ -98,6 +102,8 @@ def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sn
             or type(source_clock) is not bool or type(signed) is not bool
             or type(frame.get("slot_available_at_ms")) is not int
             or not 0<frame["slot_available_at_ms"]<=at
+            or type(frame.get("detected_at_ms")) is not int
+            or not 0<frame["detected_at_ms"]<=at
             or not all(type(frame.get(key)) is str and frame[key]
                        for key in ("id","mint","pool","creator"))
             or len(history)>32):
