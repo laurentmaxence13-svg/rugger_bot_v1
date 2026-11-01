@@ -154,3 +154,47 @@ def sized_summary(events,candidates):
         no_executable_trades=True,
         master_reference_actual_net_lamports=None,
         proven_profitability=False,cases=cases)
+
+
+def freeze_size_grid_at_s1(*, analysis, mint, ordinal,
+                           snapshot_observation_id, source_slot):
+    """Freeze fixed S1 curve buy quantities BEFORE any S2 market data arrives.
+
+    A hash-chained journal checkpoint owns this document; the whole fixed grid
+    stays visible, including failed sizes. No actual order can be submitted.
+    """
+    if (type(mint) is not str or not mint or type(ordinal) is not int or ordinal<0
+            or type(snapshot_observation_id) is not int or snapshot_observation_id<=0
+            or type(source_slot) is not int or source_slot<=0
+            or type(analysis) is not dict or analysis.get("context_slot")!=source_slot):
+        raise ValueError("S1 certified-bank identity and clock required")
+    try:
+        inputs=_s1_inputs(analysis)
+    except (ValueError,TypeError,KeyError):
+        inputs=None
+    rows=[]
+    for amount in FROZEN_SIZES_LAMPORTS:
+        rec=dict(size_lamports=amount,buy_quantity_atomic=None,
+                 buy_curve_fee_lamports=None,status="UNQUALIFIED",
+                 reason="S1_curve_bank_reserve_or_fee_facts_unqualified")
+        if inputs is not None:
+            try:
+                buy=constant_product_projection(inputs["pool"],
+                    input_lamports=amount,fee_rates_ppm=inputs["fee_rates_ppm"],
+                    base_vault_atomic=inputs["base_vault_atomic"],
+                    quote_vault_lamports=inputs["quote_vault_lamports"],
+                    share_fee_rate_ppm=inputs["share_fee_rate_ppm"])
+                rec.update(buy_quantity_atomic=buy["buy_output_atomic"],
+                    buy_curve_fee_lamports=buy["buy_curve_fee_lamports"],
+                    status="S1_MODEL_QUOTED_NOT_FILLED",reason=None)
+            except (SnapshotEvidenceError,ValueError,TypeError,KeyError) as exc:
+                reason=str(exc)
+                rec["reason"]=("S1_"+reason if reason.replace("_","").isalnum()
+                               and len(reason)<=96 else "S1_curve_model_unqualified")
+        rows.append(rec)
+    return dict(schema="p3-S1-frozen-curve-sizes-v1",
+        mint=mint,ordinal=ordinal,initial_bank_observation_id=snapshot_observation_id,
+        source_slot=source_slot,size_grid_lamports=list(FROZEN_SIZES_LAMPORTS),
+        frozen_buy_models=rows,contains_S2_evidence=False,
+        all_sizes_retain_no_selection=True,actual_entry_filled=False,
+        financial_order_submitted=False,net_pnl_lamports=None)
