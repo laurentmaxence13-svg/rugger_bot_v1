@@ -10,8 +10,26 @@ from bot.p4.paired_research_ledger import freeze_pair
 PROTOCOL=Path(__file__).resolve().parents[1]/"validation"/"prospective"/"20261101_public_creator_holdout_protocol.json"
 
 
+# The isolated regression runner intentionally copies only bot/ and tests/
+# into its sandbox. The source checkout / dedicated offline audit verifies the
+# committed JSON byte-for-byte against this immutable public contract.
+EXPECTED_PROTOCOL=dict(
+    schema="rugger-creator-disjoint-prospective-protocol-v1",
+    registered_at_ms=1793512800000,
+    split_salt_sha256="0f1be6d9273db57a1e927b932b5aa51628bd39d9c99e54e799ec4ce2e64f107f",
+    holdout_modulus=10,holdout_buckets=[0,1,2,3,4,5,6],
+    minimum_holdout_creators=50,minimum_qualified_cycles=50,
+    position_horizon_ms=300000,financial_orders_allowed=False)
+
+
 def protocol():
-    return json.loads(PROTOCOL.read_text(encoding="utf-8"))
+    if PROTOCOL.exists():
+        actual=json.loads(PROTOCOL.read_text(encoding="utf-8"))
+        assert actual==EXPECTED_PROTOCOL, "committed_holdout_protocol_changed"
+        return actual
+    # Isolated tests exercise the exact same protocol logic even when
+    # validation/ is intentionally not copied into their temp checkout.
+    return dict(EXPECTED_PROTOCOL)
 
 
 def case(at):
