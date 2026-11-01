@@ -89,9 +89,17 @@ def cpmm_sell_source_quote(*,bank,mint,curve_pool,token_amount_atomic,
     if transfer_in>=amount:
         raise ValueError("input_token2022_transfer_consumes_lot")
     post_transfer=amount-transfer_in
-    fee_trade=_ceil_fee(post_transfer,trade)
-    fee_creator_in=_ceil_fee(post_transfer,creator) if creator_on_input else 0
-    net_input=post_transfer-fee_trade-fee_creator_in
+    # Raydium rounds the combined input fee ONCE; allocating creator/trade
+    # separately with ceil would occasionally overcharge by one token atom.
+    if creator_on_input:
+        combined=_ceil_fee(post_transfer,trade+creator)
+        fee_creator_in=combined*creator//(trade+creator) if trade+creator else 0
+        fee_trade=combined-fee_creator_in
+        net_input=post_transfer-combined
+    else:
+        fee_trade=_ceil_fee(post_transfer,trade)
+        fee_creator_in=0
+        net_input=post_transfer-fee_trade
     if net_input<=0:
         raise ValueError("cpmm_trade_input_consumed_by_fees")
     gross=net_input*reserve_out//(reserve_in+net_input)
