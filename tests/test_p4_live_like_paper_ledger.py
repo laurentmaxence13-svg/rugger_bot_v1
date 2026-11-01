@@ -130,7 +130,7 @@ def test_future_decision_without_verified_creator_or_features_cannot_enter():
     engine=PaperLedger()
     engine.register(wait)
     assert engine.snapshot()["accounts"]["master"]["complete_cycle_net_pnl_lamports"]==0
-    assert engine.snapshot()["policy_paired_model_net_edge_lamports"]==0
+    assert engine.snapshot()["policy_paired_model_net_edge_lamports"] is None
     with pytest.raises(ValueError,match="freeze_was_modified"):
         tampered=deepcopy(wait)
         tampered["case"]["decisions"]["master"]="ENTER"
