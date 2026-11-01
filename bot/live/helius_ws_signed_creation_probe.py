@@ -69,8 +69,20 @@ def inspect_forward_creations(report, events, rpc):
     # Selection depends exclusively on evidence captured before tx lookup,
     # not on future outcomes. Prefer explicit untrusted Initialize hints.
     candidates = [e for e in events if not e["on_chain_transaction_failed"]]
-    candidates.sort(key=lambda e: 0 if e["untrusted_initialize_log_hint"] else 1)
-    chosen = candidates[:MAX_INSPECTIONS]
+    hinted = [e for e in candidates if e["untrusted_initialize_log_hint"]]
+    other = [e for e in candidates if not e["untrusted_initialize_log_hint"]]
+    chosen = hinted[:MAX_INSPECTIONS]
+    remaining = MAX_INSPECTIONS-len(chosen)
+    # When logs carry no recognizable Initialize name (common on mainnet),
+    # inspecting the FIRST eight of 30 is an early-window selection bias.
+    # Stratify the remaining time-ordered notifications across the entire
+    # window. The indices are deterministic BEFORE any transaction lookup.
+    if remaining and other:
+        if len(other)<=remaining:
+            chosen.extend(other)
+        else:
+            chosen.extend(other[(2*i+1)*len(other)//(2*remaining)]
+                          for i in range(remaining))
     selected = {e["signature"] for e in chosen}
     records = []
     for e in events:
@@ -239,7 +251,7 @@ def inspect_forward_creations(report, events, rpc):
         inspection_candidates_preselected=len(chosen),
         uninspected_due_to_rpc_budget=len(chosen)-inspected,
         selected_before_receipt_lookup=True,
-        selection_rule="first_eight_unfailed_logs_initialize_hint_priority_then_arrival_budget_aware",
+        selection_rule="initialize_hints_first_then_preoutcome_time_stratified_eight_finalized_receipts",
         source_log_chain_sha256=report["signature_ledger_sha256"],
         status_counts=counts, records=records,
         signed_creation_candidate_transactions=counts.get("SIGNED_OUTER_CREATION_CANDIDATE", 0),
