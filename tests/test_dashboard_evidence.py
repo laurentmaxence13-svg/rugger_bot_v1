@@ -2,14 +2,16 @@
 import io
 import json
 from pathlib import Path
+import sqlite3
 import tempfile
 import unittest
 import zipfile
 
 from bot.dashboard.evidence import (
-    LEDGER,PROBE,SIGNED,INTEGRATED,load_local,load_uploaded,
+    LEDGER,PROBE,SIGNED,INTEGRATED,ENGINE,load_local,load_uploaded,
     parse_documents,synthetic_demo,
 )
+from bot.dashboard.local_db import read_paper_db
 
 
 def paper_ledger():
@@ -136,6 +138,66 @@ class DashboardEvidenceTest(unittest.TestCase):
         self.assertFalse(parsed["cycles"])
         self.assertEqual(parsed["summary"][0]["valeur"],"Indisponible")
 
+
+    def test_local_paper_engine_db_real_quote_history_readonly(self):
+        with tempfile.TemporaryDirectory() as d:
+            db=Path(d)/"rugger_bot.db"
+            with sqlite3.connect(db) as con:
+                con.executescript("""
+                    CREATE TABLE paper_portfolio(id INT,initial_capital_sol REAL,realized_capital_sol REAL);
+                    INSERT INTO paper_portfolio VALUES(1,10,9.97);
+                    CREATE TABLE paper_decisions(
+                        id INTEGER PRIMARY KEY,mint TEXT,strategy_mode TEXT,
+                        enter INT,entry_allowed INT,decision_time INT,
+                        score REAL,reasons_json TEXT);
+                    INSERT INTO paper_decisions VALUES(1,'TOK','shadow_final',0,0,
+                        1793540000,0.5,'["insufficient_sources"]');
+                    CREATE TABLE paper_prices(
+                        mint TEXT,timestamp INT,price_usd REAL,pair_address TEXT,
+                        liquidity_usd REAL);
+                    INSERT INTO paper_prices VALUES('TOK',1793540000,0.00002,'PAIR',10000);
+                    INSERT INTO paper_prices VALUES('TOK',1793540010,0.00003,'PAIR',11000);
+                    CREATE TABLE paper_trades(
+                        mint TEXT,creator TEXT,entry_time INT,exit_time INT,
+                        status TEXT,strategy_mode TEXT,position_sol REAL,pnl_sol REAL,
+                        entry_price REAL,exit_price REAL,exit_reason TEXT);
+                    INSERT INTO paper_trades VALUES('TOK','CREATOR',1793540000,
+                        1793540010,'closed','shadow_final',0.05,-0.001,
+                        0.00002,0.00003,'stop_loss');
+                    INSERT INTO paper_trades VALUES('OPEN','CREATOR',1793540005,
+                        NULL,'open','shadow_baseline',0.02,NULL,0.00004,NULL,NULL);
+                """)
+            result=read_paper_db(db)
+            self.assertEqual(len(result["cycles"]),1)
+            self.assertEqual(result["cycles"][0]["strategie"],"PAPER_ENGINE")
+            self.assertEqual(result["cycles"][0]["resultat_net_sol"],-0.001)
+            self.assertIsNone(result["cycles"][0]["sortie_sol"])
+            self.assertEqual(len(result["prices"]),2)
+            self.assertEqual(len(result["positions"]),1)
+            self.assertEqual(result["positions"][0]["strategie"],"SHADOW_BASELINE")
+            self.assertEqual(result["decisions"][0]["decision"],"WAIT")
+            self.assertEqual(len(result["summary"]),2)
+            with sqlite3.connect(db) as con:
+                self.assertEqual(con.execute("SELECT COUNT(*) FROM paper_trades").fetchone()[0],2)
+
+    def test_missing_db_is_not_created(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/"missing.db"
+            self.assertFalse(path.exists())
+            self.assertEqual(read_paper_db(path)["cycles"],[])
+            self.assertFalse(path.exists())
+
+    def test_legacy_report_summary_not_master_net_pnl(self):
+        report=dict(schema=ENGINE,paper_only=True,real_orders_enabled=False,
+            launches_observed=4,quotes_recorded=8,decision_count=6,
+            open_paper_positions=1,closed_paper_positions=1,
+            performance_data_complete=True,pnl_sol=0.125)
+        parsed=parse_documents([("paper_engine_report.json",report)])
+        self.assertEqual(parsed["cycles"],[])
+        self.assertEqual(len(parsed["summary"]),6)
+        self.assertTrue(any("non vérifiée" in r["information"]
+                            for r in parsed["summary"]))
+        self.assertFalse(any(x["strategie"]=="MASTER" for x in parsed["cycles"]))
 
 if __name__=="__main__":
     unittest.main()
