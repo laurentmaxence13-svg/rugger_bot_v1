@@ -326,6 +326,7 @@ def aggregate(root,manifest):
             for action,n in report.get(key,{}).items():
                 arms[arm][action]=arms[arm].get(action,0)+n
     return dict(schema="p3-24h-sampled-observation-progress-v1",
+        session_status=manifest["status"],
         started_at_ms=manifest["start_at_ms"],deadline_at_ms=manifest["deadline_at_ms"],
         planned_windows=WINDOWS,window_counts=counts,
         total_requests_or_failure_reserved_upper_bound=manifest["actual_requests_used"],
@@ -409,6 +410,13 @@ def _run_local(root,*,resume,max_total_requests,revision,clock=time.time,sleep=t
             manifest["windows"].append(w)
             manifest["actual_requests_used"]+=w["requests_used"]
             atomic_write_json(root/"session.json",manifest,sort_keys=True,allow_nan=False)
+            progress=aggregate(root,manifest)
+            atomic_write_json(root/"progress.json",progress,sort_keys=True,allow_nan=False)
+            # Visible and bounded window telemetry, no raw source responses.
+            print(json.dumps(dict(index=i,state=w["state"],
+                windows_recorded=len(manifest["windows"]),request_usage_upper_bound=
+                manifest["actual_requests_used"],source_revision=revision,
+                all_trades_real=False,master_net_profit_verified=False)),flush=True)
             # Never hide 3 consecutive source errors or timed out workers.
             if (len(manifest["windows"])>=3 and
                     all(t["state"] in ("SOURCE_GAP","INTERRUPTED")
@@ -435,6 +443,8 @@ def _run_local(root,*,resume,max_total_requests,revision,clock=time.time,sleep=t
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--preflight",action="store_true")
+    parser.add_argument("--status",action="store_true",
+                        help="Read persisted window status without network")
     parser.add_argument("--network",action="store_true",
                         help="Explicit public read-only network authorization")
     parser.add_argument("--accept-observation-only",action="store_true",
@@ -447,6 +457,12 @@ def main(argv=None):
     check=preflight(revision=revision,max_total_requests=args.max_total_requests)
     if args.preflight:
         print(json.dumps(check,sort_keys=True))
+        return 0
+    if args.status:
+        if args.session_dir is None:
+            parser.error("--status needs --session-dir")
+        manifest=_read_manifest(_root_guard(args.session_dir))
+        print(json.dumps(aggregate(args.session_dir,manifest),sort_keys=True))
         return 0
     if not args.network or not args.accept_observation_only or args.session_dir is None:
         parser.error("NO GO for exact profitability: run --preflight first. Sampling needs --network --accept-observation-only --session-dir.")
