@@ -277,8 +277,14 @@ def capture_window(root,manifest,i,*,run=subprocess.run,now_ms=None):
         pre_followup_size_grid_receipts_verified=(
             model["fixed_size_curve_sensitivity"]["pre_followup_size_grids_verified"]
             if model is not None else None),
-        state="SOURCE_GAP" if report.get("stop_reason") is not None
-              or report.get("selected_corpus_size")==0 else "CAPTURED",
+        state="SOURCE_GAP" if (
+            report.get("stop_reason") is not None
+            or report.get("selected_corpus_size")==0
+            or report.get("frozen_actual_master_reference_candidates")!=report.get("selected_corpus_size")
+            or model is None
+            or model["fixed_size_curve_sensitivity"]["pre_followup_size_grids_verified"]
+               !=report.get("selected_corpus_size")
+            ) else "CAPTURED",
         stop_reason=report.get("stop_reason"),
         requests_used=report["requests_used"],request_usage_exact=True,
         planned_at_ms=planned,observed_at_ms=now,
@@ -381,6 +387,13 @@ def _run_local(root,*,resume,max_total_requests,revision,clock=time.time,sleep=t
         for i in range(WINDOWS):
             if i in attempted:
                 continue
+            # Git revision is a provenance promise. A branch switch in
+            # the middle of the 24h interval invalidates comparability.
+            current_revision=subprocess.check_output(
+                ["git","rev-parse","HEAD"],text=True).strip()
+            if current_revision!=revision:
+                manifest["status"]="HALTED_SOURCE_REVISION_CHANGED"
+                break
             target=manifest["start_at_ms"]+i*INTERVAL_SECONDS*1000
             end=manifest["start_at_ms"]+(i+1)*INTERVAL_SECONDS*1000
             if target>=manifest["deadline_at_ms"]:
@@ -454,6 +467,11 @@ def main(argv=None):
     parser.add_argument("--max-total-requests",type=int,default=960)
     args=parser.parse_args(argv)
     revision=subprocess.check_output(["git","rev-parse","HEAD"],text=True).strip()
+    # Uncommitted edits to tracked code defeat source-revision provenance.
+    tracked_edits=subprocess.check_output(
+        ["git","status","--porcelain","--untracked-files=no"],text=True).strip()
+    if tracked_edits:
+        parser.error("Commit or discard tracked changes before registering a 24h observation")
     check=preflight(revision=revision,max_total_requests=args.max_total_requests)
     if args.preflight:
         print(json.dumps(check,sort_keys=True))
