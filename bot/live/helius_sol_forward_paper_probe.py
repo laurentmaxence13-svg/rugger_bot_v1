@@ -224,6 +224,20 @@ def run(*,rpc,wait_seconds=12,sample_page=0,sleep=time.sleep):
             source_scan=evidence,financial_order_submitted=False,
             actual_Master_qualified_cycles=0,
             exact_net_Master_pnl_lamports=None)
+    if evidence.get("selected_count")==0:
+        # A predeclared SHA slice can have no viable active pools.
+        # This is a normal denominator outcome, not a crash nor a trade.
+        return dict(schema=SCHEMA,
+            status="NO_QUALIFIED_ACTIVE_SOL_POOLS_IN_PREDECLARED_SLICE",
+            source_evidence=evidence,
+            paper_model_report=dict(
+                status="NO_QUALIFIED_ACTIVE_SOL_POOLS_IN_PREDECLARED_SLICE",
+                exact_model_roundtrips=0,number_of_frozen_cases=0,
+                true_Master_net_pnl_lamports=None,
+                measured_Master_minus_reference_edge_lamports=None,
+                financial_order_submitted=False,profitability_demonstrated=False),
+            financial_order_submitted=False,actual_Master_qualified_cycles=0,
+            exact_net_Master_pnl_lamports=None)
     return dict(schema=SCHEMA,source_evidence=evidence,
                 paper_model_report=evaluate_probe(evidence))
 
