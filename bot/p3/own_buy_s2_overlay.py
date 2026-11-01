@@ -45,6 +45,16 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         raise ValueError("nonzero_predeclared_lot_and_mint_required")
     if type(expected_pool) is not str or not expected_pool:
         raise ValueError("source_pool_address_required")
+    for bank in (s1_analysis,s2_analysis):
+        if (bank.get("pool_address")!=expected_pool or
+                bank.get("mint")!=expected_mint or
+                bank.get("evidence_profile")!="published_metadata_v1" or
+                bank.get("identity_status")!="verified" or
+                bank.get("facts",{}).get("program_derived_addresses_verified") is not True):
+            raise ValueError("source_pool_or_mint_or_identity_unverified")
+    if (s1_analysis["facts"].get("addresses")!=s2_analysis["facts"].get("addresses")
+            or type(s1_analysis["facts"].get("addresses")) is not dict):
+        raise ValueError("source_seven_account_graph_changed")
     i1,i2=_inputs(s1_analysis),_inputs(s2_analysis)
     if s2_analysis["context_slot"]<=s1_analysis["context_slot"]:
         raise ValueError("S2_source_slot_not_strictly_later")
