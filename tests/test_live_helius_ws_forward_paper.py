@@ -187,3 +187,28 @@ def test_hinted_events_dont_claim_creation_or_economic_fill():
     assert event["untrusted_initialize_log_hint"] is True
     assert event["classification"]=="UNCLASSIFIED_PROGRAM_LOG_NOT_LAUNCH_PROOF"
     assert event["filled"] is False
+
+
+def test_scoped_vs_legacy_creation_hints_are_separately_counted_no_trade():
+    token="TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+    a=mod.ReadOnlyLogAudit(7,2,successful_only=True)
+    nested=[f"Program {PROGRAM} invoke [1]",
+        f"Program {token} invoke [2]",
+        "Program log: Instruction: Initialize",
+        f"Program {token} success",f"Program {PROGRAM} success"]
+    assert a.accept(message(SIG_A,logs=nested),
+        received_mono_ns=10,parsed_mono_ns=11,received_utc_ns=12)
+    own=[f"Program {PROGRAM} invoke [1]",
+        "Program log: Instruction: InitializeV2",f"Program {PROGRAM} success"]
+    assert a.accept(message(SIG_B,logs=own),
+        received_mono_ns=20,parsed_mono_ns=21,received_utc_ns=22)
+    report=a.report(duration_ms=1000,handshake_ms=5)
+    assert report["events_received_unique"]==2
+    assert report["legacy_initialize_prefix_observations"]==2
+    assert report["scoped_launchlab_initialize_observations"]==1
+    assert report["launchlab_invocation_trace_observations"]==2
+    assert a.events[0]["untrusted_legacy_initialize_prefix_hint"] is True
+    assert a.events[0]["untrusted_initialize_log_hint"] is False
+    assert a.events[1]["untrusted_initialize_log_hint"] is True
+    assert report["financial_order_submitted"] is False
+    assert all(x["filled"] is False for x in a.events)
