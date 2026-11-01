@@ -102,6 +102,7 @@ def test_two_signed_launches_from_same_creator_count_one_independent_group():
     b["rows"].append(quote)
     proof=copy.deepcopy(c["records"][0]);proof["mint"]="mint-two"
     proof["pool"]="pool-two";proof["signature"]="sig-two"
+    proof["verified_exact_message_sha256"]="b"*64
     proof["signed_outer_creations"][0]["mint"]="mint-two"
     proof["signed_outer_creations"][0]["pool"]="pool-two"
     c["records"].append(proof)
@@ -112,3 +113,41 @@ def test_two_signed_launches_from_same_creator_count_one_independent_group():
     assert result["cryptographically_authenticated_selected_creators"]==1
     assert result["matched_full_lot_quote_scenarios"]==2
     assert result["market_profitability_verified"] is False
+
+
+def test_same_finalized_signature_cannot_be_reused_to_claim_two_creators():
+    a,b,c=fixtures()
+    row=copy.deepcopy(a["selection"]["records"][0])
+    row["source_row"].update(mint="mint-two",pool="pool-two",creator_claim="creator-two")
+    a["selection"]["records"].append(row)
+    a["selection"]["selected_count"]=2
+    quote=copy.deepcopy(b["rows"][0])
+    quote.update(mint="mint-two",creator_claim="creator-two")
+    b["rows"].append(quote)
+    proof=copy.deepcopy(c["records"][0])
+    proof.update(mint="mint-two",pool="pool-two",creator="creator-two",
+                 verified_exact_message_sha256="b"*64)
+    proof["signed_outer_creations"][0].update(
+        mint="mint-two",pool="pool-two",creator="creator-two")
+    c["records"].append(proof)
+    with pytest.raises(ValueError,match="tampered_or_conflicted_signed_creator"):
+        join_signed_index_quotes(a,b,c)
+
+
+def test_same_signed_message_hash_cannot_count_as_two_creators():
+    a,b,c=fixtures()
+    row=copy.deepcopy(a["selection"]["records"][0])
+    row["source_row"].update(mint="mint-two",pool="pool-two",creator_claim="creator-two")
+    a["selection"]["records"].append(row)
+    a["selection"]["selected_count"]=2
+    quote=copy.deepcopy(b["rows"][0])
+    quote.update(mint="mint-two",creator_claim="creator-two")
+    b["rows"].append(quote)
+    proof=copy.deepcopy(c["records"][0])
+    proof.update(mint="mint-two",pool="pool-two",creator="creator-two",
+                 signature="sig-two")
+    proof["signed_outer_creations"][0].update(
+        mint="mint-two",pool="pool-two",creator="creator-two")
+    c["records"].append(proof)
+    with pytest.raises(ValueError,match="tampered_or_conflicted_signed_creator"):
+        join_signed_index_quotes(a,b,c)
