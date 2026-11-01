@@ -59,16 +59,21 @@ def main():
     # Read the just-closed capture, and report the concrete blocking reason
     # for missing observed LaunchLab curve quotes. This audit has no network.
     venue_summary=None
+    curve_summary=None
     try:
         from bot.p3.store import CaptureStore
         from bot.p3.venue_audit import venue_audit
+        from bot.p3.curve_cycle_shadow import replay_events
         with CaptureStore(db_path,readonly=True) as journal:
             anchor=journal.verify_integrity()
-            venue_summary=venue_audit(journal.events(),expected_tail=anchor)
+            events=journal.events()
+            venue_summary=venue_audit(events,expected_tail=anchor)
+            curve_summary=replay_events(events,expected_tail=anchor)
     except ValueError:
         # An interrupted discovery may correctly have no frozen prefix.
         # The primary error/absence is preserved by the main P3 report.
         venue_summary=None
+        curve_summary=None
     print(json.dumps(dict(
         report=str(report_path),
         selected_tokens=report["selected_corpus_size"],
@@ -85,6 +90,11 @@ def main():
         active_launchlab_curves=(venue_summary["stage_counts"].get(
             "launchlab_curve_active_status_observed",0)
             if venue_summary is not None else None),
+        conditional_s1s2_curve_markouts=(curve_summary["conditional_curve_markouts"]
+            if curve_summary is not None else None),
+        conditional_s1s2_curve_refusals=(
+            curve_summary["conditional_curve_markout_refusals"]
+            if curve_summary is not None else None),
         initial_full_exit_routes_quoted=report["initial_full_exit_route_quoted"],
         full_sell_quotes=report["full_sell_quotes"],
         refused_sell_quotes=report["refused_sell_quotes"],
