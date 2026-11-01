@@ -13,6 +13,7 @@ import re
 
 from bot.p3.accounting import SolFeeBreakdown, accounting_json_safe
 from bot.p3.exit_qualification import qualify_exit_quote_pair
+from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
 
 
 P4_SCOPE = 'instrumental_development_only'
@@ -104,7 +105,7 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         raise ValueError('At most one immutable prospective prefix is permitted')
     candidate_observations = [e for e in events if e.get('kind') in
         ('pool_snapshot','quote_attempt','candidate_decision','launch','transaction')
-        or e.get('outcome') == 'projected_inventory_fixed']
+        or e.get('outcome') in ('projected_inventory_fixed','initial_full_exit_liquidity_screen')]
     prefix = prefixes[0] if prefixes else None
     if prefix is None:
         errors = [e for e in events if e.get('kind') == 'request' and
@@ -179,6 +180,32 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
                 raise ValueError('Duplicate inventory fixation would inflate projected entries')
             inventories[buy_id] = dict(acquired_atomic=str(acquired),minimum_atomic=str(minimum),
                 checkpoint_id=e['id'],buy_observation_id=buy_id)
+        # Replay initial full-size screens from retained event evidence.
+        # Follow-up and partial quotes cannot retroactively pass this gate.
+        receipts = [e for e in candidate_events if e.get('kind') == 'checkpoint'
+                    and e.get('outcome') == 'initial_full_exit_liquidity_screen']
+        if receipts and len(receipts) != len(inventories):
+            raise ValueError('Initial full-exit screen receipts must cover every projected inventory')
+        screens = []
+        for inv in inventories.values():
+            buy_id = inv['buy_observation_id']
+            initial = [e for e in quotes if e['payload'].get('quote_side') == 'sell'
+                       and e['payload'].get('probe_phase') == 'initial'
+                       and e['payload'].get('exit_scope') == 'full_expected'
+                       and e['payload'].get('inventory_buy_observation_id') == buy_id]
+            # Never cherry-pick a favorable quote from duplicate observations.
+            chosen = initial[0] if len(initial) == 1 else None
+            screen = initial_full_exit_liquidity_screen(
+                mint=mint,acquired_atomic=inv['acquired_atomic'],
+                buy_observation_id=buy_id,sell_event=chosen)
+            registered = [e for e in receipts if e.get('payload',{}).get('buy_observation_id') == buy_id]
+            if registered:
+                receipt = registered[0]
+                if (len(registered) != 1 or receipt.get('payload') != screen
+                        or (chosen is not None and (chosen['id'] >= receipt['id']
+                             or chosen['available_at_ms'] > receipt['available_at_ms']))):
+                    raise ValueError('Initial full-exit screen receipt differs from observed quote')
+            screens.append(dict(screen,gate_recorded=bool(registered)))
         full, partial, refused, unattempted, errors, unavailable_other = [], [], [], [], [], []
         full_attempts = sum(e['payload'].get('quote_side') == 'sell' and e['payload'].get('exit_scope') == 'full_expected' and e.get('outcome') != 'not_attempted' for e in quotes)
         partial_attempts = sum(e['payload'].get('quote_side') == 'sell' and e['payload'].get('exit_scope') == 'partial_diagnostic' and e.get('outcome') != 'not_attempted' for e in quotes)
@@ -188,6 +215,8 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         if not creation: admission_reasons.add('creation_transaction_unverified')
         if not identity: admission_reasons.add('identity_supply_or_permissions_unqualified')
         if len(slots)<2: admission_reasons.add('two_distinct_observed_bank_periods_missing')
+        if inventories and not any(s['initial_full_exit_route_quoted'] and s['gate_recorded'] for s in screens):
+            admission_reasons.add('initial_full_exit_liquidity_gate_not_passed')
         for e in quotes:
             p=e['payload']; side=p.get('quote_side'); scope=p.get('exit_scope'); outcome=e.get('outcome')
             for fee in p.get('fee_details',{}).get('route_fees',[]):
@@ -227,6 +256,9 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         cases.append(dict(ordinal=selected['ordinal'],mint=mint,pool=selected['pool'],
             creator_claim=selected.get('creator',selected.get('creator_claim')),
             analyzed=bool(analyses),projected_entries=list(inventories.values()),
+            initial_full_exit_liquidity_screens=screens,
+            initial_full_exit_route_quoted=sum(s['initial_full_exit_route_quoted'] for s in screens),
+            initial_full_exit_gates_recorded=sum(s['gate_recorded'] for s in screens),
             distinct_bank_slots=slots,creation_verified=creation,identity_supply_permissions_qualified=identity,
             full_sell_quote_ids=full,partial_sell_quote_ids=partial,refused_sell_quote_ids=refused,
             full_sell_observation_attempts=full_attempts,partial_sell_observation_attempts=partial_attempts,
@@ -256,6 +288,9 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         candidates_analyzed=sum(c['analyzed'] for c in cases),
         candidates_with_projected_entry=sum(bool(c['projected_entries']) for c in cases),
         projected_entry_observations=sum(len(c['projected_entries']) for c in cases),
+         initial_full_exit_route_quoted=sum(c['initial_full_exit_route_quoted'] for c in cases),
+         initial_full_exit_gates_recorded=sum(c['initial_full_exit_gates_recorded'] for c in cases),
+         initial_full_exit_screen_scope='initial_quote_only_not_fills_or_executable_approval',
         full_sell_quotes=sum(len(c['full_sell_quote_ids']) for c in cases),
         partial_sell_quotes=sum(len(c['partial_sell_quote_ids']) for c in cases),
         refused_sell_quotes=sum(len(c['refused_sell_quote_ids']) for c in cases),
