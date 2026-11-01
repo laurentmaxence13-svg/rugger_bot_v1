@@ -10,6 +10,9 @@ from test_p4_experiment import corpus
 
 def frame():
     row=corpus()["frames"][0]
+    # Synthetic quote fixture reports contextSlot=101 while its outer frame
+    # originally declares slot=100. Align the test frame to the quote source.
+    row["source_slot"]=101
     row.update(source_clock_verified=False,signed_creator_verified=False)
     return row
 
