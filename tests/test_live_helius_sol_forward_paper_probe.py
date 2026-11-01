@@ -1,0 +1,131 @@
+"""No-network pre-outcome genuine-score freeze and conditional SOL research ledger."""
+from copy import deepcopy
+
+import pytest
+
+from bot.live.helius_sol_forward_paper_probe import (
+    _freeze_before_followup,evaluate_probe,run,SCHEMA,SIZING_LAMPORTS)
+from test_p3_curve_size_grid import bank
+
+
+MINT="source-valid-test-mint"
+POOL="source-valid-test-pool"
+CREATOR="source-creator-public-key"
+REG="a"*64
+
+
+def source_s1(*,risk=False):
+    analysis=deepcopy(bank(101,"initial")["payload"]["analysis"])
+    analysis["facts"]["pool"]["mint_a"]=MINT
+    if risk:
+        analysis["risk_flags"]=["mint_supply_or_decimals_mismatch"]
+        analysis["conditional_projection"]=None
+    return dict(registration_sha256=REG,s1_slot=101,
+        s1_received_at_ms=300000,
+        selected_before_S1=[dict(mint=MINT,pool=POOL,creator_claim=CREATOR)],
+        s1_observations=[dict(row=dict(
+            mint=MINT,pool=POOL,creator_claim=CREATOR,
+            s1_slot=101,s1_analysis_sha256="b"*64),
+            s1_analysis=analysis)])
+
+
+def prospective(*,risk=False,with_exit=True):
+    s1=source_s1(risk=risk)
+    frozen=_freeze_before_followup(s1)
+    action=frozen["frozen_actions"][0]
+    qty=action["hypothetical_probe_token_quantity_atomic"]
+    ladder=[dict(entry_lamports=str(SIZING_LAMPORTS),
+        s1_exact_buy_quantity_atomic=qty,
+        s2_conditional_sell_lamports="60000000" if with_exit else None,
+        s2_refusal="no_source_verified_exact_lot_S2_sell")]
+    return dict(status="ACTIVE_SURVIVOR_PROSPECTIVE_OBSERVATION_COMPLETE",
+        registration_sha256=REG,first_bank_slot=101,second_bank_slot=102,
+        preregistered_research_freeze=frozen,
+        S1_research_freeze_before_S2_sha256=_hash_test(frozen),
+        observations=[dict(mint=MINT,pool=POOL,s1_slot=101,s2_slot=102,
+                           research_size_ladder=ladder,s2_risk_flags=[])])
+
+
+def _hash_test(doc):
+    import hashlib,json
+    return hashlib.sha256(json.dumps(doc,sort_keys=True,
+        separators=(",",":"),allow_nan=False).encode()).hexdigest()
+
+
+def test_actual_master_and_reference_decisions_frozen_before_future_prices():
+    freeze=_freeze_before_followup(source_s1())
+    assert freeze["schema"]==SCHEMA
+    assert freeze["S2_available_at_ms"] is None
+    assert freeze["frozen_before_any_S2_reads"] is True
+    assert freeze["financial_order_submitted"] is False
+    record=freeze["frozen_actions"][0]
+    assert record["actual_Master_action"] in ("WAIT","NO_TRADE")
+    assert record["actual_reference_action"]=="WAIT"
+    assert record["hypothetical_research_probe_action"]=="ENTER_CONDITIONAL_MODEL"
+    assert int(record["hypothetical_probe_token_quantity_atomic"])>0
+    assert record["hypothetical_probe_size_lamports"]==50_000_000
+    assert record["hypothetical_S1_buy_fill_executed"] is False
+
+
+def test_model_roundtrip_conditional_fees_does_not_mislabel_master_profit():
+    r=evaluate_probe(prospective())
+    assert r["status"]=="REAL_SOL_S1S2_PAPER_MODEL_MARKOUTS"
+    assert r["exact_model_roundtrips"]==1
+    case=r["cases"][0]
+    assert case["conditional_markout_before_extra_costs_lamports"]=="10000000"
+    assert [s["conditional_net_lamports"] for s in case["extra_cost_scenarios"]]==[
+        "10000000","9985000","9000000","0"]
+    assert r["measured_Master_minus_reference_edge_lamports"] is None
+    assert r["exact_net_Master_pnl_lamports"] is None
+    assert case["actual_paper_buy_fill_count"]==0
+    assert r["profitability_demonstrated"] is False
+    assert r["financial_order_submitted"] is False
+
+
+def test_missing_exit_censors_position_never_zero_pnl():
+    r=evaluate_probe(prospective(with_exit=False))
+    assert r["exact_model_roundtrips"]==0
+    assert r["cases"][0]["status"]=="CENSORED_OPEN_HYPOTHETICAL_PROBE_NO_S2_EXIT"
+    assert r["cases"][0]["extra_cost_scenarios"]==[]
+    assert r["cases"][0]["conditional_markout_before_extra_costs_lamports"] is None
+
+
+def test_source_risk_blocks_even_fixed_probe_action():
+    r=evaluate_probe(prospective(risk=True))
+    assert r["exact_model_roundtrips"]==0
+    assert r["cases"][0]["status"]=="S1_RESEARCH_PROBE_NOT_ADMISSIBLE"
+    assert r["cases"][0]["true_Master_net_pnl_lamports"] is None
+    assert r["cases"][0]["hypothetical_probe_action"]=="REJECT"
+
+
+def test_tamper_frozen_receipt_and_future_slot_refused():
+    source=prospective()
+    source["preregistered_research_freeze"]["frozen_actions"][0][
+        "hypothetical_probe_token_quantity_atomic"]="1000"
+    with pytest.raises(ValueError,match="prospective_S1_freeze"):
+        evaluate_probe(source)
+    source=prospective()
+    source["second_bank_slot"]=source["first_bank_slot"]
+    with pytest.raises(ValueError,match="prospective_S1_freeze"):
+        evaluate_probe(source)
+
+
+def test_real_runner_calls_s1_freezer_only_from_source_collector(monkeypatch):
+    seen=[]
+    def fake_cohort(rpc,**kwargs):
+        assert kwargs["prefer_root_activity"] is True
+        assert kwargs["research_ladder"] is True
+        assert kwargs["sample_page"]==2
+        snapshot=source_s1()
+        receipt=kwargs["freeze_at_s1"](snapshot)
+        seen.append(receipt)
+        source=prospective()
+        source["preregistered_research_freeze"]=receipt
+        source["S1_research_freeze_before_S2_sha256"]=_hash_test(receipt)
+        return source
+    monkeypatch.setattr("bot.live.helius_sol_forward_paper_probe.observe_active_survivor_cohort",
+                        fake_cohort)
+    output=run(rpc=object(),sample_page=2,wait_seconds=12)
+    assert len(seen)==1
+    assert output["paper_model_report"]["exact_model_roundtrips"]==1
+    assert output["paper_model_report"]["actual_Master_research_executed_orders"]==0
