@@ -50,6 +50,7 @@ def test_one_creator_repeated_in_two_campaigns_not_two_creators():
     assert sum(x["creator_split_counts"].values())==1
     assert x["independently_reverified_finalized_signed_creator_count"]==0
     assert x["qualified_master_reference_holdout_cycles"]==0
+    assert x["holdout_rule_registered_before_source_observations"] is False
     assert x["market_profitability_verified"] is False
     assert x["master_minus_reference_net_pnl_lamports"] is None
 
