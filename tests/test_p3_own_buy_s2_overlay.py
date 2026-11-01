@@ -22,7 +22,16 @@ def snap(slot,*,real_a=1_000_000_000_000,real_b=5_000_000_000):
     analysis.update(pool_address=POOL,mint=MINT,
         identity_status="owner_layout_relations_and_supplied_pins_checked",
         evidence_profile="published_metadata_v1")
-    analysis["facts"]["program_derived_addresses_verified"]=True
+    analysis["facts"]["program_derived_addresses_verified"]=False
+    analysis["facts"]["identity_certification"]=dict(
+        schema="p3-launchlab-identity-certification-v1",
+        account_discriminators_verified=True,
+        program_derived_addresses_verified=False,
+        program_derived_addresses_partially_verified=True,
+        checks=[
+            dict(name="pool_pda",status="PASS"),
+            dict(name="platform_pda",status="UNKNOWN",
+                 reason="original_platform_admin_seed_not_retained")])
     analysis["facts"]["addresses"]=dict(
         pool=POOL,config="fixture-config",platform="fixture-platform",
         mint_a=MINT,mint_b=pool["mint_b"],
@@ -50,6 +59,10 @@ def test_own_buy_overlay_can_quote_when_untouched_observed_s2_lacks_owned_tokens
         int(p["overlay_S2_sell_lamports"])-AMOUNT)
     assert p["observation_is_a_two_bank_real_source"] is True
     assert p["counterfactual_reserves_are_not_observed"] is True
+    assert p["published_identity_incomplete_PDA_checks"]==[
+        "S1:platform_pda","S2:platform_pda"]
+    assert p["partial_PDA_certification_accepted_for_research_only"] is True
+    assert p["full_chain_creation_proof_not_established"] is True
     assert p["intervening_swaps_repriced_under_own_buy"] is False
     assert p["provider_executable_full_lot_exit_verified"] is False
     assert p["actual_paper_fills"]==0
@@ -71,7 +84,8 @@ def test_two_models_are_reported_separately_when_both_support_exact_sell():
 
 @pytest.mark.parametrize("kind",[
     "risk","mint","pool","graph","config","changed_fee","completion",
-    "slot","insufficient_base","vault_overflow","schema"])
+    "slot","insufficient_base","vault_overflow","schema",
+    "failed_PDA","missing_pins"])
 def test_dangerous_counterfactual_assumptions_refused(kind):
     s1=snap(100,real_a=10**13)
     s2=snap(101,real_a=10**12)
@@ -86,6 +100,10 @@ def test_dangerous_counterfactual_assumptions_refused(kind):
     if kind=="insufficient_base":s2["facts"]["base_vault"]["amount_atomic"]="1"
     if kind=="vault_overflow":s2["facts"]["quote_vault"]["amount_atomic"]=str(2**64-1)
     if kind=="schema":s2["evidence_profile"]="legacy"
+    if kind=="failed_PDA":
+        s2["facts"]["identity_certification"]["checks"][0]["status"]="FAIL"
+    if kind=="missing_pins":
+        s2["facts"]["identity_certification"]["account_discriminators_verified"]=False
     with pytest.raises(ValueError):
         project(s1,s2)
 
