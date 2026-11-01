@@ -250,3 +250,98 @@ def test_wait_wait_never_creates_censored_exposure():
     assert row["reference_hypothetical_entry_notional_lamports"]==0
     assert row["master_censored_entry_notional_lamports"]==0
     assert row["reference_censored_entry_notional_lamports"]==0
+
+
+def _matching_trace(row):
+    frozen=row["frozen_pair"]
+    case_data=frozen["research_case"]
+    master={"ENTER":"ENTER","WAIT":"WAIT","REJECT":"NO_TRADE"}[case_data["master_action"]]
+    return dict(schema="rugger-real-engines-frozen-shadow-intents-v1",
+        frozen_pair=deepcopy(frozen),
+        common_feature_frame_hash=case_data["feature_receipt_sha256"],
+        original_master_action=master,
+        original_reference_enter_intent=case_data["reference_action"]=="ENTER",
+        master_decision_sha256="a"*64,reference_intent_sha256="b"*64,
+        reference_decision_scope="scorer_intent_without_operational_admission",
+        master_decision_scope="actual_master_shadow_full_evidence_and_capital_gate",
+        source_signed_creator_verified=case_data["signed_creator_verified"],
+        source_provider_price_clock_verified=case_data["source_clock_verified"],
+        no_independent_executable_orders=True,
+        prospective_strategy_profitability_verified=False,
+        financial_order_submitted=False,live_ready_to_arm=False,
+        actual_engines_called_before_outcome=True)
+
+
+def test_full_matching_real_engine_trace_is_structurally_accepted_not_cryptographically_proven():
+    row=case()
+    row["engine_trace"]=_matching_trace(row)
+    report=audit_creator_disjoint_shadow([row],protocol())
+    assert report["rows"][0]["engine_adapter_trace_present"] is True
+    assert report["source_protocol_registration_externally_verified"] is False
+    assert report["empirical_net_master_advantage_verified"] is False
+
+
+@pytest.mark.parametrize("key,bad",[
+    ("common_feature_frame_hash","f"*64),
+    ("original_master_action","WAIT"),
+    ("original_reference_enter_intent",True),
+    ("master_decision_sha256","bad-hash"),
+    ("reference_intent_sha256",None),
+    ("source_signed_creator_verified",False),
+    ("source_provider_price_clock_verified",False),
+    ("no_independent_executable_orders",False),
+    ("prospective_strategy_profitability_verified",True),
+    ("live_ready_to_arm",True),
+    ("reference_decision_scope","actual_execution"),
+    ("master_decision_scope","unverified_reference")
+])
+def test_forged_engine_trace_rejected_even_with_correct_frozen_pair(key,bad):
+    row=case()
+    row["engine_trace"]=_matching_trace(row)
+    row["engine_trace"][key]=bad
+    with pytest.raises(ValueError,match="engine_trace_must_match"):
+        audit_creator_disjoint_shadow([row],protocol())
+
+
+def test_disagreement_counts_and_hypothetical_capital_delta_include_censored_cases():
+    rows=[case(0,master="ENTER",reference="WAIT"),
+          case(1,master="WAIT",reference="ENTER"),
+          case(2,master="ENTER",reference="ENTER"),
+          case(3,master="WAIT",reference="REJECT")]
+    result=audit_creator_disjoint_shadow(rows,protocol())
+    counts={k:sum(x["frozen_action_pair_counts"][k] for x in result["splits"].values())
+            for k in ("MASTER_ONLY_ENTER","REFERENCE_ONLY_ENTER","BOTH_ENTER","BOTH_ABSTAIN")}
+    assert counts==dict(MASTER_ONLY_ENTER=1,REFERENCE_ONLY_ENTER=1,
+                        BOTH_ENTER=1,BOTH_ABSTAIN=1)
+    assert sum(x["frozen_action_disagreements"] for x in result["splits"].values())==2
+    assert sum(x["hypothetical_entry_notional_master_minus_reference_lamports"]
+               for x in result["splits"].values())==0
+    assert result["actual_master_minus_reference_net_pnl_lamports"] is None
+
+
+def test_unknown_outcome_sensitivity_requires_break_even_not_zero_imputation():
+    # Same creator => both records in the same split. One fully costed
+    # conditional quote plus one censored case must not produce a winner.
+    rows=[case(0,creator="same"),case(1,creator="same")]
+    rows[0]["followup"]=followup(0,sell=90_000_000)
+    result=audit_creator_disjoint_shadow(rows,protocol())
+    split=result["rows"][0]["split"]
+    stats=result["splits"][split]
+    assert stats["cases_with_complete_conditional_model_edge"]==1
+    assert stats["cases_with_unknown_model_edge"]==1
+    assert stats["conditional_complete_case_only_edge_sum_lamports"]==-10_015_000
+    assert stats["minimum_mean_unknown_edge_for_strictly_positive_conditional_total_lamports"]==10_015_001
+    assert stats["missing_edge_is_unbounded_without_fee_and_exit_assumptions"] is True
+    assert stats["all_cases_conditional_edge_sum_lamports"] is None
+    assert result["empirical_net_master_advantage_verified"] is False
+
+
+def test_all_conditional_rows_do_not_invent_unknown_mean_or_real_profit():
+    row=case();row["followup"]=followup()
+    result=audit_creator_disjoint_shadow([row],protocol())
+    split=result["rows"][0]["split"]
+    stats=result["splits"][split]
+    assert stats["minimum_mean_unknown_edge_for_strictly_positive_conditional_total_lamports"] is None
+    assert stats["missing_edge_is_unbounded_without_fee_and_exit_assumptions"] is False
+    assert stats["all_cases_conditional_edge_sum_lamports"]==9_985_000
+    assert result["empirical_net_master_advantage_verified"] is False
