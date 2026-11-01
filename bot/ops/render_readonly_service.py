@@ -28,6 +28,62 @@ ALLOWED_SUMMARY = frozenset((
 ))
 
 
+# The HTTP endpoint is public. A whitelist of field *names* is insufficient:
+# a malformed upstream summary could put credentials or false P&L claims inside
+# an otherwise allowed string/count. Publish only typed, bounded source facts.
+SAFE_CAPTURE_STATUSES = frozenset((
+    "NO_SIGNED_CREATIONS_IN_BOUNDED_CAPTURE",
+    "NO_VALID_POOL_ACCOUNT_GRAPHS",
+    "S1_DECISIONS_FROZEN_BEFORE_S2",
+    "TWO_CLOCK_MODEL_CAPTURE_COMPLETE_NOT_PROFITABILITY",
+))
+SUMMARY_BOOLEAN_FIELDS = frozenset((
+    "financial_order_submitted", "execution_verified",
+    "live_ready_to_arm", "exact_profitability_demonstrated",
+))
+OPTIONAL_RPC_COUNTERS = frozenset((
+    "actual_verification_rpc_calls_used", "actual_bank_rpc_calls_used",
+))
+
+
+def sanitize_public_summary(result):
+    """Reject false economic claims and unsafe values before HTTP publication."""
+    if type(result) is not dict:
+        raise ValueError("observer_result_must_be_mapping")
+    if (result.get("financial_order_submitted") is not False
+            or result.get("live_ready_to_arm") is not False
+            or result.get("execution_verified") is not False
+            or type(result.get("trade_fills_simulated")) is not int
+            or result["trade_fills_simulated"] != 0):
+        raise ValueError("unexpected_financial_claim_in_paper_observer")
+    # This signed-source observer never opens a Master PAPER position. Counts
+    # and P&L from a different experimental engine must never be imported.
+    for key in ("qualified_economic_cycles", "paper_portfolio_open_positions",
+                "paper_portfolio_closed_positions"):
+        if key in result and (type(result[key]) is not int or result[key] != 0):
+            raise ValueError("unexpected_master_economic_activity")
+    if ("exact_profitability_demonstrated" in result
+            and result["exact_profitability_demonstrated"] is not False):
+        raise ValueError("unexpected_profitability_claim")
+    safe = {}
+    for key in ALLOWED_SUMMARY:
+        if key not in result:
+            continue
+        value = result[key]
+        if key == "capture_status":
+            if type(value) is not str or value not in SAFE_CAPTURE_STATUSES:
+                raise ValueError("invalid_public_capture_status")
+        elif key in SUMMARY_BOOLEAN_FIELDS:
+            if type(value) is not bool:
+                raise ValueError("invalid_public_boolean")
+        elif value is None and key in OPTIONAL_RPC_COUNTERS:
+            pass
+        elif type(value) is not int or not 0 <= value <= 1_000_000:
+            raise ValueError("invalid_public_counter")
+        safe[key] = value
+    return safe
+
+
 def parse_settings(env):
     enabled = env.get("RUGGER_OBSERVATION_ENABLED", "0")
     interval = env.get("RUGGER_INTERVAL_SECONDS", "300")
@@ -95,14 +151,7 @@ class Observer:
                 output = Path(folder)/"capture"
                 result = run(seconds=self.settings["capture_seconds"],
                              output_dir=output, api_key=self._env["HELIUS_API_KEY"])
-            if type(result) is not dict:
-                raise ValueError("observer_result_must_be_mapping")
-            if (result.get("financial_order_submitted") is not False
-                    or result.get("live_ready_to_arm") is not False
-                    or result.get("execution_verified") is not False
-                    or result.get("trade_fills_simulated") != 0):
-                raise ValueError("unexpected_financial_claim_in_paper_observer")
-            sanitized = {key: result[key] for key in ALLOWED_SUMMARY if key in result}
+            sanitized = sanitize_public_summary(result)
             with self._lock:
                 self._state["observer_status"] = "CAPTURE_COMPLETED_READ_ONLY"
                 self._state["cycle_count"] += 1
