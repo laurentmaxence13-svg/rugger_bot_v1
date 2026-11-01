@@ -86,7 +86,7 @@ def reconcile(pinned,prospective):
                     or sig in source_by_signature):
                 raise ValueError("duplicate_or_invalid_signed_source_identity")
             identity=(creator,mint,pool)
-            if (mint,pool) in source_by_pool and
+            if ((mint,pool) in source_by_pool and
                     source_by_pool[(mint,pool)]!=creator):
                 raise ValueError("conflicting_source_creator_for_pool")
             source_by_signature[sig]=identity
