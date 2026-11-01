@@ -68,7 +68,12 @@ python -m bot.p3.observation24h --network --accept-observation-only --resume --s
 
 Keep PC awake, on power, with sufficient storage and network. A closed laptop
 or broken Web connection produces explicit missing windows, not backfilled
-trades. No additional subscription or charge is automatically purchased;
+trades. A normal Ctrl+C exits through the supervisor lock cleanup; after an
+abrupt power loss, a stale `session.lock` may remain. **Never delete that lock
+until you have verified no other supervisor process is still running**; then
+remove only the stale lock and use the exact same `--resume` command.
+Failed or orphaned windows reserve the full 20-request worst case.
+No additional subscription or charge is automatically purchased;
 provider billing/quota conditions have NOT been verified.
 
 ## Mandatory GO criteria for a real-like 24h Master/reference economic experiment
