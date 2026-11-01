@@ -130,7 +130,7 @@ def test_observer_uses_exact_public_apis_and_does_not_send_transactions(tmp_path
     bot.observe_public_cycle(book,fetch=fetch,clock=lambda:now[0])
     now[0]+=20000
     bot.observe_public_cycle(book,fetch=fetch,clock=lambda:now[0])
-    assert requests==[bot.PROFILE_URL,bot.PRICE_URL+MINT]*2
+    assert requests==[bot.PROFILE_URL,bot.PRICE_URL+MINT,bot.PRICE_URL+MINT]
     assert len(book.snapshot()["positions"])==1
     assert book.snapshot()["master_shadow"][0]["entry_authorized"] is False
     assert book.snapshot()["service"]["financial_order_submitted"] is False
@@ -139,3 +139,32 @@ def test_observer_uses_exact_public_apis_and_does_not_send_transactions(tmp_path
 def test_live_send_disabled_in_service():
     from bot.ops.render_readonly_service import Observer
     assert Observer(env={}).snapshot()["live_trading_enabled"] is False
+
+
+def test_open_position_can_sell_when_discovery_or_group_quotes_fail(tmp_path):
+    """Existing inventory is always checked first, even under provider churn."""
+    now=[1730419200000]
+    book=bot.PaperState(path=tmp_path/"fallback.json",clock=lambda:now[0])
+    raw=[dict(chainId="solana",baseToken={"address":MINT,"symbol":"M"},
+              quoteToken={"address":bot.SOL_MINT},priceNative="0.0001",
+              liquidity={"usd":11000},pairAddress=PAIR,dexId="raydium")]
+    calls=[]
+    def fetch(url):
+        calls.append(url)
+        if url==bot.PROFILE_URL:return [{"chainId":"solana","tokenAddress":MINT}]
+        if url.startswith(bot.PAIR_FALLBACK_URL):return raw
+        if url.startswith(bot.PRICE_URL) and len(calls)<=3:return raw
+        if url.startswith(bot.PRICE_URL):raise TimeoutError("market grouped endpoint unavailable")
+        raise AssertionError("unexpected endpoint")
+    bot.observe_public_cycle(book,fetch=fetch,clock=lambda:now[0])
+    now[0]+=20000
+    bot.observe_public_cycle(book,fetch=fetch,clock=lambda:now[0])
+    assert len(book.snapshot()["positions"])==1
+    now[0]+=100000
+    bot.observe_public_cycle(book,fetch=fetch,clock=lambda:now[0])
+    state=book.snapshot()
+    assert len(state["closed"])==1
+    assert len(state["positions"])==0
+    assert state["closed"][0]["closed_reason"]=="TIME_EXIT"
+    assert bot.PAIR_FALLBACK_URL+MINT in calls
+    assert state["service"]["financial_order_submitted"] is False
