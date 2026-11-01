@@ -42,10 +42,23 @@ FIXED = dict(schema='p3-prospective-inventory-v1', plan_id='prospective-inventor
     p4_holdout_policy='future_preregistered_after_model_freeze_excluding_development_creators')
 
 
+# Alternate preregistered PAPER source protocol: never route LaunchLab
+# bonding curve buys/sells via a CPMM/AMM Trade API.
+CURVE_PHASE_FIXED=dict(FIXED,
+    schema='p3-prospective-launchlab-curve-phase-v1',
+    plan_id='prospective-launchlab-curve-phase-009',
+    quote_venue='launchlab_curve_S1_only',
+    partial_rule='no_AMM_provider_quotes_while_observing_launchlab_curve')
+
+
 def validate_plan(plan):
-    if type(plan) is not dict or set(plan) != set(FIXED)|{'registered_at_ms','source_revision'}:
+    if type(plan) is not dict:
+        raise ValueError('Unsupported prospective plan')
+    fixed=(CURVE_PHASE_FIXED if plan.get('schema')==CURVE_PHASE_FIXED['schema']
+           else FIXED)
+    if set(plan) != set(fixed)|{'registered_at_ms','source_revision'}:
         raise ValueError('Unsupported prospective plan fields')
-    if any(type(plan[k]) is not type(v) or plan[k] != v for k,v in FIXED.items()):
+    if any(type(plan[k]) is not type(v) or plan[k] != v for k,v in fixed.items()):
         raise ValueError('Unsupported prospective protocol')
     if (type(plan['registered_at_ms']) is not int or not 0 < plan['registered_at_ms'] < now_ms()
             or type(plan['source_revision']) is not str
@@ -168,6 +181,7 @@ async def _fee_reference(store,session,append,row):
 
 async def collect_prospective(store,session,plan,*,provenance='live'):
     plan_hash=validate_plan(plan)
+    curve_phase_only=plan.get('quote_venue')=='launchlab_curve_S1_only'
     if session.rpc_url != plan['rpc_endpoint']:
         raise ValueError('Shared session endpoint differs from the preregistered source')
     if store.events() or session.requests_used or session.max_requests!=20:
@@ -216,62 +230,63 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
                 cp._gap(append,'prospective_pool_graph_unusable',mint=row['mint'])
         initial_slot,initial=await _grouped_snapshot(store,session,append,rows,graphs,slot,'initial')
         snapshot_completed=time.monotonic_ns()
-        provider=NativeInventoryQuoteProvider(session.session,store,shared_session=session,append=append,
-            stop_on_provider_rejection=False,max_requests=20)
         inventories={}
-        for row in rows:
-            mint=row['mint']
-            if mint not in initial:
-                continue
-            context=await provider(None,mint,side='buy',amount_atomic='1000000000',inventory=None,
-                decision_at_ms=now_ms(),observation_metadata={'probe_phase':'initial',
-                    'prospective_ordinal':row['ordinal']})
-            if context is None:
-                continue
-            event=context['buy_observation']
-            decimals=initial[mint]['analysis'].get('facts',{}).get('base_mint',{}).get('decimals')
-            decimals=int(decimals) if type(decimals) is str and decimals.isdecimal() else decimals
-            inventory=inventory_from_buy(event,basis='expected_buy_output',token_decimals=decimals,
-                entry_decision_at_ms=max(now_ms(),event['available_at_ms']),max_source_age_ms=5000)
-            if inventory['accepted']:
-                inventory['buy_observation_id']=event['id']
-                inventory['partial_diagnostic_atomic']=str(int(inventory['acquired_atomic'])//4)
-                inventories[mint]=inventory
-                append('checkpoint',received_at_ms=now_ms(),mint=mint,outcome='projected_inventory_fixed',
-                    payload={'acquired_atomic':inventory['acquired_atomic'],'minimum_atomic':inventory['minimum_atomic'],
-                             'partial_diagnostic_atomic':inventory['partial_diagnostic_atomic'],
-                             'buy_observation_id':event['id'],'acquisition_verified':False})
-            else:
-                cp._gap(append,'prospective_buy_inventory_unusable',mint=mint)
-        for row in rows:
-            mint=row['mint']
-            if mint not in inventories:
-                continue
-            inv=inventories[mint]
-            context=await provider(None,mint,side='sell',amount_atomic=inv['acquired_atomic'],
-                inventory={'mint':mint,'remaining_atomic':inv['acquired_atomic']},decision_at_ms=now_ms(),
-                observation_metadata={'probe_phase':'initial','exit_scope':'full_expected',
-                    'inventory_buy_observation_id':inv['buy_observation_id'],'prospective_ordinal':row['ordinal']})
-            event=context['sell_observation'] if context else None
-            # Record a fail-closed full-inventory route screen BEFORE any partial
-            # diagnostic or later follow-up. This does not admit or acquire a
-            # PAPER position; later information must never retroactively pass it.
-            screen=initial_full_exit_liquidity_screen(
-                mint=mint,acquired_atomic=inv['acquired_atomic'],
-                buy_observation_id=inv['buy_observation_id'],sell_event=event)
-            append('checkpoint',received_at_ms=now_ms(),mint=mint,
-                outcome='initial_full_exit_liquidity_screen',payload=screen)
-            if (event and event['outcome']=='unavailable' and event.get('reason')=='provider_rejected'
-                    and int(inv['partial_diagnostic_atomic'])>0):
-                # Fixed BEFORE the full response; no inventory is resized or settled.
-                request_id='prospective-partial-'+str(row['ordinal'])
-                client=RaydiumQuoteClient(session)
-                quote=await _quote_with_cancellation_receipt(client,append,mint,SOL_MINT,
-                    inv['partial_diagnostic_atomic'],'sell',request_id)
-                quote.update(probe_phase='initial',exit_scope='partial_diagnostic',
-                    inventory_buy_observation_id=inv['buy_observation_id'],prospective_ordinal=row['ordinal'],
-                    diagnostic_only=True)
-                _record_quote(append,quote,'sell',request_id)
+        if not curve_phase_only:
+            provider=NativeInventoryQuoteProvider(session.session,store,shared_session=session,append=append,
+                stop_on_provider_rejection=False,max_requests=20)
+            for row in rows:
+                mint=row['mint']
+                if mint not in initial:
+                    continue
+                context=await provider(None,mint,side='buy',amount_atomic='1000000000',inventory=None,
+                    decision_at_ms=now_ms(),observation_metadata={'probe_phase':'initial',
+                        'prospective_ordinal':row['ordinal']})
+                if context is None:
+                    continue
+                event=context['buy_observation']
+                decimals=initial[mint]['analysis'].get('facts',{}).get('base_mint',{}).get('decimals')
+                decimals=int(decimals) if type(decimals) is str and decimals.isdecimal() else decimals
+                inventory=inventory_from_buy(event,basis='expected_buy_output',token_decimals=decimals,
+                    entry_decision_at_ms=max(now_ms(),event['available_at_ms']),max_source_age_ms=5000)
+                if inventory['accepted']:
+                    inventory['buy_observation_id']=event['id']
+                    inventory['partial_diagnostic_atomic']=str(int(inventory['acquired_atomic'])//4)
+                    inventories[mint]=inventory
+                    append('checkpoint',received_at_ms=now_ms(),mint=mint,outcome='projected_inventory_fixed',
+                        payload={'acquired_atomic':inventory['acquired_atomic'],'minimum_atomic':inventory['minimum_atomic'],
+                                 'partial_diagnostic_atomic':inventory['partial_diagnostic_atomic'],
+                                 'buy_observation_id':event['id'],'acquisition_verified':False})
+                else:
+                    cp._gap(append,'prospective_buy_inventory_unusable',mint=mint)
+            for row in rows:
+                mint=row['mint']
+                if mint not in inventories:
+                    continue
+                inv=inventories[mint]
+                context=await provider(None,mint,side='sell',amount_atomic=inv['acquired_atomic'],
+                    inventory={'mint':mint,'remaining_atomic':inv['acquired_atomic']},decision_at_ms=now_ms(),
+                    observation_metadata={'probe_phase':'initial','exit_scope':'full_expected',
+                        'inventory_buy_observation_id':inv['buy_observation_id'],'prospective_ordinal':row['ordinal']})
+                event=context['sell_observation'] if context else None
+                # Record a fail-closed full-inventory route screen BEFORE any partial
+                # diagnostic or later follow-up. This does not admit or acquire a
+                # PAPER position; later information must never retroactively pass it.
+                screen=initial_full_exit_liquidity_screen(
+                    mint=mint,acquired_atomic=inv['acquired_atomic'],
+                    buy_observation_id=inv['buy_observation_id'],sell_event=event)
+                append('checkpoint',received_at_ms=now_ms(),mint=mint,
+                    outcome='initial_full_exit_liquidity_screen',payload=screen)
+                if (event and event['outcome']=='unavailable' and event.get('reason')=='provider_rejected'
+                        and int(inv['partial_diagnostic_atomic'])>0):
+                    # Fixed BEFORE the full response; no inventory is resized or settled.
+                    request_id='prospective-partial-'+str(row['ordinal'])
+                    client=RaydiumQuoteClient(session)
+                    quote=await _quote_with_cancellation_receipt(client,append,mint,SOL_MINT,
+                        inv['partial_diagnostic_atomic'],'sell',request_id)
+                    quote.update(probe_phase='initial',exit_scope='partial_diagnostic',
+                        inventory_buy_observation_id=inv['buy_observation_id'],prospective_ordinal=row['ordinal'],
+                        diagnostic_only=True)
+                    _record_quote(append,quote,'sell',request_id)
         # Run the ACTUAL frozen Master and reference scorers on the S1
         # informational prefix, with missing features left missing. Commit
         # decisions before ANY follow-up bank is requested; never retrofit
@@ -294,7 +309,7 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
                 source_slot=bank['context_slot'])
             append('checkpoint',received_at_ms=now_ms(),mint=row['mint'],
                 outcome='initial_curve_size_grid_frozen',payload=frozen_grid)
-        if initial_slot is not None and inventories:
+        if initial_slot is not None and (inventories or curve_phase_only):
             delay=max(0,15000000000-(time.monotonic_ns()-snapshot_completed))/1e9
             await asyncio.sleep(delay)
             waited_ms=(time.monotonic_ns()-snapshot_completed)//1000000
@@ -307,7 +322,7 @@ async def collect_prospective(store,session,plan,*,provenance='live'):
             if following_slot is not None and following_slot>initial_slot:
                 for row in rows:
                     mint=row['mint']
-                    if mint in inventories:
+                    if mint in inventories and not curve_phase_only:
                         inv=inventories[mint]
                         await provider(None,mint,side='sell',amount_atomic=inv['acquired_atomic'],
                             inventory={'mint':mint,'remaining_atomic':inv['acquired_atomic']},decision_at_ms=now_ms(),
