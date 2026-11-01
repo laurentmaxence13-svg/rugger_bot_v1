@@ -28,10 +28,28 @@ def funnel(summary, source_windows):
     signed_signatures=set()
     reasons=Counter()
     windows=[]
+    clocked=summary.get("local_capture_clock_is_not_external_git_or_provider_proof")
+    if clocked not in (None,True):
+        raise ValueError("invalid_local_capture_clock_disclaimer")
+    previous_capture_completed_ms=None
     for index,(meta,source) in enumerate(zip(summary["windows"],source_windows)):
         if (type(meta) is not dict or meta.get("window")!=index+1
                 or type(source) is not dict or set(source)!={"events","report"}):
             raise ValueError("window_sequence_or_envelope_invalid")
+        if clocked is True:
+            start=meta.get("capture_started_local_ms")
+            end=meta.get("capture_completed_local_ms")
+            if (type(start) is not int or type(end) is not int
+                    or not 0<start<=end
+                    or (previous_capture_completed_ms is not None
+                        and start<previous_capture_completed_ms)
+                    or meta.get("capture_clock_authentication")!="local_wall_clock_unverified"):
+                raise ValueError("local_capture_clock_order_or_provenance_invalid")
+            previous_capture_completed_ms=end
+        elif any(k in meta for k in ("capture_started_local_ms",
+                                     "capture_completed_local_ms",
+                                     "capture_clock_authentication")):
+            raise ValueError("unregistered_partial_local_capture_clock")
         digest=hashlib.sha256(_canonical(source).encode("utf-8")).hexdigest()
         if digest!=meta.get("source_sha256"):
             raise ValueError("tampered_window_or_wrong_artifact")
@@ -117,6 +135,8 @@ def funnel(summary, source_windows):
         raise ValueError("creator_ids_not_reconciled")
     return dict(schema="rugger-prospective-campaign-funnel-v1",
         campaign_sha256=hashlib.sha256(_canonical(summary).encode("utf-8")).hexdigest(),
+        local_capture_clock_provided=clocked is True,
+        local_capture_clock_independently_authenticated=False,
         windows=windows,
         observed_events=sum(w["received"] for w in windows),
         unique_event_signatures=len(seen),
