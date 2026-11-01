@@ -61,8 +61,9 @@ def _followup_sell_from_snapshot(analysis,exact_quantity):
         share_fee_rate_ppm=_canonical_uint(facts.get("share_fee_assumption_ppm","0")))
 
 
-def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False,prefer_root_activity=False):
-    if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool or type(prefer_root_activity) is not bool):
+def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False,prefer_root_activity=False,freeze_at_s1=None):
+    if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool or type(prefer_root_activity) is not bool
+            or (freeze_at_s1 is not None and not callable(freeze_at_s1))):
         raise ValueError("active_readonly_cohort_bounds_required")
     scan=discover_live_pool_account_page(rpc)
     candidates=scan["initial_pools_before_price"]
@@ -117,6 +118,7 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         selected_count=len(selected),root_slot=root_slot,
         financial_order_submitted=False),sort_keys=True),flush=True)
     observations=[];bank1_slot=None;bank2_slot=None
+    preregistered_research_freeze=None
     if selected:
         keys=list(dict.fromkeys(
             k for r in selected for k in r["addresses"].values()))
@@ -171,6 +173,31 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
             partial_records=len(observations),
             frozen_selection_sha256=registration_sha256,
             actual_buy_sell_cycles=0),sort_keys=True),flush=True)
+        # Strictly BEFORE any sleep or follow-up bank read. A custom research
+        # scorer sees ONLY frozen pool identities and S1 account analyses.
+        # No historical creation signature or quote-execution claim is made.
+        if freeze_at_s1 is not None:
+            from copy import deepcopy
+            s1clock=time.time_ns()//1_000_000
+            frozen_input=dict(registration_sha256=registration_sha256,
+                s1_slot=bank1_slot,s1_received_at_ms=s1clock,
+                selected_before_S1=[dict(pool=r["pool"],mint=r["mint"],
+                    creator_claim=r["creator_claim"]) for r in selected],
+                s1_observations=[dict(row=deepcopy(rec),
+                    s1_analysis=deepcopy(by_mint.get(rec["mint"])))
+                    for rec in observations])
+            frozen_receipt=freeze_at_s1(deepcopy(frozen_input))
+            if (type(frozen_receipt) is not dict or
+                    frozen_receipt.get("s1_registration_sha256")!=registration_sha256
+                    or frozen_receipt.get("s1_slot")!=bank1_slot or
+                    frozen_receipt.get("future_S2_used") is not False or
+                    frozen_receipt.get("financial_order_submitted") is not False):
+                raise ValueError("unqualified_pre_S2_research_freeze")
+            preregistered_research_freeze=deepcopy(frozen_receipt)
+            print(json.dumps(dict(phase="S1_RESEARCH_FREEZE_BEFORE_S2",
+                freeze_sha256=_hash(frozen_receipt),
+                selected_count=len(selected),financial_order_submitted=False),
+                sort_keys=True),flush=True)
         sleep(wait_seconds)
         bank2_slot,b2=_bank(rpc,keys,bank1_slot+1)
         for rec in observations:
@@ -268,6 +295,10 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         no_historical_survivor_bias_control=True,
         master_vs_reference_edge_demonstrated=False,
         research_size_ladder_enabled=research_ladder,
+        preregistered_research_freeze=preregistered_research_freeze,
+        S1_research_freeze_before_S2_sha256=(
+            _hash(preregistered_research_freeze)
+            if preregistered_research_freeze is not None else None),
         root_activity_filter_enabled=prefer_root_activity,
         research_size_ladder_lamports=list(RESEARCH_LADDER_LAMPORTS) if research_ladder else None,
         research_sizes_are_not_independent_creators=True,
