@@ -7,7 +7,7 @@ from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
 from bot.p3.quotes import SOL_MINT
 from bot.p3.prospective_report import build_prospective_report
 from test_p3_prospective_report import corpus
-from tools.p3_replay_liquidity_gate import replay
+from bot.p3.replay_liquidity_gate import replay
 
 MINT = "TokenTestMint"
 
