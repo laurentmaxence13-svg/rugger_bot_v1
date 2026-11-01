@@ -61,11 +61,14 @@ def _followup_sell_from_snapshot(analysis,exact_quantity):
         share_fee_rate_ppm=_canonical_uint(facts.get("share_fee_assumption_ppm","0")))
 
 
-def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False,prefer_root_activity=False,freeze_at_s1=None):
+def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False,prefer_root_activity=False,freeze_at_s1=None,sample_page=0):
     if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool or type(prefer_root_activity) is not bool
+            or type(sample_page) is not int or not 0<=sample_page<=4
             or (freeze_at_s1 is not None and not callable(freeze_at_s1))):
         raise ValueError("active_readonly_cohort_bounds_required")
-    scan=discover_live_pool_account_page(rpc)
+    scan=(discover_live_pool_account_page(rpc)
+          if sample_page==0 else
+          discover_live_pool_account_page(rpc,sample_page=sample_page))
     candidates=scan["initial_pools_before_price"]
     if not candidates:
         return dict(status="NO_ACTIVE_SOL_POOLS_ON_FIRST_PAGE",
@@ -108,6 +111,7 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
               creator_claim=r["creator_claim"]) for r in selected],
         denominator=denominator,entry_lamports=BUY_LAMPORTS,
         sample_scope="first_v2_page_active_survivors_only",
+        sample_page=sample_page,
         no_frozen_trade_decisions=True,
         root_activity_filter_preregistered=prefer_root_activity,
         root_activity_filter="real_a_positive_and_real_b_positive_only_before_S1" if prefer_root_activity else "none",
@@ -299,6 +303,7 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         scan_slot=scan["scan_slot"],root_slot=root_slot,
         first_bank_slot=bank1_slot,second_bank_slot=bank2_slot,
         page_size=scan["observed_active_SOL_pools_in_one_page"],
+        sample_page=sample_page,
         additional_pages_exist=scan["further_pages_exist"],
         discovery_denominator=denominator,
         selected_count=len(selected),observations=observations,
@@ -324,6 +329,7 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--research-size-ladder",action="store_true")
     parser.add_argument("--prefer-root-activity",action="store_true")
+    parser.add_argument("--sample-page",type=int,default=0)
     args=parser.parse_args()
     rpc=None
     try:
@@ -332,7 +338,8 @@ def main():
         rpc=HeliusReadOnlyRpc.from_environment(max_calls=6,
                                            allow_active_pool_scan=True)
         report=observe_active_survivor_cohort(rpc,research_ladder=args.research_size_ladder,
-            prefer_root_activity=args.prefer_root_activity)
+            prefer_root_activity=args.prefer_root_activity,
+            sample_page=args.sample_page)
     except Exception as exc:
         code=str(exc)
         safe=code if type(exc) is ValueError and len(code)<100 and code.replace("_","").isalnum() else type(exc).__name__
