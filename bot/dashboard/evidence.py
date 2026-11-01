@@ -19,8 +19,9 @@ LEDGER="rugger-dual-arm-live-like-paper-ledger-v1"
 PROBE="rugger-real-sol-prospective-conditional-paper-cycle-v1"
 SIGNED="rugger-signed-creator-asof-paired-paper-v1"
 INTEGRATED="rugger-helius-signed-master-paper-integration-v1"
+ENGINE="paper-engine-report-v1"
 
-SUPPORTED={LEDGER,PROBE,SIGNED,INTEGRATED}
+SUPPORTED={LEDGER,PROBE,SIGNED,INTEGRATED,ENGINE}
 SAFE_NAME=re.compile(r"^[a-zA-Z0-9_./-]{1,220}$")
 
 
@@ -106,7 +107,7 @@ def load_uploaded(filename,content):
 
 def parse_documents(documents):
     """Return normalized, explicitly labelled trades, decisions, projections."""
-    out=dict(cycles=[],decisions=[],projections=[],sources=[],summary=[])
+    out=dict(cycles=[],decisions=[],projections=[],sources=[],summary=[],positions=[],prices=[])
     seen=set()
     for original_name,doc in documents[:MAX_FILES]:
         if type(doc) is not dict:
@@ -134,6 +135,8 @@ def parse_documents(documents):
             _signed(doc,name,out)
         elif schema==INTEGRATED:
             _integrated(doc,name,out)
+        elif schema==ENGINE:
+            _engine_report(doc,name,out)
     return out
 
 
@@ -287,6 +290,29 @@ def _integrated(doc,name,out):
                 information=label,valeur=str(val)))
 
 
+def _engine_report(doc,name,out):
+    # Existing bot.analyser.paper_engine writes this into data/, not paper_artifacts.
+    if doc.get("paper_only") is not True or doc.get("real_orders_enabled") is not False:
+        return
+    for field,label in (
+        ("launches_observed","Lancements observés"),
+        ("quotes_recorded","Cotations USD enregistrées"),
+        ("decision_count","Décisions du moteur PAPER"),
+        ("open_paper_positions","Positions PAPER ouvertes"),
+        ("closed_paper_positions","Positions PAPER clôturées")):
+        val=doc.get(field)
+        if type(val) is int:
+            out["summary"].append(dict(source=name,information=label,valeur=str(val)))
+    complete=doc.get("performance_data_complete") is True
+    pnl=doc.get("pnl_sol")
+    # Legacy report may use conversion USD -> SOL at constant FX. Even a
+    # mathematically reconciled report is not source-native Master profitability.
+    if complete and type(pnl) in (int,float) and -1e30<float(pnl)<1e30:
+        out["summary"].append(dict(source=name,
+            information="P&L PAPER legacy (conversion USD/SOL non vérifiée)",
+            valeur=f"{pnl:.9f} SOL (approximation, jamais Master)"))
+
+
 def synthetic_demo():
     """Opt-in offline UI demonstration, deliberately unlike market evidence."""
     return dict(
@@ -302,6 +328,6 @@ def synthetic_demo():
         decisions=[dict(source="DÉMO SYNTHÉTIQUE",mint="TOKEN_EXEMPLE_C",
             strategie="MASTER",decision="WAIT",slot=None,horodatage_ms=None,
             preuve="Exemple fictif; pas de décision Helius")],
-        projections=[],sources=[dict(fichier="DÉMO SYNTHÉTIQUE",
+        projections=[],prices=[],positions=[],sources=[dict(fichier="DÉMO SYNTHÉTIQUE",
             schema="exemple",statut="100 % fictif",
             trading_live="NON",donnees_verifiees="NON")],summary=[])
