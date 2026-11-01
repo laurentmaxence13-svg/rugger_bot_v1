@@ -12,6 +12,7 @@ from pathlib import Path
 
 from bot.analyser.artifacts import atomic_write_json
 from bot.p3.quotes import SOL_MINT
+from bot.p3.curve_quote_audit import curve_exit_diagnostics
 from bot.p3.store import CaptureStore
 
 
@@ -119,11 +120,15 @@ def venue_audit(events, *, expected_tail):
             for q in responses)
         plausible_gap = bool(stage == "launchlab_curve_active_status_observed"
             and initial_refused)
+        curve_diagnostics=curve_exit_diagnostics(events,mint)
         counts[stage]+=1
         cases.append(dict(ordinal=ordinal,mint=mint,stage=stage,
             stage_observations=stages,trade_api_sell_observations=responses,
             trade_api_refusal_counts=dict(sorted(failures.items())),
             active_curve_trade_api_coverage_gap_plausible=plausible_gap,
+            observed_curve_sell_diagnostics=curve_diagnostics,
+            observed_curve_sell_estimates=sum(1 for item in curve_diagnostics
+                 if item.get('curve_estimate_available') is True),
             trade_api_refusal_proves_onchain_illiquidity=False,
             migration_verified=False,full_exit_executable_proven=False,
             settled_position=False,net_pnl_sol=None))
@@ -132,6 +137,8 @@ def venue_audit(events, *, expected_tail):
         active_curve_trade_api_coverage_gap_candidates=sum(
             c["active_curve_trade_api_coverage_gap_plausible"] for c in cases),
         trade_api_refusal_proves_onchain_illiquidity=False,
+        observed_curve_sell_estimates=sum(c['observed_curve_sell_estimates'] for c in cases),
+        curve_sell_basis='observed_bank_conditional_without_projected_own_buy_not_executable',
         venue_aware_executable_cycle_count=0,
         strategy_profitability_verified=False,live_ready_to_arm=False,
         financial_order_submitted=False,cases=cases)
@@ -151,6 +158,7 @@ def replay(db_path, output_path):
         stage_counts=report["stage_counts"],
         active_curve_trade_api_coverage_gap_candidates=report[
             "active_curve_trade_api_coverage_gap_candidates"],
+        observed_curve_sell_estimates=report['observed_curve_sell_estimates'],
         venue_aware_executable_cycle_count=0,
         strategy_profitability_verified=False)
 
