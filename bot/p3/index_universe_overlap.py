@@ -89,3 +89,34 @@ def audit_index_universes(reports):
         master_net_pnl_lamports=None,reference_net_pnl_lamports=None,
         financially_submitted_orders=0,live_ready_to_arm=False,
         market_profitability_verified=False)
+
+
+
+def main(argv=None):
+    """Report all source-page overlaps; no additional network requests."""
+    import argparse
+    from pathlib import Path
+    p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--reports",required=True,type=Path,nargs="+")
+    p.add_argument("--output",required=True,type=Path)
+    args=p.parse_args(argv)
+    paths=[x.resolve() for x in [*args.reports,args.output]]
+    if len(set(paths))!=len(paths) or args.output.exists():
+        p.error("distinct_reports_and_fresh_output_required")
+    reports=[json.loads(path.read_text(encoding="utf8")) for path in args.reports]
+    result=audit_index_universes(reports)
+    args.output.parent.mkdir(parents=True,exist_ok=True)
+    with args.output.open("x",encoding="utf8") as output:
+        json.dump(result,output,sort_keys=True,indent=2,allow_nan=False)
+        output.write("\n")
+    print(json.dumps(dict(status=result["schema"],
+        total_rows=result["total_index_observations"],
+        unique_pool_pairs=result["unique_provider_claimed_token_pool_pairs"],
+        claimed_unique_creators=result["unique_provider_claimed_creator_ids"],
+        verified_independent_creators=result["authentic_signed_creation_creator_ids"],
+        economic_cycles_verified=0,financial_order_submitted=False)))
+    return 0
+
+
+if __name__=="__main__":
+    raise SystemExit(main())
