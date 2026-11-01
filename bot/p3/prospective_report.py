@@ -13,7 +13,8 @@ import re
 
 from bot.p3.accounting import SolFeeBreakdown, accounting_json_safe
 from bot.p3.exit_qualification import qualify_exit_quote_pair
-from bot.p3.liquidity_screen import initial_full_exit_liquidity_screen
+from bot.p3.liquidity_screen import (initial_full_exit_liquidity_screen,
+                                     recorded_initial_full_exit_route_passed)
 
 
 P4_SCOPE = 'instrumental_development_only'
@@ -224,7 +225,7 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
         if not creation: admission_reasons.add('creation_transaction_unverified')
         if not identity: admission_reasons.add('identity_supply_or_permissions_unqualified')
         if len(slots)<2: admission_reasons.add('two_distinct_observed_bank_periods_missing')
-        if inventories and not any(s['initial_full_exit_route_quoted'] and s['gate_recorded'] for s in screens):
+        if inventories and not any(recorded_initial_full_exit_route_passed(s) for s in screens):
             admission_reasons.add('initial_full_exit_liquidity_gate_not_passed')
         for e in quotes:
             p=e['payload']; side=p.get('quote_side'); scope=p.get('exit_scope'); outcome=e.get('outcome')
@@ -261,8 +262,7 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
             # initial full-inventory liquidity screen was absent or refused.
             initial_gate=screens_by_buy_id[buy_id]
             if (scope == 'full_expected' and p.get('probe_phase') == 'followup'
-                    and initial_gate['gate_recorded'] is True
-                    and initial_gate['initial_full_exit_route_quoted'] is True
+                    and recorded_initial_full_exit_route_passed(initial_gate)
                     and creation and identity and len(slots)>=2 and projection is not None):
                 net_projections.append(dict(sell_observation_id=e['id'],
                     buy_observation_id=buy_id,projection=accounting_json_safe(projection),
