@@ -83,3 +83,64 @@ def test_mismatched_window_order_refused(tmp_path):
     summary,items=fixtures(tmp_path)
     with pytest.raises(ValueError,match="tampered_window|sequence_or_envelope"):
         funnel(summary,list(reversed(items)))
+
+
+
+def _reanchor(summary,items,index):
+    """Model a dishonest publisher recomputing the source hash after mutation."""
+    import hashlib
+    from bot.live.helius_prospective_campaign import _canonical
+    summary["windows"][index]["source_sha256"]=hashlib.sha256(
+        _canonical(items[index]).encode("utf-8")).hexdigest()
+
+
+def test_rehashed_unobserved_inspection_is_refused(tmp_path):
+    summary,items=fixtures(tmp_path)
+    items[0]["report"]["attempts"][0]["signature"]="not-captured"
+    _reanchor(summary,items,0)
+    with pytest.raises(ValueError,match="inspected_signature_not_in_observed_window"):
+        funnel(summary,items)
+
+
+def test_rehashed_double_inspection_does_not_multiply_creators(tmp_path):
+    summary,items=fixtures(tmp_path)
+    attempt=copy.deepcopy(items[0]["report"]["attempts"][0])
+    items[0]["report"]["attempts"].append(attempt)
+    summary["windows"][0]["inspected_attempts"]=2
+    summary["windows"][0]["verified_signed_launch_candidates"]=2
+    summary["windows"][0]["newly_observed_creator_claims"]=1
+    _reanchor(summary,items,0)
+    with pytest.raises(ValueError,match="duplicated_inspection_within_window"):
+        funnel(summary,items)
+
+
+def test_rehashed_duplicate_observed_signature_is_refused(tmp_path):
+    summary,items=fixtures(tmp_path)
+    items[0]["events"].append(copy.deepcopy(items[0]["events"][0]))
+    summary["windows"][0]["observed_events"]=2
+    summary["windows"][0]["repeated_signatures_across_windows"]=1
+    summary["observed_events"]=3
+    _reanchor(summary,items,0)
+    with pytest.raises(ValueError,match="duplicated_event_signature_within_window"):
+        funnel(summary,items)
+
+
+def test_source_denominator_counts_uninspected_events_as_unknown(tmp_path):
+    summary,items=fixtures(tmp_path)
+    items[0]["events"].append(dict(signature="captured-but-not-inspected"))
+    summary["windows"][0]["observed_events"]=2
+    summary["observed_events"]=3
+    _reanchor(summary,items,0)
+    out=funnel(summary,items)
+    assert out["unique_event_signatures"]==3
+    assert out["unique_inspected_event_signatures"]==2
+    assert out["uninspected_unique_event_signatures"]==1
+    assert out["uninspected_events_are_unknown_not_negative"] is True
+    assert out["signed_creator_claims_not_independent_crypto_reverification"] is True
+
+
+def test_signed_creation_claims_count_unique_signatures(tmp_path):
+    summary,items=fixtures(tmp_path)
+    out=funnel(summary,items)
+    assert out["unique_signed_creation_signature_claims"]==2
+    assert out["verified_signed_creator_claims"]==2
