@@ -97,11 +97,15 @@ if (Test-Path -LiteralPath $pythonVenv) {
 }
 
 Write-Host 'Verification des dependances Streamlit...'
-# importlib.find_spec never prints a missing-package traceback. On Windows
-# PowerShell 5.1, redirected stderr from "import streamlit" was being promoted
-# to a terminating NativeCommandError *before* the pip install could run.
-& $pythonVenv -c 'import importlib.util,sys; sys.exit(0 if all(importlib.util.find_spec(x) is not None for x in ("streamlit","pandas")) else 1)'
+# PowerShell 5.1 may strip quotes inside a Python "-c" argument.
+# Inspect pip's installed distribution list instead (no missing-import traceback).
+$installed = & $pythonVenv -m pip --disable-pip-version-check list --format=freeze
 if ($LASTEXITCODE -ne 0) {
+    throw 'Pip ne fonctionne pas dans .venv-dashboard. Renomme ce dossier et relance le BAT.'
+}
+$hasStreamlit = @($installed | Where-Object { $_ -match '^streamlit==' }).Count -gt 0
+$hasPandas = @($installed | Where-Object { $_ -match '^pandas==' }).Count -gt 0
+if (-not ($hasStreamlit -and $hasPandas)) {
     Write-Host 'Installation des dependances (premier lancement uniquement)...'
     # PowerShell 5.1 treats stderr from native executables as an ErrorRecord;
     # pip may use stderr even for ordinary progress and warnings.
@@ -116,6 +120,8 @@ if ($LASTEXITCODE -ne 0) {
     if ($installExitCode -ne 0) {
         throw 'Installation Streamlit impossible. Verifie la connexion Internet et copie l erreur pip visible ci-dessus.'
     }
+} else {
+    Write-Host 'Streamlit deja installe. Aucune installation necessaire.'
 }
 
 Write-Host "Demarrage de Rugger Bot a $url ..."
