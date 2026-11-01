@@ -84,6 +84,16 @@ def sanitize_public_summary(result):
     return safe
 
 
+def require_signed_source_ed25519():
+    """Check the real signed-receipt verifier before any Helius network call.
+
+    The base Render requirements do not install this optional dependency.
+    Never degrade to unsigned receipts or an experimental market feed.
+    """
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    return Ed25519PublicKey
+
+
 def parse_settings(env):
     enabled = env.get("RUGGER_OBSERVATION_ENABLED", "0")
     interval = env.get("RUGGER_INTERVAL_SECONDS", "300")
@@ -143,6 +153,9 @@ class Observer:
             self._state["last_started_at_utc_ms"] = int(self._clock()*1000)
         try:
             if self._runner is None:
+                # Fail closed *before* websocket/RPC credits are consumed when
+                # Render lacks the optional cryptographic verification package.
+                require_signed_source_ed25519()
                 from bot.live.helius_signed_master_paper import run_pipeline
                 run = run_pipeline
             else:
