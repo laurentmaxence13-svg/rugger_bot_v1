@@ -55,6 +55,12 @@ def campaign(*,windows=4,seconds=60,max_events=100,
     seen_signatures=set()
     seen_creators=set()
     receipts=[]
+    # An interrupted Actions job must not silently erase already captured
+    # windows from the denominator. A bounded, replaceable checkpoint is
+    # deliberately distinct from the final immutable complete summary.
+    checkpoint_path=out/f"prospective_{session}_checkpoint.json"
+    if checkpoint_path.exists() or checkpoint_path.is_symlink():
+        raise FileExistsError("existing_campaign_checkpoint_refused")
     for index in range(windows):
         # One new provider client and a cryptographically frozen selection per
         # window. Never re-query an earlier decision with future S2 data.
@@ -131,6 +137,17 @@ def campaign(*,windows=4,seconds=60,max_events=100,
         with path.open("x",encoding="utf-8") as handle:
             handle.write(_canonical(dict(events=events,report=report))+"\n")
         receipts.append(receipt)
+        checkpoint=dict(schema="rugger-prospective-window-checkpoint-v1",
+            windows_requested=windows,windows_completed=len(receipts),
+            complete=False,source_window_receipts=list(receipts),
+            local_capture_clock_independently_authenticated=False,
+            economic_cycles_verified=0,master_reference_edge_lamports=None,
+            market_profitability_verified=False,
+            financial_order_submitted=False,live_ready_to_arm=False)
+        temporary=out/f"prospective_{session}_checkpoint.tmp"
+        with temporary.open("w",encoding="utf-8") as handle:
+            handle.write(_canonical(checkpoint)+"\n")
+        os.replace(temporary,checkpoint_path)
         print(_canonical(dict(status="PAPER_WINDOW_COMPLETE",**receipt)),flush=True)
     summary=dict(schema=SCHEMA,
         local_capture_clock_is_not_external_git_or_provider_proof=True,
