@@ -175,6 +175,8 @@ def test_own_buy_overlay_model_is_separate_from_unquoted_untouched_s2_and_master
     case=report["cases"][0]
     assert report["exact_model_roundtrips"]==0
     assert report["own_buy_overlay_conditional_models"]==1
+    assert report["own_buy_overlay_source_replay_verified_models"]==0
+    assert case["own_buy_overlay_public_bank_replay_verified"] is False
     assert case["status"]=="CENSORED_OPEN_HYPOTHETICAL_PROBE_NO_S2_EXIT"
     assert case["own_buy_overlay_status"]=="CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY"
     assert case["own_buy_overlay_sell_lamports"]=="56000000"
@@ -192,4 +194,19 @@ def test_tampered_overlay_markout_cannot_enter_a_profitable_summary():
     row["s2_own_buy_overlay_sell_lamports"]="56000000"
     row["s2_own_buy_overlay_delta_before_extra_costs_lamports"]="999999999"
     with pytest.raises(ValueError,match="S2_own_buy_overlay_markout_inconsistent"):
+        evaluate_probe(raw)
+
+
+def test_archived_public_bank_digest_tamper_aborts_overlay_reporting():
+    raw=prospective(with_exit=False)
+    row=raw["observations"][0]["research_size_ladder"][0]
+    row.update(s2_own_buy_overlay_status="MODEL_CONDITIONAL_NOT_EXECUTABLE",
+               s2_own_buy_overlay_sell_lamports="56000000",
+               s2_own_buy_overlay_delta_before_extra_costs_lamports="6000000",
+               s2_own_buy_overlay_receipt_sha256="c"*64)
+    rec=raw["observations"][0]
+    rec["s1_decoded_public_bank_replay"]={"corrupted_by_relay":True}
+    rec["s2_decoded_public_bank_replay"]={"corrupted_by_relay":True}
+    rec["s2_decoded_public_bank_sha256"]="a"*64
+    with pytest.raises(ValueError,match="archived_public_S1_S2_bank_digest_mismatch"):
         evaluate_probe(raw)
