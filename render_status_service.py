@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import threading
 from urllib.parse import urlsplit
 
-from render_paper_engine import PaperState, run_public_worker
+from bot.ops.render_paper_engine import PaperState, run_public_worker
 
 os.environ["RUGGER_NO_DOTENV"]="1"
 os.environ["RUGGER_LIVE_ENABLED"]="0"
