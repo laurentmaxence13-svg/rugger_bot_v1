@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import time
 
 from bot.live.helius_early_signed_s1s2 import bounded_early_capture
 
@@ -57,7 +58,11 @@ def campaign(*,windows=4,seconds=60,max_events=100,
     for index in range(windows):
         # One new provider client and a cryptographically frozen selection per
         # window. Never re-query an earlier decision with future S2 data.
+        capture_started_local_ms=time.time_ns()//1_000_000
         report,events=asyncio.run(capture(seconds=seconds,max_events=max_events))
+        capture_completed_local_ms=time.time_ns()//1_000_000
+        if capture_completed_local_ms<capture_started_local_ms:
+            raise ValueError("nonmonotonic_local_capture_clock")
         if (type(report) is not dict or report.get("schema")!=CAPTURE_SCHEMA
             or report.get("financial_order_submitted") is not False
             or report.get("live_ready_to_arm") is not False
@@ -96,7 +101,11 @@ def campaign(*,windows=4,seconds=60,max_events=100,
                         seen_creators.add(x["creator"])
             frozen+=int(type(attempt.get("frozen_pre_S2")) is dict)
             conditional+=int("s1_s2_conditional_markout_lamports" in attempt)
-        receipt=dict(window=index+1,observed_events=len(events),
+        receipt=dict(window=index+1,
+            capture_started_local_ms=capture_started_local_ms,
+            capture_completed_local_ms=capture_completed_local_ms,
+            capture_clock_authentication="local_wall_clock_unverified",
+            observed_events=len(events),
             repeated_signatures_across_windows=repeats,
             inspected_attempts=len(report["attempts"]),
             verified_signed_launch_candidates=signed,
@@ -112,7 +121,9 @@ def campaign(*,windows=4,seconds=60,max_events=100,
             handle.write(_canonical(dict(events=events,report=report))+"\n")
         receipts.append(receipt)
         print(_canonical(dict(status="PAPER_WINDOW_COMPLETE",**receipt)),flush=True)
-    summary=dict(schema=SCHEMA,windows_requested=windows,
+    summary=dict(schema=SCHEMA,
+        local_capture_clock_is_not_external_git_or_provider_proof=True,
+        windows_requested=windows,
         seconds_per_window=seconds,max_events_per_window=max_events,
         max_readonly_helius_requests=windows*10,
         windows=receipts,observed_events=sum(w["observed_events"] for w in receipts),
