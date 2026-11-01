@@ -45,7 +45,7 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
                  rpc_factory=HeliusReadOnlyRpc):
     """One bounded attempt, never reuse/output credentials or overwrite files."""
     if (type(seconds) is not int or not 10<=seconds<=45
-            or type(api_key) is not str
+            or type(api_key) is not str or api_key=="COLLE_TA_CLE_ICI"
             or re.fullmatch(r"[A-Za-z0-9_-]{16,160}",api_key) is None):
         raise ValueError("bounded_helius_operator_inputs_required")
     folder=Path(output_dir)
