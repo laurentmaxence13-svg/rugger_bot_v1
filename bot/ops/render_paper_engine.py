@@ -214,6 +214,27 @@ class PaperState:
         at_ms = self.clock() if at_ms is None else at_ms
         if not isinstance(quotes, dict) or not isinstance(at_ms, int) or at_ms <= 0:
             raise ValueError("invalid_paper_observation")
+        # Never retain or account untrusted non-finite provider fields.
+        # This also prevents corrupting the atomic JSON journal on NaN/Inf.
+        valid = {}
+        for mint, quote in quotes.items():
+            if not _mint(mint) or not isinstance(quote, dict):
+                continue
+            pair = quote.get("pair")
+            price = finite_positive(quote.get("price_sol"))
+            liquid = finite_positive(quote.get("liquidity_usd"))
+            if (not _mint(pair) or price is None or liquid is None
+                    or liquid < MIN_LIQUIDITY_USD):
+                continue
+            valid[mint] = {
+                "mint": mint, "pair": pair, "price_sol": price,
+                "liquidity_usd": liquid,
+                "symbol": str(quote.get("symbol") or "?")[:24],
+                "dex": str(quote.get("dex") or "?")[:32],
+                "source": "DexScreener indicative SOL-pair market",
+                "executable": False,
+            }
+        quotes = valid
         with self.lock:
             s = self.state
             today = datetime.fromtimestamp(at_ms/1000, timezone.utc).date().isoformat()
