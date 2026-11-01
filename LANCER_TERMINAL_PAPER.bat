@@ -27,14 +27,18 @@ if errorlevel 1 (
   pause
   exit /b 1
 )
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0LANCER_TERMINAL_PAPER.ps1"
+if "%RUGGER_DASHBOARD_SMOKE_TEST%"=="1" (
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0LANCER_TERMINAL_PAPER.ps1" -SmokeTest
+) else (
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0LANCER_TERMINAL_PAPER.ps1"
+)
 set "RESULT=%ERRORLEVEL%"
 if not "%RESULT%"=="0" (
   echo.
   echo ECHEC DU LANCEMENT : lire le message d'erreur ci-dessus.
   echo Envoie une capture de cette fenetre et, si present, du fichier terminal_paper_serveur_stderr.log.
   echo Le navigateur seul ne permet pas d'identifier la cause.
-  pause
+  if not "%RUGGER_DASHBOARD_SMOKE_TEST%"=="1" pause
 )
 popd
 endlocal & exit /b %RESULT%
