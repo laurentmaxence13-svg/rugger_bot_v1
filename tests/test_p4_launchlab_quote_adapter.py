@@ -12,7 +12,7 @@ MINT="verified-source-mint"
 POOL="verified-curve-pool"
 
 
-def source(slot,phase,*,outstanding=10**15):
+def source(slot,phase,*,outstanding=5*10**13):
     event=bank(slot,phase,real_a=outstanding)
     analysis=event["payload"]["analysis"]
     pool=analysis["facts"]["pool"]
@@ -45,7 +45,7 @@ def test_buy_curve_model_source_stamped_paper_quote_real_sdk():
 def test_causal_decision_synthetic_then_model_filled_buy_and_observed_sell():
     # This proves the engine's integration, NOT that Master has issued ENTER
     # on a true mainnet creation. Source and decisions are fixture values.
-    e,a=source(101,"followup",outstanding=10**15)
+    e,a=source(101,"followup",outstanding=5*10**13)
     frozen=freeze_decision(dict(
         id="t1",mint=MINT,creator="fixture-signed",pool=POOL,
         source_slot=100,available_at_ms=1000,
@@ -60,7 +60,7 @@ def test_causal_decision_synthetic_then_model_filled_buy_and_observed_sell():
     qty=exchange.snapshot()["accounts"]["master"]["open_inventory"][0]["quantity_atomic"]
     # New bank source slot/time for an actually observed later quote; enough
     # circulation is needed to quote the hypothetical inventory.
-    next_e,next_analysis=source(102,"followup",outstanding=10**15)
+    next_e,next_analysis=source(102,"followup",outstanding=5*10**13)
     next_e["available_at_ms"]=3000
     sell=paper_quote(next_e,next_analysis,"SELL",qty)["paper_quote"]
     exchange.quote("t1","master","SELL",sell)
