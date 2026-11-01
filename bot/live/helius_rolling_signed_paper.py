@@ -217,7 +217,8 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
                             started_at_ms=gap_start,
                             recovered_at_ms=now_ms(),
                             reason="connection_reestablished_after_unknown_gap"))
-                        tally["source_websocket_gaps"]+=1
+                        # Reconnection recovery closes an existing unknown
+                        # gap; do not count a second disconnection.
                     window_start=time.monotonic_ns()
                     audit=ReadOnlyLogAudit(sub,CHUNK_MAX_EVENTS)
                     while time.monotonic()<deadline and not stop:
