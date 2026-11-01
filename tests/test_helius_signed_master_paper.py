@@ -34,7 +34,7 @@ class FakeRpc:
 
 async def no_creation_observer(seconds,maximum,api_key,*,successful_only):
     assert api_key==SECRET
-    assert seconds==15 and maximum==4
+    assert seconds==15 and maximum==100
     assert successful_only is False
     return ReadOnlyLogAudit(7,4).report(duration_ms=15000,handshake_ms=5),[]
 
