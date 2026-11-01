@@ -376,3 +376,32 @@ def test_rehashed_future_source_clock_and_missing_followup_still_rejected():
     frozen["freeze_sha256"]=_sha({k:v for k,v in frozen.items() if k!="freeze_sha256"})
     with pytest.raises(ValueError,match="frozen_decision_payload_not_causal"):
         audit_creator_disjoint_shadow([row],protocol())
+
+
+
+def test_positive_reference_score_intent_is_not_an_operationally_admitted_trade():
+    row=case(reference="ENTER")
+    row["engine_trace"]=_matching_trace(row)
+    row["followup"]=followup()
+    x=audit_creator_disjoint_shadow([row],protocol())
+    observed=x["rows"][0]
+    assert observed["conditional_model_master_minus_reference_lamports"]==0
+    assert observed["reference_operational_admission_verified"] is False
+    assert observed["master_reference_operational_admission_matched"] is False
+    assert observed["candidate_conditional_edge_is_not_executable_policy_edge"] is True
+    assert x["reference_only_scorer_intent_not_executable_order"] is True
+    assert x["operationally_comparable_master_reference_cycles"]==0
+    assert sum(y["operationally_comparable_action_pairs"]
+               for y in x["splits"].values())==0
+    assert x["empirical_net_master_advantage_verified"] is False
+
+
+def test_hundred_favorable_hypothetical_disagreements_cannot_certify_policy_edge():
+    records=[case(i,master="ENTER",reference="WAIT") for i in range(100)]
+    for i,row in enumerate(records):
+        row["followup"]=followup(i,sell=200_000_000)
+    x=audit_creator_disjoint_shadow(records,protocol())
+    assert sum(y["frozen_action_disagreements"] for y in x["splits"].values())==100
+    assert x["operationally_comparable_master_reference_cycles"]==0
+    assert x["actual_master_minus_reference_net_pnl_lamports"] is None
+    assert x["empirical_net_master_advantage_verified"] is False
