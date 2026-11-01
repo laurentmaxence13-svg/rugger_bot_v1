@@ -154,8 +154,16 @@ class ReadOnlyLogAudit:
         # A provider log string is only a discovery hint. User programs can
         # emit similar strings, so it can never certify a creation.
         hint = _launchlab_initialize_hint(tx["logs"])
+        legacy_hint = any(type(line) is str and
+                          line.startswith("Program log: Instruction: Initialize")
+                          for line in tx["logs"])
+        launchlab_trace = any(type(line) is str and
+                              line.startswith("Program "+PROGRAM+" invoke [")
+                              for line in tx["logs"])
         event = dict(signature=signature, slot=slot,
                      untrusted_initialize_log_hint=hint,
+                     untrusted_legacy_initialize_prefix_hint=legacy_hint,
+                     untrusted_launchlab_invocation_trace_present=launchlab_trace,
                      on_chain_transaction_failed=tx["err"] is not None,
                      reception_utc_ns=received_utc_ns,
                      reception_monotonic_ns=received_mono_ns,
@@ -181,6 +189,12 @@ class ReadOnlyLogAudit:
             source_program=PROGRAM, source_commitment="confirmed",
             observation_scope="program_logs_not_verified_new_token_creations",
             events_received_unique=len(self.events),
+            legacy_initialize_prefix_observations=sum(
+                x["untrusted_legacy_initialize_prefix_hint"] for x in self.events),
+            scoped_launchlab_initialize_observations=sum(
+                x["untrusted_initialize_log_hint"] for x in self.events),
+            launchlab_invocation_trace_observations=sum(
+                x["untrusted_launchlab_invocation_trace_present"] for x in self.events),
             retention_policy=("successful_only_with_failed_denominator" if self.successful_only
                               else "all_notifications"),
             unique_valid_notifications_seen=len(self.seen),
