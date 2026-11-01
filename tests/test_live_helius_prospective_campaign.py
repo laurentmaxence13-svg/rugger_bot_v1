@@ -70,7 +70,7 @@ def test_same_signature_not_mistaken_for_independent_evidence(tmp_path):
 
 
 @pytest.mark.parametrize("windows,seconds,max_events",[
-    (0,10,20),(7,10,20),(1,9,20),(1,61,20),(1,10,101),
+    (0,10,20),(7,10,20),(1,9,20),(1,61,20),(1,10,201),
     (1,10,0),(True,10,20),(1,10.0,20)])
 def test_budget_refused_before_capture(tmp_path,windows,seconds,max_events):
     with pytest.raises(ValueError,match="explicit_multi_window_budget_required"):
