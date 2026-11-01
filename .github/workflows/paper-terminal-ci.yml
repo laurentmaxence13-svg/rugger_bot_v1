@@ -11,6 +11,7 @@ on:
       - "tests/test_dashboard_evidence.py"
       - "requirements-dashboard.txt"
       - "LANCER_TERMINAL_PAPER.bat"
+      - "LANCER_TERMINAL_PAPER.ps1"
       - "TERMINAL_PAPER.md"
       - ".github/workflows/paper-terminal-ci.yml"
 
@@ -63,3 +64,30 @@ jobs:
           done
           cat /tmp/rugger-streamlit.log
           exit 1
+
+
+  windows-paper-start:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout same commit on Windows
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Windows Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.12"
+      - name: Execute actual Windows launcher and verify Streamlit HTTP health
+        shell: powershell
+        run: |
+          & "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File ".\LANCER_TERMINAL_PAPER.ps1" -SmokeTest
+          if ($LASTEXITCODE -ne 0) { throw "Windows launcher smoke test failed" }
+          Write-Host "WINDOWS_PAPER_LAUNCHER_VERIFIED"
+      - name: Print redacted diagnostics on Windows failure
+        if: failure()
+        shell: powershell
+        run: |
+          foreach ($f in @('terminal_paper_serveur_stdout.log', 'terminal_paper_serveur_stderr.log')) {
+            if (Test-Path $f) { Get-Content $f -Tail 35 }
+          }
