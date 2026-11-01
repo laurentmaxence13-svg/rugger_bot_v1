@@ -9,7 +9,7 @@ A missing on-chain verified source/fee cost prevents a PAPER fill. This module
 does not send transactions, mock trades, infer future migration, or insert
 hypothetical buy inventory into a later observed on-chain bank.
 """
-from bot.p3.curve_size_grid import _s1_inputs
+from bot.p3.curve_size_grid import _s1_inputs,_u64
 from bot.p3.launchlab import (
     SnapshotEvidenceError,constant_product_projection,observed_sell_projection)
 from bot.p4.live_like_paper_ledger import source_quote
