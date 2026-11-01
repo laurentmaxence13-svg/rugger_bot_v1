@@ -17,6 +17,18 @@ REG="a"*64
 def source_s1(*,risk=False):
     analysis=deepcopy(bank(101,"initial")["payload"]["analysis"])
     analysis["facts"]["pool"]["mint_a"]=MINT
+    # Source fixture is an analysis-only bank and intentionally omits the
+    # observed source buy projection. Build that *from the same S1 facts*,
+    # never from future S2 observations.
+    from bot.p3.curve_size_grid import _s1_inputs
+    from bot.p3.launchlab import constant_product_projection
+    inputs=_s1_inputs(analysis)
+    analysis["conditional_projection"]=constant_product_projection(
+        inputs["pool"],input_lamports=SIZING_LAMPORTS,
+        fee_rates_ppm=inputs["fee_rates_ppm"],
+        base_vault_atomic=inputs["base_vault_atomic"],
+        quote_vault_lamports=inputs["quote_vault_lamports"],
+        share_fee_rate_ppm=inputs["share_fee_rate_ppm"])
     if risk:
         analysis["risk_flags"]=["mint_supply_or_decimals_mismatch"]
         analysis["conditional_projection"]=None
