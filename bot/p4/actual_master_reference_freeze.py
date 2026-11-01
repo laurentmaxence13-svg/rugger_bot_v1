@@ -18,6 +18,34 @@ def _digest(doc):
         separators=(",",":")).encode()).hexdigest()
 
 
+def _reject_future_labels(value,depth=0):
+    """Fail closed on nested future labels in any shared scorer observation.
+
+    A top-level four-key blacklist is insufficient: a future S2 oracle
+    nested in features or history could influence both scorers. This check
+    does not authenticate the feature's external receipt or source clock.
+    """
+    if depth>12:
+        raise ValueError("nested_feature_depth_limit")
+    if type(value) is dict:
+        for key,item in value.items():
+            if type(key) is not str:
+                raise ValueError("non_string_feature_key")
+            k=key.lower()
+            if (k.startswith(("future_","postdecision_","realized_",
+                               "ground_truth_","oracle_","s2_future_"))
+                    or k.endswith(("_after_decision","_future_outcome"))
+                    or k in ("future","future_exit","postdecision_results",
+                             "realized_pnl","target_outcome","oracle_result")):
+                raise ValueError("postoutcome_features_in_preoutcome_frame")
+            _reject_future_labels(item,depth+1)
+    elif type(value) in (tuple,list):
+        if len(value)>2048:
+            raise ValueError("bounded_feature_history_required")
+        for item in value:
+            _reject_future_labels(item,depth+1)
+
+
 def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sniping"):
     if (type(frame) is not dict or type(history) not in (list,tuple)
             or type(reference_strategy) is not str
@@ -38,16 +66,27 @@ def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sn
                        for key in ("id","mint","pool","creator"))
             or len(history)>32):
         raise ValueError("causal_scorer_features_and_identity_required")
+    previous_at=0
+    previous_slot=0
     for prior in history:
         if (type(prior) is not dict or type(prior.get("available_at_ms")) is not int
-                or prior["available_at_ms"]>=at):
+                or not previous_at<prior["available_at_ms"]<at):
             raise ValueError("future_or_unordered_history_refused")
-    # Caller-observed original feature receipt hash is NOT a network signature.
-    # No future oracle values may enter the shared frame.
-    selected={k:v for k,v in frame.items() if k not in (
-        "future_exit","future_S2_price","realized_pnl","postdecision_results")}
-    if selected!=frame:
-        raise ValueError("postoutcome_features_in_preoutcome_frame")
+        if (type(prior.get("source_slot")) is not int
+                or prior["source_slot"]<=0
+                or prior["source_slot"]>slot
+                or prior["source_slot"]<previous_slot
+                or type(prior.get("slot_available_at_ms")) is not int
+                or prior["slot_available_at_ms"]>prior["available_at_ms"]
+                or type(prior.get("features_available_at_ms")) is not int
+                or prior["features_available_at_ms"]>prior["available_at_ms"]):
+            raise ValueError("noncausal_historical_source_clock")
+        previous_at=prior["available_at_ms"]
+        previous_slot=prior["source_slot"]
+    # A frozen receipt hash is not a cryptographic attestation of market
+    # availability. Reject future-labelled fields at ANY nesting depth.
+    _reject_future_labels(frame)
+    _reject_future_labels(history)
     master=MasterDecisionOrchestrator().evaluate(frame,history,
         inventory=None,health=None,capital=None)
     ref=decide_prefix(reference_strategy,frame,history,decision_at_ms=at)
