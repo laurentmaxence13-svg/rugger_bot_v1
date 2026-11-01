@@ -177,6 +177,10 @@ def _ledger(doc,name,out):
                 decision="POSITION PAPER OUVERTE",
                 slot=pos.get("entry_slot"),horodatage_ms=pos.get("entry_at_ms"),
                 preuve="Position simulée; valorisation non vérifiée"))
+            out["positions"].append(dict(source=name,mint=_address(pos.get("mint")),
+                strategie=arm.upper(),capital_sol=_sol(pos.get("entry_spend_lamports")),
+                entree_usd=None,entree_ms=pos.get("entry_at_ms"),
+                statut="POSITION PAPER OUVERTE — LOT NON VALORISÉ"))
     for event in doc.get("events",[]):
         if type(event) is not dict or event.get("type")!="PRECOMMITTED_DECISION":
             continue
