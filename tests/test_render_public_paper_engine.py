@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-import render_paper_engine as bot
+from bot.ops import render_paper_engine as bot
 
 MINT = "BuTkXR6hhPrNgyH1ZJchsbTimbFoNCm6smkM3yLTbonk"
 PAIR = "EUcMrcmVJPLyeH9xw7NSGsdHyzLTVywvNNieP4FcYq2X"
@@ -137,6 +137,5 @@ def test_observer_uses_exact_public_apis_and_does_not_send_transactions(tmp_path
 
 
 def test_live_send_disabled_in_service():
-    import render_status_service as service
-    assert service.STORE.snapshot()["service"]["live_trading_enabled"] is False
-    assert service.Handler.do_POST is not None
+    from bot.ops.render_readonly_service import Observer
+    assert Observer(env={}).snapshot()["live_trading_enabled"] is False
