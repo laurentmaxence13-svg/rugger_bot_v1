@@ -104,86 +104,12 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Pip ne fonctionne pas dans .venv-dashboard. Renomme ce dossier et relance le BAT.'
 }
 $hasStreamlit = @($installed | Where-Object { $_ -match '^streamlit==' }).Count -gt 0
-$hasPandas = @($installed | Where-Object { $_ -match '^pandas==2\.3\.3
-
-Write-Host "Demarrage de Rugger Bot a $url ..."
-try {
-    $params = @('-m','streamlit','run','bot/dashboard/app.py',"--server.address=$address","--server.port=$port",'--server.headless=true','--browser.gatherUsageStats=false','--server.fileWatcherType=none')
-    $server = Start-Process -FilePath $pythonVenv -WorkingDirectory $root -ArgumentList $params -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    $ready = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        if (Health-OK) { $ready = $true; break }
-        $server.Refresh()
-        if ($server.HasExited) { break }
-        Start-Sleep -Milliseconds 500
-    }
-    if (-not $ready) {
-        Show-Diagnostics
-        throw 'Le serveur local ne repond pas sur le port 8501.'
-    }
-    Write-Host ''
-    Write-Host "[OK] TERMINAL OPERATIONNEL : $url" -ForegroundColor Green
-    if (-not $SmokeTest) {
-        Start-Process $url
-        Write-Host 'Ton navigateur doit afficher RUGGER BOT - TERMINAL PAPER.'
-        Write-Host 'Garde cette fenetre ouverte pour garder le terminal actif.'
-        Write-Host 'Ferme-la pour arreter le serveur et liberer le port.'
-        Wait-Process -Id $server.Id
-        Write-Host 'Le serveur a ete arrete.'
-    }
-} finally {
-    if ($null -ne $server) {
-        try {
-            $server.Refresh()
-            if (-not $server.HasExited) {
-                Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
-            }
-        } catch { }
-    }
-}
- }).Count -gt 0
-$hasNumpy = @($installed | Where-Object { $_ -match '^numpy==2\.3\.4
-
-Write-Host "Demarrage de Rugger Bot a $url ..."
-try {
-    $params = @('-m','streamlit','run','bot/dashboard/app.py',"--server.address=$address","--server.port=$port",'--server.headless=true','--browser.gatherUsageStats=false','--server.fileWatcherType=none')
-    $server = Start-Process -FilePath $pythonVenv -WorkingDirectory $root -ArgumentList $params -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-    $ready = $false
-    for ($attempt = 0; $attempt -lt 60; $attempt++) {
-        if (Health-OK) { $ready = $true; break }
-        $server.Refresh()
-        if ($server.HasExited) { break }
-        Start-Sleep -Milliseconds 500
-    }
-    if (-not $ready) {
-        Show-Diagnostics
-        throw 'Le serveur local ne repond pas sur le port 8501.'
-    }
-    Write-Host ''
-    Write-Host "[OK] TERMINAL OPERATIONNEL : $url" -ForegroundColor Green
-    if (-not $SmokeTest) {
-        Start-Process $url
-        Write-Host 'Ton navigateur doit afficher RUGGER BOT - TERMINAL PAPER.'
-        Write-Host 'Garde cette fenetre ouverte pour garder le terminal actif.'
-        Write-Host 'Ferme-la pour arreter le serveur et liberer le port.'
-        Wait-Process -Id $server.Id
-        Write-Host 'Le serveur a ete arrete.'
-    }
-} finally {
-    if ($null -ne $server) {
-        try {
-            $server.Refresh()
-            if (-not $server.HasExited) {
-                Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
-            }
-        } catch { }
-    }
-}
- }).Count -gt 0
+$hasPandas = @($installed | Where-Object { $_ -match '^pandas==2\.3\.3$' }).Count -gt 0
+$hasNumpy = @($installed | Where-Object { $_ -match '^numpy==2\.3\.4$' }).Count -gt 0
 $installNeeded = -not ($hasStreamlit -and $hasPandas -and $hasNumpy)
 $repairInstall = $false
 
-# A healthy HTTP endpoint does not prove that compiled pandas modules can import.
+# An HTTP health check does not prove pandas' compiled modules work.
 if (-not $installNeeded) {
     $previousErrorAction = $ErrorActionPreference
     try {
@@ -199,10 +125,8 @@ if (-not $installNeeded) {
         $repairInstall = $true
     }
 }
-
 if ($installNeeded) {
     Write-Host 'Mise en compatibilite des dependances du terminal...'
-    # PowerShell 5.1 may surface normal pip stderr as an ErrorRecord.
     $previousErrorAction = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
@@ -222,7 +146,7 @@ if ($installNeeded) {
     Write-Host 'Bibliotheques Streamlit, pandas et numpy compatibles.'
 }
 
-# Fail explicitly if pandas still cannot import, instead of displaying a red UI traceback.
+# Fail explicitly if the binary module import is broken.
 $previousErrorAction = $ErrorActionPreference
 try {
     $ErrorActionPreference = 'Continue'
