@@ -141,3 +141,24 @@ def test_real_runner_calls_s1_freezer_only_from_source_collector(monkeypatch):
     assert len(seen)==1
     assert output["paper_model_report"]["exact_model_roundtrips"]==1
     assert output["paper_model_report"]["actual_Master_research_executed_orders"]==0
+
+
+def test_zero_admissible_pools_is_a_valid_full_denominator_no_trade(monkeypatch):
+    called=[]
+    def fake_cohort(rpc,**kwargs):
+        called.append(kwargs)
+        return dict(status="ACTIVE_SURVIVOR_PROSPECTIVE_OBSERVATION_COMPLETE",
+            selected_count=0,observations=[],registration_sha256=REG,
+            first_bank_slot=None,second_bank_slot=None,
+            discovery_denominator=[dict(selection_reason="root_not_supported")],
+            financial_order_submitted=False,live_ready_to_arm=False)
+    monkeypatch.setattr("bot.live.helius_sol_forward_paper_probe.observe_active_survivor_cohort",
+                        fake_cohort)
+    report=run(rpc=object(),sample_page=1)
+    assert len(called)==1
+    assert report["status"]=="NO_QUALIFIED_ACTIVE_SOL_POOLS_IN_PREDECLARED_SLICE"
+    assert report["paper_model_report"]["exact_model_roundtrips"]==0
+    assert report["paper_model_report"]["number_of_frozen_cases"]==0
+    assert report["paper_model_report"]["measured_Master_minus_reference_edge_lamports"] is None
+    assert report["exact_net_Master_pnl_lamports"] is None
+    assert report["financial_order_submitted"] is False
