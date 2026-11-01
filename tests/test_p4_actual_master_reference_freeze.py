@@ -160,3 +160,35 @@ def test_raw_provider_camelcase_future_context_slot_rejected():
         "contextSlot":x["source_slot"]+1}}
     with pytest.raises(ValueError,match="nested_future_source_slot"):
         freeze_real_master_reference(x)
+
+
+@pytest.mark.parametrize("clock_field",["slot_available_at_ms"])
+@pytest.mark.parametrize("invalid_clock",[-1,0])
+def test_nonpositive_current_slot_availability_refused(clock_field,invalid_clock):
+    x=frame()
+    x[clock_field]=invalid_clock
+    with pytest.raises(ValueError,match="causal_scorer_features"):
+        freeze_real_master_reference(x)
+
+
+@pytest.mark.parametrize("clock_field",["slot_available_at_ms","features_available_at_ms"])
+@pytest.mark.parametrize("invalid_clock",[-1,0])
+def test_nonpositive_historical_availability_refused(clock_field,invalid_clock):
+    x=frame();x["available_at_ms"]+=2000;x["source_slot"]+=2
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    prior=frame()
+    prior[clock_field]=invalid_clock
+    with pytest.raises(ValueError,match="noncausal_historical_source_clock"):
+        freeze_real_master_reference(x,[prior])
+
+
+@pytest.mark.parametrize("identity",["mint","pool","creator"])
+def test_cross_asset_or_creator_history_refused_before_both_scorers(identity):
+    x=frame();x["available_at_ms"]+=2000;x["source_slot"]+=2
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    prior=frame()
+    prior[identity]="different_identity"
+    with pytest.raises(ValueError,match="cross_asset_or_creator_history"):
+        freeze_real_master_reference(x,[prior])
