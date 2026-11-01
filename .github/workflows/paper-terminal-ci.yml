@@ -1,0 +1,65 @@
+name: PAPER terminal standalone smoke + evidence tests
+
+on:
+  push:
+    branches:
+      - main
+      - feat/paper-terminal-main-20261101
+  pull_request:
+    paths:
+      - "bot/dashboard/**"
+      - "tests/test_dashboard_evidence.py"
+      - "requirements-dashboard.txt"
+      - "LANCER_TERMINAL_PAPER.bat"
+      - "TERMINAL_PAPER.md"
+      - ".github/workflows/paper-terminal-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  paper-terminal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - name: Validate pure Python adapters and compile terminal
+        run: |
+          python -m unittest discover -s tests -p test_dashboard_evidence.py -v
+          python -m compileall -q bot/dashboard
+      - name: Install only the optional dashboard dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-dashboard.txt
+      - name: Render actual empty evidence state and explicitly synthetic demo
+        run: |
+          python - <<'PY'
+          from streamlit.testing.v1 import AppTest
+          app=AppTest.from_file("bot/dashboard/app.py",default_timeout=30).run()
+          assert not app.exception, str(app.exception)
+          print("EMPTY_EVIDENCE_UI_RENDERED")
+          app.sidebar.toggle[0].set_value(True).run()
+          assert not app.exception, str(app.exception)
+          print("SYNTHETIC_DEMO_UI_RENDERED")
+          PY
+      - name: Smoke test Streamlit HTTP health locally (no wallet or market network)
+        run: |
+          python -m streamlit run bot/dashboard/app.py \
+            --server.headless=true --server.address=127.0.0.1 \
+            --server.port=8501 > /tmp/rugger-streamlit.log 2>&1 &
+          p=$!
+          trap 'kill $p 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8501/_stcore/health; then
+              echo "LOCAL_TERMINAL_HEALTH_OK"
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/rugger-streamlit.log
+          exit 1
