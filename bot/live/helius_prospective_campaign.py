@@ -79,6 +79,11 @@ def campaign(*,windows=4,seconds=60,max_events=100,
             if type(event) is not dict or type(event.get("signature")) is not str:
                 raise ValueError("invalid_public_log_evidence")
         signatures=[e["signature"] for e in events]
+        if (any(type(sig) is not str or not sig for sig in signatures)
+                or len(signatures)!=len(set(signatures))):
+            raise ValueError("nonunique_or_empty_window_event_signatures")
+        event_ids=set(signatures)
+        inspected_ids=set()
         repeats=sum(sig in seen_signatures for sig in signatures)
         seen_signatures.update(signatures)
         signed=0
@@ -88,6 +93,12 @@ def campaign(*,windows=4,seconds=60,max_events=100,
         for attempt in report["attempts"]:
             if type(attempt) is not dict:
                 raise ValueError("unqualified_attempt_refused")
+            attempt_signature=attempt.get("signature")
+            if (type(attempt_signature) is not str or
+                    attempt_signature not in event_ids or
+                    attempt_signature in inspected_ids):
+                raise ValueError("inspection_must_match_one_observed_signature")
+            inspected_ids.add(attempt_signature)
             launches=attempt.get("signed_outer_creations")
             if launches:
                 if type(launches) is not list:
