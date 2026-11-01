@@ -132,6 +132,17 @@ def audit_creator_disjoint_shadow(records,protocol):
               if values["master"] is not None and values["reference"] is not None
               else None)
         censor=("MISSING_FOLLOWUP" if followup is None else followup["exit_kind"])
+        # Preserve the hypothetical entry capital tied up by each arm, even
+        # if there is no exit, an exit fails, or costs remain unknown.
+        # These are *model* notionals, never wallet debits or actual exposure.
+        size=case["hypothetical_buy_lamports"]
+        model_notional={arm:size if actions[arm]=="ENTER" else 0
+                        for arm in ("master","reference")}
+        censored_notional={arm:model_notional[arm] if values[arm] is None else 0
+                           for arm in ("master","reference")}
+        missing_costs=(followup is not None and censor=="FULL_QUOTE" and
+                       (followup["extra_costs_lamports"] is None or
+                        followup["failure_costs_lamports"] is None))
         qualified_clock=(case["source_clock_verified"] and case["signed_creator_verified"]
                          and scored is not None and scored["source_quote_time_validated"])
         rows.append(dict(index=idx,creator=creator,mint=case["mint"],pool=case["pool"],
@@ -144,6 +155,11 @@ def audit_creator_disjoint_shadow(records,protocol):
                 scored["source_quote_time_validated"] if scored else False),
             all_required_clocks_self_attested=bool(qualified_clock),
             followup_class=censor,
+            master_hypothetical_entry_notional_lamports=model_notional["master"],
+            reference_hypothetical_entry_notional_lamports=model_notional["reference"],
+            master_censored_entry_notional_lamports=censored_notional["master"],
+            reference_censored_entry_notional_lamports=censored_notional["reference"],
+            complete_exit_quote_but_missing_costs=missing_costs,
             conditional_model_master_lamports=values["master"],
             conditional_model_reference_lamports=values["reference"],
             conditional_model_master_minus_reference_lamports=edge,
@@ -174,6 +190,11 @@ def audit_creator_disjoint_shadow(records,protocol):
             failed_exit=sum(r["followup_class"]=="FAILED_EXIT" for r in subset),
             open_unpriced=sum(r["followup_class"]=="OPEN_UNPRICED" for r in subset),
             migrated_no_quote=sum(r["followup_class"]=="MIGRATED_NO_QUOTE" for r in subset),
+            complete_exit_quote_but_missing_costs=sum(r["complete_exit_quote_but_missing_costs"] for r in subset),
+            master_modelled_entry_notional_lamports=sum(r["master_hypothetical_entry_notional_lamports"] for r in subset),
+            reference_modelled_entry_notional_lamports=sum(r["reference_hypothetical_entry_notional_lamports"] for r in subset),
+            master_censored_entry_notional_lamports=sum(r["master_censored_entry_notional_lamports"] for r in subset),
+            reference_censored_entry_notional_lamports=sum(r["reference_censored_entry_notional_lamports"] for r in subset),
             signed_and_source_clocks_self_attested=sum(r["all_required_clocks_self_attested"] for r in subset),
             conditional_complete_case_only_edge_sum_lamports=conditional_complete_case_sum if complete else None,
             all_cases_conditional_edge_sum_lamports=conditional_complete_case_sum if len(complete)==len(subset) and subset else None,
