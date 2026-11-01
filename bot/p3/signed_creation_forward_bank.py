@@ -14,7 +14,8 @@ import sys
 import time
 
 from bot.master_decision import MasterDecisionOrchestrator
-from bot.p4.native_asof_signal_bridge import native_asof_bank
+from bot.p4.native_asof_signal_bridge import native_asof_bank,verified_full_asof_features
+from bot.p4_experiment import decide_prefix
 from bot.p3.helius_index_prospective_cohort import _bank, _hash
 from bot.p3.launchlab import (SnapshotEvidenceError, addresses_from_pool,
                               analyze_snapshot, observed_sell_projection)
@@ -169,9 +170,31 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             row["s1_buy_model"]=None
             row["native_sol_asof_signal"]=None
             row["native_sol_signal_status"]="SOURCE_BANK_NOT_QUALIFIED"
-        # No features/operational health/source clocked quote. Actual frozen
-        # reference engine cannot signal BUY; actual Master policy must evaluate
-        # the same facts and refuse, rather than fabricating an ENTER.
+        # Compute an explicit, audited feature completeness receipt using
+        # only the evidence available at S1. Do not invent USD oracle, creator
+        # history, signed swap tape, or historical source prices.
+        native=row.get("native_sol_asof_signal")
+        if native is not None:
+            feature_audit=verified_full_asof_features(
+                native=native,
+                creation=dict(mint=row["mint"],pool=row["pool"],
+                    creator=row["creator"],cryptographic_creation=True,
+                    verified_at_ms=s1at,
+                    detected_at_ms=row["detected_utc_ns"]//1_000_000),
+                sol_usd=None,creator_history=None,
+                verified_transactions=None,market_price_history=None,
+                decision_at_ms=s1at)
+            if feature_audit["status"]!="INSUFFICIENT_CAUSAL_FEATURE_EVIDENCE":
+                raise ValueError("unexpected_complete_asof_features_without_sources")
+            row["asof_feature_evidence_audit"]=feature_audit
+        else:
+            row["asof_feature_evidence_audit"]=dict(
+                status="UNQUALIFIED_NATIVE_S1_BANK",
+                missing=["native_SOL_bank_not_qualified"],
+                features=None,eligible_for_actual_master_entry=False)
+        # No features/operational health/source clocked quote. Evaluate BOTH
+        # real scorers on the SAME source clock before S2. Never substitute a
+        # fictitious reference BUY or a fixed research-probe entry.
         frame=dict(id="signed-s1-"+_hash([row["signature"],s1slot,s1at]),
             mint=row["mint"],creator=row["creator"],pool=row["pool"],
             detected_at_ms=row["detected_utc_ns"]//1_000_000,
@@ -182,11 +205,16 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             unknowns=["causal_USD_features","source_quote_clock","independent_buyers",
                       "own_network_costs","execution_health","creator_independence"])
         master=core.evaluate(frame,[],inventory=None,health=None,capital=None)
-        if master["action"] in ("ENTER","BUY"):
-            raise ValueError("unknown_asof_features_must_not_trigger_master_entry")
+        reference=decide_prefix("early_sniping",frame,[])
+        if master["action"] in ("ENTER","BUY") or reference["enter"] is not False:
+            raise ValueError("unknown_asof_features_must_not_trigger_either_entry")
         row["frozen_decision_before_S2"]=dict(at_ms=s1at,source_slot=s1slot,
             frame_sha256=_hash(frame),master_policy_sha256=core.policy_sha256,
-            reference_action="WAIT_FOR_FEATURES",reference_reason="actual_reference_scorer_has_no_asof_features",
+            reference_action="WAIT_FOR_FEATURES",
+            reference_reason="actual_reference_scorer_has_no_asof_features",
+            reference_full_decision_sha256=_hash(reference),
+            source_feature_audit_sha256=_hash(row["asof_feature_evidence_audit"]),
+            source_feature_missing=list(row["asof_feature_evidence_audit"]["missing"]),
             master_action=master["action"],master_reasons=master["reasons"],
             master_full_decision_sha256=_hash(master),
             paired_comparison_is_not_trade_backtest=True,
