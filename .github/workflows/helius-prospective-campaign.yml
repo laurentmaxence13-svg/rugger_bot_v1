@@ -47,7 +47,7 @@ jobs:
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
-          python -B -m bot.live.helius_prospective_campaign --windows 4 --seconds 60 --max-events 100
+          python -B -m bot.live.helius_prospective_campaign --windows 4 --seconds 60 --max-events 200
       - name: Audit campaign attrition, verify all per-window hashes, never claim filled PnL
         run: |
           python -B -m bot.p3.prospective_campaign_funnel \
