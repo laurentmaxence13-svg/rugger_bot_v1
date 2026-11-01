@@ -63,11 +63,13 @@ def _reject_nested_unavailable_clocks(value,*,at_ms,source_slot,depth=0):
             if k in ("available_at_ms","features_available_at_ms",
                      "slot_available_at_ms","observed_at_ms","received_at_ms",
                      "source_available_at_ms","quote_available_at_ms",
-                     "price_available_at_ms"):
+                     "price_available_at_ms","source_time_ms",
+                     "sourcetimems","quote_source_time_ms"):
                 if type(item) is not int or item<=0 or item>at_ms:
                     raise ValueError("nested_future_availability_clock")
             if k in ("source_slot","context_slot","quote_slot",
-                     "observed_slot","price_slot"):
+                     "observed_slot","price_slot","contextslot",
+                     "sourceslot","quoteslot"):
                 if type(item) is not int or item<=0 or item>source_slot:
                     raise ValueError("nested_future_source_slot")
             _reject_nested_unavailable_clocks(item,at_ms=at_ms,
