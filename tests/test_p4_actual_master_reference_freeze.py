@@ -143,3 +143,20 @@ def test_nested_future_history_slot_rejected_even_if_before_current_slot():
     past["features"]["provider_quote"]={"context_slot":past["source_slot"]+1}
     with pytest.raises(ValueError,match="nested_future_source_slot"):
         freeze_real_master_reference(x,[past])
+
+
+
+def test_raw_provider_camelcase_future_source_time_rejected():
+    x=frame()
+    x["features"]["raw_quote_payload"]={"data":{
+        "sourceTimeMs":x["available_at_ms"]+1}}
+    with pytest.raises(ValueError,match="nested_future_availability_clock"):
+        freeze_real_master_reference(x)
+
+
+def test_raw_provider_camelcase_future_context_slot_rejected():
+    x=frame()
+    x["features"]["raw_quote_payload"]={"data":{
+        "contextSlot":x["source_slot"]+1}}
+    with pytest.raises(ValueError,match="nested_future_source_slot"):
+        freeze_real_master_reference(x)
