@@ -85,25 +85,30 @@ def test_bad_config_fails_closed(env):
 
 
 def test_http_health_and_status_have_no_credentials():
+    # The repository's isolated CI forbids actual socket.bind. Exercise the
+    # real handler without opening a TCP port or weakening network isolation.
+    from io import BytesIO
     obj=mod.Observer(env={})
-    server=ThreadingHTTPServer(("127.0.0.1",0),mod.handler_factory(obj))
-    worker=threading.Thread(target=server.serve_forever,daemon=True)
-    worker.start()
-    try:
-        conn=HTTPConnection("127.0.0.1",server.server_address[1],timeout=2)
-        conn.request("GET","/healthz")
-        response=conn.getresponse()
-        assert response.status==200
-        assert response.getheader("Access-Control-Allow-Origin")==mod.ALLOWED_ORIGIN
-        assert json.loads(response.read())["financial_orders_enabled"] is False
-        conn.request("GET","/api/status")
-        response=conn.getresponse()
-        status=json.loads(response.read())
-        assert response.status==200
-        assert status["observer_status"]=="DISABLED_EXPLICITLY"
-        assert status["mode"]=="READ_ONLY_MASTER_PAPER_EVIDENCE"
-        assert status["is_24_7_guaranteed"] is False
-    finally:
-        server.shutdown()
-        server.server_close()
-        worker.join(timeout=2)
+    Handler=mod.handler_factory(obj)
+    def request(path):
+        handler=object.__new__(Handler)
+        handler.path=path
+        handler.wfile=BytesIO()
+        headers={}
+        result={"status":None}
+        handler.send_response=lambda status:result.__setitem__("status",status)
+        handler.send_header=lambda key,value:headers.__setitem__(key,value)
+        handler.end_headers=lambda:None
+        handler.send_error=lambda status,*args:result.__setitem__("status",status)
+        handler.do_GET()
+        return result["status"],headers,handler.wfile.getvalue()
+    status,headers,payload=request("/healthz")
+    assert status==200
+    assert headers["Access-Control-Allow-Origin"]==mod.ALLOWED_ORIGIN
+    assert json.loads(payload)["financial_orders_enabled"] is False
+    status,headers,payload=request("/api/status")
+    value=json.loads(payload)
+    assert status==200
+    assert value["observer_status"]=="DISABLED_EXPLICITLY"
+    assert value["mode"]=="READ_ONLY_MASTER_PAPER_EVIDENCE"
+    assert value["is_24_7_guaranteed"] is False
