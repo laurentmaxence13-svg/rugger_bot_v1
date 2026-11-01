@@ -1,31 +1,44 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-echo.
-echo =========================================
-echo  RUGGER BOT - TERMINAL PAPER (LECTURE SEULE)
-echo =========================================
-echo.
-if not exist ".venv\Scripts\python.exe" (
-  echo Creation du Python virtuel .venv...
-  py -3 -m venv .venv
-  if errorlevel 1 (
-    echo ERREUR : Python 3 est requis. Installer Python et cocher Add Python to PATH.
-    pause
-    exit /b 1
-  )
-)
-set "PY=.venv\Scripts\python.exe"
-echo Verification des dependances du terminal...
-"%PY%" -m pip install -r requirements-dashboard.txt
+setlocal EnableExtensions
+title RUGGER BOT - TERMINAL PAPER
+pushd "%~dp0"
 if errorlevel 1 (
-  echo ERREUR : installation de Streamlit impossible. Verifier la connexion Internet.
+  echo ERREUR : dossier de projet non accessible.
   pause
   exit /b 1
 )
-echo.
-echo Ouvrir dans le navigateur : http://localhost:8501
-echo Le terminal ne peut PAS effectuer d'ordres reels.
-echo CTRL+C pour arreter.
-"%PY%" -m streamlit run bot/dashboard/app.py --server.address 127.0.0.1 --server.port 8501
-endlocal
+
+if not exist "bot\dashboard\app.py" (
+  echo ERREUR : application introuvable.
+  echo Extraire entierement le ZIP dans un dossier Windows, ne pas lancer depuis l'archive.
+  pause
+  exit /b 1
+)
+if not exist "LANCER_TERMINAL_PAPER.ps1" (
+  echo ERREUR : lanceur de diagnostic absent.
+  echo Telecharger la derniere version complete depuis GitHub, branche main.
+  pause
+  exit /b 1
+)
+
+where powershell.exe >nul 2>&1
+if errorlevel 1 (
+  echo ERREUR : PowerShell indisponible. Installer Windows PowerShell 5.1 ou plus.
+  pause
+  exit /b 1
+)
+if "%RUGGER_DASHBOARD_SMOKE_TEST%"=="1" (
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0LANCER_TERMINAL_PAPER.ps1" -SmokeTest
+) else (
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0LANCER_TERMINAL_PAPER.ps1"
+)
+set "RESULT=%ERRORLEVEL%"
+if not "%RESULT%"=="0" (
+  echo.
+  echo ECHEC DU LANCEMENT : lire le message d'erreur ci-dessus.
+  echo Envoie une capture de cette fenetre et, si present, du fichier terminal_paper_serveur_stderr.log.
+  echo Le navigateur seul ne permet pas d'identifier la cause.
+  if not "%RUGGER_DASHBOARD_SMOKE_TEST%"=="1" pause
+)
+popd
+endlocal & exit /b %RESULT%

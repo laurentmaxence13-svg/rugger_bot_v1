@@ -5,8 +5,8 @@
 ## Démarrage Windows (le plus simple)
 
 1. Depuis GitHub, ouvrir la branche **main**, puis télécharger le ZIP du code. Décompresser le projet dans un dossier accessible sur le PC.
-2. Double-cliquer sur **LANCER_TERMINAL_PAPER.bat**. La première fois, le script crée un environnement Python local et installe Streamlit. Python 3.11 ou supérieur doit être installé.
-3. Ouvrir **http://localhost:8501** dans le navigateur si la page ne s'ouvre pas seule.
+2. Double-cliquer sur **LANCER_TERMINAL_PAPER.bat**. Le lanceur vérifie Python, crée un environnement séparé pour le terminal et installe Streamlit si nécessaire. Il ouvre automatiquement le navigateur seulement après avoir vérifié que le serveur répond.
+3. Vérifier le message vert **[OK] TERMINAL OPERATIONNEL** dans la fenêtre noire. Le navigateur ouvre **http://127.0.0.1:8501**. Garder la fenêtre noire ouverte.
 4. Activer **Démo entièrement fictive** pour vérifier immédiatement l'interface avec deux transactions fabriquées, clairement étiquetées. **Désactiver** pour revenir aux preuves réelles.
 
 Ou, depuis le terminal de VS Code :
@@ -47,3 +47,22 @@ Pour actualiser l'écran à mesure que le moteur enregistre de nouvelles donnée
 Les positions de ce moteur ancien sont marquées **PAPER_ENGINE** ou **SHADOW_BASELINE** ; elles ne sont **pas des trades Master**, et leur P&L issu de prix USD n'est pas une preuve de rentabilité réelle en SOL. L'onglet **Prix USD observés** montre les points de prix stockés (courbe horodatée, sans fabriquer de bougies ou un prix exécutable).
 
 Si les fichiers ne sont pas encore présents, le terminal reste vide et explicite. Le mode démonstration n'affiche que des exemples entièrement fictifs.
+
+
+## Dépannage Windows : ERR_CONNECTION_REFUSED
+
+L'adresse localhost:8501 ne fonctionne **que si Streamlit est réellement lancé sur ton PC** ; ce n'est pas un service hébergé sur GitHub.
+
+1. Télécharger de nouveau le projet depuis GitHub, branche **main**, option **Code > Download ZIP**, puis **extraire complètement** l'archive.
+2. Double-cliquer sur **LANCER_TERMINAL_PAPER.bat** dans le dossier extrait. Le navigateur ne s'ouvre que lorsque le serveur est disponible. Ne pas exécuter le BAT à l'intérieur d'un ZIP non extrait.
+3. Si le lanceur échoue, **la fenêtre noire reste ouverte** avec la cause. Envoie une capture de cette fenêtre et, si demandé, les dernières lignes du fichier **terminal_paper_serveur_stderr.log** (et éventuellement **terminal_paper_serveur_stdout.log**) dans le même dossier.
+
+Le terminal dispose désormais d'un Python virtuel **.venv-dashboard** distinct du Python **.venv** déjà utilisé par le bot. Cela évite de perturber les bibliothèques du bot existant. Aucune clé Helius ni portefeuille Phantom n'est nécessaire pour ouvrir cette interface.
+
+Si Python n'est pas installé, récupérer Python 3.12 sur https://www.python.org/downloads/ puis relancer le BAT.
+
+Pour valider seulement le démarrage et refermer automatiquement le serveur sur Windows :
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\LANCER_TERMINAL_PAPER.ps1 -SmokeTest
+
+Cette commande diagnostique n'est pas nécessaire pour l'usage normal.

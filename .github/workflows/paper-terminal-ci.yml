@@ -11,6 +11,7 @@ on:
       - "tests/test_dashboard_evidence.py"
       - "requirements-dashboard.txt"
       - "LANCER_TERMINAL_PAPER.bat"
+      - "LANCER_TERMINAL_PAPER.ps1"
       - "TERMINAL_PAPER.md"
       - ".github/workflows/paper-terminal-ci.yml"
 
@@ -63,3 +64,38 @@ jobs:
           done
           cat /tmp/rugger-streamlit.log
           exit 1
+
+
+  windows-paper-start:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout same commit on Windows
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Windows Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.12"
+      - name: Execute the Windows BAT entrypoint and verify Streamlit HTTP health twice
+        shell: powershell
+        run: |
+          $env:RUGGER_DASHBOARD_SMOKE_TEST = '1'
+          & cmd.exe /d /c ".\LANCER_TERMINAL_PAPER.bat"
+          if ($LASTEXITCODE -ne 0) { throw "Windows first-launch BAT smoke test failed" }
+          Write-Host "WINDOWS_FIRST_INSTALL_AND_HTTP_HEALTH_VERIFIED"
+          $repeat = & cmd.exe /d /c ".\LANCER_TERMINAL_PAPER.bat"
+          if ($LASTEXITCODE -ne 0) { throw "Windows second-launch BAT smoke test failed" }
+          if ($repeat | Select-String -SimpleMatch 'Installation des dependances') {
+            throw "Windows launcher tried to reinstall dependencies on second launch"
+          }
+          Write-Host $repeat
+          Write-Host "WINDOWS_REPEAT_START_WITHOUT_REINSTALL_VERIFIED"
+      - name: Print redacted diagnostics on Windows failure
+        if: failure()
+        shell: powershell
+        run: |
+          foreach ($f in @('terminal_paper_serveur_stdout.log', 'terminal_paper_serveur_stderr.log')) {
+            if (Test-Path $f) { Get-Content $f -Tail 35 }
+          }
