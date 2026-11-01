@@ -139,6 +139,20 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                 by_mint[row["mint"]]=analysis
                 rec["s1_analysis_sha256"]=_hash(analysis)
                 rec["s1_blocking_reasons"]=analysis["blocking_reasons"]
+                # Preserve public raw identity diagnostics even if the risk
+                # gate refuses every speculative entry. A supply mismatch is
+                # NOT automatically a valid burned-mint reconciliation.
+                facts=analysis.get("facts",{})
+                rec["s1_supply_consistency"]=facts.get("supply_consistency")
+                poolfacts=facts.get("pool",{})
+                mintfacts=facts.get("base_mint",{})
+                quotefacts=facts.get("quote_mint",{})
+                rec["s1_mint_decimal_comparison"]=dict(
+                    pool_base_decimals=poolfacts.get("decimals_a"),
+                    decoded_mint_base_decimals=mintfacts.get("decimals"),
+                    pool_quote_decimals=poolfacts.get("decimals_b"),
+                    decoded_mint_quote_decimals=quotefacts.get("decimals"))
+                rec["s1_snapshot_risk_flags"]=analysis.get("risk_flags",[])
                 entry=analysis.get("conditional_projection")
                 rec["s1_buy_quantity_atomic"]=(
                     entry.get("buy_output_atomic") if type(entry) is dict else None)
