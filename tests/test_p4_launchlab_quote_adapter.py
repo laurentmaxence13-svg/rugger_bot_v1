@@ -51,7 +51,8 @@ def test_causal_decision_synthetic_then_model_filled_buy_and_observed_sell():
         source_slot=100,available_at_ms=1000,
         decisions={"master":"ENTER","reference":"WAIT"},
         signed_creator_verified=True,asof_features_verified=True,
-        source_quote_clock_verified=True,policy_sha256="a"*64))
+        source_quote_clock_verified=True,
+        entry_size_lamports=50_000_000,policy_sha256="a"*64))
     exchange=PaperLedger(minimum_delay_ms=250)
     exchange.register(frozen)
     e["available_at_ms"]=1500
