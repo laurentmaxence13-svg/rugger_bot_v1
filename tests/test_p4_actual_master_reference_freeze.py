@@ -192,3 +192,21 @@ def test_cross_asset_or_creator_history_refused_before_both_scorers(identity):
     prior[identity]="different_identity"
     with pytest.raises(ValueError,match="cross_asset_or_creator_history"):
         freeze_real_master_reference(x,[prior])
+
+
+def test_future_detection_clock_refused_even_when_quote_clock_is_old():
+    x=frame();x["detected_at_ms"]=x["available_at_ms"]+1
+    with pytest.raises(ValueError,match="causal_scorer_features"):
+        freeze_real_master_reference(x)
+
+
+@pytest.mark.parametrize("field",[
+    "detected_at_ms","creation_observed_at_ms","quote_received_at_ms",
+    "response_received_at_ms","provider_received_at_ms",
+    "last_trade_time_ms","event_time_ms","block_time_ms"
+])
+def test_nested_future_market_observation_clock_refused(field):
+    x=frame()
+    x["features"]["untrusted_source"]={field:x["available_at_ms"]+1}
+    with pytest.raises(ValueError,match="nested_future_availability_clock"):
+        freeze_real_master_reference(x)
