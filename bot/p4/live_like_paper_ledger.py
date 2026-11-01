@@ -158,7 +158,7 @@ class PaperLedger:
         q=source_quote(evidence)
         frozen=self.cases[case_id]
         case=frozen["case"]
-        if q["id"] in self.used_quote_ids:
+        if (arm,q["id"]) in self.used_quote_ids:
             raise ValueError("quote_receipt_reuse_forbidden")
         if q["mint"]!=case["mint"]:
             raise ValueError("quote_mint_mismatch")
@@ -231,7 +231,7 @@ class PaperLedger:
             del state["positions"][case_id]
             effect="PAPER_SELL_MODELED_NOT_ACTUAL"
         self._last_time=q["available_at_ms"]
-        self.used_quote_ids.add(q["id"])
+        self.used_quote_ids.add((arm,q["id"]))
         self.events.append(dict(type=effect,case_id=case_id,arm=arm,
             quote_id=q["id"],slot=q["source_slot"],
             at_ms=q["available_at_ms"],venue=q["venue"],
