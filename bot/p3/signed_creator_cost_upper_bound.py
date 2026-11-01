@@ -11,11 +11,13 @@ from pathlib import Path
 
 
 def _amount(x,name):
-    if type(x) is not str or not x.isascii() or not x.isdigit():
-        if name=="delta" and type(x) is str and x.startswith("-") and x[1:].isascii() and x[1:].isdigit():
-            return -int(x[1:])
+    if type(x) is not str or not x.isascii():
         raise ValueError(name+"_canonical_integer_required")
-    if (x!="0" and x.startswith("0")) or (x.startswith("-") and x[1:] in ("","0")):
+    if x.startswith("-"):
+        if (name!="delta" or len(x)<2 or x[1]=="0"
+                or not x[1:].isdigit()):
+            raise ValueError(name+"_canonical_integer_required")
+    elif not x.isdigit() or (len(x)>1 and x[0]=="0"):
         raise ValueError(name+"_canonical_integer_required")
     value=int(x)
     if abs(value)>10**18:
