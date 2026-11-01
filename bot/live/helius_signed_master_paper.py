@@ -92,6 +92,13 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
             or paired.get("comparative_master_edge_lamports") is not None):
         raise ValueError("unqualified_trading_or_economic_claim")
     pair_sha=save("paired_signed_master_paper.json",paired)
+    pool_refusal_counts={}
+    for observed in paired.get("observations",[]):
+        reason=observed.get("root_refusal") or observed.get("s1_refusal")
+        if reason:
+            pool_refusal_counts[reason]=pool_refusal_counts.get(reason,0)+1
+    eligible_native_sol_count=sum(
+        "graph" in row for row in paired.get("observations",[]))
     # Carry the ACTUAL signed S1 Master/ref freezes into the two-arm paper
     # portfolio before any synthetic price may be applied. Neither arm is
     # force-entered: missing causal SignalFeatures and costs remain WAIT.
@@ -128,6 +135,10 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
             "distinct_creator_claims_from_signed_transactions"),
         selected_independent_signed_creators=paired.get(
             "signed_creation_candidates_selected"),
+        supported_native_SOL_graphs=eligible_native_sol_count,
+        source_market_refusal_reason_counts=pool_refusal_counts,
+        non_native_SOL_pool_count=pool_refusal_counts.get("non_native_SOL_quote_mint",0),
+        economic_qualification_of_non_SOL_quoted_pool_not_attempted=True,
         frozen_S1_decisions=sum(
             "frozen_decision_before_S2" in e
             for e in paired.get("observations",[])),
