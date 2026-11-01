@@ -128,8 +128,9 @@ def _validate_window(root,w,revision):
     if state not in ("CAPTURED","SOURCE_GAP","INTERRUPTED","MISSED"):
         raise ValueError("invalid_window_state")
     if state not in ("CAPTURED","SOURCE_GAP"):
-        if w.get("requests_used")!=0:
-            raise ValueError("missing_window_cannot_consume_reconstructed_calls")
+        if (state=="MISSED" and w.get("requests_used")!=0
+                or state=="INTERRUPTED" and w.get("requests_used")!=MAX_REQUESTS_PER_WINDOW):
+            raise ValueError("interrupted_request_usage_must_reserve_worst_case")
         return
     folder=root/"windows"/f"{index:03d}"
     plan_path=folder/"plan.json";db_path=folder/"capture.sqlite";report_path=folder/"report.json"
@@ -224,7 +225,11 @@ def capture_window(root,manifest,i,*,run=subprocess.run,now_ms=None):
         code=-1
     # Never persist stdout/stderr: an upstream error may echo credentials.
     if code!=0 or not report_path.is_file() or not db_path.is_file():
-        return dict(index=i,state="INTERRUPTED",requests_used=0,
+        # Failure can have consumed anywhere from 0 to 20 requests. Reserve
+        # all 20 to prevent a broken subprocess from evading the session cap.
+        return dict(index=i,state="INTERRUPTED",
+            requests_used=MAX_REQUESTS_PER_WINDOW,
+            request_usage_exact=False,
             safe_reason="bounded_child_failure_or_timeout",planned_at_ms=planned,
             observed_at_ms=now,financial_order_submitted=False)
     report=json.loads(report_path.read_text(encoding="utf-8"))
@@ -244,7 +249,7 @@ def capture_window(root,manifest,i,*,run=subprocess.run,now_ms=None):
         state="SOURCE_GAP" if report.get("stop_reason") is not None
               or report.get("selected_corpus_size")==0 else "CAPTURED",
         stop_reason=report.get("stop_reason"),
-        requests_used=report["requests_used"],
+        requests_used=report["requests_used"],request_usage_exact=True,
         planned_at_ms=planned,observed_at_ms=now,
         plan_sha256=_file_sha(plan_path),db_sha256=_file_sha(db_path),
         report_sha256=_file_sha(report_path),tail_hash=tail,
@@ -280,8 +285,12 @@ def aggregate(root,manifest):
     return dict(schema="p3-24h-sampled-observation-progress-v1",
         started_at_ms=manifest["start_at_ms"],deadline_at_ms=manifest["deadline_at_ms"],
         planned_windows=WINDOWS,window_counts=counts,
-        total_requests=manifest["actual_requests_used"],
+        total_requests_or_failure_reserved_upper_bound=manifest["actual_requests_used"],
+        total_requests_confirmed=sum(w["requests_used"] for w in manifest["windows"]
+            if w["state"] in ("CAPTURED","SOURCE_GAP")),
         request_cap=manifest["max_total_requests"],
+        all_request_usage_exact=not any(w["state"]=="INTERRUPTED"
+            for w in manifest["windows"]),
         unique_mints_sampled=len(seen_mints),
         unique_creator_claims_UNVERIFIED=len(creator_claims),
         creator_identity_independence_certified=False,
@@ -337,6 +346,14 @@ def _run_local(root,*,resume,max_total_requests,revision,clock=time.time,sleep=t
             elif manifest["actual_requests_used"]+20>manifest["max_total_requests"]:
                 manifest["status"]="REQUEST_BUDGET_EXHAUSTED"
                 break
+            elif _window_files(root,i)[0].exists():
+                # A crash can happen after a child started but before manifest
+                # publication. Never re-run into this folder and never pretend
+                # its unknown request usage is zero.
+                w=dict(index=i,state="INTERRUPTED",planned_at_ms=target,
+                    observed_at_ms=current,requests_used=MAX_REQUESTS_PER_WINDOW,
+                    request_usage_exact=False,
+                    safe_reason="orphan_window_must_be_audited_not_retried")
             else:
                 w=execute(root,manifest,i,now_ms=current)
                 if w.get("index")!=i:
