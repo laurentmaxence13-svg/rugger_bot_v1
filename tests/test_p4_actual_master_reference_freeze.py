@@ -59,3 +59,47 @@ def test_missing_known_feature_availability_prevents_false_freeze():
 def test_invalid_reference_name_rejected_before_evaluation():
     with pytest.raises(ValueError,match="bounded_actual_scorer"):
         freeze_real_master_reference(frame(),reference_strategy="unregistered")
+
+
+def test_nested_future_price_in_features_rejected_before_scorers():
+    x=frame();x["features"]["future_S2_price"]=10**12
+    with pytest.raises(ValueError,match="postoutcome_features"):
+        freeze_real_master_reference(x)
+
+
+def test_nested_future_price_in_history_rejected_before_scorers():
+    x=frame();x["available_at_ms"]+=2000;x["source_slot"]+=2
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    prior=frame();prior["features"]["postdecision_results"]={"win":True}
+    with pytest.raises(ValueError,match="postoutcome_features"):
+        freeze_real_master_reference(x,[prior])
+
+
+def test_out_of_order_historical_frames_rejected():
+    x=frame();x["available_at_ms"]+=3000;x["source_slot"]+=3
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    a=frame();b=deepcopy(a);b["available_at_ms"]+=1000;b["source_slot"]+=1
+    b["slot_available_at_ms"]=b["available_at_ms"]
+    b["features_available_at_ms"]=b["available_at_ms"]
+    with pytest.raises(ValueError,match="future_or_unordered_history"):
+        freeze_real_master_reference(x,[b,a])
+
+
+def test_future_historical_slot_clock_rejected():
+    x=frame();x["available_at_ms"]+=2000;x["source_slot"]+=2
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    prior=frame();prior["slot_available_at_ms"]=x["available_at_ms"]
+    with pytest.raises(ValueError,match="noncausal_historical_source_clock"):
+        freeze_real_master_reference(x,[prior])
+
+
+def test_future_historical_feature_clock_rejected():
+    x=frame();x["available_at_ms"]+=2000;x["source_slot"]+=2
+    x["slot_available_at_ms"]=x["available_at_ms"]
+    x["features_available_at_ms"]=x["available_at_ms"]
+    prior=frame();prior["features_available_at_ms"]=x["available_at_ms"]
+    with pytest.raises(ValueError,match="noncausal_historical_source_clock"):
+        freeze_real_master_reference(x,[prior])
