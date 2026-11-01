@@ -36,6 +36,7 @@ def audit_campaigns(campaigns):
         raise ValueError("bounded_campaign_archive_set_required")
     runs=set()
     signatures={}
+    inspected_signatures=set()
     creators={}
     mint_pool={}
     message_hashes={}
@@ -73,6 +74,7 @@ def audit_campaigns(campaigns):
                 sig=_text(attempt.get("signature"),"attempt_signature")
                 if sig not in event_ids:
                     raise ValueError("inspected_signature_not_in_captured_window")
+                inspected_signatures.add(sig)
                 launches=attempt.get("signed_outer_creations")
                 if not launches:
                     continue
@@ -123,6 +125,10 @@ def audit_campaigns(campaigns):
         source_reports=reports,
         total_observed_event_rows=sum(x["events"] for x in reports),
         unique_observed_event_signatures=len(signatures),
+        unique_inspected_event_signatures=len(inspected_signatures),
+        uninspected_unique_event_signatures=len(signatures)-len(inspected_signatures),
+        unique_inspected_signed_creation_signatures=len(mint_pool),
+        uninspected_events_are_not_verified_non_creations=True,
         cross_run_repeated_event_observations=counts["cross_run_repeated_event"],
         unique_signed_creator_claims=len(creators),
         unique_signed_mint_pool_pairs=len(message_hashes),
