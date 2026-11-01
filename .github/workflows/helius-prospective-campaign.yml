@@ -10,9 +10,13 @@ on:
 permissions:
   contents: read
 
+# Other PR label events also instantiate this workflow (with skipped jobs).
+# Cancelling by PR ref would silently kill a 4-minute capture when an
+# unrelated offline-audit label is added. Serialize; never cancel a running
+# prospective capture for unrelated metadata events.
 concurrency:
   group: rugger-creator-campaign-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   bounded-campaign:
