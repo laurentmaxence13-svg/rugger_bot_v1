@@ -25,7 +25,12 @@ SAMPLE=12
 def _h(data):
     return hashlib.sha256(data.encode()).hexdigest()
 
-def discover_live_pool_account_page(rpc):
+def discover_live_pool_account_page(rpc,*,sample_page=0):
+    # Page refers to a non-overlapping, preregistered 12-address slice
+    # within the SAME 64-address first RPC page; never requests Helius cursor
+    # pages or selects by hindsight price/exit outcome.
+    if type(sample_page) is not int or not 0<=sample_page<=4:
+        raise ValueError("fixed_active_sample_page_0_to_4_required")
     if not callable(rpc) or rpc("getGenesisHash",[])!=MAINNET_GENESIS:
         raise ValueError("wrong_mainnet_genesis")
     result=rpc("getProgramAccountsV2",[PROGRAM,OPTIONS])
@@ -55,8 +60,9 @@ def discover_live_pool_account_page(rpc):
         raise ValueError("duplicate_program_account_scan")
     # A deterministic pseudorandom permutation, committed before any S1
     # pricing; not a sampling-theory certificate of representativeness.
-    selected=sorted(addresses,
-        key=lambda a:_h("rugger-active-scan-v1:"+str(slot)+":"+a))[:SAMPLE]
+    ordered=sorted(addresses,
+        key=lambda a:_h("rugger-active-scan-v1:"+str(slot)+":"+a))
+    selected=ordered[sample_page*SAMPLE:(sample_page+1)*SAMPLE]
     return dict(schema="rugger-current-active-program-accounts-v1",
         status="ACTIVE_SOL_POOLS_PAGE_RECORDED",
         program=PROGRAM,scan_slot=slot,observed_active_SOL_pools_in_one_page=len(addresses),
@@ -65,7 +71,8 @@ def discover_live_pool_account_page(rpc):
         cursor_not_retained_or_followed=True,
         observed_universe_sha256=_h("\n".join(sorted(addresses))),
         initial_pools_before_price=selected,
-        predetermined_approach="fixed_SHA256_slot_permutation_first_12",
+        sample_page=sample_page,selection_offset=sample_page*SAMPLE,
+        predetermined_approach="fixed_SHA256_slot_permutation_slice_of_12_in_first_64",
         source="filtered_getProgramAccountsV2_first_page_current_active_only",
         global_uniform_sample=False,
         is_creation_universe=False, includes_inactive_or_failed_launches=False,
