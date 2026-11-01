@@ -27,6 +27,7 @@ from bot.live.helius_readonly_rpc import HeliusReadOnlyRpc
 from bot.live.helius_ws_forward_paper import observe
 from bot.live.helius_ws_signed_creation_probe import inspect_forward_creations
 from bot.p3.signed_creation_forward_bank import signed_creator_asof_paper
+from bot.p4.live_like_paper_ledger import PaperLedger,freeze_decision
 
 SCHEMA="rugger-helius-signed-master-paper-integration-v1"
 MAX_LOG_EVENTS=100  # retain full log denominator; verifier caps proof lookups at 10
@@ -91,6 +92,32 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
             or paired.get("comparative_master_edge_lamports") is not None):
         raise ValueError("unqualified_trading_or_economic_claim")
     pair_sha=save("paired_signed_master_paper.json",paired)
+    # Carry the ACTUAL signed S1 Master/ref freezes into the two-arm paper
+    # portfolio before any synthetic price may be applied. Neither arm is
+    # force-entered: missing causal SignalFeatures and costs remain WAIT.
+    paper=PaperLedger()
+    for row in sorted(paired.get("observations",[]),
+                      key=lambda r:r.get("s1_received_ms",0)):
+        freeze=row.get("frozen_decision_before_S2")
+        if type(freeze) is not dict:
+            continue
+        action=freeze.get("master_action")
+        if action not in ("WAIT","NO_TRADE"):
+            raise ValueError("unexpected_unverified_master_trade_intent")
+        item=freeze_decision(dict(
+            id="helius-s1-"+row["signature"],
+            mint=row["mint"],creator=row["creator"],pool=row["pool"],
+            source_slot=freeze["source_slot"],available_at_ms=freeze["at_ms"],
+            entry_size_lamports=100_000_000,
+            decisions=dict(master="WAIT" if action=="WAIT" else "REJECT",
+                           reference="WAIT"),
+            signed_creator_verified=True,
+            asof_features_verified=False,
+            source_quote_clock_verified=False,
+            policy_sha256=freeze["master_policy_sha256"]))
+        paper.register(item)
+    paper_book=paper.snapshot()
+    paper_sha=save("paired_paper_portfolio.json",paper_book)
     summary=dict(
         schema=SCHEMA,source="Helius_mainnet_public_finalized_signatures",
         observation_scope="bounded_late_verified_creation_and_two_bank_shadow",
@@ -104,6 +131,13 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
         frozen_S1_decisions=sum(
             "frozen_decision_before_S2" in e
             for e in paired.get("observations",[])),
+        actual_signed_policy_frozen_paper_cases=paper_book["frozen_decisions"],
+        paper_portfolio_open_positions=sum(
+            paper_book["accounts"][arm]["open_positions"]
+            for arm in ("master","reference")),
+        paper_portfolio_closed_positions=sum(
+            paper_book["accounts"][arm]["closed_paper_cycles"]
+            for arm in ("master","reference")),
         capture_status=paired.get("status"),
         websocket_delivery_is_not_finalized_entry_signal=True,
         source_creator_verification_after_log_capture=True,
@@ -119,7 +153,8 @@ def run_pipeline(*,seconds, output_dir, api_key, observer=observe,
         actual_bank_rpc_calls_used=getattr(bank_rpc,"count",None),
         sha256=dict(signed_log_capture=log_sha,
                     finalized_creation_proof=verified_sha,
-                    paired_signed_master_paper=pair_sha),
+                    paired_signed_master_paper=pair_sha,
+                    paired_paper_portfolio=paper_sha),
         output_dir=str(folder))
     save("summary.json",summary)
     return summary
