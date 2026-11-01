@@ -159,6 +159,9 @@ def evaluate_probe(research):
             own_buy_overlay_cost_scenarios=[],
             own_buy_overlay_status="NOT_QUALIFIED",
             own_buy_overlay_refusal=None,
+            own_buy_overlay_public_bank_replay_verified=False,
+            own_buy_overlay_observed_reserve_activity=None,
+            own_buy_overlay_observed_source_reserve_deltas=None,
             own_buy_overlay_path_dependent_not_executable=True,
             model_only_executable_buy_sell_not_verified=True,
             true_Master_net_pnl_lamports=None,
@@ -209,8 +212,41 @@ def evaluate_probe(research):
                 if str(delta)!=sized.get(
                         "s2_own_buy_overlay_delta_before_extra_costs_lamports"):
                     raise ValueError("S2_own_buy_overlay_markout_inconsistent")
+                # Future campaigns retain decoded PUBLIC seven-account
+                # banks and exact hash receipts for independent offline model
+                # replay. Earlier campaigns remain transparently unverified.
+                s1_public=row.get("s1_decoded_public_bank_replay")
+                s2_public=row.get("s2_decoded_public_bank_replay")
+                replay_verified=False
+                reserve_activity=sized.get(
+                    "s2_own_buy_overlay_source_curve_activity_observed")
+                reserve_deltas=sized.get(
+                    "s2_own_buy_overlay_source_reserve_deltas")
+                if type(s1_public) is dict and type(s2_public) is dict:
+                    from bot.p3.own_buy_s2_overlay import own_buy_s2_overlay
+                    if (_hash(s1_public)!=row.get("s1_analysis_sha256") or
+                            _hash(s2_public)!=row.get("s2_decoded_public_bank_sha256")):
+                        raise ValueError("archived_public_S1_S2_bank_digest_mismatch")
+                    replay=own_buy_s2_overlay(
+                        s1_analysis=s1_public,s2_analysis=s2_public,
+                        input_lamports=SIZING_LAMPORTS,
+                        expected_mint=p["mint"],expected_pool=p["pool"])
+                    if (_hash(replay)!=sized.get(
+                            "s2_own_buy_overlay_receipt_sha256")
+                            or replay["overlay_S2_sell_lamports"]!=overlay_lamports
+                            or replay["paper_bought_tokens_atomic"]!=
+                               p["hypothetical_probe_token_quantity_atomic"]
+                            or replay["source_curve_reserve_activity_observed"]!=
+                               reserve_activity
+                            or replay["observed_S1_to_S2_reserve_deltas"]!=
+                               reserve_deltas):
+                        raise ValueError("archived_public_overlay_model_replay_failed")
+                    replay_verified=True
                 item.update(
                     own_buy_overlay_status="CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY",
+                    own_buy_overlay_public_bank_replay_verified=replay_verified,
+                    own_buy_overlay_observed_reserve_activity=reserve_activity,
+                    own_buy_overlay_observed_source_reserve_deltas=reserve_deltas,
                     own_buy_overlay_sell_lamports=overlay_lamports,
                     own_buy_overlay_delta_before_extra_costs_lamports=str(delta),
                     own_buy_overlay_cost_scenarios=[
@@ -226,6 +262,12 @@ def evaluate_probe(research):
         cases.append(item)
     overlay_quoted=sum(row["own_buy_overlay_status"]==
         "CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY" for row in cases)
+    overlay_source_replay_verified=sum(
+        row["own_buy_overlay_public_bank_replay_verified"] is True for row in cases)
+    overlay_with_actual_reserve_activity=sum(
+        row["own_buy_overlay_observed_reserve_activity"] is True for row in cases)
+    overlay_with_flat_reserves=sum(
+        row["own_buy_overlay_observed_reserve_activity"] is False for row in cases)
     quoted=sum(row["status"]=="CONDITIONAL_MODEL_ROUNDTRIP_NOT_FILL"
                for row in cases)
     return dict(schema=SCHEMA,
@@ -238,6 +280,9 @@ def evaluate_probe(research):
         frozen_before_followup_SHA256=_hash(frozen),
         exact_model_roundtrips=quoted,number_of_frozen_cases=len(cases),
         own_buy_overlay_conditional_models=overlay_quoted,
+        own_buy_overlay_source_replay_verified_models=overlay_source_replay_verified,
+        own_buy_overlay_models_with_actual_reserve_activity=overlay_with_actual_reserve_activity,
+        own_buy_overlay_models_with_flat_source_reserves=overlay_with_flat_reserves,
         own_buy_overlay_uses_unobserved_counterfactual_reserves=True,
         own_buy_overlay_master_trades_executed=0,
         rejected_or_censored_models=len(cases)-quoted,
