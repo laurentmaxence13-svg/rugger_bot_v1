@@ -24,6 +24,8 @@ def funnel(summary, source_windows):
     counts=Counter()
     creator_ids=set()
     seen=set()
+    inspected_unique=set()
+    signed_signatures=set()
     reasons=Counter()
     windows=[]
     for index,(meta,source) in enumerate(zip(summary["windows"],source_windows)):
@@ -43,9 +45,15 @@ def funnel(summary, source_windows):
             raise ValueError("non_readonly_capture_refused")
         window_status=Counter()
         repeats=0
+        window_event_ids=set()
         for event in events:
             if type(event) is not dict or type(event.get("signature")) is not str:
                 raise ValueError("event_identity_missing")
+            if not event["signature"]:
+                raise ValueError("empty_event_signature")
+            if event["signature"] in window_event_ids:
+                raise ValueError("duplicated_event_signature_within_window")
+            window_event_ids.add(event["signature"])
             if event["signature"] in seen:
                 repeats+=1
             seen.add(event["signature"])
@@ -55,9 +63,19 @@ def funnel(summary, source_windows):
         model_count=0
         signed_count=0
         frozen_count=0
+        window_inspected=set()
         for attempt in report["attempts"]:
             if type(attempt) is not dict:
                 raise ValueError("invalid_attempt")
+            signature=attempt.get("signature")
+            if type(signature) is not str or not signature:
+                raise ValueError("inspected_signature_required")
+            if signature not in window_event_ids:
+                raise ValueError("inspected_signature_not_in_observed_window")
+            if signature in window_inspected:
+                raise ValueError("duplicated_inspection_within_window")
+            window_inspected.add(signature)
+            inspected_unique.add(signature)
             status=attempt.get("status") or "NO_STATUS_RECORDED"
             if type(status) is not str:
                 raise ValueError("invalid_status")
@@ -67,6 +85,7 @@ def funnel(summary, source_windows):
                 if type(launches) is not list:
                     raise ValueError("invalid_signed_launch_list")
                 signed_count+=len(launches)
+                signed_signatures.add(signature)
                 for item in launches:
                     if type(item) is not dict or type(item.get("creator")) is not str:
                         raise ValueError("invalid_creator_claim")
@@ -87,7 +106,9 @@ def funnel(summary, source_windows):
             raise ValueError("attempt_counters_do_not_reconcile")
         counts.update(window_status)
         windows.append(dict(window=index+1,received=len(events),
-            inspected=len(report["attempts"]),status_counts=dict(sorted(window_status.items())),
+            inspected=len(report["attempts"]),
+            unique_uninspected_signatures=len(window_event_ids-window_inspected),
+            status_counts=dict(sorted(window_status.items())),
             signed_creations=signed_count,frozen_S1=frozen_count,
             conditional_model_markouts=model_count))
     if summary.get("observed_events")!=sum(w["received"] for w in windows):
@@ -99,6 +120,11 @@ def funnel(summary, source_windows):
         windows=windows,
         observed_events=sum(w["received"] for w in windows),
         unique_event_signatures=len(seen),
+        unique_inspected_event_signatures=len(inspected_unique),
+        uninspected_unique_event_signatures=len(seen-inspected_unique),
+        uninspected_events_are_unknown_not_negative=True,
+        unique_signed_creation_signature_claims=len(signed_signatures),
+        signed_creator_claims_not_independent_crypto_reverification=True,
         verified_signed_creator_claims=len(creator_ids),
         status_counts=dict(sorted(counts.items())),
         refusal_reasons=dict(sorted(reasons.items())),
