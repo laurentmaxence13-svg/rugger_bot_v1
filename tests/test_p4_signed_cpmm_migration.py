@@ -23,7 +23,9 @@ def signed_fixture():
     keys[17]["pubkey"]=OLD
     keys[29]["pubkey"]=PROGRAM
     return dict(slot=400,meta=dict(err=None),
-        transaction=dict(message=dict(accountKeys=keys,
+        transaction=dict(signatures=["synthetic-test-only-signature"],message=dict(
+            header=dict(numRequiredSignatures=1,numReadonlySignedAccounts=0,numReadonlyUnsignedAccounts=0),
+            accountKeys=keys,
             instructions=[dict(programIdIndex=29,
                 accounts=list(range(28)),data=_encode(DISC))])))
 
