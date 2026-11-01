@@ -1,0 +1,19 @@
+{
+  "schema": "rugger-creator-disjoint-prospective-protocol-v1",
+  "registered_at_ms": 1793502000000,
+  "split_salt_sha256": "6d7003e01f446b54696933bf3d5e07f5a2f6e7319269e0a623909c2b6e19bdfb",
+  "holdout_modulus": 10,
+  "holdout_buckets": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "minimum_holdout_creators": 50,
+  "minimum_qualified_cycles": 50,
+  "position_horizon_ms": 120000,
+  "financial_orders_allowed": false
+}
