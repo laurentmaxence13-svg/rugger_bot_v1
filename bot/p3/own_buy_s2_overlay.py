@@ -49,7 +49,7 @@ def own_buy_s2_overlay(*,s1_analysis,s2_analysis,input_lamports,
         if (bank.get("pool_address")!=expected_pool or
                 bank.get("mint")!=expected_mint or
                 bank.get("evidence_profile")!="published_metadata_v1" or
-                bank.get("identity_status")!="verified" or
+                bank.get("identity_status")!="owner_layout_relations_and_supplied_pins_checked" or
                 bank.get("facts",{}).get("program_derived_addresses_verified") is not True):
             raise ValueError("source_pool_or_mint_or_identity_unverified")
     if (s1_analysis["facts"].get("addresses")!=s2_analysis["facts"].get("addresses")
