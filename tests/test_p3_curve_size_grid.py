@@ -23,7 +23,7 @@ def bank(slot,phase,*,real_a=10**13,has_vault=True):
         kind="candidate_decision",outcome="not_admitted",
         source_slot=slot,available_at_ms=slot*100,
         payload={"probe_phase":phase,
-                 "analysis":dict(facts=facts,risk_flags=[])})
+                 "analysis":dict(context_slot=slot,facts=facts,risk_flags=[])})
 
 
 def source():
