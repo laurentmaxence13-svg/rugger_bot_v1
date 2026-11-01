@@ -266,7 +266,12 @@ class PaperLedger:
                 model_only_not_actual_trading=True,
                 conditional_on_observed_or_provider_quote_fills=True,
                 closed_trades=list(state["closed"]))
-        comparable=all(accounts[arm]["complete_cycle_net_pnl_lamports"] is not None for arm in ARMS)
+        any_closed=any(accounts[arm]["closed_paper_cycles"]>0 for arm in ARMS)
+        comparable=(any_closed and all(
+            accounts[arm]["complete_cycle_net_pnl_lamports"] is not None
+            for arm in ARMS))
+        # Two WAIT decisions do not establish a measured zero edge: no
+        # trades means no economically informative comparison.
         edge=(accounts["master"]["complete_cycle_net_pnl_lamports"]-
               accounts["reference"]["complete_cycle_net_pnl_lamports"]
               if comparable else None)
