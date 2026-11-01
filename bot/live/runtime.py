@@ -156,6 +156,16 @@ class LiveRuntime:
             raise ValueError('explicit_unchanged_strategy_policy_approval_required')
         if self.engine.mode is Mode.LIVE_ENABLED and frame.get('data_kind')!='market_observation':
             raise ValueError('synthetic_frames_cannot_authorize_live_route')
+        # A strategy approval hash is not a promotion authorization. The
+        # current Master explicitly reports experimental shadow-only status,
+        # even when its diagnostic scorer proposes ENTER. It must never send
+        # real funds solely because a hash was approved by an operator.
+        # Keep liquidation of pre-existing inventory independent: this gate
+        # protects NEW entries, not observe_position emergency exits.
+        if (self.engine.mode is Mode.LIVE_ENABLED
+                and (proposal.get('promotion_allowed') is not True
+                     or proposal.get('execution_authorized') is not True)):
+            raise ValueError('unpromoted_Master_cannot_authorize_live_entry')
         request=await self.route_request_provider(decision_id,proposal,frame)
         if (type(request) is not dict or request.get('decision_id')!=decision_id
                 or request.get('side')!='BUY' or request.get('mint')!=frame.get('mint')
