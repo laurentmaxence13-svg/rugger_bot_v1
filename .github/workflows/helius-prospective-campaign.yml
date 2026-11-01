@@ -41,13 +41,18 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
       - name: Adversarial offline campaign and earlier capture regression
         run: |
-          python -m pytest -q tests/test_live_helius_prospective_campaign.py
+          python -m pytest -q tests/test_live_helius_prospective_campaign.py tests/test_prospective_campaign_funnel.py
           python -m pytest -q tests/test_live_helius_early_signed_s1s2.py tests/test_live_helius_ws_forward_paper.py
       - name: Four sixty-second causal observation windows; no orders
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           python -B -m bot.live.helius_prospective_campaign --windows 4 --seconds 60 --max-events 100
+      - name: Audit campaign attrition, verify all per-window hashes, never claim filled PnL
+        run: |
+          python -B -m bot.p3.prospective_campaign_funnel \
+            --summary paper_artifacts/prospective_${{ github.run_id }}_summary.json \
+            --output paper_artifacts/prospective_${{ github.run_id }}_funnel.json
       - name: Retain only public independently hashed evidence per window
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
