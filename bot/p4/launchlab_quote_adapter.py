@@ -49,8 +49,12 @@ def asof_launchlab_quote(*,analysis,source_event,mint,pool,side,
         raise ValueError("causal_source_receipt_missing")
     inputs=_s1_inputs(analysis)
     source_pool=inputs["pool"]
-    if source_pool.get("mint_a")!=mint or source_pool.get("status")!=0:
+    # Account decoding retains its original decimal-string status, whereas
+    # the SDK sell primitive accepts a normalized numeric enum.
+    status=int(source_pool.get("status")) if str(source_pool.get("status")).isdecimal() else None
+    if source_pool.get("mint_a")!=mint or status!=0:
         raise ValueError("active_source_mint_and_curve_required")
+    source_pool["status"]=status
     if side=="BUY":
         model=constant_product_projection(
             source_pool,input_lamports=amount,
