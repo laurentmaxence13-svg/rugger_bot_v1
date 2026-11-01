@@ -46,6 +46,40 @@ def _reject_future_labels(value,depth=0):
             _reject_future_labels(item,depth+1)
 
 
+
+def _reject_nested_unavailable_clocks(value,*,at_ms,source_slot,depth=0):
+    """Reject as-of violations hidden in nested quote/feature objects.
+
+    Namespaced source clocks must be no later than the frame that uses them.
+    This proves internal consistency, not authenticity of provider timestamps.
+    """
+    if depth>12:
+        raise ValueError("nested_feature_depth_limit")
+    if type(value) is dict:
+        for key,item in value.items():
+            if type(key) is not str:
+                raise ValueError("non_string_feature_key")
+            k=key.lower()
+            if k in ("available_at_ms","features_available_at_ms",
+                     "slot_available_at_ms","observed_at_ms","received_at_ms",
+                     "source_available_at_ms","quote_available_at_ms",
+                     "price_available_at_ms"):
+                if type(item) is not int or item<=0 or item>at_ms:
+                    raise ValueError("nested_future_availability_clock")
+            if k in ("source_slot","context_slot","quote_slot",
+                     "observed_slot","price_slot"):
+                if type(item) is not int or item<=0 or item>source_slot:
+                    raise ValueError("nested_future_source_slot")
+            _reject_nested_unavailable_clocks(item,at_ms=at_ms,
+                source_slot=source_slot,depth=depth+1)
+    elif type(value) in (tuple,list):
+        if len(value)>2048:
+            raise ValueError("bounded_feature_history_required")
+        for item in value:
+            _reject_nested_unavailable_clocks(item,at_ms=at_ms,
+                source_slot=source_slot,depth=depth+1)
+
+
 def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sniping"):
     if (type(frame) is not dict or type(history) not in (list,tuple)
             or type(reference_strategy) is not str
@@ -87,6 +121,10 @@ def freeze_real_master_reference(frame,history=(),*,reference_strategy="early_sn
     # availability. Reject future-labelled fields at ANY nesting depth.
     _reject_future_labels(frame)
     _reject_future_labels(history)
+    _reject_nested_unavailable_clocks(frame,at_ms=at,source_slot=slot)
+    for prior in history:
+        _reject_nested_unavailable_clocks(prior,
+            at_ms=prior["available_at_ms"],source_slot=prior["source_slot"])
     master=MasterDecisionOrchestrator().evaluate(frame,history,
         inventory=None,health=None,capital=None)
     ref=decide_prefix(reference_strategy,frame,history,decision_at_ms=at)
