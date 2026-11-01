@@ -145,3 +145,42 @@ def test_only_known_no_trade_or_enter_actions():
     case=setup();case["master_action"]="SELL_ALL"
     with pytest.raises(ValueError,match="causal_policy"):
         freeze_pair(case)
+
+
+def test_master_enter_reference_wait_counts_costed_model_edge():
+    f=freeze_pair(setup(master="ENTER",ref="WAIT"))
+    r=score_pair(f,price(fees=6000,failures=12000))
+    assert r["master_and_reference"]["reference"]["conditional_net_if_all_costs_provided_lamports"]==0
+    assert r["conditional_modelled_master_minus_reference_lamports"]==-3099155
+    assert r["candidate_both_enter_illustrative_delta_lamports"] is None
+    assert r["economically_validated_master_advantage_lamports"] is None
+
+
+def test_master_wait_reference_enter_counts_avoided_conditional_loss():
+    f=freeze_pair(setup(master="WAIT",ref="ENTER"))
+    r=score_pair(f,price(fees=6000,failures=12000))
+    assert r["conditional_modelled_master_minus_reference_lamports"]==3099155
+    assert r["market_profitability_verified"] is False
+
+
+def test_enter_unknown_fees_remains_censored_against_abstention():
+    f=freeze_pair(setup(master="ENTER",ref="WAIT"))
+    r=score_pair(f,price(fees=None,failures=0))
+    assert r["conditional_modelled_master_minus_reference_lamports"] is None
+    assert r["comparison_censored_due_to_unknown_enter_costs_or_exit"] is True
+
+
+def test_reference_failed_exit_cannot_be_inferred_as_master_profit():
+    f=freeze_pair(setup(master="WAIT",ref="ENTER"))
+    r=score_pair(f,price(exit_kind="FAILED_EXIT",price=None,fees=0,failures=10000))
+    assert r["conditional_modelled_master_minus_reference_lamports"] is None
+    assert r["master_and_reference"]["reference"]["conditional_net_if_all_costs_provided_lamports"] is None
+
+
+def test_both_abstain_is_zero_incremental_difference_not_profitable_cycle():
+    f=freeze_pair(setup(master="WAIT",ref="REJECT"))
+    r=score_pair(f,price(exit_kind="OPEN_UNPRICED",price=None,fees=None,failures=None))
+    assert r["conditional_modelled_master_minus_reference_lamports"]==0
+    assert r["decision_arms_with_hypothetical_entries"]==0
+    assert r["qualified_executed_economic_cycles"]==0
+    assert r["economically_validated_master_advantage_lamports"] is None
