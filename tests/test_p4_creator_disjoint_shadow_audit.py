@@ -187,3 +187,15 @@ def test_creator_assignment_stable_and_outcome_independent():
     b["followup"]=followup()
     assert audit_creator_disjoint_shadow([a],p)["rows"][0]["split"]==(
         audit_creator_disjoint_shadow([b],p)["rows"][0]["split"])
+
+
+def test_self_attested_creator_flags_cannot_satisfy_verified_holdout_threshold():
+    rows=[case(i,signed=True) for i in range(200)]
+    result=audit_creator_disjoint_shadow(rows,protocol())
+    assert result["splits"]["holdout"]["creator_groups_signed_self_attested"]>=50
+    assert result["holdout_minimum_signed_self_attested_creator_groups_reached"] is True
+    assert result["holdout_minimum_verified_creator_groups_reached"] is False
+    assert result["splits"]["holdout"]["creator_groups_independently_verified"]==0
+    assert result["creator_signature_proofs_independently_revalidated"] is False
+    assert result["complete_creation_denominator_externally_verified"] is False
+    assert result["empirical_net_master_advantage_verified"] is False
