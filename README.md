@@ -1,5 +1,12 @@
 # Rugger Bot V1 — moteur Solana en simulation
 
+## Terminal visuel PAPER (Windows, navigateur)
+
+**Livré et testé :** lancer **LANCER_TERMINAL_PAPER.bat**, puis ouvrir **http://localhost:8501**. L'interface affiche les décisions, les positions PAPER locales, leurs cotations USD enregistrées, le P&L des cycles clos, et accepte les JSON/ZIP des expériences Helius depuis GitHub Actions. Le bouton Démo présente exclusivement des opérations inventées et marquées fictives.
+
+Les cycles PAPER Master/référence sont séparés des scénarios contrefactuels et de l'ancien moteur PAPER. Le terminal est en lecture seule, ne lance aucun ordre réel et ne prouve aucune rentabilité. Voir **[TERMINAL_PAPER.md](TERMINAL_PAPER.md)**.
+
+
 Entrées, suivi, sorties et portefeuille sont intégrés en **PAPER ONLY**. Aucun
 ordre réel ni code de signature de transaction. La rentabilité n'est pas démontrée.
 
