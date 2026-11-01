@@ -155,3 +155,31 @@ def test_campaign_refuses_duplicate_events_before_persisting(tmp_path):
         c.campaign(windows=1,seconds=10,max_events=20,
                    capture=duplicated,workspace=home,session="duplicated")
     assert not list((home/"paper_artifacts").glob("*.json"))
+
+
+
+def test_checkpoint_preserves_partial_window_hash_denominator_without_pnl(tmp_path):
+    home=root(tmp_path)
+    summary=c.campaign(windows=2,seconds=10,max_events=20,
+        capture=factory(),workspace=home,session="checkpoint")
+    path=home/"paper_artifacts"/"prospective_checkpoint_checkpoint.json"
+    saved=json.loads(path.read_text())
+    assert saved["schema"]=="rugger-prospective-window-checkpoint-v1"
+    assert saved["windows_requested"]==2
+    assert saved["windows_completed"]==2
+    assert saved["source_window_receipts"]==summary["windows"]
+    assert saved["complete"] is False
+    assert saved["economic_cycles_verified"]==0
+    assert saved["master_reference_edge_lamports"] is None
+    assert saved["financial_order_submitted"] is False
+
+
+def test_existing_checkpoint_never_overwritten_by_retry(tmp_path):
+    home=root(tmp_path)
+    folder=home/"paper_artifacts";folder.mkdir()
+    checkpoint=folder/"prospective_collision_checkpoint.json"
+    checkpoint.write_text("immutable-prior-evidence")
+    with pytest.raises(FileExistsError,match="existing_campaign_checkpoint"):
+        c.campaign(windows=1,seconds=10,max_events=20,
+            capture=factory(),workspace=home,session="collision")
+    assert checkpoint.read_text()=="immutable-prior-evidence"
