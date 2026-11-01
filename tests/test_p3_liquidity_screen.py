@@ -140,3 +140,20 @@ def test_only_recorded_initial_full_exit_route_can_pass_projection_prerequisite(
     refused=screen(event(outcome="unavailable",
                         response={"success":False,"msg":"INSUFFICIENT_LIQUIDITY"}))
     assert not recorded_initial_full_exit_route_passed(dict(refused,gate_recorded=True))
+
+
+def test_preregistered_one_command_smoke_plan_has_immutable_protocol_fields():
+    import time
+    from bot.p3.liquidity_smoke import new_smoke_plan
+    from bot.p3.prospective_campaign import FIXED, validate_plan
+    stamp=int(time.time()*1000)-1000
+    revision="a"*40
+    plan=new_smoke_plan(revision=revision,registered_at_ms=stamp)
+    assert plan["source_revision"]==revision
+    assert plan["registered_at_ms"]==stamp
+    assert all(plan[k]==v for k,v in FIXED.items())
+    assert plan["max_requests"]==20
+    assert plan["max_elapsed_ms"]==60000
+    assert len(validate_plan(plan))==64
+    with pytest.raises(ValueError):
+        new_smoke_plan(revision="not-a-commit",registered_at_ms=stamp)
