@@ -126,7 +126,15 @@ def discover_recent_signed_sol_trade_pools(rpc,*,clock_ms=None):
             row["eligibility_reason"]="NOT_INSPECTED_RPC_BUDGET"
         else:
             receipt_attempts+=1
-            receipt=rpc("getTransaction",[sig,RAW_OPTS])
+            try:
+                receipt=rpc("getTransaction",[sig,RAW_OPTS])
+            except (ValueError,KeyError,TypeError):
+                # A legacy/v0 reader must not silently reinterpret a
+                # version-1 receipt. Preserve this censored source slot and
+                # continue within the same hard ten-call provider budget.
+                row["eligibility_reason"]="FINALIZED_RECEIPT_RPC_UNAVAILABLE_OR_UNSUPPORTED"
+                records.append(row)
+                continue
             if (type(receipt) is not dict or receipt.get("slot")!=slot or
                     type(receipt.get("transaction")) is not dict or
                     receipt["transaction"].get("signatures",[None])[0]!=sig or
