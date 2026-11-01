@@ -94,9 +94,15 @@ def join_signed_index_quotes(index_report,quote_audit,signed):
         source_index_sha256=_hash(index_report),
         source_quote_audit_sha256=_hash(quote_audit),
         source_signed_proof_sha256=_hash(signed),
+        # A creator may launch multiple mints. Counting verified rows as
+        # independent creators would inflate the holdout denominator.
         selected_creator_claims=len(pre),
-        cryptographically_authenticated_selected_creators=sum(
+        selected_distinct_provider_claimed_creator_ids=len(
+            {r["creator"] for r in pre.values()}),
+        authenticated_selected_creation_count=sum(
             x["authenticated_outer_creation"] for x in rows),
+        cryptographically_authenticated_selected_creators=len({
+            x["creator_claim"] for x in rows if x["authenticated_outer_creation"]}),
         matched_full_lot_quote_scenarios=sum(
             len(x["indicative_full_lot_quote_scenarios"]) for x in rows),
         rows=rows,
