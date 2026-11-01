@@ -104,6 +104,7 @@ def discover_recent_signed_sol_trade_pools(rpc,*,clock_ms=None):
             or any(type(x) is not dict for x in listed)):
         raise ValueError("bounded_program_signature_page_required")
     records=[];seen=set();selected=[];seen_pools=set();seen_mints=set()
+    receipt_attempts=0
     for i,meta in enumerate(listed):
         sig=_signature(meta.get("signature"))
         slot=meta.get("slot")
@@ -121,9 +122,10 @@ def discover_recent_signed_sol_trade_pools(rpc,*,clock_ms=None):
             row["eligibility_reason"]="FAILED_SIGNED_PROGRAM_TRANSACTION"
         elif age is None or age<0 or age>MAX_AGE_SECONDS*1000:
             row["eligibility_reason"]="UNVERIFIED_OR_STALE_PROGRAM_TRANSACTION_CLOCK"
-        elif i>=RECEIPT_LIMIT:
+        elif receipt_attempts>=RECEIPT_LIMIT:
             row["eligibility_reason"]="NOT_INSPECTED_RPC_BUDGET"
         else:
+            receipt_attempts+=1
             receipt=rpc("getTransaction",[sig,RAW_OPTS])
             if (type(receipt) is not dict or receipt.get("slot")!=slot or
                     type(receipt.get("transaction")) is not dict or
@@ -153,13 +155,7 @@ def discover_recent_signed_sol_trade_pools(rpc,*,clock_ms=None):
         source_program=PROGRAM,source_commitment="finalized",
         root_selection_at_ms=now,source_signature_count=len(listed),
         receipt_lookup_budget=RECEIPT_LIMIT,
-        receipt_lookup_attempts=sum(
-            x["eligibility_reason"] in (
-                "SIGNED_SOL_LAUNCHLAB_TRADE",
-                "VERIFIED_OTHER_PROGRAM_INSTRUCTION",
-                "SIGNED_RECEIPT_OR_INSTRUCTION_REFUSED",
-                "FINALIZED_RECEIPT_VERSION_OR_IDENTITY_UNQUALIFIED")
-            for x in records),
+        receipt_lookup_attempts=receipt_attempts,
         selected_recent_pool_count=len(selected),
         selected_signed_recent_trade_pools=selected,
         original_signature_page_records=records,
