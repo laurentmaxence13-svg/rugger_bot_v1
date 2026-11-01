@@ -12,19 +12,24 @@ import subprocess
 import sys
 import time
 
-from bot.p3.prospective_campaign import FIXED
+from bot.p3.prospective_campaign import FIXED,CURVE_PHASE_FIXED
 
 
-def new_smoke_plan(*, revision, registered_at_ms):
+def new_smoke_plan(*, revision, registered_at_ms, curve_phase_only=False):
     if not (type(revision) is str and re.fullmatch(r"[0-9a-f]{40}", revision)):
         raise ValueError("Require exact source revision")
     if type(registered_at_ms) is not int or registered_at_ms <= 0:
         raise ValueError("Require positive preregistration time")
-    return dict(FIXED,registered_at_ms=registered_at_ms,source_revision=revision)
+    if type(curve_phase_only) is not bool:
+        raise ValueError("Curve-phase mode must be an explicit boolean")
+    return dict(CURVE_PHASE_FIXED if curve_phase_only else FIXED,
+                registered_at_ms=registered_at_ms,source_revision=revision)
 
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--curve-phase-only",action="store_true",
+                        help="Use observed LaunchLab curve banks, no routed AMM API quotes")
     parser.add_argument("--network",action="store_true",
                         help="Explicitly authorize the <=20 public quote/RPC requests")
     parser.add_argument("--output-dir",type=Path,default=Path("paper_artifacts"))
@@ -37,9 +42,10 @@ def main():
     revision=subprocess.check_output(
         ["git","rev-parse","HEAD"],text=True).strip()
     started=time.time_ns()
-    plan=new_smoke_plan(revision=revision,registered_at_ms=started//1_000_000-1000)
+    plan=new_smoke_plan(revision=revision,registered_at_ms=started//1_000_000-1000,
+                        curve_phase_only=args.curve_phase_only)
     unique=str(started)
-    basename="liquidity_gate_"+unique
+    basename=("curve_phase_" if args.curve_phase_only else "liquidity_gate_")+unique
     plan_path=args.output_dir/(basename+"_plan.json")
     db_path=args.output_dir/(basename+"_capture.sqlite")
     report_path=args.output_dir/(basename+"_report.json")
@@ -77,6 +83,8 @@ def main():
     print(json.dumps(dict(
         report=str(report_path),
         selected_tokens=report["selected_corpus_size"],
+        quote_protocol=plan["schema"],
+        Raydium_AMM_trade_api_quotes_requested=not args.curve_phase_only,
         projected_entries=report["projected_entry_observations"],
         recorded_initial_liquidity_gates=report["initial_full_exit_gates_recorded"],
         master_reference_shadow_frozen=report["frozen_actual_master_reference_candidates"],
