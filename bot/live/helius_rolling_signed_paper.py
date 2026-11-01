@@ -100,29 +100,134 @@ def _check_manifest(directory,manifest):
     return reserved
 
 
+def _recover_session(folder,*,duration_seconds,rpc_call_cap,restart_at_ms):
+    """Conservatively continue one existing session without erasing its evidence.
+
+    Restarts are visible gaps, never reconstructed history. Previously reserved
+    calls are never refunded on failure; incomplete chunks are marked refused.
+    Signed source tapes are checked against persisted SHA256 before continuation.
+    """
+    folder=Path(folder)
+    if folder.is_symlink() or not folder.is_dir():
+        raise ValueError("original_session_folder_required")
+    path=folder/"manifest.json"
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("original_manifest_required")
+    manifest=json.loads(path.read_text(encoding="utf-8"))
+    _check_manifest(folder,manifest)
+    if (manifest.get("duration_seconds")!=duration_seconds
+            or manifest.get("max_rpc_calls")!=rpc_call_cap
+            or type(restart_at_ms) is not int
+            or not manifest["start_ms"]<restart_at_ms<manifest["end_ms"]
+            or manifest.get("status") in (
+                "COMPLETED_NO_KNOWN_GAP_NOT_PROOF_OF_COMPLETE_TAPE",
+                "COMPLETED_WITH_GAPS")):
+        raise ValueError("resume_original_horizon_quota_or_status_required")
+    seen=set()
+    tally=dict(verified_creations=0,frozen_s1_decisions=0,
+        supported_native_SOL_graphs=0,
+        source_refusals=0,source_websocket_gaps=0,
+        verification_rpc_calls=0,
+        non_native_SOL_pool_count=0,
+        source_market_refusal_reason_counts={})
+    last_received=manifest["start_ms"]
+    for i,rec in enumerate(manifest["windows"]):
+        chunkdir=folder/"chunks"/f"{i:06d}"
+        raw=json.loads((chunkdir/"received.json").read_text(encoding="utf-8"))
+        events=raw.get("events")
+        if (type(events) is not list or len(events)!=rec.get("source_event_count")
+                or type(raw.get("report")) is not dict
+                or raw["report"].get("signature_ledger_sha256") is None):
+            raise ValueError("original_capture_events_not_qualifiable")
+        for event in events:
+            sig=event.get("signature")
+            stamp=event.get("reception_utc_ns")
+            if (type(sig) is not str or not sig or sig in seen or
+                    type(stamp) is not int or stamp<=0):
+                raise ValueError("replayed_or_invalid_captured_signature")
+            seen.add(sig)
+            last_received=max(last_received,stamp//1_000_000)
+        if rec["state"]=="VERIFIED":
+            proof=chunkdir/"verified"/"summary.json"
+            if proof.is_symlink() or not proof.is_file():
+                raise ValueError("verified_window_summary_missing")
+            summary=json.loads(proof.read_text(encoding="utf-8"))
+            if (digest(summary)!=rec.get("verified_summary_sha256")
+                    or summary.get("financial_order_submitted") is not False
+                    or summary.get("execution_verified") is not False
+                    or summary.get("capture_status") is None):
+                raise ValueError("verified_window_summary_tampered")
+            used=(summary.get("actual_verification_rpc_calls_used",0) or 0)+(
+                summary.get("actual_bank_rpc_calls_used",0) or 0)
+            if used!=rec["rpc_calls_reserved"]:
+                raise ValueError("verified_window_rpc_calls_modified")
+            tally["verified_creations"]+=summary.get("selected_independent_signed_creators",0)
+            tally["frozen_s1_decisions"]+=summary.get("frozen_S1_decisions",0)
+            tally["supported_native_SOL_graphs"]+=summary.get("supported_native_SOL_graphs",0)
+            tally["verification_rpc_calls"]+=used
+            tally["non_native_SOL_pool_count"]+=summary.get("non_native_SOL_pool_count",0)
+            for key,count in summary.get("source_market_refusal_reason_counts",{}).items():
+                d=tally["source_market_refusal_reason_counts"]
+                d[key]=d.get(key,0)+count
+        elif rec["state"]=="INTERRUPTED":
+            # A killed process may have already sent all 15 RPC calls. Leave
+            # its reservation debited; do not retry and double-charge.
+            rec["state"]="SOURCE_REFUSED"
+            rec["error_class"]="UNCERTAIN_CRASH_DURING_VERIFICATION"
+            tally["source_refusals"]+=1
+        else:
+            tally["source_refusals"]+=1
+    for gap in manifest["websocket_gaps"]:
+        if gap.get("unknown_missed_transactions") is True:
+            tally["source_websocket_gaps"]+=1
+    manifest["websocket_gaps"].append(dict(
+        started_at_ms=last_received,recovered_at_ms=restart_at_ms,
+        reason="operator_process_restart_unknown_events",
+        unknown_missed_transactions=True,
+        source_backfill_verified=False))
+    tally["source_websocket_gaps"]+=1
+    manifest["status"]="RESUMED_WITH_GAP"
+    manifest["events_retained"]=len(seen)
+    _check_manifest(folder,manifest)
+    atomic_write_json(path,manifest,sort_keys=True,allow_nan=False)
+    return manifest,seen,tally
+
+
 async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
-                  websocket_factory=None):
+                  websocket_factory=None,resume=False):
     """Single local foreground invocation: no process detached, no background job."""
     if (type(api_key) is not str or api_key=="COLLE_TA_CLE_ICI"
             or re.fullmatch(r"[A-Za-z0-9_-]{16,160}",api_key) is None):
         raise ValueError("helius_env_key_required")
     folder=Path(directory)
-    if folder.exists() or folder.is_symlink():
-        raise ValueError("new_empty_source_directory_required")
-    folder.mkdir(parents=True,exist_ok=False)
-    (folder/"chunks").mkdir()
-    manifest=session_plan(duration_seconds=duration_seconds,rpc_call_cap=rpc_call_cap)
-    atomic_write_json(folder/"manifest.json",manifest,sort_keys=True,allow_nan=False)
+    if type(resume) is not bool:
+        raise ValueError("explicit_resume_boolean_required")
+    if resume:
+        manifest,global_seen,tally=_recover_session(folder,
+            duration_seconds=duration_seconds,rpc_call_cap=rpc_call_cap,
+            restart_at_ms=now_ms())
+    else:
+        if folder.exists() or folder.is_symlink():
+            raise ValueError("new_empty_source_directory_required")
+        folder.mkdir(parents=True,exist_ok=False)
+        (folder/"chunks").mkdir()
+        manifest=session_plan(duration_seconds=duration_seconds,rpc_call_cap=rpc_call_cap)
+        atomic_write_json(folder/"manifest.json",manifest,sort_keys=True,allow_nan=False)
+        global_seen=set()
+        tally=dict(verified_creations=0,frozen_s1_decisions=0,
+            supported_native_SOL_graphs=0,source_refusals=0,
+            source_websocket_gaps=0,verification_rpc_calls=0,
+            non_native_SOL_pool_count=0,
+            source_market_refusal_reason_counts={})
     endpoint="wss://"+_ENDPOINT_HOST+"/?api-key="+api_key
     if websocket_factory is None:
         from websockets.asyncio.client import connect
         websocket_factory=connect
     queue=asyncio.Queue(maxsize=MAX_QUEUED_CHUNKS)
-    global_seen=set()
-    tally=dict(verified_creations=0,frozen_s1_decisions=0,
-               source_refusals=0,source_websocket_gaps=0,
-               verification_rpc_calls=0)
-    deadline=time.monotonic()+duration_seconds
+    # Recovery MUST keep the original 24h end clock. A restart never
+    # reinitializes the study or silently extends its observation horizon.
+    remaining=max(0,(manifest["end_ms"]-now_ms())/1000)
+    deadline=time.monotonic()+remaining
     stop=False
     worker_error=None
 
@@ -154,6 +259,11 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
                 w["master_decisions"]=summary["frozen_S1_decisions"]
                 tally["verified_creations"]+=summary["selected_independent_signed_creators"]
                 tally["frozen_s1_decisions"]+=summary["frozen_S1_decisions"]
+                tally["supported_native_SOL_graphs"]+=summary.get("supported_native_SOL_graphs",0)
+                tally["non_native_SOL_pool_count"]+=summary.get("non_native_SOL_pool_count",0)
+                for reason,count in summary.get("source_market_refusal_reason_counts",{}).items():
+                    d=tally["source_market_refusal_reason_counts"]
+                    d[reason]=d.get(reason,0)+count
                 tally["verification_rpc_calls"]+=used
             except Exception as error:
                 # Failures may consume all 15 allowed calls; never re-use them.
@@ -271,7 +381,7 @@ async def monitor(*,directory,api_key,duration_seconds=120,rpc_call_cap=3000,
         await queue.join()
         await queue.put(None)
         await worker
-        if manifest["status"]=="REGISTERED":
+        if manifest["status"] in ("REGISTERED","RESUMED_WITH_GAP"):
             manifest["status"]=("COMPLETED_WITH_GAPS" if tally["source_websocket_gaps"]
                  else "COMPLETED_NO_KNOWN_GAP_NOT_PROOF_OF_COMPLETE_TAPE")
         manifest["summary"]=dict(tally,
@@ -297,6 +407,8 @@ def main(argv=None):
     p.add_argument("--network",action="store_true")
     p.add_argument("--duration-seconds",type=int,default=120)
     p.add_argument("--rpc-call-cap",type=int,default=3000)
+    p.add_argument("--resume",action="store_true",
+                   help="Only resume an existing audited folder before its original deadline; gap remains")
     p.add_argument("--output-dir",type=Path,required=True)
     args=p.parse_args(argv)
     if not args.network:
@@ -305,7 +417,7 @@ def main(argv=None):
         result=asyncio.run(monitor(directory=args.output_dir,
             api_key=os.environ.get("HELIUS_API_KEY"),
             duration_seconds=args.duration_seconds,
-            rpc_call_cap=args.rpc_call_cap))
+            rpc_call_cap=args.rpc_call_cap,resume=args.resume))
         print(json.dumps(result,sort_keys=True))
         return 0
     except Exception as error:
