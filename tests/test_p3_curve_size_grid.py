@@ -84,6 +84,7 @@ def test_no_future_bank_and_nonactive_s2_do_not_invent_closures():
                sized_s1s2_cases(source()[:1],row))
     wrong=source()
     wrong[1]["source_slot"]=100
+    wrong[1]["payload"]["analysis"]["context_slot"]=100
     assert all(r["reason"]=="followup_not_causal_or_newer_bank" for r in
                sized_s1s2_cases(wrong,row))
     migrated=source()
