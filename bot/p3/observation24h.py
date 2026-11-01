@@ -368,7 +368,14 @@ def _run_local(root,*,resume,max_total_requests,revision,clock=time.time,sleep=t
                 manifest["status"]="HALTED_REPEATED_SOURCE_FAILURES"
                 break
         else:
-            manifest["status"]="COMPLETE_SAMPLED_WINDOW"
+            # A final sample at T+23h45 does not prove observation until T+24h.
+            # The last 15-minute gap is explicitly unsampled.
+            remaining_ms=manifest["deadline_at_ms"]-int(clock()*1000)
+            if remaining_ms>0:
+                sleep(remaining_ms/1000)
+            manifest["status"]=("COMPLETE_24H_PERIODIC_SAMPLES"
+                if int(clock()*1000)>=manifest["deadline_at_ms"]
+                else "CLOCK_INCONSISTENT_NOT_COMPLETE")
         atomic_write_json(root/"session.json",manifest,sort_keys=True,allow_nan=False)
         result=aggregate(root,manifest)
         atomic_write_json(root/"progress.json",result,sort_keys=True,allow_nan=False)
