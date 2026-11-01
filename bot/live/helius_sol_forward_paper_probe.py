@@ -186,7 +186,7 @@ def evaluate_probe(research):
                     for cost in COST_STRESS_LAMPORTS],
                 own_buy_not_reflected_in_real_future_source_bank=True,
                 source_quote_not_independently_executable=True,
-                source_snapshot_risk_flags=row.get("s2_risk_flags")))
+                source_snapshot_risk_flags=row.get("s2_risk_flags"))
         cases.append(item)
     quoted=sum(row["status"]=="CONDITIONAL_MODEL_ROUNDTRIP_NOT_FILL"
                for row in cases)
