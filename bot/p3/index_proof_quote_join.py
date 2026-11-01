@@ -39,6 +39,8 @@ def join_signed_index_quotes(index_report,quote_audit,signed):
     if len(pre)!=index_report.get("selection",{}).get("selected_count"):
         raise ValueError("frozen_selection_incomplete")
     confirmed={}
+    seen_signatures=set()
+    seen_signed_message_hashes=set()
     for r in signed.get("records",[]):
         if r.get("status")!="EXACT_OUTER_SIGNED_CREATION_VERIFIED":
             continue
@@ -48,8 +50,15 @@ def join_signed_index_quotes(index_report,quote_audit,signed):
                 or type(match) is not list or len(match)!=1
                 or any(match[0].get(key)!=r.get(key) for key in ("mint","pool","creator"))
                 or type(r.get("verified_exact_message_sha256")) is not str
-                or len(r["verified_exact_message_sha256"])!=64):
+                or len(r["verified_exact_message_sha256"])!=64
+                or any(c not in "0123456789abcdef" for c in r["verified_exact_message_sha256"])
+                or type(r.get("signature")) is not str
+                or not r["signature"]
+                or r["signature"] in seen_signatures
+                or r["verified_exact_message_sha256"] in seen_signed_message_hashes):
             raise ValueError("tampered_or_conflicted_signed_creator")
+        seen_signatures.add(r["signature"])
+        seen_signed_message_hashes.add(r["verified_exact_message_sha256"])
         confirmed[mint]=r
     rows=[]
     for row in quote_audit.get("rows",[]):
@@ -94,6 +103,8 @@ def join_signed_index_quotes(index_report,quote_audit,signed):
         source_index_sha256=_hash(index_report),
         source_quote_audit_sha256=_hash(quote_audit),
         source_signed_proof_sha256=_hash(signed),
+        upstream_crypto_verification_inherited_not_replayed=True,
+        creator_proof_revalidated_by_this_join=False,
         # A creator may launch multiple mints. Counting verified rows as
         # independent creators would inflate the holdout denominator.
         selected_creator_claims=len(pre),
