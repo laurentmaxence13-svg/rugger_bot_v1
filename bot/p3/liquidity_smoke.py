@@ -92,6 +92,12 @@ def main():
             if venue_summary is not None else None),
         conditional_s1s2_curve_markouts=(curve_summary["conditional_curve_markouts"]
             if curve_summary is not None else None),
+        fixed_size_curve_markouts=(curve_summary["fixed_size_curve_sensitivity"]["conditional_only_size_markouts"]
+            if curve_summary is not None else None),
+        pre_followup_s1_size_grids_verified=(curve_summary["fixed_size_curve_sensitivity"]["pre_followup_size_grids_verified"]
+            if curve_summary is not None else None),
+        fixed_size_grid_retrospective_only=(curve_summary["fixed_size_curve_sensitivity"]["historical_replay_not_prospective_preadmission"]
+            if curve_summary is not None else None),
         conditional_s1s2_curve_refusals=(
             curve_summary["conditional_curve_markout_refusals"]
             if curve_summary is not None else None),
