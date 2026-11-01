@@ -64,6 +64,13 @@ jobs:
             --db paper_artifacts/index_first_journal.sqlite \
             --output paper_artifacts/index_first_report.json \
             --network
+      - name: Reconcile every provider full-position quote with the hash-verified journal
+        run: |
+          python -m pytest -q tests/test_index_quote_roundtrip_audit.py
+          python -B -m bot.p3.index_quote_roundtrip_audit \
+            --report paper_artifacts/index_first_report.json \
+            --journal paper_artifacts/index_first_journal.sqlite \
+            --output paper_artifacts/index_first_exact_lot_audit.json
       - name: Public report and journal retained; no wallet data
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -72,6 +79,7 @@ jobs:
           path: |
             paper_artifacts/index_first_plan.json
             paper_artifacts/index_first_report.json
+            paper_artifacts/index_first_exact_lot_audit.json
             paper_artifacts/index_first_journal.sqlite
           retention-days: 14
           if-no-files-found: warn
