@@ -162,3 +162,34 @@ def test_zero_admissible_pools_is_a_valid_full_denominator_no_trade(monkeypatch)
     assert report["paper_model_report"]["measured_Master_minus_reference_edge_lamports"] is None
     assert report["exact_net_Master_pnl_lamports"] is None
     assert report["financial_order_submitted"] is False
+
+
+def test_own_buy_overlay_model_is_separate_from_unquoted_untouched_s2_and_master():
+    raw=prospective(with_exit=False)
+    row=raw["observations"][0]["research_size_ladder"][0]
+    row["s2_own_buy_overlay_status"]="MODEL_CONDITIONAL_NOT_EXECUTABLE"
+    row["s2_own_buy_overlay_sell_lamports"]="56000000"
+    row["s2_own_buy_overlay_delta_before_extra_costs_lamports"]="6000000"
+    row["s2_own_buy_overlay_receipt_sha256"]="c"*64
+    report=evaluate_probe(raw)
+    case=report["cases"][0]
+    assert report["exact_model_roundtrips"]==0
+    assert report["own_buy_overlay_conditional_models"]==1
+    assert case["status"]=="CENSORED_OPEN_HYPOTHETICAL_PROBE_NO_S2_EXIT"
+    assert case["own_buy_overlay_status"]=="CONDITIONAL_PATH_DEPENDENT_MODEL_ONLY"
+    assert case["own_buy_overlay_sell_lamports"]=="56000000"
+    assert case["own_buy_overlay_cost_scenarios"][0]["conditional_net_lamports"]=="6000000"
+    assert case["own_buy_overlay_cost_scenarios"][-1]["conditional_net_lamports"]=="-4000000"
+    assert case["true_Master_net_pnl_lamports"] is None
+    assert report["measured_Master_minus_reference_edge_lamports"] is None
+    assert report["actual_Master_research_executed_orders"]==0
+
+
+def test_tampered_overlay_markout_cannot_enter_a_profitable_summary():
+    raw=prospective(with_exit=False)
+    row=raw["observations"][0]["research_size_ladder"][0]
+    row["s2_own_buy_overlay_status"]="MODEL_CONDITIONAL_NOT_EXECUTABLE"
+    row["s2_own_buy_overlay_sell_lamports"]="56000000"
+    row["s2_own_buy_overlay_delta_before_extra_costs_lamports"]="999999999"
+    with pytest.raises(ValueError,match="S2_own_buy_overlay_markout_inconsistent"):
+        evaluate_probe(raw)
