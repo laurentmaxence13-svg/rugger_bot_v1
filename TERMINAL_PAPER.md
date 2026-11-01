@@ -4,7 +4,7 @@
 
 ## Démarrage Windows (le plus simple)
 
-1. Depuis GitHub, ouvrir la branche **feat/paper-terminal-20261101** ou sa pull request, puis télécharger le ZIP du code. Décompresser le projet dans un dossier accessible sur le PC.
+1. Depuis GitHub, ouvrir la branche **main**, puis télécharger le ZIP du code. Décompresser le projet dans un dossier accessible sur le PC.
 2. Double-cliquer sur **LANCER_TERMINAL_PAPER.bat**. La première fois, le script crée un environnement Python local et installe Streamlit. Python 3.11 ou supérieur doit être installé.
 3. Ouvrir **http://localhost:8501** dans le navigateur si la page ne s'ouvre pas seule.
 4. Activer **Démo entièrement fictive** pour vérifier immédiatement l'interface avec deux transactions fabriquées, clairement étiquetées. **Désactiver** pour revenir aux preuves réelles.
