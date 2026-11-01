@@ -86,7 +86,7 @@ def test_unsigned_wrong_pool_or_wrong_cpmm_owner_fail_closed():
     bad["accrued_protocol_sol"]=10_000_000_000
     with pytest.raises(ValueError,match="accrued_cpmm_fees"):
         paper_quote(bad)
-    with pytest.raises(ValueError,match="exact_signed_migration"):
+    with pytest.raises(ValueError,match="verified_cpmm_bank_and_migration"):
         cpmm_sell_source_quote(bank=bank(),mint=MINT,curve_pool=OLD_POOL,
             token_amount_atomic=1_000_000,migration=None,
             network_and_priority_fee_lamports=5000,
