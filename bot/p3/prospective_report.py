@@ -214,6 +214,7 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
                             or chosen['available_at_ms'] > receipt['available_at_ms']))):
                     raise ValueError('Initial full-exit screen receipt differs from observed quote')
             screens.append(dict(screen,gate_recorded=bool(registered)))
+        screens_by_buy_id={screen['buy_observation_id']: screen for screen in screens}
         full, partial, refused, unattempted, errors, unavailable_other = [], [], [], [], [], []
         full_attempts = sum(e['payload'].get('quote_side') == 'sell' and e['payload'].get('exit_scope') == 'full_expected' and e.get('outcome') != 'not_attempted' for e in quotes)
         partial_attempts = sum(e['payload'].get('quote_side') == 'sell' and e['payload'].get('exit_scope') == 'partial_diagnostic' and e.get('outcome') != 'not_attempted' for e in quotes)
@@ -256,7 +257,12 @@ def build_prospective_report(plan, events, *, integrity_verified, expected_tail)
                 fees=fees,available_cash_lamports=plan.get('reference_cash_lamports'))
             admission_reasons.update(verdict['reasons'])
             projection=verdict['conditional_accounting_projection']
+            # A FOLLOWUP full-size quote cannot rescue a position whose
+            # initial full-inventory liquidity screen was absent or refused.
+            initial_gate=screens_by_buy_id[buy_id]
             if (scope == 'full_expected' and p.get('probe_phase') == 'followup'
+                    and initial_gate['gate_recorded'] is True
+                    and initial_gate['initial_full_exit_route_quoted'] is True
                     and creation and identity and len(slots)>=2 and projection is not None):
                 net_projections.append(dict(sell_observation_id=e['id'],
                     buy_observation_id=buy_id,projection=accounting_json_safe(projection),
