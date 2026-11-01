@@ -117,3 +117,41 @@ def test_credential_not_written_to_artefacts(tmp_path,monkeypatch):
         capture=factory(),workspace=home)
     for path in (home/"paper_artifacts").glob("*.json"):
         assert "this_is_only_a_unit_test_secret" not in path.read_text()
+
+
+
+def test_campaign_refuses_inspection_not_in_forward_observed_events(tmp_path):
+    async def forged(*,seconds,max_events):
+        report,events=await factory()(seconds=seconds,max_events=max_events)
+        report["attempts"][0]["signature"]="unseen-signature"
+        return report,events
+    home=root(tmp_path)
+    with pytest.raises(ValueError,match="inspection_must_match_one_observed_signature"):
+        c.campaign(windows=1,seconds=10,max_events=20,
+                   capture=forged,workspace=home,session="forged")
+    assert not list((home/"paper_artifacts").glob("*.json"))
+
+
+def test_campaign_refuses_two_attempts_for_same_signature(tmp_path):
+    async def doubled(*,seconds,max_events):
+        report,events=await factory()(seconds=seconds,max_events=max_events)
+        report["attempts"].append(dict(report["attempts"][0]))
+        return report,events
+    home=root(tmp_path)
+    with pytest.raises(ValueError,match="inspection_must_match_one_observed_signature"):
+        c.campaign(windows=1,seconds=10,max_events=20,
+                   capture=doubled,workspace=home,session="doubled")
+    assert not list((home/"paper_artifacts").glob("*.json"))
+
+
+def test_campaign_refuses_duplicate_events_before_persisting(tmp_path):
+    async def duplicated(*,seconds,max_events):
+        report,events=await factory()(seconds=seconds,max_events=max_events)
+        events.append(dict(events[0]))
+        report["forward_log_report"]["events_received_unique"]=2
+        return report,events
+    home=root(tmp_path)
+    with pytest.raises(ValueError,match="nonunique_or_empty_window_event_signatures"):
+        c.campaign(windows=1,seconds=10,max_events=20,
+                   capture=duplicated,workspace=home,session="duplicated")
+    assert not list((home/"paper_artifacts").glob("*.json"))
