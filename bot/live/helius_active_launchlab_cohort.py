@@ -21,6 +21,7 @@ from bot.p3.cohort import _uint as _checked_integer
 
 MAX_SELECTED=3
 WAIT_SECONDS=12
+RESEARCH_LADDER_LAMPORTS=(5_000_000,10_000_000,25_000_000,50_000_000,100_000_000,250_000_000,1_000_000_000)
 
 
 def _canonical_uint(value):
@@ -60,8 +61,8 @@ def _followup_sell_from_snapshot(analysis,exact_quantity):
         share_fee_rate_ppm=_canonical_uint(facts.get("share_fee_assumption_ppm","0")))
 
 
-def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep):
-    if not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20:
+def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sleep,research_ladder=False):
+    if (not callable(rpc) or type(wait_seconds) is not int or not 1<=wait_seconds<=20 or type(research_ladder) is not bool):
         raise ValueError("active_readonly_cohort_bounds_required")
     scan=discover_live_pool_account_page(rpc)
     candidates=scan["initial_pools_before_price"]
@@ -134,6 +135,29 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                 rec["s1_buy_quantity_atomic"]=(
                     entry.get("buy_output_atomic") if type(entry) is dict else None)
                 rec["s1_buy_projection_model_only"]=type(entry) is dict
+                if research_ladder:
+                    # All sizes are preregistered; their S1 exact quantities freeze before S2.
+                    rec["research_size_ladder"]=[]
+                    for amount in RESEARCH_LADDER_LAMPORTS:
+                        test=analyze_snapshot({k:b1[k] for k in row["addresses"].values()},
+                            context_slot=bank1_slot,expected_mint=row["mint"],pool_address=row["pool"],
+                            input_lamports=amount,evidence_profile="published_metadata_v1")
+                        proj=test.get("conditional_projection")
+                        eligible=(test.get("risk_flags")==[] and type(proj) is dict
+                            and type(proj.get("buy_output_atomic")) is str
+                            and proj["buy_output_atomic"].isdecimal()
+                            and int(proj["buy_output_atomic"])>0)
+                        rec["research_size_ladder"].append(dict(
+                            entry_lamports=str(amount),
+                            s1_exact_buy_quantity_atomic=proj["buy_output_atomic"] if eligible else None,
+                            s1_projection_research_only=eligible,
+                            s1_blocking_reasons=test.get("blocking_reasons",[]),
+                            s1_risk_flags=test.get("risk_flags",[]),
+                            s1_analysis_sha256=_hash(test),
+                            s2_conditional_sell_lamports=None,
+                            s2_conditional_gross_markout_lamports=None,
+                            observed_execution=False))
+                    rec["research_size_ladder_frozen_S1_sha256"]=_hash(rec["research_size_ladder"])
             except (ValueError,KeyError,TypeError,AttributeError):
                 rec["s1_refusal"]="unverifiable_account_bundle"
             observations.append(rec)
@@ -194,6 +218,34 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
                     else type(exc).__name__)
                 rec["s2_refusal"]="insufficient_supported_real_S2_exit_evidence"
                 rec["s2_refusal_diagnostic"]=safe
+        if research_ladder:
+            for rec in observations:
+                ladder=rec.get("research_size_ladder")
+                if type(ladder) is not list:
+                    continue
+                item=next(r for r in selected if r["mint"]==rec["mint"])
+                try:
+                    # Coherent S2 bank is new; never change frozen S1 quantities.
+                    s2=analyze_snapshot({k:b2[k] for k in item["addresses"].values()},
+                        context_slot=bank2_slot,expected_mint=item["mint"],pool_address=item["pool"],
+                        input_lamports=BUY_LAMPORTS,evidence_profile="published_metadata_v1",
+                        compute_projection=False)
+                    for row in ladder:
+                        qty=row["s1_exact_buy_quantity_atomic"]
+                        if qty is None:
+                            row["s2_refusal"]="S1_model_unavailable_or_risky";continue
+                        try:
+                            quote=_followup_sell_from_snapshot(s2,qty)
+                            proceeds=_canonical_uint(quote["output_lamports"])
+                            row["s2_conditional_sell_lamports"]=str(proceeds)
+                            row["s2_conditional_gross_markout_lamports"]=str(proceeds-int(row["entry_lamports"]))
+                            row["conditional_costs_observed"]=False
+                            row["economic_cycle_qualified"]=False
+                        except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
+                            row["s2_refusal"]="exact_lot_S2_curve_or_capacity_refused"
+                except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
+                    for row in ladder:
+                        row["s2_refusal"]="S2_bank_or_identity_unqualified"
     return dict(schema="rugger-onchain-active-survivor-S1S2-v1",
         status="ACTIVE_SURVIVOR_PROSPECTIVE_OBSERVATION_COMPLETE",
         registration_sha256=registration_sha256,
@@ -209,17 +261,24 @@ def observe_active_survivor_cohort(rpc,*,wait_seconds=WAIT_SECONDS,sleep=time.sl
         holdout_verified=False,representative_creation_universe=False,
         no_historical_survivor_bias_control=True,
         master_vs_reference_edge_demonstrated=False,
+        research_size_ladder_enabled=research_ladder,
+        research_size_ladder_lamports=list(RESEARCH_LADDER_LAMPORTS) if research_ladder else None,
+        research_sizes_are_not_independent_creators=True,
         live_ready_to_arm=False,financial_order_submitted=False,
         rpc_calls_used=getattr(rpc,"count",None))
 
 def main():
+    import argparse
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--research-size-ladder",action="store_true")
+    args=parser.parse_args()
     rpc=None
     try:
         if "HELIUS_API_KEY" not in os.environ:
             raise ValueError("helius_secret_required")
         rpc=HeliusReadOnlyRpc.from_environment(max_calls=6,
                                            allow_active_pool_scan=True)
-        report=observe_active_survivor_cohort(rpc)
+        report=observe_active_survivor_cohort(rpc,research_ladder=args.research_size_ladder)
     except Exception as exc:
         code=str(exc)
         safe=code if type(exc) is ValueError and len(code)<100 and code.replace("_","").isalnum() else type(exc).__name__
