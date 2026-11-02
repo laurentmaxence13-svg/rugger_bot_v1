@@ -71,13 +71,8 @@ function fmt(v,n=5){return Number.isFinite(Number(v))?Number(v).toFixed(n):"—"
 function el(id){return document.getElementById(id)}
 function rows(id,values,widths){const parent=el(id);parent.replaceChildren();if(!values.length){const tr=document.createElement('tr');const td=document.createElement('td');td.colSpan=widths;td.textContent='Aucune donnée disponible';tr.appendChild(td);parent.appendChild(tr);return}
 for(const row of values){const tr=document.createElement('tr');for(const value of row){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td)}parent.appendChild(tr)}}
-async function draw(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json(),obs=d.observations||{},pos=d.positions||[];
-const total=(Number(d.cash_sol)||0)+pos.reduce((v,p)=>v+Number(p.quantity||0)*Number(obs[p.mint]?.price||0)*.99,0);
-el('total').textContent=fmt(total,6)+' SOL';el('cash').textContent=fmt(d.cash_sol,6)+' SOL';
-el('closed').textContent=(d.closed||[]).length;const realized=(d.closed||[]).reduce((a,x)=>a+Number(x.pnl_sol||0),0);el('realized').textContent='P&L PAPER réalisé (modélisé) : '+fmt(realized,6)+' SOL';
-const age=d.service?.last_source_age_seconds;el('health').textContent=d.service?.source_fresh?'Marché observé · '+age+' s':d.last_error?'Données : '+d.last_error:'En attente du marché';
-el('source').textContent='Source : profils promotionnels DexScreener, paires SOL publiques · '+(d.polls||0)+' cycles · dernière observation : '+(age===null?'—':age+' secondes')+'. Ni univers complet des créations ni devis exécutables.';
-try{const hr=await fetch('/api/helius',{cache:'no-store'});if(!hr.ok)throw Error('HTTP '+hr.status);
+// Signed-source status must refresh even when the experimental market API fails.
+async function drawHelius(){try{const hr=await fetch('/api/helius',{cache:'no-store'});if(!hr.ok)throw Error('HTTP '+hr.status);
 const h=await hr.json(),s=h.last_summary||{};
 el('helius-state').textContent='Source Helius : '+(h.observer_status||'INCONNU');
 el('helius-counts').textContent='Captures : '+(h.cycle_count||0)+
@@ -85,13 +80,19 @@ el('helius-counts').textContent='Captures : '+(h.cycle_count||0)+
 ' · décisions S1 figées : '+(s.frozen_S1_decisions??'—')+
 ' · positions Master exécutées : 0'+
 (h.last_safe_error_class?' · erreur : '+h.last_safe_error_class:'');
-}catch(err){el('helius-state').textContent='Observateur Helius inaccessible : '+String(err.message||err)}
+}catch(err){el('helius-state').textContent='Observateur Helius inaccessible : '+String(err.message||err)}}
+async function draw(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json(),obs=d.observations||{},pos=d.positions||[];
+const total=(Number(d.cash_sol)||0)+pos.reduce((v,p)=>v+Number(p.quantity||0)*Number(obs[p.mint]?.price||0)*.99,0);
+el('total').textContent=fmt(total,6)+' SOL';el('cash').textContent=fmt(d.cash_sol,6)+' SOL';
+el('closed').textContent=(d.closed||[]).length;const realized=(d.closed||[]).reduce((a,x)=>a+Number(x.pnl_sol||0),0);el('realized').textContent='P&L PAPER réalisé (modélisé) : '+fmt(realized,6)+' SOL';
+const age=d.service?.last_source_age_seconds;el('health').textContent=d.service?.source_fresh?'Marché observé · '+age+' s':d.last_error?'Données : '+d.last_error:'En attente du marché';
+el('source').textContent='Source : profils promotionnels DexScreener, paires SOL publiques · '+(d.polls||0)+' cycles · dernière observation : '+(age===null?'—':age+' secondes')+'. Ni univers complet des créations ni devis exécutables.';
 rows('master',(d.master_shadow||[]).map(x=>[x.mint?.slice(0,11)+'…',x.action,(x.reasons||[]).slice(0,3).join(', ')||x.reason||'—']),3);
 rows('positions',pos.map(x=>[x.symbol||x.mint.slice(0,10),fmt(x.spent_sol,4)+' SOL',fmt(x.quantity,2),'OUVERTE']),4);
 rows('market',(d.candidates||[]).slice(0,12).map(x=>[x.symbol+' · '+x.mint.slice(0,8),x.dex,fmt(x.price_sol,10),fmt(x.liquidity_usd,0)]),4);
 rows('events',(d.events||[]).slice(-14).reverse().map(x=>[new Date(x.at_ms).toISOString().slice(11,19),x.kind,JSON.stringify(x.details).slice(0,180)]),3);
 }catch(err){el('health').textContent='Service indisponible : '+String(err.message||err)}}
-draw();setInterval(draw,15000);
+draw();drawHelius();setInterval(draw,15000);setInterval(drawHelius,15000);
 </script></body></html>"""
 
 
