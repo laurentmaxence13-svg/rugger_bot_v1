@@ -73,7 +73,9 @@ def test_observations_and_invalid_financial_claims(summary_override, blocker):
     assert assess(snapshot)["master_buy_sell_paper_verified"] is False
 
 
-@pytest.mark.parametrize("snapshot", [None, {}, [], "secret"])
+@pytest.mark.parametrize("snapshot", [None, {}, [], "secret",
+    {"observer_status": []}, {"observer_status": {}},
+    {"observer_status": ["CAPTURE_COMPLETED_READ_ONLY"]}])
 def test_untrusted_snapshot_cannot_claim_readiness(snapshot):
     result = assess(snapshot)
     assert result["status"] == "NO_GO"
