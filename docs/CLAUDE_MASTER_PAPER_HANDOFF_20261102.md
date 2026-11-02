@@ -82,6 +82,15 @@ Separate Vercel project:
   Ed25519 import and read-only pipeline import, then compilation. No network
   market capture in the build preflight itself (package installation uses
   Python package index).
+- `bot/ops/render_readiness_http_smoke.py`: **opt-in**, three bounded GETs
+  to the existing public Render service (`/healthz`, `/api/helius`,
+  `/api/master-readiness`) with strict NO-GO consistency checks. Without
+  `--network` it does not request anything. It never contacts Helius.
+  Manual one-shot command **only after safe deployment**:
+  `python -B -m bot.ops.render_readiness_http_smoke --network`.
+  A PR-labeled one-shot GitHub Action is also available via label
+  `run-render-master-readiness-smoke-once`; do not apply before deploying
+  the matching reviewed branch or the old Render API will return 404.
 - `bot/live/helius_signed_master_paper.py`: signed creation + S1/S2
   evidence capture, paired shadow WAIT, hashes, no actual fills.
 - `bot/p4/live_like_paper_ledger.py`: exact lot, causal independent quote,
