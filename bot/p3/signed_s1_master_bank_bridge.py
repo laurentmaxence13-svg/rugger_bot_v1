@@ -19,6 +19,10 @@ DOCUMENTED_NON_TRADE_BLOCKERS=frozenset({
     "execution_not_verified",
     "additional_execution_costs_unknown",
     "creation_transaction_not_verified_by_snapshot",
+    # PlatformConfig does not retain original platform admin seed; explicitly
+    # UNKNOWN alone is not a disqualifier for quote/reserve MODELING, but still
+    # disqualifies the actual Master for any ENTER decision.
+    "original_platform_admin_seed_not_retained",
 })
 
 def signed_s1_master_bank(*,analysis,mint,pool,creator,signature,
@@ -50,11 +54,45 @@ def signed_s1_master_bank(*,analysis,mint,pool,creator,signature,
         return None,"S1_BANK_DECODED_FACTS_MISSING"
     ident=facts.get("identity_certification")
     if (type(ident) is not dict or
-            ident.get("account_discriminators_verified") is not True or
-            ident.get("program_derived_addresses_verified") is not True or
-            ident.get("blocking_reasons") != [] or
-            facts.get("program_derived_addresses_verified") is not True):
+            ident.get("account_discriminators_verified") is not True):
         return None,"S1_BANK_IDENTITY_NOT_INDEPENDENTLY_CERTIFIED"
+    fully_qualified=(ident.get("program_derived_addresses_verified") is True
+                     and ident.get("blocking_reasons")==[]
+                     and facts.get("program_derived_addresses_verified") is True)
+    partial_model_only=False
+    if not fully_qualified:
+        # Only ONE published schema gap is permissible for model analysis:
+        # the original PlatformConfig admin seed cannot be independently
+        # reconstructed from the retained platform account. All other PDAs,
+        # owners, discriminators, vault links, supplies and signed creation
+        # remain mandatory. Never mark identity_qualified=True in this case.
+        checks=ident.get("checks")
+        if (type(checks) is not list
+                or not checks
+                or ident.get("blocking_reasons")!=[
+                    "original_platform_admin_seed_not_retained"]
+                or ident.get("program_derived_addresses_verified") is not False
+                or facts.get("program_derived_addresses_verified") is not False):
+            return None,"S1_BANK_IDENTITY_NOT_INDEPENDENTLY_CERTIFIED"
+        by_name={}
+        for check in checks:
+            if (type(check) is not dict
+                    or type(check.get("name")) is not str
+                    or check["name"] in by_name
+                    or check.get("status") not in ("PASS","UNKNOWN")):
+                return None,"S1_BANK_IDENTITY_NOT_INDEPENDENTLY_CERTIFIED"
+            by_name[check["name"]]=check
+        mandatory=("pool_pda","vault_a_pda","vault_b_pda",
+                   "config_pda","authority_pda")
+        platform=by_name.get("platform_pda")
+        if (any(by_name.get(k,{}).get("status")!="PASS" for k in mandatory)
+                or type(platform) is not dict
+                or platform.get("status")!="UNKNOWN"
+                or platform.get("reason")!="original_platform_admin_seed_not_retained"
+                or any(v.get("status")!="PASS" and k!="platform_pda"
+                       for k,v in by_name.items())):
+            return None,"S1_BANK_IDENTITY_NOT_INDEPENDENTLY_CERTIFIED"
+        partial_model_only=True
     supply=facts.get("supply_consistency")
     if type(supply) is not dict or supply.get("matches") is not True or supply.get("context_slot") != source_slot:
         return None,"S1_BANK_SUPPLY_NOT_RECONCILED"
@@ -70,7 +108,10 @@ def signed_s1_master_bank(*,analysis,mint,pool,creator,signature,
         mint=mint,pool=pool,creator=creator,
         source_slot=source_slot,available_at_ms=received_at_ms,
         provenance="retained_rpc_snapshot",
-        identity_qualified=True,creation_verified=True,supply_verified=True,
+        identity_qualified=not partial_model_only,
+        creation_verified=True,supply_verified=True,
+        platform_admin_pda_unverified=partial_model_only,
+        research_only_no_execution=(partial_model_only is True),
         evidence_tail_hash=raw_bank_sha256,
         pool_state=source["pool"],
         fee_rates_ppm=list(source["fee_rates_ppm"]),
@@ -78,4 +119,4 @@ def signed_s1_master_bank(*,analysis,mint,pool,creator,signature,
         quote_vault_lamports=source["quote_vault_lamports"],
         curve_type=0,
         share_fee_rate_ppm=source["share_fee_rate_ppm"],
-    ),None
+    ),("S1_PARTIAL_PLATFORM_ADMIN_UNKNOWN_MODEL_ONLY" if partial_model_only else None)
