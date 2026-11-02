@@ -17,18 +17,20 @@ def fake_pair(*,forged=False):
         mint=MINT,pool=POOL,
         s1_bank_preserved_before_S2=True,s2_received_ms=1700000003000,
         frozen_decision_before_S2=dict(master_action="WAIT",
-            future_S2_used=False,real_order=False),
+            at_ms=1700000001000,future_S2_used=False,real_order=False),
         s1_independent_research_buy_quote=dict(
             input_mint=SOL,output_mint=MINT,
             input_atomic="50000000",output_atomic="1000",
             provider_route_pool=POOL,actual_fill=False,
             hypothetical_lot_was_never_executed=True,
+            provider_produced_at_ms=None,provider_source_slot=None,
             received_at_utc_ms=1700000002000),
         s2_independent_research_sell_quote=dict(
             input_mint=MINT,output_mint=SOL,
             input_atomic="1000",output_atomic="49000000",
             provider_route_pool="another-pool" if forged else POOL,
-            actual_fill=False,received_at_utc_ms=1700000003200),
+            actual_fill=False,provider_produced_at_ms=None,
+            provider_source_slot=None,received_at_utc_ms=1700000003200),
         source_produced_quote_clocks_verified=False,
         research_quote_pair_is_not_an_actual_Master_PAPER_cycle=True,
         research_only_quote_delta_before_extra_costs_lamports="-1000000")
