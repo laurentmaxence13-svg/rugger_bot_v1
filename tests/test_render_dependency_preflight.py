@@ -1,5 +1,4 @@
 """Offline Render build-contract tests. No sockets, RPC, or financial orders."""
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -60,17 +59,43 @@ def test_real_source_import_only_no_capture():
     assert preflight.verify_readonly_source() is True
 
 
-def test_build_script_installs_before_crypto_preflight():
-    root = Path(__file__).resolve().parents[1]
-    lines = (root / "scripts/render_readonly_build.sh").read_text().splitlines()
-    commands = [line.strip() for line in lines
-                if line.strip().startswith("python ")]
-    assert commands == [
-        "python -m pip install --disable-pip-version-check -r requirements-render.txt",
-        "python -B -m bot.ops.render_dependency_preflight",
-        "python -m compileall -q render_status_service.py bot/ops/render_readonly_service.py bot/ops/render_dependency_preflight.py",
-    ]
-    assert "export RUGGER_LIVE_ENABLED=0" in lines
-    assert "export RUGGER_NO_DOTENV=1" in lines
-    assert "-r requirements-live.txt" in (
-        root / "requirements-render.txt").read_text()
+def test_render_build_install_then_preflight_then_compile(monkeypatch):
+    from bot.ops import render_readonly_build as build
+    calls = []
+    def fake_runner(args, *, check, env):
+        assert check is True
+        assert env["RUGGER_NO_DOTENV"] == "1"
+        assert env["RUGGER_LIVE_ENABLED"] == "0"
+        calls.append(args)
+    assert build.run_build(runner=fake_runner) is True
+    assert len(calls) == 3
+    assert calls[0][1:] == [
+        "-m", "pip", "install", "--disable-pip-version-check",
+        "-r", "requirements-render.txt"]
+    assert calls[1][1:] == [
+        "-B", "-m", "bot.ops.render_dependency_preflight"]
+    assert calls[2][1:3] == ["-m", "compileall"]
+
+
+def test_render_build_failure_prevents_all_later_steps():
+    import subprocess
+    from bot.ops import render_readonly_build as build
+    calls = []
+    def fail_pip(args, *, check, env):
+        calls.append(args)
+        raise subprocess.CalledProcessError(1, args)
+    with pytest.raises(subprocess.CalledProcessError):
+        build.run_build(runner=fail_pip)
+    assert len(calls) == 1
+
+
+def test_render_build_main_refuses_without_printing_secrets(monkeypatch, capsys):
+    from bot.ops import render_readonly_build as build
+    marker = "API_KEY=synthetic_sensitive_value"
+    def fail():
+        raise RuntimeError(marker)
+    monkeypatch.setattr(build, "run_build", fail)
+    assert build.main() == 1
+    out = capsys.readouterr().out
+    assert "READONLY_RENDER_BUILD_REFUSED:RuntimeError" in out
+    assert marker not in out
