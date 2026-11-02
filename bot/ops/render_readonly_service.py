@@ -192,7 +192,25 @@ class Observer:
 
     def snapshot(self):
         with self._lock:
-            return json.loads(json.dumps(self._state, sort_keys=True, allow_nan=False))
+            state = json.loads(json.dumps(self._state, sort_keys=True, allow_nan=False))
+        # A completed capture is a historical observation, not perpetual live
+        # evidence. Render Free can suspend this process between polls. Never
+        # publish an old signed summary as current after a missed observation
+        # window, during the next capture, or after a clock rollback.
+        completed_ms = state["last_completed_at_utc_ms"]
+        age_ms = (int(self._clock() * 1000) - completed_ms
+                  if completed_ms is not None else None)
+        max_age_ms = (self.settings["interval_seconds"] +
+                      self.settings["capture_seconds"]) * 1000
+        fresh = (state["observer_status"] == "CAPTURE_COMPLETED_READ_ONLY"
+                 and state["last_summary"] is not None
+                 and age_ms is not None and 0 <= age_ms <= max_age_ms)
+        state["signed_evidence_fresh"] = fresh
+        if not fresh:
+            # Cumulative attempt counters remain accurate; individual signed
+            # creation/S1 counts cannot be mistaken for fresh Master activity.
+            state["last_summary"] = None
+        return state
 
     def capture_once(self):
         self._update_status()
