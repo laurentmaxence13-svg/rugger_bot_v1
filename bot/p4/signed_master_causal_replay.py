@@ -94,11 +94,17 @@ def replay_public_signed_cohort(folder):
                 or verified.get("status")!="CAPTURE_VERIFIED_AND_RPC_INSPECTED"):
             raise ValueError("invalid_public_signed_provenance")
         digest="0"*64
+        current_events={}
         for event in events:
             sig=event.get("signature") if type(event) is dict else None
             if type(sig) is not str or not sig or sig in verified_signatures:
                 raise ValueError("duplicate_or_invalid_source_signature")
+            if (type(event.get("slot")) is not int or event["slot"]<=0
+                    or type(event.get("reception_utc_ns")) is not int
+                    or event["reception_utc_ns"]<=0):
+                raise ValueError("incomplete_original_source_event_clock")
             verified_signatures.add(sig)
+            current_events[sig]=event
             digest=_hash(dict(previous=digest,event=event))
         if (digest!=report.get("signature_ledger_sha256")
                 or verified.get("source_log_chain_sha256")!=digest
@@ -109,10 +115,17 @@ def replay_public_signed_cohort(folder):
         if type(records) is not list or len(records)!=len(events):
             raise ValueError("incomplete_signed_verification_denominator")
         creation_by_signature={}
+        seen_verified_records=set()
         for verified_row in records:
-            if (type(verified_row) is not dict
-                    or verified_row.get("signature") not in verified_signatures):
+            if type(verified_row) is not dict:
                 raise ValueError("invalid_signed_receipt_identity")
+            signature=verified_row.get("signature")
+            event=current_events.get(signature)
+            if (event is None or signature in seen_verified_records
+                    or verified_row.get("slot")!=event["slot"]
+                    or verified_row.get("reception_utc_ns")!=event["reception_utc_ns"]):
+                raise ValueError("invalid_signed_receipt_identity")
+            seen_verified_records.add(signature)
             if verified_row.get("status")=="SIGNED_OUTER_CREATION_CANDIDATE":
                 if (verified_row.get("cryptographic_signature_verified") is not True
                         or type(verified_row.get("launches")) is not list):
