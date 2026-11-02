@@ -52,6 +52,9 @@ def run(*,directory,window_count=3,seconds=75,
     pairs=0
     rejected=0
     receipts=[]
+    signed_s1_bank_count=0
+    signed_s1_bank_refusals={}
+    native_curve_spot_observed=0
     for i in range(window_count):
         path=folder/f"window_{i:02d}"/"paired_master_source_shadow.json"
         raw=json.loads(path.read_text(encoding="utf-8"))
@@ -63,6 +66,27 @@ def run(*,directory,window_count=3,seconds=75,
         for row in raw["observations"]:
             if type(row) is not dict:
                 raise ValueError("untrusted_signed_quote_observation")
+            # Count real S1 source-bank availability BEFORE quote selection;
+            # the presence of a bank is not the missing feature/edge evidence.
+            status=row.get("s1_source_bank_bridge_status","NOT_REPORTED")
+            if type(status) is not str or len(status)>110:
+                raise ValueError("invalid_signed_bank_provenance_status")
+            if status=="SIGNED_CERTIFIED_S1_BANK_RETAINED_FOR_MASTER":
+                original_frame=row.get("s1_preoutcome_frame")
+                bank=original_frame.get("bank_state") if type(original_frame) is dict else None
+                if (type(bank) is not dict
+                        or bank.get("source_slot")!=row.get("s1_slot")
+                        or bank.get("mint")!=row.get("mint")
+                        or bank.get("pool")!=row.get("pool")
+                        or bank.get("provenance")!="retained_rpc_snapshot"
+                        or any(bank.get(k) is not True for k in
+                               ("identity_qualified","creation_verified","supply_verified"))):
+                    raise ValueError("unverifiable_qualified_s1_bank_report")
+                signed_s1_bank_count+=1
+            else:
+                signed_s1_bank_refusals[status]=signed_s1_bank_refusals.get(status,0)+1
+            if row.get("native_sol_signal_status")=="SOURCE_NATIVE_SOL_PRICE_OBSERVED":
+                native_curve_spot_observed+=1
             signed=row.get("frozen_decision_before_S2")
             buy=row.get("s1_independent_research_buy_quote")
             sell=row.get("s2_independent_research_sell_quote")
@@ -117,6 +141,10 @@ def run(*,directory,window_count=3,seconds=75,
         window_count=window_count,observed_signed_source_events=original["observed_unique_events"],
         signed_source_creators=original["uniquely_selected_signed_creators"],
         native_SOL_source_creators=original["native_SOL_source_creators"],
+        certified_s1_banks_forwarded_to_real_Master=signed_s1_bank_count,
+        signed_s1_bank_source_refusal_counts=signed_s1_bank_refusals,
+        native_SOL_curve_spot_observations=native_curve_spot_observed,
+        source_bank_is_not_a_complete_asof_signal_or_trade=True,
         independent_quote_S1_cases=sources,
         two_clock_quote_only_pairs=pairs,
         incomplete_quote_pairs=rejected,
