@@ -148,6 +148,17 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
         if graph is None:continue
         s1at=clock_ms()
         row["s1_slot"]=s1slot;row["s1_received_ms"]=s1at
+        # Preserve the EXACT 7 public account responses before subsequent S2
+        # reads. An analysis hash without the underlying bytes is not
+        # independently reproducible and cannot establish Master readiness.
+        # No secret, wallet or mutable RPC client object is serialized.
+        raw_bank=dict(source_signature=row["signature"],
+            creation_slot=row["source_slot"],context_slot=s1slot,
+            received_at_ms=s1at,graph=deepcopy(graph),
+            accounts={addr:deepcopy(s1accounts.get(addr)) for addr in graph.values()})
+        row["s1_raw_bank"]=raw_bank
+        row["s1_raw_bank_sha256"]=_hash(raw_bank)
+        row["s1_bank_preserved_before_S2"]=True
         try:
             a=analyze_snapshot(
                 {address:s1accounts[address] for address in graph.values()},
