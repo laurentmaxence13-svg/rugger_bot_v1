@@ -1,0 +1,57 @@
+name: Prospective signed SOL S1 then S2 independently quoted research (NO ORDERS)
+on:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+jobs:
+  one-shot-public-signed-asof-quote-research:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'run-signed-sol-s1s2-quotes-once' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    env:
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_LIVE_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout reviewed research PR with no saved Git credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install pinned free read-only source dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Verify signed Master WAIT, S1/S2 quote-only and no-financial-order contracts
+        run: |
+          set -euo pipefail
+          python -m pytest -q tests/test_public_sol_forward_quote_research.py tests/test_signed_master_causal_replay.py tests/test_real_signed_sol_exactlot_quote_probe.py
+      - name: One bounded 3x75 second free public Solana signed creator and Raydium quote study
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.live.public_sol_forward_quote_research \
+            --network --windows 3 --seconds 75 \
+            --output-dir "paper_artifacts/causal_quote_${GITHUB_RUN_ID}"
+      - name: Replay original Master decisions without converting research quotes to fills
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.p4.signed_master_causal_replay \
+            "paper_artifacts/causal_quote_${GITHUB_RUN_ID}"
+      - name: Archive real signed-source bank, frozen Master and quote-only sidecar
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: signed-sol-causal-asof-quote-research-${{ github.run_id }}
+          path: paper_artifacts/causal_quote_*/**/*.json
+          if-no-files-found: warn
+          retention-days: 30
