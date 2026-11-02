@@ -40,7 +40,7 @@ def test_bounded_signed_source_summary_accepts_valid_limits():
     ("actual_verification_rpc_calls_used", 11),
     ("actual_bank_rpc_calls_used", 6),
     ("crypto_signed_creation_transactions", 101),
-    ("selected_independent_signed_creators", 5),
+    ("selected_independent_signed_creators", 4),
     ("frozen_S1_decisions", 3),
     ("actual_signed_policy_frozen_paper_cases", 2),
 ])
@@ -50,6 +50,15 @@ def test_impossible_signed_source_evidence_refused_before_publication(key, bad_v
     with pytest.raises(ValueError, match="impossible_signed_source_counter|inconsistent_signed_source_evidence"):
         sanitize_public_summary(summary)
 
+
+
+def test_multiple_signed_launches_in_one_transaction_are_not_rejected():
+    # A signed outer transaction can contain more than one verified launch;
+    # the count of unique creators need not be <= transaction count.
+    summary = _bounded_summary()
+    summary["crypto_signed_creation_transactions"] = 2
+    summary["selected_independent_signed_creators"] = 3
+    assert sanitize_public_summary(summary)["selected_independent_signed_creators"] == 3
 
 def test_malformed_source_counters_do_not_leak_secret_or_report_success():
     secret = "offline_test_helius_key_never_publish_123456"
