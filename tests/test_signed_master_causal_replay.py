@@ -56,22 +56,22 @@ def signed_s1_campaign(tmp_path,monkeypatch,*,quote_pair=False):
     monkeypatch.setattr(bank,"observed_sell_projection",
                         lambda *args,**kwargs:dict(output_lamports="900000000"))
     if quote_pair:
-        from bot.p3.real_signed_sol_exactlot_quote_probe import (
-            BUY_LOT_LAMPORTS,MINT as ROUTE_MINT,POOL as ROUTE_POOL)
+        from bot.p3.real_signed_sol_exactlot_quote_probe import BUY_LOT_LAMPORTS
         # The fake creator/pool fixture has a different name from the
         # pinned real source mint, so this test uses the pinned callback's
         # exact real route identities without promoting source identities.
-        def quote(side,amount):
+        def quote(side,amount,*,mint,pool):
+            assert mint==MINT and pool==POOL
             quote_calls.append(side)
             return dict(side=side,
-                input_mint="So11111111111111111111111111111111111111112" if side=="BUY" else ROUTE_MINT,
-                output_mint=ROUTE_MINT if side=="BUY" else "So11111111111111111111111111111111111111112",
+                input_mint="So11111111111111111111111111111111111111112" if side=="BUY" else mint,
+                output_mint=mint if side=="BUY" else "So11111111111111111111111111111111111111112",
                 input_atomic=str(amount),
                 output_atomic="1000000" if side=="BUY" else "49000000",
                 requested_slippage_bps=50,source_quote_sha256="a"*64,
                 received_at_utc_ms=1793475669400+(100 if side=="BUY" else 2000),
                 provider_produced_at_ms=None,provider_source_slot=None,
-                provider_route_pool=ROUTE_POOL,
+                provider_route_pool=pool,
                 independent_quote_indicative_only=True,
                 hypothetical_lot_was_never_executed=True,
                 fully_costed_trade=False,actual_fill=False)
