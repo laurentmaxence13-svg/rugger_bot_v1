@@ -164,6 +164,8 @@ def test_missing_candidate_campaign_keeps_null_profit_without_calls(tmp_path):
                           capture=capture)
     result=replay_public_signed_cohort(folder)
     assert result["genuine_master_S1_decisions_recomputed"]==0
+    assert result["status"]=="NO_GENUINE_MASTER_S1_TO_REPLAY"
+    assert result["source_original_Ed25519_proofs_used"] is False
     assert result["master_net_pnl_lamports"] is None
     assert result["master_paper_entries"]==0
 
