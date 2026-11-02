@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 
 from bot.ops.render_paper_engine import PaperState, run_public_worker
 from bot.ops.render_readonly_service import Observer as SignedHeliusObserver
+from bot.ops.render_master_readiness import assess_master_paper_readiness
 
 os.environ["RUGGER_NO_DOTENV"]="1"
 os.environ["RUGGER_LIVE_ENABLED"]="0"
@@ -58,6 +59,11 @@ a{color:#8bbcff}.warn{border-left:3px solid #f4bc59;padding-left:12px;color:#dbb
 <div class="metric" style="font-size:19px" id="helius-state">État : chargement…</div>
 <div class="note" id="helius-counts">Aucune preuve récupérée pour le moment.</div>
 <div class="note"><a href="/api/helius">Statut Helius vérifiable (JSON)</a></div></section>
+<section class="card"><h2>Véritable Rugger Master · disponibilité PAPER</h2>
+<div class="note warn">Diagnostic uniquement issu de la source signée Helius. Le moteur DexScreener expérimental ne peut ni activer le Master ni lui attribuer des transactions.</div>
+<div class="metric" style="font-size:19px" id="master-readiness-state">NO-GO · vérification…</div>
+<div class="note" id="master-readiness-blocker">En attente du diagnostic de la source signée.</div>
+<div class="note"><a href="/api/master-readiness">Diagnostic vérifiable (JSON)</a></div></section>
 <section class="card"><h2>Positions du moteur PAPER expérimental</h2>
 <div class="note">Entrées de 0,05 SOL ; sortie à +8 %, -6 % ou 90 secondes ; frais hypothétiques 1 % par côté + 0,00001 SOL par côté. Prix indicatifs, pas de transaction blockchain.</div>
 <div style="overflow:auto"><table><thead><tr><th>Token</th><th>Mise</th><th>Quantité virtuelle</th><th>État</th></tr></thead><tbody id="positions"><tr><td colspan="4">Aucune position</td></tr></tbody></table></div></section>
@@ -88,6 +94,20 @@ el('helius-counts').textContent='Tentatives : '+(h.cycle_count??'—')+
 el('helius-state').textContent='Observateur Helius inaccessible · données non vérifiables';
 el('helius-counts').textContent='Aucun compteur Helius vérifiable actuellement.';
 }}
+async function drawMasterReadiness(){try{
+const response=await fetch('/api/master-readiness',{cache:'no-store'});
+if(!response.ok)throw Error('diagnostic_unavailable');
+const diagnostic=await response.json();
+const safe=diagnostic?.status==='NO_GO' && diagnostic?.master_buy_sell_paper_verified===false &&
+diagnostic?.financial_order_submitted===false && diagnostic?.source==='HELIUS_SIGNED_LAUNCHLAB_ONLY';
+el('master-readiness-state').textContent=safe?'NO-GO · véritable Master PAPER':'NO-GO · diagnostic non vérifiable';
+el('master-readiness-blocker').textContent=safe?
+'Blocage suivant : '+String(diagnostic.next_blocker||'INCONNU'):
+'Informations du véritable Master indisponibles ; aucun trade vérifié.';
+}catch(_err){
+el('master-readiness-state').textContent='NO-GO · diagnostic indisponible';
+el('master-readiness-blocker').textContent='Aucune donnée Master PAPER vérifiable actuellement.';
+}}
 async function draw(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json(),obs=d.observations||{},pos=d.positions||[];
 const total=(Number(d.cash_sol)||0)+pos.reduce((v,p)=>v+Number(p.quantity||0)*Number(obs[p.mint]?.price||0)*.99,0);
 el('total').textContent=fmt(total,6)+' SOL';el('cash').textContent=fmt(d.cash_sol,6)+' SOL';
@@ -99,7 +119,7 @@ rows('positions',pos.map(x=>[x.symbol||x.mint.slice(0,10),fmt(x.spent_sol,4)+' S
 rows('market',(d.candidates||[]).slice(0,12).map(x=>[x.symbol+' · '+x.mint.slice(0,8),x.dex,fmt(x.price_sol,10),fmt(x.liquidity_usd,0)]),4);
 rows('events',(d.events||[]).slice(-14).reverse().map(x=>[new Date(x.at_ms).toISOString().slice(11,19),x.kind,JSON.stringify(x.details).slice(0,180)]),3);
 }catch(err){el('health').textContent='Service indisponible : '+String(err.message||err)}}
-draw();drawHelius();setInterval(draw,15000);setInterval(drawHelius,15000);
+draw();drawHelius();drawMasterReadiness();setInterval(draw,15000);setInterval(drawHelius,15000);setInterval(drawMasterReadiness,15000);
 </script></body></html>"""
 
 
@@ -114,6 +134,10 @@ class Handler(BaseHTTPRequestHandler):
             mime="application/json"
         elif path == "/api/helius":
             data=json.dumps(SIGNED_SOURCE.snapshot(),allow_nan=False).encode("utf-8")
+            mime="application/json"
+        elif path == "/api/master-readiness":
+            data=json.dumps(assess_master_paper_readiness(SIGNED_SOURCE.snapshot()),
+                            allow_nan=False).encode("utf-8")
             mime="application/json"
         elif path == "/api/status":
             data=json.dumps(STORE.snapshot(),allow_nan=False).encode("utf-8")
