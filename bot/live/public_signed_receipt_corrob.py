@@ -25,6 +25,25 @@ EXPECTED_POOL = "AHHBr6UkNtjxKuiGKuLdRi1kA1w2sDZsHGjJRDEaMXef"
 MAX_RESPONSE_BYTES = 1_500_000
 SCHEMA = "rugger-independent-historical-signed-creation-proof-v1"
 
+# Only predefined local error identifiers may be shown. Never print raw RPC
+# JSON, provider exception messages or a credential-bearing URL.
+SAFE_REFUSALS = frozenset((
+    "free_public_rpc_not_available",
+    "unbounded_public_rpc_reply",
+    "invalid_public_rpc_reply",
+    "historical_receipt_unavailable_on_free_rpc",
+    "independent_signed_receipt_identity_mismatch",
+    "independent_signed_message_hash_mismatch",
+    "independent_signed_launch_creation_not_matched",
+    "unsupported_transaction_message_or_header",
+    "historical_transaction_Ed25519_signature_invalid",
+    "compiled_signer_count_invalid",
+    "compiled_instruction_index_invalid",
+    "compiled_instruction_data_noncanonical",
+    "exact_compiled_signer_vector_required",
+    "invalid_v0_lookup_table_indices",
+))
+
 
 def _reject(reason):
     raise ValueError(reason)
@@ -114,8 +133,9 @@ def main(argv=None):
         result = check_pinned_public_receipt(fetch_one_public_transaction())
     except Exception as error:
         # Do not echo network response or exception details.
+        safe = str(error) if type(error) is ValueError and str(error) in SAFE_REFUSALS else None
         print(json.dumps(dict(schema=SCHEMA, status="REFUSED",
-            safe_error_class=type(error).__name__,
+            safe_error_class=type(error).__name__, safe_reason_code=safe,
             financial_order_submitted=False), sort_keys=True))
         return 2
     print(json.dumps(result, sort_keys=True, allow_nan=False))
