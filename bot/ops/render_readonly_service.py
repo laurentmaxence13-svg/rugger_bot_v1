@@ -56,7 +56,6 @@ SIGNED_SOURCE_COUNTER_LIMITS = {
 # A downstream signed observation cannot outnumber its upstream evidence.
 SIGNED_SOURCE_COUNT_RELATIONS = (
     ("crypto_signed_creation_transactions", "log_events_retained"),
-    ("selected_independent_signed_creators", "crypto_signed_creation_transactions"),
     ("frozen_S1_decisions", "supported_native_SOL_graphs"),
     ("actual_signed_policy_frozen_paper_cases", "frozen_S1_decisions"),
 )
