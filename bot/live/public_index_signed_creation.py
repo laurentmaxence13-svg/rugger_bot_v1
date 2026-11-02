@@ -69,6 +69,7 @@ def inspect_pool(pool, *, rpc, max_receipts=MAX_RECEIPTS_PER_POOL):
         selected_signatures_precommitted=len(selected),
         outer_signed_create_verified=False,
         signed_message_sha256=None,
+        signed_creation_signature=None,
         signed_creation_slot=None,
         native_SOL_pool_graph_verified=False,
         contextual_S1_bank_qualified=False,
@@ -86,7 +87,9 @@ def inspect_pool(pool, *, rpc, max_receipts=MAX_RECEIPTS_PER_POOL):
             continue
         if (raw.get("slot")!=row["slot"] or raw["meta"].get("err") is not None
                 or type(raw.get("transaction")) is not dict
-                or raw["transaction"].get("signatures", [None])[0]!=row["signature"]):
+                or type(raw["transaction"].get("signatures")) is not list
+                or not raw["transaction"]["signatures"]
+                or raw["transaction"]["signatures"][0]!=row["signature"]):
             continue
         # Failing Ed25519 verification cannot be covered by a loose index.
         proof=verify_compiled_rpc_signatures(raw)
@@ -104,6 +107,7 @@ def inspect_pool(pool, *, rpc, max_receipts=MAX_RECEIPTS_PER_POOL):
             continue
         result["outer_signed_create_verified"]=True
         result["signed_message_sha256"]=proof["exact_message_sha256"]
+        result["signed_creation_signature"]=row["signature"]
         result["signed_creation_slot"]=raw["slot"]
         result["status"]="SIGNED_CREATION_VERIFIED_INDEX_SURVIVOR_NOT_SIGNAL"
         break
