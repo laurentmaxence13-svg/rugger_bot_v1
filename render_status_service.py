@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 
 from bot.ops.render_paper_engine import PaperState, run_public_worker
 from bot.ops.render_readonly_service import Observer as SignedHeliusObserver
+from bot.ops.render_master_readiness import assess_master_paper_readiness
 
 os.environ["RUGGER_NO_DOTENV"]="1"
 os.environ["RUGGER_LIVE_ENABLED"]="0"
@@ -106,6 +107,10 @@ class Handler(BaseHTTPRequestHandler):
             mime="application/json"
         elif path == "/api/helius":
             data=json.dumps(SIGNED_SOURCE.snapshot(),allow_nan=False).encode("utf-8")
+            mime="application/json"
+        elif path == "/api/master-readiness":
+            data=json.dumps(assess_master_paper_readiness(SIGNED_SOURCE.snapshot()),
+                            allow_nan=False).encode("utf-8")
             mime="application/json"
         elif path == "/api/status":
             data=json.dumps(STORE.snapshot(),allow_nan=False).encode("utf-8")
