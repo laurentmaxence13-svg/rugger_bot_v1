@@ -55,6 +55,8 @@ async function fetch(url) {
     json: async () => ({
       observer_status: 'CAPTURE_COMPLETED_READ_ONLY',
       cycle_count: 2,
+      successful_capture_count: 1,
+      refused_capture_count: 1,
       last_summary: {crypto_signed_creation_transactions: 1,
                      frozen_S1_decisions: 0}
     })
@@ -73,6 +75,10 @@ setImmediate(() => {
     throw new Error('Signed Helius status disappeared during market outage');
   if (!element('helius-counts').textContent.includes('créations signées confirmées : 1'))
     throw new Error('Signed counts did not render');
+  if (!element('helius-counts').textContent.includes('Tentatives : 2') ||
+      !element('helius-counts').textContent.includes('résumés acceptés : 1') ||
+      !element('helius-counts').textContent.includes('refus : 1'))
+    throw new Error('Refused Helius attempts were incorrectly shown as successful captures');
   if (timers.length !== 2 || !timers.some(t => t[0] === 'drawHelius' && t[1] === 15000))
     throw new Error('Independent Helius refresh timer missing');
   process.stdout.write('independent_signed_source_polling_ok');
