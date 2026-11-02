@@ -136,3 +136,18 @@ def test_injected_quote_callback_cannot_force_any_paper_trade_or_executable_rout
     assert r["actual_master_PAPER_buy_sell_verified"] is False
     assert r["qualified_master_economic_cycles"]==0
     assert r["master_net_pnl_lamports"] is None
+
+
+def test_real_provider_quote_missing_source_slot_cannot_enter_genuine_paper_ledger():
+    from bot.p4.live_like_paper_ledger import source_quote
+    opener=FakeOpener()
+    r=p.probe(quote=lambda side,lot:p._quote(side,lot,opener=opener))
+    assert r["independent_exact_lot_quote_pair_present"] is True
+    # The ledger requires independently source-clocked exact quote receipts,
+    # fees and migration proofs. An API quote with only a local receipt clock
+    # must not be injected as a genuine Master modeled BUY/SELL.
+    with pytest.raises(ValueError,match="exact_quote_evidence_required"):
+        source_quote(r["buy_quote"])
+    with pytest.raises(ValueError,match="exact_quote_evidence_required"):
+        source_quote(r["sell_quote"])
+    assert r["master_net_pnl_lamports"] is None
