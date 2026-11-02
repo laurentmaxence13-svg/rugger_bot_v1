@@ -1,0 +1,51 @@
+name: One public Raydium index to independently signed SOL creator probe (NO ORDERS)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/public_index_signed_creation.py'
+      - 'bot/live/public_sol_forward_paper.py'
+      - 'tests/test_public_index_signed_creation.py'
+      - '.github/workflows/public-index-signed-creator.yml'
+permissions:
+  contents: read
+jobs:
+  signed-index-readonly:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_LIVE_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact audited PR code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.11'
+      - name: Install existing public client and offline test dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Run signed-pool index and payer verification tests without provider calls
+        run: |
+          set -euo pipefail
+          python -m pytest -q tests/test_public_index_signed_creation.py tests/test_public_sol_forward_paper.py
+      - name: Sample only 2 new SOL pool leads and max 20 public read-only RPC calls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.live.public_index_signed_creation \
+            --network --output-dir "paper_artifacts/free_public_index_${GITHUB_RUN_ID}"
+      - name: Archive only observed read-only evidence and NO-GO diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: public-index-signed-creator-${{ github.run_id }}
+          path: paper_artifacts/free_public_index_*/**/*.json
+          if-no-files-found: warn
+          retention-days: 30
