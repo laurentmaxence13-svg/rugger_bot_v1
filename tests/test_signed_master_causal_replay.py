@@ -17,7 +17,7 @@ def write(path,doc):
     path.write_text(json.dumps(doc,sort_keys=True,allow_nan=False))
 
 
-def signed_s1_campaign(tmp_path,monkeypatch):
+def signed_s1_campaign(tmp_path,monkeypatch,*,quote_pair=False):
     import bot.p3.signed_creation_forward_bank as bank
     import bot.p3.certification as certification
     c,v=signed_pair()
@@ -26,12 +26,15 @@ def signed_s1_campaign(tmp_path,monkeypatch):
     graph=dict(pool=POOL,config=addr(31),platform=addr(32),mint_a=MINT,
                mint_b=bank.SOL_MINT,vault_a=addr(33),vault_b=addr(34))
     calls=[]
+    quote_calls=[]
     def banks(rpc,addresses,floor):
         i=len(calls);calls.append((addresses,floor))
         if i==0:
             return 463809742,{POOL:{"source":"pool"}}
         if i==1:
             return 463809743,{key:{"source":"S1"} for key in addresses}
+        if quote_pair:
+            assert quote_calls==["BUY"]  # exact S1 quote was read BEFORE the S2 bank
         return 463809744,{key:{"source":"S2"} for key in addresses}
     def analysis(accounts,**kwargs):
         if kwargs.get("compute_projection") is False:
@@ -52,12 +55,33 @@ def signed_s1_campaign(tmp_path,monkeypatch):
     monkeypatch.setattr("bot.p4.signed_master_causal_replay.analyze_snapshot",analysis)
     monkeypatch.setattr(bank,"observed_sell_projection",
                         lambda *args,**kwargs:dict(output_lamports="900000000"))
+    if quote_pair:
+        from bot.p3.real_signed_sol_exactlot_quote_probe import (
+            BUY_LOT_LAMPORTS,MINT as ROUTE_MINT,POOL as ROUTE_POOL)
+        # The fake creator/pool fixture has a different name from the
+        # pinned real source mint, so this test uses the pinned callback's
+        # exact real route identities without promoting source identities.
+        def quote(side,amount):
+            quote_calls.append(side)
+            return dict(side=side,
+                input_mint="So11111111111111111111111111111111111111112" if side=="BUY" else ROUTE_MINT,
+                output_mint=ROUTE_MINT if side=="BUY" else "So11111111111111111111111111111111111111112",
+                input_atomic=str(amount),
+                output_atomic="1000000" if side=="BUY" else "49000000",
+                requested_slippage_bps=50,source_quote_sha256="a"*64,
+                received_at_utc_ms=1793475669400+(100 if side=="BUY" else 2000),
+                provider_produced_at_ms=None,provider_source_slot=None,
+                provider_route_pool=ROUTE_POOL,
+                independent_quote_indicative_only=True,
+                hypothetical_lot_was_never_executed=True,
+                fully_costed_trade=False,actual_fill=False)
+        monkeypatch.setattr("bot.p3.real_signed_sol_exactlot_quote_probe._quote",quote)
     def rpc(method,params):
         assert method=="getGenesisHash"
         return MAINNET_GENESIS
     paired=bank.signed_creator_asof_paper(c,v,rpc,
         sleep=lambda delay:None,clock_ms=lambda:1793475669400,
-        delay_seconds=1)
+        delay_seconds=1,include_readonly_quotes=quote_pair)
     assert len(calls)==3
     assert paired["observations"][0]["frozen_decision_before_S2"]["master_action"]=="WAIT"
     source=tmp_path/"campaign"
@@ -269,3 +293,36 @@ def test_missing_original_seven_account_bank_refused(tmp_path,monkeypatch):
     write(campaign_path,campaign)
     with pytest.raises(ValueError,match="original_seven_account_S1_bank_tampered_or_missing"):
         replay_public_signed_cohort(folder)
+
+
+def test_real_master_s1_frozen_then_quote_only_s1_and_s2_are_strictly_separate(
+        tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch,quote_pair=True)
+    paired=json.loads((folder/"window_00"/"paired_master_source_shadow.json").read_text())
+    row=paired["observations"][0]
+    assert row["frozen_decision_before_S2"]["master_action"]=="WAIT"
+    assert row["s1_independent_quote_state"]=="AFTER_MASTER_WAIT_BEFORE_S2_INDICATIVE"
+    assert row["s2_independent_quote_state"]=="AFTER_S2_INDICATIVE"
+    assert row["s1_independent_research_buy_quote"]["input_atomic"]=="50000000"
+    assert row["s2_independent_research_sell_quote"]["input_atomic"]=="1000000"
+    assert row["research_only_quote_delta_before_extra_costs_lamports"]=="-1000000"
+    assert row["source_produced_quote_clocks_verified"] is False
+    assert row["research_quote_is_not_owned_Master_position"] is True
+    assert row["research_quote_pair_is_not_an_actual_Master_PAPER_cycle"] is True
+    result=replay_public_signed_cohort(folder)
+    assert result["genuine_master_S1_decisions_recomputed"]==1
+    assert result["master_paper_entries"]==0
+    assert result["master_paper_exits"]==0
+    assert result["master_net_pnl_lamports"] is None
+
+
+def test_optional_signed_source_quote_disabled_is_no_provider_network(
+        tmp_path,monkeypatch):
+    from unittest.mock import Mock
+    fake=Mock(side_effect=AssertionError("quotes disabled"))
+    monkeypatch.setattr("bot.p3.real_signed_sol_exactlot_quote_probe._quote",fake)
+    folder=signed_s1_campaign(tmp_path,monkeypatch,quote_pair=False)
+    fake.assert_not_called()
+    paired=json.loads((folder/"window_00"/"paired_master_source_shadow.json").read_text())
+    assert "s1_independent_research_buy_quote" not in paired["observations"][0]
+    assert replay_public_signed_cohort(folder)["master_paper_entries"]==0
