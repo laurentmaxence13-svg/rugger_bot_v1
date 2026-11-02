@@ -175,7 +175,8 @@ class Observer:
             historical_or_live_trade_fill_confirmed=False,
             observer_status="STARTING", started_at_utc_ms=int(self._clock()*1000),
             last_started_at_utc_ms=None, last_completed_at_utc_ms=None,
-            cycle_count=0, last_safe_error_class=None, last_summary=None,
+            cycle_count=0, successful_capture_count=0, refused_capture_count=0,
+            last_safe_error_class=None, last_summary=None,
         )
         self._update_status()
 
@@ -217,6 +218,7 @@ class Observer:
             with self._lock:
                 self._state["observer_status"] = "CAPTURE_COMPLETED_READ_ONLY"
                 self._state["cycle_count"] += 1
+                self._state["successful_capture_count"] += 1
                 self._state["last_completed_at_utc_ms"] = int(self._clock()*1000)
                 self._state["last_summary"] = sanitized
                 self._state["last_safe_error_class"] = None
@@ -226,6 +228,7 @@ class Observer:
             with self._lock:
                 self._state["observer_status"] = "CAPTURE_REFUSED"
                 self._state["cycle_count"] += 1
+                self._state["refused_capture_count"] += 1
                 self._state["last_completed_at_utc_ms"] = int(self._clock()*1000)
                 self._state["last_safe_error_class"] = type(error).__name__
                 self._state["last_summary"] = None
