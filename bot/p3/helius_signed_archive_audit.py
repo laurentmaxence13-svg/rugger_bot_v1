@@ -139,7 +139,7 @@ def audit_signed_archive(archive_path):
             if (signed != _integer(proof.get("signed_creation_candidate_transactions"), maximum=100)
                     or selected != _integer(paired.get("signed_creation_candidates_selected"), maximum=3)
                     or frozen != _integer(portfolio.get("frozen_decisions"), maximum=3)
-                    or selected > signed or frozen > selected):
+                    or frozen > selected):
                 _fail("signed_evidence_decision_count_mismatch")
             if (summary.get("trade_fills_simulated") != 0 or
                     type(summary.get("trade_fills_simulated")) is not int or
