@@ -12,6 +12,7 @@ POOL="EBA8nnnHuFRMHd3Ac9HMMCNTi52E3GXT7HDreXwvhnCu"
 CREATOR="HxM1EeyZ9z71m8mu5x9bsUdtTP1f9qtT7mo9D5tB3xwM"
 SIGNATURE="5qqLenzDgNbLkuN482pPEzoZLyygQYsdLzdMZ2cuKqbpXyXRbXZCASRGw2gWNK91cpBZgorjThhJAhiCtwJk6hUk"
 SLOT=464432476
+PAYER="7AGFdhKYM7D5RjJn5Zk4vG9iA1c4hyR6iHLbo1tsztVn"
 
 
 def row():
@@ -40,7 +41,9 @@ def fake_rpc(*,page=None,wrong=False):
                 assert params[0]==SIGNATURE
                 return {"slot":SLOT, "meta":{"err":None,
                          "innerInstructions":[{"index":0,"instructions":[]}]},
-                         "transaction":{"signatures":[SIGNATURE]}}
+                         "transaction":{"signatures":[SIGNATURE],
+                          "message":{"header":{"numRequiredSignatures":1},
+                                     "accountKeys":[PAYER]}}}
             if method=="getMultipleAccounts":
                 assert params[1]["commitment"]=="confirmed"
                 if len(params[0])==1:
@@ -59,7 +62,8 @@ def patch_signed_verified(monkeypatch):
                    "exact_message_sha256":"a"*64})
     def decode_outer(tx):
         assert tx["meta"]["innerInstructions"]==[]
-        return [{"creator":CREATOR,"mint":MINT,"pool_state":POOL}]
+        return [{"creator":CREATOR,"mint":MINT,"pool_state":POOL,
+                 "payer":PAYER}]
     monkeypatch.setattr(mod,"compiled_launchlab_creations",decode_outer)
     graph={"pool":POOL,"config":"source-config","platform":"source-platform",
            "mint_a":MINT,"mint_b":SOL_MINT,
@@ -105,7 +109,8 @@ def test_real_scorer_protection_remains_even_with_signed_SOL_graph(
 def test_untrusted_index_creator_claim_does_not_count_as_signed(monkeypatch):
     patch_signed_verified(monkeypatch)
     monkeypatch.setattr(mod,"compiled_launchlab_creations",
-        lambda tx:[{"creator":"another-creator","mint":MINT,"pool_state":POOL}])
+        lambda tx:[{"creator":"another-creator","mint":MINT,"pool_state":POOL,
+                    "payer":PAYER}])
     item=dict(pool=POOL,mint=MINT,creator_claim=CREATOR)
     result=mod.inspect_pool(item,rpc=fake_rpc())
     assert result["outer_signed_create_verified"] is False
@@ -160,3 +165,14 @@ def test_unexpected_scorer_financial_projection_is_never_promoted(monkeypatch,tm
     assert result["genuine_master_paper_buy_sell_verified"] is False
     assert result["master_net_pnl_lamports"] is None
     assert result["independently_executable_quotes_verified"] is False
+
+
+def test_compiled_outer_payer_must_be_signed(monkeypatch):
+    patch_signed_verified(monkeypatch)
+    monkeypatch.setattr(mod,"compiled_launchlab_creations",
+        lambda tx:[{"creator":CREATOR,"mint":MINT,"pool_state":POOL,
+                    "payer":"unsigned-other-account"}])
+    result=mod.inspect_pool(dict(pool=POOL,mint=MINT,creator_claim=CREATOR),
+                            rpc=fake_rpc())
+    assert result["outer_signed_create_verified"] is False
+    assert result["signed_creation_signature"] is None
