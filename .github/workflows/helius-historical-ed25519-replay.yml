@@ -107,7 +107,9 @@ jobs:
           print("FOUR_PUBLIC_VENDOR_PARQUET_SAMPLES_SCHEMA_VALIDATED_NOT_MASTER_PROFITABILITY")
           for k,v in sorted(r["samples"].items()):
               print(k, "rows", v["rows_in_sample"], "SOL",v.get("direct_SOL_pairs_trades"),
-                    "cols",v["column_count"], "slots",v["earliest_slot"],v["latest_slot"])
+                    "cols",v["column_count"], "slots",v["earliest_slot"],v["latest_slot"],
+                    "verified_ATOMIC_source_rows",v.get("strict_source_direct_SOL_rows_normalized_NOT_Master_fills"),
+                    "success_flags",v["transaction_success_field_distributions"])
           PY
       - name: Preserve readonly public metadata report only
         if: always()
