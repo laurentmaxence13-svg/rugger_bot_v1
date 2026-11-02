@@ -61,6 +61,8 @@ def test_two_indicative_quotes_are_never_master_paper_trades():
     assert result["sell_quote"]["output_atomic"]=="48000000"
     assert result["provider_response"]=="CURRENT_INDICATIVE_ROUTE_PAIR_NOT_MASTER_PAPER_FILL"
     assert result["independent_exact_lot_quote_pair_present"] is True
+    assert result["hypothetical_quote_only_delta_before_extra_costs_lamports"]=="-2000000"
+    assert result["quote_delta_is_not_a_Master_PnL_or_fill"] is True
     assert result["quote_source_clocks_and_slots_verified"] is False
     assert result["independently_executable_prices_at_original_S1"] is False
     assert result["actual_master_PAPER_buy_sell_verified"] is False
@@ -76,6 +78,7 @@ def test_routing_to_other_pool_not_accepted_as_signed_launchlab_quote():
     assert r["safe_refusal_code"]=="quote_provider_not_exact_signed_launchlab_pool"
     assert r["independent_exact_lot_quote_pair_present"] is False
     assert r["master_net_pnl_lamports"] is None
+    assert r["hypothetical_quote_only_delta_before_extra_costs_lamports"] is None
 
 
 def test_provider_lacks_liquidity_and_fee_proof_never_claims_profit():
