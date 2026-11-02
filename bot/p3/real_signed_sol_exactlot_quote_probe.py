@@ -135,6 +135,8 @@ def probe(*,quote=_quote):
         provider_response="UNAVAILABLE_OR_UNQUALIFIED",
         buy_quote=None,sell_quote=None,
         independent_exact_lot_quote_pair_present=False,
+        hypothetical_quote_only_delta_before_extra_costs_lamports=None,
+        quote_delta_is_not_a_Master_PnL_or_fill=True,
         quote_source_clocks_and_slots_verified=False,
         actual_master_PAPER_entry_qualified=False,
         actual_master_PAPER_buy_sell_verified=False,
@@ -152,6 +154,8 @@ def probe(*,quote=_quote):
             quote("SELL",int(buy["output_atomic"])))
         calls+=1
         result["sell_quote"]=sell
+        result["hypothetical_quote_only_delta_before_extra_costs_lamports"]=str(
+            int(sell["output_atomic"])-BUY_LOT_LAMPORTS)
         result["independent_exact_lot_quote_pair_present"]=True
         result["provider_response"]="CURRENT_INDICATIVE_ROUTE_PAIR_NOT_MASTER_PAPER_FILL"
     except Exception as error:
