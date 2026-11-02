@@ -97,3 +97,17 @@ def test_network_fee_is_source_level_not_net_master_profit():
     assert a["network_fee_per_signature_lamports"] == b["network_fee_per_signature_lamports"]
     assert "net_master_profit_lamports" not in a
     assert "net_master_profit_lamports" not in b
+
+
+def test_actual_vendor_varchar_boolean_is_decoded_without_truthiness_bug():
+    row = buy()
+    row["Transaction_Result_Success"] = "true"
+    assert source_reported_direct_sol_trade(
+        row, program="raydium_launchpad")["sol_amount_lamports"] == 50_000_001
+    row["Transaction_Result_Success"] = "false"
+    assert source_reported_direct_sol_trade(
+        row, program="raydium_launchpad") is None
+    for invalid in ("TRUE", "1", 1, None, ""):
+        row["Transaction_Result_Success"] = invalid
+        with pytest.raises(ValueError, match="missing_or_unknown_source_transaction_success"):
+            source_reported_direct_sol_trade(row, program="raydium_launchpad")
