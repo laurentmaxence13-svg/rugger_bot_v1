@@ -101,6 +101,31 @@ def _quote(side,input_atomic,*,opener=None):
         fully_costed_trade=False,actual_fill=False)
 
 
+def _checked_receipt(side,expected_input,value):
+    """Untrusted quote callbacks cannot fabricate pool identity or lots."""
+    src,dst=(SOL_MINT,MINT) if side=="BUY" else (MINT,SOL_MINT)
+    if (type(value) is not dict or value.get("side")!=side
+            or value.get("input_mint")!=src or value.get("output_mint")!=dst
+            or value.get("input_atomic")!=str(expected_input)
+            or value.get("provider_route_pool")!=POOL
+            or value.get("requested_slippage_bps")!=SLIPPAGE_BPS
+            or value.get("provider_produced_at_ms") is not None
+            or value.get("provider_source_slot") is not None
+            or value.get("independent_quote_indicative_only") is not True
+            or value.get("hypothetical_lot_was_never_executed") is not True
+            or value.get("fully_costed_trade") is not False
+            or value.get("actual_fill") is not False
+            or type(value.get("source_quote_sha256")) is not str
+            or len(value["source_quote_sha256"])!=64
+            or type(value.get("received_at_utc_ms")) is not int
+            or value["received_at_utc_ms"]<=0):
+        raise ValueError("unqualified_quote_callback_receipt")
+    amt=value.get("output_atomic")
+    if type(amt) is not str or not amt.isascii() or not amt.isdigit() or not 1<=int(amt)<=10**18:
+        raise ValueError("unqualified_quote_callback_receipt")
+    return value
+
+
 def probe(*,quote=_quote):
     result=dict(schema=SCHEMA,source="FREE_RAYDIUM_READONLY_COMPUTE_QUOTE",
         verified_signed_creation_signature=SOURCE_CREATION_SIGNATURE,
@@ -119,10 +144,12 @@ def probe(*,quote=_quote):
         no_transaction_builder_or_wallet=True)
     calls=0
     try:
-        buy=quote("BUY",BUY_LOT_LAMPORTS)
+        buy=_checked_receipt("BUY",BUY_LOT_LAMPORTS,
+            quote("BUY",BUY_LOT_LAMPORTS))
         calls+=1
         result["buy_quote"]=buy
-        sell=quote("SELL",int(buy["output_atomic"]))
+        sell=_checked_receipt("SELL",int(buy["output_atomic"]),
+            quote("SELL",int(buy["output_atomic"])))
         calls+=1
         result["sell_quote"]=sell
         result["independent_exact_lot_quote_pair_present"]=True
@@ -140,7 +167,8 @@ def probe(*,quote=_quote):
           "quote_provider_identity_lot_or_slippage_mismatch",
           "quote_provider_output_not_exact_atomic",
           "quote_provider_route_missing",
-          "quote_provider_not_exact_signed_launchlab_pool"))
+          "quote_provider_not_exact_signed_launchlab_pool",
+          "unqualified_quote_callback_receipt"))
         result["safe_refusal_code"]=str(error) if type(error) is ValueError and str(error) in known else "OTHER_"+type(error).__name__
         result["provider_response"]="CURRENT_ROUTE_NOT_VERIFIED"
     result["requests_successfully_returned"]=calls
