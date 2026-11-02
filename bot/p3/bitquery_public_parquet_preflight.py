@@ -181,8 +181,8 @@ def check_parquet(conn, path, *, expected_program, kind):
     else:
         (pools, nonnegative) = conn.execute(
             "SELECT COUNT(DISTINCT Pool_Market_MarketAddress), "
-            "SUM(CASE WHEN Pool_BaseCurrency_PostAmount < 0 OR "
-            "Pool_QuoteCurrency_PostAmount < 0 THEN 1 ELSE 0 END) "
+            "SUM(CASE WHEN TRY_CAST(Pool_BaseCurrency_PostAmount AS DOUBLE) < 0 OR "
+            "TRY_CAST(Pool_QuoteCurrency_PostAmount AS DOUBLE) < 0 THEN 1 ELSE 0 END) "
             "FROM " + relation).fetchone()
         record.update({"distinct_pool_market_addresses": int(pools),
                        "negative_reserve_rows": int(nonnegative or 0)})
