@@ -11,7 +11,9 @@ from bot.live import public_signed_receipt_corrob as p
 def transaction():
     return {
         "slot": p.EXPECTED_SLOT, "meta": {"err": None},
-        "transaction": {"signatures": [p.EXPECTED_SIGNATURE]},
+        "transaction": {"signatures": [p.EXPECTED_SIGNATURE],
+                        "message": {"header": {"numRequiredSignatures": 1},
+                                    "accountKeys": [p.EXPECTED_PAYER]}},
     }
 
 
@@ -51,7 +53,8 @@ def test_original_ed25519_receipt_and_signed_launch_must_match(monkeypatch):
                                 "exact_message_sha256": p.EXPECTED_MESSAGE_SHA256})
     decoder = Mock(return_value=[{"creator": p.EXPECTED_CREATOR,
                                   "mint": p.EXPECTED_MINT,
-                                  "pool": p.EXPECTED_POOL}])
+                                  "pool_state": p.EXPECTED_POOL,
+                                  "payer": p.EXPECTED_PAYER}])
     monkeypatch.setattr(p, "verify_compiled_rpc_signatures", crypto)
     monkeypatch.setattr(p, "compiled_launchlab_creations", decoder)
     result = p.check_pinned_public_receipt(transaction())
@@ -98,7 +101,7 @@ def test_unrelated_outer_launch_identity_fails_closed(monkeypatch):
                     "exact_message_sha256": p.EXPECTED_MESSAGE_SHA256})
     monkeypatch.setattr(p, "compiled_launchlab_creations",
         lambda tx: [{"creator": "wrong_creator", "mint": p.EXPECTED_MINT,
-                     "pool": p.EXPECTED_POOL}])
+                     "pool_state": p.EXPECTED_POOL, "payer": p.EXPECTED_PAYER}])
     with pytest.raises(ValueError, match="independent_signed_launch_creation_not_matched"):
         p.check_pinned_public_receipt(transaction())
 
@@ -125,3 +128,34 @@ def test_public_rpc_error_redacted_without_private_information(monkeypatch, caps
     output = capsys.readouterr().out
     assert marker not in output
     assert '"status": "REFUSED"' in output
+
+
+def test_signed_outer_creation_requires_same_payer_from_compiled_signers(monkeypatch):
+    monkeypatch.setattr(p, "verify_compiled_rpc_signatures",
+        lambda tx: {"cryptographic_signatures_verified": True,
+                    "exact_message_sha256": p.EXPECTED_MESSAGE_SHA256})
+    monkeypatch.setattr(p, "compiled_launchlab_creations",
+        lambda tx: [{"creator": p.EXPECTED_CREATOR,
+                     "mint": p.EXPECTED_MINT, "pool_state": p.EXPECTED_POOL,
+                     "payer": p.EXPECTED_PAYER}])
+    tx = transaction()
+    tx["transaction"]["message"]["accountKeys"] = ["unrelated-signer"]
+    with pytest.raises(ValueError, match="independent_signed_payer_not_present_in_message"):
+        p.check_pinned_public_receipt(tx)
+
+
+def test_inner_only_rpc_launch_does_not_pass_as_signed_creation(monkeypatch):
+    monkeypatch.setattr(p, "verify_compiled_rpc_signatures",
+        lambda tx: {"cryptographic_signatures_verified": True,
+                    "exact_message_sha256": p.EXPECTED_MESSAGE_SHA256})
+    def decoder(tx):
+        if not tx["meta"].get("innerInstructions"):
+            return []
+        return [{"creator": p.EXPECTED_CREATOR,
+                 "mint": p.EXPECTED_MINT, "pool_state": p.EXPECTED_POOL,
+                 "payer": p.EXPECTED_PAYER}]
+    monkeypatch.setattr(p, "compiled_launchlab_creations", decoder)
+    tx = transaction()
+    tx["meta"]["innerInstructions"] = [{"index": 0, "instructions": []}]
+    with pytest.raises(ValueError, match="independent_signed_launch_creation_not_matched"):
+        p.check_pinned_public_receipt(tx)
