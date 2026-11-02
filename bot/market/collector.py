@@ -22,11 +22,10 @@ import urllib.error
 import urllib.request
 
 from bot.market.launchlab_events import (
-    LAUNCHLAB_PROGRAM, EventDecodeError, b58encode, extract_trade_events,
+    LAUNCHLAB_PROGRAM, WSOL_MINT, EventDecodeError, b58encode, extract_trade_events,
 )
 from bot.market.pool_timeline import build_timeline
 
-WSOL_MINT = 'So11111111111111111111111111111111111111112'
 POOL_DISCRIMINATOR = hashlib.sha256(b'account:PoolState').digest()[:8]
 SIGNATURE_PAGE = 1000
 ARCHIVE_VERSION = 1
@@ -124,24 +123,26 @@ def fetch_pool_account(rpc, pool):
     return decode_pool_account(base64.b64decode(value['data'][0]))
 
 
-def fetch_signatures(rpc, address, *, max_pages, known_newest=None):
-    """All signatures of ``address`` newest-first, stopping at ``known_newest``.
+def fetch_signatures(rpc, address, *, max_pages, before=None, known_newest=None):
+    """Signatures of ``address``, newest first, paged backwards from ``before``.
 
-    Returns (signatures, reached_origin). ``reached_origin`` is True only when
-    the listing was exhausted, i.e. the address's full history was listed.
+    Forward mode (``known_newest`` given): listing stops at that signature and
+    the flag is True only if it was found; otherwise the rows must not be merged.
+    Backward mode: the flag is True only when the listing was exhausted, i.e.
+    history is complete from ``before`` back to the address's first signature.
     """
-    out, before = [], None
+    out = []
     for _ in range(max_pages):
         options = {'limit': SIGNATURE_PAGE, 'commitment': 'finalized'}
         if before:
             options['before'] = before
         page = rpc.call('getSignaturesForAddress', [address, options]) or []
         for row in page:
-            if row['signature'] == known_newest:
-                return out, False
+            if known_newest is not None and row['signature'] == known_newest:
+                return out, True
             out.append(row)
         if len(page) < SIGNATURE_PAGE:
-            return out, True
+            return out, known_newest is None
         before = page[-1]['signature']
     return out, False
 
@@ -194,13 +195,22 @@ def collect_pool(rpc, pool, directory, *, max_signature_pages=20):
     try:
         if archive.account is None:
             archive.account = fetch_pool_account(rpc, pool)
-        newest = archive.signatures[0]['signature'] if archive.signatures else None
-        rows, reached = fetch_signatures(rpc, pool, max_pages=max_signature_pages,
-                                         known_newest=newest)
-        if newest is None:
-            archive.signatures, archive.signatures_complete = rows, reached
-        else:
+        # The listing stays contiguous: new rows are merged only when they connect
+        # to the archived newest signature; older history is then fetched backwards
+        # until the origin is reached. An interrupted run therefore resumes cleanly.
+        if archive.signatures:
+            rows, connected = fetch_signatures(
+                rpc, pool, max_pages=max_signature_pages,
+                known_newest=archive.signatures[0]['signature'])
+            if not connected:
+                raise RpcError('signature_listing_gap:raise_max_signature_pages')
             archive.signatures = rows + archive.signatures
+        if not archive.signatures_complete:
+            oldest = archive.signatures[-1]['signature'] if archive.signatures else None
+            rows, origin = fetch_signatures(rpc, pool, max_pages=max_signature_pages,
+                                            before=oldest)
+            archive.signatures += rows
+            archive.signatures_complete = origin
         for row in reversed(archive.signatures):                   # oldest first
             if row.get('err') is not None or row['signature'] in archive.transactions:
                 continue

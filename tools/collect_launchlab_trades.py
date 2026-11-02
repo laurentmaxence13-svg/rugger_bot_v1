@@ -75,6 +75,13 @@ def discover(rpc, program_txs):
     return pools
 
 
+def _summary(archive):
+    try:
+        return summarize(archive)[0]
+    except ValueError as exc:      # e.g. inconsistent curve parameters: fail closed, report it
+        return {'pool': archive.pool, 'complete': False, 'error': str(exc)}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--rpc', choices=('helius', 'public'), default='helius')
@@ -94,7 +101,7 @@ def main(argv=None):
     if args.command == 'summarize':
         pools = args.pool or sorted(p.name[:-len('.json.gz')] for p in args.dir.glob('*.json.gz'))
         for pool in pools:
-            print(json.dumps(summarize(load_archive(args.dir, pool))[0], sort_keys=True))
+            print(json.dumps(_summary(load_archive(args.dir, pool)), sort_keys=True))
         return 0
 
     rpc = _rpc(args.rpc, args.max_calls)
@@ -110,7 +117,7 @@ def main(argv=None):
                 archive, status = load_archive(args.dir, pool), 'budget_exhausted'
             except (RpcError, EventDecodeError) as exc:
                 archive, status = load_archive(args.dir, pool), f'error:{exc}'
-            summary = summarize(archive)[0]
+            summary = _summary(archive)
             summary['collect_status'] = status
             print(json.dumps(summary, sort_keys=True))
             if status == 'budget_exhausted':

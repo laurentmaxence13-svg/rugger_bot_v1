@@ -24,6 +24,7 @@ from bot.market.launchlab_curve import (
 )
 
 LAUNCHLAB_PROGRAM = 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'
+WSOL_MINT = 'So11111111111111111111111111111111111111112'
 EVENT_IX_TAG = bytes.fromhex('e445a52e51cb9a1d')  # sha256("anchor:event")[:8]
 TRADE_EVENT_DISCRIMINATOR = hashlib.sha256(b'event:TradeEvent').digest()[:8]
 TRADE_EVENT_SIZE = 8 + 32 + 13 * 8 + 3
@@ -150,8 +151,8 @@ def check_trade(values):
         issues.append('constant_product_decreased')
     if values['exact_in'] and not issues and basis > 0:
         rate = implied_fee_rate_ppm(values)
-        state = CurveState(vb, vq, rb0, rq0, values['total_base_sell'])
         try:
+            state = CurveState(vb, vq, rb0, rq0, values['total_base_sell'])
             fill = (buy_exact_in(state, a_in, rate) if values['side'] == BUY
                     else sell_exact_in(state, a_in, rate))
             if fill.amount_out != a_out or fill.fee != fees:

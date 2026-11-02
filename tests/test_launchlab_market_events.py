@@ -276,3 +276,15 @@ def test_real_fixture_timeline_marks_unobserved_intervals():
     assert [e.slot for e in timeline.events] == sorted(e.slot for e in timeline.events)
     # The seven fixtures are a sample, not the full history: gaps must show it.
     assert timeline.gaps and timeline.gaps[0].reason == 'history_starts_mid_curve'
+
+
+def test_inconsistent_curve_state_is_a_violation_not_a_crash():
+    (event,) = extract_trade_events(_load('464541196'))
+    values = {k: getattr(event, k) for k in (
+        'total_base_sell', 'virtual_base', 'virtual_quote', 'real_base_before',
+        'real_quote_before', 'real_base_after', 'real_quote_after', 'amount_in',
+        'amount_out', 'protocol_fee', 'platform_fee', 'creator_fee', 'share_fee',
+        'side', 'exact_in')}
+    assert check_trade(values) == ()
+    values['total_base_sell'] = values['real_base_before'] - 1
+    assert check_trade(values) == ('curve_refused:invalid_curve_state',)

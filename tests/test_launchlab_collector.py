@@ -98,10 +98,33 @@ def test_unavailable_transaction_is_counted_missing_not_dropped(tmp_path):
     assert summary['transactions_missing'] == 1 and not summary['complete']
 
 
-def test_incremental_listing_stops_at_known_newest(tmp_path):
+def test_incremental_listing_stops_at_known_newest():
     rpc = FakeRpc(50)
-    rows, reached = col.fetch_signatures(rpc, POOL, max_pages=5, known_newest=rpc.order[2])
-    assert [r['signature'] for r in rows] == rpc.order[:2] and not reached
+    rows, connected = col.fetch_signatures(rpc, POOL, max_pages=5, known_newest=rpc.order[2])
+    assert [r['signature'] for r in rows] == rpc.order[:2] and connected
+
+
+def test_partial_first_listing_resumes_backwards_until_origin(tmp_path, monkeypatch):
+    monkeypatch.setattr(col, 'SIGNATURE_PAGE', 3)
+    rpc = FakeRpc(50, page_size=3)
+    partial = col.collect_pool(rpc, POOL, tmp_path, max_signature_pages=1)
+    assert len(partial.signatures) == 3 and not partial.signatures_complete
+    archive = col.collect_pool(rpc, POOL, tmp_path, max_signature_pages=5)
+    assert [r['signature'] for r in archive.signatures] == rpc.order
+    assert archive.signatures_complete and len(archive.transactions) == 7
+
+
+def test_forward_gap_is_refused_and_archive_is_unchanged(tmp_path, monkeypatch):
+    monkeypatch.setattr(col, 'SIGNATURE_PAGE', 3)
+    rpc = FakeRpc(50, page_size=3)
+    rpc.order = rpc.order[3:]                # first run only sees older history
+    col.collect_pool(rpc, POOL, tmp_path)
+    before = col.load_archive(tmp_path, POOL)
+    newer = FakeRpc(50, page_size=3)         # three newer signatures now exist
+    with pytest.raises(col.RpcError, match='signature_listing_gap'):
+        col.collect_pool(newer, POOL, tmp_path, max_signature_pages=1)
+    assert col.load_archive(tmp_path, POOL).signatures == before.signatures
+
 
 
 def test_pool_account_requires_launchlab_discriminator():
