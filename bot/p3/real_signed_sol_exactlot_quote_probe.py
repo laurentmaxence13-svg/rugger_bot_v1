@@ -18,7 +18,7 @@ from urllib.request import Request, build_opener, HTTPSHandler, ProxyHandler, HT
 from urllib.error import HTTPError, URLError
 
 from bot.analyser.artifacts import atomic_write_json
-from bot.p3.quotes import SOL_MINT
+from bot.p3.quotes import SOL_MINT,_mint
 
 SCHEMA="rugger-independent-quote-probe-real-signed-sol-mint-v1"
 ORIGIN="https://transaction-v1.raydium.io/compute/swap-base-in"
@@ -41,10 +41,13 @@ def _digest(data):
         separators=(",",":"),allow_nan=False).encode()).hexdigest()
 
 
-def _quote(side,input_atomic,*,opener=None):
+def _quote(side,input_atomic,*,mint=MINT,pool=POOL,opener=None):
     if side not in ("BUY","SELL") or type(input_atomic) is not int or not 1<=input_atomic<=10**18:
         raise ValueError("exact_source_lot_required")
-    src,dst=(SOL_MINT,MINT) if side=="BUY" else (MINT,SOL_MINT)
+    _mint(mint);_mint(pool)
+    if mint==SOL_MINT or mint==pool:
+        raise ValueError("exact_source_lot_required")
+    src,dst=(SOL_MINT,mint) if side=="BUY" else (mint,SOL_MINT)
     params=dict(inputMint=src,outputMint=dst,amount=str(input_atomic),
                 slippageBps=str(SLIPPAGE_BPS),txVersion="V0")
     url=ORIGIN+"?"+urlencode(params)
@@ -87,7 +90,7 @@ def _quote(side,input_atomic,*,opener=None):
             or any(type(item) is not dict for item in route)):
         raise ValueError("quote_provider_route_missing")
     pools=[item.get("poolId") for item in route]
-    if len(route)!=1 or pools!=[POOL]:
+    if len(route)!=1 or pools!=[pool]:
         raise ValueError("quote_provider_not_exact_signed_launchlab_pool")
     return dict(side=side,input_mint=src,output_mint=dst,
         input_atomic=str(input_atomic),output_atomic=amount,
@@ -95,19 +98,19 @@ def _quote(side,input_atomic,*,opener=None):
         source_quote_sha256=_digest(payload),
         received_at_utc_ms=time.time_ns()//1_000_000,
         provider_produced_at_ms=None,provider_source_slot=None,
-        provider_route_pool=POOL,
+        provider_route_pool=pool,
         independent_quote_indicative_only=True,
         hypothetical_lot_was_never_executed=True,
         fully_costed_trade=False,actual_fill=False)
 
 
-def _checked_receipt(side,expected_input,value):
+def _checked_receipt(side,expected_input,value,*,mint=MINT,pool=POOL):
     """Untrusted quote callbacks cannot fabricate pool identity or lots."""
-    src,dst=(SOL_MINT,MINT) if side=="BUY" else (MINT,SOL_MINT)
+    src,dst=(SOL_MINT,mint) if side=="BUY" else (mint,SOL_MINT)
     if (type(value) is not dict or value.get("side")!=side
             or value.get("input_mint")!=src or value.get("output_mint")!=dst
             or value.get("input_atomic")!=str(expected_input)
-            or value.get("provider_route_pool")!=POOL
+            or value.get("provider_route_pool")!=pool
             or value.get("requested_slippage_bps")!=SLIPPAGE_BPS
             or value.get("provider_produced_at_ms") is not None
             or value.get("provider_source_slot") is not None
