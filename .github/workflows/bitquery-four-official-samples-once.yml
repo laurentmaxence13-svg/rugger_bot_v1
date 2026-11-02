@@ -32,7 +32,7 @@ jobs:
       - name: Bounded four fixed public samples: inspect schemas and SOL rows only
         run: |
           set -euo pipefail
-          python -B -m tools.bitquery_public_parquet_preflight --network --output "${RUNNER_TEMP}/rugger-bitquery-free-samples.json"
+          python -B -m bot.p3.bitquery_public_parquet_preflight --network --output "${RUNNER_TEMP}/rugger-bitquery-free-samples.json"
           python - "${RUNNER_TEMP}/rugger-bitquery-free-samples.json" <<'PY'
           import json,sys
           report=json.load(open(sys.argv[1]))
