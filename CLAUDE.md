@@ -19,6 +19,10 @@ confuse the separate DexScreener demonstrator with a Master trade.
 - Work on independent branches/PRs and verify CI before claiming success.
 - If the Master abstains, record a real WAIT and the missing evidence;
   do not invent fills, positions or financial returns.
+- Genuine operational Master entry has protected historical thresholds
+  of 50 qualified economic cycles and 20 independent creators. Independent
+  `MASTER_RESEARCH_PAPER` policy intents are NOT operational Master trades.
+  Never lower the limits or relabel research/DEX fills to bypass them.
 
 ## Resume command
 
