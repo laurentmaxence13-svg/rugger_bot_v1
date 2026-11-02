@@ -14,6 +14,7 @@ def signed():
         "signed_evidence_fresh": False,
         "live_trading_enabled": False,
         "no_signing_or_order_submission": True,
+        "wallet_connected": False,
         "last_summary": None,
     }
 
@@ -79,7 +80,7 @@ def test_false_success_and_cross_feed_claims_refused(tamper):
     report.update(tamper)
     with pytest.raises(ValueError, match="inconsistent_master_readiness"):
         smoke.validate_readiness(
-            {"financial_order_submitted": False}, source, report)
+            {"status": "up", "financial_order_submitted": False}, source, report)
 
 
 def test_reject_unsafe_signed_source_even_with_no_go_report():
@@ -88,7 +89,7 @@ def test_reject_unsafe_signed_source_even_with_no_go_report():
     source["live_trading_enabled"] = True
     with pytest.raises(ValueError, match="unsafe_signed_source"):
         smoke.validate_readiness(
-            {"financial_order_submitted": False}, source, report)
+            {"status": "up", "financial_order_submitted": False}, source, report)
 
 
 def test_no_network_without_explicit_flag(monkeypatch, capsys):
@@ -114,8 +115,26 @@ def test_network_optin_is_explicit_and_reports_no_go(monkeypatch, capsys):
     report = assess_master_paper_readiness(source)
     monkeypatch.setattr(smoke, "smoke_once",
         lambda: smoke.validate_readiness(
-            {"financial_order_submitted": False}, source, report))
+            {"status": "up", "financial_order_submitted": False}, source, report))
     assert smoke.main(["--network"]) == 0
     output = json.loads(capsys.readouterr().out)
     assert output["next_blocker"] == "SIGNED_OBSERVER_DISABLED"
     assert output["master_buy_sell_paper_verified"] is False
+
+
+def test_missing_null_pnl_field_is_not_accepted_as_present():
+    source = signed()
+    report = assess_master_paper_readiness(source)
+    del report["master_net_pnl_sol"]
+    with pytest.raises(ValueError, match="inconsistent_master_readiness"):
+        smoke.validate_readiness(
+            {"status": "up", "financial_order_submitted": False}, source, report)
+
+
+def test_unexpected_health_status_is_not_accepted():
+    source = signed()
+    report = assess_master_paper_readiness(source)
+    with pytest.raises(ValueError, match="unsafe_readonly_health"):
+        smoke.validate_readiness(
+            {"status": "maintenance", "financial_order_submitted": False},
+            source, report)
