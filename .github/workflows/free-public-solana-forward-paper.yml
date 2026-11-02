@@ -14,7 +14,9 @@ permissions:
 
 jobs:
   free-no-key-pilot:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.head.ref == 'feat/free-public-solana-signed-forward-paper-20261102'
     runs-on: ubuntu-latest
     timeout-minutes: 6
     env:
