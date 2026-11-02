@@ -156,6 +156,19 @@ def check_parquet(conn, path, *, expected_program, kind):
         "wrong_dex_program_rows": int(mismatch or 0),
         "pool_or_curve_reserves_do_not_automatically_imply_executable_quotes": True,
     }
+    # The vendor schema describes Bool, but confirm the actual Parquet values
+    # and physical logical type; no unknown success may become a trade fill.
+    status_rows = conn.execute(
+        "SELECT typeof(Transaction_Result_Success), "
+        "COALESCE(CAST(Transaction_Result_Success AS VARCHAR), 'NULL'), COUNT(*) "
+        "FROM " + relation + " GROUP BY 1, 2 ORDER BY 1, 2 LIMIT 16").fetchall()
+    record["transaction_success_field_distributions"] = [
+        {"duckdb_type": str(kind), "source_value": str(value), "rows": int(n)}
+        for kind,value,n in status_rows
+    ]
+    record["transaction_success_null_rows"] = int(conn.execute(
+        "SELECT COUNT(*) FROM " + relation +
+        " WHERE Transaction_Result_Success IS NULL").fetchone()[0])
     if kind == "trades":
         sol = ",".join("'" + a + "'" for a in SOL_MINTS)
         buy = "Trade_Buy_Currency_MintAddress"
