@@ -1,0 +1,49 @@
+name: Official free Bitquery four-Parquet prepurchase verification (READ ONLY)
+on:
+  pull_request:
+    types: [labeled]
+permissions:
+  contents: read
+jobs:
+  free-vendor-samples-once:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'run-bitquery-four-official-samples-once' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_LIVE_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout reviewed PR head without saved credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Vendor Parquet reader only - no RPC or payment
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check duckdb==1.4.2
+      - name: Bounded four fixed public samples: inspect schemas and SOL rows only
+        run: |
+          set -euo pipefail
+          python -B -m tools.bitquery_public_parquet_preflight --network --output "${RUNNER_TEMP}/rugger-bitquery-free-samples.json"
+          python - "${RUNNER_TEMP}/rugger-bitquery-free-samples.json" <<'PY'
+          import json,sys
+          report=json.load(open(sys.argv[1]))
+          assert report["all_four_samples_structurally_checked"]
+          assert not report["economic_edge_validated"]
+          assert not report["financial_order_submitted"]
+          assert report["master_net_pnl_sol"] is None
+          print("OFFICIAL_BITQUERY_FOUR_TABLES_SCHEMA_OK; MASTER_EDGE_NOT_PROVEN")
+          for name, values in sorted(report["samples"].items()):
+              print(name, "columns", values["column_count"], "rows", values["rows_in_sample"],
+                    "SOL trades", values.get("direct_SOL_pairs_trades", "N/A"),
+                    "slots", values["earliest_slot"], values["latest_slot"],
+                    "SHA256", values["sample_sha256"])
+          PY
