@@ -195,8 +195,8 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             raw_bank_sha256=row["s1_raw_bank_sha256"],
             signed_creation_verified=row.get("cryptographic_creation") is True)
         row["s1_source_bank_bridge_status"]=(
-            "SIGNED_CERTIFIED_S1_BANK_RETAINED_FOR_MASTER" if bank_state is not None
-            else bank_refusal)
+            "SIGNED_CERTIFIED_S1_BANK_RETAINED_FOR_MASTER"
+            if bank_state is not None and bank_refusal is None else bank_refusal)
         # Compute an explicit, audited feature completeness receipt using
         # only the evidence available at S1. Do not invent USD oracle, creator
         # history, signed swap tape, or historical source prices.
