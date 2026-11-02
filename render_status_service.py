@@ -87,7 +87,7 @@ el('helius-counts').textContent='Tentatives : '+(h.cycle_count??'—')+
 // Never surface untrusted exception text (which may include provider details).
 el('helius-state').textContent='Observateur Helius inaccessible · données non vérifiables';
 el('helius-counts').textContent='Aucun compteur Helius vérifiable actuellement.';
-}
+}}
 async function draw(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json(),obs=d.observations||{},pos=d.positions||[];
 const total=(Number(d.cash_sol)||0)+pos.reduce((v,p)=>v+Number(p.quantity||0)*Number(obs[p.mint]?.price||0)*.99,0);
 el('total').textContent=fmt(total,6)+' SOL';el('cash').textContent=fmt(d.cash_sol,6)+' SOL';
