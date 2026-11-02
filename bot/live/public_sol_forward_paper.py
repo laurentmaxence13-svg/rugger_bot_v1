@@ -22,8 +22,14 @@ from bot.live.helius_ws_signed_creation_probe import inspect_forward_creations
 from bot.p3.signed_creation_forward_bank import signed_creator_asof_paper
 from bot.live.readonly_plan import MAINNET_GENESIS
 
-HTTP_RPC = "https://api.mainnet.solana.com"
-WS_RPC = "wss://api.mainnet.solana.com"
+# Two consecutive bounded GitHub runner captures against the shared
+# Solana Foundation socket ended before subscription/first signed event with
+# ConnectionClosedError (2026-11-02). PublicNode publishes BOTH HTTPS and
+# WebSocket mainnet endpoints at the same host; keep one coherent provider
+# and verify mainnet genesis independently before interpreting any receipts.
+# This is still shared free RPC: no production SLA or LIVE trading permission.
+HTTP_RPC = "https://solana-rpc.publicnode.com"
+WS_RPC = "wss://solana-rpc.publicnode.com"
 SCHEMA = "rugger-public-solana-forward-signed-paper-v1"
 MAX_RPC = 15
 MAX_EVENTS = 100
