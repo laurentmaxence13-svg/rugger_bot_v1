@@ -46,6 +46,22 @@ OPTIONAL_RPC_COUNTERS = frozenset((
 ))
 
 
+# These limits come from the read-only signed Helius runner, not from the
+# independent DexScreener experiment. Never publish impossible provider usage.
+SIGNED_SOURCE_COUNTER_LIMITS = {
+    "log_events_retained": 100,
+    "actual_verification_rpc_calls_used": 10,
+    "actual_bank_rpc_calls_used": 5,
+}
+# A downstream signed observation cannot outnumber its upstream evidence.
+SIGNED_SOURCE_COUNT_RELATIONS = (
+    ("crypto_signed_creation_transactions", "log_events_retained"),
+    ("selected_independent_signed_creators", "crypto_signed_creation_transactions"),
+    ("frozen_S1_decisions", "supported_native_SOL_graphs"),
+    ("actual_signed_policy_frozen_paper_cases", "frozen_S1_decisions"),
+)
+
+
 def sanitize_public_summary(result):
     """Reject false economic claims and unsafe values before HTTP publication."""
     if type(result) is not dict:
@@ -81,6 +97,13 @@ def sanitize_public_summary(result):
         elif type(value) is not int or not 0 <= value <= 1_000_000:
             raise ValueError("invalid_public_counter")
         safe[key] = value
+    for key, limit in SIGNED_SOURCE_COUNTER_LIMITS.items():
+        if key in safe and safe[key] is not None and safe[key] > limit:
+            raise ValueError("impossible_signed_source_counter")
+    for downstream, upstream in SIGNED_SOURCE_COUNT_RELATIONS:
+        if downstream in safe and upstream in safe:
+            if safe[downstream] > safe[upstream]:
+                raise ValueError("inconsistent_signed_source_evidence")
     return safe
 
 
