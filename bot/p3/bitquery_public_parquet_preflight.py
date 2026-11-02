@@ -178,6 +178,30 @@ def check_parquet(conn, path, *, expected_program, kind):
             "sells_token_receives_SOL_rows": int(sold_token_to_sol or 0),
             "buys_token_pays_SOL_rows": int(bought_token_with_sol or 0),
         })
+        # Test actual source value types using our exact-atomic intake, never
+        # assume a schema-compatible SOL record is a trade of our Master.
+        from bot.p3.bitquery_atomic_finance import source_reported_direct_sol_trade
+        sol_condition = "((" + buy + " IN (" + sol + ")) <> (" + sell + " IN (" + sol + ")))"
+        records = conn.execute(
+            "SELECT * FROM " + relation +
+            " WHERE " + sol_condition + " LIMIT 20").fetchall()
+        names = [entry[0] for entry in desc]
+        source_program = "raydium_launchpad" if expected_program == (
+            "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj") else "raydium_cpmm"
+        normalized = 0
+        refusals = {}
+        for entry in records:
+            raw = dict(zip(names, entry))
+            try:
+                converted = source_reported_direct_sol_trade(raw, program=source_program)
+                if converted is not None:
+                    normalized += 1
+            except ValueError as error:
+                reason = str(error).split(":")[0][:64]
+                refusals[reason] = refusals.get(reason, 0) + 1
+        record["actual_direct_SOL_records_sampled_for_atomic_intake"] = len(records)
+        record["strict_source_direct_SOL_rows_normalized_NOT_Master_fills"] = normalized
+        record["atomic_intake_refusals_by_reason"] = refusals
     else:
         (pools, nonnegative) = conn.execute(
             "SELECT COUNT(DISTINCT Pool_Market_MarketAddress), "
