@@ -3,16 +3,10 @@ from io import BytesIO
 
 import pytest
 
-from importlib.util import spec_from_file_location, module_from_spec
-from pathlib import Path
-
-source = Path(__file__).resolve().parents[1] / 'tools' / 'bitquery_public_parquet_preflight.py'
-spec = spec_from_file_location('rugger_official_bitquery_sample_audit', source)
-module = module_from_spec(spec)
-spec.loader.exec_module(module)
-COMMON_REQUIRED, REQUIRED, SAMPLES = module.COMMON_REQUIRED, module.REQUIRED, module.SAMPLES
-inspect_columns, verdict = module.inspect_columns, module.verdict
-download_sample, MAX_SAMPLE_BYTES, BASE = module.download_sample, module.MAX_SAMPLE_BYTES, module.BASE
+from bot.p3.bitquery_public_parquet_preflight import (
+    COMMON_REQUIRED, REQUIRED, SAMPLES, inspect_columns, verdict,
+    download_sample, MAX_SAMPLE_BYTES, BASE,
+)
 
 
 def test_both_programs_two_tables_with_fixed_allowlisted_source():
