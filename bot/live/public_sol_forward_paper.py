@@ -60,6 +60,16 @@ class PublicReadOnlyRpc:
                      and params[1].get("commitment") == "finalized"
                      and params[1].get("encoding") in ("json", "base64")
                      and params[1].get("maxSupportedTransactionVersion") in (0, 1))
+        elif method == "getSignaturesForAddress":
+            # Only an explicit Raydium LaunchLab pool address, never a
+            # wallet/account list, and a finite first-page query.
+            valid = (type(params) is list and len(params) == 2
+                     and type(params[0]) is str and 32 <= len(params[0]) <= 44
+                     and type(params[1]) is dict
+                     and set(params[1]) == {"limit", "commitment"}
+                     and type(params[1]["limit"]) is int
+                     and 1 <= params[1]["limit"] <= 1000
+                     and params[1]["commitment"] == "finalized")
         elif method == "getMultipleAccounts":
             valid = (type(params) is list and len(params) == 2
                      and type(params[0]) is list and 1 <= len(params[0]) <= 21
