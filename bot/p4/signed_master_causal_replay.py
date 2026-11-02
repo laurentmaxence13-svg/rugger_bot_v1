@@ -202,6 +202,8 @@ def replay_public_signed_cohort(folder):
             elif source.get("s1_refusal")!="unsupported_or_invalid_seven_account_bank":
                 raise ValueError("missing_original_S1_account_analysis_or_refusal")
             frame=source.get("s1_preoutcome_frame")
+            if type(frame) is not dict:
+                raise ValueError("noncausal_signed_master_frame")
             # Rebuild forwarded source state from the ORIGINAL S1 account
             # bytes, independently of the saved S1 frame. If any bank field
             # differs, fail closed before invoking either genuine scorer.
