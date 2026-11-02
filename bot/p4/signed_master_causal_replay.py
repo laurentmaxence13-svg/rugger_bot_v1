@@ -235,7 +235,12 @@ def replay_public_signed_cohort(folder):
             or len(signed_creators)!=campaign.get("uniquely_selected_signed_creators")
             or len(graph_creators)!=campaign.get("native_SOL_source_creators")):
         raise ValueError("signed_replay_book_or_cohort_count_mismatch")
-    return dict(schema=SCHEMA,status="GENUINE_MASTER_CAUSAL_WAIT_REPRODUCED",
+    # A successful source/integrity audit with ZERO original decisions is
+    # not a successful Master strategy replay. Keep this distinction visible
+    # to Rugger Wallet, auditors and any future automation.
+    status=("GENUINE_MASTER_CAUSAL_WAIT_REPRODUCED" if frozen
+            else "NO_GENUINE_MASTER_S1_TO_REPLAY")
+    return dict(schema=SCHEMA,status=status,
         original_master_policy_sha256=MasterDecisionOrchestrator().policy_sha256,
         acquired_events=events_total,
         signed_distinct_creators=len(signed_creators),
@@ -244,7 +249,7 @@ def replay_public_signed_cohort(folder):
         master_paper_entries=0,master_paper_exits=0,
         master_net_pnl_lamports=None,reference_net_pnl_lamports=None,
         measured_master_edge_lamports=None,
-        source_original_Ed25519_proofs_used=True,
+        source_original_Ed25519_proofs_used=bool(signed_creators),
         archived_Ed25519_signatures_reverified_from_bytes_here=False,
         independent_executable_quotes_verified=False,
         exact_real_master_buy_sell_paper_cycle_verified=False,
