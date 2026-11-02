@@ -96,7 +96,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p paper_artifacts/bitquery_public_sample
-          python -B bot/p3/bitquery_public_parquet_preflight.py --network --output "paper_artifacts/bitquery_public_sample/samples.json"
+          python -B -m bot.p3.bitquery_public_parquet_preflight --network --output "paper_artifacts/bitquery_public_sample/samples.json"
           python - <<'PY'
           import json
           r=json.load(open("paper_artifacts/bitquery_public_sample/samples.json",encoding="utf-8"))
