@@ -99,10 +99,19 @@ def inspect_pool(pool, *, rpc, max_receipts=MAX_RECEIPTS_PER_POOL):
         launches=compiled_launchlab_creations(outer)
         if type(launches) is not list:
             raise ValueError("source_outer_creation_parser_refused")
+        message=raw["transaction"].get("message")
+        if (type(message) is not dict or type(message.get("header")) is not dict
+                or type(message.get("accountKeys")) is not list):
+            raise ValueError("source_compiled_signer_keys_unavailable")
+        signed_count=message["header"].get("numRequiredSignatures")
+        if type(signed_count) is not int or not 1<=signed_count<=len(message["accountKeys"]):
+            raise ValueError("source_compiled_signer_count_invalid")
+        signed_payers=set(message["accountKeys"][:signed_count])
         if not any(type(v) is dict and
             v.get("creator")==pool["creator_claim"] and
             v.get("pool_state")==pool["pool"] and
-            v.get("mint")==pool["mint"]
+            v.get("mint")==pool["mint"] and
+            v.get("payer") in signed_payers
             for v in launches):
             continue
         result["outer_signed_create_verified"]=True
