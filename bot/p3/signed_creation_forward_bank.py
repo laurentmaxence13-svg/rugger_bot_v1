@@ -208,6 +208,14 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
         reference=decide_prefix("early_sniping",frame,[])
         if master["action"] in ("ENTER","BUY") or reference["enter"] is not False:
             raise ValueError("unknown_asof_features_must_not_trigger_either_entry")
+        # A hash-only freeze cannot be independently REPLAYED: it omits the
+        # original as-of inputs and exact scorer outputs. Preserve all three
+        # before reading any S2 account, without changing policy admission.
+        # This is public-source research, not a wallet, quote, fill or order.
+        row["s1_preoutcome_frame"]=deepcopy(frame)
+        row["s1_preoutcome_master_decision"]=deepcopy(master)
+        row["s1_preoutcome_reference_decision"]=deepcopy(reference)
+        row["s1_scorer_inputs_and_outputs_preserved_before_S2"]=True
         row["frozen_decision_before_S2"]=dict(at_ms=s1at,source_slot=s1slot,
             frame_sha256=_hash(frame),master_policy_sha256=core.policy_sha256,
             reference_action="WAIT_FOR_FEATURES",
