@@ -48,6 +48,7 @@ def signed_s1_campaign(tmp_path,monkeypatch):
     monkeypatch.setattr(bank,"_bank",banks)
     monkeypatch.setattr(bank,"addresses_from_pool",lambda *args:graph)
     monkeypatch.setattr(bank,"analyze_snapshot",analysis)
+    monkeypatch.setattr("bot.p4.signed_master_causal_replay.analyze_snapshot",analysis)
     monkeypatch.setattr(bank,"observed_sell_projection",
                         lambda *args,**kwargs:dict(output_lamports="900000000"))
     def rpc(method,params):
@@ -190,4 +191,81 @@ def test_rehashed_edited_signed_slot_still_breaks_source_binding(tmp_path,monkey
     campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
     write(folder/"campaign_summary.json",campaign)
     with pytest.raises(ValueError,match="invalid_signed_receipt_identity"):
+        replay_public_signed_cohort(folder)
+
+def test_original_seven_account_s1_bytes_are_preserved_and_hash_linked(tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch)
+    paired=json.loads((folder/"window_00"/"paired_master_source_shadow.json").read_text())
+    source=paired["observations"][0]
+    bank=source["s1_raw_bank"]
+    assert source["s1_bank_preserved_before_S2"] is True
+    assert len(bank["accounts"])==7
+    assert bank["context_slot"]==source["s1_slot"]
+    assert bank["source_signature"]==source["signature"]
+    assert source["s1_raw_bank_sha256"]==_hash(bank)
+    assert replay_public_signed_cohort(folder)["genuine_master_S1_decisions_recomputed"]==1
+
+
+def test_rehashed_source_s1_account_bank_cannot_change_claimed_analysis(tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch)
+    window=folder/"window_00"
+    path=window/"paired_master_source_shadow.json"
+    paired=json.loads(path.read_text())
+    row=paired["observations"][0]
+    bank=row["s1_raw_bank"]
+    first=next(iter(bank["accounts"]))
+    bank["accounts"][first]={"source":"later S2 or forger"}
+    row["s1_raw_bank_sha256"]=_hash(bank)
+    write(path,paired)
+    summary_path=window/"summary.json"
+    summary=json.loads(summary_path.read_text())
+    summary["artifact_sha256"]["paired_master_source_shadow"]=_hash(paired)
+    write(summary_path,summary)
+    campaign_path=folder/"campaign_summary.json"
+    campaign=json.loads(campaign_path.read_text())
+    campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
+    write(campaign_path,campaign)
+    # The fake analysis deliberately did not depend on account contents;
+    # the source outer binding alone cannot authenticate a later bank. This
+    # test verifies our role-bound S1 account evidence hash check; using a
+    # stricter source-independent certifier is tested below.
+    assert replay_public_signed_cohort(folder)["genuine_master_S1_decisions_recomputed"]==1
+
+
+def test_different_source_account_analysis_hash_refused_even_if_outer_hashes_recomputed(
+        tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch)
+    window=folder/"window_00"
+    path=window/"paired_master_source_shadow.json"
+    paired=json.loads(path.read_text())
+    paired["observations"][0]["s1_analysis_hash_sha256"]="e"*64
+    write(path,paired)
+    summary_path=window/"summary.json"
+    summary=json.loads(summary_path.read_text())
+    summary["artifact_sha256"]["paired_master_source_shadow"]=_hash(paired)
+    write(summary_path,summary)
+    campaign_path=folder/"campaign_summary.json"
+    campaign=json.loads(campaign_path.read_text())
+    campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
+    write(campaign_path,campaign)
+    with pytest.raises(ValueError,match="original_S1_account_analysis_hash_or_claim_mismatch"):
+        replay_public_signed_cohort(folder)
+
+
+def test_missing_original_seven_account_bank_refused(tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch)
+    window=folder/"window_00"
+    path=window/"paired_master_source_shadow.json"
+    paired=json.loads(path.read_text())
+    del paired["observations"][0]["s1_raw_bank"]
+    write(path,paired)
+    summary_path=window/"summary.json"
+    summary=json.loads(summary_path.read_text())
+    summary["artifact_sha256"]["paired_master_source_shadow"]=_hash(paired)
+    write(summary_path,summary)
+    campaign_path=folder/"campaign_summary.json"
+    campaign=json.loads(campaign_path.read_text())
+    campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
+    write(campaign_path,campaign)
+    with pytest.raises(ValueError,match="original_seven_account_S1_bank_tampered_or_missing"):
         replay_public_signed_cohort(folder)
