@@ -75,7 +75,9 @@ for(const row of values){const tr=document.createElement('tr');for(const value o
 async function drawHelius(){try{const hr=await fetch('/api/helius',{cache:'no-store'});if(!hr.ok)throw Error('HTTP '+hr.status);
 const h=await hr.json(),s=h.last_summary||{};
 el('helius-state').textContent='Source Helius : '+(h.observer_status||'INCONNU');
-el('helius-counts').textContent='Captures : '+(h.cycle_count||0)+
+el('helius-counts').textContent='Tentatives : '+(h.cycle_count??'—')+
+' · résumés acceptés : '+(h.successful_capture_count??'—')+
+' · refus : '+(h.refused_capture_count??'—')+
 ' · créations signées confirmées : '+(s.crypto_signed_creation_transactions??'—')+
 ' · décisions S1 figées : '+(s.frozen_S1_decisions??'—')+
 ' · positions Master exécutées : 0'+
