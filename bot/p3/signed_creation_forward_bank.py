@@ -249,7 +249,9 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             row["s1_independent_quote_state"]="REFUSED_OR_NOT_AVAILABLE"
             try:
                 quoted=_checked_receipt("BUY",BUY_LOT_LAMPORTS,
-                    _quote("BUY",BUY_LOT_LAMPORTS))
+                    _quote("BUY",BUY_LOT_LAMPORTS,
+                           mint=row["mint"],pool=row["pool"]),
+                    mint=row["mint"],pool=row["pool"])
                 if (quoted["received_at_utc_ms"]<s1at
                         or quoted["provider_source_slot"] is not None
                         or quoted["provider_produced_at_ms"] is not None):
@@ -279,7 +281,8 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             try:
                 exact_qty=int(buy_quote["output_atomic"])
                 quoted=_checked_receipt("SELL",exact_qty,
-                    _quote("SELL",exact_qty))
+                    _quote("SELL",exact_qty,mint=row["mint"],pool=row["pool"]),
+                    mint=row["mint"],pool=row["pool"])
                 if (quoted["received_at_utc_ms"]<row["s2_received_ms"]
                         or quoted["received_at_utc_ms"]<=buy_quote["received_at_utc_ms"]
                         or quoted["provider_source_slot"] is not None
