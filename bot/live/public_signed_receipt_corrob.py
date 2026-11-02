@@ -65,7 +65,9 @@ def check_pinned_public_receipt(tx):
             or type(tx.get("meta")) is not dict
             or tx["meta"].get("err") is not None
             or type(tx.get("transaction")) is not dict
-            or tx["transaction"].get("signatures", [None])[0] != EXPECTED_SIGNATURE):
+            or type(tx["transaction"].get("signatures")) is not list
+            or not tx["transaction"]["signatures"]
+            or tx["transaction"]["signatures"][0] != EXPECTED_SIGNATURE):
         _reject("independent_signed_receipt_identity_mismatch")
     crypto = verify_compiled_rpc_signatures(tx)
     if (crypto.get("cryptographic_signatures_verified") is not True or
