@@ -120,3 +120,65 @@ def test_native_s1_SOL_curve_spot_can_use_nonfinancial_blockers_only():
     with pytest.raises(ValueError,match="unqualified_source_curve_bank_flags"):
         native_asof_bank(analysis=a,mint=MINT,creator=CREATOR,pool=POOL,
                          source_slot=101,available_at_ms=TS)
+
+
+def partial_platform_admin_analysis():
+    obj=analysis()
+    obj["blocking_reasons"].append("original_platform_admin_seed_not_retained")
+    obj["facts"]["program_derived_addresses_verified"]=False
+    obj["facts"]["identity_certification"].update(
+        program_derived_addresses_verified=False,
+        blocking_reasons=["original_platform_admin_seed_not_retained"],
+        checks=[{"name":k,"status":"PASS"} for k in (
+            "pool_pda","vault_a_pda","vault_b_pda",
+            "config_pda","authority_pda")]+[
+            {"name":"platform_pda","status":"UNKNOWN",
+             "reason":"original_platform_admin_seed_not_retained"}],
+    )
+    return obj
+
+
+def test_real_world_platform_admin_seed_unknown_retains_model_but_vetoes_entry():
+    obj=partial_platform_admin_analysis()
+    source,level=transform(source=obj)
+    assert level=="S1_PARTIAL_PLATFORM_ADMIN_UNKNOWN_MODEL_ONLY"
+    assert source["identity_qualified"] is False
+    assert source["creation_verified"] is True
+    assert source["platform_admin_pda_unverified"] is True
+    assert source["research_only_no_execution"] is True
+    frame=dict(id="signed-partial-platform-s1",mint=MINT,pool=POOL,
+               creator=CREATOR,detected_at_ms=TS-2000,
+               available_at_ms=TS,source_slot=101,slot_available_at_ms=TS,
+               data_kind="market_observation",bank_state=source,
+               features=None,features_available_at_ms=None,independent_buyers=None)
+    bank_data,error=_bank_for_costs(frame,TS)
+    assert bank_data is not None and error is None
+    decision=MasterDecisionOrchestrator().evaluate(
+        frame,[],inventory=None,health=None,capital=None)
+    assert decision["action"]=="WAIT"
+    assert "source_identity_supply_creation_unqualified" in decision["reasons"]
+    assert "qualified_past_edge_evidence_unavailable" in decision["reasons"]
+    assert decision["execution_authorized"] is False
+    native=native_asof_bank(analysis=obj,mint=MINT,creator=CREATOR,
+                           pool=POOL,source_slot=101,available_at_ms=TS)
+    assert native["source_native_facts_observed"] is True
+    assert native["platform_admin_seed_independently_certified"] is False
+    assert native["price_usd"] is None
+    assert native["complete_SignalFeatures_available"] is False
+
+
+def test_any_additional_unknown_identity_or_risky_account_refuses_partial_mode():
+    base=partial_platform_admin_analysis()
+    wrong=deepcopy(base)
+    wrong["facts"]["identity_certification"]["checks"].append(
+        {"name":"unknown_critical_vault","status":"UNKNOWN"})
+    assert transform(source=wrong)[0] is None
+    bad=deepcopy(base)
+    bad["facts"]["identity_certification"]["checks"][0]["status"]="FAIL"
+    assert transform(source=bad)[0] is None
+    corrupt=deepcopy(base)
+    corrupt["facts"]["supply_consistency"]["matches"]=False
+    assert transform(source=corrupt)[0] is None
+    malicious=deepcopy(base)
+    malicious["risk_flags"].append("mint_authority_present")
+    assert transform(source=malicious)[0] is None
