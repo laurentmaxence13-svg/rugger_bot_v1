@@ -82,7 +82,16 @@ def source_reported_direct_sol_trade(row, *, program):
         raise ValueError("unsupported_raydium_program")
     if row.get("Trade_Dex_ProgramAddress") != PROGRAMS[program]:
         raise ValueError("wrong_raydium_program")
-    if row.get("Transaction_Result_Success") is not True:
+    # Vendor's free Parquet samples encode the published Bool as VARCHAR
+    # containing exactly 'true' / 'false'. Do not use bool('false') == True!
+    success = row.get("Transaction_Result_Success")
+    if type(success) is bool:
+        is_success = success
+    elif type(success) is str and success in ("true", "false"):
+        is_success = success == "true"
+    else:
+        raise ValueError("missing_or_unknown_source_transaction_success")
+    if not is_success:
         return None  # failed transactions never produce a fulfilled swap
     bought = _address(row.get("Trade_Buy_Currency_MintAddress"))
     sold = _address(row.get("Trade_Sell_Currency_MintAddress"))
