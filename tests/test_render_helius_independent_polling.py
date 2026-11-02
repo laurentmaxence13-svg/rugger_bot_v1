@@ -25,6 +25,7 @@ def test_signed_source_has_separate_polling_and_refresh_timer():
     assert "draw();drawHelius();" in script
     assert "setInterval(draw,15000)" in script
     assert "setInterval(drawHelius,15000)" in script
+    assert "setInterval(drawMasterReadiness,15000)" in script
 
 
 def test_signed_status_renders_even_when_market_endpoint_fails():
@@ -79,8 +80,9 @@ setImmediate(() => {
       !element('helius-counts').textContent.includes('résumés acceptés : 1') ||
       !element('helius-counts').textContent.includes('refus : 1'))
     throw new Error('Refused Helius attempts were incorrectly shown as successful captures');
-  if (timers.length !== 2 || !timers.some(t => t[0] === 'drawHelius' && t[1] === 15000))
-    throw new Error('Independent Helius refresh timer missing');
+  if (timers.length !== 3 || !timers.some(t => t[0] === 'drawHelius' && t[1] === 15000) ||
+      !timers.some(t => t[0] === 'drawMasterReadiness' && t[1] === 15000))
+    throw new Error('Independent Helius or Master readiness refresh timer missing');
   process.stdout.write('independent_signed_source_polling_ok');
 });
 """
