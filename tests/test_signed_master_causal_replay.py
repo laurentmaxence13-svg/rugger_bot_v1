@@ -44,6 +44,7 @@ def signed_s1_campaign(tmp_path,monkeypatch):
         return dict(evidence_profile="published_metadata_v1",
             blocking_reasons=["execution_not_verified"],
             risk_flags=[],
+            source_account_bytes_sha256=_hash(accounts),
             conditional_projection=dict(buy_output_atomic="200"))
     monkeypatch.setattr(bank,"_bank",banks)
     monkeypatch.setattr(bank,"addresses_from_pool",lambda *args:graph)
@@ -225,11 +226,10 @@ def test_rehashed_source_s1_account_bank_cannot_change_claimed_analysis(tmp_path
     campaign=json.loads(campaign_path.read_text())
     campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
     write(campaign_path,campaign)
-    # The fake analysis deliberately did not depend on account contents;
-    # the source outer binding alone cannot authenticate a later bank. This
-    # test verifies our role-bound S1 account evidence hash check; using a
-    # stricter source-independent certifier is tested below.
-    assert replay_public_signed_cohort(folder)["genuine_master_S1_decisions_recomputed"]==1
+    # Even if an attacker re-hashes the outer JSON, the original S1
+    # account-derived analysis must no longer match.
+    with pytest.raises(ValueError,match="original_S1_account_analysis_hash_or_claim_mismatch"):
+        replay_public_signed_cohort(folder)
 
 
 def test_different_source_account_analysis_hash_refused_even_if_outer_hashes_recomputed(
