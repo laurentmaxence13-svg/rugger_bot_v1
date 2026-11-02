@@ -99,6 +99,16 @@ Separate Vercel project:
 - `bot/p4/native_asof_signal_bridge.py` and
   `bot/p4/master_research_paper_intent.py`: causal feature bridge and
   research-only intent; research intents are NOT operational Master orders.
+- `bot/master_decision.py` freezes operational admission thresholds
+  `min_qualified_cycles=50` and `min_creator_groups=20`. It also requires
+  healthy sources, capital, known costs, qualified historical evidence,
+  identity/supply controls, complete as-of features and admissible quotes.
+  Never relax those protected thresholds to force a genuine Master entry.
+  `bot/p4/master_research_paper_intent.py` supports independent Master
+  **strategy research intent** before operational authorization; this remains
+  `MASTER_RESEARCH_PAPER`, not an operational Master buy/sell or demonstrated
+  profitability. Build independently qualified historical cycles to satisfy
+  operational evidence gates without attributing research fills to Master.
 - Existing PR #56 explicitly documents missing causally complete
   SignalFeatures, exact independently executable BUY and SELL quotes,
   verified migrated CPMM sell routes, a representative qualified cohort,
