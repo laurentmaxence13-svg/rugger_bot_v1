@@ -121,3 +121,15 @@ def test_non_route_response_fails_closed_with_no_secret_echo(monkeypatch):
     assert marker not in json.dumps(r)
     assert r["independent_exact_lot_quote_pair_present"] is False
     assert r["financial_order_submitted"] is False
+
+
+def test_injected_quote_callback_cannot_force_any_paper_trade_or_executable_route():
+    r=p.probe(quote=lambda side,amount:{
+        "side":side,"input_atomic":str(amount),"output_atomic":"999999",
+        "provider_route_pool":"fake-pool","actual_fill":True})
+    assert r["safe_refusal_code"]=="unqualified_quote_callback_receipt"
+    assert r["buy_quote"] is None
+    assert r["sell_quote"] is None
+    assert r["actual_master_PAPER_buy_sell_verified"] is False
+    assert r["qualified_master_economic_cycles"]==0
+    assert r["master_net_pnl_lamports"] is None
