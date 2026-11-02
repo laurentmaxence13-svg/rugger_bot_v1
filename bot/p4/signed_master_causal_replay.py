@@ -14,6 +14,8 @@ from pathlib import Path
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4_experiment import decide_prefix
 from bot.p4.live_like_paper_ledger import PaperLedger,freeze_decision
+from bot.p3.launchlab import analyze_snapshot,SnapshotEvidenceError
+from bot.p3.signed_creation_forward_bank import PAPER_BUY_LAMPORTS
 
 SCHEMA="rugger-signed-genuine-master-paper-causal-replay-v1"
 SOURCE_SCHEMA="rugger-free-public-signed-cohort-v1"
@@ -164,6 +166,38 @@ def replay_public_signed_cohort(folder):
                     and launch.get("pool")==source.get("pool")
                     for launch in record["launches"]):
                 raise ValueError("frozen_master_not_linked_to_signed_creation")
+            # Independent source-account replay: the old evidence contained
+            # an analysis hash but not the seven original public account
+            # responses. No later S2 value may reconstruct an S1 bank.
+            bank=source.get("s1_raw_bank")
+            graph=source.get("graph")
+            if (source.get("s1_bank_preserved_before_S2") is not True
+                    or type(bank) is not dict or type(graph) is not dict
+                    or type(bank.get("accounts")) is not dict
+                    or set(bank.get("graph",{}))!=set(graph)
+                    or bank.get("graph")!=graph
+                    or bank.get("source_signature")!=source.get("signature")
+                    or bank.get("creation_slot")!=source.get("source_slot")
+                    or bank.get("context_slot")!=source.get("s1_slot")
+                    or bank.get("received_at_ms")!=source.get("s1_received_ms")
+                    or set(bank["accounts"])!=set(graph.values())
+                    or _hash(bank)!=source.get("s1_raw_bank_sha256")):
+                raise ValueError("original_seven_account_S1_bank_tampered_or_missing")
+            if source.get("s1_analysis_hash_sha256") is not None:
+                try:
+                    reproduced=analyze_snapshot(bank["accounts"],
+                        context_slot=bank["context_slot"],
+                        expected_mint=source["mint"],pool_address=source["pool"],
+                        input_lamports=PAPER_BUY_LAMPORTS,
+                        evidence_profile="published_metadata_v1")
+                except (SnapshotEvidenceError,ValueError,KeyError,TypeError):
+                    raise ValueError("original_S1_account_analysis_cannot_be_replayed") from None
+                if (_hash(reproduced)!=source["s1_analysis_hash_sha256"]
+                        or reproduced.get("blocking_reasons")!=source.get("s1_blocking_reasons")
+                        or reproduced.get("conditional_projection")!=source.get("s1_buy_model")):
+                    raise ValueError("original_S1_account_analysis_hash_or_claim_mismatch")
+            elif source.get("s1_refusal")!="unsupported_or_invalid_seven_account_bank":
+                raise ValueError("missing_original_S1_account_analysis_or_refusal")
             frame=source.get("s1_preoutcome_frame")
             saved_master=source.get("s1_preoutcome_master_decision")
             saved_reference=source.get("s1_preoutcome_reference_decision")
