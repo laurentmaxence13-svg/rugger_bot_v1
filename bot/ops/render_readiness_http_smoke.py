@@ -38,10 +38,12 @@ def fetch_public_json(path, *, opener=urlopen):
 def validate_readiness(health, signed, readiness):
     """Reject claims of Master execution or cross-feed substitution."""
     if (type(health) is not dict or
+            health.get("status") != "up" or
             health.get("financial_order_submitted") is not False):
         raise ValueError("unsafe_readonly_health")
     if (type(signed) is not dict or
             signed.get("live_trading_enabled") is not False or
+            signed.get("wallet_connected") is not False or
             signed.get("no_signing_or_order_submission") is not True):
         raise ValueError("unsafe_signed_source")
     expected = assess_master_paper_readiness(signed)
@@ -53,7 +55,7 @@ def validate_readiness(health, signed, readiness):
                   "experimental_dexscreener_excluded",
                   "financial_order_submitted", "live_trading_enabled",
                   "requires_explicit_new_evidence_to_advance"):
-        if readiness.get(field) != expected[field] or (
+        if field not in readiness or readiness.get(field) != expected[field] or (
                 type(readiness.get(field)) is not type(expected[field])):
             raise ValueError("inconsistent_master_readiness")
     return {
