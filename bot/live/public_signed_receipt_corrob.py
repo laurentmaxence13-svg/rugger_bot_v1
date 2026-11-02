@@ -20,6 +20,7 @@ EXPECTED_SIGNATURE = "3TEheZgrLKhD3s1nTnae6wHp8cKuJCr67QBJc1dDMNdLdNn4HSsa3SkbWN
 EXPECTED_SLOT = 464124955
 EXPECTED_MESSAGE_SHA256 = "a4e81e4c6620e2aaa4be3d98e76224f43cebdddc24e49e32122bd3bc772f29b7"
 EXPECTED_CREATOR = "24L1tRQfEfc6yRCVocnJisprJ2qEfEuC7ApnSC7ADgiU"
+EXPECTED_PAYER = "5bhCPvCCrXitKGcTx48iWdUQYUaGhVwCX8Wf3LAwW5RS"
 EXPECTED_MINT = "EUcMrcmVJPLyeH9xw7NSGsdHyzLTVywvNNieP4FcYq2X"
 EXPECTED_POOL = "AHHBr6UkNtjxKuiGKuLdRi1kA1w2sDZsHGjJRDEaMXef"
 MAX_RESPONSE_BYTES = 1_500_000
@@ -35,6 +36,7 @@ SAFE_REFUSALS = frozenset((
     "independent_signed_receipt_identity_mismatch",
     "independent_signed_message_hash_mismatch",
     "independent_signed_launch_creation_not_matched",
+    "independent_signed_payer_not_present_in_message",
     "unsupported_transaction_message_or_header",
     "historical_transaction_Ed25519_signature_invalid",
     "compiled_signer_count_invalid",
@@ -92,14 +94,27 @@ def check_pinned_public_receipt(tx):
     if (crypto.get("cryptographic_signatures_verified") is not True or
             crypto.get("exact_message_sha256") != EXPECTED_MESSAGE_SHA256):
         _reject("independent_signed_message_hash_mismatch")
-    launches = compiled_launchlab_creations(tx)
+    # The raw compiled parser exposes "pool_state"; archived proof records
+    # normalize that field to "pool". Only OUTER compiled instructions are
+    # Ed25519-signed. Never accept an inner RPC-attested creation as signed.
+    outer = dict(tx, meta=dict(tx["meta"], innerInstructions=[]))
+    launches = compiled_launchlab_creations(outer)
     if type(launches) is not list or not any(
             type(item) is dict and
             item.get("creator") == EXPECTED_CREATOR and
+            item.get("payer") == EXPECTED_PAYER and
             item.get("mint") == EXPECTED_MINT and
-            item.get("pool") == EXPECTED_POOL
+            item.get("pool_state") == EXPECTED_POOL
             for item in launches):
         _reject("independent_signed_launch_creation_not_matched")
+    message = tx["transaction"].get("message")
+    if (type(message) is not dict or type(message.get("header")) is not dict
+            or type(message.get("accountKeys")) is not list):
+        _reject("independent_signed_payer_not_present_in_message")
+    count = message["header"].get("numRequiredSignatures")
+    if (type(count) is not int or count < 1
+            or EXPECTED_PAYER not in message["accountKeys"][:count]):
+        _reject("independent_signed_payer_not_present_in_message")
     return {
         "schema": SCHEMA,
         "status": "INDEPENDENT_ED25519_RECEIPT_VERIFIED",
