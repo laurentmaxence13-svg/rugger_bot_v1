@@ -1,6 +1,7 @@
 name: One public Raydium index to independently signed SOL creator probe (NO ORDERS)
 on:
   pull_request:
+    types: [labeled]
     paths:
       - 'bot/live/public_index_signed_creation.py'
       - 'bot/live/public_sol_forward_paper.py'
@@ -10,7 +11,10 @@ permissions:
   contents: read
 jobs:
   signed-index-readonly:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'run-public-index-once' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
