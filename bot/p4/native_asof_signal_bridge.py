@@ -32,7 +32,7 @@ def native_asof_bank(*,analysis,mint,creator,pool,source_slot,available_at_ms):
         "additional_execution_costs_unknown",
         "creation_transaction_not_verified_by_snapshot",
     }
-    blockers=analysis.get("blocking_reasons")
+    blockers=analysis.get("blocking_reasons", [])
     if (type(analysis.get("risk_flags")) is not list
             or analysis["risk_flags"]
             or type(blockers) is not list
