@@ -37,7 +37,7 @@ def assess_master_paper_readiness(signed_snapshot):
     state = signed_snapshot.get("observer_status")
     summary = signed_snapshot.get("last_summary")
     fresh = signed_snapshot.get("signed_evidence_fresh") is True
-    blocker = STATE_TO_BLOCKER.get(state)
+    blocker = STATE_TO_BLOCKER.get(state) if type(state) is str else None
     if blocker is None:
         if state != "CAPTURE_COMPLETED_READ_ONLY":
             blocker = "UNRECOGNIZED_SIGNED_SOURCE_STATE"
