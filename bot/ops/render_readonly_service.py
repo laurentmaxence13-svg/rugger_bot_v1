@@ -50,6 +50,10 @@ OPTIONAL_RPC_COUNTERS = frozenset((
 # independent DexScreener experiment. Never publish impossible provider usage.
 SIGNED_SOURCE_COUNTER_LIMITS = {
     "log_events_retained": 100,
+    "selected_independent_signed_creators": 3,
+    "supported_native_SOL_graphs": 3,
+    "frozen_S1_decisions": 3,
+    "actual_signed_policy_frozen_paper_cases": 3,
     "actual_verification_rpc_calls_used": 10,
     "actual_bank_rpc_calls_used": 5,
 }
