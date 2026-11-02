@@ -60,6 +60,7 @@ SIGNED_SOURCE_COUNTER_LIMITS = {
 # A downstream signed observation cannot outnumber its upstream evidence.
 SIGNED_SOURCE_COUNT_RELATIONS = (
     ("crypto_signed_creation_transactions", "log_events_retained"),
+    ("supported_native_SOL_graphs", "selected_independent_signed_creators"),
     ("frozen_S1_decisions", "supported_native_SOL_graphs"),
     ("actual_signed_policy_frozen_paper_cases", "frozen_S1_decisions"),
 )
@@ -107,6 +108,28 @@ def sanitize_public_summary(result):
         if downstream in safe and upstream in safe:
             if safe[downstream] > safe[upstream]:
                 raise ValueError("inconsistent_signed_source_evidence")
+    # The source pipeline emits these statuses at distinct, audited stages.
+    # Reject a contradictory stage/count combination instead of showing
+    # impossible signed provenance to Rugger Wallet. Missing optional counters
+    # remain omitted for backward-compatible offline diagnostic fixtures.
+    stage = safe.get("capture_status")
+    if stage == "NO_SIGNED_CREATIONS_IN_BOUNDED_CAPTURE":
+        zero_fields = ("selected_independent_signed_creators",
+                       "supported_native_SOL_graphs", "frozen_S1_decisions",
+                       "actual_signed_policy_frozen_paper_cases")
+    elif stage == "NO_VALID_POOL_ACCOUNT_GRAPHS":
+        zero_fields = ("supported_native_SOL_graphs", "frozen_S1_decisions",
+                       "actual_signed_policy_frozen_paper_cases")
+    else:
+        zero_fields = ()
+    if any(safe.get(key, 0) != 0 for key in zero_fields):
+        raise ValueError("inconsistent_signed_capture_stage")
+    if (stage == "NO_VALID_POOL_ACCOUNT_GRAPHS"
+            and safe.get("selected_independent_signed_creators", 1) == 0):
+        raise ValueError("inconsistent_signed_capture_stage")
+    if (stage == "TWO_CLOCK_MODEL_CAPTURE_COMPLETE_NOT_PROFITABILITY"
+            and safe.get("supported_native_SOL_graphs", 1) == 0):
+        raise ValueError("inconsistent_signed_capture_stage")
     return safe
 
 
