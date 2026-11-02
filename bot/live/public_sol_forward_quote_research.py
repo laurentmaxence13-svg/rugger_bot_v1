@@ -53,6 +53,7 @@ def run(*,directory,window_count=3,seconds=75,
     rejected=0
     receipts=[]
     signed_s1_bank_count=0
+    partial_s1_bank_count=0
     signed_s1_bank_refusals={}
     native_curve_spot_observed=0
     for i in range(window_count):
@@ -83,6 +84,27 @@ def run(*,directory,window_count=3,seconds=75,
                                ("identity_qualified","creation_verified","supply_verified"))):
                     raise ValueError("unverifiable_qualified_s1_bank_report")
                 signed_s1_bank_count+=1
+            elif status=="S1_PARTIAL_PLATFORM_ADMIN_UNKNOWN_MODEL_ONLY":
+                frame=row.get("s1_preoutcome_frame")
+                bank=frame.get("bank_state") if type(frame) is dict else None
+                decision=row.get("s1_preoutcome_master_decision")
+                if (type(bank) is not dict
+                        or bank.get("source_slot")!=row.get("s1_slot")
+                        or bank.get("mint")!=row.get("mint")
+                        or bank.get("pool")!=row.get("pool")
+                        or bank.get("provenance")!="retained_rpc_snapshot"
+                        or bank.get("identity_qualified") is not False
+                        or bank.get("platform_admin_pda_unverified") is not True
+                        or bank.get("research_only_no_execution") is not True
+                        or bank.get("creation_verified") is not True
+                        or bank.get("supply_verified") is not True
+                        or type(decision) is not dict
+                        or decision.get("action")=="ENTER"
+                        or decision.get("execution_authorized") is not False
+                        or "source_identity_supply_creation_unqualified" not in
+                            decision.get("reasons",[])):
+                    raise ValueError("unqualified_partial_platform_identity_promoted")
+                partial_s1_bank_count+=1
             else:
                 signed_s1_bank_refusals[status]=signed_s1_bank_refusals.get(status,0)+1
             if row.get("native_sol_signal_status")=="SOURCE_NATIVE_SOL_PRICE_OBSERVED":
@@ -142,6 +164,7 @@ def run(*,directory,window_count=3,seconds=75,
         signed_source_creators=original["uniquely_selected_signed_creators"],
         native_SOL_source_creators=original["native_SOL_source_creators"],
         certified_s1_banks_forwarded_to_real_Master=signed_s1_bank_count,
+        partial_s1_banks_with_model_costs_but_UNVERIFIED_identity=partial_s1_bank_count,
         signed_s1_bank_source_refusal_counts=signed_s1_bank_refusals,
         native_SOL_curve_spot_observations=native_curve_spot_observed,
         source_bank_is_not_a_complete_asof_signal_or_trade=True,
