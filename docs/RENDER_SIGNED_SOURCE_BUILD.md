@@ -9,12 +9,12 @@ command of an existing service; this PR does not claim to have deployed it.
 After code review and explicit approval of the *Render feature branch* only,
 the operator must update **that existing service** using the dashboard:
 
-- Build command: `sh scripts/render_readonly_build.sh`
+- Build command: `python -B -m bot.ops.render_readonly_build`
 - Start command: `python render_status_service.py` (unchanged)
 - Auto-deploy: OFF (unchanged)
 - No merge to `main`; no new paid service or change of plan.
 
-The build script installs only the existing declared free Python dependencies,
+The isolated build helper installs only the existing declared free Python dependencies,
 requires the independent Ed25519 verifier and imports the genuine signed Helius
 read-only pipeline. If any step fails, the build exits nonzero. It does not
 capture market data, read secrets, connect wallets or submit transactions.
