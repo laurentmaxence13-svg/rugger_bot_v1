@@ -79,7 +79,12 @@ def run(*,directory,window_count=3,seconds=75,
                         or buy.get("output_mint")!=row.get("mint")
                         or buy.get("provider_route_pool")!=row.get("pool")
                         or buy.get("actual_fill") is not False
-                        or buy.get("hypothetical_lot_was_never_executed") is not True):
+                        or buy.get("hypothetical_lot_was_never_executed") is not True
+                        or buy.get("provider_produced_at_ms") is not None
+                        or buy.get("provider_source_slot") is not None
+                        or type(row.get("s2_received_ms")) is not int
+                        or type(signed.get("at_ms")) is not int
+                        or not signed["at_ms"]<=buy.get("received_at_utc_ms",0)<row["s2_received_ms"]):
                     raise ValueError("unqualified_signed_S1_buy_quote_provenance")
             if sell is not None:
                 if (type(buy) is not dict
@@ -90,6 +95,8 @@ def run(*,directory,window_count=3,seconds=75,
                         or type(row.get("s2_received_ms")) is not int
                         or sell.get("received_at_utc_ms",0)<row["s2_received_ms"]
                         or sell.get("actual_fill") is not False
+                        or sell.get("provider_produced_at_ms") is not None
+                        or sell.get("provider_source_slot") is not None
                         or row.get("source_produced_quote_clocks_verified") is not False
                         or row.get("research_quote_pair_is_not_an_actual_Master_PAPER_cycle") is not True):
                     raise ValueError("unqualified_signed_S2_sell_quote_provenance")
