@@ -1,6 +1,7 @@
 name: Genuine Master signed S1 score replay over free Solana PAPER capture (NO ORDERS)
 on:
   pull_request:
+    types: [labeled]
     paths:
       - 'bot/p3/signed_creation_forward_bank.py'
       - 'bot/p4/signed_master_causal_replay.py'
@@ -10,7 +11,10 @@ permissions:
   contents: read
 jobs:
   retain-and-replay-signed-s1:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'run-genuine-master-s1-replay-once' &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 9
     env:
