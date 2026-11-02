@@ -23,5 +23,5 @@ Version 1, 2026-11-03. The canonical copy lives on branch `claude/autonomy-frame
    e. tests deleted, skipped or weakened;
    f. changes to `.github/workflows/` that add secrets, write permissions or schedules;
    g. changes that touch the default branch or its protection.
-5. Post one comment with `gh pr comment <N> --body-file <file>`. Start it with `[automated review]`. Include the head SHA, the suite counts, the checklist results, and exactly one verdict: `READY_FOR_OWNER`, `CHANGES_REQUESTED` or `NEEDS_OWNER_DECISION`.
+5. Post one comment with `gh pr comment <N> --body-file <file>`. Start it with `[automated review]`. Include the head SHA, the suite counts, the checklist results, and exactly one verdict: `READY_FOR_OWNER`, `CHANGES_REQUESTED` or `NEEDS_OWNER_DECISION`. The planner in `tools/dev_state.py` reads this comment: a `CHANGES_REQUESTED` verdict makes the development agent resume that branch with the findings, within the round limit. `NEEDS_OWNER_DECISION` never triggers automatic work.
 6. Stop. If `gh` is unavailable, give the full review in the final message instead.

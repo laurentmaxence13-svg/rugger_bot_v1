@@ -1,0 +1,69 @@
+{
+  "coordination_branch": "claude/launchlab-trade-events",
+  "items": [
+    {
+      "id": "slot-timing-v1",
+      "rank": 1,
+      "title": "Measure seconds per Solana slot from the committed SOL pool archives",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "bot/market/timing.py",
+        "tests/test_launchlab_timing.py",
+        "docs/research/SLOT_TIMING_20261103.md"
+      ],
+      "acceptance": [
+        "bot/market/timing.py exposes pure functions over (slot, block_time) pairs and does no network access",
+        "tests read only tests/fixtures/launchlab_sol_pools and synthetic samples, and pass with python -W error",
+        "the research note reports the measured seconds-per-slot range, the number of pairs, the 1-second block-time quantisation, and states that this is not a measurement of our own orders",
+        "the 2-slot latency assumption of bot/market/replay.py is reported in seconds; its default is NOT changed"
+      ]
+    },
+    {
+      "id": "warnings-gate-v1",
+      "rank": 2,
+      "title": "Run the offline suite with warnings treated as errors",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": ["tests/"],
+      "acceptance": [
+        "python -W error -m pytest on the offline suite passes on Ubuntu",
+        "only real warnings are fixed; no test is skipped or weakened to hide one"
+      ]
+    },
+    {
+      "id": "legacy-copies-doc-v1",
+      "rank": 3,
+      "title": "Document the legacy copies bot/bot and tests/tests",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": ["docs/autonomy/LEGACY_COPIES.md"],
+      "acceptance": [
+        "the note lists each legacy copy, its size, and whether anything imports it",
+        "nothing is deleted or moved"
+      ]
+    },
+    {
+      "id": "master-comparison-v1",
+      "rank": 4,
+      "title": "Compare the Master decision logic on the archived SOL pools",
+      "offline": true,
+      "requires_owner": true,
+      "target_paths": ["bot/market/", "tools/"],
+      "acceptance": [
+        "gated: needs an owner decision on importing the decision logic of PR 89"
+      ]
+    },
+    {
+      "id": "broader-sample-v1",
+      "rank": 5,
+      "title": "Broaden the LaunchLab sample, including dead pools",
+      "offline": false,
+      "requires_owner": true,
+      "target_paths": ["data/launchlab_trades/"],
+      "acceptance": [
+        "gated: needs an owner-approved RPC budget; never run by a routine"
+      ]
+    }
+  ]
+}
