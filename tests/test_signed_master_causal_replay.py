@@ -166,3 +166,26 @@ def test_missing_candidate_campaign_keeps_null_profit_without_calls(tmp_path):
     assert result["genuine_master_S1_decisions_recomputed"]==0
     assert result["master_net_pnl_lamports"] is None
     assert result["master_paper_entries"]==0
+
+
+def test_rehashed_edited_signed_slot_still_breaks_source_binding(tmp_path,monkeypatch):
+    folder=signed_s1_campaign(tmp_path,monkeypatch)
+    window=folder/"window_00"
+    source=json.loads((window/"public_log_capture.json").read_text())
+    verified=json.loads((window/"finalized_creation_proof.json").read_text())
+    paired=json.loads((window/"paired_master_source_shadow.json").read_text())
+    summary=json.loads((window/"summary.json").read_text())
+    campaign=json.loads((folder/"campaign_summary.json").read_text())
+    verified["records"][0]["slot"]+=1
+    paired["frozen_source_hash_sha256"]=_hash(dict(
+        log_chain=source["report"]["signature_ledger_sha256"],
+        verified_receipts=verified))
+    write(window/"finalized_creation_proof.json",verified)
+    write(window/"paired_master_source_shadow.json",paired)
+    summary["artifact_sha256"]["finalized_creation_proof"]=_hash(verified)
+    summary["artifact_sha256"]["paired_master_source_shadow"]=_hash(paired)
+    write(window/"summary.json",summary)
+    campaign["windows"][0]["source_summary_sha256"]=_hash(summary)
+    write(folder/"campaign_summary.json",campaign)
+    with pytest.raises(ValueError,match="invalid_signed_receipt_identity"):
+        replay_public_signed_cohort(folder)
