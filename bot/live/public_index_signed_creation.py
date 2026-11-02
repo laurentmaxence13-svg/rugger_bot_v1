@@ -30,6 +30,32 @@ SIGNATURE_PAGE_LIMIT=1000
 MAX_RPC_PER_POOL=10
 MAX_TOTAL_RPC=20
 
+# User-controlled RPC/network error strings must never reach CI or the Wallet.
+# Only our own constant public-source refusal identifiers are safe.
+SAFE_PUBLIC_ERRORS=frozenset((
+    "new_index_source_directory_required",
+    "wrong_source_index_registration_schema",
+    "wrong_sol_source_genesis",
+    "unbounded_source_pool_signature_page",
+    "malformed_or_duplicate_pool_signatures",
+    "source_outer_creation_parser_refused",
+    "source_compiled_signer_keys_unavailable",
+    "source_compiled_signer_count_invalid",
+    "signed_creation_not_cryptographically_verified",
+    "source_creator_signature_not_independently_verified",
+    "public_pool_index_call_cap_exceeded",
+    "unbounded_source_read_budget",
+    "public_rpc_http_unavailable",
+    "public_rpc_reply_too_large",
+    "public_rpc_invalid_json",
+    "helius_rpc_envelope_refused",
+    "non_readonly_or_malformed_public_rpc_refused",
+    "raydium_index_redirect_forbidden",
+    "raydium_index_unexpected_envelope",
+    "raydium_index_rows_invalid",
+    "raydium_index_maximum_response_size_exceeded",
+))
+
 
 def _sha(doc):
     return hashlib.sha256(json.dumps(doc,sort_keys=True,separators=(",",":"),
@@ -211,8 +237,15 @@ def main(argv=None):
     try:
         result=run_index_proof_campaign(output_dir=args.output_dir)
     except Exception as error:
+        reason=str(error) if type(error) is ValueError else ""
+        if reason.startswith("raydium_index_http_status_") and (
+                reason.split("_")[-1].isdigit() and len(reason.split("_")[-1])==3):
+            code=reason
+        else:
+            code=reason if reason in SAFE_PUBLIC_ERRORS else None
         print(json.dumps(dict(schema=SCHEMA,status="REFUSED",
               safe_error_class=type(error).__name__,
+              safe_reason_code=code,
               financial_order_submitted=False),sort_keys=True))
         return 2
     print(json.dumps(result,sort_keys=True,allow_nan=False))
