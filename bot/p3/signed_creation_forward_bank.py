@@ -80,14 +80,15 @@ def _select(capture, verified):
 
 def signed_creator_asof_paper(capture, verified, rpc, *,
                               sleep=time.sleep, clock_ms=lambda: time.time_ns()//1_000_000,
-                              delay_seconds=12):
+                              delay_seconds=12,include_readonly_quotes=False):
     """Capture S1 + frozen actual shadow decisions, THEN S2 (no trade calls).
 
     Missing or moved pools are preserved as refusals. Native SDK quotes are
     conditional, not executable provider quotes; there is no settled book.
     """
     if (type(delay_seconds) is not int or not 1<=delay_seconds<=MAX_WAIT_SECONDS
-            or not callable(rpc) or not callable(sleep) or not callable(clock_ms)):
+            or not callable(rpc) or not callable(sleep) or not callable(clock_ms)
+            or type(include_readonly_quotes) is not bool):
         raise ValueError("bounded_readonly_prospective_inputs_required")
     candidates, denominator = _select(capture, verified)
     report = dict(schema="rugger-signed-creator-asof-paired-paper-v1",
@@ -238,6 +239,27 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             master_full_decision_sha256=_hash(master),
             paired_comparison_is_not_trade_backtest=True,
             future_S2_used=False,real_order=False)
+        if include_readonly_quotes:
+            # Explicitly OPTIONAL: research-only exact-lot free GET quote
+            # after the REAL Master's WAIT has been frozen, before S2 reads.
+            # It cannot retroactively change the original Master decision,
+            # cannot grant source-produced quote clocks, and never buys.
+            from bot.p3.real_signed_sol_exactlot_quote_probe import (
+                _quote, _checked_receipt, BUY_LOT_LAMPORTS)
+            row["s1_independent_quote_state"]="REFUSED_OR_NOT_AVAILABLE"
+            try:
+                quoted=_checked_receipt("BUY",BUY_LOT_LAMPORTS,
+                    _quote("BUY",BUY_LOT_LAMPORTS))
+                if (quoted["received_at_utc_ms"]<s1at
+                        or quoted["provider_source_slot"] is not None
+                        or quoted["provider_produced_at_ms"] is not None):
+                    raise ValueError("postdecision_local_quote_clock_unqualified")
+                row["s1_independent_research_buy_quote"]=quoted
+                row["s1_independent_quote_state"]="AFTER_MASTER_WAIT_BEFORE_S2_INDICATIVE"
+            except Exception as error:
+                row["s1_independent_quote_refusal_class"]=type(error).__name__
+                # Do not leak provider response/URL or invent a price.
+                row["s1_independent_quote_state"]="QUOTE_UNAVAILABLE_NOT_EXECUTABLE"
     report["freeze_completed_before_S2"]=True
     report["status"]="S1_DECISIONS_FROZEN_BEFORE_S2"
     # Print only public receipt identifying data; subsequent I/O cannot
@@ -250,6 +272,29 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
     for row in report["observations"]:
         if row.get("graph") is None:continue
         row["s2_slot"]=s2slot;row["s2_received_ms"]=clock_ms()
+        if include_readonly_quotes and row.get("s1_independent_research_buy_quote") is not None:
+            from bot.p3.real_signed_sol_exactlot_quote_probe import _quote,_checked_receipt
+            buy_quote=row["s1_independent_research_buy_quote"]
+            row["s2_independent_quote_state"]="REFUSED_OR_NOT_AVAILABLE"
+            try:
+                exact_qty=int(buy_quote["output_atomic"])
+                quoted=_checked_receipt("SELL",exact_qty,
+                    _quote("SELL",exact_qty))
+                if (quoted["received_at_utc_ms"]<row["s2_received_ms"]
+                        or quoted["received_at_utc_ms"]<=buy_quote["received_at_utc_ms"]
+                        or quoted["provider_source_slot"] is not None
+                        or quoted["provider_produced_at_ms"] is not None):
+                    raise ValueError("post_S2_quote_clock_unqualified")
+                row["s2_independent_research_sell_quote"]=quoted
+                row["s2_independent_quote_state"]="AFTER_S2_INDICATIVE"
+                row["research_only_quote_delta_before_extra_costs_lamports"]=str(
+                    int(quoted["output_atomic"])-int(buy_quote["input_atomic"]))
+                row["source_produced_quote_clocks_verified"]=False
+                row["research_quote_is_not_owned_Master_position"]=True
+                row["research_quote_pair_is_not_an_actual_Master_PAPER_cycle"]=True
+            except Exception as error:
+                row["s2_independent_quote_refusal_class"]=type(error).__name__
+                row["s2_independent_quote_state"]="QUOTE_UNAVAILABLE_NOT_EXECUTABLE"
         if row.get("s1_buy_model") is None:
             row["s2_refusal"]="no_qualified_preexisting_s1_buy_projection"
             continue
