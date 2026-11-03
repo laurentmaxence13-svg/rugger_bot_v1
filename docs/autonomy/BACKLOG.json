@@ -20,8 +20,23 @@
       ]
     },
     {
-      "id": "warnings-gate-v1",
+      "id": "blocktime-crosscheck-v1",
       "rank": 2,
+      "title": "Cross-check blockTime against getBlockTime on two independent RPC providers",
+      "offline": false,
+      "requires_owner": true,
+      "target_paths": [
+        "docs/research/",
+        "tests/fixtures/launchlab_sol_pools/"
+      ],
+      "acceptance": [
+        "gated: needs an owner-approved budget of a few getBlockTime calls on two providers; never run by a routine without it",
+        "explains the gap between the measured seconds per slot and the 400 ms reference before any latency assumption changes"
+      ]
+    },
+    {
+      "id": "warnings-gate-v1",
+      "rank": 3,
       "title": "Run the offline suite with warnings treated as errors",
       "offline": true,
       "requires_owner": false,
@@ -33,7 +48,7 @@
     },
     {
       "id": "legacy-copies-doc-v1",
-      "rank": 3,
+      "rank": 4,
       "title": "Document the legacy copies bot/bot and tests/tests",
       "offline": true,
       "requires_owner": false,
@@ -45,7 +60,7 @@
     },
     {
       "id": "master-comparison-v1",
-      "rank": 4,
+      "rank": 5,
       "title": "Compare the Master decision logic on the archived SOL pools",
       "offline": true,
       "requires_owner": true,
@@ -56,7 +71,7 @@
     },
     {
       "id": "broader-sample-v1",
-      "rank": 5,
+      "rank": 6,
       "title": "Broaden the LaunchLab sample, including dead pools",
       "offline": false,
       "requires_owner": true,

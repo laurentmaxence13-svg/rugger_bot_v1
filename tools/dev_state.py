@@ -162,8 +162,9 @@ def plan(branches, items, max_rounds=MAX_ROUNDS):
             'reasons': reasons or ['no backlog item is defined']}
 
 
-def _run(args, cwd=ROOT):
-    return subprocess.run(args, cwd=cwd, check=True, capture_output=True, text=True,
+def _run(args):
+    """Run git or gh in the caller's working directory: the dev branch checkout."""
+    return subprocess.run(args, check=True, capture_output=True, text=True,
                           encoding='utf-8').stdout
 
 

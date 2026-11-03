@@ -166,6 +166,35 @@ def test_repository_backlog_is_valid_and_ranked():
     assert any(i['offline'] and not i['requires_owner'] for i in items)
 
 
+def test_scope_checks_the_callers_repository_not_the_tool_checkout(tmp_path, monkeypatch):
+    """The routine runs the protocol checkout's tool from a dev branch working tree."""
+    import subprocess
+
+    repo = tmp_path / 'work'
+    repo.mkdir()
+
+    def git(*args):
+        return subprocess.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@t.invalid', *args],
+                              cwd=repo, check=True, capture_output=True, text=True)
+
+    git('init', '-q', '-b', 'base')
+    git('commit', '-q', '--allow-empty', '-m', 'base')
+    git('checkout', '-q', '-b', 'dev')
+    (repo / 'bot').mkdir()
+    (repo / 'bot' / 'timing.py').write_text('x = 1\n', encoding='utf-8')
+    (repo / 'elsewhere.txt').write_text('y\n', encoding='utf-8')
+    git('add', '-A')
+    git('commit', '-q', '-m', 'work')
+    backlog = tmp_path / 'backlog.json'
+    backlog.write_text(json.dumps({'coordination_branch': 'base',
+                                   'items': [item('x', 1, ['bot/timing.py'])]}), encoding='utf-8')
+    monkeypatch.chdir(repo)
+    assert ds.main(['scope', 'x', '--base', 'base', '--backlog', str(backlog)]) == 3
+    git('rm', '-q', 'elsewhere.txt')
+    git('commit', '-q', '-m', 'drop out-of-scope file')
+    assert ds.main(['scope', 'x', '--base', 'base', '--backlog', str(backlog)]) == 0
+
+
 def test_duplicate_or_incomplete_backlog_is_rejected(tmp_path):
     duplicate = {'coordination_branch': 'claude/x', 'items': [
         item('same', 1, ['a']), item('same', 2, ['b'])]}
