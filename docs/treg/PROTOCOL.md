@@ -35,7 +35,7 @@ Statut : **brouillon local, non publié, non activé**. Politique livrée en pau
   `treg.replay` dans l'ordre des commentaires.
 - Enveloppe d'événement (`rugger-treg-event-v1`) : `event_id`, `task_id`, `seq`,
   `prev_digest` (chaîne de hash), `from_agent`, `type`
-  (`create|transition|heartbeat|wake`), `hop`, `utc`, `payload`, `digest`.
+  (`create|transition|heartbeat|wake|link`), `hop`, `utc`, `payload`, `digest`.
 - Une issue unique **`RUGGER04 inbox (T-REG)`** reçoit les rapports finaux, lisible
   par le propriétaire et, si son connecteur GitHub le permet, par RUGGER 04.
 
@@ -62,7 +62,7 @@ Preuves exigées à `submitted` :
 ## 4. Réveil, reprise, interruption
 
 À chaque réveil (message pointeur, événement de PR, rappel de sécurité) :
-1. relire les issues `treg` et leurs commentaires ; les enregistrer en snapshot JSON ;
+1. relire **l'issue de sa tâche et celles de toutes ses dépendances amont** (`depends_on`, transitif) ; les enregistrer en snapshot JSON (`treg.py ingest`). Les tâches **aval** ne sont pas nécessaires : chaque tâche déclare ses successeurs (`downstream`, à la création ou par un événement `link` du propriétaire), et `wake_targets` les notifie même sur une vue partielle. `emit` signale `partial_snapshot_missing` si une dépendance amont manque et `done_without_downstream_nobody_notified` si une clôture ne réveille personne ;
 2. `python -B tools/treg.py validate snapshot.json --policy docs/treg/agents.json` ;
 3. `python -B tools/treg.py plan snapshot.json --policy … --agent R0x --now <UTC>` ;
 4. exécuter **une seule** action, écrire l'événement, puis envoyer au plus les

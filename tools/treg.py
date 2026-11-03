@@ -34,7 +34,7 @@ KINDS = ('data_handoff', 'implement', 'report')
 STATUSES = ('authorized', 'claimed', 'in_progress', 'submitted', 'in_review',
             'changes_requested', 'done', 'blocked', 'cancelled')
 LEASED = ('claimed', 'in_progress', 'in_review')
-TYPES = ('create', 'transition', 'heartbeat', 'wake')
+TYPES = ('create', 'transition', 'heartbeat', 'wake', 'link')
 HEX40 = re.compile(r'[0-9a-f]{40}\Z')
 HEX64 = re.compile(r'[0-9a-f]{64}\Z')
 TASK_ID = re.compile(r'T-\d{4}\Z')
@@ -154,7 +154,7 @@ def _transition_allowed(task, frm, to, agent):
 
 
 def _validate_new_task(task, policy):
-    keys = {'task_id', 'kind', 'title', 'assignee', 'reviewer', 'depends_on', 'authorization', 'branch'}
+    keys = {'task_id', 'kind', 'title', 'assignee', 'reviewer', 'depends_on', 'authorization', 'branch', 'downstream'}
     if type(task) is not dict or set(task) - keys or not {'task_id', 'kind', 'title', 'assignee',
                                                           'depends_on', 'authorization'} <= set(task):
         raise TregError('task_fields')
@@ -166,10 +166,30 @@ def _validate_new_task(task, policy):
         ok, reason = check_branch(policy, task['assignee'], task.get('branch') or '')
         if not ok:
             raise TregError('task_branch_refused:' + reason)
+    _validate_downstream(task.get('downstream', []), task['task_id'])
     auth = task['authorization']
     if (type(auth) is not dict or auth.get('channel') != 'owner_chat'
             or not HEX64.match(str(auth.get('quote_sha256', ''))) or not auth.get('scope')):
         raise TregError('owner_chat_authorization_required')
+
+
+def _validate_downstream(entries, own_id):
+    """Forward links: who must be woken when this task is done (works on a partial snapshot)."""
+    if type(entries) is not list:
+        raise TregError('downstream_must_be_list')
+    for entry in entries:
+        if (type(entry) is not dict or set(entry) != {'task_id', 'agent'} or not TASK_ID.match(str(entry['task_id']))
+                or entry['task_id'] == own_id or entry['agent'] not in AGENTS):
+            raise TregError('downstream_entry_invalid')
+
+
+def missing_references(state):
+    """Upstream tasks (depends_on) absent from the snapshot. A valid view holds every task it
+    touches plus their transitive upstream; downstream tasks are not needed (forward links)."""
+    refs = set()
+    for task in state['tasks'].values():
+        refs.update(task['depends_on'])
+    return sorted(refs - set(state['tasks']))
 
 
 def _check_evidence(task, payload, policy):
@@ -247,6 +267,7 @@ def apply_event(state, event, policy):
         task.update(status='authorized', lease=None, evidence={}, transitions=0,
                     max_hops=policy['defaults']['max_hops'], max_transitions=policy['defaults']['max_transitions'])
         task.setdefault('reviewer', None)
+        task.setdefault('downstream', [])
         new['tasks'][task['task_id']] = task
     else:
         task = new['tasks'].get(event['task_id'])
@@ -258,7 +279,16 @@ def apply_event(state, event, policy):
         if task['status'] in LEASED and task['lease'] and task['lease']['agent'] != agent and agent != OWNER:
             if not (event['type'] == 'transition' and payload.get('status_to') == 'blocked'):
                 raise TregError('task_leased_by_' + task['lease']['agent'])
-        if event['type'] == 'heartbeat':
+        if event['type'] == 'link':
+            if agent != OWNER or task['status'] == 'cancelled' or set(payload) - {'downstream', 'recorded_by', 'note'}:
+                raise TregError('link_requires_owner_event_on_live_task')
+            entries = payload.get('downstream')
+            _validate_downstream(entries, task['task_id'])
+            if not entries:
+                raise TregError('link_requires_downstream_entries')
+            known = {e['task_id'] for e in task['downstream']}
+            task['downstream'] += [copy.deepcopy(e) for e in entries if e['task_id'] not in known]
+        elif event['type'] == 'heartbeat':
             if task['status'] not in LEASED or not task['lease'] or task['lease']['agent'] != agent:
                 raise TregError('heartbeat_requires_own_lease')
             task['lease']['until'] = fmt_utc(at + timedelta(minutes=policy['defaults']['lease_ttl_minutes']))
@@ -432,6 +462,11 @@ def wake_targets(state, event):
     elif to == 'changes_requested':
         targets.append(task['assignee'])
     elif to == 'done':
+        # Declared forward links first: they work even when the snapshot holds only this task.
+        for entry in task.get('downstream', []):
+            other = state['tasks'].get(entry['task_id'])
+            if other is None or other['status'] == 'authorized':
+                targets.append(other['assignee'] if other else entry['agent'])
         for other in sorted(state['tasks'].values(), key=lambda t: t['task_id']):
             if task['task_id'] in other['depends_on'] and other['status'] == 'authorized':
                 targets.append(other['assignee'])
@@ -470,10 +505,12 @@ def simulate_scenario(policy, *, start='2026-11-04T08:00:00Z'):
         return event
 
     for task in ({'task_id': 'T-0001', 'kind': 'data_handoff', 'title': 'S-001 validated dataset',
-                  'assignee': 'R03', 'depends_on': [], 'authorization': auth},
+                  'assignee': 'R03', 'depends_on': [], 'authorization': auth,
+                  'downstream': [{'task_id': 'T-0002', 'agent': 'R01'}]},
                  {'task_id': 'T-0002', 'kind': 'implement', 'title': 'S-001 process dataset',
                   'assignee': 'R01', 'reviewer': 'R02', 'depends_on': ['T-0001'],
-                  'branch': 'claude/r01-t0002-s001', 'authorization': auth},
+                  'branch': 'claude/r01-t0002-s001', 'authorization': auth,
+                  'downstream': [{'task_id': 'T-0003', 'agent': 'R01'}]},
                  {'task_id': 'T-0003', 'kind': 'report', 'title': 'S-001 result to RUGGER 04',
                   'assignee': 'R01', 'depends_on': ['T-0002'], 'authorization': auth}):
         emit(task['task_id'], OWNER, 'create', {'task': task})
@@ -572,8 +609,16 @@ def main(argv=None):
             raise TregError('payload_must_be_object')
         event = make_event(state, task_id=args.task, from_agent=args.agent, type=args.type, utc=args.now, payload=payload)
         new_state, _ = apply_event(state, event, policy)
-        print(json.dumps({'event': event, 'comment_body': render_comment(event),
-                          'wake_targets': wake_targets(new_state, event)}, indent=1, sort_keys=True, ensure_ascii=False))
+        targets = wake_targets(new_state, event)
+        warnings = []
+        if missing_references(new_state):
+            warnings.append('partial_snapshot_missing:' + ','.join(missing_references(new_state)))
+        task = new_state['tasks'][args.task]
+        if (event['type'] == 'transition' and payload.get('status_to') == 'done' and task['kind'] != 'report'
+                and not targets and not task.get('downstream')):
+            warnings.append('done_without_downstream_nobody_notified')
+        print(json.dumps({'event': event, 'comment_body': render_comment(event), 'wake_targets': targets,
+                          'warnings': warnings}, indent=1, sort_keys=True, ensure_ascii=False))
         return 0
     if args.cmd == 'dashboard':
         print(render_dashboard(state, generated_utc=args.now), end='')
