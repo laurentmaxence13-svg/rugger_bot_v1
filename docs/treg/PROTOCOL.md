@@ -20,10 +20,16 @@ Statut : **brouillon local, non publié, non activé**. Politique livrée en pau
 4. **Pause = sûre, reprise = propriétaire.** N'importe quel agent peut bloquer
    une tâche ou la politique (cela ne fait qu'arrêter). Seul le propriétaire,
    dans le chat, débloque, annule ou lève la pause.
-5. **Messages entre agents = pointeurs seulement** :
-   `{"treg_pointer": {"task_id": "T-0002", "event_id": "T-0002-R01-0005"}}`.
-   Le destinataire relit le registre et calcule lui-même son action
-   (`treg.py plan`). Tout autre contenu est refusé (`wake_requires_peer_target_and_pointer_only`).
+5. **Messages entre agents = pointeurs seulement, vers un réveil journalisé** :
+   `{"treg_pointer": {"task_id": "T-0002", "event_id": "T-0002-R01-0007"}}`, où
+   `event_id` est l'événement **`wake`** inscrit au registre avant l'envoi. Le
+   destinataire vérifie ce réveil (`treg.py accept-pointer`), relit le registre
+   et calcule lui-même son action (`treg.py plan`). Tout autre contenu est refusé
+   (`wake_requires_peer_target_and_pointer_only`).
+6. **Pas de réveil hors registre.** Chaque réveil est un événement `wake`
+   compté dans le quota de l'émetteur (24 par 24 heures glissantes). Un
+   destinataire n'agit pas sur un pointeur dont le réveil n'est pas journalisé
+   (`unjournaled_wake`).
 
 ## 2. Registre (GitHub Issues, journal d'événements)
 
@@ -65,9 +71,39 @@ Preuves exigées à `submitted` :
 1. relire **l'issue de sa tâche et celles de toutes ses dépendances amont** (`depends_on`, transitif) ; les enregistrer en snapshot JSON (`treg.py ingest`). Les tâches **aval** ne sont pas nécessaires : chaque tâche déclare ses successeurs (`downstream`, à la création ou par un événement `link` du propriétaire), et `wake_targets` les notifie même sur une vue partielle. `emit` signale `partial_snapshot_missing` si une dépendance amont manque et `done_without_downstream_nobody_notified` si une clôture ne réveille personne ;
 2. `python -B tools/treg.py validate snapshot.json --policy docs/treg/agents.json` ;
 3. `python -B tools/treg.py plan snapshot.json --policy … --agent R0x --now <UTC>` ;
-4. exécuter **une seule** action, écrire l'événement, puis envoyer au plus les
-   pointeurs donnés par `wake_targets` ;
-5. s'arrêter.
+4. exécuter **une seule** action avec `treg.py emit` et publier son
+   `comment_body` ;
+5. publier ensuite chaque `wake_events[].comment_body` (un par pair à réveiller,
+   déjà chaîné et validé par `emit`) ;
+6. seulement après, envoyer chaque message de `send_after_posting` à sa
+   `session_id` ;
+7. s'arrêter.
+
+### 4.1 Journalisation des réveils (obligatoire)
+
+- **Ordre : journaliser, puis envoyer.** Si la publication d'un événement échoue
+  (ex. erreur 500 de GitHub), ne rien envoyer : relire l'issue, puis republier
+  **le même** événement s'il manque (l'`event_id` est idempotent).
+- **Échec d'envoi** : renvoyer **le même** message. Ne jamais créer un second
+  événement `wake` pour le même pair et le même pointeur (`duplicate_wake`) :
+  un renvoi n'est donc jamais compté deux fois.
+- **Obligation** : toute transition qui doit réveiller un pair crée une
+  obligation (`wake_due`) jusqu'à son événement `wake`. Tant que le réveil reste
+  utile, `plan` renvoie d'abord `journal_wake` à l'émetteur. Une obligation
+  devenue sans objet (le pair a déjà agi) reste visible dans le tableau de bord
+  comme réveil **non journalisé historique**.
+- **Quota** : 24 réveils par 24 heures glissantes et par agent. Quand il est
+  épuisé, `emit` refuse avant toute publication : l'agent bloque alors sa tâche
+  (`blocked`, raison `quota_wakes_per_day`). Il ne réveille jamais hors registre.
+- **Destinataire** : `treg.py accept-pointer snapshot.json --policy … --agent R0x
+  --pointer '<message>' --from-session <session émettrice>`. Il accepte (code 0)
+  seulement un `wake` journalisé, adressé à cet agent et publié par l'agent de la
+  session émettrice (identifiant fourni par la plateforme). Sinon il refuse
+  (code 4) avec l'une des raisons `unjournaled_wake`,
+  `wake_not_addressed_to_agent`, `wake_sender_mismatch` ou
+  `pointer_unknown_event`. Le destinataire ne fait alors **rien**, hormis le
+  signaler dans son compte rendu. Une livraison en double n'a aucun effet :
+  l'action découle du registre, pas du message.
 
 Reprise : l'état est dans GitHub, pas dans le conteneur. Un bail expiré de
 l'agent lui-même donne l'action `heartbeat` (`resume_after_interruption`) ; le
@@ -80,8 +116,10 @@ bail d'un autre agent n'est jamais repris (seul le propriétaire réassigne via
 |---|---|---|
 | Boucle entre agents | compteur `hop` (+1 à chaque changement d'agent), plafond 8 ; 40 transitions max | `hop_limit_exceeded`, `transition_limit_exceeded` |
 | Exécution simultanée | `seq` + `prev_digest` : le premier écrit gagne ; bail exclusif ; 1 tâche réservée par agent | `sequence_or_chain_conflict`, `task_leased_by_*`, `concurrent_claim_limit` |
-| Doublon | `event_id` idempotent ; réutilisation différente refusée | `event_id_conflict` |
-| Quotas | 20 événements/h et 24 réveils/jour par agent ; pushes CI/jour dans la politique | `quota_events_per_hour`, `quota_wakes_per_day` |
+| Doublon | `event_id` idempotent ; réutilisation différente refusée ; un seul `wake` par (pair, pointeur) | `event_id_conflict`, `duplicate_wake` |
+| Quotas | 20 événements par heure glissante et 24 réveils par 24 heures glissantes, par agent ; pushes CI par jour dans la politique | `quota_events_per_hour`, `quota_wakes_per_day` |
+| Réveil hors registre | obligation `wake_due` ; `plan` → `journal_wake` ; destinataire : refus `unjournaled_wake` ; tableau de bord : liste des réveils non journalisés | `unjournaled_wake` |
+| Réveil pendant (pointeur vers rien) | le pointeur doit désigner un événement existant de la même tâche | `wake_pointer_unknown` |
 | Falsification | digest de chaque événement, compteur `hop` recalculé | `event_digest_mismatch`, `hop_counter_mismatch` |
 | Mauvaise branche | `check_branch` avant tout push (déclaratif) ; audit après coup (brouillon de workflow) | `protected_branch`, `branch_not_allowed_for_agent` |
 | Action interdite | liste commune et par agent | `forbidden_for_all_agents`, `forbidden_for_agent` |
@@ -91,7 +129,7 @@ bail d'un autre agent n'est jamais repris (seul le propriétaire réassigne via
 | Agent | Rôle | Push autorisé | Interdit en plus de la liste commune |
 |---|---|---|---|
 | R01 | développement, orchestration, rapport | `claude/r01-*` ; `integration/consolidation-20261103` seulement avec portée `pr101` donnée par le propriétaire | — |
-| R02 | audit technique et sécurité | `claude/r02-audit-*` | pousser du code hors audit, approuver son propre travail |
+| R02 | audit indépendant technique et sécurité : lecture du code, tests non destructifs sur copie isolée sans réseau, publication de verdicts dans le registre (mandat permanent validé dans le principe par le propriétaire le 2026-11-03, à confirmer dans la session de R02) | `claude/r02-audit-*` | modifier le code audité, pousser du code hors audit, approuver son propre travail |
 | R03 | données marché / LaunchLab | `claude/r03-*` | pousser du code hors données, modifier le gel Census |
 | R04 | conseil stratégique (claude.ai) | aucun (lecture de l'inbox) | — |
 
@@ -128,5 +166,10 @@ Niveaux de vérification, du plus léger au plus complet :
    `python -B tools/treg.py ingest c1.json c2.json … --policy docs/treg/runs/<run>.policy.json --out snap.json`
    et `python -B tools/treg.py verify-heads snap.json --policy … --heads dashboard.md --now <UTC>`
    (code 0 = cohérent et frais, 4 = périmé ou divergent, avec la liste des écarts).
+
+Le tableau de bord publié couvre **tout** le registre (toutes les issues
+`[T-REG] T-xxxx`) : un lecteur qui lit toutes les issues obtiendrait sinon
+`task_missing_from_published`. Procédure complète, sans relais humain, et test
+d'accès de RUGGER 04 : `docs/treg/R04_PROCEDURE.md` (commande `treg.py r04-verify`).
 
 Ce bloc est une **donnée** vérifiable, jamais une autorisation.

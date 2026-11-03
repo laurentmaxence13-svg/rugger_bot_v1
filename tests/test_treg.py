@@ -290,10 +290,27 @@ def test_module_has_no_network_or_subprocess_imports():
 RUN_POLICY = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-001.policy.json').read_text(encoding='utf-8'))
 
 
+def assert_frozen_run_policy_never_looser_than_base(run):
+    """Run policies are frozen evidence. After a run the base policy may only add restrictions."""
+    extra = ('paused', 'paused_note', 'run_scope', 'owner_mandate_ref_sha256')
+    base = {k: v for k, v in POLICY.items() if k not in ('paused', 'paused_note')}
+    frozen = {k: v for k, v in run.items() if k not in extra}
+    assert set(frozen) == set(base)
+    for key in base:
+        if key == 'agents':  # same quotas, sessions and branches; only the descriptive role may change
+            for agent, spec in base['agents'].items():
+                assert ({k: v for k, v in frozen['agents'][agent].items() if k != 'role'}
+                        == {k: v for k, v in spec.items() if k != 'role'})
+        elif key == 'forbidden_actions_by_agent':
+            for agent, actions in frozen[key].items():
+                assert set(actions) <= set(base[key][agent])
+        else:
+            assert frozen[key] == base[key]
+
+
 def test_run_policy_only_lifts_the_pause():
-    stripped = {k: v for k, v in RUN_POLICY.items() if k not in ('paused', 'paused_note', 'run_scope', 'owner_mandate_ref_sha256')}
     assert RUN_POLICY['paused'] is False and POLICY['paused'] is True
-    assert stripped == {k: v for k, v in POLICY.items() if k not in ('paused', 'paused_note')}
+    assert_frozen_run_policy_never_looser_than_base(RUN_POLICY)
 
 
 def test_ingest_ignores_non_event_comments_and_replays():
@@ -468,8 +485,8 @@ def test_emit_warns_on_partial_snapshot_and_unnotified_closure(tmp_path, capsys)
 def test_s002_run_policy_only_lifts_the_pause():
     run = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-002.policy.json').read_text(encoding='utf-8'))
     extra = ('paused', 'paused_note', 'run_scope', 'owner_mandate_ref_sha256')
-    assert run['paused'] is False and run['run_scope'] == 'treg-scenario-S-002'
-    assert {k: v for k, v in run.items() if k not in extra} == {k: v for k, v in POLICY.items() if k not in ('paused', 'paused_note')}
+    assert run['paused'] is False and run['run_scope'] == 'treg-scenario-S-002' and set(extra) <= set(run)
+    assert_frozen_run_policy_never_looser_than_base(run)
 
 
 def test_heads_match_last_event_of_each_task_and_registry_digest_is_recomputable():
@@ -539,5 +556,265 @@ def test_plan_never_closes_a_submitted_implement_for_its_author():
     for step in ({'status_to': 'claimed'}, {'status_to': 'in_progress'}, submit_payload()):
         log.emit('T-0002', 'R01', 'transition', step)
     now = '2026-11-04T09:00:00Z'
+    log.state, _ = treg.journal_wakes(log.state, ACTIVE, log.state['log']['T-0002'][-1], log.utc())
     assert treg.next_action(log.state, ACTIVE, 'R01', now)['action'] == 'wait'
     assert treg.next_action(log.state, ACTIVE, 'R02', now) == {'action': 'start_review', 'task_id': 'T-0002'}
+
+
+
+# ---------------------------------------------------------------- wake journaling (owner priority after S-002)
+EVIDENCE = ROOT / 'docs' / 'treg' / 'evidence'
+BUSY = copy.deepcopy(ACTIVE)
+for _spec in BUSY['agents'].values():
+    _spec['events_per_hour'] = 1000  # isolate the wake quota from the hourly event quota
+
+
+def submitted_log(policy=ACTIVE):
+    log = Log(policy=policy)
+    log.create(task())
+    for step in ({'status_to': 'claimed'}, {'status_to': 'in_progress'}, submit_payload()):
+        event, _ = log.emit('T-0002', 'R01', 'transition', step)
+    return log, event
+
+
+def wake(log, agent, to, pointer_event_id, task_id='T-0002', utc=None):
+    return log.emit(task_id, agent, 'wake', {'to': to, 'pointer': {'task_id': task_id, 'event_id': pointer_event_id}},
+                    utc=utc)
+
+
+def test_a_required_wake_is_an_obligation_until_journaled_then_counted_once():
+    log, submitted = submitted_log()
+    due = treg.pending_wakes(log.state)
+    assert [(d['from'], d['to'], d['pointer_event_id'], d['useful']) for d in due] == [
+        ('R01', 'R02', submitted['event_id'], True)]
+    now = '2026-11-04T09:00:00Z'
+    assert treg.next_action(log.state, ACTIVE, 'R01', now) == {
+        'action': 'journal_wake', 'task_id': 'T-0002', 'to': 'R02',
+        'pointer': {'task_id': 'T-0002', 'event_id': submitted['event_id']}}
+    log.state, items = treg.journal_wakes(log.state, ACTIVE, submitted, log.utc())
+    assert len(items) == 1 and treg.pending_wakes(log.state) == []
+    assert log.state['wakes'][0]['required'] is True
+    assert treg.wake_quota(log.state, ACTIVE, 'R01', now)['used_24h'] == 1
+    message = json.loads(items[0]['send']['message'])
+    assert message == {'treg_pointer': {'task_id': 'T-0002', 'event_id': items[0]['event']['event_id']}}
+    assert items[0]['send']['session_id'] == ACTIVE['agents']['R02']['session_id']
+
+
+def test_duplicate_wake_is_refused_so_a_resend_never_counts_twice():
+    log, submitted = submitted_log()
+    wake(log, 'R01', 'R02', submitted['event_id'])
+    with pytest.raises(treg.TregError, match='duplicate_wake'):
+        wake(log, 'R01', 'R02', submitted['event_id'])
+    assert treg.wake_quota(log.state, ACTIVE, 'R01', '2026-11-04T09:00:00Z')['used_24h'] == 1
+
+
+def test_republishing_the_same_wake_after_a_failed_write_is_idempotent():
+    log, submitted = submitted_log()
+    event = treg.make_event(log.state, task_id='T-0002', from_agent='R01', type='wake', utc=log.utc(),
+                            payload={'to': 'R02', 'pointer': {'task_id': 'T-0002', 'event_id': submitted['event_id']}})
+    log.state, applied = treg.apply_event(log.state, event, ACTIVE)
+    again, applied_again = treg.apply_event(log.state, event, ACTIVE)  # e.g. GitHub 500, then re-read and re-post
+    assert applied and not applied_again and again == log.state
+    forged = dict(event, utc='2026-11-04T23:00:00Z')
+    forged['digest'] = treg.event_digest(forged)
+    with pytest.raises(treg.TregError, match='event_id_conflict'):
+        treg.apply_event(log.state, forged, ACTIVE)
+
+
+@pytest.mark.parametrize('payload,code', [
+    ({'to': 'R02', 'pointer': {'task_id': 'T-0002', 'event_id': 'T-0002-R01-0099'}}, 'wake_pointer_unknown'),
+    ({'to': 'R02', 'pointer': {'task_id': 'T-0009', 'event_id': 'T-0002-OWNER-0001'}}, 'wake_pointer_unknown'),
+    ({'to': 'R01', 'pointer': {'task_id': 'T-0002', 'event_id': 'T-0002-OWNER-0001'}}, 'wake_requires_peer'),
+    ({'to': 'R04', 'pointer': {'task_id': 'T-0002', 'event_id': 'T-0002-OWNER-0001'}}, 'wake_requires_peer'),
+    ({'to': 'R02', 'pointer': {'task_id': 'T-0002', 'event_id': 'T-0002-OWNER-0001'}, 'note': 'do X'},
+     'wake_requires_peer'),
+    ({'to': 'R02', 'pointer': 'T-0002-OWNER-0001'}, 'wake_requires_peer'),
+])
+def test_malformed_or_dangling_wakes_are_refused(payload, code):
+    log = Log()
+    log.create(task())
+    with pytest.raises(treg.TregError, match=code):
+        log.emit('T-0002', 'R01', 'wake', payload)
+
+
+def test_wake_quota_is_a_rolling_24_hours_and_exhaustion_means_block():
+    log = Log(policy=BUSY)
+    log.create(task())
+    previous = 'T-0002-OWNER-0001'
+    for minute in range(24):  # 24 distinct wakes on 2026-11-04 between 20:00 and 20:23
+        event, _ = wake(log, 'R01', ('R02', 'R03')[minute % 2], previous, utc='2026-11-04T20:%02d:00Z' % minute)
+        previous = event['event_id']
+    with pytest.raises(treg.TregError, match='quota_wakes_per_day'):  # calendar day would have allowed it
+        wake(log, 'R01', 'R02', previous, utc='2026-11-05T00:30:00Z')
+    # The agent cannot wake its peer any more: it stops by blocking (always allowed), it does not skip the journal.
+    _, applied = log.emit('T-0002', 'R01', 'transition', {'status_to': 'blocked', 'reason': 'quota_wakes_per_day'},
+                          utc='2026-11-05T00:31:00Z')
+    assert applied and log.state['tasks']['T-0002']['status'] == 'blocked'
+    _, applied = wake(log, 'R01', 'R02', previous, utc='2026-11-05T20:00:30Z')  # oldest wake left the window
+    assert applied
+
+
+def test_journal_wakes_raises_before_anything_is_posted_when_the_quota_is_spent():
+    policy = copy.deepcopy(ACTIVE)
+    policy['agents']['R01']['wakes_per_day'] = 1
+    log, submitted = submitted_log(policy)
+    wake(log, 'R01', 'R03', submitted['event_id'])  # spends the only wake
+    with pytest.raises(treg.TregError, match='quota_wakes_per_day'):
+        treg.journal_wakes(log.state, policy, submitted, log.utc())
+
+
+def test_receiver_acts_only_on_journaled_wakes_addressed_to_it():
+    log, submitted = submitted_log()
+    r01, r02 = ACTIVE['agents']['R01']['session_id'], ACTIVE['agents']['R02']['session_id']
+    check = treg.accept_pointer
+    pointer = {'task_id': 'T-0002', 'event_id': submitted['event_id']}
+    assert check(log.state, ACTIVE, 'R02', pointer)['reason'] == 'unjournaled_wake'  # sender skipped the registry
+    log.state, items = treg.journal_wakes(log.state, ACTIVE, submitted, log.utc())
+    wake_pointer = json.loads(items[0]['send']['message'])['treg_pointer']
+    assert check(log.state, ACTIVE, 'R02', wake_pointer, sender_session=r01)['accept'] is True
+    assert check(log.state, ACTIVE, 'R02', pointer)['accept'] is True  # earlier protocol: transition + journaled wake
+    assert check(log.state, ACTIVE, 'R03', wake_pointer)['reason'] == 'wake_not_addressed_to_agent'
+    assert check(log.state, ACTIVE, 'R02', wake_pointer, sender_session=r02)['reason'] == 'wake_sender_mismatch'
+    assert check(log.state, ACTIVE, 'R02', {'task_id': 'T-0002', 'event_id': 'T-0002-R01-0042'})['reason'] == \
+        'pointer_unknown_event'
+    assert check(log.state, ACTIVE, 'R02', {'event_id': 'x'})['reason'] == 'pointer_format'
+
+
+def test_a_duplicate_delivery_is_a_no_op_for_the_receiver():
+    log, submitted = submitted_log()
+    log.state, items = treg.journal_wakes(log.state, ACTIVE, submitted, log.utc())
+    pointer = json.loads(items[0]['send']['message'])['treg_pointer']
+    now = '2026-11-04T09:00:00Z'
+    assert treg.accept_pointer(log.state, ACTIVE, 'R02', pointer)['accept']
+    assert treg.next_action(log.state, ACTIVE, 'R02', now) == {'action': 'start_review', 'task_id': 'T-0002'}
+    log.emit('T-0002', 'R02', 'transition', {'status_to': 'in_review'})
+    assert treg.accept_pointer(log.state, ACTIVE, 'R02', pointer)['accept']  # same message delivered again
+    assert treg.next_action(log.state, ACTIVE, 'R02', now) == {'action': 'audit', 'task_id': 'T-0002'}
+    with pytest.raises(treg.TregError, match='transition_refused'):
+        log.emit('T-0002', 'R02', 'transition', {'status_to': 'in_review'})
+
+
+def test_an_unjournaled_wake_stops_being_demanded_once_the_target_has_moved_on():
+    log, submitted = submitted_log()
+    log.emit('T-0002', 'R02', 'transition', {'status_to': 'in_review'})  # R02 acted without a journaled wake
+    due = treg.pending_wakes(log.state)
+    assert len(due) == 1 and due[0]['useful'] is False  # still reported, no longer demanded
+    assert treg.next_action(log.state, ACTIVE, 'R01', '2026-11-04T09:00:00Z')['action'] == 'wait'
+
+
+def test_simulation_journals_every_required_wake_and_receivers_accept_them():
+    state, ops = treg.simulate_scenario(POLICY)
+    assert treg.pending_wakes(state) == []
+    assert [(w['from'], w['to'], w['required']) for w in state['wakes']] == [
+        ('R03', 'R01', True), ('R01', 'R02', True), ('R02', 'R01', True)]
+    sends = [o for o in ops if o['tool'].endswith('send_message')]
+    for send in sends:  # each message names the journaled wake event, which precedes it in the operations
+        assert json.loads(send['message'])['treg_pointer']['event_id'].split('-')[-2] in treg.AGENTS
+
+
+def test_emit_prints_the_wake_events_to_post_and_the_messages_to_send(tmp_path, capsys):
+    log, _ = submitted_log()
+    log.state['log']['T-0002'].pop()  # rebuild the snapshot just before the submission
+    events = [e for tid in sorted(log.state['log']) for e in log.state['log'][tid]]
+    snap = tmp_path / 'snap.json'
+    snap.write_text(json.dumps({'schema': treg.SCHEMA_SNAPSHOT, 'events': events}), encoding='utf-8')
+    policy = tmp_path / 'policy.json'
+    policy.write_text(json.dumps(ACTIVE), encoding='utf-8')
+    rc = treg.main(['emit', str(snap), '--policy', str(policy), '--task', 'T-0002', '--agent', 'R01',
+                    '--type', 'transition', '--payload', json.dumps(submit_payload()), '--now', '2026-11-04T09:00:00Z'])
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 0 and len(out['wake_events']) == 1
+    wake_event = out['wake_events'][0]['event']
+    assert wake_event['prev_digest'] == out['event']['digest'] and wake_event['payload']['to'] == 'R02'
+    assert json.loads(out['send_after_posting'][0]['message'])['treg_pointer']['event_id'] == wake_event['event_id']
+    state = treg.replay(events + [out['event'], wake_event], ACTIVE)
+    assert treg.pending_wakes(state) == []
+
+
+@pytest.mark.parametrize('run,expected', [
+    ('S-001', [('T-0001', 'R03', 'R01'), ('T-0002', 'R02', 'R01')]),
+    ('S-002', [('T-0005', 'R02', 'R01')]),
+])
+def test_archived_runs_replay_and_show_exactly_their_unjournaled_wakes(run, expected):
+    policy = json.loads((ROOT / 'docs' / 'treg' / 'runs' / ('%s.policy.json' % run)).read_text(encoding='utf-8'))
+    snapshot = json.loads((EVIDENCE / run / 'events.json').read_text(encoding='utf-8'))
+    state = treg.replay(snapshot['events'], policy)
+    assert all(t['status'] == 'done' for t in state['tasks'].values())
+    missing = treg.pending_wakes(state)
+    assert [(m['task_id'], m['from'], m['to']) for m in missing] == expected
+    assert not any(m['useful'] for m in missing)  # history: nobody is asked to journal them now
+    for agent in treg.AGENTS:
+        assert treg.next_action(state, policy, agent, '2026-11-04T09:00:00Z')['action'] == 'wait'
+
+
+# ---------------------------------------------------------------- RUGGER 04 direct read (r04-verify)
+def archived_registry():
+    """Comment lists per task issue, rebuilt from the archived S-001 and S-002 evidence."""
+    lists = []
+    for run in ('S-001', 'S-002'):
+        events = json.loads((EVIDENCE / run / 'events.json').read_text(encoding='utf-8'))['events']
+        for task_id in sorted({e['task_id'] for e in events}):
+            mine = sorted((e for e in events if e['task_id'] == task_id), key=lambda e: e['seq'])
+            lists.append([{'body': treg.render_comment(e)} for e in mine])
+    return lists
+
+
+S002_POLICY = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-002.policy.json').read_text(encoding='utf-8'))
+
+
+def inbox_with_dashboard(lists, generated_utc, *, extra_after=()):
+    state = treg.replay(treg.ingest(lists)['events'], S002_POLICY)
+    board = treg.render_dashboard(state, generated_utc=generated_utc, policy=S002_POLICY)
+    return [{'id': 1, 'body': 'S-002 report, no heads here'},
+            {'id': 2, 'html_url': 'https://example.invalid/issues/103#issuecomment-2', 'body': board},
+            *({'id': 3 + i, 'body': b} for i, b in enumerate(extra_after))]
+
+
+def test_r04_verify_reports_current_then_idle_then_diverged():
+    lists = archived_registry()
+    inbox = inbox_with_dashboard(lists, '2026-11-04T00:00:00Z', extra_after=['a later comment without heads'])
+    fresh = treg.r04_verify(lists, inbox, POLICY, now='2026-11-04T00:30:00Z')  # shipped (paused) policy: reader mode
+    assert fresh['verdict'] == 'CURRENT' and fresh['events'] == 40 and len(fresh['tasks']) == 6
+    assert fresh['heads_comment'].endswith('#issuecomment-2') and fresh['wakes_not_journaled'] == 3
+    assert fresh['line'].startswith('RUGGER04-VERIFY | utc=2026-11-04T00:30:00Z') and fresh['line'].endswith('CURRENT')
+    idle = treg.r04_verify(lists, inbox, POLICY, now='2026-11-04T09:00:00Z')
+    assert idle['verdict'] == 'CURRENT_IDLE' and idle['registry_digest'] == fresh['registry_digest']
+    truncated = [list(x) for x in lists]
+    truncated[-1].pop()  # an event the inbox heads know about is missing from what was read
+    assert treg.r04_verify(truncated, inbox, POLICY, now='2026-11-04T00:30:00Z')['verdict'] == 'DIVERGED'
+    partial = lists[3:]  # only S-002 issues read: the heads list tasks the reader did not see
+    assert treg.r04_verify(partial, inbox, POLICY, now='2026-11-04T00:30:00Z')['verdict'] == 'DIVERGED'
+
+
+def test_r04_verify_without_heads_and_from_the_command_line(tmp_path, capsys):
+    lists = archived_registry()
+    assert treg.r04_verify(lists, [{'body': 'nothing'}], POLICY, now='2026-11-04T00:30:00Z')['verdict'] == 'NO_HEADS'
+    paths = []
+    for i, comments in enumerate(lists):
+        path = tmp_path / ('c%d.json' % i)
+        path.write_text(json.dumps(comments), encoding='utf-8')
+        paths.append(str(path))
+    inbox = tmp_path / 'inbox.json'
+    inbox.write_text(json.dumps(inbox_with_dashboard(lists, '2026-11-04T00:00:00Z')), encoding='utf-8')
+    policy = str(ROOT / 'docs' / 'treg' / 'agents.json')
+    assert treg.main(['r04-verify', '--policy', policy, '--registry', *paths, '--inbox', str(inbox),
+                      '--now', '2026-11-04T00:10:00Z']) == 0
+    assert json.loads(capsys.readouterr().out)['verdict'] == 'CURRENT'
+    assert treg.main(['r04-verify', '--policy', policy, '--registry', *paths[:-1], '--inbox', str(inbox),
+                      '--now', '2026-11-04T00:10:00Z']) == 4
+    assert json.loads(capsys.readouterr().out)['verdict'] == 'DIVERGED'
+
+
+def test_accept_pointer_command_reads_the_whole_message(tmp_path, capsys):
+    events = json.loads((EVIDENCE / 'S-002' / 'events.json').read_text(encoding='utf-8'))['events']
+    snap = tmp_path / 'snap.json'
+    snap.write_text(json.dumps({'schema': treg.SCHEMA_SNAPSHOT, 'events': events}), encoding='utf-8')
+    policy = str(ROOT / 'docs' / 'treg' / 'runs' / 'S-002.policy.json')
+    r03 = S002_POLICY['agents']['R03']['session_id']
+    ok = json.dumps({'treg_pointer': {'task_id': 'T-0004', 'event_id': 'T-0004-R03-0006'}})  # S-002, as sent by R03
+    assert treg.main(['accept-pointer', str(snap), '--policy', policy, '--agent', 'R01', '--pointer', ok,
+                      '--from-session', r03]) == 0
+    assert json.loads(capsys.readouterr().out)['wake_event_id'] == 'T-0004-R03-0007'
+    unjournaled = json.dumps({'task_id': 'T-0005', 'event_id': 'T-0005-R02-0007'})  # S-002, as sent by R02
+    assert treg.main(['accept-pointer', str(snap), '--policy', policy, '--agent', 'R01', '--pointer', unjournaled]) == 4
+    assert json.loads(capsys.readouterr().out)['reason'] == 'unjournaled_wake'

@@ -113,7 +113,8 @@ def check_action(policy, agent, action):
 
 # --------------------------------------------------------------------------- state
 def empty_state():
-    return {'tasks': {}, 'log': {}, 'event_ids': {}, 'inbox': [], 'by_agent': {a: [] for a in AGENTS + (OWNER,)}}
+    return {'tasks': {}, 'log': {}, 'event_ids': {}, 'inbox': [], 'by_agent': {a: [] for a in AGENTS + (OWNER,)},
+            'wake_due': [], 'wakes': []}
 
 
 def _deps_done(state, task):
@@ -221,8 +222,9 @@ def _quota(state, policy, agent, at, kind):
     mine = state['by_agent'][agent]
     if sum(1 for e in mine if parse_utc(e['utc']) > at - timedelta(hours=1)) >= spec['events_per_hour']:
         raise TregError('quota_events_per_hour')
+    # Rolling 24 hours (not the calendar day): 24 wakes cannot be doubled across midnight.
     if kind == 'wake' and sum(1 for e in mine if e['type'] == 'wake'
-                              and parse_utc(e['utc']).date() == at.date()) >= spec['wakes_per_day']:
+                              and parse_utc(e['utc']) > at - timedelta(hours=24)) >= spec['wakes_per_day']:
         raise TregError('quota_wakes_per_day')
 
 
@@ -293,9 +295,22 @@ def apply_event(state, event, policy):
                 raise TregError('heartbeat_requires_own_lease')
             task['lease']['until'] = fmt_utc(at + timedelta(minutes=policy['defaults']['lease_ttl_minutes']))
         elif event['type'] == 'wake':
-            target = payload.get('to')
-            if target not in AGENTS or target == agent or set(payload.get('pointer', {})) != {'task_id', 'event_id'}:
+            target, pointer = payload.get('to'), payload.get('pointer')
+            if (set(payload) != {'to', 'pointer'} or target not in AGENTS or target == agent
+                    or type(pointer) is not dict or set(pointer) != {'task_id', 'event_id'}):
                 raise TregError('wake_requires_peer_target_and_pointer_only')
+            if pointer['task_id'] != event['task_id'] or pointer['event_id'] not in {e['event_id'] for e in log}:
+                raise TregError('wake_pointer_unknown')
+            if any(e['type'] == 'wake' and e['payload']['to'] == target and e['payload']['pointer'] == pointer
+                   for e in log):
+                raise TregError('duplicate_wake')  # a re-send reuses the journaled wake, never a new one
+            due = [d for d in new['wake_due'] if (d['task_id'], d['from'], d['to'], d['pointer_event_id'])
+                   == (event['task_id'], agent, target, pointer['event_id'])]
+            for entry in due:
+                new['wake_due'].remove(entry)
+            new['wakes'].append({'event_id': event['event_id'], 'task_id': event['task_id'], 'from': agent,
+                                 'to': target, 'pointer_event_id': pointer['event_id'], 'utc': event['utc'],
+                                 'required': bool(due)})
         else:
             to = payload.get('status_to')
             if to not in STATUSES:
@@ -341,6 +356,11 @@ def apply_event(state, event, policy):
                     task['evidence']['blocked_reason'] = payload.get('reason') or 'unspecified'
             task['status'] = to
             task['transitions'] += 1
+            # Every peer this transition must wake becomes a journaling obligation until its `wake` event.
+            for target in wake_targets(new, event):
+                new['wake_due'].append({'task_id': event['task_id'], 'from': agent, 'to': target['to'],
+                                        'pointer_event_id': event['event_id'], 'utc': event['utc'],
+                                        'reason': to})
     log.append(copy.deepcopy(event))
     new['event_ids'][event['event_id']] = event['digest']
     new['by_agent'][event['from_agent']].append({'utc': event['utc'], 'type': event['type']})
@@ -440,7 +460,49 @@ def verify_heads(published, state, *, now, max_age_minutes=60):
             'problems': problems, 'registry_digest': current['registry_digest']}
 
 
-def render_dashboard(state, *, generated_utc):
+def find_heads(inbox_comments):
+    """Latest `treg-heads` block among inbox comments (MCP dicts or raw bodies) -> (heads, reference)."""
+    found = None
+    for comment in inbox_comments:
+        body = comment.get('body') if isinstance(comment, dict) else comment
+        if type(body) is str and HEADS_MARKER in body:
+            match = re.search(re.escape(HEADS_MARKER) + r'\s*```json\n(.*?)\n```', body, re.S)
+            if match:
+                ref = (comment.get('html_url') or comment.get('id')) if isinstance(comment, dict) else None
+                found = (json.loads(match.group(1)), ref)
+    return found if found else (None, None)
+
+
+def r04_verify(registry_comment_lists, inbox_comments, policy, *, now, max_age_minutes=60):
+    """What RUGGER 04 runs after reading GitHub itself: inbox heads vs a full replay of the registry.
+
+    Read-only: the replay ignores the write-time pause (a reader never writes). Verdicts:
+    CURRENT (heads match the registry and are recent), CURRENT_IDLE (match, older than
+    `max_age_minutes`, no event since), DIVERGED (registry changed or heads incomplete),
+    NO_HEADS (no heads block in the inbox).
+    """
+    published, ref = find_heads(inbox_comments)
+    snapshot = ingest(registry_comment_lists)
+    state = replay(snapshot['events'], dict(policy, paused=False))
+    current = heads(state, generated_utc=now)
+    missing = pending_wakes(state)
+    if published is None:
+        result = {'verdict': 'NO_HEADS', 'problems': ['no_heads_block_in_inbox']}
+    else:
+        check = verify_heads(published, state, now=now, max_age_minutes=max_age_minutes)
+        verdict = 'DIVERGED' if not check['consistent'] else ('CURRENT' if check['fresh'] else 'CURRENT_IDLE')
+        result = {'verdict': verdict, 'problems': check['problems'], 'heads_generated_utc': published.get('generated_utc')}
+    result.update(heads_comment=ref, registry_digest=current['registry_digest'], events=current['events'],
+                  tasks={k: v['status'] for k, v in sorted(state['tasks'].items())},
+                  inbox_reports=len(state['inbox']), wakes_not_journaled=len(missing),
+                  wakes_not_journaled_useful=sum(1 for m in missing if m['useful']))
+    result['line'] = ('RUGGER04-VERIFY | utc=%s | heads_comment=%s | registry_digest=%s | events=%d | tasks=%d | '
+                      'wakes_not_journaled=%d | verdict=%s' % (now, ref, current['registry_digest'], current['events'],
+                                                               len(state['tasks']), len(missing), result['verdict']))
+    return result
+
+
+def render_dashboard(state, *, generated_utc, policy=None):
     """Markdown dashboard for RUGGER 04, derived only from the replayed event log."""
     lines = ['# RUGGER 04 — tableau de bord T-REG', '',
              'Généré %s à partir du journal rejoué et validé (`tools/treg.py`).' % generated_utc, '',
@@ -464,6 +526,21 @@ def render_dashboard(state, *, generated_utc):
             ', '.join(task['depends_on']) or '—', len(state['log'].get(task_id, [])), ' ; '.join(proof) or '—'))
     lines += ['', '## Rapports reçus', '']
     lines += ['- %s (tâches : %s)' % (entry['summary'], ', '.join(entry['task_refs'])) for entry in state['inbox']] or ['- aucun']
+    lines += ['', '## Réveils entre agents', '']
+    if policy is not None:
+        lines += ['| Agent | Réveils journalisés (24 h glissantes) | Quota |', '|---|---|---|']
+        for agent in AGENTS:
+            quota = wake_quota(state, policy, agent, generated_utc)
+            lines.append('| %s | %d | %d |' % (agent, quota['used_24h'], quota['limit']))
+        lines.append('')
+    lines.append('Réveils journalisés : %d (dont %d exigés par une transition).' % (
+        len(state['wakes']), sum(1 for w in state['wakes'] if w['required'])))
+    missing = pending_wakes(state)
+    lines += ['', 'Réveils exigés mais **non journalisés** : %d' % len(missing)]
+    lines += ['- %s : %s → %s après `%s` (%s) — %s' % (
+        m['task_id'], m['from'], m['to'], m['pointer_event_id'], m['reason'],
+        'encore utile : le planificateur de %s demande `journal_wake`' % m['from'] if m['useful']
+        else 'historique : sans effet sur le travail restant') for m in missing]
     lines += ['', '## Vérification (têtes du registre)', '',
               'Chaque `digest` doit être celui du dernier commentaire `treg-event` de l\'issue de la tâche ; '
               '`registry_digest` = SHA-256 canonique de `{tâche: digest}`. Vérification complète : '
@@ -478,6 +555,11 @@ def next_action(state, policy, agent, now):
     if policy.get('paused', False):
         return {'action': 'stop', 'reason': 'registry_paused'}
     at = parse_utc(now)
+    for due in pending_wakes(state):
+        if due['from'] == agent and due['useful']:
+            # A wake that was sent (or is about to be) without its journal entry comes first.
+            return {'action': 'journal_wake', 'task_id': due['task_id'], 'to': due['to'],
+                    'pointer': {'task_id': due['task_id'], 'event_id': due['pointer_event_id']}}
     tasks = [state['tasks'][k] for k in sorted(state['tasks'])]
     for task in tasks:
         lease = task.get('lease')
@@ -525,6 +607,87 @@ def wake_targets(state, event):
     return [{'to': t, 'pointer': pointer} for t in dict.fromkeys(targets) if t != event['from_agent']]
 
 
+def _wake_still_useful(state, due):
+    """True while the woken agent still has something to do because of this transition."""
+    task = state['tasks'].get(due['task_id'])
+    if task is None:
+        return False
+    if due['reason'] == 'submitted':
+        return task['status'] == 'submitted' and task.get('reviewer') == due['to']
+    if due['reason'] == 'changes_requested':
+        return task['status'] == 'changes_requested' and task['assignee'] == due['to']
+    linked = {e['task_id'] for e in task.get('downstream', [])}
+    for other in state['tasks'].values():
+        if (other['assignee'] == due['to'] and other['status'] == 'authorized'
+                and (other['task_id'] in linked or due['task_id'] in other['depends_on'])):
+            return True
+    return False
+
+
+def pending_wakes(state):
+    """Wakes a transition required but nobody journaled. `useful` = the target still has work from it."""
+    return [dict(due, useful=_wake_still_useful(state, due)) for due in state['wake_due']]
+
+
+def wake_quota(state, policy, agent, now):
+    at = parse_utc(now)
+    used = sum(1 for e in state['by_agent'][agent] if e['type'] == 'wake'
+               and parse_utc(e['utc']) > at - timedelta(hours=24))
+    return {'agent': agent, 'used_24h': used, 'limit': policy['agents'][agent]['wakes_per_day']}
+
+
+def journal_wakes(state, policy, event, utc):
+    """Build and validate the `wake` events that must follow `event`; return (state, items).
+
+    Each item holds the wake event and the exact message to send. The message points at the
+    journaled wake event itself, so a receiver can check that the wake is in the registry and
+    counted in the sender's quota. Protocol: publish the wake event first, send second; a
+    failed send is retried with the same message, never with a new wake event.
+    """
+    items = []
+    for wake in wake_targets(state, event):
+        wake_event = make_event(state, task_id=event['task_id'], from_agent=event['from_agent'], type='wake',
+                                utc=utc, payload=wake)
+        state, _ = apply_event(state, wake_event, policy)
+        items.append({'event': wake_event, 'send': {
+            'session_id': policy['agents'][wake['to']]['session_id'],
+            'message': json.dumps({'treg_pointer': {'task_id': wake_event['task_id'],
+                                                    'event_id': wake_event['event_id']}}, sort_keys=True)}})
+    return state, items
+
+
+def accept_pointer(state, policy, agent, pointer, *, sender_session=None):
+    """Receiver-side check of a `treg_pointer`: act only on a wake journaled in the registry.
+
+    Accepted: the pointer names a `wake` event addressed to `agent` (current protocol), or a
+    transition followed by such a journaled wake (earlier protocol). Refused otherwise, in
+    particular `unjournaled_wake`: the sender skipped the registry, so the wake is not counted in
+    its quota and the receiver does not act on it. `sender_session` is the platform-provided
+    session of the message; when given it must belong to the agent that journaled the wake.
+    """
+    if type(pointer) is not dict or set(pointer) != {'task_id', 'event_id'}:
+        return {'accept': False, 'reason': 'pointer_format'}
+    log = state['log'].get(pointer['task_id'], [])
+    named = [e for e in log if e['event_id'] == pointer['event_id']]
+    if not named:
+        return {'accept': False, 'reason': 'pointer_unknown_event'}
+    if named[0]['type'] == 'wake':
+        wakes = named
+    else:
+        wakes = [e for e in log if e['type'] == 'wake' and e['payload']['pointer']['event_id'] == pointer['event_id']]
+    wakes = [e for e in wakes if e['payload']['to'] == agent]
+    if not wakes:
+        return {'accept': False, 'reason': 'wake_not_addressed_to_agent' if named[0]['type'] == 'wake'
+                else 'unjournaled_wake'}
+    wake = wakes[0]
+    if sender_session is not None:
+        expected = policy['agents'][wake['from_agent']]['session_id']
+        if sender_session != expected:
+            return {'accept': False, 'reason': 'wake_sender_mismatch', 'wake_event_id': wake['event_id']}
+    return {'accept': True, 'wake_event_id': wake['event_id'], 'from_agent': wake['from_agent'],
+            'note': 'run plan: the registry, not the message, decides the action; duplicates are no-ops'}
+
+
 # ------------------------------------------------------------------------ scenario
 def simulate_scenario(policy, *, start='2026-11-04T08:00:00Z'):
     """RUGGER 03 hands validated data -> RUGGER 01 implements -> RUGGER 02 audits -> RUGGER 04 inbox.
@@ -547,13 +710,16 @@ def simulate_scenario(policy, *, start='2026-11-04T08:00:00Z'):
         state, _ = apply_event(state, event, policy)
         ops.append({'tool': 'mcp__github__add_issue_comment', 'issue': 'registry:' + task_id,
                     'by': agent, 'body_sha256': hashlib.sha256(render_comment(event).encode()).hexdigest()})
-        for wake in wake_targets(state, event):
-            wake_event = make_event(state, task_id=task_id, from_agent=agent, type='wake',
-                                    utc=fmt_utc(clock), payload=wake)
-            state, _ = apply_event(state, wake_event, policy)
-            ops.append({'tool': 'mcp__claude-code-remote__send_message', 'by': agent,
-                        'session_id': policy['agents'][wake['to']]['session_id'],
-                        'message': json.dumps({'treg_pointer': wake['pointer']}, sort_keys=True)})
+        state, items = journal_wakes(state, policy, event, fmt_utc(clock))
+        for item in items:  # journal first, then send a pointer to the journaled wake
+            ops.append({'tool': 'mcp__github__add_issue_comment', 'issue': 'registry:' + task_id, 'by': agent,
+                        'body_sha256': hashlib.sha256(render_comment(item['event']).encode()).hexdigest()})
+            ops.append({'tool': 'mcp__claude-code-remote__send_message', 'by': agent, **item['send']})
+            receiver = item['event']['payload']['to']
+            check = accept_pointer(state, policy, receiver, json.loads(item['send']['message'])['treg_pointer'],
+                                   sender_session=policy['agents'][agent]['session_id'])
+            if not check['accept']:
+                raise TregError('simulation_wake_refused:' + check['reason'])
         return event
 
     for task in ({'task_id': 'T-0001', 'kind': 'data_handoff', 'title': 'S-001 validated dataset',
@@ -632,6 +798,18 @@ def main(argv=None):
     p.add_argument('snapshot')
     p.add_argument('--policy', required=True)
     p.add_argument('--now', required=True)
+    p = sub.add_parser('accept-pointer', help='receiver: act only on a wake journaled in the registry')
+    p.add_argument('snapshot')
+    p.add_argument('--policy', required=True)
+    p.add_argument('--agent', required=True, choices=AGENTS)
+    p.add_argument('--pointer', required=True, help='the treg_pointer object, or the whole message, as JSON')
+    p.add_argument('--from-session', default=None, help='sender session id given by the platform')
+    p = sub.add_parser('r04-verify', help='RUGGER 04: inbox heads vs a full replay of the registry')
+    p.add_argument('--policy', required=True)
+    p.add_argument('--registry', nargs='+', required=True, help='saved comments of every [T-REG] task issue')
+    p.add_argument('--inbox', required=True, help='saved comments of the RUGGER04 inbox issue')
+    p.add_argument('--now', required=True)
+    p.add_argument('--max-age-minutes', type=int, default=60)
     args = parser.parse_args(argv)
     with open(args.policy, encoding='utf-8') as handle:
         policy = validate_policy(json.load(handle))
@@ -644,6 +822,17 @@ def main(argv=None):
         print(json.dumps({'statuses': {k: v['status'] for k, v in sorted(state['tasks'].items())},
                           'inbox': state['inbox'], 'operations_not_executed': ops}, indent=1, sort_keys=True))
         return 0
+    if args.cmd == 'r04-verify':
+        lists = []
+        for path in args.registry:
+            with open(path, encoding='utf-8') as handle:
+                lists.append(json.load(handle))
+        with open(args.inbox, encoding='utf-8') as handle:
+            inbox = json.load(handle)
+        result = r04_verify(lists, inbox if isinstance(inbox, list) else [inbox], policy, now=args.now,
+                            max_age_minutes=args.max_age_minutes)
+        print(json.dumps(result, indent=1, sort_keys=True))
+        return 0 if result['verdict'] in ('CURRENT', 'CURRENT_IDLE') else 4
     if args.cmd == 'ingest':
         loaded = []
         for path in args.comments:
@@ -668,6 +857,13 @@ def main(argv=None):
         event = make_event(state, task_id=args.task, from_agent=args.agent, type=args.type, utc=args.now, payload=payload)
         new_state, _ = apply_event(state, event, policy)
         targets = wake_targets(new_state, event)
+        # Raises (nothing to post) when a required wake is refused, e.g. quota: block the task instead.
+        _, wake_items = journal_wakes(new_state, policy, event, args.now)
+        if event['type'] == 'wake':
+            wake_items = [{'event': event, 'send': {
+                'session_id': policy['agents'][payload['to']]['session_id'],
+                'message': json.dumps({'treg_pointer': {'task_id': event['task_id'], 'event_id': event['event_id']}},
+                                      sort_keys=True)}}]
         warnings = []
         if missing_references(new_state):
             warnings.append('partial_snapshot_missing:' + ','.join(missing_references(new_state)))
@@ -675,7 +871,13 @@ def main(argv=None):
         if (event['type'] == 'transition' and payload.get('status_to') == 'done' and task['kind'] != 'report'
                 and not targets and not task.get('downstream')):
             warnings.append('done_without_downstream_nobody_notified')
+        wake_events = [{'event': item['event'], 'comment_body': render_comment(item['event']), 'send': item['send']}
+                       for item in wake_items if item['event'] is not event]
         print(json.dumps({'event': event, 'comment_body': render_comment(event), 'wake_targets': targets,
+                          'wake_events': wake_events,
+                          'send_after_posting': [item['send'] for item in wake_items],
+                          'protocol': 'post comment_body, then each wake_events[].comment_body, then send; '
+                                      'retry a failed send with the same message, never a new wake event',
                           'warnings': warnings}, indent=1, sort_keys=True, ensure_ascii=False))
         return 0
     if args.cmd == 'verify-heads':
@@ -687,11 +889,20 @@ def main(argv=None):
         print(json.dumps(result, sort_keys=True))
         return 0 if result['consistent'] and result['fresh'] else 4
     if args.cmd == 'dashboard':
-        print(render_dashboard(state, generated_utc=args.now), end='')
+        print(render_dashboard(state, generated_utc=args.now, policy=policy), end='')
         return 0
+    if args.cmd == 'accept-pointer':
+        pointer = json.loads(args.pointer)
+        if isinstance(pointer, dict) and 'treg_pointer' in pointer:
+            pointer = pointer['treg_pointer']
+        result = accept_pointer(state, policy, args.agent, pointer, sender_session=args.from_session)
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result['accept'] else 4
     if args.cmd == 'validate':
         print(json.dumps({'tasks': {k: v['status'] for k, v in sorted(state['tasks'].items())},
-                          'events': sum(len(v) for v in state['log'].values())}, sort_keys=True))
+                          'events': sum(len(v) for v in state['log'].values()),
+                          'wakes_journaled': len(state['wakes']),
+                          'wakes_not_journaled': pending_wakes(state)}, sort_keys=True))
         return 0
     print(json.dumps(next_action(state, policy, args.agent, args.now), sort_keys=True))
     return 0

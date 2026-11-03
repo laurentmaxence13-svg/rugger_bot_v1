@@ -1,0 +1,429 @@
+{
+ "events": [
+  {
+   "digest": "cf6d88cf24bf322a84816b81b084c0a3eec2f240f798366b0321526fe8cd33cb",
+   "event_id": "T-0004-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate S-002 received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R03",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "bb16843cb58011ed118cc3aabbbf733fed28325e4c7e2d7f2a3ddf69465217ba",
+      "scope": "treg-scenario-S-002"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0005"
+      }
+     ],
+     "kind": "data_handoff",
+     "task_id": "T-0004",
+     "title": "S-002 certify the 7 LaunchLab trade transaction fixtures at 4f2875d"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0004",
+   "type": "create",
+   "utc": "2026-11-03T23:28:36Z"
+  },
+  {
+   "digest": "3b898b8ba8b3cb51158223ef3b86715d69359f49638920822dcd012064a51d02",
+   "event_id": "T-0004-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0004-OWNER-0001",
+     "task_id": "T-0004"
+    },
+    "to": "R03"
+   },
+   "prev_digest": "cf6d88cf24bf322a84816b81b084c0a3eec2f240f798366b0321526fe8cd33cb",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0004",
+   "type": "wake",
+   "utc": "2026-11-03T23:28:36Z"
+  },
+  {
+   "digest": "b70245443df159cce0cb7899ff60bb8857c1d45af8b8e036dc5213c2cc7ebd4a",
+   "event_id": "T-0005-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate S-002 received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "bb16843cb58011ed118cc3aabbbf733fed28325e4c7e2d7f2a3ddf69465217ba",
+      "scope": "treg-scenario-S-002"
+     },
+     "branch": "claude/r01-t0005-s002",
+     "depends_on": [
+      "T-0004"
+     ],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0006"
+      }
+     ],
+     "kind": "implement",
+     "reviewer": "R02",
+     "task_id": "T-0005",
+     "title": "S-002 decode TradeEvents of the certified fixtures (offline)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0005",
+   "type": "create",
+   "utc": "2026-11-03T23:28:36Z"
+  },
+  {
+   "digest": "e1de28468ab991ff38f26b0a1a2b12c1de1646d1240f5e6240962d088d1f4efe",
+   "event_id": "T-0006-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate S-002 received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "bb16843cb58011ed118cc3aabbbf733fed28325e4c7e2d7f2a3ddf69465217ba",
+      "scope": "treg-scenario-S-002"
+     },
+     "depends_on": [
+      "T-0005"
+     ],
+     "kind": "report",
+     "task_id": "T-0006",
+     "title": "S-002 audited result to the RUGGER 04 inbox (#103)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0006",
+   "type": "create",
+   "utc": "2026-11-03T23:28:36Z"
+  },
+  {
+   "digest": "fb8d5371acb6679ec6a36c3c8e46a7d1aa21873e65395f785ac717873cc6d519",
+   "event_id": "T-0004-R03-0003",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "3b898b8ba8b3cb51158223ef3b86715d69359f49638920822dcd012064a51d02",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0004",
+   "type": "transition",
+   "utc": "2026-11-03T23:30:31Z"
+  },
+  {
+   "digest": "25084895eb9004827260a7c7811aa25b9dc0afbfdb1460451a9e6497ad9af14d",
+   "event_id": "T-0004-R03-0004",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "fb8d5371acb6679ec6a36c3c8e46a7d1aa21873e65395f785ac717873cc6d519",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0004",
+   "type": "transition",
+   "utc": "2026-11-03T23:30:45Z"
+  },
+  {
+   "digest": "b812950ad5009b2f5a23fb0bff5897bfdf4c439dcdf8200f430bf693db58b3c4",
+   "event_id": "T-0004-R03-0005",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "dataset": {
+     "commit": "4f2875d943f970983ee6198cc35931c3f31d380d",
+     "path": "tests/fixtures/launchlab_trades/",
+     "rows": 7,
+     "sha256": "eed8ddf85745bdeee7a1f9df73a386f8d8254c5ac7d998bc80eff8ff7755bfc3"
+    },
+    "status_to": "submitted",
+    "validation": {
+     "checks": [
+      "7/7 json parse",
+      "combined digest per T-0004 rule",
+      "no network"
+     ],
+     "extra_checks": [
+      "7/7 parse as getTransaction result with transaction, meta, signatures; meta.err null",
+      "combined digest reproduced independently with coreutils sha256sum"
+     ],
+     "files": {
+      "457008408_2GA8XgSjs2EV.json": "a9780d7b1966facf05500a23186ffe98df81e5f88719dc0b6782d6c16374e7e3",
+      "459866469_4ZSpJs8L5G3P.json": "c859f100bd478f339c7769a764b2177f951ef2e19f0c764415cc0eefcb0fe323",
+      "459868666_3qaHFT6bPW1N.json": "e6d6663e5585e98759ff66cfd9d8d4906573d036922829ff951b1d2a9379ba1d",
+      "462898486_5CoYF1KYukfe.json": "ab5bd6b4288fd7925da3fca21e5be3c50cacaf279c920b0a62645d547b13bbc3",
+      "463375991_5b6nDLtJNstA.json": "60a56b357871ec2989b84e63e1c165128579732f6e44b8cecc64ce48819d617b",
+      "463375992_qAEQpdTVKiUm.json": "fddea8b861098f5317c9b5e5c318cb2e86a5a145d1ccb89c1794e1e42da429eb",
+      "464541196_D1QxEWn4KVyT.json": "daa42b3c2cc894740ac1fa419496ae00c7034a56afa063b35bda26bd207d444e"
+     },
+     "method": "sha256 of git blob bytes at the commit, no checkout",
+     "provider_calls": 0,
+     "status": "PASS"
+    }
+   },
+   "prev_digest": "25084895eb9004827260a7c7811aa25b9dc0afbfdb1460451a9e6497ad9af14d",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0004",
+   "type": "transition",
+   "utc": "2026-11-03T23:31:35Z"
+  },
+  {
+   "digest": "544f60cb83da565a040de71064a6d88d02097657055505a6b1243ea99c109eed",
+   "event_id": "T-0004-R03-0006",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "b812950ad5009b2f5a23fb0bff5897bfdf4c439dcdf8200f430bf693db58b3c4",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0004",
+   "type": "transition",
+   "utc": "2026-11-03T23:31:51Z"
+  },
+  {
+   "digest": "fd8c9ecf216d502601a1e67a36cb039bf29775279e083010c445cb4be401838d",
+   "event_id": "T-0004-R03-0007",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0004-R03-0006",
+     "task_id": "T-0004"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "544f60cb83da565a040de71064a6d88d02097657055505a6b1243ea99c109eed",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0004",
+   "type": "wake",
+   "utc": "2026-11-03T23:32:05Z"
+  },
+  {
+   "digest": "ff61b3ec40c004e684d06b358657b3539ff64e94c25d643477a7561d4f6bc252",
+   "event_id": "T-0005-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "b70245443df159cce0cb7899ff60bb8857c1d45af8b8e036dc5213c2cc7ebd4a",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0005",
+   "type": "transition",
+   "utc": "2026-11-03T23:35:51Z"
+  },
+  {
+   "digest": "dfacca068cb0362044c1e8939dee644c2478218a881a470b2cb163595caf4a57",
+   "event_id": "T-0005-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "ff61b3ec40c004e684d06b358657b3539ff64e94c25d643477a7561d4f6bc252",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0005",
+   "type": "transition",
+   "utc": "2026-11-03T23:35:51Z"
+  },
+  {
+   "digest": "50450640592cae21b2bd1cc40e23c28d851e727fe0c1df7a42b1aa8f1740a621",
+   "event_id": "T-0005-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "branch": "claude/r01-t0005-s002",
+    "commit": "164291788e242d2142ec36027dabc453199cf0bf",
+    "input_sha256": "eed8ddf85745bdeee7a1f9df73a386f8d8254c5ac7d998bc80eff8ff7755bfc3",
+    "output": {
+     "lines": 7,
+     "path": "validation/treg_s002/trade_events.jsonl",
+     "sha256": "fe0f25afaeea778d1c504f88194d5adf4307dc397ec4e456323487fb8b5ce2ee"
+    },
+    "provider_calls": 0,
+    "status_to": "submitted",
+    "tests": {
+     "command": "python -B -m pytest -q tests/test_launchlab_market_events.py tests/test_launchlab_collector.py -p no:cacheprovider -W error",
+     "failed": 0,
+     "passed": 32
+    }
+   },
+   "prev_digest": "dfacca068cb0362044c1e8939dee644c2478218a881a470b2cb163595caf4a57",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0005",
+   "type": "transition",
+   "utc": "2026-11-03T23:37:06Z"
+  },
+  {
+   "digest": "dd998016a270dc73350f35a1445cd3427e777e1c3715d2204b1ef74d48620021",
+   "event_id": "T-0005-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0005-R01-0004",
+     "task_id": "T-0005"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "50450640592cae21b2bd1cc40e23c28d851e727fe0c1df7a42b1aa8f1740a621",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0005",
+   "type": "wake",
+   "utc": "2026-11-03T23:37:20Z"
+  },
+  {
+   "digest": "d9090e26a8823cdbf637284122722ecb934531d70b629ed04d0b049e233134e8",
+   "event_id": "T-0005-R02-0006",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_review"
+   },
+   "prev_digest": "dd998016a270dc73350f35a1445cd3427e777e1c3715d2204b1ef74d48620021",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0005",
+   "type": "transition",
+   "utc": "2026-11-03T23:39:47Z"
+  },
+  {
+   "digest": "3fdfc248ebdd0f816141080451759d00935da8f3b4e3d474c1322e2b6474fda0",
+   "event_id": "T-0005-R02-0007",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "audit": {
+     "audited_commit": "164291788e242d2142ec36027dabc453199cf0bf",
+     "checks": [
+      "T-0004 recomputed independently at 4f2875d: 7/7 blob sha256 match, combined digest eed8ddf85745bdeee7a1f9df73a386f8d8254c5ac7d998bc80eff8ff7755bfc3, 7/7 getTransaction JSON readable",
+      "164291788e24 parent is 4f2875d; diff adds only validation/treg_s002/{RUN.md,decode_trade_events.py,trade_events.jsonl}; bot/ tools/ tests/ unchanged",
+      "decode replay x2 in isolated git-archive copy, unshare -rn network namespace + audit hook: exit 0, 0 network attempts",
+      "output sha256 fe0f25afaeea778d1c504f88194d5adf4307dc397ec4e456323487fb8b5ce2ee (7 lines), byte-identical to committed file; 7/7 exact_curve_check true",
+      "pytest submitted command (market_events + collector) -W error, Python 3.13.18, no network: 32 passed; all tests/test_launchlab_*.py: 53 passed"
+     ],
+     "findings": [],
+     "provider_calls": 0,
+     "scope_note": "decode of 7 archived historical transactions; not a trading result",
+     "verdict": "PASS"
+    },
+    "status_to": "done"
+   },
+   "prev_digest": "d9090e26a8823cdbf637284122722ecb934531d70b629ed04d0b049e233134e8",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0005",
+   "type": "transition",
+   "utc": "2026-11-03T23:39:56Z"
+  },
+  {
+   "digest": "9735e5d2cdc58e82f466487c862f063f4967cbf40d1c587370608478c52fbd34",
+   "event_id": "T-0006-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "e1de28468ab991ff38f26b0a1a2b12c1de1646d1240f5e6240962d088d1f4efe",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0006",
+   "type": "transition",
+   "utc": "2026-11-03T23:42:46Z"
+  },
+  {
+   "digest": "18e75b4e23bf3618bb082876818f44259af27183b697cc0b8dffc6cbbb7616a7",
+   "event_id": "T-0006-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "9735e5d2cdc58e82f466487c862f063f4967cbf40d1c587370608478c52fbd34",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0006",
+   "type": "transition",
+   "utc": "2026-11-03T23:42:46Z"
+  },
+  {
+   "digest": "a487cce1379b308b1123857e26d6622e9e77884d3708226775d7b3411df4a85d",
+   "event_id": "T-0006-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "inbox": {
+     "audit_verdict": "PASS",
+     "audited_commit": "164291788e242d2142ec36027dabc453199cf0bf",
+     "input_sha256": "eed8ddf85745bdeee7a1f9df73a386f8d8254c5ac7d998bc80eff8ff7755bfc3",
+     "output_sha256": "fe0f25afaeea778d1c504f88194d5adf4307dc397ec4e456323487fb8b5ce2ee",
+     "provider_calls": 0,
+     "report_comment": "https://github.com/laurentmaxence13-svg/rugger_bot_v1/issues/103#issuecomment-6618377904",
+     "summary": "S-002 complete: RUGGER 03 certified the 7 LaunchLab trade fixtures at 4f2875d (combined sha256 eed8ddf85745, recomputed by R01 and R02); RUGGER 01 decoded them offline (commit 164291788e24, output sha256 fe0f25afaeea, 7 rows, 7/7 exact curve checks, 32 tests green); RUGGER 02 audited the exact commit independently (isolated replay x2 without network, byte-identical output) with verdict PASS. 4/4 inter-agent wakes happened without human relay; RUGGER 04 cannot be woken and its reading is not verified. Decode of archived transactions, not a trading result.",
+     "task_refs": [
+      "T-0004",
+      "T-0005"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "18e75b4e23bf3618bb082876818f44259af27183b697cc0b8dffc6cbbb7616a7",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0006",
+   "type": "transition",
+   "utc": "2026-11-03T23:43:55Z"
+  },
+  {
+   "digest": "f1c6dd9ac6396db0c3492121348adfc8b6f78af364db73846a9b38c6b3f2a116",
+   "event_id": "T-0006-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "a487cce1379b308b1123857e26d6622e9e77884d3708226775d7b3411df4a85d",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0006",
+   "type": "transition",
+   "utc": "2026-11-03T23:44:10Z"
+  }
+ ],
+ "schema": "rugger-treg-snapshot-v1"
+}

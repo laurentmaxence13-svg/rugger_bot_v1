@@ -18,7 +18,7 @@
       "ci_pushes_per_day": 10
     },
     "R02": {
-      "role": "technical and security audit",
+      "role": "independent technical and security audit: code reading, non-destructive tests on an isolated copy without network, verdicts published in the registry (standing mandate approved in principle by the owner on 2026-11-03; effective only once stated in R02's own session)",
       "session_id": "session_016VkauH2T9jzsXwKUP3d4Ts",
       "push_branches": ["claude/r02-audit-*"],
       "events_per_hour": 20,
@@ -65,7 +65,7 @@
     "read_secret"
   ],
   "forbidden_actions_by_agent": {
-    "R02": ["push_code_outside_audit_branch", "approve_own_work"],
+    "R02": ["push_code_outside_audit_branch", "approve_own_work", "modify_audited_code"],
     "R03": ["push_code_outside_data_branch", "modify_census_freeze"]
   }
 }
