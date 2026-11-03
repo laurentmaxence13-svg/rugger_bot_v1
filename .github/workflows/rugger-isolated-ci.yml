@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+          python -m pip install --disable-pip-version-check -r requirements-live.txt -r requirements-dashboard.txt 'pytest>=8,<10'
       - name: Record exact tree and module hashes
         shell: bash
         run: |

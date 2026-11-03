@@ -43,7 +43,7 @@ jobs:
 
       - name: Install dependencies (PyPI only, no credentials)
         run: |
-          python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-dashboard.txt pytest
+          python -m pip install --disable-pip-version-check -r requirements-live.txt -r requirements-dashboard.txt pytest
 
       - name: Record toolchain and exact revision
         run: |
