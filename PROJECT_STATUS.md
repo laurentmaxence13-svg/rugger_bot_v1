@@ -5,9 +5,11 @@
 > `docs/MASTER_CONTINUITY.md`, `CLAUDE.md` de la pile #89) est un **journal
 > historique** : utile comme preuve, jamais comme état courant.
 > L'ancien contenu de ce fichier (préparation P3, 26-27 oct.) reste lisible via
-> `git show d9b950e:PROJECT_STATUS.md`.
+> `git show d9b950e:PROJECT_STATUS.md`. Celui de la pile #89 (498 lignes) via
+> `git show cf9a084:PROJECT_STATUS.md`.
 
-Dernière vérification : **2026-11-03**, sur `main` = `d9b950e`. Niveau de preuve
+Dernière vérification : **2026-11-03**, sur `main` = `d9b950e` et sur la branche
+d'intégration `integration/consolidation-20261103` (§4 bis). Niveau de preuve
 indiqué partout : *mesuré* (commande rejouée ce jour), *code* (lu dans le dépôt),
 *historique* (affirmé par une note, non rejoué), *inconnu*.
 
@@ -60,7 +62,7 @@ moteur d'exécution vers un espace recherche (étape ultérieure, voir §6).
 | Moteur LIVE cœur (23 modules `bot/live`) | #89 | testé hors réseau, désarmé ; anti-double envoi présent (`rpc.py:98`) | **CONSERVER** |
 | Sondes réseau dans `bot/live` (40 modules) | #89 | scripts de recherche mélangés au moteur | **AMÉLIORER** : déplacer hors `bot/live` |
 | Interfaces : Streamlit Rugger Wallet (#61), service Render (#63/#64/#87, #65–#74), aperçu Vercel (#86) | 3 endroits | trois UIs concurrentes | **FUSIONNER** : une seule (décision D4) |
-| Workflows CI (51 sur #89, dont 4 planifiés Helius) | #89 | planifiés toutes les 6 h dès l'arrivée sur `main` | **AMÉLIORER** : désactiver les `schedule:` avant intégration (D3) |
+| Workflows CI (52 sur l'intégration, dont 2 `schedule:` Helius et 45 réseau sur `pull_request`) | intégration | 47 passés en `workflow_dispatch` seul (§4 bis) | **AMÉLIORER** : réactiver un par un avec budget |
 | Copies `bot/bot/` (66 fichiers), `tests/tests/` (6), `*.bak*`, `*.avant_correctif` (6) | `main` | importées nulle part (*code*, `git grep`) ; inventaire en cours (#94) | **SUPPRIMER** après #94 |
 | ~40 notes `.md` à la racine (`P1_*`, `P3_*`, `CODEX_*`) | `main` | historiques | **ARCHIVER** dans `docs/history/` (étape ultérieure) |
 | Suivi Axiom | — | **aucun code** ; Axiom n'est cité que comme concurrent | **À DÉFINIR** (D5) |
@@ -100,44 +102,120 @@ Ordre d'intégration recommandé (le propriétaire fusionne, jamais un agent) :
 3. Fermeture des 41 PR contenues ; rebase de #92–#99 sur la nouvelle référence.
 4. Nettoyage (§6 étapes 2–4).
 
+## 4 bis. Branche d'intégration `integration/consolidation-20261103`
+
+Décisions D1, D2, D3, D6 approuvées. Base `main` `d9b950e`. Fusions, dans
+l'ordre (`--no-ff`, aucun cherry-pick) :
+
+| # | Branche | SHA fusionné | Base de fusion | Conflits |
+|---|---|---|---|---|
+| PR #100 | `claude/practical-lovelace-jylnbi` | `84e4f0c` | `d9b950e` | 0 |
+| PR #90 | `claude/launchlab-trade-events` | `4f2875d` | `d9b950e` | 0 |
+| PR #88 | `feat/prepurchase-bitquery-official-sample-proof-20261102` | `ce0f76d` | `7ddddb9` | 7 (journal dans la PR) |
+| PR #89 | `feat/master-real-s1-bank-bridge-20261102` | `cf9a084` | `ce0f76d` (= #88) | 0 |
+| PR #91 | `claude/autonomy-framework-20261103` | `327cc8c` | `7bd4fad` | 0 |
+| PR #98 | `claude/dev-20261103-master-feature-reconstructibility-v1` | `33dbe78` | `4f2875d` | 0 |
+
+#91 et #98 sont fusionnées en plus de l'ordre demandé parce que
+`BACKLOG.json`, `MASTER_CONTINUITY.md` et `tools/master_feature_inventory.py`
+n'existent que sur ces branches. Aucun fichier copié à la main.
+
+Points chauds attendus : `final_decision_engine.py` n'est modifié par aucune
+branche ; `p4_experiment.py`, `master_decision.py` et `CLAUDE.md` n'existent
+que dans #89 ; `AGENTS.md` n'a changé que dans #89 (version #89 retenue = D1).
+Les correctifs Windows de `main` (socketpair, blocage réseau thread-local,
+neutralisation dotenv) sont dans `tests/p16h_isolated_runner.py`, **identique**
+des deux côtés ; ceux du terminal (lanceur `.bat`/`.ps1`, pins pandas/numpy,
+garde graphique vide, job CI Windows) sont conservés côté `main`.
+
+Changements de code en plus des fusions (un commit chacun, réversibles) :
+`tools/offline_check.py` (liste blanche pile B), `bot/market/replay.py` (taux
+de frais par pool, finding 3), `tools/master_feature_inventory.py` (finding 1-2),
+`bot/dashboard/local_db.py` (fermeture SQLite, §7). Aucun seuil, critère
+anti-rug, score, TP/SL ni taille de position modifié. Aucun run du Master.
+
+Workflows (D3) : 47 workflows réseau passent en **`workflow_dispatch` seul**
+(2 `schedule:` Helius, 45 `pull_request`, 2 `push`). Rien n'est supprimé, aucun
+secret touché. Restent automatiques : `offline-tests.yml`,
+`rugger-isolated-ci.yml`, `paper-terminal-ci.yml` (hors ligne).
+
 ## 5. Dernier état réellement testé
 
-Commande : `python -m pytest -q tests --ignore=tests/tests -p no:cacheprovider`,
-Python 3.13, environnement isolé, sans réseau ni `.env`, 2026-11-03.
+Commande de référence (harnais isolé, sans réseau, sans `.env`, avertissements
+en erreur) :
+`python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error`
+(`check.py` n'existe pas ; `tools/offline_check.py` vient de #89. Pour `main`,
+qui ne l'a pas, la même copie a été posée en fichier non suivi.)
+Dépendances : `requirements*.txt` de la branche, pins `pandas==2.3.3`,
+`numpy==2.3.4`. 2026-11-03.
 
-| Révision | Résultat |
-|---|---|
-| `main` `d9b950e` | 1358 réussis, 1 ignoré, 242 sous-tests |
-| #90 `4f2875d` | 1404 réussis, 1 ignoré, 242 sous-tests |
-| #89 `cf9a084` (+ `requirements-live.txt`) | 3926 réussis, 1 ignoré, 242 sous-tests |
-| essai `#89 + main + #90` (non poussé) | **3974 réussis, 1 ignoré, 0 échec** |
+| Révision | Python | Résultat | Code | stderr |
+|---|---|---|---|---|
+| `main` `d9b950e` | 3.12.3 | 1358 réussis, 1 ignoré, 242 sous-tests | 0 | vide |
+| `main` `d9b950e` | 3.13.18 | 5 échecs, 1 erreur, 1352 réussis, 1 ignoré, 242 sous-tests ; 6/6 = `ResourceWarning` SQLite | 1 | vide |
+| intégration (HEAD de la PR) | 3.12.3 | **4011 réussis, 1 ignoré, 242 sous-tests** | 0 | vide |
+| intégration (HEAD de la PR) | 3.13.18 | 17 échecs, 3 erreurs, 3992 réussis, 1 ignoré, 242 sous-tests ; **20/20 = `ResourceWarning` SQLite** | 1 | vide |
+
+Le seul ignoré est `tests/test_research_pipeline.py:17` (« base utilisateur
+absente », attendu sans base locale). Sous 3.13, les échecs sont **aléatoires
+d'une exécution à l'autre** et ont tous la même cause, déjà présente sur `main`
+(voir §7) ; sur `main`, 6/6 ont cette même cause. Aucun échec fonctionnel.
+Mesures antérieures, `pytest` simple sans `-W error` : `main` 1358,
+#90 1404, #89 3926.
 
 Aucun de ces tests ne prouve une exécution réelle ni une rentabilité.
 
 ## 6. Prochaine mission prioritaire
 
-**Construire la référence unique** sur une branche d'intégration, après D1–D3 :
-
-1. `#89 + main + #90`, 6 conflits résolus côté `main`, `schedule:` désactivés,
-   suite complète publiée.
-2. Déplacer les 40 sondes hors de `bot/live` (aucun changement de logique).
-3. Supprimer `bot/bot/`, `tests/tests/`, `*.bak*`, `*.avant_correctif`
-   après revue de #94.
-4. Archiver les notes racine historiques dans `docs/history/`.
+1. ~~`#89 + main + #90`, conflits résolus côté `main`, `schedule:` désactivés,
+   suite complète publiée.~~ Fait sur `integration/consolidation-20261103`
+   (§4 bis), en attente de revue. **Le propriétaire fusionne, jamais un agent.**
+2. Corriger les connexions SQLite non fermées pour que la suite passe sous
+   Python 3.13 avec `-W error` (bloquant pour Windows 3.13, §7).
+3. Fermer les 41 PR contenues dans #89 ; rebaser #92–#97 et #99 sur la
+   nouvelle référence.
+4. Déplacer les 40 sondes hors de `bot/live` (aucun changement de logique).
+5. Supprimer `bot/bot/`, `tests/tests/`, `*.bak*`, `*.avant_correctif`
+   après revue de #94 ; archiver les notes racine dans `docs/history/`.
 
 Chaque étape = une PR courte, testée, réversible.
 
 ## 7. Blocages
 
 **Techniques**
-- Deux piles disjointes : l'agent planifié (pile B) développe sur `main` sans le
-  Master ni le moteur LIVE, qui n'existent que dans la pile A.
-- Consignes contradictoires (voir §8, D1).
+- **Python 3.13 + `-W error` : la suite échoue déjà sur `main`.** Python 3.13
+  émet un `ResourceWarning` pour toute `sqlite3.Connection` non fermée
+  explicitement ; le ramasse-miettes le déclenche dans un test sans rapport,
+  d'où des échecs différents à chaque exécution. Python 3.12 : 0 échec. Le CI
+  de référence `rugger-isolated-ci.yml` tourne en 3.11, ce qui masquait le
+  problème. Non introduit par l'intégration, non masqué : à corriger (§6.2).
+  Localisation (`PYTHONTRACEMALLOC=1`, une exécution) : 75 connexions non
+  fermées, **23 lignes dans 13 fichiers**. 39/75 viennent de tests qui créent un
+  `ExecutionJournal` (`bot/live/journal.py:43`) sans appeler `close()` ; le
+  reste vient d'utilitaires de test (`test_paper_engine`, `test_research_pipeline`,
+  `test_functional_cli`, `test_master_endurance`, `test_offline_endurance`,
+  `test_dashboard_evidence`…). Un seul site en production :
+  `bot/dashboard/local_db.py:38` (`with sqlite3.connect()` ne ferme pas ;
+  garde le fichier PAPER ouvert sous Windows) — **corrigé** dans cette PR,
+  avec 2 tests.
+- 47 workflows sont désormais manuels. Plusieurs jobs ont des conditions
+  `github.event.pull_request` / `labeled` : en `workflow_dispatch`, ils seront
+  ignorés. Chaque réactivation demande une revue du workflow et un budget.
+- `bitquery-four-official-samples-once.yml` (#88) était du YAML invalide
+  (nom d'étape avec « : » non cité), donc rejeté par GitHub : corrigé.
+- `tools/offline_check.py` ne copiait pas les outils et fixtures `.json.gz`
+  de la pile B : 2 erreurs de collecte. Liste blanche étendue à 4 chemins
+  explicites et aux `.json.gz` sous `tests/fixtures/` seulement.
 - `main` non protégé ; l'identité connectée est administratrice. Les règles des
   agents ne sont pas une barrière technique.
-- Les tâches planifiées s'appellent « DISABLED » mais sont **actives** :
-  agent dev toutes les heures (`11 * * * *`), validation quotidienne (06:00 UTC),
-  relecteur ponctuel. `docs/MASTER_CONTINUITY.md` (#91) les dit désactivées : faux.
+- Tâches planifiées (lu le 2026-11-03 à 18:04 UTC) : agent dev **désactivé**
+  depuis 18:01:43 UTC (dernier déclenchement 17:11:51, aucun travail) ;
+  validation **active**, quotidienne à 06:07 UTC malgré son nom « no
+  recurrence » ; relecteur **actif**, ponctuel 2027-01-01. Détail dans
+  `docs/MASTER_CONTINUITY.md`.
+- `BACKLOG.json` a `start_new_work: false` sur cette branche, mais **`true`**
+  sur `claude/autonomy-framework-20261103`, que lisent les routines. La pause
+  effective est l'état de la tâche planifiée.
 - `data/` est ignoré par git : seules 3 archives de pools SOL sont versionnées
   (fixtures #90).
 
@@ -147,17 +225,79 @@ Chaque étape = une PR courte, testée, réversible.
 - Seuils Master protégés : 50 cycles économiques qualifiés et 20 créateurs
   indépendants avant toute entrée opérationnelle — non atteints.
 - Latence d'exécution (2 slots) : hypothèse non vérifiée.
+- Coût des tentatives échouées et loyer : voir ci-dessous.
+
+## Independent audit findings, 2026-11-03
+
+Niveau de preuve : *mesuré* sur les fixtures versionnées
+`tests/fixtures/launchlab_sol_pools/` (3 pools SOL), sauf mention contraire.
+
+1. **`depth_usd` reclassé `NEEDS_EXTRA_READS`** dans
+   `tools/master_feature_inventory.py` et son test : la capacité de courbe est
+   exacte en SOL, mais le champ est en USD et exige un taux absent des
+   événements. Comptes : **13 / 5 / 16 / 3** (événements / transactions /
+   lectures supplémentaires / inconnu), au lieu de 14/5/15/3. Rapport #98
+   (`docs/research/MASTER_FEATURE_RECONSTRUCTIBILITY.md`) mis à jour.
+2. **Fixtures trop courtes pour les fenêtres.** Les pools couvrent **16, 31 et
+   29 s**. `momentum_60s`, `momentum_300s`, `price_change_5m_pct`,
+   `price_change_1h_pct` valent `None` ; `tx_buys_5m`, `tx_sells_5m` sont des
+   fenêtres **partielles**. Exactement **7** `SignalFeatures` sont calculables
+   entièrement (`signal_time`, `observed_at`, `fee_bps`, `slippage_bps_est`,
+   `bundle_transactions`, `bundle_wallets`, `same_slot_wallets`) plus 2
+   comptes partiels (`computable_on_span`, testé). Tout run du Master sur ces
+   fixtures est un **Master tronqué** et doit être étiqueté ainsi. Aucun run du
+   Master n'est présenté ici.
+3. **Le taux de frais de courbe est une entrée par pool** : **10 000 / 12 500 /
+   18 000 ppm** observés, un taux par pool. Recherche des valeurs codées en dur
+   (`12500`, `12_500`, `0.0125`, `1.25 %`, constantes `*FEE_RATE*`) dans
+   `bot/` et `tools/` hors `bot/bot` :
+   - `bot/market/replay.py:30` `DEFAULT_FEE_RATE_PPM = 12_500`, défaut de
+     `ExecutionModel` et donc de `replay()` : **corrigé** (correctif sûr, seul
+     appelant hors tests = `tools/launchlab_baseline_report.py`, qui passait
+     déjà le taux observé). Par défaut, le taux est lu sur le dernier événement
+     réel à l'indice de décision ; un taux explicite reste prioritaire ; taux et
+     source sont enregistrés dans `TradeResult`. Tests :
+     `tests/test_replay_fee_rate_per_pool.py` (4).
+   - `tests/test_launchlab_market_events.py:28`, `tests/test_launchlab_replay.py:12` :
+     constantes de fixtures synthétiques, légitimes.
+   - `tests/test_p3_quotes.py:25,105` : `priceImpactPct`, pas un taux de frais.
+   - Hypothèse codée en dur à revoir (non corrigée, moteur LIVE) :
+     `share_fee_rate_ppm=0` dans `bot/live/route.py:186` et
+     `bot/live/evidence.py:414`.
+4. **Transactions échouées : 59 / 173 signatures (34,1 %)** dans les fixtures.
+   Le modèle de coût doit porter un terme « tentative échouée » (frais de base +
+   priorité payés sans fill). `bot/market/replay.py` n'en a pas. Pour **notre**
+   bot, ce taux est **UNKNOWN** tant qu'il n'est pas mesuré ; le taux observé
+   chez les autres traders n'est pas transposable.
+5. **Loyer ATA / WSOL.** Règle retenue : capital **immobilisé**
+   (`rent_locked`), **récupérable** à `CloseAccount` (`rent_recovered`),
+   **passé en perte** (`rent_written_off`) seulement sur impossibilité prouvée
+   (poussière après vente partielle, compte orphelin, jeton gelé, clôture jamais
+   exécutée). Part non récupérable = frais des transactions create/close quand
+   elles ne sont pas groupées avec l'achat/la vente. Pas d'ajout au plancher de
+   coût comme perte par défaut. État du code (*code*) :
+   - LIVE : `bot/live/journal.py` a `locked_rent_lamports` par position,
+     réconcilié par `bot/live/engine.py:228` ; `bot/live/positions.py:161`
+     le traite comme actif immobilisé. **Lacune** : pas de `rent_recovered` ni
+     de `rent_written_off`.
+   - `bot/p3/own_fee_bounds.py` : `ata_rent_locked_lamports` +
+     `ata_recovered_at_horizon` ; compte le loyer en borne haute de coût s'il
+     n'est pas récupéré à l'horizon. Cohérent comme borne, pas comme perte.
+   - `bot/market/replay.py` : suppose le loyer remboursé, **sans** frais de la
+     transaction de clôture. **Lacune.**
+   - Registre PAPER (`bot/analyser`) : aucun champ de loyer. **Lacune.**
+   Ces lacunes ne sont pas corrigées dans cette PR (consigne).
 
 ## 8. Décisions et validations nécessaires (propriétaire)
 
 | # | Décision | Recommandation |
 |---|---|---|
-| D1 | **Consigne active** : `AGENTS.md` de `main` dit « PAPER ONLY, aucun composant réel, première mission en lecture seule » ; celui de #89 et `LIVE_READINESS_MANDATE.md` (29/10) autorisent le développement LIVE désarmé. | Adopter la version #89 lors de l'intégration : développement LIVE autorisé, **aucune** signature réelle, aucun fonds, activation = décision séparée. |
-| D2 | Pile A comme base de la référence (plutôt que reconstruire depuis `main`). | Oui : verte, contient Master + LIVE ; reconstruire serait une réécriture géante. |
-| D3 | 4 workflows planifiés Helius (`HELIUS_API_KEY`, toutes les 6 h) dans #89. | Les désactiver dans la branche d'intégration ; réactiver un par un avec budget. |
+| D1 ✅ approuvée | **Consigne active** : `AGENTS.md` de `main` dit « PAPER ONLY, aucun composant réel, première mission en lecture seule » ; celui de #89 et `LIVE_READINESS_MANDATE.md` (29/10) autorisent le développement LIVE désarmé. | Adopter la version #89 lors de l'intégration : développement LIVE autorisé, **aucune** signature réelle, aucun fonds, activation = décision séparée. |
+| D2 ✅ approuvée | Pile A comme base de la référence (plutôt que reconstruire depuis `main`). | Oui : verte, contient Master + LIVE ; reconstruire serait une réécriture géante. |
+| D3 ✅ approuvée | Workflows réseau automatiques de #89. Mesure corrigée : **2** `schedule:` réels (Helius, toutes les 6 h), pas 4 ; et 45 workflows réseau déclenchés par `pull_request`, qui auraient tourné à l'ouverture de la PR d'intégration. | Fait : tous en `workflow_dispatch` seul ; réactiver un par un avec budget. |
 | D4 | Interface unique : Streamlit Rugger Wallet, Render ou Vercel. | Une seule ; les deux autres archivées. |
 | D5 | « Suivi Axiom » : sens exact ? (voir le portefeuille LIVE dans Axiom, ou exporter les positions vers Axiom ?) | Préciser ; rien n'existe aujourd'hui. |
-| D6 | Agent planifié : continuer sur la pile B pendant l'intégration ? | Le mettre en pause pendant l'intégration, puis le rebaser sur la nouvelle référence. |
+| D6 ✅ approuvée | Agent planifié : continuer sur la pile B pendant l'intégration ? | Le mettre en pause pendant l'intégration, puis le rebaser sur la nouvelle référence. |
 | D7 | Protection de `main` (GitHub Pro payant) ou risque accepté. | Décision de coût. |
 
 ## Règle de mise à jour
