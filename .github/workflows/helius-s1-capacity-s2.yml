@@ -1,16 +1,7 @@
 name: S1-qualified capacity to S2 conditional LaunchLab SELL (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/helius_s1_capacity_then_s2.py'
-      - 'tests/test_live_helius_s1_capacity_then_s2.py'
-      - '.github/workflows/helius-s1-capacity-s2.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request, schedule.
   workflow_dispatch:
-  # GitHub cron executes only after this workflow is merged into default branch.
-  # At most four read-only runs/day; no real orders and no paid data provider.
-  schedule:
-    - cron: '17 */6 * * *'
-
 permissions:
   contents: read
 

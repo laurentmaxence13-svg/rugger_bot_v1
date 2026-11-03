@@ -1,10 +1,6 @@
 name: Prospective two-bank CPMM markout (HELIUS READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/cpmm_prospective_markout.py'
-      - 'tests/test_live_cpmm_prospective_markout.py'
-      - '.github/workflows/cpmm-prospective-markout-readonly.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

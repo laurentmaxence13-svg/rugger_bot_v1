@@ -1,13 +1,6 @@
 name: Rugger replay retained public Solana ProgramData
 on:
-  push:
-    branches:
-      - 'review/live-program-pinning-*'
-  pull_request:
-    paths:
-      - 'bot/live/program_pin.py'
-      - 'validation/live_20261029/replay_program_pin.py'
-      - '.github/workflows/program-pin-replay.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: push, pull_request.
   workflow_dispatch:
 
 permissions:

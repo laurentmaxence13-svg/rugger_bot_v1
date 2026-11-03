@@ -3,12 +3,8 @@ name: One free public Solana signed LaunchLab forward PAPER sample (NO ORDERS)
 # Independently samples real Solana public nodes, without Helius credentials.
 # This is a one-shot study, NOT a continuously powered Master engine.
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_sol_forward_paper.py'
-      - 'tests/test_public_sol_forward_paper.py'
-      - '.github/workflows/free-public-solana-forward-paper.yml'
-
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
 permissions:
   contents: read
 

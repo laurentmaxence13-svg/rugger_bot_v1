@@ -2,10 +2,8 @@ name: Pinned signed LaunchLab root diagnosis (NO LIVE)
 
 # Historical account layout diagnosis only: current root is not creation-time S1.
 on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
-  pull_request:
-    types: [labeled]
-
 permissions:
   contents: read
 

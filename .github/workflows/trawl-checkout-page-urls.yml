@@ -1,9 +1,6 @@
 name: Verify both Trawl purchase pages and exact program IDs (NO PAYMENT)
 on:
-  pull_request:
-    paths:
-      - 'tools/verify_trawl_checkout_links.py'
-      - '.github/workflows/trawl-checkout-page-urls.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

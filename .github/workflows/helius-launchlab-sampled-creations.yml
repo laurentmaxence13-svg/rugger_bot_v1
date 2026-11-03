@@ -1,17 +1,7 @@
 name: Sample signed LaunchLab creation candidates (HELIUS READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/helius_launchlab_cohort_probe.py'
-      - 'bot/live/helius_readonly_rpc.py'
-      - 'tests/test_live_helius_launchlab_cohort_probe.py'
-      - '.github/workflows/helius-launchlab-sampled-creations.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request, schedule.
   workflow_dispatch:
-  # GitHub cron executes only after this workflow is merged into default branch.
-  # At most four read-only runs/day; no real orders and no paid data provider.
-  schedule:
-    - cron: '43 */6 * * *'
-
 permissions:
   contents: read
 

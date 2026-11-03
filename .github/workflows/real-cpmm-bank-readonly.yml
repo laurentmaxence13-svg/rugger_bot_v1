@@ -1,10 +1,6 @@
 name: Observe two real migrated CPMM pool banks (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_cpmm_pool_probe.py'
-      - 'tests/test_live_public_cpmm_pool_probe.py'
-      - '.github/workflows/real-cpmm-bank-readonly.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

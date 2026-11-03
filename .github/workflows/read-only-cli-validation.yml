@@ -1,15 +1,6 @@
 name: Rugger strict read-only CLI contract
 on:
-  push:
-    branches:
-      - 'review/live-program-pinning-*'
-  pull_request:
-    paths:
-      - 'bot/live/readonly_*.py'
-      - 'bot/live/cpmm_readiness.py'
-      - 'tools/run_readonly_cpmm_preflight.py'
-      - 'validation/live_readonly/**'
-      - '.github/workflows/read-only-cli-validation.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: push, pull_request.
   workflow_dispatch:
 
 permissions:

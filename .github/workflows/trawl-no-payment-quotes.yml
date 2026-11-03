@@ -1,11 +1,6 @@
 name: Trawl LaunchLab and CPMM automatic quotes (NO PAYMENT)
 on:
-  pull_request:
-    paths:
-      - 'tools/trawl_no_payment_quote.py'
-      - 'bot/p3/trawl_no_payment_quote.py'
-      - 'tests/test_trawl_no_payment_quote.py'
-      - '.github/workflows/trawl-no-payment-quotes.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

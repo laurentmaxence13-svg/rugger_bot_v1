@@ -2,8 +2,7 @@ name: Bounded LaunchLab WebSocket forward PAPER probe (NO LIVE)
 # Explicit experiment only; never spend runner minutes on every PR update.
 # Label this PR 'run-ws-probe' to request a run; no orders are sent.
 on:
-  pull_request:
-    types: [labeled]
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

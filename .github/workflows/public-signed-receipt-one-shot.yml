@@ -1,10 +1,7 @@
 name: One existing signed LaunchLab receipt via free public Solana RPC (NO ORDERS)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_signed_receipt_corrob.py'
-      - 'tests/test_public_signed_receipt_corrob.py'
-      - '.github/workflows/public-signed-receipt-one-shot.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

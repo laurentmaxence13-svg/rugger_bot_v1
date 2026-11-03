@@ -1,11 +1,6 @@
 name: Cross-provider signed LaunchLab migrations (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/cross_provider_migration_proof.py'
-      - 'bot/live/public_migration_discovery.py'
-      - 'tests/test_live_cross_provider_migration_proof.py'
-      - '.github/workflows/cross-provider-migrations-readonly.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

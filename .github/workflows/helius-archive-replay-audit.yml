@@ -3,11 +3,7 @@ name: Audit existing signed Helius archives (NO RPC, NO ORDERS)
 # Re-check existing Nov 1 GitHub Actions evidence, not a new Helius capture.
 # Artifacts have finite retention. This workflow fails closed if expired.
 on:
-  pull_request:
-    paths:
-      - 'bot/p3/helius_signed_archive_audit.py'
-      - 'tests/test_helius_signed_archive_audit.py'
-      - '.github/workflows/helius-archive-replay-audit.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

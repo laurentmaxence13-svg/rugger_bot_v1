@@ -1,11 +1,6 @@
 name: Current active LaunchLab SOL pool scan (HELIUS READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/helius_active_launchlab_scan.py'
-      - 'bot/live/helius_readonly_rpc.py'
-      - 'tests/test_live_helius_active_launchlab_scan.py'
-      - '.github/workflows/helius-active-launchlab-scan.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

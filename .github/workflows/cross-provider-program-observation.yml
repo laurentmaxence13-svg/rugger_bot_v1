@@ -1,10 +1,6 @@
 name: Independent public Solana RPC code comparison (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_program_observer.py'
-      - 'validation/live_readonly/cross_provider_program_observer.py'
-      - '.github/workflows/cross-provider-program-observation.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

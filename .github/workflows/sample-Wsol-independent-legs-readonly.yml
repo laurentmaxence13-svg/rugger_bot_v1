@@ -1,10 +1,6 @@
 name: Verify sampled WSOL BUY and SELL separately (READ ONLY)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_sample_wsol_legs.py'
-      - 'tests/test_live_public_sample_wsol_legs.py'
-      - '.github/workflows/sample-Wsol-independent-legs-readonly.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 permissions:
   contents: read

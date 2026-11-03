@@ -1,12 +1,6 @@
 name: Master vs reference evidence sufficiency audit (NO LIVE)
 on:
-  pull_request:
-    paths:
-      - 'bot/p3/master_oos_readiness.py'
-      - 'tests/test_master_oos_readiness.py'
-      - 'validation/master_v2/FINAL_VALIDATION.json'
-      - 'validation/master_v2/COMPARISON_SUMMARY.json'
-      - '.github/workflows/master-strict-oos-audit.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
 
 permissions:

@@ -1,10 +1,7 @@
 name: Bounded free public Solana signed creator cohort (NO ORDERS)
 on:
-  pull_request:
-    paths:
-      - 'bot/live/public_sol_forward_cohort.py'
-      - 'tests/test_public_sol_forward_cohort.py'
-      - '.github/workflows/free-public-solana-cohort.yml'
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
