@@ -25,11 +25,16 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
         if relative.parts[0] not in ("bot", "tests"):
             # Explicit audit-only allowlist; do not import arbitrary tools, secrets or config.
             if relative.as_posix() not in ("tools/bitquery_dextrades_markout.py", "tools/bitquery_dextrades_pages.py", "tools/bitquery_dextrades_replay.py", "tools/bitquery_cross_protocol_audit.py", "tools/master_prospective_gate.py",
-                                           "render_status_service.py"):
+                                           "render_status_service.py",
+                                           # Offline tools exercised by PR #90/#91/#98 tests.
+                                           "tools/launchlab_baseline_report.py", "tools/master_feature_inventory.py",
+                                           "tools/dev_state.py", "docs/autonomy/BACKLOG.json"):
                 continue
         if relative.parts[:2] in (("bot", "bot"), ("tests", "tests")):
             continue
-        if relative.suffix not in (".py", ".json"):
+        # Compressed archives are accepted only as committed test fixtures.
+        gz_fixture = relative.parts[:2] == ("tests", "fixtures") and relative.suffixes[-2:] == [".json", ".gz"]
+        if relative.suffix not in (".py", ".json") and not gz_fixture:
             continue
         source = repo / relative
         if not source.resolve().is_relative_to(repo) or source.is_symlink():
