@@ -1,5 +1,22 @@
 # État du projet — préparation P3
 
+## Current mission — LaunchLab baseline census (pre-registered, NOT RUN)
+
+- Protocol `launchlab-baseline-census-001` frozen before any network call:
+  SHA256 `b7d1c842f3cae2cf8e6570e286eaa27a67a8bd38edab32a1d2ba9d90d31ff2bb`,
+  commit `766207547956059ea5a6b90cde24933f320bfa8e`. See
+  [P3_CENSUS_PROTOCOL.md](P3_CENSUS_PROTOCOL.md) and [P3_CENSUS_RESULTS.md](P3_CENSUS_RESULTS.md).
+- **Not run: the owner quota is `[TO BE FILLED]`.** 0 market requests. The template
+  authorization is refused; the runner needs a committed `authorization.json`.
+- Strategy-free: every index identity after the baseline is enrolled and gets 13
+  fixed tasks, with no retries and nothing imputed. Coverage of all creations is
+  unknown (no independent reference).
+- Tests (isolated `git archive`, `-W error`): Python 3.12.3 **1 398 passed,
+  1 skipped, 242 subtests**, exit 0. Python 3.13 has 6 GC-timed sqlite
+  ResourceWarnings, all from pre-existing tests (0 from the census).
+- No ledger, `decide()`, TP/SL, sizing or threshold change. Economic verdict: not
+  part of the census.
+
 ## Mission courante — v2 exécutée et preuves archivées
 
 - [PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20)
