@@ -31,8 +31,31 @@ def test_zero_defaults_are_never_classified_as_derivable_from_events():
 
 
 def test_usd_fields_are_not_claimed_from_events():
-    for name in ('price_usd', 'liquidity_usd', 'market_cap_usd', 'fdv_usd', 'funding_usd'):
+    for name in ('price_usd', 'liquidity_usd', 'market_cap_usd', 'fdv_usd', 'funding_usd', 'depth_usd'):
         assert inv.INVENTORY[name][0] != inv.EVENTS, name
+
+
+def test_class_counts_after_depth_usd_reclassification():
+    assert inv.classify_counts() == {inv.EVENTS: 13, inv.TX: 5, inv.EXTRA: 16, inv.UNKNOWN: 3}
+    assert inv.INVENTORY['depth_usd'][0] == inv.EXTRA
+
+
+def test_fixture_spans_and_computable_signal_features():
+    report = inv.audit(ROOT / 'tests' / 'fixtures' / 'launchlab_sol_pools')
+    assert sorted(m['span_seconds'] for m in report.values()) == [16, 29, 31]
+    for pool, m in report.items():
+        status = m['signal_features']
+        for name in ('momentum_60s', 'momentum_300s', 'price_change_5m_pct', 'price_change_1h_pct'):
+            assert status[name] == inv.UNAVAILABLE, (pool, name)
+        assert status['tx_buys_5m'] == status['tx_sells_5m'] == inv.PARTIAL, pool
+        computable = sorted(n for n, s in status.items() if s == inv.COMPUTABLE)
+        assert computable == ['bundle_transactions', 'bundle_wallets', 'fee_bps', 'observed_at',
+                              'same_slot_wallets', 'signal_time', 'slippage_bps_est'], pool
+
+
+def test_window_status_is_complete_for_a_long_pool():
+    assert set(inv.computable_on_span(3600).values()) == {inv.COMPUTABLE}
+    assert inv.computable_on_span(None)['momentum_60s'] == inv.UNAVAILABLE
 
 
 def test_fixture_pools_are_too_short_for_momentum_windows():

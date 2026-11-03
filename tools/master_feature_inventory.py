@@ -40,7 +40,7 @@ INVENTORY = {
     'market_cap_usd': (EXTRA, 'needs total supply and USD rate', ''),
     'fdv_usd': (EXTRA, 'needs total supply and USD rate', ''),
     'fee_bps': (EVENTS, 'implied_fee_rate_ppm / 100', ''),
-    'depth_usd': (EVENTS, 'exact curve capacity in SOL from reserves; USD needs a rate', ''),
+    'depth_usd': (EXTRA, 'curve capacity is exact in SOL from reserves; the USD value needs a SOL/USD rate absent from events', 'any USD rate sampled later leaks the future'),
     'slippage_bps_est': (EVENTS, 'exact curve math at a chosen size', 'size must be fixed before the decision'),
     'market_data_quality': (UNKNOWN, 'label of the external source, not a market fact', ''),
     'quote_source': (UNKNOWN, 'label of the external source', ''),
@@ -76,6 +76,33 @@ ZERO_DEFAULTS = ('holder_count', 'linked_wallets', 'wallet_link_count', 'wallet_
                  'holder_data_known', 'market_data_quality', 'quote_source')
 
 
+# Event-derived features that are defined over a trailing window (seconds).
+# Counts over a window shorter than requested are partial, ratios are undefined.
+WINDOW_SECONDS = {'momentum_60s': 60, 'momentum_300s': 300, 'price_change_5m_pct': 300,
+                  'price_change_1h_pct': 3600, 'tx_buys_5m': 300, 'tx_sells_5m': 300}
+WINDOW_COUNTS = ('tx_buys_5m', 'tx_sells_5m')
+COMPUTABLE, PARTIAL, UNAVAILABLE = 'COMPUTABLE', 'PARTIAL_WINDOW', 'NONE_WINDOW_LONGER_THAN_POOL'
+
+
+def computable_on_span(span_seconds):
+    """Status of every event-derived SignalFeature for a pool observed over ``span_seconds``.
+
+    Non-event classes are not listed: they are not computable from TradeEvents at all.
+    """
+    out = {}
+    for name, (cls, _, _) in INVENTORY.items():
+        if cls != EVENTS:
+            continue
+        window = WINDOW_SECONDS.get(name)
+        if window is None or (span_seconds is not None and span_seconds >= window):
+            out[name] = COMPUTABLE
+        elif name in WINDOW_COUNTS:
+            out[name] = PARTIAL
+        else:
+            out[name] = UNAVAILABLE
+    return out
+
+
 def classify_counts():
     counts = {}
     for cls, _, _ in INVENTORY.values():
@@ -101,6 +128,7 @@ def fixture_measurements(events, windows=(60, 300)):
         'windows_computable': {str(w): span is not None and span >= w for w in windows},
         'max_wallets_in_one_slot': max((len(v) for v in slots.values()), default=0),
         'distinct_fee_payers': len({e.fee_payer for e in events}),
+        'signal_features': computable_on_span(span),
     }
 
 
