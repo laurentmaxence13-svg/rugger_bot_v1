@@ -107,3 +107,4 @@ All three routines are disabled. Connectors were removed from each. Automation n
 - 2026-11-03 00:05 UTC: planner corrected to run git in the caller's repository (test added). Protocol v2.1: dependencies step, wake-up rule, integration-tool fallback for PRs. Backlog gains the gated `blocktime-crosscheck-v1`.
 - 2026-11-03 18:04 UTC: integration session read the scheduled tasks (table at the top). Dev agent `enabled=false` since 18:01:43 UTC; its 17:11:51 run was archived with 0 tokens used.
 - 2026-11-03 18:10 UTC: branch `integration/consolidation-20261103` merges #100, #90, #88, #89, #91, #98. `BACKLOG.json` on that branch: `start_new_work=false` (D6). The protocol branch itself was not modified.
+- 2026-11-03 19:50 UTC: read-only recheck from the integration session: scheduled tasks unchanged since 18:04 (dev agent disabled); no GitHub Actions run with event `schedule` in the repository history; last dev-agent branch push 11:16 UTC.

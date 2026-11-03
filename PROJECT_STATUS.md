@@ -131,13 +131,43 @@ garde graphique vide, job CI Windows) sont conservés côté `main`.
 Changements de code en plus des fusions (un commit chacun, réversibles) :
 `tools/offline_check.py` (liste blanche pile B), `bot/market/replay.py` (taux
 de frais par pool, finding 3), `tools/master_feature_inventory.py` (finding 1-2),
-`bot/dashboard/local_db.py` (fermeture SQLite, §7). Aucun seuil, critère
-anti-rug, score, TP/SL ni taille de position modifié. Aucun run du Master.
+`bot/dashboard/local_db.py` et `bot/live/journal.py` (fermeture SQLite, §7),
+tests (fermeture SQLite + `tests/conftest.py`), CI (dépendances, mode strict
+3.13). Aucun seuil, critère anti-rug, score, TP/SL ni taille de position
+modifié. Aucun run du Master.
+
+Conflits du terminal PAPER revus (2026-11-03, ronde 2) : les lignes de #89
+écartées sont une référence à la branche obsolète `feat/paper-terminal-20261101`
+(CI, doc), un ancien commentaire de `requirements-dashboard.txt`, et l'ancien
+`.bat` autonome qui installait Streamlit dans `.venv`, l'environnement du bot.
+Le `.ps1` de `main` couvre tout (environnement séparé `.venv-dashboard`,
+contrôle HTTP, smoke test, réparation pip). `bot/dashboard/app.py` : aucune
+ligne de #89 perdue. **Rien à restaurer.**
 
 Workflows (D3) : 47 workflows réseau passent en **`workflow_dispatch` seul**
 (2 `schedule:` Helius, 45 `pull_request`, 2 `push`). Rien n'est supprimé, aucun
 secret touché. Restent automatiques : `offline-tests.yml`,
 `rugger-isolated-ci.yml`, `paper-terminal-ci.yml` (hors ligne).
+
+Inventaire des 49 workflows manuels (47 modifiés + `helius-index-first-cohort`
+et `public-migration-readonly`, déjà manuels), analyse YAML des conditions
+`if:` de job :
+- **Lançables à la main : 35** (33 parmi les 47). 12 sans aucune condition
+  PR ; 23 dont la condition de job autorise explicitement `workflow_dispatch`.
+  18 de ces 35 utilisent `HELIUS_API_KEY` : chaque lancement consomme du quota
+  et demande un budget.
+- **Devenus inopérants : 13** (tous leurs jobs exigent un événement
+  `pull_request` ou un label) : `bitquery-four-official-samples-once`,
+  `free-public-solana-cohort`, `free-public-solana-forward-paper`,
+  `genuine-signed-master-paper-replay`, `helius-recent-signed-sol-trades`,
+  `helius-rolling-signed-paper`, `helius-signed-master-paper`,
+  `helius-sol-forward-paper-cycle`, `public-signed-receipt-one-shot`,
+  `render-master-readiness-smoke`, `render-public-paper-smoke`,
+  `signed-sol-causal-s1s2-quote-research`, `signed-sol-readonly-raydium-quote`.
+- **Partiel : 1** : `helius-historical-ed25519-replay` (le job
+  `official-four-table-vendor-sample` exige un label).
+Les rendre lançables exige d'éditer leur `if:` : décision du propriétaire,
+avec budget, workflow par workflow. Non fait ici.
 
 ## 5. Dernier état réellement testé
 
@@ -153,13 +183,23 @@ Dépendances : `requirements*.txt` de la branche, pins `pandas==2.3.3`,
 |---|---|---|---|---|
 | `main` `d9b950e` | 3.12.3 | 1358 réussis, 1 ignoré, 242 sous-tests | 0 | vide |
 | `main` `d9b950e` | 3.13.18 | 5 échecs, 1 erreur, 1352 réussis, 1 ignoré, 242 sous-tests ; 6/6 = `ResourceWarning` SQLite | 1 | vide |
-| intégration (HEAD de la PR) | 3.12.3 | **4011 réussis, 1 ignoré, 242 sous-tests** | 0 | vide |
-| intégration (HEAD de la PR) | 3.13.18 | 17 échecs, 3 erreurs, 3992 réussis, 1 ignoré, 242 sous-tests ; **20/20 = `ResourceWarning` SQLite** | 1 | vide |
+| intégration `e301bfe` (ronde 1) | 3.12.3 | 4011 réussis, 1 ignoré, 242 sous-tests | 0 | vide |
+| intégration `e301bfe` (ronde 1) | 3.13.18 | 17 échecs, 3 erreurs, 3992 réussis ; 20/20 = `ResourceWarning` SQLite | 1 | vide |
+| intégration `16331cd` (ronde 2) | 3.11.18 | **4014 réussis, 1 ignoré, 242 sous-tests** | 0 | vide |
+| intégration `16331cd` (ronde 2) | 3.12.3 | **4014 réussis, 1 ignoré, 242 sous-tests** | 0 | vide |
+| intégration `16331cd` (ronde 2) | 3.13.18 | **4014 réussis, 1 ignoré, 242 sous-tests** (3 exécutions identiques) | 0 | vide |
+
+CI GitHub Actions sur `16331cd` : `rugger-isolated-ci` (3.11, harnais,
+`-W error`) run 41706205234 **succès**, 4014 réussis ; `offline-tests` (3.13,
+harnais, `-W error`) run 41706205137 **succès**, 4014 réussis ; `paper-terminal-ci`
+run 41706205152 **succès** (Linux + Windows 3.12 et 3.13). Avant correction
+(`2a17093`) : `rugger-isolated-ci` échouait (`streamlit` absent, 3.11) et
+`offline-tests` aussi (`cryptography` absent, 23 modules LIVE).
 
 Le seul ignoré est `tests/test_research_pipeline.py:17` (« base utilisateur
-absente », attendu sans base locale). Sous 3.13, les échecs sont **aléatoires
-d'une exécution à l'autre** et ont tous la même cause, déjà présente sur `main`
-(voir §7) ; sur `main`, 6/6 ont cette même cause. Aucun échec fonctionnel.
+absente », attendu sans base locale). Les échecs 3.13 de la ronde 1 (et les 6
+de `main`) avaient tous la même cause, des connexions SQLite non fermées ;
+corrigée en ronde 2 (§7). Aucun échec fonctionnel.
 Mesures antérieures, `pytest` simple sans `-W error` : `main` 1358,
 #90 1404, #89 3926.
 
@@ -170,8 +210,8 @@ Aucun de ces tests ne prouve une exécution réelle ni une rentabilité.
 1. ~~`#89 + main + #90`, conflits résolus côté `main`, `schedule:` désactivés,
    suite complète publiée.~~ Fait sur `integration/consolidation-20261103`
    (§4 bis), en attente de revue. **Le propriétaire fusionne, jamais un agent.**
-2. Corriger les connexions SQLite non fermées pour que la suite passe sous
-   Python 3.13 avec `-W error` (bloquant pour Windows 3.13, §7).
+2. ~~Corriger les connexions SQLite non fermées (Python 3.13 `-W error`).~~
+   Fait en ronde 2 ; le CI 3.13 tourne désormais en mode strict.
 3. Fermer les 41 PR contenues dans #89 ; rebaser #92–#97 et #99 sur la
    nouvelle référence.
 4. Déplacer les 40 sondes hors de `bot/live` (aucun changement de logique).
@@ -183,24 +223,22 @@ Chaque étape = une PR courte, testée, réversible.
 ## 7. Blocages
 
 **Techniques**
-- **Python 3.13 + `-W error` : la suite échoue déjà sur `main`.** Python 3.13
-  émet un `ResourceWarning` pour toute `sqlite3.Connection` non fermée
-  explicitement ; le ramasse-miettes le déclenche dans un test sans rapport,
-  d'où des échecs différents à chaque exécution. Python 3.12 : 0 échec. Le CI
-  de référence `rugger-isolated-ci.yml` tourne en 3.11, ce qui masquait le
-  problème. Non introduit par l'intégration, non masqué : à corriger (§6.2).
-  Localisation (`PYTHONTRACEMALLOC=1`, une exécution) : 75 connexions non
-  fermées, **23 lignes dans 13 fichiers**. 39/75 viennent de tests qui créent un
-  `ExecutionJournal` (`bot/live/journal.py:43`) sans appeler `close()` ; le
-  reste vient d'utilitaires de test (`test_paper_engine`, `test_research_pipeline`,
-  `test_functional_cli`, `test_master_endurance`, `test_offline_endurance`,
-  `test_dashboard_evidence`…). Un seul site en production :
-  `bot/dashboard/local_db.py:38` (`with sqlite3.connect()` ne ferme pas ;
-  garde le fichier PAPER ouvert sous Windows) — **corrigé** dans cette PR,
-  avec 2 tests.
-- 47 workflows sont désormais manuels. Plusieurs jobs ont des conditions
-  `github.event.pull_request` / `labeled` : en `workflow_dispatch`, ils seront
-  ignorés. Chaque réactivation demande une revue du workflow et un budget.
+- ~~Python 3.13 + `-W error` échouait (déjà sur `main`).~~ **Résolu en ronde 2.**
+  Cause : Python 3.13 signale toute `sqlite3.Connection` non fermée ; le
+  ramasse-miettes levait l'avertissement dans un test sans rapport. Localisé
+  (`PYTHONTRACEMALLOC=1`) : 75 fuites, 23 lignes. Produit : 2 sites corrigés,
+  `bot/dashboard/local_db.py:38` (`with sqlite3.connect()` ne ferme pas) et
+  `bot/live/journal.py` (connexion laissée ouverte si l'initialisation échoue,
+  prouvé par un test sur fichier corrompu ; ajout de `with`). Les 69 autres
+  `sqlite3.connect` du produit ferment (`closing()`, `close()` ou fermeture
+  par l'appelant ; certains seulement sur le chemin normal, pas en `finally`). Tests : 19 `with ... as con`
+  fermés par `closing()`, 8 `addCleanup(con.close)`, et `tests/conftest.py`
+  ferme à la fin de chaque test les `ExecutionJournal` qu'il a ouverts
+  (seuls les tests en créent ; `sqlite3.connect` n'est pas intercepté, donc une
+  fuite du produit resterait visible).
+- 13 workflows manuels sont inopérants et 1 est partiel (liste en §4 bis) :
+  leurs jobs exigent un événement PR ou un label. 18 workflows lançables
+  utilisent `HELIUS_API_KEY`. Chaque réactivation demande une revue et un budget.
 - `bitquery-four-official-samples-once.yml` (#88) était du YAML invalide
   (nom d'étape avec « : » non cité), donc rejeté par GitHub : corrigé.
 - `tools/offline_check.py` ne copiait pas les outils et fixtures `.json.gz`
@@ -208,10 +246,15 @@ Chaque étape = une PR courte, testée, réversible.
   explicites et aux `.json.gz` sous `tests/fixtures/` seulement.
 - `main` non protégé ; l'identité connectée est administratrice. Les règles des
   agents ne sont pas une barrière technique.
-- Tâches planifiées (lu le 2026-11-03 à 18:04 UTC) : agent dev **désactivé**
-  depuis 18:01:43 UTC (dernier déclenchement 17:11:51, aucun travail) ;
+- Tâches planifiées (relu le 2026-11-03 vers 19:50 UTC, inchangé depuis
+  18:04) : agent dev **désactivé** depuis 18:01:43 UTC (dernier déclenchement
+  17:11:51, aucun travail ; dernier push d'un agent dev à 11:16 UTC) ;
   validation **active**, quotidienne à 06:07 UTC malgré son nom « no
-  recurrence » ; relecteur **actif**, ponctuel 2027-01-01. Détail dans
+  recurrence » ; relecteur **actif**, ponctuel 2027-01-01. Aucune exécution
+  GitHub Actions déclenchée par `schedule` dans l'historique du dépôt. Sessions
+  Claude visibles : une revue indépendante de #101 en attente d'une réponse du
+  propriétaire ; une session « Census » a poussé `claude/admiring-curie-r2gl1p`
+  (sans PR, hors périmètre de cette consolidation). Détail dans
   `docs/MASTER_CONTINUITY.md`.
 - `BACKLOG.json` a `start_new_work: false` sur cette branche, mais **`true`**
   sur `claude/autonomy-framework-20261103`, que lisent les routines. La pause
