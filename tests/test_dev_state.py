@@ -229,6 +229,24 @@ def test_git_event_wakeup_is_always_stopped(tmp_path, capsys):
     assert json.loads(capsys.readouterr().out)['action'] == 'STOP'
 
 
+def test_scheduled_run_cannot_resume_even_when_owner_corrections_gate_is_true(tmp_path, capsys):
+    backlog = tmp_path / 'backlog.json'
+    backlog.write_text(json.dumps({'coordination_branch': 'claude/launchlab-trade-events',
+                                   'start_new_work': False, 'resume_corrections': True,
+                                   'items': []}), encoding='utf-8')
+    state = tmp_path / 'state.json'
+    state.write_text(json.dumps({'branches': [
+        branch('claude/dev-fix', pull=pr(12),
+               corrections=[{'reason': 'owner_request', 'excerpt': '/fix'}])
+    ]}), encoding='utf-8')
+    assert ds.main(['plan', str(state), '--backlog', str(backlog),
+                    '--run-origin', 'scheduled']) == 0
+    assert json.loads(capsys.readouterr().out)['action'] == 'STOP'
+    assert ds.main(['plan', str(state), '--backlog', str(backlog),
+                    '--run-origin', 'manual']) == 0
+    assert json.loads(capsys.readouterr().out)['action'] == 'RESUME'
+
+
 def test_duplicate_or_incomplete_backlog_is_rejected(tmp_path):
     duplicate = {'coordination_branch': 'claude/x', 'items': [
         item('same', 1, ['a']), item('same', 2, ['b'])]}
