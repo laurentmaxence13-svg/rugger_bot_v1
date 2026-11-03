@@ -41,9 +41,17 @@ class ExecutionJournal:
             descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
             os.close(descriptor)
         self.con = sqlite3.connect(str(path), isolation_level=None)
+        try:
+            self._initialize(existed)
+        except BaseException:
+            # Never leave the private journal file handle open after a refused
+            # or failed initialization (Windows file locks, Python 3.13 warnings).
+            self.con.close()
+            raise
+
+    def _initialize(self, existed):
         self.con.row_factory = sqlite3.Row
         if existed and self.con.execute('PRAGMA application_id').fetchone()[0] != APPLICATION_ID:
-            self.con.close()
             raise ValueError('not_a_rugger_live_execution_journal')
         self.con.execute('PRAGMA synchronous=FULL')
         self.con.execute('PRAGMA journal_mode=DELETE')
@@ -75,6 +83,13 @@ class ExecutionJournal:
 
     def close(self):
         self.con.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.close()
+        return False
 
     @contextmanager
     def atomic(self):
