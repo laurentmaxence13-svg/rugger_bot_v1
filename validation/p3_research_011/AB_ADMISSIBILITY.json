@@ -1,0 +1,19 @@
+{
+  "active_ledger_opened": false,
+  "admissible_input_frames": 0,
+  "comparator_evaluate_called": false,
+  "economically_comparable_decisions": 0,
+  "existing_adapter_executed": true,
+  "initial_capital_each_book_lamports": "10000000000",
+  "master_net_market_pnl_sol": null,
+  "no_books_forced_on_unqualified_inputs": true,
+  "own_separate_quotes_available_for_both_budgets": true,
+  "policy_ranking": null,
+  "promotion_allowed": false,
+  "reason": "no_STRICT_identity_qualified_frames_and_quote_source_clocks_own_costs_missing",
+  "reference_initial_budget_lamports": "1000000000",
+  "reference_net_market_pnl_sol": null,
+  "research_budget_lamports": "100000000",
+  "schema": "p3-011-existing-comparator-admission-v1",
+  "universe_size": 100
+}

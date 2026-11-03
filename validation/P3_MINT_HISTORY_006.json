@@ -1,0 +1,111 @@
+{
+  "attempted": [
+    "4wAuccYwB2tLp4BsWtXYLzQpCXUnv5QW1TjNHw58rhdQX5rkxwZ9LPQ5hQzphduDmdJLoUmNJ3V1ujnswnqGeDVB",
+    "4okgNWsnPdjNuALYEBckn2g2uz2VdHWQBthNvbNYmKb1Z9ahfZV3eLPBCq3vS8SJWqk1992Nf8irnorjHw1cnTRu",
+    "5YJe66ukKXxZ373PXqJqEmanQ6vggcewTjtWRMGRbFZamGnTXB8fAAyFPuW2Mw5qSwik5srQJvn3z3KHZe2ExTqz",
+    "5eb7FA5K6fykJL1Q91USD1dbq3tT8Ye7x2NXhknp8ThWdeWrdxW95gz5m8X7osB7ZZkz5H3zXynPsDo8LfFSDv2q",
+    "4GXXGbWFPSPEY7HLwhsqx4ccUXvDKURWPjNBXwagYTE6rzhpPXFojtTy6F2ceo2ZvEwRSzuKvsGZq1gKzM5XUxPw",
+    "jzJBesvA28pG9ThP1R7p1Rg6ba8xWB4CRCDgJ7zsHDLbcsgsosS2JTsZeTRgmW9kpzwFGZt9AJN6f5wmE4KrfSc",
+    "2RqoQg7RLKND91yZy3igvu9pgfrv4uw75ELgyc44WGfEMNiM3RPmK9MtQSdoecF4ASrGqL1oEKpb7xekqfzQZJ1H",
+    "nxSwbtbhBJtsiVgEJXRoUSQ3GxYHMcBe737AqEorLkvwuBSw2imohjVvbYf8RDyVhgNKbZGicuXsagmcmFSirbq",
+    "662CF4WenipRBHKwvSxXgd83FSzRNL9FFoTZGbDZbucXiSvr93G3tz2xETaXFRoLXDhZuwrbuk1g69XJfiNUjtKh",
+    "3LaSZ3kLEG3sHaNPF6w82aobyaJvca5g8uKhX8rTtKJkwaX95wLPoLi5Z8CR55mS5Nkc2WXoU5Rtj55WhJoZBiS8",
+    "2rGAnwufZWsB2HoiXVFJqs9PwCcJzT6uFmSyGcPZsot7xFJAvdbdLsEzhKeAT9w8HTSHgmtdKaaJMGWpgF2nk9SF"
+  ],
+  "batches": [
+    {
+      "batch": 1,
+      "elapsed_ms": 6195,
+      "max_requests": 20,
+      "requests_used": 11,
+      "status": "stopped_on_first_source_or_evidence_failure_or_deadline"
+    }
+  ],
+  "closed_journal_export_and_restore_verified": true,
+  "complete_history_claimed": false,
+  "economic_verdict": "INSUFFICIENT DATA",
+  "elapsed_ms": 6216,
+  "matching_parsed_burns": [
+    {
+      "amount_atomic": "483733206530",
+      "instruction_index": 8,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "signature": "2RqoQg7RLKND91yZy3igvu9pgfrv4uw75ELgyc44WGfEMNiM3RPmK9MtQSdoecF4ASrGqL1oEKpb7xekqfzQZJ1H",
+      "slot": 461979685,
+      "source_token_account": "6nVJPVvgu211GhegKTw3gHXD6NMziyY7QTowJcW959eL",
+      "type": "burnChecked"
+    }
+  ],
+  "not_received": [
+    {
+      "signature": "2rGAnwufZWsB2HoiXVFJqs9PwCcJzT6uFmSyGcPZsot7xFJAvdbdLsEzhKeAT9w8HTSHgmtdKaaJMGWpgF2nk9SF",
+      "slot": 461980619
+    },
+    {
+      "signature": "3SqFigS7L6AZXXU1oeR69cLcg8Z6Q4f6HxCcZovwTpL2vSi8PWuPedseSzvh9DCueQcPnxt6MyCUPij1uKyyApqk",
+      "slot": 461980619
+    },
+    {
+      "signature": "5PJeBEWiTzUnsnZjau8UWh6KmeiDDqVqyDTNpFTzUQ4iDQ4gfj1CafR9pJiazwoNLQWwgXATqTMK8K6bfAxhG5PB",
+      "slot": 461980619
+    },
+    {
+      "signature": "5qnchHEwu9sQW4rnzEJaAiHizQPZes6SShwyjUR6C14D9kVuWAAy6xBjYK5nSQrhMg9xqTDqdGnKaFb8oPaLUiSR",
+      "slot": 461980619
+    },
+    {
+      "signature": "67UpQjSXmSW7Bd8obN9zoEiJA6H5N473jKBvdnckp6sByGMNL6TePcRAmwpeu3q3TFhy24Ez43bzsb5iphwM8uve",
+      "slot": 461980619
+    },
+    {
+      "signature": "6HgvM5sGzfE8xqNKfkdGLcAN4AE6yYHi3PkQ6kDoNNKiMhe7gmatCYQ1xmx1p6a7JNTZaGQ1iRmNMkQQy7Gzy1F",
+      "slot": 461980619
+    },
+    {
+      "signature": "aiKTAGPjwyrMi5PgPc3BEwsu5byymALuzGHQTsgtHdEndyFhBhBRmutoJcEGYVfjZU9uNcdEyoCKUsXSZMzM1ZN",
+      "slot": 461980619
+    },
+    {
+      "signature": "xnQobsKRhk2Nw7BAB9PuomC5iLVXe31ZbEGQe3xiiwjL3faqYBmBvuehzPbPCM5cNZUo5bxxLG1Ykq4SZodEvTm",
+      "slot": 461980619
+    },
+    {
+      "signature": "3E2ovu37XUPjz8PmAt9Hbv19aMnYsSi9pv89FXyfhSUF7ykVwsGLhUw55HPynLMCwG7LYgeWzNEWSfmxZA8saPTd",
+      "slot": 461980620
+    },
+    {
+      "signature": "3M2UqhCQkBeqWnkmc5TgcHWnaohe2ijdcQXn6ApCHxR49UzLW2is2SDZzVKgBEzQYy1n6quSrU3futDvndcjMbPV",
+      "slot": 461980651
+    },
+    {
+      "signature": "2R9rzmswQa5wSGu2Z4eLbXq3CvsvYBqjKKHTCGekdZL39zTW3q1q8aurWDA7hCHvvuBwziPKp82wMVAKZAAuSZVk",
+      "slot": 461981346
+    },
+    {
+      "signature": "2ivNY9iX3cuG7SmjnrsAgxTCsCTeGFVpU8qcnnUgzNoqJ6cFuMrL5ojPpRYc5VDG2g7F3YBJs4yyw1gqCTzn245U",
+      "slot": 461982193
+    }
+  ],
+  "observed_new_burn_sum_atomic": "483733206530",
+  "plan_sha256": "ad170961e06d9199119da1b3a6ae1d7abc3c5c35cc71b10469d101475a70c0a8",
+  "preregistered_commit": "57eef76d2598bf55c78ff41c141ff6448e572050",
+  "real_orders_enabled": false,
+  "received_transactions": [
+    "4wAuccYwB2tLp4BsWtXYLzQpCXUnv5QW1TjNHw58rhdQX5rkxwZ9LPQ5hQzphduDmdJLoUmNJ3V1ujnswnqGeDVB",
+    "4okgNWsnPdjNuALYEBckn2g2uz2VdHWQBthNvbNYmKb1Z9ahfZV3eLPBCq3vS8SJWqk1992Nf8irnorjHw1cnTRu",
+    "5YJe66ukKXxZ373PXqJqEmanQ6vggcewTjtWRMGRbFZamGnTXB8fAAyFPuW2Mw5qSwik5srQJvn3z3KHZe2ExTqz",
+    "5eb7FA5K6fykJL1Q91USD1dbq3tT8Ye7x2NXhknp8ThWdeWrdxW95gz5m8X7osB7ZZkz5H3zXynPsDo8LfFSDv2q",
+    "4GXXGbWFPSPEY7HLwhsqx4ccUXvDKURWPjNBXwagYTE6rzhpPXFojtTy6F2ceo2ZvEwRSzuKvsGZq1gKzM5XUxPw",
+    "jzJBesvA28pG9ThP1R7p1Rg6ba8xWB4CRCDgJ7zsHDLbcsgsosS2JTsZeTRgmW9kpzwFGZt9AJN6f5wmE4KrfSc",
+    "2RqoQg7RLKND91yZy3igvu9pgfrv4uw75ELgyc44WGfEMNiM3RPmK9MtQSdoecF4ASrGqL1oEKpb7xekqfzQZJ1H",
+    "nxSwbtbhBJtsiVgEJXRoUSQ3GxYHMcBe737AqEorLkvwuBSw2imohjVvbYf8RDyVhgNKbZGicuXsagmcmFSirbq",
+    "662CF4WenipRBHKwvSxXgd83FSzRNL9FFoTZGbDZbucXiSvr93G3tz2xETaXFRoLXDhZuwrbuk1g69XJfiNUjtKh",
+    "3LaSZ3kLEG3sHaNPF6w82aobyaJvca5g8uKhX8rTtKJkwaX95wLPoLi5Z8CR55mS5Nkc2WXoU5Rtj55WhJoZBiS8"
+  ],
+  "reconciliation_certified": false,
+  "records": 25,
+  "requests_used": 11,
+  "schema": "p3-remaining-historical-transactions-control-v1",
+  "status": "stopped_on_first_source_or_evidence_failure_or_deadline",
+  "tail_hash": "7a62d2a496d274bb1dcaa099ae8115a2223a5abcfef2509b30c875d09f7fe7bb"
+}

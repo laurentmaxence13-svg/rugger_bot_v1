@@ -1,0 +1,52 @@
+{
+  "AB_comparable_decisions": 0,
+  "active_policy_changed": false,
+  "active_pools": 3,
+  "capture_elapsed_ms": 2342,
+  "events": 47,
+  "execution_verified": false,
+  "loss_of_capture": false,
+  "market_bank_slots": [
+    462625157
+  ],
+  "missing": [
+    "original_platform_admin_seed",
+    "provider_exact_size_buy_and_full_exit_quotes",
+    "provider_source_clocks_and_context",
+    "applicable_own_network_priority_rent_failure_costs",
+    "independent_buyer_evidence",
+    "causal_comparison_features_health_and_separate_1SOL_reference_quotes"
+  ],
+  "modeled_full_exit_capacity_at_0_1_SOL": 2,
+  "net_market_pnl_sol": null,
+  "new_network_requests_during_recovery": 0,
+  "observed_request_methods": [
+    "GET_launch_mint_sort_new",
+    "getMultipleAccounts_roots",
+    "getMultipleAccounts_grouped",
+    "getBlockTime"
+  ],
+  "original_report_reproduced": true,
+  "platform_pda_unknown": 6,
+  "process_elapsed_ms": 2569.909355999698,
+  "prospective_economic_cycles_usable": 0,
+  "provider_quotes": 0,
+  "raw_bank_analyses_reproduced": 6,
+  "raw_discovery_response_loss": "Original run rejected full discovery metadata as unsafe_or_oversized; only100selection rows plus per-row/response digests retained. Not reconstructed.",
+  "raw_discovery_response_retained": false,
+  "received_index_rows": 100,
+  "recovered": true,
+  "requests_in_original_control": 4,
+  "retained_selection_rows": 100,
+  "schema": "p3-010-admissibility-v1",
+  "screened_native_SOL_pools": 6,
+  "strict_eligible": 0,
+  "strict_market_cycles": 0,
+  "supply_mismatch": 2,
+  "tail_hash": "1d2afec81a12cc6abfac5f5d1afaa5cca08846f70585ab8a54d83f8a69caf66d",
+  "universe_reasons": {
+    "excluded_by_preregistered_activity_capacity_or_identity": 6,
+    "invalid_or_outside_native_SOL_scope": 46,
+    "outside_fixed_screen_prefix": 48
+  }
+}

@@ -1,0 +1,67 @@
+Offline validation: 252 source/fixture files copied; no .env, Git metadata or user database.
+...........F..................                                           [100%]
+=================================== FAILURES ===================================
+____ test_partial_reduction_then_final_close_preserves_exact_remaining_cost ____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-21/test_partial_reduction_then_fi0')
+
+    def test_partial_reduction_then_final_close_preserves_exact_remaining_cost(tmp_path):
+        engine,order,plan,rpc,clock=filled(tmp_path)
+        held=order.expected_output;half=held//2
+        frame=frame_for(order,held,partial=half)
+        frame.update(features=dict(mint=order.mint,observed_at=1,momentum_60s=-1,
+            tx_buys_5m=1,tx_sells_5m=2),features_available_at_ms=1200)
+        result=evaluate(engine,order,frame)
+        assert result['action']=='REDUCE' and result['input_quantity_atomic']==str(half)
+        sell=frame['prepared_partial_exits'][0];clock[0]=1200
+        decision=json.loads(sell.rebuild_request_json)['decision_id']
+>       submitted=asyncio.run(engine.execute(decision,sell))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_live_positions.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <bot.live.engine.ExecutionEngine object at 0x7f0405f2a5a0>
+decision_id = 'exit-frame-1'
+order = PreparedLaunchLabOrder(transaction=PreparedTransaction(message=b'\x01\x00\n\x10\x16\x16\x16\x16\x16\x16\x16\x16\x16\x1...nt_exempt_lamports":2039280,"side":"SELL","slippage_bps":100,"wallet":"2VDW9dFE1ZXz4zWAbaBDQFynNVdRpQ73HyfSHMzBSL6Z"}')
+
+    async def execute(self, decision_id, order):
+        order = validate_prepared_order(order)
+        if json.loads(order.rebuild_request_json)['decision_id'] != decision_id:
+            raise ValueError('decision_id_not_bound_to_prepared_route')
+        if order.transaction.required_signers != (order.user,):
+            raise ValueError('exact_isolated_wallet_signer_required')
+        record = order_record(order)
+        if not self.journal.create(decision_id, record, self.clock_ms()):
+            # A duplicate can only inspect/recover its original signature; it
+            # never silently reconstructs, re-signs or re-sends an order.
+            return self.result(decision_id)
+        if self.mode is Mode.RESEARCH:
+            return self.result(decision_id)
+        if self.journal.killed:
+            raise ValueError('persistent_kill_switch_active')
+        height = await self.rpc.get_block_height()
+        if type(height) is not int or height > order.transaction.last_valid_block_height:
+            self.journal.release_unsent(decision_id, self.clock_ms(), 'blockhash_expired_before_simulation')
+            return self.result(decision_id)
+        simulation = await self.rpc.simulate_transaction(order.transaction.unsigned_transaction(), sig_verify=False)
+        if type(simulation) is not dict or 'err' not in simulation or simulation['err'] is not None:
+            self.journal.transition(decision_id, ('PREPARED',), 'SIMULATION_FAILED', self.clock_ms(), failure_type='simulation_refused')
+            return self.result(decision_id)
+        simulation_slot = simulation.get('context_slot')
+        if type(simulation_slot) is not int or simulation_slot < order.source_slot:
+>           raise ValueError('simulation_bank_precedes_observed_route')
+E           ValueError: simulation_bank_precedes_observed_route
+
+bot/live/engine.py:285: ValueError
+1 failed, 29 passed in 0.81s

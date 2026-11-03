@@ -1,0 +1,43 @@
+name: Discover one historical SOL LaunchLab migration (READ ONLY)
+# Historical fixed-payer sample returns no signatures; it is a research
+# diagnostic, not the validated migration evidence gate. The cryptographically
+# verified pinned migrations are checked by separate two-provider workflows.
+# Preserve this legacy probe for manual exploration only; do not count a
+# no-result page as a failing production gate.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-public-migration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  read-historical-mainnet-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared live dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Inspect bounded public migration signer history with zero financial authority
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.public_migration_discovery

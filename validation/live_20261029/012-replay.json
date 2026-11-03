@@ -1,0 +1,14 @@
+{
+  "comparison_book_scope": "two_disposable_in_memory_PAPER_books",
+  "file_database_used": false,
+  "full_discovery_JSON_retained": false,
+  "network_requests": 0,
+  "paired_admission_decisions": 12,
+  "raw_bank_analyses_replayed": 25,
+  "records": 159,
+  "report_bytes_sha256": "53d0e511fe18cbadd34ea3241090cb4bf63ed2c1c2e426c1d1abf44028bfdefc",
+  "report_reproduced_exactly": true,
+  "schema": "p3-012-offline-replay-verification-v1",
+  "strict_cycles": 0,
+  "tail_hash": "3cac1bf300e3023d5ade20336bccd3420d63469a417d148a0b32026bb3487523"
+}

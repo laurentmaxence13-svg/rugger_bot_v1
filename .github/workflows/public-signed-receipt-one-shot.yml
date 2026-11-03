@@ -1,0 +1,40 @@
+name: One existing signed LaunchLab receipt via free public Solana RPC (NO ORDERS)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/public_signed_receipt_corrob.py'
+      - 'tests/test_public_signed_receipt_corrob.py'
+      - '.github/workflows/public-signed-receipt-one-shot.yml'
+permissions:
+  contents: read
+jobs:
+  independently-check-pinned-creation:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_LIVE_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact reviewed commit without saved auth
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.11'
+      - name: Install local public-transaction verifier dependency
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Verify pinned public-source verification contract without network
+        run: |
+          set -euo pipefail
+          python -m pytest -q tests/test_public_signed_receipt_corrob.py
+      - name: ONE free public Solana JSON RPC getTransaction and independent Ed25519 verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.live.public_signed_receipt_corrob --network

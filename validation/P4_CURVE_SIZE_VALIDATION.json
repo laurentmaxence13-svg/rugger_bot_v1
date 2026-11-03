@@ -1,0 +1,38 @@
+{
+  "active_settings_changed": false,
+  "bank_size_models": 32,
+  "conditional_cost_scenarios_lamports": [
+    0,
+    15000,
+    1000000
+  ],
+  "conditional_outside_buy_lamports": [
+    0,
+    100000000,
+    500000000,
+    1000000000
+  ],
+  "conditional_outside_sell_fraction_bps": [
+    5000,
+    10000
+  ],
+  "curve_size_policy_sha256": "a2f7bc97096742b5cb70c54ca64488d0ccd2b821a4939328db4021a96d9faadf",
+  "distinct_mints": 4,
+  "entry_intents_unknown_due_to_missing_features": 24,
+  "legacy_fixture_full_report_byte_identical": true,
+  "legacy_fixture_full_report_sha256": "42b99d7eadf9614ed2418bb4e62fb85f6a9be7bf43a23df8c8ec2205e3972272",
+  "market_bank_observations": 8,
+  "market_pnl_sol": null,
+  "market_qualified_cycles": 0,
+  "market_strategy_ranking": null,
+  "new_market_requests": 0,
+  "schema": "p4-curve-size-supplement-validation-v2",
+  "scope": "Existing actual banks feed the three variants cost supplement; no missing strategy feature is invented.",
+  "source_revision": "249c7b6637d7c0cdf980b029474e4b0a576f237c",
+  "strategy_variants": [
+    "early_sniping",
+    "confirmed_momentum",
+    "adaptive_hybrid"
+  ],
+  "variant_size_associations": 96
+}

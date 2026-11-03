@@ -1,0 +1,78 @@
+{
+  "closed_journal_integrity_verified": true,
+  "context_slot": 462210506,
+  "elapsed_ms": 1087,
+  "future_quota_certified": false,
+  "healthy_at_receipt": true,
+  "market_or_trade_qualified": false,
+  "other_rpc_methods_certified": false,
+  "plan": {
+    "addresses": [
+      "So11111111111111111111111111111111111111112"
+    ],
+    "commitment": "finalized",
+    "encoding": "base64",
+    "max_elapsed_ms": 5000,
+    "max_requests": 1,
+    "plan_id": "health-before-007",
+    "registered_at_ms": 1793133803544,
+    "retry": false,
+    "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+    "rpc_method": "getMultipleAccounts",
+    "schema": "p3-rpc-health-once-v1",
+    "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+    "source_revision_role": "base_before_probe",
+    "success_claim": "one_valid_WSOL_mint_read_at_receipt_not_future_quota"
+  },
+  "plan_sha256": "13932ba576d11f488d95e546590de18e9b134455c1279e498e269daaefb10e45",
+  "real_orders_enabled": false,
+  "reason": "valid_WSOL_mint_read",
+  "records": 4,
+  "request_receipt": {
+    "available_at_ms": 1793133906970,
+    "id": 2,
+    "kind": "request",
+    "mint": null,
+    "outcome": "observed",
+    "payload": {
+      "endpoint_kind": "historical_alias",
+      "http_status": 200,
+      "latency_ms": 1082.96774,
+      "provider": "solana_public_mainnet",
+      "received_at_ms": 1793133906969,
+      "requested_at_ms": 1793133905887,
+      "retry_after_date_utc": null,
+      "retry_after_reference_date_utc": null,
+      "retry_after_seconds": null,
+      "retry_after_status": "missing",
+      "rpc_error_code": null,
+      "rpc_method": "getMultipleAccounts"
+    },
+    "payload_sha256": "244a1e61f5b7e45f1d5a0bd045de3ee03ba3e24ae13057b9bf3ff6241ca06391",
+    "previous_hash": "5e8d0fdb7c700cb69430e754c0ccceda02afb1a331b25b1cafe47dd2dea85045",
+    "provenance": "live",
+    "quality_flags": [
+      "source_time_unknown"
+    ],
+    "reason": null,
+    "received_at_ms": 1793133906969,
+    "record_hash": "c2ce8c39c47f6d83274b7af6da594a0c8e75606f793ad6041b356ec9314c9dbb",
+    "request_id": "2b8c4992-1b86-4ae6-a79c-919aaa002a76",
+    "signature": null,
+    "source_slot": null,
+    "source_slot_raw": null,
+    "source_time_ms": null,
+    "source_time_raw": null,
+    "stored_at_ms": 1793133906970
+  },
+  "requests_used": 1,
+  "schema": "p3-rpc-health-once-report-v1",
+  "source_sha256": {
+    "campaign.py": "b8be3286ceb38257f309141f0ca842b7911ae5a71ff7d99017f7c5b4e6dbbae4",
+    "collect.py": "703df5a7ec36023de006f3f9c410c130d5bd155664a0bbde689ff0cd343ce855",
+    "launchlab.py": "a1df95c731c90f743df424837ea0aeff579622d1ff0a89a171c563ed77ad2588",
+    "rpc_health.py": "8714745a7f66726d6db1afe2773b9a6113ed49281d2f8bbd0beef0ce7ae0e232"
+  },
+  "tail_hash": "e4aa64e19c7e526b5512286054e239263adc6adf423aba7e075a1296785e2b8b",
+  "wire_retry_disabled": true
+}

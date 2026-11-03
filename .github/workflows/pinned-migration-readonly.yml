@@ -1,0 +1,43 @@
+name: Verify pinned historical LaunchLab migrations (READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/pinned_migration_probe.py'
+      - 'tests/test_live_pinned_migration_probe.py'
+      - '.github/workflows/pinned-migration-readonly.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-pinned-migration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify-historical-migration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared live dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Verify externally indexed migration signatures on public mainnet
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.pinned_migration_probe

@@ -2,9 +2,12 @@
 import argparse
 import asyncio
 from decimal import Decimal, InvalidOperation
+from datetime import timezone
+from email.utils import parsedate_to_datetime
 import hashlib
 import json
 from pathlib import Path
+import re
 import time
 import uuid
 from urllib.parse import urlsplit
@@ -18,6 +21,8 @@ from bot.p3.store import CaptureStore
 from bot.scanner.transaction_parser import find_raydium_launches, RAYDIUM_LAUNCHPAD_PROGRAM_ID
 
 RPC_URL = 'https://api.mainnet-beta.solana.com'
+CANONICAL_RPC_URL = 'https://api.mainnet.solana.com'
+_PUBLIC_RPC_URLS = frozenset((RPC_URL, CANONICAL_RPC_URL))
 FX_URL = 'https://api.dexscreener.com/token-pairs/v1/solana/' + SOL_MINT
 USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 _RPC_METHODS = frozenset(('getSlot', 'getSignaturesForAddress', 'getTransaction'))
@@ -39,13 +44,34 @@ class ReadOnlyPolicyError(ValueError):
     pass
 
 
+def _registered_rpc_url(value):
+    # Exact public URLs only: no credentials, query parameters or redirects.
+    if type(value) is not str or value not in _PUBLIC_RPC_URLS:
+        raise ReadOnlyPolicyError('Unregistered public RPC endpoint')
+    return value
+
+
+def _rpc_endpoint_kind(value):
+    if value == CANONICAL_RPC_URL:
+        return 'canonical'
+    return 'historical_alias' if value == RPC_URL else 'unregistered'
+
+
 class ReadOnlySession:
     """Restrict both destinations and operations; count attempts before transport."""
-    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL):
         if type(max_requests) is not int or not 1 <= max_requests <= 20:
             raise ValueError('Request budget must be between 1 and 20')
         self.session, self.max_requests, self.requests_used = session, max_requests, 0
         self.proxy_resolver = proxy_resolver
+        # Selection is explicit and must be registered by the caller before
+        # capture. Failures never switch endpoints or consume a hidden retry.
+        self._rpc_url = _registered_rpc_url(rpc_url)
+
+    @property
+    def rpc_url(self):
+        """The endpoint selected before capture; changing it requires a new session."""
+        return self._rpc_url
 
     def _take(self):
         if self.requests_used >= self.max_requests:
@@ -69,7 +95,7 @@ class ReadOnlySession:
         return self.session.get(url, **kwargs)
 
     def post(self, url, *, json=None, **kwargs):
-        if (url != RPC_URL or not isinstance(json, dict)
+        if (url != self.rpc_url or not isinstance(json, dict)
                 or json.get('method') not in _RPC_METHODS):
             raise ReadOnlyPolicyError('RPC method is outside the read-only capture policy')
         if kwargs.get('headers') or kwargs.get('auth') or kwargs.get('cookies'):
@@ -81,16 +107,76 @@ class ReadOnlySession:
         return self.session.post(url, json=json, **kwargs)
 
 
-async def _rpc(session, append, method, params):
+def _http_date(value):
+    if (type(value) is not str or not 1 <= len(value) <= 128
+            or any(not 32 <= ord(character) <= 126 for character in value)):
+        raise ValueError('Invalid HTTP date')
+    # IMF-fixdate / obsolete RFC850 both end in GMT. The other HTTP-date
+    # representation is asctime, whose timezone is implicitly GMT.
+    asctime = re.fullmatch(r'[A-Z][a-z]{2} [A-Z][a-z]{2} [ 0-9][0-9] '
+                          r'[0-9]{2}:[0-9]{2}:[0-9]{2} [0-9]{4}', value)
+    if not value.endswith(' GMT') and not asctime:
+        raise ValueError('HTTP date requires GMT')
+    parsed = parsedate_to_datetime(value)
+    return parsed.replace(tzinfo=timezone.utc) if parsed.tzinfo is None else parsed.astimezone(timezone.utc)
+
+
+def _retry_after_receipt(headers):
+    """Retain parsed cooldown evidence only, never arbitrary response headers.
+
+    HTTP delay-seconds are exact nonnegative integers. HTTP-date is relative
+    to the server's Date header; a missing reference remains unknown rather
+    than using a possibly skewed client clock. This does not schedule a retry.
+    """
+    result = {'retry_after_seconds': None, 'retry_after_status': 'missing',
+              'retry_after_date_utc': None, 'retry_after_reference_date_utc': None}
+    value = headers.get('Retry-After')
+    if value is None:
+        return result
+    result['retry_after_status'] = 'invalid'
+    if type(value) is not str or len(value) > 128:
+        return result
+    value = value.strip()
+    if re.fullmatch(r'[0-9]{1,64}', value):
+        result.update(retry_after_seconds=int(value), retry_after_status='delay_seconds')
+        return result
+    try:
+        target = _http_date(value)
+    except (ValueError, TypeError, OverflowError):
+        return result
+    result.update(retry_after_date_utc=target.isoformat(),
+                  retry_after_status='http_date_reference_unknown')
+    try:
+        reference = _http_date(headers.get('Date'))
+    except (ValueError, TypeError, OverflowError):
+        return result
+    delay = target-reference
+    result.update(retry_after_seconds=max(0, delay.days*86400+delay.seconds),
+                  retry_after_reference_date_utc=reference.isoformat(),
+                  retry_after_status='http_date')
+    return result
+
+
+async def _rpc(session, append, method, params, *, rpc_url=None):
     request_id = str(uuid.uuid4())
     started, mono = now_ms(), time.monotonic_ns()
     outcome, reason, result, status = 'error', None, None, None
     error_code, cancelled = None, None
+    transport_error_type = None
+    retry = {'retry_after_seconds': None, 'retry_after_status': 'not_received',
+             'retry_after_date_utc': None, 'retry_after_reference_date_utc': None}
+    selected_url = getattr(session, 'rpc_url', RPC_URL)
+    target_url = selected_url if rpc_url is None else rpc_url
     try:
-        async with session.post(RPC_URL, json={
+        _registered_rpc_url(selected_url)
+        _registered_rpc_url(target_url)
+        if target_url != selected_url:
+            raise ReadOnlyPolicyError('RPC endpoint differs from explicit session selection')
+        async with session.post(target_url, json={
                 'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params},
                 timeout=aiohttp.ClientTimeout(total=8)) as response:
             status = response.status
+            retry = _retry_after_receipt(response.headers)
             if status != 200:
                 reason = 'http_' + str(status)
             else:
@@ -107,8 +193,9 @@ async def _rpc(session, append, method, params):
                     reason = 'missing_rpc_result'
                 else:
                     result, outcome = payload['result'], 'observed'
-    except (aiohttp.ClientError, OSError, asyncio.TimeoutError):
+    except (aiohttp.ClientError, OSError, asyncio.TimeoutError) as error:
         reason = 'transport_or_timeout'
+        transport_error_type = type(error).__name__
     except ReadOnlyPolicyError:
         reason = 'request_budget_or_policy_rejection'
     except (ValueError, TypeError):
@@ -119,9 +206,11 @@ async def _rpc(session, append, method, params):
     append('request', received_at_ms=received, outcome=outcome, reason=reason,
            request_id=request_id, payload={
                'provider': 'solana_public_mainnet', 'rpc_method': method,
+               'endpoint_kind': _rpc_endpoint_kind(target_url),
                'requested_at_ms': started, 'received_at_ms': received,
                'latency_ms': (time.monotonic_ns() - mono) / 1_000_000,
-               'http_status': status, 'rpc_error_code': error_code})
+               'http_status': status, 'rpc_error_code': error_code, **retry,
+               **({'transport_error_type':transport_error_type} if transport_error_type else {})})
     if cancelled is not None:
         raise cancelled
     return result, received, request_id, outcome
@@ -244,6 +333,7 @@ def _record_quote(append, quote, side, request_id):
     # Preserve the sanitized public body needed to replay normalization. The
     # store still rejects forbidden fields and retains an explicit error receipt.
     payload['retained_sanitized_response'] = quote.get('raw_payload')
+    payload['sanitized_response_retained'] = quote.get('raw_payload') is not None
     raw = json.dumps(quote.get('raw_payload'), sort_keys=True, allow_nan=False)
     payload['sanitized_response_sha256'] = hashlib.sha256(raw.encode()).hexdigest()
     payload['quote_side'] = side
@@ -259,13 +349,56 @@ def _record_quote(append, quote, side, request_id):
         # redacted credential keys). Retain a receipt without those extensions.
         append('quote_attempt', **envelope, outcome='error',
                reason='unsafe_or_invalid_quote_payload',
-               payload={'quote_side': side,
+               payload={'provider': 'raydium_trade_api', 'quote_side': side,
                         'sanitized_response_sha256': payload['sanitized_response_sha256'],
+                        'retained_sanitized_response': None,
+                        'sanitized_response_retained': False,
+                        'original_quote_outcome': quote['outcome'],
+                        'original_quote_reason': quote['reason'],
+                        'response_body_status': 'rejected_by_journal_policy',
+                        'response_body_sha256': quote.get('response_body_sha256'),
+                        'response_body_bytes_observed': quote.get('response_body_bytes_observed'),
+                        'requested_at_ms': quote['requested_at_ms'],
+                        'received_at_ms': quote['received_at_ms'],
+                        'latency_ms': quote['latency_ms'], 'http_status': quote['http_status'],
+                        'slippage_bps': quote['slippage_bps'],
                         'input_mint': quote['input_mint'], 'output_mint': quote['output_mint'],
                         'input_amount_atomic': quote['input_amount_atomic'],
                         'execution_guaranteed': False, 'executable_confirmed': False})
         return False
     return True
+
+
+async def _quote_with_cancellation_receipt(client, append, input_mint, output_mint,
+                                         amount, side, request_id, slippage_bps=100):
+    """Retain an interrupted attempt before propagating cancellation.
+
+    A cancelled request has no observed output, even if the provider may have
+    received it. Keep the side, exact requested size and local timing only.
+    """
+    requested, monotonic = now_ms(), time.monotonic_ns()
+    try:
+        return await client.quote(input_mint, output_mint, amount, slippage_bps)
+    except asyncio.CancelledError as error:
+        received = now_ms()
+        metadata = getattr(error, 'capture_quote_metadata', {})
+        # Only our client's explicit receipt whitelist crosses this boundary.
+        # Cancellation remains cancellation, including a known HTTP error whose
+        # body was interrupted by the campaign deadline.
+        retained = {key: metadata[key] for key in (
+            'http_status', 'retry_after_seconds', 'response_body_status',
+            'response_body_sha256', 'response_body_bytes_observed', 'requested_at_ms')
+            if isinstance(metadata, dict) and key in metadata}
+        append('quote_attempt', received_at_ms=received,
+               mint=output_mint if side == 'buy' else input_mint,
+               outcome='cancelled', reason='capture_cancelled', request_id=request_id,
+               payload={'provider': 'raydium_trade_api', 'quote_side': side,
+                        'input_mint': input_mint, 'output_mint': output_mint,
+                        'input_amount_atomic': str(amount), 'requested_at_ms': requested,
+                        'received_at_ms': received, 'slippage_bps': slippage_bps,
+                        'latency_ms': (time.monotonic_ns()-monotonic)/1_000_000,
+                        'position_acquired': False, 'execution_verified': False, **retained})
+        raise
 
 
 async def collect_snapshot(store, session, *, signature_limit=5, max_transactions=2,
@@ -333,10 +466,13 @@ async def collect_snapshot(store, session, *, signature_limit=5, max_transaction
     await capture_fx(session, append)
     if quote_mint is not None:
         client, quote_request = RaydiumQuoteClient(session), str(uuid.uuid4())
-        buy = await client.quote(SOL_MINT, quote_mint, amount, slippage_bps)
+        buy = await _quote_with_cancellation_receipt(
+            client, append, SOL_MINT, quote_mint, amount, 'buy', quote_request, slippage_bps)
         buy_recorded = _record_quote(append, buy, 'buy', quote_request)
         if buy['outcome'] == 'quoted' and buy_recorded:
-            sell = await client.quote(quote_mint, SOL_MINT, buy['output_amount_atomic'], slippage_bps)
+            sell = await _quote_with_cancellation_receipt(
+                client, append, quote_mint, SOL_MINT, buy['output_amount_atomic'],
+                'sell', quote_request, slippage_bps)
             _record_quote(append, sell, 'sell', quote_request)
         else:
             append('quote_attempt', received_at_ms=now_ms(), mint=quote_mint,

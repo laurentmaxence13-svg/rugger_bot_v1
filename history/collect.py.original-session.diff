@@ -1,0 +1,20 @@
+@@ -20,2 +20,3 @@
+ RPC_URL = 'https://api.mainnet-beta.solana.com'
++CANONICAL_RPC_URL = 'https://api.mainnet.solana.com'
+ FX_URL = 'https://api.dexscreener.com/token-pairs/v1/solana/' + SOL_MINT
+@@ -83,3 +84,3 @@
+ 
+-async def _rpc(session, append, method, params):
++async def _rpc(session, append, method, params, *, rpc_url=RPC_URL):
+     request_id = str(uuid.uuid4())
+@@ -89,3 +90,5 @@
+     try:
+-        async with session.post(RPC_URL, json={
++        if rpc_url not in (RPC_URL, CANONICAL_RPC_URL):
++            raise ReadOnlyPolicyError('Unregistered public RPC endpoint')
++        async with session.post(rpc_url, json={
+                 'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params},
+@@ -121,2 +124,3 @@
+                'provider': 'solana_public_mainnet', 'rpc_method': method,
++               'endpoint_kind': 'canonical' if rpc_url == CANONICAL_RPC_URL else 'historical_alias',
+                'requested_at_ms': started, 'received_at_ms': received,

@@ -1,0 +1,732 @@
+{
+  "active_policy_changed": false,
+  "corpus_sha256": "a509644f744cfcccf5b1c40dcb58936f59b7a9e91537b615b6e23173413f9304",
+  "data_kind": "synthetic",
+  "development": [
+    {
+      "candidate": {
+        "id": "early_sniping:baseline",
+        "overrides": {},
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 0,
+      "entered_positions": 0,
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "portfolio_pnl_sol": null,
+      "realized_pnl_sol": 0
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:baseline",
+        "overrides": {},
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 0,
+      "entered_positions": 0,
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "portfolio_pnl_sol": null,
+      "realized_pnl_sol": 0
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 0,
+      "entered_positions": 0,
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "portfolio_pnl_sol": null,
+      "realized_pnl_sol": 0
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:baseline",
+        "overrides": {},
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "portfolio_pnl_sol": 0.19998499999999986,
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 0,
+      "entered_positions": 0,
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "portfolio_pnl_sol": null,
+      "realized_pnl_sol": 0
+    }
+  ],
+  "execution_verified": false,
+  "freeze_basis": "development_only_before_holdout_replay",
+  "frozen_candidate_ids": [
+    "early_sniping:baseline",
+    "confirmed_momentum:baseline",
+    "adaptive_hybrid:baseline"
+  ],
+  "full_report_sha256": "87e4cd45130888f07c1196d6518d0f97e1840eaf3ddf5fb6fd4736e882679b14",
+  "holdout": [
+    {
+      "candidate": {
+        "id": "early_sniping:baseline",
+        "overrides": {},
+        "strategy": "early_sniping"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:baseline",
+        "overrides": {},
+        "strategy": "confirmed_momentum"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "realized_pnl_sol": 0.199985
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:baseline",
+        "overrides": {},
+        "strategy": "adaptive_hybrid"
+      },
+      "closed_positions": 1,
+      "entered_positions": 1,
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "realized_pnl_sol": 0.199985
+    }
+  ],
+  "holdout_disjoint_validation": {
+    "active_policy_changed": false,
+    "adjacent_windows_allowed": true,
+    "all_overlapping_windows_rejected_before_replay": true,
+    "consumed_interval_semantics": "[development_end_ms,holdout_end_ms)",
+    "empty_legacy_registry_upgraded": true,
+    "legacy_nonempty_hash_only_registry_new_replay_refused": true,
+    "legacy_shadow_rollback_available_without_new_replay": true,
+    "old_report_preserved": true,
+    "registry_untrusted_types_versions_bounds_and_pointer_links_checked": true,
+    "versions_increase_on_shadow_selection_and_rollback": true
+  },
+  "holdout_evaluation_key": "32d3b57ad0c58ef63c48f78cccb49b608f1a6d54c6edc617ccdf524bf5109f30",
+  "holdout_registry": {
+    "active_policy_changed": false,
+    "current_shadow": null,
+    "evaluated_holdouts": [
+      "32d3b57ad0c58ef63c48f78cccb49b608f1a6d54c6edc617ccdf524bf5109f30"
+    ],
+    "evaluated_windows": [
+      {
+        "development_end_ms": 200000,
+        "evaluation_key": "32d3b57ad0c58ef63c48f78cccb49b608f1a6d54c6edc617ccdf524bf5109f30",
+        "holdout_end_ms": 500000
+      }
+    ],
+    "previous_shadows": [],
+    "schema": "rugger-shadow-policy-registry-v1",
+    "version": 0
+  },
+  "market_winner": null,
+  "network_requests": 0,
+  "plan_sha256": "0c91c3bde1365b448fc981a137c49ff619ab141a1b21cbf2a9bd18221df4717d",
+  "promotion_allowed": false,
+  "promotion_blockers": [
+    "independent_market_economic_cycles_not_verified",
+    "production_activation_not_authorized",
+    "synthetic_results_only",
+    "insufficient_validation_creator_groups"
+  ],
+  "recovery_validation": {
+    "exact_size_context_regression": {
+      "additional_fees_each_lamports": "15000",
+      "data_kind": "synthetic",
+      "market_profitability_proven": false,
+      "reference_input_lamports": "1000000000",
+      "reference_net_pnl_lamports": "199985000",
+      "reference_quantity_atomic": "1000",
+      "small_input_lamports": "100000000",
+      "small_net_pnl_lamports": "19985000",
+      "small_quantity_atomic": "100"
+    },
+    "fixture_report_reproduced_after_recovery": true,
+    "holdout_re_registration_reuse_rejected": true,
+    "source_files": [
+      "bot/policy_research.py",
+      "bot/p4_experiment.py",
+      "tests/test_policy_research.py",
+      "tests/test_p4_experiment.py"
+    ],
+    "source_sha256": {
+      "bot/p4_experiment.py": "c9455f356eae07ef412a2676ce6228fad098227025305f028e289bc06f127575",
+      "bot/policy_research.py": "0787ccb051ef5f394dd998acc217f4b5b49c0b232e5a241787160b8eb45efaa8",
+      "tests/test_p4_experiment.py": "244174c4eab8fb2d2f1c07f7b497ceb838383a889d316213e6a72ecb4ee9674e",
+      "tests/test_policy_research.py": "51811ce844455375a5f30200078dde827c66adb6760bc2b41012b9ff80f3211c"
+    }
+  },
+  "research_horizon_validation": {
+    "active_policy_changed": false,
+    "allowed_horizon_ms": [
+      30000,
+      3600000
+    ],
+    "cases": [
+      {
+        "candidate_exit_ms": 1000000,
+        "candidate_net_pnl_lamports": "29985000",
+        "candidate_reason": "TIMEOUT",
+        "data_kind": "synthetic",
+        "entry_ms": 100000,
+        "extra_costs_lamports": "15000",
+        "quantity_atomic": "1000",
+        "reference_exit_ms": 1900000,
+        "reference_net_pnl_lamports": "19985000",
+        "reference_reason": "TIMEOUT",
+        "scenario": "900s_vs1800s"
+      },
+      {
+        "candidate_exit_ms": 220000,
+        "candidate_net_pnl_lamports": "39985000",
+        "candidate_reason": "TRAILING_STOP",
+        "data_kind": "synthetic",
+        "entry_ms": 100000,
+        "extra_costs_lamports": "15000",
+        "quantity_atomic": "1000",
+        "reference_exit_ms": 280000,
+        "reference_net_pnl_lamports": "19985000",
+        "reference_reason": "TRAILING_STOP",
+        "scenario": "trailing3.5pct_vs5pct"
+      }
+    ],
+    "default_economic_replays_identical": true,
+    "default_plan_identical": true,
+    "default_report_byte_identical": false,
+    "default_report_bytes": 99475,
+    "default_report_sha256": "87e4cd45130888f07c1196d6518d0f97e1840eaf3ddf5fb6fd4736e882679b14",
+    "explicit_horizon_ms": 3600000,
+    "historical_report_bytes": 99260,
+    "historical_report_sha256": "c7929cc25bd51cb2455a370eaab40a8788deef82921b52d2dd60dc75c9855dbc",
+    "horizon_restricted_to_research": true,
+    "market_profitability_proven": false,
+    "market_winner": null,
+    "report_change_reason": "Consumed holdout bounds added to registry to reject all overlapping windows; economic runs and plan unchanged",
+    "tests_cover": [
+      "900s_vs1800s_frozen_holds",
+      "3.5pct_vs5pct_frozen_trailing",
+      "frozen_TP_SL_preserved",
+      "development_cutoff_preserves_unliquidated_lot",
+      "holdout_end_preserves_unliquidated_lot",
+      "future_validation_prices_do_not_change_development",
+      "changed_horizon_cannot_unlock_consumed_holdout",
+      "noninteger_or_out_of_bound_horizon_rejected"
+    ]
+  },
+  "schema": "rugger-policy-research-report-v1",
+  "tests": "66 passed (35 policy-research and31 P4), 1.82s; offline isolated harness",
+  "validation_creator_groups": 1
+}

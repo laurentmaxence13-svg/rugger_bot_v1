@@ -1,0 +1,35 @@
+{
+  "bank_size_models": 32,
+  "csv_rows_verified": 32,
+  "files": [
+    {
+      "bytes": 21254,
+      "path": "P3_POSITION_SIZE_SUMMARY.json",
+      "sha256": "3742e6d4acbf69d837c7dd17bbf8cb495d26c5bcbc55aa26f87a7bf1e1cb63af"
+    },
+    {
+      "bytes": 1679,
+      "path": "manifest.json",
+      "sha256": "29361825be077c19c4a38fc58b60e3c425b10ccea80d6de5b39776e5879a0452"
+    },
+    {
+      "bytes": 9339,
+      "path": "positions.csv",
+      "sha256": "7b4732610c187e785d860b3a52ea313864812330d3f8f5f7f07f760b0bcc49eb"
+    },
+    {
+      "bytes": 21850,
+      "path": "report.json.gz",
+      "sha256": "b4816268f91f5ca211de1858899e0f654e27b6d3c07295256f28e0d244b70eb7"
+    }
+  ],
+  "full_report_sha256": "74d546c5c6bba5431c07d7490aae086b9b15d2b22cc3626b0fd7a7667b505aef",
+  "new_market_requests": 0,
+  "recompute_network_and_database_access_forbidden": true,
+  "remote_ref": "12e164fb783621d7fbc4284be7b9e1c7e51f54db",
+  "report_byte_identical_on_recompute": true,
+  "schema": "p3-position-size-actual-remote-restore-v1",
+  "source_bank_analyses": 8,
+  "source_revision": "249c7b6637d7c0cdf980b029474e4b0a576f237c",
+  "strict_economic_cycles": 0
+}

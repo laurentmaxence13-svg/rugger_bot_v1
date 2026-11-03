@@ -60,6 +60,8 @@ def test_metadata_only_profile_qualifies_arithmetic_without_rewriting_legacy_int
     report = qualify(accounts, a)
     assert report['conditional_projection'] is not None
     assert report['facts']['base_mint']['extension_types'] == ['18','19']
+    assert report['facts']['supply_consistency']['matches'] is True
+    assert report['facts']['supply_consistency']['reconciliation_status'] == 'not_required'
     assert report['facts']['identity_certification']['account_discriminators_verified'] is True
     assert report['facts']['identity_certification']['program_derived_addresses_verified'] is False
     assert 'original_platform_admin_seed_not_retained' in report['blocking_reasons']
@@ -149,3 +151,32 @@ def test_future_capture_retains_selection_inputs_signature_page_and_quote_bodies
         assert evidence['raw_signature_page'] == page
         quotes = [e for e in store.events(kind='quote_attempt') if e['payload'].get('provider')=='raydium_trade_api']
         assert [e['payload']['retained_sanitized_response'] for e in quotes] == [buy,sell]
+
+
+def test_supply_rejection_retains_exact_independent_facts_without_reconciliation_claim():
+    accounts, a = qualified_fixture()
+    observed = 999_020_457_494_200
+    mutate_account(accounts, a['mint_a'], 36, observed, '<Q')
+    report = qualify(accounts, a)
+    assert report['conditional_projection'] is None
+    assert 'mint_supply_or_decimals_mismatch' in report['blocking_reasons']
+    assert report['facts']['base_mint']['supply_atomic'] == str(observed)
+    assert report['facts']['pool']['supply'] == '1000000000000000'
+    assert set(report['facts']['account_data_sha256']) == set(ll.ACCOUNT_ROLES)
+    consistency = report['facts']['supply_consistency']
+    assert consistency == {
+        'context_slot': 1234,
+        'mint_supply_atomic': str(observed),
+        'pool_supply_atomic': '1000000000000000',
+        'mint_minus_pool_atomic': '-979542505800',
+        'matches': False,
+        'reconciliation_status': 'unresolved',
+    }
+    assert report['candidate_eligible'] is report['real_orders_enabled'] is False
+    # Existing default-profile archives retain their historical shape.
+    classic, addresses = fixture()
+    mutate_account(classic, addresses['mint_a'], 36, observed, '<Q')
+    legacy = ll.analyze_snapshot(classic, context_slot=1234,
+        expected_mint=addresses['mint_a'], pool_address=addresses['pool'])
+    assert 'base_mint' not in legacy['facts']
+    assert 'supply_consistency' not in legacy['facts']

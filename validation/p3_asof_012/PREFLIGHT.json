@@ -1,0 +1,20 @@
+{
+  "acquisition_authorized_by": "owner_current_live_mandate_with_P3_preregistration_bounds",
+  "authenticated_service": false,
+  "credentials_present": false,
+  "local_equivalent": "ce2ec9e223ead1b6194e95c9f84d01fc2d51b159",
+  "market_requests_so_far_this_control": 0,
+  "network_policy": "managed_unrestricted_HTTP_enforced_observations_current",
+  "new_control": "012; never_resume_009_010_011",
+  "paid_service": false,
+  "plan_sha256": "93e94c4fb301e254cb577138ad9f1a74450bb214b15e6f7767dc695c5f0c838b",
+  "proxy": "http://proxy:8080",
+  "requires_remote_plan_readback_before_network": true,
+  "schema": "p3-asof-012-preflight-v1",
+  "source_access": "public_anonymous_LaunchLab_discovery_and_Solana_RPC; stop_first_limitation_or_error",
+  "source_revision": "f36ffc49e372ac8d9d2bb3ae419f63735fe2bf9f",
+  "source_tests": "2232 passed, 1 skipped, 242 subtests in19.25s; warnings errors; stderr0",
+  "source_tree": "51ad1a93683da4d94bbfb749301e5eb986437bab",
+  "tls_verification": true,
+  "wallet_or_signature": false
+}

@@ -10,7 +10,7 @@ import aiohttp
 
 import pytest
 
-from bot.p3 import collect
+from bot.p3 import collect, evidence
 from bot.p3.store import CaptureStore
 from test_multiple_launches import transaction, instruction
 from test_p3_quotes import Response, quote_payload
@@ -274,10 +274,11 @@ def test_capture_refuses_transport_without_a_no_retry_switch(tmp_path, monkeypat
     assert report['real_orders_enabled'] is False
 
 
-def test_unsafe_quote_route_retains_failure_receipt_and_does_not_request_a_sell(tmp_path):
+@pytest.mark.parametrize('http_status', [200, 503])
+def test_unsafe_quote_route_retains_failure_receipt_and_does_not_request_a_sell(tmp_path, http_status):
     buy = quote_payload()
     buy['data']['routePlan'][0]['api_key'] = 'synthetic-not-a-real-credential'
-    transport = Transport(posts=[rpc(100), rpc([])], gets=[Response([]), Response(buy)])
+    transport = Transport(posts=[rpc(100), rpc([])], gets=[Response([]), Response(buy, status=http_status)])
     with CaptureStore(tmp_path/'capture.sqlite') as store:
         report = asyncio.run(collect.collect_snapshot(store, collect.ReadOnlySession(transport),
             quote_mint=collect.USDC_MINT, provenance='synthetic'))
@@ -285,6 +286,18 @@ def test_unsafe_quote_route_retains_failure_receipt_and_does_not_request_a_sell(
         assert len(quotes) == 2 and quotes[0]['outcome'] == 'error'
         assert quotes[0]['reason'] == 'unsafe_or_invalid_quote_payload'
         assert len(quotes[0]['payload']['sanitized_response_sha256']) == 64
+        receipt = quotes[0]['payload']
+        assert receipt['requested_at_ms'] <= receipt['received_at_ms']
+        assert receipt['http_status'] == http_status and receipt['latency_ms'] >= 0
+        assert receipt['slippage_bps'] == 100
+        assert receipt['original_quote_outcome'] == ('quoted' if http_status == 200 else 'unavailable')
+        assert receipt['provider'] == 'raydium_trade_api'
+        assert receipt['response_body_status'] == 'rejected_by_journal_policy'
+        if http_status != 200:
+            assert receipt['original_quote_reason'] == 'http_503'
+            assert len(receipt['response_body_sha256']) == 64
+        assert receipt['retained_sanitized_response'] is None
+        assert receipt['sanitized_response_retained'] is False
         assert quotes[1]['outcome'] == 'not_attempted'
         assert len(transport.calls) == 4 and report['unavailable_quotes'] == 2
         assert store.events(kind='checkpoint')
@@ -325,3 +338,99 @@ def test_validator_is_readonly_and_cannot_overwrite_capture(tmp_path, monkeypatc
     with pytest.raises(SystemExit):
         collect.main()
     assert hashlib.sha256(path.read_bytes()).hexdigest() == before
+
+
+@pytest.mark.parametrize('cancel_side', ['buy', 'sell'])
+def test_snapshot_cancelled_quotes_leave_receipt_before_propagating(tmp_path, monkeypatch, cancel_side):
+    quote = collect.RaydiumQuoteClient.quote
+    entered = asyncio.Event()
+    async def interrupted(client, first, second, amount, slippage):
+        side = 'buy' if first == collect.SOL_MINT else 'sell'
+        if side == cancel_side:
+            entered.set()
+            await asyncio.Event().wait()
+        return await quote(client, first, second, amount, slippage)
+    monkeypatch.setattr(collect.RaydiumQuoteClient, 'quote', interrupted)
+    buy = quote_payload()
+    buy['data']['slippageBps'] = 321
+    transport = Transport(posts=[rpc(100), rpc([])],
+                          gets=[Response([]), Response(buy)])
+    async def run(store):
+        task = asyncio.create_task(collect.collect_snapshot(
+            store, collect.ReadOnlySession(transport), quote_mint=collect.USDC_MINT,
+            slippage_bps=321, provenance='synthetic'))
+        try:
+            await asyncio.wait_for(entered.wait(), timeout=2)
+        finally:
+            task.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await task
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        asyncio.run(run(store))
+        quotes = store.events(kind='quote_attempt')
+        assert len(quotes) == (1 if cancel_side == 'buy' else 2)
+        cancelled = quotes[-1]
+        assert cancelled['outcome'] == 'cancelled'
+        assert cancelled['reason'] == 'capture_cancelled'
+        assert cancelled['payload']['quote_side'] == cancel_side
+        assert cancelled['payload']['slippage_bps'] == 321
+        assert cancelled['payload']['requested_at_ms'] <= cancelled['received_at_ms']
+        assert cancelled['payload']['position_acquired'] is False
+        assert cancelled['payload']['execution_verified'] is False
+        if cancel_side == 'sell':
+            assert cancelled['request_id'] == quotes[0]['request_id']
+            assert cancelled['payload']['input_amount_atomic'] == quotes[0]['payload']['output_amount_atomic']
+
+
+@pytest.mark.parametrize('http_status', [200, 429])
+def test_provider_rejection_body_survives_export_without_original_journal(tmp_path, http_status):
+    buy = quote_payload()
+    refusal = {'success': False, 'msg': 'ROUTE_NOT_FOUND', 'version': 'V1'}
+    transport = Transport(posts=[rpc(100), rpc([])],
+                          gets=[Response([]), Response(buy), Response(refusal, status=http_status)])
+    source = tmp_path/'capture.sqlite'
+    with CaptureStore(source) as store:
+        asyncio.run(collect.collect_snapshot(store, collect.ReadOnlySession(transport),
+                     quote_mint=collect.USDC_MINT, provenance='synthetic'))
+        original = store.events(kind='quote_attempt')
+        tail = store.verify_integrity()
+    bundle = tmp_path/'bundle'
+    evidence.export_capture(source, bundle, run_id='synthetic-refusal',
+                            source_revision='a'*40, completeness={'quote_bodies': 'sanitized_retained'})
+    source.unlink()
+    replay = evidence.verify_bundle(bundle, expected_tail=tail)
+    quotes = [event for event in replay['events'] if event['kind'] == 'quote_attempt']
+    assert quotes == original
+    assert [event['outcome'] for event in quotes] == ['quoted', 'unavailable']
+    rejected = quotes[1]
+    assert rejected['reason'] == ('provider_rejected' if http_status == 200 else 'http_429')
+    assert rejected['payload']['retained_sanitized_response'] == refusal
+    assert rejected['payload']['sanitized_response_retained'] is True
+    assert rejected['payload']['http_status'] == http_status
+    assert rejected['payload']['requested_at_ms'] <= rejected['received_at_ms']
+    assert rejected['available_at_ms'] >= rejected['received_at_ms']
+    assert rejected['payload']['input_amount_atomic'] == quotes[0]['payload']['output_amount_atomic']
+    assert rejected['payload']['execution_guaranteed'] is False
+    assert rejected['payload']['fee_details']['total_cost_known'] is False
+
+
+def test_cancelled_http_error_body_keeps_observed_status_without_partial_body(tmp_path):
+    class HangingError(Response):
+        async def read(self, size):
+            await asyncio.Event().wait()
+    transport = Transport(posts=[rpc(100), rpc([])],
+        gets=[Response([]), HangingError(status=503, headers={'Retry-After': '2'})])
+    async def run(store):
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(collect.collect_snapshot(store, collect.ReadOnlySession(transport),
+                quote_mint=collect.USDC_MINT, provenance='synthetic'), timeout=.01)
+    with CaptureStore(tmp_path/'capture.sqlite') as store:
+        asyncio.run(run(store))
+        event = store.events(kind='quote_attempt')[0]
+        assert event['outcome'] == 'cancelled' and event['reason'] == 'capture_cancelled'
+        assert event['payload']['http_status'] == 503
+        assert event['payload']['retry_after_seconds'] == 2
+        assert event['payload']['response_body_status'] == 'read_cancelled'
+        assert event['payload']['response_body_bytes_observed'] == 0
+        assert 'raw_payload' not in event['payload']
+        assert event['payload']['position_acquired'] is False

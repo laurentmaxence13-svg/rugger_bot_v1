@@ -1,0 +1,35 @@
+{
+  "P4_24_policies": "not optimized or promoted on two creator claims",
+  "active_policy_changed": false,
+  "development_creators": [
+    "FAYgms9DQMBGj9SZkivF3NFgC7nky9G7ty2vJo5uUTPt",
+    "DcaiBtsxyqbGh9WQrYQRZsbo5zNdBe9zXB7u2ZPvt6Dp"
+  ],
+  "development_evidence_tail": "40532579c596a58c0676ca55a074da302c737293b6841377b4fa00fd1bcff997",
+  "frozen_at_ms": 1793255569515,
+  "holdout_use_of_these_creators_prohibited": true,
+  "hypotheses": [
+    {
+      "id": "size_cost_hurdle",
+      "observation": "For both new mints,1SOL observed quote drag exceeds0.1SOL. Four lots only.",
+      "reject": "promoting1SOL or declaring0.1SOL winner without independent holdout",
+      "retain": "separate exact-size cost and break-even comparison"
+    },
+    {
+      "id": "required_outside_flow",
+      "observation": "Existing coherent own-entry model requires hypothetical outside buys about0.41-0.95SOL to break even before extras.",
+      "reject": "pretending binary-search threshold is an observed buyer or profitable opportunity",
+      "retain": "quantify required flow and compare only to causally observed activity when available"
+    },
+    {
+      "id": "source_freshness",
+      "observation": "All12quote bodies lacksourceTimeMs/contextSlot; all initial/followup quoted amounts equal.",
+      "reject": "using HTTP receipt or neighboring RPC slot as provider source clock",
+      "retain": "clock unknown; distinguish bank slot from quote context"
+    }
+  ],
+  "next_dataset": "new prospective preregistration with source clocks or a separate explicitly conditional same-bank model, own cost bounds and causal scanner features; no identical012quote campaign just to increase counts",
+  "parameters_optimized": false,
+  "policy_promotion": false,
+  "schema": "p3-011-development-hypotheses-frozen-for-future-validation-v1"
+}

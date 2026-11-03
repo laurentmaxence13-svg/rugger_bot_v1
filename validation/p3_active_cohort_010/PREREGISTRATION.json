@@ -1,0 +1,22 @@
+{
+  "acquisition_executed": false,
+  "comparison_scope": "Only causally admissible frames. Missing separate reference-size quotes/health/features/own costs => no economically comparable A/B decisions; no promotion",
+  "future_selection_prohibited": true,
+  "market_requests_before_publication": 0,
+  "market_universe_policy": "preserve all returned rows in safe raw discovery response when at most2MB; screening max100, fixedprefix6; preserve exclusions and selection before quotes",
+  "old_control009_never_rerun": true,
+  "old_data_used_as_new": false,
+  "plan_file_sha256": "a227d8c205f6140f881abae7eac378ed6e4c969d558e5c8db8f4edfb067a6a6d",
+  "plan_sha256": "2c9e38d5843a9d65f418afab81f9614f976b7751c31b0f8581a0fa992ec32ff5",
+  "quotes_resized": false,
+  "reference_initial_budget_lamports": "1000000000",
+  "registered_at_ms": 1793222166959,
+  "required_executor_network_permission": "with_additional_permissions network.enabled=true",
+  "requires_publication_and_exact_readback_before_acquisition": true,
+  "research_budget_lamports": "100000000",
+  "schema": "p3-active-cohort-010-preregistration-v1",
+  "source_local_commit": "b4f869747cd3bf86e9a719d3f96fc70e55e93229",
+  "source_remote_commit": "5bec177fdcc2c98354d13b5650c466b6bfc2a2fb",
+  "source_tree": "21de10b9265310dcfa1079cb48940eba04cba454",
+  "transport_diagnostic": "validation/p3_transport_010/DIAGNOSTIC_RESULT.json"
+}

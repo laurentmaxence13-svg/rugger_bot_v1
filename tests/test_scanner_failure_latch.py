@@ -355,6 +355,9 @@ def test_real_scanner_supervision_requires_fresh_verified_state_then_allows_entr
                 nonlocal now
                 now = 1001
                 con.execute('UPDATE scanner_backfill_state SET checked_at=1001')
+                # A renewed SQL cursor alone is no longer transport health.
+                task.scanner_health.observe_rpc(True)
+                task.scanner_health.observe_websocket('subscribed')
                 fresh.set()
                 await asyncio.Event().wait()
             async def on_state(self, message):

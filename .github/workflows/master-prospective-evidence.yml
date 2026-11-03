@@ -1,0 +1,219 @@
+name: Prospective Master/Reference PAPER evidence (NO LIVE)
+# Heavy onchain experiments are opt-in. PR code pushes do not execute them.
+# On this research PR, add label 'run-master-evidence' to run once.
+on:
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: master-prospective-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  strict-offline-contract:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-master-evidence' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout submitted commit without persisting credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared imports for offline verification (no provider calls)
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Adversarial no-invented-profit checks
+        run: |
+          python -m unittest discover -s tests -p test_master_prospective_gate.py -v
+          python -m unittest discover -s tests -p test_signed_creation_forward_bank.py -v
+          python -m pytest -q tests/test_live_helius_ws_forward_paper.py tests/test_live_helius_ws_signed_creation_probe.py
+          python -m pytest -q tests/test_live_helius_launchlab_cohort_probe.py tests/test_live_solana_v1_readonly.py
+          python -m pytest -q tests/test_live_helius_early_signed_s1s2.py
+          python -m unittest discover -s tests -p test_conditional_market_markout.py -v
+      - name: Missing data must be reported honestly
+        run: |
+          python -B tools/master_prospective_gate.py --output /tmp/master_no_data_gate.json
+
+  bounded-public-mainnet-observation:
+    needs: strict-offline-contract
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout source with credentials removed
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Read-only WebSocket dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Bound real LaunchLab log observation to 45 seconds
+        id: logs
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_ws_forward_paper --seconds 45 --max-events 100 --successful-only
+      - name: Verify finalized signed creation evidence, never infer a market fill
+        id: creations
+        if: steps.logs.outcome == 'success'
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          sleep 8
+          python -B -m bot.live.helius_ws_signed_creation_probe
+      - name: Freeze paired Master/reference decisions on signed creations before later S2 state
+        id: forward
+        if: steps.creations.outcome == 'success'
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.p3.signed_creation_forward_bank
+      - name: Publish conservative reproducible progress report
+        if: always()
+        run: |
+          python -B tools/master_prospective_gate.py \
+            --capture paper_artifacts/paper_helius_log_stream.json \
+            --verified paper_artifacts/paper_helius_verified_creations.json \
+            --output paper_artifacts/master_prospective_gate.json
+      - name: Audit causal S1/S2 conditional market markouts (not filled PnL)
+        if: steps.forward.outcome == 'success'
+        run: |
+          python -B -m bot.p3.conditional_market_markout \
+            --input paper_artifacts/paper_signed_creations_asof_banks.json \
+            --output paper_artifacts/conditional_signed_bank_markouts.json
+      - name: Retain only public observations, no secrets or wallet data
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-prospective-observation-${{ github.run_id }}
+          path: |
+            paper_artifacts/paper_helius_log_stream.json
+            paper_artifacts/paper_helius_verified_creations.json
+            paper_artifacts/master_prospective_gate.json
+            paper_artifacts/paper_signed_creations_asof_banks.json
+            paper_artifacts/conditional_signed_bank_markouts.json
+          if-no-files-found: warn
+          retention-days: 30
+
+
+  independent-finalized-creation-discovery:
+    # This is a historical discovery ledger, NEVER a prospective as-of entry.
+    # Keep it after forward observation to avoid concurrent Helius quota pressure.
+    needs: [strict-offline-contract, bounded-public-mainnet-observation]
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_WRITE_PUBLIC_EVIDENCE: '1'
+    steps:
+      - name: Checkout public research source only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Declare verified cryptographic dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Independently inspect finalized historical LaunchLab creator candidates
+        id: historical
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_launchlab_cohort_probe
+      - name: Archive public read-only historical sample including source gaps
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-independent-historical-creators-${{ github.run_id }}
+          path: paper_artifacts/paper_public_observations/*.json
+          if-no-files-found: warn
+          retention-days: 30
+
+
+  early-confirmed-prospective-sensor:
+    # Wait for historical discovery to finish, but do not suppress independent
+    # early evidence because optional historical RPC/artifact collection failed.
+    needs: [strict-offline-contract, independent-finalized-creation-discovery]
+    if: >-
+      always() && needs.strict-offline-contract.result == 'success' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout immutable public PAPER research source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared read-only dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Confirmed creation immediate S1 + frozen PAPER refusal before S2
+        id: early
+        continue-on-error: true
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python -B -m bot.live.helius_early_signed_s1s2
+      - name: Audit causal early S1/S2 conditional markouts (not filled PnL)
+        if: steps.early.outcome == 'success'
+        run: |
+          python -B -m bot.p3.conditional_market_markout \
+            --input paper_artifacts/helius_early_signed_s1_s2.json \
+            --output paper_artifacts/conditional_early_markouts.json
+      - name: Keep bounded public early records; no keys or signed trades
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: master-early-confirmed-evidence-${{ github.run_id }}
+          path: |
+            paper_artifacts/helius_early_signed_s1_s2.json
+            paper_artifacts/conditional_early_markouts.json
+          if-no-files-found: warn
+          retention-days: 30

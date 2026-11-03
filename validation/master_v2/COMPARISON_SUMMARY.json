@@ -1,0 +1,354 @@
+{
+  "data_kind": "synthetic",
+  "market_advantage_verified": false,
+  "promotion_allowed": false,
+  "results": [
+    {
+      "case": "abstention",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "-199985000",
+          "master": {
+            "basis": "no_entry_cashflow_not_a_token_outcome",
+            "conditional_net_lamports": "0",
+            "entered": false,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 4,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.199985,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "abstention",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "-199985000",
+          "master": {
+            "basis": "no_entry_cashflow_not_a_token_outcome",
+            "conditional_net_lamports": "0",
+            "entered": false,
+            "remaining_atomic": "0"
+          },
+          "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 4,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.199985,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "0",
+          "master": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 1,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0.199985,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.199985,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 0,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 250,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "0",
+          "master": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 1,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0.199985,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.199985,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 250,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "0",
+          "master": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199970000",
+            "entered": true,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199970000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 0,
+      "fee_multiplier": 2,
+      "master_closed": 1,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0.19997,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.19997,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 0,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 2,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 250,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "0",
+          "master": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199970000",
+            "entered": true,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199970000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 0,
+      "fee_multiplier": 2,
+      "master_closed": 1,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0.19997,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.19997,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "qualified",
+      "decision_delay_ms": 250,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 2,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "partial",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": "-50010000",
+          "master": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "149975000",
+            "entered": true,
+            "remaining_atomic": "0"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "full_native_quote_replay",
+            "conditional_net_lamports": "199985000",
+            "entered": true,
+            "remaining_atomic": "0"
+          }
+        }
+      ],
+      "disagreements": 1,
+      "fee_multiplier": 1,
+      "master_closed": 1,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0.149975,
+      "reference_closed": 1,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0.199985,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "partial",
+      "decision_delay_ms": 0,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "refused",
+      "decision_delay_ms": 0,
+      "deltas": [
+        {
+          "conditional_delta_lamports": null,
+          "master": {
+            "basis": "unliquidated_or_unknown_costs",
+            "conditional_net_lamports": null,
+            "entered": true,
+            "remaining_atomic": "24574445911206"
+          },
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "reference": {
+            "basis": "unliquidated_or_unknown_costs",
+            "conditional_net_lamports": null,
+            "entered": true,
+            "remaining_atomic": "24574445911206"
+          }
+        }
+      ],
+      "disagreements": 1,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 1,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 1,
+      "reference_realized_pnl_sol": 0,
+      "split": "development",
+      "strict_market_cycles": 0
+    },
+    {
+      "case": "refused",
+      "decision_delay_ms": 0,
+      "deltas": [],
+      "disagreements": 0,
+      "fee_multiplier": 1,
+      "master_closed": 0,
+      "master_entered": 0,
+      "master_realized_pnl_sol": 0,
+      "reference_closed": 0,
+      "reference_entered": 0,
+      "reference_realized_pnl_sol": 0,
+      "split": "validation",
+      "strict_market_cycles": 0
+    }
+  ],
+  "schema": "master-v2-fixture-measurements-v1"
+}

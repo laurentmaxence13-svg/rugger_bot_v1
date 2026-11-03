@@ -1,0 +1,41 @@
+{
+  "base": "7ddddb9f73339242fbcb5b9bf10fa329c82fa700",
+  "baseline": {
+    "passed": 1342,
+    "skipped": 1,
+    "subtests_passed": 242
+  },
+  "causal_regressions_on_old_code": {
+    "expected_failure": true,
+    "failed": 6
+  },
+  "economic_verdict": "INSUFFICIENT DATA",
+  "final": {
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 1348,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "full_suite_command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+  "local_test_commit": "e69b175faaa8cf864e2a29c14fc956511f57bae2",
+  "market_network_used": false,
+  "published_code_commit": "4f0fec80f7c62ae74778a04ae8b564a0104091e4",
+  "pytest": "9.1.1",
+  "python": "3.12.14",
+  "schema": "p3-continuation-validation-v1",
+  "secret_files_read": false,
+  "sha256": {
+    "bot/p3/campaign.py": "2a3930d10243b5399de3bf52e72ccc4f33e5bec1606ae5a92a4c3a2d71713700",
+    "bot/p3/collect.py": "10e46d80f485947ed89fb4940346ca633952bc1633faf43f45d3f2344e2e9c08",
+    "bot/p3/launchlab.py": "a1df95c731c90f743df424837ea0aeff579622d1ff0a89a171c563ed77ad2588",
+    "bot/p3/quotes.py": "883fe062432d5aa56f273f680cd9e97515973f6c19b89afcf2f88750257db942",
+    "tests/test_p3_collection.py": "5f19e9ca941301c4050b8d34faef8fb19830f817d153c2bcd61850d10ab2f1b5",
+    "tests/test_p3_qualification.py": "90775f03b2a06f7dc4df06095347e5470041574c1cf777b9103cfca033a4d2a4",
+    "tests/test_p3_quotes.py": "015418adb6b0a4f3a5fce60b0470f3ca04797911213ae75d989b9abae53286a3"
+  },
+  "tested_git_tree": "539f716e04666c126ee0c30b628d22417625951a",
+  "user_ledger_accessed": false
+}

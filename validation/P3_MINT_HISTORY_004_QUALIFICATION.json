@@ -1,0 +1,46 @@
+{
+  "absence_of_burn_not_proven": true,
+  "conclusion": "Seven earliest selected successful transactions contain no parsed SPL burn; 26 eligible transactions remain unfetched, including five mint references absent from the earlier received pool page. Those are leads, not proven burns or proof of exclusion from the pool account graph. Guard remains strict.",
+  "elapsed_ms": 4695,
+  "mint_references_absent_from_prior_pool_page": [
+    {
+      "signature": "fbxQ6AsyrGgycRyUKJMrCayXWtTdXLwvx58u49XGUui5PGFq9KwBqcfXt4TfcBjfhy5DzQ44ajcApRyMmiGqjJx",
+      "slot": 461979636
+    },
+    {
+      "signature": "2QF4wdfGcNAQd9zvHpUBgyj2TVi6giic6eTvNFHN83wom6ZgUuWMxwRiN4krkxSdJ5w6WMmBiuaT86hDYy4sprZG",
+      "slot": 461979675
+    },
+    {
+      "signature": "5GwqKQ7HhKWSv8X8YrKUtfhNSnUqXAHwP6ZwhdeqaHP5UmzwgmCoEGs4eppgyvr5n8kCjv84LugycoJnvJidNaxC",
+      "slot": 461979692
+    },
+    {
+      "signature": "2kdoaC56sNjedKa4S6SW11hfzcd4L6y8hYgXrp4RXuBRszbfswe8kboKZFxtgvtwrpk72aabknGDRatyhzEfMbZZ",
+      "slot": 461980644
+    },
+    {
+      "signature": "472rprYMy1zM6ZBRFhJSrvVEvWKvbStA29KiXt1siWdzz8NFPgHZtHmjUt9KaZgY12CV13Qfx8aorNcWamV8u1xA",
+      "slot": 461981360
+    }
+  ],
+  "new_network_requests_for_qualification": 0,
+  "parsed_burn_sum_atomic": "0",
+  "raw_page_rows": 37,
+  "reconciliation_certified": false,
+  "requests_used": 8,
+  "same_creation_slot_rows_excluded_by_pre_registered_strict_lower_boundary": [
+    {
+      "signature": "4wAuccYwB2tLp4BsWtXYLzQpCXUnv5QW1TjNHw58rhdQX5rkxwZ9LPQ5hQzphduDmdJLoUmNJ3V1ujnswnqGeDVB",
+      "slot": 461979373
+    },
+    {
+      "signature": "3umbNJxM9hFM6GAebVd6pj86q7Hj5ete5ygjVE6BcPpr73XWQQPQ5Ron5Nv9tw94XJdmoBBirs1d8fNFwVU4mADa",
+      "slot": 461979373
+    }
+  ],
+  "schema": "p3-history-004-offline-qualification-v1",
+  "selected_transactions": 7,
+  "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2",
+  "unfetched_eligible_transactions": 26
+}

@@ -1,0 +1,44 @@
+name: Public Solana program observation (strict READ ONLY)
+on:
+  pull_request:
+    paths:
+      - 'bot/live/public_program_observer.py'
+      - 'validation/live_readonly/public_program_observer.py'
+      - '.github/workflows/public-program-observation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-observe-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observe-unapproved-public-programs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - name: Checkout exact code without credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install only declared live runtime dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Read both public mainnet program identities exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m validation.live_readonly.public_program_observer

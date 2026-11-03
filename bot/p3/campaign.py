@@ -8,6 +8,7 @@ import argparse
 import asyncio
 import hashlib
 import json
+import re
 from pathlib import Path
 import time
 import uuid
@@ -16,7 +17,8 @@ import aiohttp
 
 from bot.analyser.artifacts import atomic_write_json
 from bot.p3.collect import (RPC_URL, ReadOnlySession, ReadOnlyPolicyError, _rpc,
-                            _environment_proxy, now_ms, capture_transaction, _record_quote)
+                            _environment_proxy, now_ms, capture_transaction, _record_quote,
+                            _quote_with_cancellation_receipt)
 from bot.p3.launchlab import addresses_from_pool, analyze_snapshot, SnapshotEvidenceError
 from bot.p3.quotes import SOL_MINT, RAYDIUM_QUOTE_URL, RaydiumQuoteClient, _mint
 from bot.p3.readiness import evaluate_readiness
@@ -54,6 +56,15 @@ def validate_plan(plan):
         # outside the first 20 signatures. Never mutate/relabel the original run.
         required.update(schema='p3-launchlab-campaign-v2', plan_id='launchlab-native-sol-002',
                         signature_limit=1000, max_supported_transaction_version=1)
+    if type(plan) is dict and plan.get('plan_id') == 'launchlab-retention-sol-003':
+        required.update(schema='p3-launchlab-campaign-v3', plan_id='launchlab-retention-sol-003',
+                        signature_limit=1000, max_supported_transaction_version=1,
+                        evidence_profile='published_metadata_v1', stop_on_source_error=True,
+                        source_main='7ddddb9f73339242fbcb5b9bf10fa329c82fa700')
+        revision = plan.get('source_revision')
+        if type(revision) is not str or re.fullmatch(r'[0-9a-f]{40}', revision) is None:
+            raise ValueError('New retention plan requires an exact source revision')
+        required['source_revision'] = revision
     if type(plan) is not dict or set(plan) != set(required) | {'registered_at_ms'}:
         raise ValueError('Unexpected preregistered plan schema')
     if any(type(plan[key]) is not type(value) or plan[key] != value
@@ -66,8 +77,15 @@ def validate_plan(plan):
 
 class CampaignSession(ReadOnlySession):
     """Adds only discovery and two account-reading methods to the P3 policy."""
-    def __init__(self, session, max_requests=8, *, proxy_resolver=None):
-        super().__init__(session, max_requests, proxy_resolver=proxy_resolver)
+    def __init__(self, session, max_requests=8, *, proxy_resolver=None, rpc_url=RPC_URL,
+                 bounded_phases=False,discovery_sort='new'):
+        super().__init__(session, max_requests, proxy_resolver=proxy_resolver, rpc_url=rpc_url)
+        if type(bounded_phases) is not bool:
+            raise ValueError('Explicit transport phase policy required')
+        self.bounded_phases = bounded_phases
+        if discovery_sort not in ('new','lastTrade'):
+            raise ValueError('Registered discovery sorting required')
+        self.discovery_sort=discovery_sort
         self._deadline_ns = None
 
     def check_deadline(self):
@@ -81,6 +99,12 @@ class CampaignSession(ReadOnlySession):
         super()._take()
 
     def _limit_timeout(self, kwargs):
+        if self.bounded_phases:
+            from bot.p3.transport import phase_timeout
+            original = kwargs.get('timeout')
+            if original is not None and not isinstance(original, aiohttp.ClientTimeout):
+                raise ReadOnlyPolicyError('Unexpected campaign timeout configuration')
+            kwargs['timeout'] = phase_timeout(original)
         if self._deadline_ns is None:
             return
         self.check_deadline()
@@ -118,7 +142,7 @@ class CampaignSession(ReadOnlySession):
         else:
             params = kwargs.pop('params', None)
             self._anonymous_options(kwargs)
-            if params != {'sort': 'new'}:
+            if params != {'sort': self.discovery_sort}:
                 raise ReadOnlyPolicyError('Unexpected discovery query')
             kwargs['params'] = params
         kwargs['allow_redirects'] = False
@@ -130,7 +154,7 @@ class CampaignSession(ReadOnlySession):
 
     def post(self, url, *, json=None, **kwargs):
         self._anonymous_options(kwargs)
-        if (url != RPC_URL or type(json) is not dict
+        if (url != self.rpc_url or type(json) is not dict
                 or set(json) != {'jsonrpc', 'id', 'method', 'params'}
                 or json.get('jsonrpc') != '2.0' or type(json.get('id')) is not int
                 or json['id'] != 1 or json.get('method') not in _METHODS
@@ -193,44 +217,32 @@ def select_rows(payload):
 async def _discover(session, append):
     started, mono = now_ms(), time.monotonic_ns()
     payload, status, reason, cancelled = None, None, None, None
+    transport_error_type = None
+    sort=getattr(session,'discovery_sort','new')
     try:
-        async with session.get(INDEX_URL, params={'sort': 'new'},
+        async with session.get(INDEX_URL, params={'sort': sort},
                                timeout=aiohttp.ClientTimeout(total=8)) as response:
             status = response.status
             if status == 200:
                 payload = await response.json(content_type=None)
             else:
                 reason = 'http_' + str(status)
-    except (aiohttp.ClientError, OSError, asyncio.TimeoutError):
+    except (aiohttp.ClientError, OSError, asyncio.TimeoutError) as error:
         reason = 'transport_or_timeout'
+        transport_error_type = type(error).__name__
     except (ValueError, TypeError, ReadOnlyPolicyError):
         reason = 'invalid_response_or_policy'
     except asyncio.CancelledError as error:
         reason, cancelled = 'capture_cancelled', error
     received = now_ms()
     append('request', received_at_ms=received, outcome='observed' if payload is not None else 'error',
-           reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': 'new',
+           reason=reason, payload={'provider': 'raydium_launch_mint_index', 'sort': sort,
                                   'requested_at_ms': started, 'http_status': status,
-                                  'latency_ms': (time.monotonic_ns()-mono)/1_000_000})
+                                  'latency_ms': (time.monotonic_ns()-mono)/1_000_000,
+                                  **({'transport_error_type':transport_error_type} if transport_error_type else {})})
     if cancelled is not None:
         raise cancelled
     return payload, received
-
-
-async def _quote_with_cancellation_receipt(client, append, input_mint, output_mint,
-                                         amount, side, request_id):
-    requested = now_ms()
-    try:
-        return await client.quote(input_mint, output_mint, amount, 100)
-    except asyncio.CancelledError:
-        append('quote_attempt', received_at_ms=now_ms(),
-               mint=output_mint if side == 'buy' else input_mint,
-               outcome='cancelled', reason='capture_cancelled', request_id=request_id,
-               payload={'provider': 'raydium_trade_api', 'quote_side': side,
-                        'input_mint': input_mint, 'output_mint': output_mint,
-                        'input_amount_atomic': str(amount), 'requested_at_ms': requested,
-                        'position_acquired': False, 'execution_verified': False})
-        raise
 
 
 def _gap(append, reason, *, mint=None):
@@ -248,7 +260,8 @@ def _bank(result, count):
     return slot, values
 
 
-async def _snapshot(store, session, append, row, addresses, minimum_slot, period):
+async def _snapshot(store, session, append, row, addresses, minimum_slot, period,
+                    *, evidence_profile='legacy'):
     requested_addresses = list(addresses.values())
     result, received, request, _ = await _rpc(session, append, 'getMultipleAccounts',
         [requested_addresses, {'encoding': 'base64', 'commitment': 'confirmed',
@@ -261,7 +274,7 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
             mint=row['mint'], request_id=request, outcome='observed' if values is not None else 'missing',
             payload={'period': period, 'addresses': addresses, 'requested_addresses': requested_addresses,
                      'raw_rpc_result': result,
-                     'minimum_context_slot': minimum_slot})
+                     'minimum_context_slot': minimum_slot, 'evidence_profile': evidence_profile})
     except ValueError:
         append('pool_snapshot', received_at_ms=received, mint=row['mint'], outcome='error',
                reason='unsafe_or_invalid_snapshot', payload={'period': period,
@@ -278,7 +291,8 @@ async def _snapshot(store, session, append, row, addresses, minimum_slot, period
     source = source_seconds * 1000 if type(source_seconds) is int and source_seconds > 0 else None
     analysis_at = now_ms()
     analysis = analyze_snapshot(dict(zip(requested_addresses, values)), context_slot=slot,
-        expected_mint=row['mint'], pool_address=row['pool'], input_lamports=1_000_000_000)
+        expected_mint=row['mint'], pool_address=row['pool'], input_lamports=1_000_000_000,
+        evidence_profile=evidence_profile)
     append('candidate_decision', received_at_ms=analysis_at, source_slot=slot, mint=row['mint'],
            outcome='not_admitted', reason='research_observation_only',
            payload={'snapshot_observation_id': identity, 'analysis_at_ms': analysis_at,
@@ -374,6 +388,10 @@ async def _creation(session, append, row, *, signature_limit=20, max_supported_t
     return verified
 
 
+class CampaignSourceStopped(RuntimeError):
+    """Stop a new instrumental run after recording a failed source receipt."""
+
+
 async def collect_campaign(store, session, plan, *, provenance='live'):
     """Execute exactly one fixed campaign; dependency injection is for offline tests."""
     plan_hash = validate_plan(plan)
@@ -384,9 +402,20 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
     started, mono = now_ms(), time.monotonic_ns()
     session._deadline_ns = mono + plan['max_elapsed_ms']*1_000_000
     selected, retained, total_rows, candidates, snapshots, addresses = [], [], None, [], {}, {}
+    initial_completed_ns = []
 
     def append(kind, **event):
-        return store.append(kind, provenance=provenance, **event)
+        identity = store.append(kind, provenance=provenance, **event)
+        if plan.get('stop_on_source_error') is True:
+            status = event.get('payload', {}).get('http_status')
+            reason = event.get('reason') or ''
+            # Logical HTTP-200 quote refusal is data, not a transport failure.
+            if ((type(status) is int and not 200 <= status < 300)
+                    or (kind in ('request', 'quote_attempt') and event.get('outcome') == 'error')
+                    or reason in ('timeout', 'transport_error')
+                    or reason.startswith('unsafe_or_invalid')):
+                raise CampaignSourceStopped('source_error_after_persisted_receipt')
+        return identity
 
     append('checkpoint', received_at_ms=started, outcome='registered_plan',
            payload={'plan': plan, 'plan_sha256': plan_hash})
@@ -459,9 +488,11 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
                 except (ValueError, TypeError):
                     _gap(append, 'pool_address_graph_unavailable', mint=mint)
                 else:
-                    first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial')
+                    first = await _snapshot(store, session, append, row, addresses[mint], slot, 'initial',
+                        evidence_profile=plan.get('evidence_profile', 'legacy'))
                     if first is not None:
                         snapshots.setdefault(mint, []).append(first)
+                        initial_completed_ns.append(time.monotonic_ns())
             session.check_deadline()
             candidate['creation_verified'] = await _creation(session, append, row,
                 signature_limit=plan['signature_limit'],
@@ -481,20 +512,29 @@ async def collect_campaign(store, session, plan, *, provenance='live'):
         if snapshots:
             # Wait from the latest initial receipt; subsequent periods cannot
             # silently be relabelled duplicate readings from the same instant.
-            last_received = max(values[0]['received_at_ms'] for values in snapshots.values())
-            delay = max(0, plan['followup_delay_ms'] - (now_ms()-last_received))
+            if plan.get('stop_on_source_error') is True:
+                # Delay conservatively after initial snapshot analysis/persistence,
+                # on a monotonic clock unaffected by UTC corrections.
+                since = (time.monotonic_ns()-max(initial_completed_ns))/1_000_000
+                delay = max(0, plan['followup_delay_ms']-since)
+            else:
+                last_received = max(values[0]['received_at_ms'] for values in snapshots.values())
+                delay = max(0, plan['followup_delay_ms'] - (now_ms()-last_received))
             await asyncio.sleep(delay/1000)
         for row in selected:
             session.check_deadline()
             previous = snapshots.get(row['mint'], [])
             if previous:
                 following = await _snapshot(store, session, append, row, addresses[row['mint']],
-                                            previous[0]['context_slot'], 'followup')
+                                            previous[0]['context_slot'], 'followup',
+                                            evidence_profile=plan.get('evidence_profile', 'legacy'))
                 if following is not None:
                     previous.append(following)
 
     try:
         await asyncio.wait_for(run(), timeout=plan['max_elapsed_ms']/1000)
+    except CampaignSourceStopped:
+        _gap(append, 'campaign_stopped_on_source_error')
     except (asyncio.TimeoutError, ReadOnlyPolicyError):
         _gap(append, 'campaign_budget_or_deadline_exhausted')
     # Every selected identity survives interruption, including ones not reached.

@@ -1,0 +1,4 @@
+# Explicit Render build dependency set for the optional signed Helius observer.
+# Operator must configure Render build command to use this file; no auto-deploy.
+# Includes cryptography for independent Ed25519 receipt verification.
+-r requirements-live.txt

@@ -1,0 +1,51 @@
+{
+  "cloud_workspace_recovered": false,
+  "code_commit": "e2e200889da3deaf4117ceb60109a46469c385da",
+  "configuration_aggressive_preserved": true,
+  "confirmed_burns_atomic": "29386275175",
+  "controlled_reads": [
+    {
+      "elapsed_ms": 26034,
+      "id": "retention_003",
+      "requests": 19
+    },
+    {
+      "elapsed_ms": 4695,
+      "id": "mint_history_004",
+      "requests": 8
+    },
+    {
+      "elapsed_ms": 3852,
+      "id": "mint_history_005",
+      "requests": 5
+    }
+  ],
+  "date": "2026-10-27",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "evidence_bundles": 8,
+  "evidence_records": 580,
+  "financial_spend": false,
+  "local_equivalent_commit": "55d58f1dd17ac2eba340de7551b4fd7d4758a494",
+  "original_shared_snapshot_sha256": "a990b4466e772762af1fecd0b220659997812a0e78f835d721b49221c5f95f56",
+  "original_task_unarchived": false,
+  "private_ledger_mutated": false,
+  "profitability_validated": false,
+  "real_observations_source_code": "455defdbe6ec388e245e188476716452b82a47c6",
+  "real_orders": false,
+  "real_sell_refusals": "INSUFFICIENT_LIQUIDITY",
+  "schema": "pr22-final-validation-v1",
+  "shared_conversation_recovered": true,
+  "shared_turns": 10,
+  "strategy_thresholds_changed": false,
+  "tested_tree": "fbcd7ff26d09734e5e8eec558ffcf554c418757c",
+  "tests": {
+    "elapsed_seconds": 4.36,
+    "failed": 0,
+    "passed": 1379,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "unreconciled_supply_deficit_atomic": "950156230625"
+}

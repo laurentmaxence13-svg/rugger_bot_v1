@@ -2,6 +2,7 @@
 import asyncio
 from copy import deepcopy
 import json
+import hashlib
 
 import aiohttp
 import pytest
@@ -32,12 +33,24 @@ def quote_payload(input_mint=SOL_MINT, output_mint=USDC, amount='1000000000',
 
 
 class Response:
-    def __init__(self, payload=None, *, status=200, headers=None, error=None):
+    def __init__(self, payload=None, *, status=200, headers=None, error=None, raw_body=None):
         self.payload, self.status = payload, status
         self.headers = headers or {}
         self.error = error
         self.closed = False
         self.json_calls = 0
+        self.content = self
+        self.body = json.dumps(payload).encode() if raw_body is None else raw_body
+        self.body_offset = 0
+        self.bytes_read = 0
+
+    async def read(self, size):
+        if self.error is not None:
+            raise self.error
+        chunk = self.body[self.body_offset:self.body_offset+size]
+        self.body_offset += len(chunk)
+        self.bytes_read += len(chunk)
+        return chunk
 
     async def __aenter__(self):
         return self
@@ -319,3 +332,58 @@ def test_missing_sell_keeps_its_failure_without_inventing_a_zero_loss():
     assert result['quoted_round_trip_delta_lamports'] is None
     assert result['buy']['outcome'] == 'quoted'
     assert result['sell']['reason'] == 'http_429'
+
+
+@pytest.mark.parametrize('alter', ['actual_input_above_budget', 'wall_clock_invalid'])
+def test_rejected_quote_never_exposes_partially_parsed_amounts_or_fees(alter):
+    payload = quote_payload()
+    session = Session(Response(payload))
+    quote_client = client(session)
+    if alter == 'actual_input_above_budget':
+        payload['data']['actualInputAmount'] = '1000000001'
+    else:
+        times = iter([1000, 999])
+        quote_client.clock_ms = lambda: next(times)
+    result = asyncio.run(quote_client.quote(SOL_MINT, USDC, '1000000000'))
+    assert result['outcome'] == 'error'
+    assert result['output_amount_atomic'] is None
+    assert result['min_output_amount_atomic'] is None
+    assert result['actual_input_amount_atomic'] is None
+    assert result['route'] == []
+    assert result['fee_details']['route_fees'] == []
+    assert result['raw_payload'] == payload  # evidence retained for diagnosis
+
+
+def test_http_error_json_is_retained_but_never_parsed_as_a_quote():
+    payload = quote_payload()  # Even a positive body cannot override HTTP 429.
+    payload['msg'] = 'RATE_LIMITED'
+    response = Response(payload, status=429, headers={'Retry-After': '2'})
+    result = fetch(Session(response))
+    assert result['reason'] == 'http_429' and result['outcome'] == 'unavailable'
+    assert result['raw_payload'] == payload
+    assert result['response_body_status'] == 'json_retained'
+    assert result['response_body_sha256'] == hashlib.sha256(response.body).hexdigest()
+    assert result['output_amount_atomic'] is None and result['route'] == []
+    assert result['retry_after_seconds'] == 2
+
+
+def test_http_error_nonjson_body_keeps_digest_without_exposing_unsafe_text():
+    raw = b'api_key=synthetic-do-not-store'
+    result = fetch(Session(Response(status=503, raw_body=raw)))
+    assert result['reason'] == 'http_503'
+    assert result['response_body_status'] == 'non_json'
+    assert result['response_body_sha256'] == hashlib.sha256(raw).hexdigest()
+    assert result['raw_payload'] is None
+    assert 'synthetic-do-not-store' not in json.dumps(result)
+
+
+def test_http_error_body_is_bounded_and_read_failure_does_not_erase_http_status():
+    response = Response(status=429, raw_body=b'x' * 100_000)
+    result = fetch(Session(response))
+    assert result['reason'] == 'http_429'
+    assert result['response_body_status'] == 'over_limit'
+    assert response.bytes_read == 65_537
+    assert result['response_body_sha256'] is None and result['raw_payload'] is None
+    result = fetch(Session(Response(status=500, error=asyncio.TimeoutError())))
+    assert result['reason'] == 'http_500'
+    assert result['response_body_status'] == 'read_failed'

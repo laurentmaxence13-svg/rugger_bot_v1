@@ -1,0 +1,28 @@
+{
+  "comparison": {
+    "legacy_usd_mark": {
+      "atomic_inventory_known": false,
+      "capital_final_sol": 10.18,
+      "cost_sol": 0.02,
+      "initial_capital_sol": 10,
+      "net_simulated_sol": 0.17999999999999997,
+      "position_sol": 1
+    },
+    "native_projected_quantity": {
+      "atomic_inventory_known": true,
+      "capital_final_sol": 10.18,
+      "cost_sol": 0.02,
+      "initial_capital_sol": 10,
+      "net_simulated_sol": 0.18,
+      "position_sol": 1
+    }
+  },
+  "data_kind": "synthetic",
+  "economic_profitability_verified": false,
+  "execution_verified": false,
+  "interpretation": "At matched costs both ledgers return 0.18 SOL. Atomic inventory adds quantity and exit checks, not an assumed performance gain.",
+  "native_costs_counted_once": true,
+  "network_requests": 0,
+  "schema": "p3-matched-inventory-cost-comparison-v1",
+  "source": "active record_quote; identical price return, notional and total synthetic costs"
+}

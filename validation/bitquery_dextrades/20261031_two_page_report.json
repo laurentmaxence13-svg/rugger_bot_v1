@@ -1,0 +1,61 @@
+{
+  "schema": "rugger-bitquery-dextrades-two-pages-v1",
+  "observation_only": true,
+  "source_cube": "Solana.DEXTrades",
+  "inputs": [
+    {
+      "name": "bitquery_page_1_20261031",
+      "sha256": "82e457d4e916718de0866721520dedd5f3d8ac0eabe44b71d1c60c3729efadc2",
+      "rows": 200,
+      "slot_high": 463789861,
+      "slot_low": 463789516
+    },
+    {
+      "name": "bitquery_page_2_20261031",
+      "sha256": "3b599257da25b9b4e42641a778c783d46189bda873e00a14850aa76615a5b0d7",
+      "rows": 200,
+      "slot_high": 463789516,
+      "slot_low": 463789255
+    }
+  ],
+  "boundary": "One exact overlapping swap row removed by full-row occurrence; other same-signature swaps retained",
+  "raw_rows": 400,
+  "overlap_rows_removed": 1,
+  "unique_observed_rows": 399,
+  "unique_signatures": 298,
+  "distinct_pools": 115,
+  "start_time_utc": "2026-10-31T18:27:53Z",
+  "end_time_utc": "2026-10-31T18:30:04Z",
+  "observed_duration_seconds": 131,
+  "programs": {
+    "raydium_launchpad": 61,
+    "raydium_cp_swap": 338
+  },
+  "wsol_rows": 281,
+  "wsol_pair_groups": 59,
+  "token_buy_observations": 102,
+  "no_later_exit_observation": 45,
+  "ambiguous_first_exit_slot": 31,
+  "strict_first_opposite_side_markouts": 26,
+  "distinct_markout_pools": 15,
+  "markout_protocols": {
+    "raydium_launchpad": 5,
+    "raydium_cp_swap": 21
+  },
+  "observed_price_markout_pct": {
+    "min": "-5.61603178",
+    "median": "-2.08872240",
+    "max": "-0.49929250",
+    "positive": 0,
+    "negative": 26
+  },
+  "next_query_slot_le": 463789255,
+  "duplicate_caveat": "Full-row overlap handling is conservative; identical distinct swaps cannot be proved without instruction index",
+  "sampling_caveat": "Not a full market universe or creator cohort; data sorted by descending slot with no intrablock order",
+  "paper_trades_certified": 0,
+  "net_pnl_sol": null,
+  "master_minus_reference_sol": null,
+  "economically_executable_exits_proven": false,
+  "economic_gate": "NO_GO_EXECUTABLE_EXITS_AND_CREATOR_COHORT_MISSING",
+  "regression": "Replayed both user-provided JSON pages offline and verified identical markout CSV on isolated reproduction; no orders, payment, network or wallet"
+}

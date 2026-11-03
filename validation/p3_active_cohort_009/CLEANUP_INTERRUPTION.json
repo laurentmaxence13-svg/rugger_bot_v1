@@ -1,0 +1,14 @@
+{
+  "acquisition_budget_violated": false,
+  "acquisition_window_within_60_seconds": true,
+  "capture_closed": true,
+  "capture_elapsed_ms": 8009,
+  "capture_requests": 1,
+  "closed_tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+  "elapsed_from_first_request_until_interruption_ms": 200951,
+  "interrupted_at_ms": 1793219995139,
+  "overall_process_within_60_seconds": false,
+  "process_cleanup_bounded_externally": false,
+  "reason": "process_cleanup_stalled_after_capture_closed; no_collection_retry",
+  "schema": "p3-active-cohort-cleanup-interruption-v1"
+}

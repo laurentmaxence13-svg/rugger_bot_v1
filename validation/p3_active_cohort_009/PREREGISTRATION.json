@@ -1,0 +1,47 @@
+{
+  "active_policy_changed": false,
+  "followup_minimum_ms": 15000,
+  "initial_cohort_budget_lamports": "100000000",
+  "known_limits": [
+    "own_extra_costs_unknown",
+    "independent_buyers_unproven",
+    "provider_clocks_may_be_absent",
+    "cohort_0.10_SOL_quote_not_reference_1_SOL_quote",
+    "master_past_edge_requirements_unmet"
+  ],
+  "market_requests_so_far": 0,
+  "maximum_elapsed_ms": 60000,
+  "maximum_execution_count": 1,
+  "maximum_requests_all_sources": 20,
+  "on_first_blocking_error": "persist_then_stop_entire_run_without_retry_or_fallback",
+  "p4_scope": "instrumental_development_only; not_independent_holdout",
+  "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+  "preregistration_published_before_acquisition_required": true,
+  "prior_controls_not_replayed": [
+    "006",
+    "007",
+    "008"
+  ],
+  "real_transactions": false,
+  "registered_at_ms": 1793219697773,
+  "remote_availability": "unknown_until_first_budgeted_request; no_separate_probe",
+  "run_id": "active_cohort_009",
+  "schema": "p3-active-cohort-009-preregistration-v1",
+  "signatures": false,
+  "source_access_basis": "SOURCE_REVIEW.json",
+  "source_commit": "4d967d0839134db878f47bfbeba3108780ca71c4",
+  "source_files": {
+    "bot/p3/active_cohort_campaign.py": "1dc0bdee23adfe5d9b9942f6aba1642300e98e66cba3e43057802e4c031ec3ce",
+    "bot/p3/campaign.py": "d026cd2df6ebafdf8af96e59c1772ebd1a75d14e0a7a20e26f90bd1c84e30c46",
+    "bot/p3/cohort.py": "744286cb469c169aa6e4c6dfe4f222d3d9b4344fb0d4a4592309db56810fd08d",
+    "bot/p3/collect.py": "082b79b17e90bf509b9344a59834fe0b13c289bd8158d65548df269e9de0c549",
+    "bot/p3/inventory_provider.py": "92f39796917333772d8b3ae70fda0d148aa01e6016d29a07cf07ef188b5fc7ea",
+    "bot/p3/prospective_campaign.py": "4d626c0900edeacad09f2c6ad7d1a4108c322c9f08fbdc6e89f17829f28d8035",
+    "bot/p3/quotes.py": "43993191176cbc361fa069b7f05787537ef4a58d265d28d4e5dbcdea82425c18",
+    "bot/p3/store.py": "80a6fb05a053b8106d8c8f10fc756544a4107bf02f3762c5de1fbb486ff33e05"
+  },
+  "source_tree": "aa33e5ce3be723b44b2bdf1f08e0124d7fedf8d6",
+  "sources_fixed_before_first_attempt": true,
+  "spend": false,
+  "transport_preflight": "TRANSPORT_PREFLIGHT.json"
+}
