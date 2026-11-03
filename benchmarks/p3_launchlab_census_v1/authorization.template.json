@@ -1,0 +1,17 @@
+{
+  "approved_at_ms": null,
+  "approved_by": null,
+  "max_creations": null,
+  "max_enrollment_duration_ms": null,
+  "network_scope": "anonymous_public_reads_listed_in_protocol",
+  "protocol_sha256": "b7d1c842f3cae2cf8e6570e286eaa27a67a8bd38edab32a1d2ba9d90d31ff2bb",
+  "request_budgets": {
+    "raydium_launch_index": null,
+    "raydium_trade_api": null,
+    "solana_public_rpc": null
+  },
+  "schema": "p3-launchlab-census-authorization-v1",
+  "spend_authorized": false,
+  "subscriptions_authorized": false,
+  "wallet_or_signing_authorized": false
+}

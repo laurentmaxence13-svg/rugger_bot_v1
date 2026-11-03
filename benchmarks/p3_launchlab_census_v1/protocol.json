@@ -1,0 +1,204 @@
+{
+  "analysis": {
+    "death_label": "none_inferred_only_observable_categories_reported",
+    "decimal_places": 9,
+    "denominators": [
+      "all_enrolled",
+      "plus60_buy_quoted",
+      "sell_dispatched"
+    ],
+    "detection_latency": "verified_creation_block_time_to_first_local_price_available_at",
+    "economic_verdict": "not_part_of_census",
+    "first_local_price": "earliest_decodable_pool_reserve_state_or_quoted_provider_buy",
+    "histogram_edges": [
+      "-1",
+      "-0.9",
+      "-0.5",
+      "-0.2",
+      "-0.05",
+      "0",
+      "0.05",
+      "0.2",
+      "0.5",
+      "1",
+      "3"
+    ],
+    "missingness": "every_enrolled_creation_counted_in_exactly_one_category_per_size",
+    "population": "all_enrolled_creations",
+    "primary_buy_input": "provider_actual_input_if_reported_else_requested",
+    "primary_costs": "gross_excludes_network_priority_and_account_costs",
+    "primary_return": "plus900_provider_sell_expected_output_lamports_over_plus60_buy_input_lamports_minus_one",
+    "quantile_method": "nearest_rank_on_exact_rationals",
+    "quantiles": [
+      "0",
+      "0.1",
+      "0.25",
+      "0.5",
+      "0.75",
+      "0.9",
+      "1"
+    ],
+    "secondary_evidence_profile": "published_metadata_v1",
+    "secondary_return": "local_curve_plus60_counterfactual_buy_quantity_sold_against_observed_plus900_state",
+    "sellable_exit": "provider_sell_quote_outcome_quoted_by_offset_and_size",
+    "state_change_vs_plus60": "real_b_and_spot_ratio_vs_plus60_by_offset_unavailable_pairs_counted"
+  },
+  "checkpoint": {
+    "archive": "operator_commits_bundles_anchors_and_run_identity_after_run_never_sqlite",
+    "export": "closed_segment_to_portable_bundle_then_separate_anchor_before_next_segment",
+    "segment_max_bytes": 8388608,
+    "segment_max_duration_ms": 1800000,
+    "segment_max_records": 2000
+  },
+  "creation_verification": {
+    "commitment": "confirmed",
+    "max_supported_transaction_version": 1,
+    "signature_limit": 1000,
+    "transaction_selection": "oldest_successful_signature_in_received_page"
+  },
+  "mode": "paper_only_observation_no_orders_no_wallet_no_signing_no_ledger",
+  "out_of_scope": [
+    "decide",
+    "tp_sl",
+    "position_sizing",
+    "paper_ledger",
+    "currency_convention",
+    "thresholds",
+    "strategy_comparison"
+  ],
+  "protocol_id": "launchlab-baseline-census-001",
+  "registered_at_ms": 1793732458773,
+  "resume": {
+    "expired_tasks": "terminal_missed_run_interrupted",
+    "identity": "same_run_dir_protocol_authorization_and_source_revision_required",
+    "in_flight_task": "terminal_interrupted_in_flight_never_retried",
+    "interrupted_segment": "closed_exported_and_anchored_before_new_segment",
+    "interruption": "open_gap_never_closed",
+    "provider_backoff": "restored_from_journaled_throttle_events",
+    "request_accounting": "last_persisted_cumulative_plus_one_operation_allowance"
+  },
+  "schedule": {
+    "anchor": "index_creation_claim_ms_if_positive_and_not_after_receipt_else_first_receipt_ms",
+    "buy_offset_ms": 60000,
+    "buy_sizes_lamports": [
+      500000000,
+      1000000000
+    ],
+    "discovery_priority": "after_ready_tasks",
+    "execution": "sequential_single_dispatcher",
+    "never_dispatch_before_due": true,
+    "ready_task_priority": "earliest_deadline_first_then_due_kind_creation_size",
+    "retries": 0,
+    "same_due_order": [
+      "state",
+      "buy",
+      "sell"
+    ],
+    "sell_offsets_ms": [
+      300000,
+      900000,
+      3600000
+    ],
+    "sell_quantity": "expected_output_atomic_of_plus60_provider_buy_quote_of_same_size",
+    "slippage_bps": 100,
+    "state_offsets_ms": [
+      60000,
+      300000,
+      900000,
+      3600000
+    ],
+    "tolerance_ms": [
+      30000,
+      60000,
+      90000,
+      180000
+    ],
+    "verification_due": "at_enrollment_deadline_run_deadline"
+  },
+  "schema": "p3-launchlab-census-protocol-v1",
+  "stop_rules": {
+    "abort_total_throttles": 10,
+    "backoff_min_ms": 30000,
+    "discovery_stop_consecutive_failures": 40,
+    "enrollment_stop_throttles": 3,
+    "enrollment_stop_window_ms": 600000,
+    "retry_after_cap_ms": 600000,
+    "throttle_http_statuses": [
+      403,
+      429
+    ]
+  },
+  "strategy_free": true,
+  "transport": {
+    "anonymous": true,
+    "authorization_caps": {
+      "raydium_launch_index": 3000,
+      "raydium_trade_api": 10000,
+      "solana_public_rpc": 20000
+    },
+    "methods": {
+      "raydium_launch_index": [
+        "GET get/list sort=new"
+      ],
+      "raydium_trade_api": [
+        "GET compute/swap-base-in"
+      ],
+      "solana_public_rpc": [
+        "getSignaturesForAddress",
+        "getTransaction",
+        "getMultipleAccounts",
+        "getBlockTime"
+      ]
+    },
+    "redirects": false,
+    "request_timeout_ms": 8000,
+    "reserved_requests_per_creation": {
+      "raydium_trade_api": 8,
+      "solana_public_rpc": 14
+    },
+    "token_bucket_burst": {
+      "raydium_launch_index": 1,
+      "raydium_trade_api": 1,
+      "solana_public_rpc": 3
+    },
+    "token_bucket_interval_ms": {
+      "raydium_launch_index": 5000,
+      "raydium_trade_api": 1000,
+      "solana_public_rpc": 500
+    },
+    "wire_retries": false
+  },
+  "universe": {
+    "baseline_rule": "valid_identities_in_first_successful_poll_are_pre_window_never_enrolled",
+    "continuity_rule": "successful_poll_must_overlap_previous_successful_poll_or_return_fewer_than_cap_rows",
+    "coverage_of_all_launchlab_creations": "unknown_no_independent_creation_reference",
+    "enrollment_rule": "every_valid_identity_first_seen_after_baseline_while_enrollment_open",
+    "identity_conflict_rule": "same_mint_with_other_pool_recorded_never_enrolled",
+    "independent_reference": null,
+    "late_listing_grace_ms": 120000,
+    "late_listing_rule": "creation_claim_older_than_window_start_minus_grace_is_pre_window",
+    "max_rows_per_poll": 100,
+    "poll_interval_ms": 15000,
+    "price_volume_score_filter": "none",
+    "quote_currency_filter": "none_all_quote_currencies_enrolled",
+    "source": "raydium_launch_mint_index_get_list_sort_new",
+    "unit": "index_identity_mint_with_its_pool"
+  },
+  "window": {
+    "authorization_caps": {
+      "max_creations": 1000,
+      "max_enrollment_duration_ms": 43200000
+    },
+    "enrollment_closes_at_first_of": [
+      "authorized_max_enrollment_duration_elapsed",
+      "authorized_max_creations_enrolled",
+      "request_quota_reservation_insufficient",
+      "index_quota_exhausted",
+      "provider_throttle_stop",
+      "discovery_unavailable_stop"
+    ],
+    "observation_end": "every_scheduled_task_terminal_or_run_deadline",
+    "run_deadline_after_enrollment_close_ms": 4080000,
+    "start": "receipt_time_of_first_successful_baseline_poll"
+  }
+}
