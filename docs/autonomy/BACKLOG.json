@@ -1,7 +1,7 @@
 {
   "coordination_branch": "claude/launchlab-trade-events",
   "start_new_work": false,
-  "start_new_work_note": "Owner switch. false: routines may only resume requested corrections (RESUME). Set to true only when the owner approves starting new backlog items.",
+  "start_new_work_note": "Owner switch for scheduled or manual new work. false or missing: no new backlog items. GitHub event wake-ups always STOP, regardless of this value.",
   "items": [
     {
       "id": "slot-timing-v1",
@@ -24,7 +24,7 @@
     {
       "id": "blocktime-crosscheck-v1",
       "rank": 2,
-      "title": "Cross-check blockTime against getBlockTime on two independent RPC providers",
+      "title": "Optional independent timestamp cross-check after official 200 ms mainnet slot-time upgrade",
       "offline": false,
       "requires_owner": true,
       "target_paths": [
@@ -32,8 +32,9 @@
         "tests/fixtures/launchlab_sol_pools/"
       ],
       "acceptance": [
-        "gated: needs an owner-approved budget of a few getBlockTime calls on two providers; never run by a routine without it",
-        "explains the gap between the measured seconds per slot and the 400 ms reference before any latency assumption changes"
+        "Official Solana Foundation documentation establishes 200 ms target slots from 2026-10-09 (epoch 1053): https://solana.com/upgrades/reduced-slot-times",
+        "Optional study of timestamp provenance or measurement bias; no presumed discrepancy against outdated 400 ms reference",
+        "Requires explicit owner approval and a bounded RPC budget; never run by a routine without it"
       ]
     },
     {
@@ -42,7 +43,9 @@
       "title": "Run the offline suite with warnings treated as errors",
       "offline": true,
       "requires_owner": false,
-      "target_paths": ["tests/"],
+      "target_paths": [
+        "tests/"
+      ],
       "acceptance": [
         "python -W error -m pytest on the offline suite passes on Ubuntu",
         "only real warnings are fixed; no test is skipped or weakened to hide one"
@@ -54,7 +57,9 @@
       "title": "Document the legacy copies bot/bot and tests/tests",
       "offline": true,
       "requires_owner": false,
-      "target_paths": ["docs/autonomy/LEGACY_COPIES.md"],
+      "target_paths": [
+        "docs/autonomy/LEGACY_COPIES.md"
+      ],
       "acceptance": [
         "the note lists each legacy copy, its size, and whether anything imports it",
         "nothing is deleted or moved"
@@ -66,7 +71,10 @@
       "title": "Compare the Master decision logic on the archived SOL pools",
       "offline": true,
       "requires_owner": true,
-      "target_paths": ["bot/market/", "tools/"],
+      "target_paths": [
+        "bot/market/",
+        "tools/"
+      ],
       "acceptance": [
         "gated: needs an owner decision on importing the decision logic of PR 89"
       ]
@@ -77,10 +85,14 @@
       "title": "Broaden the LaunchLab sample, including dead pools",
       "offline": false,
       "requires_owner": true,
-      "target_paths": ["data/launchlab_trades/"],
+      "target_paths": [
+        "data/launchlab_trades/"
+      ],
       "acceptance": [
         "gated: needs an owner-approved RPC budget; never run by a routine"
       ]
     }
-  ]
+  ],
+  "resume_corrections": false,
+  "resume_corrections_note": "Owner gate for manually requested corrections. false or missing: correction comments, reviewer verdicts and CI failures never authorize a new run. GitHub event wake-ups always STOP. Even when true, only a separately invoked manual run may RESUME."
 }
