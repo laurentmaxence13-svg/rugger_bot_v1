@@ -1,0 +1,188 @@
+{
+  "coordination_branch": "claude/launchlab-trade-events",
+  "start_new_work": true,
+  "start_new_work_note": "Owner explicitly approved starting authorized offline backlog work on 2026-11-03. Only an enabled scheduled or owner-initiated manual run may START; GitHub event wake-ups always STOP. No merges, main pushes, live transactions, paid API calls, or secret access.",
+  "items": [
+    {
+      "id": "slot-timing-v1",
+      "rank": 1,
+      "title": "Measure seconds per Solana slot from the committed SOL pool archives",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "bot/market/timing.py",
+        "tests/test_launchlab_timing.py",
+        "docs/research/SLOT_TIMING_20261103.md"
+      ],
+      "acceptance": [
+        "bot/market/timing.py exposes pure functions over (slot, block_time) pairs and does no network access",
+        "tests read only tests/fixtures/launchlab_sol_pools and synthetic samples, and pass with python -W error",
+        "the research note reports the measured seconds-per-slot range, the number of pairs, the 1-second block-time quantisation, and states that this is not a measurement of our own orders",
+        "the 2-slot latency assumption of bot/market/replay.py is reported in seconds; its default is NOT changed"
+      ]
+    },
+    {
+      "id": "blocktime-crosscheck-v1",
+      "rank": 2,
+      "title": "Optional independent timestamp cross-check after official 200 ms mainnet slot-time upgrade",
+      "offline": false,
+      "requires_owner": true,
+      "target_paths": [
+        "docs/research/",
+        "tests/fixtures/launchlab_sol_pools/"
+      ],
+      "acceptance": [
+        "Official Solana Foundation documentation establishes 200 ms target slots from 2026-10-09 (epoch 1053): https://solana.com/upgrades/reduced-slot-times",
+        "Optional study of timestamp provenance or measurement bias; no presumed discrepancy against outdated 400 ms reference",
+        "Requires explicit owner approval and a bounded RPC budget; never run by a routine without it"
+      ]
+    },
+    {
+      "id": "warnings-gate-v1",
+      "rank": 3,
+      "title": "Run the offline suite with warnings treated as errors",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "tests/"
+      ],
+      "acceptance": [
+        "python -W error -m pytest on the offline suite passes on Ubuntu",
+        "only real warnings are fixed; no test is skipped or weakened to hide one"
+      ]
+    },
+    {
+      "id": "legacy-copies-doc-v1",
+      "rank": 4,
+      "title": "Document the legacy copies bot/bot and tests/tests",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "docs/autonomy/LEGACY_COPIES.md"
+      ],
+      "acceptance": [
+        "the note lists each legacy copy, its size, and whether anything imports it",
+        "nothing is deleted or moved"
+      ]
+    },
+    {
+      "id": "launchlab-curve-parity-v1",
+      "title": "Recompute observed exact-in LaunchLab trade fills from committed SOL fixtures",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "tools/launchlab_curve_parity.py",
+        "tests/test_launchlab_curve_parity.py",
+        "docs/research/LAUNCHLAB_CURVE_PARITY.md"
+      ],
+      "acceptance": [
+        "Read only the three committed SOL pool fixtures; no RPC or new data access",
+        "For every observed trade, classify whether its instruction/path is supported by exact-in arithmetic; recompute output from the signed pre-state for supported paths and report exact integer mismatches or violations",
+        "Document the denominator, fee schedule per pool, number of supported and unsupported trade events, fixture SHA provenance and limitations; do not claim every trade passes if some cannot be modelled",
+        "Add offline focused tests and ensure no pre-existing test is weakened"
+      ],
+      "rank": 5
+    },
+    {
+      "id": "launchlab-priority-fee-v1",
+      "title": "Measure priority and total network fees from archived SOL pool transactions",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "tools/launchlab_priority_fee_report.py",
+        "tests/test_launchlab_priority_fee_report.py",
+        "docs/research/LAUNCHLAB_PRIORITY_FEES.md"
+      ],
+      "acceptance": [
+        "Use committed transaction metadata only, no network calls",
+        "Report observed meta.fee distribution by pool and slot-age bins; if compute-budget instructions can be decoded reliably, separate declared CU price from observed paid fee and document limitations",
+        "Do not infer required winning priority fee from observational fees alone or change execution defaults",
+        "Provide a reproducible command, dataset counts and offline tests"
+      ],
+      "rank": 6
+    },
+    {
+      "id": "launchlab-failure-analysis-v1",
+      "title": "Count failed and successful pool-address signatures without survivorship exclusions",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "tools/launchlab_failure_report.py",
+        "tests/test_launchlab_failure_report.py",
+        "docs/research/LAUNCHLAB_FAILURES.md"
+      ],
+      "acceptance": [
+        "Read only committed SOL fixture signature listings and report err != null counts and failure proportions by pool and age/slot from pool creation",
+        "Explain that address-level signatures are not identical to bot order attempts and cannot alone estimate our own order failure probability",
+        "Include empty/partial/malformed fixture tests and a reproducible offline report",
+        "Do not create transactions or modify historical archives"
+      ],
+      "rank": 7
+    },
+    {
+      "id": "master-feature-reconstructibility-v1",
+      "title": "Audit whether genuine Master input features can be reconstructed causally",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "docs/research/MASTER_FEATURE_RECONSTRUCTIBILITY.md",
+        "tests/test_master_feature_inventory.py",
+        "tools/master_feature_inventory.py"
+      ],
+      "acceptance": [
+        "Inspect real decision engine and PR 89 code as read-only references, identifying exact branch SHAs reviewed",
+        "List Master inputs and classify point-in-time availability from committed LaunchLab TradeEvents and their transactions versus extra token-account reads or unknown information",
+        "Differentiate unavailable fields from negative or zero values and document possible lookahead leakage",
+        "Do not execute a truncated Master as if it were genuine; do not change scores, strategy parameters or capital"
+      ],
+      "rank": 8
+    },
+    {
+      "id": "launchlab-cost-audit-v1",
+      "title": "Produce a reproducible accounting audit for reference replay cycles",
+      "offline": true,
+      "requires_owner": false,
+      "target_paths": [
+        "tools/launchlab_cost_audit.py",
+        "tests/test_launchlab_cost_audit.py",
+        "docs/research/LAUNCHLAB_COST_AUDIT.md"
+      ],
+      "acceptance": [
+        "Analyze the two available baseline entries from committed SOL fixtures, with stated entry size 0.05 SOL, two-slot assumed latency and each pool's inferred fee rate",
+        "Separate curve input and output, actual/assumed transaction network costs, estimated entry and exit amounts, migration and final liquidation flags; identify any values the current replay does not expose rather than inventing them",
+        "Report an auditable calculation and differences from the existing baseline report; no claim of profitable Master",
+        "Add offline tests and do not alter live trading, strategy thresholds or financial parameters"
+      ],
+      "rank": 9
+    },
+    {
+      "id": "master-comparison-v1",
+      "rank": 10,
+      "title": "Compare the Master decision logic on the archived SOL pools",
+      "offline": true,
+      "requires_owner": true,
+      "target_paths": [
+        "bot/market/",
+        "tools/"
+      ],
+      "acceptance": [
+        "gated: needs an owner decision on importing the decision logic of PR 89"
+      ]
+    },
+    {
+      "id": "broader-sample-v1",
+      "rank": 11,
+      "title": "Broaden the LaunchLab sample, including dead pools",
+      "offline": false,
+      "requires_owner": true,
+      "target_paths": [
+        "data/launchlab_trades/"
+      ],
+      "acceptance": [
+        "gated: needs an owner-approved RPC budget; never run by a routine"
+      ]
+    }
+  ],
+  "resume_corrections": false,
+  "resume_corrections_note": "Owner gate for manually requested corrections. false or missing: correction comments, reviewer verdicts and CI failures never authorize a new run. GitHub event wake-ups always STOP. Even when true, only a separately invoked manual run may RESUME."
+}
