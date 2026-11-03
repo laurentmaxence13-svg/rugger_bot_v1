@@ -63,7 +63,8 @@ def load_backlog(path=BACKLOG_PATH):
 def load_policy(path=BACKLOG_PATH):
     """Owner switch for new work. Missing, null or false means no new work (fail closed)."""
     data = json.loads(Path(path).read_text(encoding='utf-8'))
-    return {'start_new_work': data.get('start_new_work') is True}
+    return {'start_new_work': data.get('start_new_work') is True,
+            'resume_corrections': data.get('resume_corrections') is True}
 
 
 def normalize(path):
@@ -120,11 +121,13 @@ def ci_needs_fix(head, ci_state, comments):
     return head not in addressed
 
 
-def plan(branches, items, max_rounds=MAX_ROUNDS, start_new_work=True):
+def plan(branches, items, max_rounds=MAX_ROUNDS, start_new_work=True,
+         resume_corrections=False):
     """Decide exactly one action from the branch facts and the ranked backlog.
 
-    Corrections (RESUME) are always allowed. New work (START) only when the
-    owner's switch start_new_work is true.
+    Corrections (RESUME) require the separate explicit owner gate
+    resume_corrections=True. New work (START) requires start_new_work=True.
+    Both switches default to False when loaded from the policy file.
     """
     reasons = []
     open_branches = [b for b in branches if b['pr'] is None or b['pr']['state'] == 'OPEN']
@@ -142,7 +145,10 @@ def plan(branches, items, max_rounds=MAX_ROUNDS, start_new_work=True):
                            f"rounds; needs owner decision")
             continue
         resumable.append(branch)
-    if resumable:
+    if resumable and not resume_corrections:
+        reasons.append('correction resumes are disabled by the owner '
+                       '(resume_corrections is not true in BACKLOG.json)')
+    if resumable and resume_corrections:
         pick = resumable[0]
         return {'action': 'RESUME', 'branch': pick['name'],
                 'pr': pick['pr']['number'] if pick['pr'] else None,
@@ -243,6 +249,8 @@ def main(argv=None):
     decide = sub.add_parser('plan', help='decide one action from a fetched state file')
     decide.add_argument('state')
     decide.add_argument('--backlog', default=str(BACKLOG_PATH))
+    decide.add_argument('--run-origin', choices=('manual', 'scheduled', 'event'),
+                        default='event', help='fail closed: GitHub event wake-ups never act')
     check = sub.add_parser('scope', help='check changed files against an item scope')
     check.add_argument('item')
     check.add_argument('--base', required=True, help='e.g. origin/claude/launchlab-trade-events')
@@ -257,11 +265,18 @@ def main(argv=None):
                           'written': args.out}, sort_keys=True))
         return 0
     if args.command == 'plan':
+        if args.run_origin == 'event':
+            print(json.dumps({'action': 'STOP', 'reasons': [
+                'GitHub event wake-ups are not authorized to change the repository; '
+                'a separate, owner-approved manual run is required']}, sort_keys=True))
+            return 0
         _, items = load_backlog(args.backlog)
         policy = load_policy(args.backlog)
         state = json.loads(Path(args.state).read_text(encoding='utf-8'))
         print(json.dumps(plan(state['branches'], items,
-                              start_new_work=policy['start_new_work']),
+                              start_new_work=policy['start_new_work'],
+                              resume_corrections=(policy['resume_corrections']
+                                                  and args.run_origin == 'manual')),
                          indent=2, sort_keys=True))
         return 0
     _, items = load_backlog(args.backlog)
