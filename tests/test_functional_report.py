@@ -1,4 +1,5 @@
 """Integrated dashboard uses the active PAPER schema and reads it without writes."""
+from contextlib import closing
 import json
 import sqlite3
 
@@ -29,7 +30,7 @@ def value(report, name):
 
 
 def test_weighted_gross_net_and_capital_reuse_reconciled_ledger_without_double_fees():
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         closed(con, 'win', 20, 1, .08)
         closed(con, 'loss', 30, 2, -.20)
         changes = con.total_changes
@@ -60,7 +61,7 @@ def test_weighted_gross_net_and_capital_reuse_reconciled_ledger_without_double_f
 
 
 def test_distinct_tokens_and_accepted_decisions_do_not_hide_financial_permission_rejection():
-    with sqlite3.connect(':memory:') as con:
+    with closing(sqlite3.connect(':memory:')) as con, con:
         con.executescript('CREATE TABLE launch_candidates(mint,detection_latency_ms);'
                          'CREATE TABLE research_launches(mint);'
                          'CREATE TABLE paper_decisions(mint,enter,entry_allowed);')
@@ -83,7 +84,7 @@ def test_distinct_tokens_and_accepted_decisions_do_not_hide_financial_permission
 
 
 def test_incomplete_pnl_unknown_exit_and_missing_timing_never_become_zero_or_profit():
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         closed(con, 'unknown', 20, 1, None)
         con.execute("INSERT INTO paper_trades(mint,creator,signal_time,entry_time,entry_price,position_sol,status) "
                     "VALUES('open','synthetic',1,1,1,1,'open')")
@@ -104,7 +105,7 @@ def test_incomplete_pnl_unknown_exit_and_missing_timing_never_become_zero_or_pro
 
 
 def test_caller_latency_samples_are_measured_separately_and_invalid_values_are_disclosed():
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         report = build_functional_report(con, data_kind='synthetic',
             latency_samples_ms={'quote_response': [10,20,30,40,100,None,-1,float('nan')]})
         assert value(report, 'quote_response_latency_p50_ms') == 30

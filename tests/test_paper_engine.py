@@ -10,6 +10,7 @@ from bot.analyser.paper_trader import MarketQuote, record_quote, setup
 class PaperEngineTests(unittest.TestCase):
     def test_report_is_explicitly_paper_only(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         report = paper_engine.paper_report(con, 1000, 12)
         self.assertTrue(report['paper_only'])
@@ -19,6 +20,7 @@ class PaperEngineTests(unittest.TestCase):
 
     def test_collect_once_records_quotes_without_model(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         paper_engine.ensure_signal_status_schema(con)
         con.execute('''CREATE TABLE launch_candidates (
@@ -48,6 +50,7 @@ class PaperEngineTests(unittest.TestCase):
 
     def test_shadow_baseline_creates_only_diagnostic_paper_trade(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         model = paper_engine.shadow_baseline_model()
         message = record_quote(

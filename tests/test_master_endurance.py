@@ -1,4 +1,5 @@
 """Shadow journal stress must preserve the one existing PAPER ledger."""
+from contextlib import closing
 import json
 import hashlib
 import sqlite3
@@ -27,10 +28,10 @@ def test_master_endurance_preserves_native_book_across_replay_rollback_and_backu
     for snapshot in report['restart_snapshots']:
         path=output/snapshot['file']
         assert hashlib.sha256(path.read_bytes()).hexdigest()==snapshot['backup_sha256']
-        with sqlite3.connect(path) as backup:
+        with closing(sqlite3.connect(path)) as backup, backup:
             assert backup.execute('SELECT COUNT(*) FROM paper_master_decisions').fetchone()==(snapshot['after_event'],)
     assert report==json.loads((output/'report.json').read_text())
-    with sqlite3.connect(output/report['final_database']) as con:
+    with closing(sqlite3.connect(output/report['final_database'])) as con, con:
         assert con.execute('SELECT COUNT(*) FROM paper_master_decisions').fetchone()==(events,)
         assert con.execute('SELECT COUNT(*) FROM paper_token_legs').fetchone()==(0,)
         assert con.execute('SELECT status FROM paper_trades').fetchone()==('open',)

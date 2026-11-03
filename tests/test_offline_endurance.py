@@ -1,4 +1,5 @@
 """Virtual-time stress uses real native settlement and committed backups."""
+from contextlib import closing
 import json
 import sqlite3
 
@@ -22,13 +23,13 @@ def test_endurance_conserves_quantities_fees_capital_and_dedup_after_backup_rest
     assert report['restart_preflight_refusals']==report['restarts_verified']
     assert report['virtual_elapsed_ms']==cycles*report['virtual_step_ms']+1000
     assert report==json.loads((destination/'report.json').read_text())
-    with sqlite3.connect(destination/report['final_database']) as con:
+    with closing(sqlite3.connect(destination/report['final_database'])) as con, con:
         assert con.execute('SELECT COUNT(*) FROM paper_token_legs').fetchone()==(cycles,)
         assert con.execute('SELECT status FROM paper_trades').fetchone()==('closed',)
         assert con.execute('SELECT acquired_atomic,remaining_atomic FROM paper_token_inventory').fetchone()==(str(cycles*1000),'0')
     first=report['restart_snapshots'][0]
     assert int(first['remaining_atomic'])>0
-    with sqlite3.connect(destination/('backup-'+str(first['after_cycle'])+'.sqlite')) as con:
+    with closing(sqlite3.connect(destination/('backup-'+str(first['after_cycle'])+'.sqlite'))) as con, con:
         # A backup becomes an active continuation book, so old backup files may
         # advance after the restore. The final ledger is authoritative.
         assert con.execute('PRAGMA quick_check').fetchone()==('ok',)

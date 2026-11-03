@@ -1,4 +1,5 @@
 """Synthetic durable bundles, without provider calls or real market fixtures."""
+from contextlib import closing
 import gzip
 import hashlib
 import json
@@ -93,7 +94,7 @@ def test_retained_anchor_detects_coherent_suffix_truncation(tmp_path):
 
 def test_legacy_database_and_existing_destination_are_never_changed(tmp_path):
     legacy = tmp_path/'paper.sqlite'
-    with sqlite3.connect(legacy) as con:
+    with closing(sqlite3.connect(legacy)) as con, con:
         con.execute('CREATE TABLE paper_portfolio(capital_sol REAL)')
         con.execute('INSERT INTO paper_portfolio VALUES(10)')
     original = legacy.read_bytes()

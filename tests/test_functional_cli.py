@@ -1,4 +1,5 @@
 """Run the public CLI in disposable package copies with secrets/network tripwires."""
+from contextlib import closing
 import json
 import os
 from pathlib import Path
@@ -73,7 +74,7 @@ def test_public_help_does_not_load_dotenv_open_network_or_create_database(cli_tr
 
 def test_operations_cli_health_fails_closed_and_backup_preserves_source(cli_tree):
     database=cli_tree/'paper.sqlite'
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         setup(con)
         ensure_paper_portfolio(con,10,0)
     before=database.read_bytes()
@@ -89,7 +90,7 @@ def test_operations_cli_health_fails_closed_and_backup_preserves_source(cli_tree
     assert result.returncode==0 and result.stderr=='', result.stderr
     assert json.loads(result.stdout)['quick_check']=='ok'
     assert database.read_bytes()==before
-    with sqlite3.connect(backup) as con:
+    with closing(sqlite3.connect(backup)) as con, con:
         assert con.execute('SELECT realized_capital_sol FROM paper_portfolio').fetchone()==(10,)
 
 
@@ -160,7 +161,7 @@ def test_paper_requires_network_optin_before_importing_config(cli_tree):
 
 def test_report_uses_readonly_connection_and_preserves_existing_output(cli_tree):
     database, output = cli_tree/'synthetic.db', cli_tree/'dashboard.json'
-    with sqlite3.connect(database) as con:
+    with closing(sqlite3.connect(database)) as con, con:
         setup(con)
         ensure_paper_portfolio(con, 10, 0)
     before = database.read_bytes()

@@ -1,4 +1,5 @@
 """The read-only dashboard must close its SQLite handle (Windows keeps files locked otherwise)."""
+from contextlib import closing
 import sqlite3
 
 import pytest
@@ -21,9 +22,8 @@ def _record_connections(monkeypatch):
 
 def test_read_paper_db_closes_connection_on_success(tmp_path, monkeypatch):
     path = tmp_path / 'rugger_bot.db'
-    with sqlite3.connect(path) as setup:
+    with closing(sqlite3.connect(path)) as setup, setup:
         setup.execute('CREATE TABLE unrelated(x INTEGER)')
-    setup.close()
     opened = _record_connections(monkeypatch)
     result = local_db.read_paper_db(path)
     assert result['cycles'] == [] and len(result['sources']) == 1
@@ -34,9 +34,8 @@ def test_read_paper_db_closes_connection_on_success(tmp_path, monkeypatch):
 
 def test_read_paper_db_closes_connection_when_reading_fails(tmp_path, monkeypatch):
     path = tmp_path / 'rugger_bot.db'
-    with sqlite3.connect(path) as setup:
+    with closing(sqlite3.connect(path)) as setup, setup:
         setup.execute('CREATE TABLE unrelated(x INTEGER)')
-    setup.close()
     opened = _record_connections(monkeypatch)
 
     def boom(con, name):

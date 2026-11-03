@@ -45,6 +45,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_paper_no_model_and_idempotent_fill(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         quote = (20000, 1, 'pair')
         self.assertIsNone(record_quote(con, 'mint', 'creator', 1000, 1060, quote, None))
@@ -57,6 +58,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_paper_dynamic_take_profit_and_stop_loss(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         model = {
             'creator_scores': {'creator': .1}, 'fallback_score': 0,
@@ -79,6 +81,7 @@ class PipelineTests(unittest.TestCase):
 
     def test_paper_entry_limits(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         setup(con)
         model = {'creator_scores': {'creator': .1}, 'fallback_score': 0}
         self.assertTrue(entry_allowed(con, 86400, max_open=1, max_entries_day=1))

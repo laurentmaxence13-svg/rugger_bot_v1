@@ -10,6 +10,7 @@ from bot.analyser.paper_trader import setup, MarketQuote
 class AuditTests(unittest.TestCase):
     def database(self):
         con=sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         con.execute('CREATE TABLE launch_candidates (id INTEGER PRIMARY KEY, protocol TEXT, signature TEXT UNIQUE, slot INTEGER, block_time INTEGER, detected_at TEXT, mint TEXT, deployer_candidate TEXT, detection_latency_ms INTEGER, status TEXT, pool_state TEXT)')
         setup(con)
         pe.ensure_signal_status_schema(con)

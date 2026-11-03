@@ -1,4 +1,5 @@
 """Exact inventory reporting over the one PAPER ledger; no provider/database access."""
+from contextlib import closing
 import json
 import sqlite3
 
@@ -40,7 +41,7 @@ def native_position(con, *, partial=False, entry_extra=1000):
 
 
 def test_legacy_history_does_not_get_invented_atomic_inventory():
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         con.execute("INSERT INTO paper_trades(mint,creator,signal_time,entry_time,entry_price,position_sol,status) "
                     "VALUES('legacy','c',1,1,1,1,'open')")
         report = build_functional_report(con, data_kind='synthetic')
@@ -53,7 +54,7 @@ def test_legacy_history_does_not_get_invented_atomic_inventory():
 
 
 def test_native_full_costs_use_exact_extra_fees_not_derived_basis_points_twice():
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         pnl = native_position(con)
         before = con.total_changes
         report = build_functional_report(con, data_kind='synthetic')
@@ -77,7 +78,7 @@ def test_native_full_costs_use_exact_extra_fees_not_derived_basis_points_twice()
 
 @pytest.mark.parametrize('entry_extra', [0, 1000])
 def test_partial_native_legs_are_realized_without_full_trade_or_invented_entry_fee_split(entry_extra):
-    with ledger() as con:
+    with closing(ledger()) as con, con:
         pnl = native_position(con,partial=True,entry_extra=entry_extra)
         for n, accepted in enumerate((True,False,None)):
             con.execute('INSERT INTO paper_token_exit_attempts VALUES(?,?,?,?,?)',
