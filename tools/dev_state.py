@@ -60,6 +60,12 @@ def load_backlog(path=BACKLOG_PATH):
     return data['coordination_branch'], sorted(items, key=lambda i: i['rank'])
 
 
+def load_policy(path=BACKLOG_PATH):
+    """Owner switch for new work. Missing, null or false means no new work (fail closed)."""
+    data = json.loads(Path(path).read_text(encoding='utf-8'))
+    return {'start_new_work': data.get('start_new_work') is True}
+
+
 def normalize(path):
     return path.strip().strip('/')
 
@@ -114,8 +120,12 @@ def ci_needs_fix(head, ci_state, comments):
     return head not in addressed
 
 
-def plan(branches, items, max_rounds=MAX_ROUNDS):
-    """Decide exactly one action from the branch facts and the ranked backlog."""
+def plan(branches, items, max_rounds=MAX_ROUNDS, start_new_work=True):
+    """Decide exactly one action from the branch facts and the ranked backlog.
+
+    Corrections (RESUME) are always allowed. New work (START) only when the
+    owner's switch start_new_work is true.
+    """
     reasons = []
     open_branches = [b for b in branches if b['pr'] is None or b['pr']['state'] == 'OPEN']
     claimed = {i for b in branches
@@ -139,6 +149,10 @@ def plan(branches, items, max_rounds=MAX_ROUNDS):
                 'rounds': pick['rounds'], 'backlog_ids': pick['backlog_ids'],
                 'requests': pick['corrections'], 'reasons': reasons, 'locked_paths': locked}
 
+    if not start_new_work:
+        return {'action': 'STOP', 'locked_paths': locked,
+                'reasons': reasons + ['new work is disabled by the owner '
+                                      '(start_new_work is not true in BACKLOG.json)']}
     eligible = []
     for item in sorted(items, key=lambda i: i['rank']):   # never rely on the caller's order
         if item['id'] in claimed:
@@ -244,8 +258,11 @@ def main(argv=None):
         return 0
     if args.command == 'plan':
         _, items = load_backlog(args.backlog)
+        policy = load_policy(args.backlog)
         state = json.loads(Path(args.state).read_text(encoding='utf-8'))
-        print(json.dumps(plan(state['branches'], items), indent=2, sort_keys=True))
+        print(json.dumps(plan(state['branches'], items,
+                              start_new_work=policy['start_new_work']),
+                         indent=2, sort_keys=True))
         return 0
     _, items = load_backlog(args.backlog)
     matches = [i for i in items if i['id'] == args.item]

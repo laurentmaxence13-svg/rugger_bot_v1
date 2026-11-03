@@ -1,5 +1,7 @@
 {
   "coordination_branch": "claude/launchlab-trade-events",
+  "start_new_work": false,
+  "start_new_work_note": "Owner switch. false: routines may only resume requested corrections (RESUME). Set to true only when the owner approves starting new backlog items.",
   "items": [
     {
       "id": "slot-timing-v1",

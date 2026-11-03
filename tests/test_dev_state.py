@@ -195,6 +195,24 @@ def test_scope_checks_the_callers_repository_not_the_tool_checkout(tmp_path, mon
     assert ds.main(['scope', 'x', '--base', 'base', '--backlog', str(backlog)]) == 0
 
 
+def test_owner_switch_blocks_new_work_but_never_corrections():
+    items = [item('a', 1, ['docs/a.md'])]
+    assert ds.plan([], items, start_new_work=False)['action'] == 'STOP'
+    branches = [branch('claude/dev-fix', files=['docs/f.md'], ids=['f'], pull=pr(12),
+                       corrections=[{'reason': 'owner_request', 'excerpt': '/fix'}], rounds=1)]
+    decision = ds.plan(branches, items, start_new_work=False)
+    assert decision['action'] == 'RESUME' and decision['pr'] == 12
+
+
+def test_missing_or_false_switch_fails_closed(tmp_path):
+    path = tmp_path / 'policy.json'
+    path.write_text(json.dumps({'coordination_branch': 'claude/x', 'items': []}), encoding='utf-8')
+    assert ds.load_policy(path) == {'start_new_work': False}
+    path.write_text(json.dumps({'start_new_work': 'yes'}), encoding='utf-8')
+    assert ds.load_policy(path) == {'start_new_work': False}
+    assert ds.load_policy(BACKLOG) == {'start_new_work': False}
+
+
 def test_duplicate_or_incomplete_backlog_is_rejected(tmp_path):
     duplicate = {'coordination_branch': 'claude/x', 'items': [
         item('same', 1, ['a']), item('same', 2, ['b'])]}

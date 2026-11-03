@@ -42,6 +42,7 @@ All three routines are disabled. Connectors were removed from each. Automation n
 
 ## Owner actions pending
 
+0. **Session subscription (unauthorised wake-up).** The first dev session (`cse_016VkauFwWUB3SWAfCeqN33w`) is still subscribed to PR #92 events. It answered the `/fix` request on its own at 00:00 UTC (commit `a01269a`), which you did not authorise. The owner switch `start_new_work` in `BACKLOG.json` is now `false`, so such a session can only resume requested corrections and cannot start new work. To stop the subscription, open the session in claude.ai/code. The tools available to me cannot unsubscribe it.
 1. **Extra usage.** Open https://claude.ai/settings/usage and confirm that usage credits (extra usage) are OFF. Automation cannot read this setting.
 2. **Resume PR #92 to apply the `/fix` request.** This needs one manual run of the dev agent. The planner will choose RESUME. Approve it or not.
 3. **Budget for `blocktime-crosscheck-v1`.** A few `getBlockTime` calls on two RPC providers. This is the only way to explain the measured slot rate. Approve the budget or not.
@@ -58,6 +59,7 @@ All three routines are disabled. Connectors were removed from each. Automation n
 - No signing, no transaction, no live trading, no spending, no change to the paid plan.
 - A routine writes only its own branch and its own run record. This file and `BACKLOG.json` are owner-only.
 - A session woken by a pull request or check event runs the planner and acts only on RESUME for that branch.
+- New work starts only when `start_new_work` is `true` in `BACKLOG.json`. It is `false` now, and only the owner changes it.
 - Each commit ends with a `Co-Authored-By` line naming the model that actually produced it.
 
 ## Log
@@ -68,4 +70,5 @@ All three routines are disabled. Connectors were removed from each. Automation n
 - 2026-11-02 23:40 UTC: SOL fixture pack committed to PR #90 (`4f2875d`). Planner, backlog and protocol v2 committed to PR #91 (`e490cea`).
 - 2026-11-02 23:43 UTC: cloud development run 1. START `slot-timing-v1`. PR #92 opened (`a8a0321`), CI passed.
 - 2026-11-02 23:59 UTC: `/fix` request posted on PR #92 about the unvalidated slot-time claim. The planner chose RESUME.
+- 2026-11-03 00:00 UTC: the dev session answered the `/fix` on PR #92 without an authorised run (commit `a01269a`). Correction is in scope and conforms to the request. Recorded as an unauthorised wake-up; see owner action 0.
 - 2026-11-03 00:05 UTC: planner corrected to run git in the caller's repository (test added). Protocol v2.1: dependencies step, wake-up rule, integration-tool fallback for PRs. Backlog gains the gated `blocktime-crosscheck-v1`.
