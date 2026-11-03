@@ -51,6 +51,8 @@ jobs:
           python -m pytest --version
           git rev-parse HEAD
 
-      - name: Run offline suite
+      - name: Run offline suite (isolated copy, warnings as errors)
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
         run: |
-          python -m pytest -q tests --ignore=tests/tests -p no:cacheprovider -rfE
+          python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rfE -W error
