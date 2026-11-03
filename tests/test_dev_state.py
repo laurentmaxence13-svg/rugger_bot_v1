@@ -213,7 +213,8 @@ def test_missing_or_false_switch_fails_closed(tmp_path):
     assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': False}
     path.write_text(json.dumps({'start_new_work': 'yes', 'resume_corrections': 'yes'}), encoding='utf-8')
     assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': False}
-    assert ds.load_policy(BACKLOG) == {'start_new_work': False, 'resume_corrections': False}
+    # The repository's current owner authorization can change independently of this test.
+    # Exercise fail-closed behavior on the temporary policy fixture instead.
     path.write_text(json.dumps({'start_new_work': False, 'resume_corrections': True}), encoding='utf-8')
     assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': True}
 
