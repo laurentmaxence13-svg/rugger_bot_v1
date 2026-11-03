@@ -136,3 +136,28 @@ Tests : `39 passed` sous Python 3.11.18, 3.12.3 et 3.13.18 (`pytest -q tests/tes
 - `tools/treg.py` — registre, garde-fous, planificateur, simulateur (stdlib, hors ligne)
 - `tests/test_treg.py` — 39 tests hors ligne
 - `.github/workflows-draft/treg-branch-audit.yml.disabled` — audit de branche, inerte
+
+## 9. Résultats réels V1–V5 (2026-11-03, mandat d'autonomie)
+
+| Étape | Résultat | Preuve |
+|---|---|---|
+| V1 distinguer agent / propriétaire | **impossible** avec les outils disponibles | issue #103 créée par R01 : `"login":"laurentmaxence13-svg"`, `"author_association":"OWNER"`, identique à un écrit du propriétaire |
+| V2 messages entre sessions | **livraison et réveil vérifiés** ; réponse non testée | `send_message` → `{"status":"delivered"}` ×2 ; R03 (au repos) réveillé à 22:52:34Z, a lu le pointeur et **refusé d'agir sans autorisation de son propriétaire** (comportement attendu) ; R02 occupé, message reçu |
+| V3 publication | **fait** | PR brouillon #102, `claude/r01-treg` @ `41050e6`, 43 tests verts (3.11/3.12/3.13), aucun workflow ajouté |
+| V4 registre GitHub | **fait** | labels créés automatiquement à l'usage ; inbox #103 ; tâches #104 (T-0001), #105 (T-0002), #106 (T-0003) ; 5 événements publiés ; rejeu depuis le contenu GitHub OK ; planificateur : R03 → `claim T-0001`, R01/R02 → `wait` |
+| V5 scénario réel S-001 | **bloqué à T-0001** | R03 exige l'autorisation dans son propre chat. Part R01 préparée hors ligne (rapport 3 pools, SHA-256 `e9fb617a…`, 53 tests `test_launchlab_*` verts), **non réservée** tant que T-0001 n'est pas `done` |
+
+## 10. V6 — activation proposée (NON activée)
+
+Ce que les vérifications changent : `send_message` réveille réellement une session au repos ; **aucune nouvelle routine n'est nécessaire pour les réveils**.
+
+| Mécanisme | Proposition | Limite |
+|---|---|---|
+| Réveil par événement | pointeur `send_message` émis par `treg.py emit` (`wake_targets`) | 24 réveils/jour/agent, `hop` ≤ 8 |
+| Reprise après interruption | `send_later` à 60 min, ré-armé **seulement** tant que l'agent détient un bail ; arrêt après 3 vérifications sans changement | pas de routine récurrente |
+| CI des PR de tâche | l'auteur s'abonne à sa propre PR de tâche | une session par PR |
+| Quota Claude | avant chaque action : `get_session` → `rate_limit_info.status == "allowed"` et `isUsingOverage == false`, sinon `wait` | — |
+| Arrêt immédiat | tout agent bloque une tâche (`blocked`) ; le propriétaire dit « T-REG STOP » dans chaque session ou rétablit `paused: true` | réversible par le propriétaire seul |
+| Tâches poke-only / cron | **non proposées** à ce stade | — |
+
+Décision propriétaire requise pour finir V5 : autoriser S-001 **dans le chat de RUGGER 03 et de RUGGER 02** (texte proposé dans le rapport consolidé). Aucune autre décision nécessaire pour V6 tant qu'aucune routine n'est créée.
