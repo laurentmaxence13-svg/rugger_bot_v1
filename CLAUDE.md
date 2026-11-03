@@ -1,9 +1,12 @@
 # Claude Code entrypoint — Rugger Master
 
 **Read these documents first, in order:**
+0. `PROJECT_STATUS.md` — **single source of truth** for the current state,
+   PR graph, last tested results, blockers and owner decisions. Where any
+   other document below disagrees with it, `PROJECT_STATUS.md` wins.
 1. `AGENTS.md` — repository safety and development requirements.
-2. `docs/CLAUDE_MASTER_PAPER_HANDOFF_20261102.md` — verified GitHub,
-   Render, Vercel, CI and source-code checkpoint with next concrete steps.
+2. `docs/CLAUDE_MASTER_PAPER_HANDOFF_20261102.md` — historical checkpoint
+   (GitHub, Render, Vercel, CI) of 2026-11-02; not the current state.
 3. `LIVE_READINESS_MANDATE.md` — development roadmap; no live transaction
    authorization follows from permission to develop live components.
 

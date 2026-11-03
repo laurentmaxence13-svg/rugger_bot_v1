@@ -1,5 +1,24 @@
 # Rugger Master: continuity record (v2.2 safety amendment)
 
+## Integration reconciliation — 2026-11-03 18:10 UTC (branch `integration/consolidation-20261103`)
+
+This copy arrived on the integration branch by merging PR #91. On this branch:
+
+- **`PROJECT_STATUS.md` is the single source of truth.** This file is an agent-protocol log, subordinate to it.
+- `docs/autonomy/BACKLOG.json` here has `start_new_work: false` and `resume_corrections: false` (decision D6: no new agent work during the consolidation review).
+- The routines still read `claude/autonomy-framework-20261103`, where `start_new_work` is **true** (owner commit `c72a3b8`, 2026-11-03 06:04 UTC). The flag on this branch therefore does **not** stop the routines; only the scheduled task state does.
+- The sections below written at 00:05 UTC are outdated where they conflict with this table. In particular, "all three routines are disabled" and the cron `30 1 * * *` were wrong by the afternoon.
+
+Scheduled tasks as returned by `list_triggers`, 2026-11-03 18:04 UTC:
+
+| Name (as stored) | ID | `enabled` | Schedule | Last fired (UTC) | Last run |
+|---|---|---|---|---|---|
+| Rugger Master dev agent (scheduled, DISABLED) | `trig_019Zqz5ax6uqmJQZKnKB2VVX` | **false** (changed 18:01:43) | `11 * * * *` (hourly) | 17:11:51 | session archived, 0 tokens used: the run did no work |
+| Rugger Master validation cloud (manual, no recurrence) | `trig_01FCseiBnoeNVFPHggcy5DMA` | **true** | `0 6 * * *` (daily, next 2026-11-04 06:07) | 12:30:00 | succeeded |
+| Rugger Master independent PR reviewer (DISABLED, no trigger attached) | `trig_01Xu5G5fnfE2Zq26232UbqE6` | **true** | one-shot 2027-01-01 | 12:29:57 | succeeded |
+
+The names saying "DISABLED" or "no recurrence" do not match the `enabled` field for two of the three tasks. The validation task will fire again at 06:07 UTC unless the owner disables it. No session of this integration changed any scheduled task.
+
 ## Immediate safety override — 2026-11-03
 
 A development cloud session unexpectedly resumed PR #92 after a `/fix` comment. **No unattended routine activation is authorized.** The owner must manually stop/unsubscribe session `cse_016VkauFwWUB3SWAfCeqN33w` inside https://claude.ai/code; GitHub access cannot revoke that subscription.
@@ -86,3 +105,5 @@ All three routines are disabled. Connectors were removed from each. Automation n
 - 2026-11-02 23:59 UTC: `/fix` request posted on PR #92 about the unvalidated slot-time claim. The planner chose RESUME.
 - 2026-11-03 00:00 UTC: the dev session answered the `/fix` on PR #92 without an authorised run (commit `a01269a`). Correction is in scope and conforms to the request. Recorded as an unauthorised wake-up; see owner action 0.
 - 2026-11-03 00:05 UTC: planner corrected to run git in the caller's repository (test added). Protocol v2.1: dependencies step, wake-up rule, integration-tool fallback for PRs. Backlog gains the gated `blocktime-crosscheck-v1`.
+- 2026-11-03 18:04 UTC: integration session read the scheduled tasks (table at the top). Dev agent `enabled=false` since 18:01:43 UTC; its 17:11:51 run was archived with 0 tokens used.
+- 2026-11-03 18:10 UTC: branch `integration/consolidation-20261103` merges #100, #90, #88, #89, #91, #98. `BACKLOG.json` on that branch: `start_new_work=false` (D6). The protocol branch itself was not modified.

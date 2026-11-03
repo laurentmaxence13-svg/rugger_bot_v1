@@ -1,7 +1,7 @@
 {
   "coordination_branch": "claude/launchlab-trade-events",
-  "start_new_work": true,
-  "start_new_work_note": "Owner explicitly approved starting authorized offline backlog work on 2026-11-03. Only an enabled scheduled or owner-initiated manual run may START; GitHub event wake-ups always STOP. No merges, main pushes, live transactions, paid API calls, or secret access.",
+  "start_new_work": false,
+  "start_new_work_note": "Closed on the integration branch integration/consolidation-20261103 (decision D6, 2026-11-03): no new backlog work while the #89 + #90 consolidation is under review. The routines read claude/autonomy-framework-20261103, where the flag is still true; the effective pause is the dev-agent scheduled task being disabled (enabled=false since 2026-11-03 18:01:43 UTC). Previous note: Owner explicitly approved starting authorized offline backlog work on 2026-11-03. Only an enabled scheduled or owner-initiated manual run may START; GitHub event wake-ups always STOP. No merges, main pushes, live transactions, paid API calls, or secret access.",
   "items": [
     {
       "id": "slot-timing-v1",
