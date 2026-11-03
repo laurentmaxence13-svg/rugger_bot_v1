@@ -16,6 +16,7 @@ Version 2.2, 2026-11-03 (unauthorized wake-up mitigation; fail closed). Authorit
 
 ## Procedure
 
+0. **Entry gate before every other tool or command:** identify the invocation source. If this is a GitHub comment, check, webhook, already-subscribed session wake-up, or unclear source, STOP immediately. Do not even execute step 1. Only proceed for an explicit owner-started manual task or an owner-enabled cron routine; the latter may START only, never RESUME. The planner's `--run-origin` parameter is advisory and cannot prove origin independently.
 1. Record `date -u` and `git ls-remote origin refs/heads/main`. Then install dependencies from PyPI only, in the interpreter you will use: `python -m pip install --disable-pip-version-check -r requirements.txt -r requirements-dashboard.txt pytest`. Without it the suite cannot even be collected.
 2. Plan. From the checkout of the protocol branch, run:
    `python tools/dev_state.py fetch --out "$HOME/dev_state.json"`, then
