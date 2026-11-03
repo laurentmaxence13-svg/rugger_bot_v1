@@ -7,7 +7,11 @@ Execution model (every assumption is explicit and reported):
 * **Latency** -- an order decided at slot ``s`` lands after every real event
   with slot ``<= s + latency_slots`` (others' transactions in those slots win).
 * **Exact fills** -- integer curve arithmetic from :mod:`launchlab_curve` with
-  ``fee_rate_ppm`` for our own orders.
+  ``fee_rate_ppm`` for our own orders. The rate is a per-pool input (10000,
+  12500 and 18000 ppm are all observed): by default it is read from the last
+  real event at the decision index, i.e. from pool state at decision time. An
+  explicit ``fee_rate_ppm`` overrides it; the rate used and its source are
+  recorded in ``TradeResult``.
 * **Own impact** -- after our buy, every later real trade is replayed with the
   same exact-in amount on the shifted curve (other traders' sizes unchanged).
   If a replayed trade becomes impossible the run stops as
@@ -27,14 +31,13 @@ from dataclasses import dataclass, field
 from bot.market.launchlab_curve import CurveError, buy_exact_in, sell_exact_in
 from bot.market.launchlab_events import WSOL_MINT, implied_fee_rate_ppm
 
-DEFAULT_FEE_RATE_PPM = 12_500
 SOLANA_BASE_FEE_LAMPORTS = 5_000
 
 
 @dataclass(frozen=True)
 class ExecutionModel:
     latency_slots: int = 2
-    fee_rate_ppm: int = DEFAULT_FEE_RATE_PPM
+    fee_rate_ppm: int = None    # None: read the pool's rate at decision time
     base_fee_lamports: int = SOLANA_BASE_FEE_LAMPORTS
     priority_fee_lamports: int = 100_000
 
@@ -65,6 +68,8 @@ class TradeResult:
     tokens: int = 0
     hold_slots: int = None
     notes: list = field(default_factory=list)
+    fee_rate_ppm: int = None        # rate applied to our own fills
+    fee_rate_source: str = None     # 'model' | 'pool_event_at_decision'
 
     @property
     def priced(self):
@@ -139,10 +144,15 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
     else:
         return result
     result.decision_index = k
+    if model.fee_rate_ppm is None:
+        rate, result.fee_rate_source = _event_rate(events[k]), 'pool_event_at_decision'
+    else:
+        rate, result.fee_rate_source = model.fee_rate_ppm, 'model'
+    result.fee_rate_ppm = rate
     land = _landing_index(events, k, events[k].slot + model.latency_slots)
     state = events[land].state_after()
     try:
-        fill = buy_exact_in(state, amount, model.fee_rate_ppm)
+        fill = buy_exact_in(state, amount, rate)
     except CurveError as exc:
         result.outcome = 'no_entry'
         result.notes.append(f'entry_refused:{exc}')
@@ -157,7 +167,7 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
     while True:
         if pending_exit_slot is not None and (j >= len(events) or events[j].slot > pending_exit_slot):
             try:
-                sale = sell_exact_in(state, position.tokens, model.fee_rate_ppm)
+                sale = sell_exact_in(state, position.tokens, rate)
             except CurveError as exc:
                 result.outcome = 'counterfactual_divergence'
                 result.notes.append(f'exit_refused:{exc}')
@@ -182,7 +192,7 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
             return result
         if pending_exit_slot is None:
             try:
-                mark = sell_exact_in(state, position.tokens, model.fee_rate_ppm).amount_out
+                mark = sell_exact_in(state, position.tokens, rate).amount_out
             except CurveError:
                 mark = 0
             if strategy.exit(events[:j + 1], position, mark):
@@ -190,7 +200,7 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
         j += 1
     # End of observed data with the position still open: mark to exact quote.
     try:
-        result.received = sell_exact_in(state, position.tokens, model.fee_rate_ppm).amount_out
+        result.received = sell_exact_in(state, position.tokens, rate).amount_out
     except CurveError as exc:
         result.outcome = 'counterfactual_divergence'
         result.notes.append(f'mark_refused:{exc}')
