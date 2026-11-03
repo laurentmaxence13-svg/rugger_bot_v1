@@ -14,7 +14,7 @@
 | Default branch | `main` = `d9b950e4708a3d0fc9c955f852144ec1fd893867`. Never pushed by automation. |
 | Coordination branch (dev work accumulates here) | `claude/launchlab-trade-events`, PR #90, draft. Holds the offline CI workflow and the SOL fixture pack (`4f2875d`). |
 | Protocol branch (routines read this) | `claude/autonomy-framework-20261103`, PR #91, draft, stacked on PR #90. Holds this file, the protocols v2.1, the planner, and the backlog. |
-| Open dev work | PR #92, draft, branch `claude/dev-20261102-slot-timing-v1` at `a8a0321`. Item `slot-timing-v1`. It has a `/fix` request pending, so the planner's decision is RESUME. |
+| Open dev work | PR #92, draft, branch `claude/dev-20261102-slot-timing-v1` at `a01269a`. Item `slot-timing-v1`. The `/fix` was applied at 00:00 UTC. The planner now returns STOP, because the owner switch `start_new_work` is false. |
 | Not merged, do not merge without owner approval | PR #88, PR #89, PR #90, PR #91, PR #92 |
 
 PR #89 is stacked on the branch of PR #88 (`feat/prepurchase-bitquery-official-sample-proof-20261102`), not on `main`.
@@ -24,7 +24,7 @@ PR #89 is stacked on the branch of PR #88 (`feat/prepurchase-bitquery-official-s
 - **Offline CI, Ubuntu, Python 3.13.** Run `41544313745` on `7bd4fad`: 1401 passed, 1 skipped. Run on PR #90 at `4f2875d`: success. Run on PR #91 at `e490cea`: 1421 passed, 1 skipped. Run on PR #92 at `a8a0321`: success.
 - **Cloud validation run 1 (manual).** Routine `trig_01FCseiBnoeNVFPHggcy5DMA`, PASS on Python 3.11.18. Report on `claude/cloud-validation-20261103` at `6b82c05`. `main` unchanged.
 - **Cloud development run 1 (manual).** Routine `trig_019Zqz5ax6uqmJQZKnKB2VVX`, session `cse_016VkauFwWUB3SWAfCeqN33w`. The planner chose START `slot-timing-v1`. The run produced `claude/dev-20261102-slot-timing-v1` (`a8a0321`, PR #92) with four in-scope files. Suite: 1404 before, 1412 after.
-- **Planner on live GitHub state, verified after the run.** RESUME of PR #92 for the `/fix` request, with 0 rounds used. Locked paths are exactly the four files of the item.
+- **Planner on live GitHub state.** Before the correction: RESUME of PR #92 for the `/fix` request, with 0 rounds used, and locked paths exactly the four files of the item. After the correction (00:00 UTC): STOP, because new work is closed by the owner switch.
 - **Measured seconds per slot is reproducible but not explained.** Independent recomputation from the committed archives gives 0.2155 s/slot (64 slots, 181-slot span, 39 s), per pool 0.2132 to 0.2222. This contradicts the 400 ms slot time in the older sources checked (https://www.helius.dev/blog/alpenglow). A secondary search summary claims a change to 200 ms in October 2026, but the official Solana page (https://solana.com/upgrades/alpenglow) returned HTTP 429 and could not be checked. Until the cause is established, no latency assumption changes. This is tracked as `blocktime-crosscheck-v1`, which is gated on an owner-approved RPC budget.
 - **Local Windows failures** (SQLite file lock, symlink privilege, CRLF) do not reproduce on Linux. They are environment-specific.
 - **Data reality.** Git tracks nothing under `data/`, which is git-ignored, so a cloud checkout never receives those archives. The three complete SOL-quoted pool archives are versioned as fixtures in `tests/fixtures/launchlab_sol_pools/`, with SHA-256 digests in `MANIFEST.json`. The non-SOL pool is left out.
