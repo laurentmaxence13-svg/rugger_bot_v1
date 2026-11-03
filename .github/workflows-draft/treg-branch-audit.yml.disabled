@@ -1,0 +1,39 @@
+# DRAFT, INERT. GitHub only runs files under .github/workflows/ ending in .yml or .yaml.
+# This file lives in .github/workflows-draft/ with a .disabled suffix: it cannot run.
+#
+# Purpose (detective control, NOT a prevention): all agents push under the owner's
+# GitHub identity and this private repository has no branch protection, so GitHub
+# cannot refuse a push from the wrong agent. This job would flag it after the fact.
+#
+# Activation (owner decision only): move to .github/workflows/treg-branch-audit.yml
+# and replace `workflow_dispatch:` by:
+#   push:
+#     branches: ['claude/r0*', 'integration/**']
+# No secret, no network beyond checkout, read-only token.
+name: T-REG branch/agent audit (offline)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.13'
+      - name: Check that the pushing agent may push to this branch
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          agent=$(git log -1 --format=%B | sed -n 's/^T-REG-Agent: \(R0[123]\)$/\1/p' | tail -1)
+          if [ -z "$agent" ]; then
+            echo "::error::commit has no 'T-REG-Agent: R0x' trailer"; exit 1
+          fi
+          python -B tools/treg.py check-branch --policy docs/treg/agents.json --agent "$agent" --branch "$BRANCH"

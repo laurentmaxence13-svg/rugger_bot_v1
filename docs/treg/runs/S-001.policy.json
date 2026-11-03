@@ -1,0 +1,105 @@
+{
+  "schema": "rugger-treg-policy-v1",
+  "paused": false,
+  "paused_note": "Run policy for scope treg-scenario-S-001 only. Pause lifted on the owner's chat mandate received by R01 (reference sha256 06ac1561a87305b343bd4295a63ee920249651a2ac7ed5f9ffa3af4898614694; a reference, not a proof of authorship). R02 and R03 act only if their own owner chat covers S-001. Any agent may re-pause by blocking a task.",
+  "defaults": {
+    "max_hops": 8,
+    "max_transitions": 40,
+    "lease_ttl_minutes": 90
+  },
+  "agents": {
+    "R01": {
+      "role": "development and orchestration",
+      "session_id": "session_016VkauGn9vY4RpyfxsRgDKo",
+      "push_branches": [
+        "claude/r01-*"
+      ],
+      "events_per_hour": 20,
+      "wakes_per_day": 24,
+      "max_concurrent_claims": 1,
+      "ci_pushes_per_day": 10
+    },
+    "R02": {
+      "role": "technical and security audit",
+      "session_id": "session_016VkauH2T9jzsXwKUP3d4Ts",
+      "push_branches": [
+        "claude/r02-audit-*"
+      ],
+      "events_per_hour": 20,
+      "wakes_per_day": 24,
+      "max_concurrent_claims": 1,
+      "ci_pushes_per_day": 4
+    },
+    "R03": {
+      "role": "market data and LaunchLab",
+      "session_id": "session_016VkauDiqRPev2Vgpiv27ip",
+      "push_branches": [
+        "claude/r03-*"
+      ],
+      "events_per_hour": 20,
+      "wakes_per_day": 24,
+      "max_concurrent_claims": 1,
+      "ci_pushes_per_day": 4
+    }
+  },
+  "r04": {
+    "role": "strategic advisor in claude.ai, read-only consumer",
+    "channel": "github_issue",
+    "inbox_title": "RUGGER04 inbox (T-REG)",
+    "can_write_github": false
+  },
+  "protected_branches": [
+    {
+      "pattern": "main",
+      "push": []
+    },
+    {
+      "pattern": "integration/consolidation-20261103",
+      "push": [
+        {
+          "agent": "R01",
+          "scope": "pr101"
+        }
+      ]
+    },
+    {
+      "pattern": "claude/admiring-curie-r2gl1p",
+      "push": []
+    },
+    {
+      "pattern": "claude/autonomy-framework-20261103",
+      "push": []
+    },
+    {
+      "pattern": "claude/launchlab-trade-events",
+      "push": []
+    }
+  ],
+  "forbidden_actions_all": [
+    "merge_pull_request",
+    "force_push",
+    "delete_branch",
+    "rewrite_history",
+    "create_trigger",
+    "update_trigger",
+    "enable_trigger",
+    "workflow_dispatch",
+    "provider_network_call",
+    "sign_transaction",
+    "send_transaction",
+    "spend",
+    "read_secret"
+  ],
+  "forbidden_actions_by_agent": {
+    "R02": [
+      "push_code_outside_audit_branch",
+      "approve_own_work"
+    ],
+    "R03": [
+      "push_code_outside_data_branch",
+      "modify_census_freeze"
+    ]
+  },
+  "run_scope": "treg-scenario-S-001",
+  "owner_mandate_ref_sha256": "06ac1561a87305b343bd4295a63ee920249651a2ac7ed5f9ffa3af4898614694"
+}
