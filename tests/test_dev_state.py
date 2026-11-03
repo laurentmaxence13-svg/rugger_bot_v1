@@ -89,7 +89,7 @@ def test_corrections_are_resumed_before_any_new_work():
     branches = [branch('claude/dev-fix', files=['docs/f.md'], ids=['f'], pull=pr(12),
                        corrections=[{'reason': 'owner_request', 'excerpt': '/fix tests'}],
                        rounds=1)]
-    decision = ds.plan(branches, items)
+    decision = ds.plan(branches, items, resume_corrections=True)
     assert decision['action'] == 'RESUME' and decision['branch'] == 'claude/dev-fix'
     assert decision['pr'] == 12 and decision['backlog_ids'] == ['f']
 
@@ -107,7 +107,7 @@ def test_exhausted_rounds_stop_automatic_corrections_and_new_work_continues():
 def test_lowest_pull_request_number_is_resumed_first():
     branches = [branch('claude/dev-b', pull=pr(9), corrections=[{'reason': 'ci_failed'}], rounds=1),
                 branch('claude/dev-a', pull=pr(7), corrections=[{'reason': 'ci_failed'}], rounds=1)]
-    assert ds.plan(branches, [])['pr'] == 7
+    assert ds.plan(branches, [], resume_corrections=True)['pr'] == 7
 
 
 def test_stop_explains_every_blocked_item():
@@ -195,22 +195,38 @@ def test_scope_checks_the_callers_repository_not_the_tool_checkout(tmp_path, mon
     assert ds.main(['scope', 'x', '--base', 'base', '--backlog', str(backlog)]) == 0
 
 
-def test_owner_switch_blocks_new_work_but_never_corrections():
+def test_owner_switches_fail_closed_for_start_and_resume():
     items = [item('a', 1, ['docs/a.md'])]
     assert ds.plan([], items, start_new_work=False)['action'] == 'STOP'
     branches = [branch('claude/dev-fix', files=['docs/f.md'], ids=['f'], pull=pr(12),
                        corrections=[{'reason': 'owner_request', 'excerpt': '/fix'}], rounds=1)]
-    decision = ds.plan(branches, items, start_new_work=False)
+    assert ds.plan(branches, items, start_new_work=False)['action'] == 'STOP'
+    decision = ds.plan(branches, items, start_new_work=False, resume_corrections=True)
     assert decision['action'] == 'RESUME' and decision['pr'] == 12
+    decision = ds.plan(branches, items, start_new_work=True, resume_corrections=False)
+    assert decision['action'] == 'START' and decision['item'] == 'a'
 
 
 def test_missing_or_false_switch_fails_closed(tmp_path):
     path = tmp_path / 'policy.json'
     path.write_text(json.dumps({'coordination_branch': 'claude/x', 'items': []}), encoding='utf-8')
-    assert ds.load_policy(path) == {'start_new_work': False}
-    path.write_text(json.dumps({'start_new_work': 'yes'}), encoding='utf-8')
-    assert ds.load_policy(path) == {'start_new_work': False}
-    assert ds.load_policy(BACKLOG) == {'start_new_work': False}
+    assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': False}
+    path.write_text(json.dumps({'start_new_work': 'yes', 'resume_corrections': 'yes'}), encoding='utf-8')
+    assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': False}
+    assert ds.load_policy(BACKLOG) == {'start_new_work': False, 'resume_corrections': False}
+    path.write_text(json.dumps({'start_new_work': False, 'resume_corrections': True}), encoding='utf-8')
+    assert ds.load_policy(path) == {'start_new_work': False, 'resume_corrections': True}
+
+
+def test_git_event_wakeup_is_always_stopped(tmp_path, capsys):
+    state = tmp_path / 'state.json'
+    state.write_text(json.dumps({'branches': []}), encoding='utf-8')
+    assert ds.main(['plan', str(state), '--run-origin', 'event']) == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result['action'] == 'STOP'
+    assert 'GitHub event' in result['reasons'][0]
+    assert ds.main(['plan', str(state)]) == 0
+    assert json.loads(capsys.readouterr().out)['action'] == 'STOP'
 
 
 def test_duplicate_or_incomplete_backlog_is_rejected(tmp_path):
