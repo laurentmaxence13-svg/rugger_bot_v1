@@ -1,4 +1,18 @@
-# Rugger Master: continuity record (v2)
+# Rugger Master: continuity record (v2.2 safety amendment)
+
+## Immediate safety override — 2026-11-03
+
+A development cloud session unexpectedly resumed PR #92 after a `/fix` comment. **No unattended routine activation is authorized.** The owner must manually stop/unsubscribe session `cse_016VkauFwWUB3SWAfCeqN33w` inside https://claude.ai/code; GitHub access cannot revoke that subscription.
+
+The authoritative protocol branch now defaults **both** owner gates to closed:
+- `start_new_work: false`: no new backlog tasks;
+- `resume_corrections: false`: no correction RESUME, regardless of `/fix` comments, reviewer verdicts or CI failures.
+
+`tools/dev_state.py plan` defaults to `--run-origin event` and returns STOP on event wake-ups. A manual run must explicitly pass `--run-origin manual`; an enabled scheduled run passes `scheduled` and can only START when allowed. These checks are defense in depth, not a substitute for restricting GitHub permissions or stopping an active session. No new background automation should be enabled until the old session subscription is demonstrably terminated.
+
+**Timing clarification from the Solana Foundation:** target mainnet slot duration became 200 ms on **2026-10-09** (epoch 1053), https://solana.com/upgrades/reduced-slot-times . Historical 0.213–0.222 s/slot measurements in PR #92 are compatible with this target. Alpenglow's ~150 ms target finality is distinct: https://solana.com/upgrades/alpenglow . The replay's 2-slot latency remains *an unverified execution assumption*. A timestamp RPC cross-check is optional.
+
+**Git safety:** `main` remains unprotected and the connected identity has administrator rights. Never treat policy text or tests as enforceable prevention of writes by that identity. Grant reduced permissions or configure branch protection before truly unattended runs.
 
 ## Authority
 
@@ -42,7 +56,7 @@ All three routines are disabled. Connectors were removed from each. Automation n
 
 ## Owner actions pending
 
-0. **Session subscription (unauthorised wake-up).** The first dev session (`cse_016VkauFwWUB3SWAfCeqN33w`) is still subscribed to PR #92 events. It answered the `/fix` request on its own at 00:00 UTC (commit `a01269a`), which you did not authorise. The owner switch `start_new_work` in `BACKLOG.json` is now `false`, so such a session can only resume requested corrections and cannot start new work. To stop the subscription, open the session in claude.ai/code. The tools available to me cannot unsubscribe it.
+0. **URGENT: session subscription (unauthorised wake-up).** The first dev session (`cse_016VkauFwWUB3SWAfCeqN33w`) is still subscribed to PR #92 events. It answered the `/fix` request on its own at 00:00 UTC (commit `a01269a`), which you did not authorise. The owner switch `start_new_work` in `BACKLOG.json` is now `false`, so such a session can only resume requested corrections and cannot start new work. To stop the subscription, open the session in claude.ai/code. The tools available to me cannot unsubscribe it.
 1. **Extra usage.** Open https://claude.ai/settings/usage and confirm that usage credits (extra usage) are OFF. Automation cannot read this setting.
 2. **Resume PR #92 to apply the `/fix` request.** This needs one manual run of the dev agent. The planner will choose RESUME. Approve it or not.
 3. **Budget for `blocktime-crosscheck-v1`.** A few `getBlockTime` calls on two RPC providers. This is the only way to explain the measured slot rate. Approve the budget or not.
