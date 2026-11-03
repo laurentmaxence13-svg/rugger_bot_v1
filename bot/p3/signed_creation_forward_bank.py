@@ -15,6 +15,7 @@ import time
 
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4.native_asof_signal_bridge import native_asof_bank,verified_full_asof_features
+from bot.p3.signed_s1_master_bank_bridge import signed_s1_master_bank
 from bot.p4_experiment import decide_prefix
 from bot.p3.helius_index_prospective_cohort import _bank, _hash
 from bot.p3.launchlab import (SnapshotEvidenceError, addresses_from_pool,
@@ -149,6 +150,7 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
         if graph is None:continue
         s1at=clock_ms()
         row["s1_slot"]=s1slot;row["s1_received_ms"]=s1at
+        a=None  # Never reuse a previous creator's source analysis on a failed row.
         # Preserve the EXACT 7 public account responses before subsequent S2
         # reads. An analysis hash without the underlying bytes is not
         # independently reproducible and cannot establish Master readiness.
@@ -182,6 +184,19 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             row["s1_buy_model"]=None
             row["native_sol_asof_signal"]=None
             row["native_sol_signal_status"]="SOURCE_BANK_NOT_QUALIFIED"
+        # Source-bank facts have ALREADY been captured and audited as of S1.
+        # Retain exactly verified accounts/reserves/fees instead of forcing
+        # Master.bank_state=None on every genuinely signed pool. Unsafe or
+        # incompletely certified banks remain UNKNOWN, never paper-tradable.
+        bank_state,bank_refusal=signed_s1_master_bank(
+            analysis=a,mint=row["mint"],pool=row["pool"],
+            creator=row["creator"],signature=row["signature"],
+            source_slot=s1slot,received_at_ms=s1at,
+            raw_bank_sha256=row["s1_raw_bank_sha256"],
+            signed_creation_verified=row.get("cryptographic_creation") is True)
+        row["s1_source_bank_bridge_status"]=(
+            "SIGNED_CERTIFIED_S1_BANK_RETAINED_FOR_MASTER"
+            if bank_state is not None and bank_refusal is None else bank_refusal)
         # Compute an explicit, audited feature completeness receipt using
         # only the evidence available at S1. Do not invent USD oracle, creator
         # history, signed swap tape, or historical source prices.
@@ -213,7 +228,7 @@ def signed_creator_asof_paper(capture, verified, rpc, *,
             available_at_ms=s1at,source_slot=s1slot,
             slot_available_at_ms=s1at,data_kind="market_observation",
             features=None,features_available_at_ms=None,health=None,
-            independent_buyers=None,bank_state=None,
+            independent_buyers=None,bank_state=bank_state,
             unknowns=["causal_USD_features","source_quote_clock","independent_buyers",
                       "own_network_costs","execution_health","creator_independence"])
         master=core.evaluate(frame,[],inventory=None,health=None,capital=None)

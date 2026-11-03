@@ -16,6 +16,8 @@ from bot.p4_experiment import decide_prefix
 from bot.p4.live_like_paper_ledger import PaperLedger,freeze_decision
 from bot.p3.launchlab import analyze_snapshot,SnapshotEvidenceError
 from bot.p3.signed_creation_forward_bank import PAPER_BUY_LAMPORTS
+from bot.p3.signed_s1_master_bank_bridge import signed_s1_master_bank
+from bot.p4.native_asof_signal_bridge import native_asof_bank
 
 SCHEMA="rugger-signed-genuine-master-paper-causal-replay-v1"
 SOURCE_SCHEMA="rugger-free-public-signed-cohort-v1"
@@ -183,6 +185,7 @@ def replay_public_signed_cohort(folder):
                     or set(bank["accounts"])!=set(graph.values())
                     or _hash(bank)!=source.get("s1_raw_bank_sha256")):
                 raise ValueError("original_seven_account_S1_bank_tampered_or_missing")
+            reproduced=None
             if source.get("s1_analysis_hash_sha256") is not None:
                 try:
                     reproduced=analyze_snapshot(bank["accounts"],
@@ -199,13 +202,48 @@ def replay_public_signed_cohort(folder):
             elif source.get("s1_refusal")!="unsupported_or_invalid_seven_account_bank":
                 raise ValueError("missing_original_S1_account_analysis_or_refusal")
             frame=source.get("s1_preoutcome_frame")
+            if type(frame) is not dict:
+                raise ValueError("noncausal_signed_master_frame")
+            # Rebuild forwarded source state from the ORIGINAL S1 account
+            # bytes, independently of the saved S1 frame. If any bank field
+            # differs, fail closed before invoking either genuine scorer.
+            # Legacy artifacts without a bridge never acquire a bank.
+            if "s1_source_bank_bridge_status" in source:
+                derived,refusal=signed_s1_master_bank(
+                    analysis=reproduced,
+                    mint=source["mint"],pool=source["pool"],
+                    creator=source["creator"],signature=source["signature"],
+                    source_slot=source["s1_slot"],
+                    received_at_ms=source["s1_received_ms"],
+                    raw_bank_sha256=source["s1_raw_bank_sha256"],
+                    signed_creation_verified=source.get("cryptographic_creation") is True)
+                expected=("SIGNED_CERTIFIED_S1_BANK_RETAINED_FOR_MASTER"
+                          if derived is not None and refusal is None else refusal)
+                if (type(frame) is not dict
+                        or frame.get("bank_state")!=derived
+                        or source.get("s1_source_bank_bridge_status")!=expected):
+                    raise ValueError("unreproducible_original_signed_S1_bank_bridge")
+                if source.get("native_sol_asof_signal") is not None:
+                    try:
+                        observed=native_asof_bank(
+                            analysis=reproduced,mint=source["mint"],
+                            creator=source["creator"],pool=source["pool"],
+                            source_slot=source["s1_slot"],
+                            available_at_ms=source["s1_received_ms"])
+                    except (ValueError,KeyError,TypeError):
+                        raise ValueError("unreproducible_native_SOL_S1_curve") from None
+                    if (observed!=source["native_sol_asof_signal"]
+                            or source.get("native_sol_signal_status")
+                               !="SOURCE_NATIVE_SOL_PRICE_OBSERVED"):
+                        raise ValueError("source_native_SOL_S1_receipt_modified")
+            elif type(frame) is dict and frame.get("bank_state") is not None:
+                raise ValueError("legacy_S1_bank_was_not_replayed_from_original_accounts")
             saved_master=source.get("s1_preoutcome_master_decision")
             saved_reference=source.get("s1_preoutcome_reference_decision")
             if (type(frame) is not dict or type(saved_master) is not dict
                     or type(saved_reference) is not dict
                     or frame.get("features") is not None
                     or frame.get("health") is not None
-                    or frame.get("bank_state") is not None
                     or frame.get("mint")!=source.get("mint")
                     or frame.get("creator")!=source.get("creator")
                     or frame.get("pool")!=source.get("pool")

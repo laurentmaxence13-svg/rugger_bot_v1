@@ -22,7 +22,26 @@ def native_asof_bank(*,analysis,mint,creator,pool,source_slot,available_at_ms):
             or type(available_at_ms) is not int or available_at_ms<=0
             or analysis.get("context_slot")!=source_slot):
         raise ValueError("causal_signed_creation_bank_required")
-    if analysis.get("risk_flags") or analysis.get("blocking_reasons"):
+    # The analyzer correctly preserves three NON-TRADING unknowns even on a
+    # safe, source-qualified bank: no onchain order, unknown network costs,
+    # and creation unverified BY THE SNAPSHOT (the outer signed receipt was
+    # separately checked). These do not invalidate the observed SOL curve
+    # reserves. Any unrecognized security/identity blocker still refuses.
+    non_trade_unknowns={
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        # Independent platform ADMIN seed cannot be recovered from published
+        # PlatformConfig; its UNKNOWN identity must NOT prevent arithmetic on
+        # already observed, single-slot SOL reserves, but MUST prevent ENTRY.
+        "original_platform_admin_seed_not_retained",
+    }
+    blockers=analysis.get("blocking_reasons", [])
+    if (type(analysis.get("risk_flags")) is not list
+            or analysis["risk_flags"]
+            or type(blockers) is not list
+            or any(type(x) is not str or x not in non_trade_unknowns
+                   for x in blockers)):
         raise ValueError("unqualified_source_curve_bank_flags")
     facts=_s1_inputs(analysis)
     bank=facts["pool"]
@@ -50,6 +69,9 @@ def native_asof_bank(*,analysis,mint,creator,pool,source_slot,available_at_ms):
         complete_SignalFeatures_available=False,
         source_price_is_curve_model_not_executable_quote=True,
         source_native_facts_observed=True,
+        platform_admin_seed_independently_certified=(
+            "original_platform_admin_seed_not_retained" not in blockers),
+        platform_admin_unknown_does_not_authorize_entry=True,
         financial_order_submitted=False)
 
 
