@@ -1,7 +1,7 @@
 {
   "coordination_branch": "claude/launchlab-trade-events",
-  "start_new_work": false,
-  "start_new_work_note": "Owner switch for scheduled or manual new work. false or missing: no new backlog items. GitHub event wake-ups always STOP, regardless of this value.",
+  "start_new_work": true,
+  "start_new_work_note": "Owner explicitly approved starting authorized offline backlog work on 2026-11-03. Only an enabled scheduled or owner-initiated manual run may START; GitHub event wake-ups always STOP. No merges, main pushes, live transactions, paid API calls, or secret access.",
   "items": [
     {
       "id": "slot-timing-v1",
