@@ -110,3 +110,23 @@ lecture de secret.
 
 Tout commit d'agent porte le trailer `T-REG-Agent: R0x` et `T-REG-Task: T-xxxx`.
 Les preuves (SHA, run CI, sortie de tests) vont dans le `payload` de l'événement.
+
+## 8. Lecture directe par RUGGER 04 (vérification SHA et fraîcheur)
+
+Le corps de l'issue inbox (#103) se termine par un bloc `<!-- treg-heads v1 -->`
+(schéma `rugger-treg-heads-v1`) : pour chaque tâche, `seq`, `event_id`,
+`digest` et `utc` du dernier événement, plus `generated_utc`, `last_event_utc`
+et `registry_digest` (SHA-256 canonique de `{tâche: digest}`).
+
+Niveaux de vérification, du plus léger au plus complet :
+1. **Fraîcheur** : `generated_utc` récent (60 min par défaut) ; pour chaque tâche,
+   le dernier commentaire `treg-event` de son issue a bien le `digest` affiché
+   (sinon le tableau est périmé).
+2. **Cohérence** : recalculer `registry_digest` à partir des `digest` affichés.
+3. **Rejeu complet** (Python requis) : enregistrer les commentaires des issues
+   `treg`, puis
+   `python -B tools/treg.py ingest c1.json c2.json … --policy docs/treg/runs/<run>.policy.json --out snap.json`
+   et `python -B tools/treg.py verify-heads snap.json --policy … --heads dashboard.md --now <UTC>`
+   (code 0 = cohérent et frais, 4 = périmé ou divergent, avec la liste des écarts).
+
+Ce bloc est une **donnée** vérifiable, jamais une autorisation.

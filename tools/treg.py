@@ -396,6 +396,50 @@ def ingest(comment_lists):
     return {'schema': SCHEMA_SNAPSHOT, 'events': order_events(parse_comments(bodies))}
 
 
+HEADS_MARKER = '<!-- treg-heads v1 -->'
+
+
+def heads(state, *, generated_utc):
+    """Verifiable summary of the registry: last event of each task and one global digest.
+
+    Anyone (RUGGER 04 included) can compare each task's head digest with the last
+    `treg-event` comment of its issue, and recompute `registry_digest`.
+    """
+    per_task = {}
+    for task_id in sorted(state['log']):
+        last = state['log'][task_id][-1]
+        per_task[task_id] = {'seq': last['seq'], 'event_id': last['event_id'], 'digest': last['digest'],
+                             'utc': last['utc'], 'status': state['tasks'][task_id]['status']}
+    utcs = [h['utc'] for h in per_task.values()]
+    return {'schema': 'rugger-treg-heads-v1', 'generated_utc': generated_utc, 'tasks': per_task,
+            'events': sum(len(v) for v in state['log'].values()), 'last_event_utc': max(utcs) if utcs else None,
+            'registry_digest': digest({k: v['digest'] for k, v in per_task.items()})}
+
+
+def verify_heads(published, state, *, now, max_age_minutes=60):
+    """Compare a published heads block with a freshly replayed snapshot."""
+    problems = []
+    current = heads(state, generated_utc=now)
+    if published.get('schema') != 'rugger-treg-heads-v1':
+        problems.append('heads_schema')
+    if published.get('registry_digest') != digest({k: v['digest'] for k, v in published.get('tasks', {}).items()}):
+        problems.append('published_registry_digest_inconsistent')
+    for task_id in sorted(set(current['tasks']) | set(published.get('tasks', {}))):
+        mine, theirs = current['tasks'].get(task_id), published.get('tasks', {}).get(task_id)
+        if theirs is None:
+            problems.append('task_missing_from_published:' + task_id)
+        elif mine is None:
+            problems.append('task_unknown_in_registry:' + task_id)
+        elif mine['digest'] != theirs['digest']:
+            problems.append('stale_or_diverged:%s:published_seq=%s:registry_seq=%s' % (task_id, theirs['seq'], mine['seq']))
+    age = (parse_utc(now) - parse_utc(published.get('generated_utc', now))).total_seconds() / 60
+    fresh = 0 <= age <= max_age_minutes
+    if not fresh:
+        problems.append('published_heads_age_minutes:%d' % age)
+    return {'consistent': not [p for p in problems if not p.startswith('published_heads_age')], 'fresh': fresh,
+            'problems': problems, 'registry_digest': current['registry_digest']}
+
+
 def render_dashboard(state, *, generated_utc):
     """Markdown dashboard for RUGGER 04, derived only from the replayed event log."""
     lines = ['# RUGGER 04 — tableau de bord T-REG', '',
@@ -420,6 +464,11 @@ def render_dashboard(state, *, generated_utc):
             ', '.join(task['depends_on']) or '—', len(state['log'].get(task_id, [])), ' ; '.join(proof) or '—'))
     lines += ['', '## Rapports reçus', '']
     lines += ['- %s (tâches : %s)' % (entry['summary'], ', '.join(entry['task_refs'])) for entry in state['inbox']] or ['- aucun']
+    lines += ['', '## Vérification (têtes du registre)', '',
+              'Chaque `digest` doit être celui du dernier commentaire `treg-event` de l\'issue de la tâche ; '
+              '`registry_digest` = SHA-256 canonique de `{tâche: digest}`. Vérification complète : '
+              '`tools/treg.py ingest` puis `tools/treg.py verify-heads`.', '',
+              HEADS_MARKER, '```json', json.dumps(heads(state, generated_utc=generated_utc), indent=1, sort_keys=True), '```']
     return '\n'.join(lines) + '\n'
 
 
@@ -570,6 +619,12 @@ def main(argv=None):
     p.add_argument('--type', required=True, choices=TYPES)
     p.add_argument('--payload', required=True, help='JSON object')
     p.add_argument('--now', required=True)
+    p = sub.add_parser('verify-heads', help='check a published heads block against the registry')
+    p.add_argument('snapshot')
+    p.add_argument('--policy', required=True)
+    p.add_argument('--heads', required=True, help='JSON file, or a markdown file containing the treg-heads block')
+    p.add_argument('--now', required=True)
+    p.add_argument('--max-age-minutes', type=int, default=60)
     p = sub.add_parser('dashboard')
     p.add_argument('snapshot')
     p.add_argument('--policy', required=True)
@@ -620,6 +675,14 @@ def main(argv=None):
         print(json.dumps({'event': event, 'comment_body': render_comment(event), 'wake_targets': targets,
                           'warnings': warnings}, indent=1, sort_keys=True, ensure_ascii=False))
         return 0
+    if args.cmd == 'verify-heads':
+        with open(args.heads, encoding='utf-8') as handle:
+            text = handle.read()
+        if HEADS_MARKER in text:
+            text = re.search(re.escape(HEADS_MARKER) + r'\s*```json\n(.*?)\n```', text, re.S).group(1)
+        result = verify_heads(json.loads(text), state, now=args.now, max_age_minutes=args.max_age_minutes)
+        print(json.dumps(result, sort_keys=True))
+        return 0 if result['consistent'] and result['fresh'] else 4
     if args.cmd == 'dashboard':
         print(render_dashboard(state, generated_utc=args.now), end='')
         return 0

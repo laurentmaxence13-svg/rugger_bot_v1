@@ -462,3 +462,51 @@ def test_emit_warns_on_partial_snapshot_and_unnotified_closure(tmp_path, capsys)
     snap.write_text(json.dumps({'schema': treg.SCHEMA_SNAPSHOT, 'events': log2.state['log']['T-0002']}))
     out = treg.missing_references(treg.replay(log2.state['log']['T-0002'], ACTIVE))
     assert out == ['T-0001']
+
+
+# ---------------------------------------------------------------- RUGGER 04 direct read: heads, digests, freshness
+def test_s002_run_policy_only_lifts_the_pause():
+    run = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-002.policy.json').read_text(encoding='utf-8'))
+    extra = ('paused', 'paused_note', 'run_scope', 'owner_mandate_ref_sha256')
+    assert run['paused'] is False and run['run_scope'] == 'treg-scenario-S-002'
+    assert {k: v for k, v in run.items() if k not in extra} == {k: v for k, v in POLICY.items() if k not in ('paused', 'paused_note')}
+
+
+def test_heads_match_last_event_of_each_task_and_registry_digest_is_recomputable():
+    state, _ = treg.simulate_scenario(POLICY)
+    h = treg.heads(state, generated_utc='2026-11-04T10:00:00Z')
+    for tid, head in h['tasks'].items():
+        assert head['digest'] == state['log'][tid][-1]['digest'] and head['seq'] == len(state['log'][tid])
+    assert h['registry_digest'] == treg.digest({k: v['digest'] for k, v in h['tasks'].items()})
+    assert treg.verify_heads(h, state, now='2026-11-04T10:30:00Z') == {
+        'consistent': True, 'fresh': True, 'problems': [], 'registry_digest': h['registry_digest']}
+
+
+def test_verify_heads_detects_stale_divergent_and_old_dashboards():
+    state, _ = treg.simulate_scenario(POLICY)
+    old = treg.heads(state, generated_utc='2026-11-04T10:00:00Z')
+    tid = 'T-0002'
+    ev = treg.make_event(state, task_id=tid, from_agent='R01', type='wake', utc='2026-11-04T11:00:00Z',
+                         payload={'to': 'R02', 'pointer': {'task_id': tid, 'event_id': state['log'][tid][-1]['event_id']}})
+    newer, _ = treg.apply_event(state, ev, ACTIVE)
+    result = treg.verify_heads(old, newer, now='2026-11-04T12:30:00Z', max_age_minutes=60)
+    assert result['consistent'] is False and result['fresh'] is False
+    assert any(p.startswith('stale_or_diverged:T-0002') for p in result['problems'])
+    forged = copy.deepcopy(old); forged['tasks']['T-0001']['digest'] = '0' * 64
+    assert 'published_registry_digest_inconsistent' in treg.verify_heads(forged, state, now='2026-11-04T10:01:00Z')['problems']
+
+
+def test_verify_heads_cli_reads_the_published_dashboard_markdown(tmp_path, capsys):
+    state, _ = treg.simulate_scenario(POLICY)
+    events = [e for tid in sorted(state['log']) for e in state['log'][tid]]
+    snap = tmp_path / 'snap.json'
+    snap.write_text(json.dumps({'schema': treg.SCHEMA_SNAPSHOT, 'events': treg.order_events(events)}))
+    board = tmp_path / 'board.md'
+    board.write_text(treg.render_dashboard(state, generated_utc='2026-11-04T10:00:00Z'))
+    pol = tmp_path / 'pol.json'
+    pol.write_text(json.dumps(RUN_POLICY))
+    assert treg.HEADS_MARKER in board.read_text()
+    code = treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T10:20:00Z'])
+    out = json.loads(capsys.readouterr().out)
+    assert code == 0 and out['consistent'] and out['fresh']
+    assert treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T13:00:00Z']) == 4
