@@ -1,79 +1,167 @@
-# État du projet — préparation P3
+# Rugger Master — état de référence unique
 
-## Mission courante — v2 exécutée et preuves archivées
+> **Ce fichier est la seule source de vérité sur l'état du projet.** Tout autre
+> document d'état (`P1_*`, `P3_*`, `CODEX_*`, `LIVE_*_CHECKPOINT`,
+> `docs/MASTER_CONTINUITY.md`, `CLAUDE.md` de la pile #89) est un **journal
+> historique** : utile comme preuve, jamais comme état courant.
+> L'ancien contenu de ce fichier (préparation P3, 26-27 oct.) reste lisible via
+> `git show d9b950e:PROJECT_STATUS.md`.
 
-- [PR #20](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/20)
-  **fusionnée** : main `8167264931af3a22dcce32e9d1a821d275b51307`.
-  Référence **1 304 / 1 / 242** reproduite ; deadline, annulations et enveloppe
-  RPC corrigées après revue indépendante : **1 309 / 1 / 242** avant fusion.
-  Voir [P3_PR20_REVIEW.md](P3_PR20_REVIEW.md).
-- V2 existant exécuté depuis ce main, plan inchangé : **19/20 requêtes,
-  25,909/60 s, 100 lignes, 2 candidats, 2 créations vérifiées, 4 snapshots,
-  2 devis d'achat, 0 ventes disponibles**, 1 gap d'univers, 182 événements.
-- Durabilité : **5 archives privées / 397 événements / 199 105 octets gzip**,
-  restaurées via blobs GitHub sans DB locale ; hashes/ancrages vérifiés.
-  Aucun SQLite, ledger ou .env publié. Les anciens corps jamais conservés
-  restent manquants, explicitement déclarés dans les manifestes.
-- Branche : `fix/p3-data-certification-and-durable-replay`, base main fusionné.
-  [PR #21 ouverte](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/21).
-  Code testé : `de1e4b3d10b01a8bf9bd6003aaf8b8798a837ee5`.
-  Suite finale : **1 342 réussis, 1 ignoré, 242 sous-tests**, warnings en erreur,
-  stderr vide ; aucun réseau dans les tests, aucune dépendance ajoutée.
-- Corrections ciblées : Token-2022 metadata-only 18/19, pins IDL indépendants/PDA
-  publiques, contrôle de vente sur état ultérieur, entrées de replay et export
-  portable. Profil historique conservé ; aucun seuil ou ledger modifié.
-- Diagnostic postérieur : premier candidat lisible mais plateforme UNKNOWN ;
-  second PDA complète mais supply mint/pool différente, contrôle conservé.
-  Aucune estimation de sortie ultérieure qualifiée ; aucun résultat réétiqueté.
-- **P3 économique : NO-GO / INSUFFICIENT DATA.** Couverture indépendante,
-  temps source des devis, frais complets, réconciliation et sorties manquent.
-- Rapport : [P3_V2_FINAL_VALIDATION.md](P3_V2_FINAL_VALIDATION.md).
-  [Résultats v2](validation/P3_V2_DATA_RESULTS.json),
-  [archives](evidence/p3/index.json),
-  [restauration](validation/P3_EVIDENCE_RESTORE.json).
-- Aucun ordre réel, dépense, souscription ou portefeuille activé. Pas de campagne
-  prolongée ; droits/quotas et replay brut complet restent des préconditions.
+Dernière vérification : **2026-11-03**, sur `main` = `d9b950e`. Niveau de preuve
+indiqué partout : *mesuré* (commande rejouée ce jour), *code* (lu dans le dépôt),
+*historique* (affirmé par une note, non rejoué), *inconnu*.
 
-## Résultats P3 antérieurs conservés
+---
 
-- Après PR #19 : main `966076c`, 880/1/242 reproduits ; P3_PR19_REVIEW.md.
-- Primaire v1 : 19 requêtes, 185 événements, 0/2 créations ; diagnostics séparés :
-  6 lectures, une création confirmée, second pool indisponible par timeout.
-  Aucun réétiquetage des résultats primaires ou des performances historiques.
-- Rapports historiques : P3_LAUNCHLAB_VALIDATION.md, P3_LAUNCHLAB_CAMPAIGN.md,
-  P3_SOURCE_ALTERNATIVES.md ; preuves disponibles désormais archivées séparément.
+## 1. Objectif final
 
-## Livraison P1/P2 précédente
+Un **seul** bot Rugger Master pour Solana / Raydium LaunchLab (puis CPMM après
+migration), capable de :
 
-- Branche de livraison : `fix/p1-research-gates-and-synthetic-protocol`.
-- Livraison : [PR #18](https://github.com/laurentmaxence13-svg/rugger_bot_v1/pull/18).
-- Commit audité code et artefacts : `fcfe41eb9abdda83d308cc17a2ef52910fc08e18` ;
-  la mise à jour de suivi ajoute uniquement ces références de livraison.
-- Référence P1 publiée et reproduite : `56294b4795390db14b1bc46205ab382eb4ac0f5d` (604/1/242).
-- Commit du protocole figé avant expériences : `8530f2b982e657fe7cb3fe82c3d0ad5028edeffd`.
-- Validation courante : **699 tests réussis, 1 ignoré, 242 sous-tests réussis**,
-  warnings en erreur. Le skip concerne une base utilisateur volontairement absente.
-- Validation effectuée dans le cloud ; aucun check CI GitHub n'est configuré
-  sur cette branche. Revues indépendantes du nettoyage, des exclusions héritées,
-  de la fidélité des artefacts et des conclusions économiques terminées.
-- B01/B03/B04 conservés ; compléments B02, B05/B08/B09, motifs de refus et
-  exclusions v25/v26 validés. Aucun critère de stratégie active modifié.
-- Support P1 du périmètre synthétique : GO. P1 global tous CLI/données réelles :
-  non certifié. Détails dans P1_CLOUD_VALIDATION.md.
-- Sources validées et exécutées : `f1a1345f3a7c1871ef497c9d2ec1eb219c652a8a`.
-- P2 synthétique : trois mondes exécutés, neuf candidats de développement et
-  27 sensibilités finales ; trois relectures identiques. Aucun candidat positif
-  en validation au stress fixé ; aucun modèle activé. Voir QUANT_VALIDATION_REPORT.md
-  et benchmarks/p2_synthetic_v1/manifest.json.
-- Avantage économique : **INSUFFICIENT DATA**. Aucun corpus réellement exécutable
-  ni change entrée/sortie vérifié ; limites dans ECONOMIC_VIABILITY_AUDIT.md.
-- Comparaison memecoins/BTC–SOL : INSUFFICIENT DATA pour les deux ; aucun second
-  moteur construit ou réorientation justifiée (STRATEGY_COMPARISON.md).
-- Réseau autorisé utilisé : GitHub et gestion Git/PR ; aucune API de marché,
-  RPC/WS marché, portefeuille, clé privée ou nouvelle dépense.
-- Trading réel : **interdit sans autorisation financière explicite**, aucune
-  activation ni transaction effectuée.
-- Prochain objectif mesurable : définir la devise et un corpus point-in-time
-  avec rejets/absences, FX et quotes exécutables à taille effective. P3 attend
-  ces données et les autorisations correspondantes ; aucune conclusion économique
-  ni réorientation BTC/SOL n’est justifiée par les fixtures.
+1. observer les créations LaunchLab en temps réel ;
+2. décider (Master) ENTER / WAIT / EXIT avec coûts réels en SOL ;
+3. exécuter en PAPER, puis — **sur décision séparée du propriétaire** — en LIVE
+   avec un portefeuille dédié et des limites strictes ;
+4. être suivi depuis une interface (Rugger Wallet) et sur Axiom.
+
+Trois jalons **distincts**, aucun n'est atteint aujourd'hui :
+
+| Jalon | Signification | État |
+|---|---|---|
+| `LIVE_READY_TO_ARM` | moteur LIVE complet, désarmé, testé hors réseau | non atteint (*historique*) |
+| `LIVE_EXECUTION_VERIFIED` | vrais ordres autorisés, réconciliés | non commencé |
+| `ECONOMIC_EDGE_VALIDATED` | avantage net de frais, hors échantillon | **non démontré** — aucune rentabilité |
+
+## 2. Architecture de référence (cible)
+
+```
+bot/scanner  bot/solana       → capture LaunchLab (WebSocket/RPC)        [main]
+bot/market                    → décodage exact TradeEvent + courbe       [#90]
+bot/p3  bot/p4                → preuves, coûts, replay causal            [#89]
+bot/master_*.py               → décision Master (shadow/PAPER)           [#89]
+bot/analyser  bot/database    → moteur PAPER, SQLite, rapports           [main]
+bot/live (cœur, 23 modules)   → route, signer isolé, submission, journal [#89]
+bot/dashboard + Rugger Wallet → interface unique                         [main + #89]
+```
+
+Règle : un composant n'existe qu'à **un** endroit. Les sondes réseau ponctuelles
+(40 modules `helius_*`, `public_*`, `pinned_*`… dans `bot/live`) sortent du
+moteur d'exécution vers un espace recherche (étape ultérieure, voir §6).
+
+## 3. Composants : état et classement
+
+| Composant | Où | État | Classement |
+|---|---|---|---|
+| Scanner, client Solana, SQLite, config | `main` | testé (*mesuré*) | **CONSERVER** |
+| Moteur PAPER `bot/analyser` | `main` | testé ; audit P0 du 22/10 corrigé par #1–#4 (*historique*) | **CONSERVER** |
+| Décodeur TradeEvent + courbe exacte `bot/market` | #90 seulement | testé, unique dans le dépôt (*code*) | **FUSIONNER** dans la référence |
+| Master `bot/master_*.py`, `bot/p4` | #89 seulement | testé ; S1 bank réel ajouté par #89 | **CONSERVER**, intégrer |
+| Preuves/campagnes `bot/p3` (73 modules) | #89 | testé ; beaucoup de campagnes ponctuelles 009–012 | **AMÉLIORER** : garder le noyau, archiver les campagnes après intégration |
+| Moteur LIVE cœur (23 modules `bot/live`) | #89 | testé hors réseau, désarmé ; anti-double envoi présent (`rpc.py:98`) | **CONSERVER** |
+| Sondes réseau dans `bot/live` (40 modules) | #89 | scripts de recherche mélangés au moteur | **AMÉLIORER** : déplacer hors `bot/live` |
+| Interfaces : Streamlit Rugger Wallet (#61), service Render (#63/#64/#87, #65–#74), aperçu Vercel (#86) | 3 endroits | trois UIs concurrentes | **FUSIONNER** : une seule (décision D4) |
+| Workflows CI (51 sur #89, dont 4 planifiés Helius) | #89 | planifiés toutes les 6 h dès l'arrivée sur `main` | **AMÉLIORER** : désactiver les `schedule:` avant intégration (D3) |
+| Copies `bot/bot/` (66 fichiers), `tests/tests/` (6), `*.bak*`, `*.avant_correctif` (6) | `main` | importées nulle part (*code*, `git grep`) ; inventaire en cours (#94) | **SUPPRIMER** après #94 |
+| ~40 notes `.md` à la racine (`P1_*`, `P3_*`, `CODEX_*`) | `main` | historiques | **ARCHIVER** dans `docs/history/` (étape ultérieure) |
+| Suivi Axiom | — | **aucun code** ; Axiom n'est cité que comme concurrent | **À DÉFINIR** (D5) |
+
+## 4. PR et dépendances
+
+Le dépôt contient **deux piles indépendantes** qui ne se connaissent pas :
+
+- **Pile A** — `#22 → … → #88 → #89`, base `main@7ddddb9` (avant le terminal
+  PAPER). **839 commits, ~115 000 lignes, 784 fichiers** hors de `main`. Contient
+  Master, LIVE, P3/P4, Render.
+- **Pile B** — `#90 → #91…#99`, base `main@d9b950e`. Agent Claude planifié.
+  Contient `bot/market`, outils hors ligne, protocole d'autonomie.
+
+Aucun fichier commun entre A et B (*mesuré*). L'intégration est faisable :
+`#89 + main + #90` fusionnent avec **6 conflits**, tous dans les fichiers du
+terminal PAPER (`bot/dashboard/app.py`, `README.md`, `TERMINAL_PAPER.md`,
+`LANCER_TERMINAL_PAPER.bat`, `requirements-dashboard.txt`,
+`.github/workflows/paper-terminal-ci.yml`) ; en prenant la version `main`
+(correctifs Windows #59/#60 postérieurs) : **3974 réussis, 1 ignoré, 0 échec**.
+
+| Catégorie | PR | Motif |
+|---|---|---|
+| **Porteuse à intégrer après revue** | **#89** (inclut 41 PR ouvertes) | pointe de la pile A, verte |
+| **Porteuse à intégrer après revue** | **#90** | base de la pile B, verte, `bot/market` unique |
+| Déjà contenues dans #89 → fermer après intégration de #89 | #22, #29–#31, #33, #34, #36–#39, #41, #42, #45–#48, #50, #52–#55, #65–#74, #76–#79, #81, #83–#85, #88 | 0 commit hors de #89 (*mesuré*) |
+| Remplacées par une meilleure implémentation | #44 (anti-double envoi déjà dans #89, `bot/live/rpc.py:98`), #40 (ses commits propres se déclarent couverts par #41, inclus dans #89), #43 (fermée) | garde équivalent présent |
+| Remplacée | #35 (61 commits) | branche parallèle de #36–#39, intégrée autrement via #39 « codex-free PR35–PR38 » ; à confirmer en revue |
+| Corrections / décision nécessaires | #56 (1 commit Render ledger expérimental), #86 (Vercel), #80, #82 (preuves réseau ponctuelles) | dépendent de D3/D4 |
+| Preuves historiques à conserver ouvertes temporairement | #24, #27, #28, #49 (recherche P3, 2–8 commits) | jamais intégrées, utiles comme trace |
+| Pile B, en revue | #92, #93 (slot timing), #94 (inventaire copies), #95–#99 (rapports hors ligne) | sur #90, petites, testées par CI |
+| Protocole d'autonomie | #91 | à garder **hors** de la référence (règles des agents) |
+
+Ordre d'intégration recommandé (le propriétaire fusionne, jamais un agent) :
+1. Décisions D1–D3 ci-dessous.
+2. Branche d'intégration `#89 + main + #90`, désactivation des `schedule:`, revue.
+3. Fermeture des 41 PR contenues ; rebase de #92–#99 sur la nouvelle référence.
+4. Nettoyage (§6 étapes 2–4).
+
+## 5. Dernier état réellement testé
+
+Commande : `python -m pytest -q tests --ignore=tests/tests -p no:cacheprovider`,
+Python 3.13, environnement isolé, sans réseau ni `.env`, 2026-11-03.
+
+| Révision | Résultat |
+|---|---|
+| `main` `d9b950e` | 1358 réussis, 1 ignoré, 242 sous-tests |
+| #90 `4f2875d` | 1404 réussis, 1 ignoré, 242 sous-tests |
+| #89 `cf9a084` (+ `requirements-live.txt`) | 3926 réussis, 1 ignoré, 242 sous-tests |
+| essai `#89 + main + #90` (non poussé) | **3974 réussis, 1 ignoré, 0 échec** |
+
+Aucun de ces tests ne prouve une exécution réelle ni une rentabilité.
+
+## 6. Prochaine mission prioritaire
+
+**Construire la référence unique** sur une branche d'intégration, après D1–D3 :
+
+1. `#89 + main + #90`, 6 conflits résolus côté `main`, `schedule:` désactivés,
+   suite complète publiée.
+2. Déplacer les 40 sondes hors de `bot/live` (aucun changement de logique).
+3. Supprimer `bot/bot/`, `tests/tests/`, `*.bak*`, `*.avant_correctif`
+   après revue de #94.
+4. Archiver les notes racine historiques dans `docs/history/`.
+
+Chaque étape = une PR courte, testée, réversible.
+
+## 7. Blocages
+
+**Techniques**
+- Deux piles disjointes : l'agent planifié (pile B) développe sur `main` sans le
+  Master ni le moteur LIVE, qui n'existent que dans la pile A.
+- Consignes contradictoires (voir §8, D1).
+- `main` non protégé ; l'identité connectée est administratrice. Les règles des
+  agents ne sont pas une barrière technique.
+- Les tâches planifiées s'appellent « DISABLED » mais sont **actives** :
+  agent dev toutes les heures (`11 * * * *`), validation quotidienne (06:00 UTC),
+  relecteur ponctuel. `docs/MASTER_CONTINUITY.md` (#91) les dit désactivées : faux.
+- `data/` est ignoré par git : seules 3 archives de pools SOL sont versionnées
+  (fixtures #90).
+
+**Économiques**
+- P3 : **NO-GO / INSUFFICIENT DATA** (*historique*, non contredit). Pas de
+  couverture indépendante, frais complets, sorties qualifiées ni réconciliation.
+- Seuils Master protégés : 50 cycles économiques qualifiés et 20 créateurs
+  indépendants avant toute entrée opérationnelle — non atteints.
+- Latence d'exécution (2 slots) : hypothèse non vérifiée.
+
+## 8. Décisions et validations nécessaires (propriétaire)
+
+| # | Décision | Recommandation |
+|---|---|---|
+| D1 | **Consigne active** : `AGENTS.md` de `main` dit « PAPER ONLY, aucun composant réel, première mission en lecture seule » ; celui de #89 et `LIVE_READINESS_MANDATE.md` (29/10) autorisent le développement LIVE désarmé. | Adopter la version #89 lors de l'intégration : développement LIVE autorisé, **aucune** signature réelle, aucun fonds, activation = décision séparée. |
+| D2 | Pile A comme base de la référence (plutôt que reconstruire depuis `main`). | Oui : verte, contient Master + LIVE ; reconstruire serait une réécriture géante. |
+| D3 | 4 workflows planifiés Helius (`HELIUS_API_KEY`, toutes les 6 h) dans #89. | Les désactiver dans la branche d'intégration ; réactiver un par un avec budget. |
+| D4 | Interface unique : Streamlit Rugger Wallet, Render ou Vercel. | Une seule ; les deux autres archivées. |
+| D5 | « Suivi Axiom » : sens exact ? (voir le portefeuille LIVE dans Axiom, ou exporter les positions vers Axiom ?) | Préciser ; rien n'existe aujourd'hui. |
+| D6 | Agent planifié : continuer sur la pile B pendant l'intégration ? | Le mettre en pause pendant l'intégration, puis le rebaser sur la nouvelle référence. |
+| D7 | Protection de `main` (GitHub Pro payant) ou risque accepté. | Décision de coût. |
+
+## Règle de mise à jour
+
+Toute PR qui change l'état du projet met à jour **ce fichier** (sections
+concernées seulement) avec révision, commande et résultat. Les journaux détaillés
+vont dans la description de la PR, pas dans un nouveau fichier d'état.
