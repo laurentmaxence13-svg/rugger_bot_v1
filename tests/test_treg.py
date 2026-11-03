@@ -510,3 +510,34 @@ def test_verify_heads_cli_reads_the_published_dashboard_markdown(tmp_path, capsy
     out = json.loads(capsys.readouterr().out)
     assert code == 0 and out['consistent'] and out['fresh']
     assert treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T13:00:00Z']) == 4
+
+
+# ---------------------------------------------------------------- planner closes producer tasks (S-002 finding)
+@pytest.mark.parametrize('kind,agent,payload', [
+    ('data_handoff', 'R03', {'status_to': 'submitted', 'dataset': {'path': 'd', 'sha256': 'e' * 64, 'commit': 'a' * 40,
+                                                                   'rows': 7}, 'validation': {'status': 'PASS'}}),
+    ('report', 'R01', {'status_to': 'submitted', 'inbox': {'summary': 's', 'task_refs': ['T-0001']}}),
+])
+def test_plan_tells_the_producer_to_close_a_submitted_handoff_or_report(kind, agent, payload):
+    # Found by RUGGER 03 in S-002: `plan` answered `wait` at `submitted`, so an agent that
+    # follows the planner literally never closed a data_handoff or report task.
+    log = Log()
+    log.create(task('T-0001', kind=kind, assignee=agent))
+    for step in ({'status_to': 'claimed'}, {'status_to': 'in_progress'}, payload):
+        log.emit('T-0001', agent, 'transition', step)
+    now = '2026-11-04T09:00:00Z'
+    assert treg.next_action(log.state, ACTIVE, agent, now) == {'action': 'close', 'task_id': 'T-0001'}
+    other = 'R02'
+    assert treg.next_action(log.state, ACTIVE, other, now)['action'] == 'wait'
+    log.emit('T-0001', agent, 'transition', {'status_to': 'done'})
+    assert treg.next_action(log.state, ACTIVE, agent, now) == {'action': 'wait', 'reason': 'nothing_actionable'}
+
+
+def test_plan_never_closes_a_submitted_implement_for_its_author():
+    log = Log()
+    log.create(task())
+    for step in ({'status_to': 'claimed'}, {'status_to': 'in_progress'}, submit_payload()):
+        log.emit('T-0002', 'R01', 'transition', step)
+    now = '2026-11-04T09:00:00Z'
+    assert treg.next_action(log.state, ACTIVE, 'R01', now)['action'] == 'wait'
+    assert treg.next_action(log.state, ACTIVE, 'R02', now) == {'action': 'start_review', 'task_id': 'T-0002'}

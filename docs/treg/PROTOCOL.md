@@ -49,7 +49,7 @@ authorized ──claim──▶ claimed ──start──▶ in_progress ──s
                      changes_requested ◀──────────┘──── │        │
                                                         ▼        ▼
                                                       done   changes_requested
-data_handoff, report : submitted ──▶ done (par le producteur, preuves exigées)
+data_handoff, report : submitted ──▶ done (par le producteur, preuves exigées ; `plan` renvoie `close`)
 toute tâche ──▶ blocked (tout agent) ; blocked ──▶ authorized|cancelled (propriétaire)
 ```
 

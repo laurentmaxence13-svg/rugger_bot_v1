@@ -491,6 +491,9 @@ def next_action(state, policy, agent, now):
             return {'action': 'resume_work', 'task_id': task['task_id']}
         if task['status'] == 'submitted' and task['kind'] == 'implement' and task.get('reviewer') == agent:
             return {'action': 'start_review', 'task_id': task['task_id']}
+        if task['status'] == 'submitted' and task['kind'] in ('data_handoff', 'report') and task['assignee'] == agent:
+            # The producer closes its own handoff/report once the evidence is published.
+            return {'action': 'close', 'task_id': task['task_id']}
     for task in tasks:
         if (task['status'] == 'authorized' and task['assignee'] == agent and _deps_done(state, task)
                 and _claims_held(state, agent, at) < policy['agents'][agent]['max_concurrent_claims']):
