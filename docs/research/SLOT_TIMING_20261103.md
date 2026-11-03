@@ -13,7 +13,7 @@ Source: `tests/fixtures/launchlab_sol_pools/*.json.gz` (signature listings: `slo
 
 Pairs: 173 signature rows, 64 distinct (slot, block_time) pairs after deduplication. Measured range across pools: **0.213 to 0.222 s/slot**. These are the numbers computed from the archives, nothing more.
 
-**Unexplained discrepancy.** The sources checked give a slot time of about 400 ms (for example https://www.helius.dev/blog/alpenglow). The measured 0.213 to 0.222 s/slot contradicts that, and **its cause is not established**. It must not be read as a property of the network. Candidate causes, none verified: the `blockTime` clock of the RPC provider; a protocol change not confirmed on an official page; sampling (three short pools, each under 3 minutes).
+**Reconciled reference (Solana Foundation).** The official Solana network-upgrade record confirms that the target mainnet slot duration changed from 400 ms to **200 ms** at epoch 1053 on **2026-10-09**: https://solana.com/upgrades/reduced-slot-times . The observed 0.213 to 0.222 s/slot is therefore *compatible with* the current ~200 ms target; comparison with older 400 ms documentation was inappropriate. This does **not** establish a network-wide realized slot average, nor the latency, landing position or inclusion time of any Rugger Master order. This is a narrow historical sample (three pools, each under three minutes) based on integer-second `blockTime`. The measured 0.2155 s/slot is an empirical span estimate, not a protocol parameter. Alpenglow's roughly 150 ms target *finality* is a different quantity from slot duration: https://solana.com/upgrades/alpenglow .
 
 ## Limits
 
@@ -23,8 +23,8 @@ Pairs: 173 signature rows, 64 distinct (slot, block_time) pairs after deduplicat
 
 ## Replay latency assumption
 
-`bot/market/replay.py` `ExecutionModel.latency_slots = 2`; the default is **not changed** by this note and a test pins it. Conditional arithmetic only, **unvalidated**: if the measured rate were correct, 2 slots would be about 0.43 to 0.44 s; at 0.4 s/slot it would be 0.8 s. Because the discrepancy above is open, no seconds figure should be used for the replay.
+`bot/market/replay.py` `ExecutionModel.latency_slots = 2`; the default is **not changed** by this note and a test pins it. Conditional arithmetic only: two slots at the historical observed span rate amount to about 0.43 to 0.44 s, and two slots at the *current target* 0.20 s amount to 0.40 s. **Neither figure measures bot execution latency**; the replay's two-slot assumption remains unvalidated. Do not replace a latency model with a network slot-duration measurement.
 
 ## Next check (not run)
 
-Cross-check `blockTime` against `getBlockTime` for a few recent slots on two independent RPC providers. Proposed budget: 5 slots x 2 providers = 10 `getBlockTime` calls (plus 1 `getSlot` per provider, 12 calls in total). Needs the owner's approval of the providers and budget; no RPC is called by this routine.
+**Optional independent timestamp check**, not required to confirm the already-official 200 ms upgrade: compare archived `blockTime` with `getBlockTime` for matching historical slots if the providers retain those slots, and investigate timestamp provenance or systematic bias. A fresh-slot comparison instead validates current provider timing, not the historical archive. Previously proposed budget: 5 slots x 2 providers plus one `getSlot` per provider (12 RPC calls). Only run with explicit owner authorization and an appropriate free RPC budget; no RPC is called by this note.
