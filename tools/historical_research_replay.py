@@ -17,13 +17,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from bot.p4.historical_research_replay import ARMS, ReplayParams, run_replay  # noqa: E402
+from bot.p4.sol_usd_series import load_series  # noqa: E402
 
 DEFAULT_FIXTURES = ROOT / 'tests' / 'fixtures' / 'launchlab_sol_pools'
 
 
 def summary_lines(bundle, top=6):
     flags = bundle['flags']
-    yield (f"{bundle['category']} {bundle['schema']}  sol_usd={flags['sol_usd']} "
+    yield (f"{bundle['category']} {bundle['schema']}  sol_usd={flags.get('sol_usd_source') or flags['sol_usd']} "
            f"({flags['sol_usd_provenance']})  exclude_launchlab_vault="
            f"{bundle['params']['exclude_launchlab_vault']}  asof_inputs_causal={flags['asof_inputs_causal']}")
     for pool in bundle['pools']:
@@ -47,6 +48,8 @@ def main(argv=None):
                         help='declared SOL/USD rate; absent from the fixtures, never verified')
     parser.add_argument('--sol-usd-provenance', default=None,
                         help='required with --sol-usd, e.g. ASSUMED_DECLARED')
+    parser.add_argument('--sol-usd-series', type=Path, default=None,
+                        help='rugger-sol-usd-series-v1 file (JSON or .gz); exclusive with --sol-usd')
     parser.add_argument('--exclude-launchlab-vault', action='store_true',
                         help='leave the curve vault authority out of holder statistics')
     parser.add_argument('--out', type=Path, default=None, help='write the bundle JSON here')
@@ -56,7 +59,11 @@ def main(argv=None):
                               exclude_launchlab_vault=args.exclude_launchlab_vault)
     except ValueError as exc:
         parser.error(str(exc))
-    bundle = run_replay(args.fixtures, params)
+    try:
+        series = load_series(args.sol_usd_series) if args.sol_usd_series else None
+        bundle = run_replay(args.fixtures, params, series)
+    except ValueError as exc:
+        parser.error(str(exc))
     if args.out:
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(bundle, sort_keys=True, indent=1, allow_nan=False) + '\n',

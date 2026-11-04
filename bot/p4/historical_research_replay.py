@@ -44,6 +44,7 @@ from bot.market.replay import ExecutionModel, Strategy, replay
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4.native_asof_signal_bridge import NativeQuote
 from bot.p4_experiment import POLICY as P4_POLICY, decide_prefix
+from bot.p4.sol_usd_series import MAX_AGE_MS as SOL_USD_MAX_AGE_MS, VERIFICATION as SOL_USD_VERIFICATION, price_usd
 
 CATEGORY = 'HISTORICAL_REPLAY'
 SCHEMA = 'rugger-historical-research-replay-v1'
@@ -186,8 +187,9 @@ def _vetoes(flags):
 class _PoolObserver:
     """Causal frames and scorer outputs per decision index, shared by both arms."""
 
-    def __init__(self, archive, timeline, facts, params):
+    def __init__(self, archive, timeline, facts, params, sol_usd_series=None):
         self.pool, self.facts, self.params = archive.pool, facts, params
+        self.series = sol_usd_series
         self.transactions = sorted((_tx_key(tx), signature, tx)
                                    for signature, tx in archive.transactions.items())
         self.keys = {signature: key for key, signature, _tx in self.transactions}
@@ -206,6 +208,19 @@ class _PoolObserver:
         spot = Fraction(state.quote_reserve * 10 ** self.facts['base_decimals'],
                         state.base_reserve * 10 ** 9)
         return float(spot * sol), float(Fraction(state.real_quote, 10 ** 9) * sol)
+
+    def _past_prices(self, events, sol):
+        """Past (time, price_usd, liquidity_usd); with a series each event uses its own as-of rate."""
+        if self.series is None:
+            return [(e.block_time, *self._quote(e, sol)) for e in events]
+        rows = []
+        for e in events:
+            point, _age, refusal = self.series.as_of(
+                slot=e.slot, transaction_index=self.keys[e.signature][1],
+                decision_ms=e.block_time * 1000 + self.params.receipt_latency_ms)
+            if refusal is None:
+                rows.append((e.block_time, *self._quote(e, price_usd(point))))
+        return rows
 
     def _evaluate(self, history):
         event, facts, params = history[-1], self.facts, self.params
@@ -228,17 +243,28 @@ class _PoolObserver:
             blocked = ['creation_identity_unavailable']
         elif sum(e.signature == event.signature for e in history) < self.events_per_tx[event.signature]:
             blocked = ['intra_transaction_event_not_last']
-        elif params.sol_usd is None:
+        elif self.series is None and params.sol_usd is None:
             blocked = ['sol_usd_rate_unavailable']
+        elif self.series is not None:
+            point, age, refusal = self.series.as_of(slot=event.slot, transaction_index=key[1],
+                                                    decision_ms=at)
+            if refusal:
+                blocked = [refusal]
+            else:
+                shared['sol_usd_point'] = dict(
+                    slot=point['slot'], transaction_index=point['transaction_index'],
+                    source_kind=point['source_kind'], source_ref=point['source_ref'],
+                    evidence_sha256=point['evidence_sha256'], age_ms=age,
+                    verification=SOL_USD_VERIFICATION)
         if blocked:
             wait = dict(intent='WAIT', blocking_reasons=blocked + common)
             return dict(shared=shared, decisions={arm: wait for arm in ARMS}, exit_conditions=None)
-        sol = Fraction(str(params.sol_usd))
+        sol = price_usd(point) if self.series is not None else Fraction(str(params.sol_usd))
         detected = facts['creation_block_time'] * 1000 + params.receipt_latency_ms
         price, funding = self._quote(event, sol)
         features = build_features(
             inputs, facts['mint'], facts['creator'], detected // 1000, at // 1000,
-            [(e.block_time, *self._quote(e, sol)) for e in history[:-1]],
+            self._past_prices(history[:-1], sol),
             NativeQuote(price_usd=price, liquidity_usd=funding), prior_launches=0,
             excluded_holder_owners=([facts['vault_authority']] if params.exclude_launchlab_vault
                                     and facts['vault_authority'] else ()))
@@ -337,13 +363,13 @@ def _trade(result, events, arm, params):
     return row
 
 
-def replay_pool(archive, params, *, quote_mint):
+def replay_pool(archive, params, *, quote_mint, sol_usd_series=None):
     """Replay both research arms on one complete pool archive."""
     summary, timeline = summarize(archive)
     if not summary['complete']:
         raise ValueError(f'pool_history_incomplete:{archive.pool}')
     facts = creation_facts(archive)
-    observer = _PoolObserver(archive, timeline, facts, params)
+    observer = _PoolObserver(archive, timeline, facts, params, sol_usd_series)
     record = dict(pool=archive.pool, **facts, trades=len(timeline.events),
                   transactions=len(archive.transactions), signatures=len(archive.signatures),
                   failed_signatures=sum(row.get('err') is not None for row in archive.signatures),
@@ -375,11 +401,18 @@ def _totals(pools):
     return totals
 
 
-def run_replay(fixtures_dir, params=None):
-    """Return the deterministic HISTORICAL_REPLAY bundle for the fixture directory."""
+def run_replay(fixtures_dir, params=None, sol_usd_series=None):
+    """Return the deterministic HISTORICAL_REPLAY bundle for the fixture directory.
+
+    ``sol_usd_series`` (bot.p4.sol_usd_series.SolUsdSeries) replaces the declared
+    constant: each decision uses the as-of point or WAITs with the refusal reason.
+    """
     params = ReplayParams() if params is None else params
+    if sol_usd_series is not None and params.sol_usd is not None:
+        raise ValueError('sol_usd_constant_and_series_are_exclusive')
     manifest_sha256, digests, archives = load_fixtures(fixtures_dir)
-    pools = [replay_pool(archive, params, quote_mint=entry['quote_mint']) for entry, archive in archives]
+    pools = [replay_pool(archive, params, quote_mint=entry['quote_mint'], sol_usd_series=sol_usd_series)
+             for entry, archive in archives]
     signatures = sum(pool['signatures'] for pool in pools)
     journal = [row for pool in pools for row in pool['journal']]
     bundle = dict(
@@ -402,5 +435,11 @@ def run_replay(fixtures_dir, params=None):
             admissible_in_paper_ledger=False, counted_in_master_gate=False,
             master_operational_trade=False, research_evidence_status=RESEARCH_EVIDENCE_STATUS,
             financial_order_submitted=False))
+    if sol_usd_series is not None:
+        bundle['sol_usd_series'] = dict(
+            label=sol_usd_series.label, sha256=sol_usd_series.sha256,
+            points=len(sol_usd_series.points), max_age_ms=SOL_USD_MAX_AGE_MS,
+            verification=SOL_USD_VERIFICATION)
+        bundle['flags']['sol_usd_source'] = 'series:' + sol_usd_series.label
     bundle['bundle_sha256'] = _sha(bundle)
     return bundle
