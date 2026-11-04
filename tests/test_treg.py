@@ -818,3 +818,11 @@ def test_accept_pointer_command_reads_the_whole_message(tmp_path, capsys):
     unjournaled = json.dumps({'task_id': 'T-0005', 'event_id': 'T-0005-R02-0007'})  # S-002, as sent by R02
     assert treg.main(['accept-pointer', str(snap), '--policy', policy, '--agent', 'R01', '--pointer', unjournaled]) == 4
     assert json.loads(capsys.readouterr().out)['reason'] == 'unjournaled_wake'
+
+
+def test_s003_run_policy_only_lifts_the_pause():
+    run = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-003.policy.json').read_text(encoding='utf-8'))
+    assert run['paused'] is False and run['run_scope'] == 'treg-scenario-S-003'
+    assert run['owner_mandate_ref_sha256'] == '08ed4480f5e9e2afeec24084ae9e95b9f5232b56b49fa488234bb647d0c1f1d5'
+    assert run['agents'] == POLICY['agents']  # S-003 runs on the current base rules, R02 mandate included
+    assert_frozen_run_policy_never_looser_than_base(run)
