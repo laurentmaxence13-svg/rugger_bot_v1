@@ -65,3 +65,12 @@ Aucune autre source n'est acceptée, en particulier les API HTTP comme DexScreen
 - Il n'alimente ni le grand livre PAPER, ni `research_evidence`, ni le seuil du Master.
 - Le bundle par défaut, sans série, reste identique à l'octet (`fa86f314…`).
 - Une série constante à 150 donne exactement les décisions du taux déclaré à 150 (test de cohérence).
+
+## 6. Fenêtre de collecte (règle M1, contre le biais de survie)
+
+Le MANIFEST de la collecte peut fournir `entry_cutoff_slot` et `window_slot_max`, soit dans chaque entrée de pool, soit au premier niveau, mais toujours les deux ensemble.
+
+- **Entrée** : aucune entrée de recherche après `entry_cutoff_slot`. Les décisions concernées restent journalisées en WAIT, avec le motif `after_entry_cutoff_slot`.
+- **Sortie** : un cycle n'est clos que si sa sortie a lieu au plus tard au slot `window_slot_max`. Sinon, son résultat est `open_at_window_end` : il n'est jamais compté comme cycle clos, et sa valeur de marché est seulement indiquée dans `mark_pnl_lamports`.
+- **Contrôle** : le rejeu exige que `window_slot_max − entry_cutoff_slot` soit au moins égal à `ceil(exit_horizon_ms / 400) + 2 × latency_slots`, soit 79 slots avec les paramètres actuels. Les pools encore actifs près de la fin de la fenêtre **doivent être gardés** dans l'export.
+- **Compatibilité** : sans ces champs, le comportement est inchangé et les fixtures ne sont pas affectées.

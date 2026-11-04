@@ -273,3 +273,68 @@ def test_paper_ledger_and_research_gate_are_never_reached():
     output = subprocess.run([sys.executable, '-B', '-c', code, str(PACK)], cwd=ROOT, env=env,
                             capture_output=True, text=True, check=True, timeout=300).stdout
     assert output.strip() == '[]'
+
+
+def _forced(window, params=hrr.ReplayParams(**DECLARED)):
+    archive = archives()[C7F9]
+    _summary, timeline = summarize(archive)
+    observer = _EnterAt(archive, timeline, hrr.creation_facts(archive), params)
+    arm = hrr.ResearchArm('master', observer, params, window)
+    result = hrr.replay(timeline, arm, params.execution_model(), quote_mint=WSOL_MINT)
+    return hrr._apply_window(hrr._trade(result, timeline.events, arm, params), window), arm, timeline
+
+
+def test_collection_window_validation_and_absence():
+    params = hrr.ReplayParams()
+    assert hrr.collection_window({'pool': 'x'}, {'pools': []}, params) is None
+    gap = -(-params.exit_horizon_ms // hrr.SLOT_MS_FLOOR) + 2 * params.latency_slots
+    window = hrr.collection_window({'entry_cutoff_slot': 1000, 'window_slot_max': 1000 + gap}, {}, params)
+    assert window == dict(entry_cutoff_slot=1000, window_slot_max=1000 + gap, minimum_gap_slots=gap)
+    # Top-level values apply when the pool entry has none.
+    assert hrr.collection_window({}, {'entry_cutoff_slot': 1, 'window_slot_max': 1 + gap}, params)
+    for bad, error in (({'entry_cutoff_slot': 5}, 'invalid_collection_window'),
+                       ({'entry_cutoff_slot': 10, 'window_slot_max': 10}, 'invalid_collection_window'),
+                       ({'entry_cutoff_slot': 10, 'window_slot_max': 10 + gap - 1},
+                        'collection_window_gap_shorter_than_exit_horizon')):
+        with pytest.raises(ValueError, match=error):
+            hrr.collection_window(bad, {}, params)
+
+
+def test_no_entry_after_the_cutoff_slot():
+    _summary, timeline = summarize(archives()[C7F9])
+    decision_slot = timeline.events[_EnterAt.enter_index].slot
+    window = dict(entry_cutoff_slot=decision_slot - 1, window_slot_max=decision_slot + 10_000)
+    trade, arm, _timeline = _forced(window)
+    assert trade['outcome'] == 'no_entry' and trade['entry_index'] is None
+    late = [row for row in arm.journal if row['slot'] > window['entry_cutoff_slot']]
+    assert late and all(row['intent'] == 'WAIT' and 'after_entry_cutoff_slot' in row['blocking_reasons']
+                        for row in late)
+
+
+def test_exit_after_window_end_is_never_a_closed_cycle():
+    free, _arm, timeline = _forced(None)
+    assert free['entry_index'] is not None
+    decision_slot = timeline.events[_EnterAt.enter_index].slot
+    # Window ends right after the entry: any exit (or end-of-data mark) falls outside it.
+    window = dict(entry_cutoff_slot=decision_slot, window_slot_max=free['entry_slot'])
+    trade, _arm, _timeline = _forced(window)
+    assert trade['outcome'] == 'open_at_window_end'
+    assert trade['pnl_lamports'] is None and trade['net_return'] is None
+    assert trade['mark_pnl_lamports'] == free['pnl_lamports']
+
+
+def test_manifest_window_is_read_and_default_bundle_unchanged(tmp_path):
+    pack = tmp_path / 'pack'
+    shutil.copytree(PACK, pack)
+    manifest = json.loads((pack / 'MANIFEST.json').read_text(encoding='utf-8'))
+    for entry in manifest['pools']:
+        entry['entry_cutoff_slot'], entry['window_slot_max'] = 1, 10**12
+    (pack / 'MANIFEST.json').write_text(json.dumps(manifest), encoding='utf-8')
+    doc = hrr.run_replay(pack)
+    assert all(row['window']['window_slot_max'] == 10**12 for row in doc['pools'])
+    assert 'collection_window_rule' in doc['flags']
+    reasons = doc['totals']['master']['blocking_reasons']
+    assert reasons.get('after_entry_cutoff_slot', 0) > 0
+    default = bundle()
+    assert 'collection_window_rule' not in default['flags']
+    assert all('window' not in row for row in default['pools'])

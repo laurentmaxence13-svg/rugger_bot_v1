@@ -113,8 +113,30 @@ class ReplayParams:
                               priority_fee_lamports=self.priority_fee_lamports)
 
 
+SLOT_MS_FLOOR = 400     # average Solana slot; a gap is checked conservatively in slots
+
+
+def collection_window(entry, manifest, params):
+    """Optional collection window from the MANIFEST (pool entry overrides top level).
+
+    ``entry_cutoff_slot``: no research entry is admitted after it; ``window_slot_max``:
+    an exit counts as a closed cycle only if it lands at or before it (anti survival
+    bias, R02 observation M1). Both or neither; None when absent (fixtures unchanged).
+    """
+    source = entry if ('entry_cutoff_slot' in entry or 'window_slot_max' in entry) else manifest
+    cutoff, end = source.get('entry_cutoff_slot'), source.get('window_slot_max')
+    if cutoff is None and end is None:
+        return None
+    if type(cutoff) is not int or type(end) is not int or not 0 < cutoff < end:
+        raise ValueError('invalid_collection_window')
+    minimum_gap = -(-params.exit_horizon_ms // SLOT_MS_FLOOR) + 2 * params.latency_slots
+    if end - cutoff < minimum_gap:
+        raise ValueError('collection_window_gap_shorter_than_exit_horizon')
+    return dict(entry_cutoff_slot=cutoff, window_slot_max=end, minimum_gap_slots=minimum_gap)
+
+
 def load_fixtures(directory):
-    """Return (manifest_sha256, {file: sha256}, [(entry, archive)]); refuse any digest mismatch."""
+    """Return (manifest_sha256, {file: sha256}, [(entry, archive)], manifest); refuse any mismatch."""
     directory = Path(directory)
     raw = (directory / 'MANIFEST.json').read_bytes()
     manifest = json.loads(raw)
@@ -132,7 +154,7 @@ def load_fixtures(directory):
             raise ValueError(f"fixture_pool_mismatch:{entry['file']}")
         digests[entry['file']] = digest
         pools.append((entry, archive))
-    return hashlib.sha256(raw).hexdigest(), digests, pools
+    return hashlib.sha256(raw).hexdigest(), digests, pools, manifest
 
 
 def _tx_key(tx):
@@ -313,10 +335,10 @@ class _PoolObserver:
 class ResearchArm(Strategy):
     """One research arm: journal every decision, enter once, pre-registered exit."""
 
-    def __init__(self, arm, observer, params):
+    def __init__(self, arm, observer, params, window=None):
         if arm not in ARMS:
             raise ValueError('unknown_research_arm')
-        self.arm, self.observer, self.params = arm, observer, params
+        self.arm, self.observer, self.params, self.window = arm, observer, params, window
         self.journal, self.exit_plan, self.exit_trigger = [], None, None
 
     def entry(self, history):
@@ -324,6 +346,9 @@ class ResearchArm(Strategy):
             return None
         result = self.observer.observe(history)
         decision = result['decisions'][self.arm]
+        if self.window is not None and history[-1].slot > self.window['entry_cutoff_slot']:
+            decision = dict(intent='WAIT', blocking_reasons=(
+                [r for r in decision['blocking_reasons']] + ['after_entry_cutoff_slot']))
         self.journal.append(dict(result['shared'], arm=self.arm, **decision))
         if decision['intent'] != 'ENTER' or result['exit_conditions'] is None:
             return None
@@ -363,7 +388,17 @@ def _trade(result, events, arm, params):
     return row
 
 
-def replay_pool(archive, params, *, quote_mint, sol_usd_series=None):
+def _apply_window(row, window):
+    """A cycle counts only if its exit lands at or before window_slot_max (Q6, M1)."""
+    if window is None or row['outcome'] not in ('closed', 'open_at_end'):
+        return row
+    if row['outcome'] == 'closed' and row['exit_slot'] <= window['window_slot_max']:
+        return row
+    return dict(row, outcome='open_at_window_end', mark_pnl_lamports=row['pnl_lamports'],
+                pnl_lamports=None, net_return=None)
+
+
+def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None):
     """Replay both research arms on one complete pool archive."""
     summary, timeline = summarize(archive)
     if not summary['complete']:
@@ -376,11 +411,13 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None):
                   holder_owners_excluded=([facts['vault_authority']] if params.exclude_launchlab_vault
                                           and facts['vault_authority'] else []),
                   journal=[], arms={})
+    if window is not None:
+        record['window'] = window
     for name in ARMS:
-        arm = ResearchArm(name, observer, params)
+        arm = ResearchArm(name, observer, params, window)
         result = replay(timeline, arm, params.execution_model(), quote_mint=quote_mint)
         record['journal'].extend(arm.journal)
-        record['arms'][name] = _trade(result, timeline.events, arm, params)
+        record['arms'][name] = _apply_window(_trade(result, timeline.events, arm, params), window)
     return record
 
 
@@ -410,8 +447,9 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None):
     params = ReplayParams() if params is None else params
     if sol_usd_series is not None and params.sol_usd is not None:
         raise ValueError('sol_usd_constant_and_series_are_exclusive')
-    manifest_sha256, digests, archives = load_fixtures(fixtures_dir)
-    pools = [replay_pool(archive, params, quote_mint=entry['quote_mint'], sol_usd_series=sol_usd_series)
+    manifest_sha256, digests, archives, manifest = load_fixtures(fixtures_dir)
+    pools = [replay_pool(archive, params, quote_mint=entry['quote_mint'], sol_usd_series=sol_usd_series,
+                         window=collection_window(entry, manifest, params))
              for entry, archive in archives]
     signatures = sum(pool['signatures'] for pool in pools)
     journal = [row for pool in pools for row in pool['journal']]
@@ -435,6 +473,10 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None):
             admissible_in_paper_ledger=False, counted_in_master_gate=False,
             master_operational_trade=False, research_evidence_status=RESEARCH_EVIDENCE_STATUS,
             financial_order_submitted=False))
+    if any('window' in pool for pool in pools):
+        bundle['flags']['collection_window_rule'] = (
+            'no entry after entry_cutoff_slot; a cycle counts only if its exit lands at or before '
+            'window_slot_max; otherwise open_at_window_end (never a closed cycle)')
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
             label=sol_usd_series.label, sha256=sol_usd_series.sha256,
