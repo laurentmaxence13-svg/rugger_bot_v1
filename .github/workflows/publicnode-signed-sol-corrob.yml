@@ -1,11 +1,8 @@
 name: Reverify first signed SOL LaunchLab creator from a second free provider (NO ORDERS)
 
 on:
-  pull_request:
-    paths:
-      - 'bot/live/publicnode_signed_sol_creation.py'
-      - 'tests/test_publicnode_signed_sol_creation.py'
-      - '.github/workflows/publicnode-signed-sol-corrob.yml'
+  # Manual only (legacy port 2026-11-04, D3 rule): automatic triggers removed: pull_request.
+  workflow_dispatch:
 
 permissions:
   contents: read

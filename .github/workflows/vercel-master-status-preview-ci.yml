@@ -1,9 +1,7 @@
 name: Rugger Vercel genuine Master NO-GO preview (offline only)
 on:
-  pull_request:
-    paths:
-      - 'vercel/master-status-preview/**'
-      - '.github/workflows/vercel-master-status-preview-ci.yml'
+  # Manual only (legacy port 2026-11-04, D3 rule): automatic triggers removed: pull_request.
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
