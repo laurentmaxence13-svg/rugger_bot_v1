@@ -151,10 +151,15 @@ Les preuves (SHA, run CI, sortie de tests) vont dans le `payload` de l'événeme
 
 ## 8. Lecture directe par RUGGER 04 (vérification SHA et fraîcheur)
 
-Le corps de l'issue inbox (#103) se termine par un bloc `<!-- treg-heads v1 -->`
-(schéma `rugger-treg-heads-v1`) : pour chaque tâche, `seq`, `event_id`,
-`digest` et `utc` du dernier événement, plus `generated_utc`, `last_event_utc`
-et `registry_digest` (SHA-256 canonique de `{tâche: digest}`).
+Le corps de l'issue inbox (#103) porte le tableau de bord courant, qui se termine
+par un bloc `<!-- treg-heads v1 -->` (schéma `rugger-treg-heads-v1`). Pour chaque
+tâche, ce bloc donne le `seq`, l'`event_id`, le `digest` et l'`utc` du dernier
+événement, plus `generated_utc`, `last_event_utc` et `registry_digest` (SHA-256
+canonique de `{tâche: digest}`). Les commentaires gardent les tableaux
+précédents. Le bloc dont la date `generated_utc` est la plus récente fait foi.
+Un tableau **obsolète** (le registre a avancé et son historique est intact) se
+distingue d'une **divergence d'intégrité** (événement réécrit, manquant ou omis).
+Voir `R04_PROCEDURE.md` §2 et `treg.py classify_heads`.
 
 Niveaux de vérification, du plus léger au plus complet :
 1. **Fraîcheur** : `generated_utc` récent (60 min par défaut) ; pour chaque tâche,
@@ -165,7 +170,8 @@ Niveaux de vérification, du plus léger au plus complet :
    `treg`, puis
    `python -B tools/treg.py ingest c1.json c2.json … --policy docs/treg/runs/<run>.policy.json --out snap.json`
    et `python -B tools/treg.py verify-heads snap.json --policy … --heads dashboard.md --now <UTC>`
-   (code 0 = cohérent et frais, 4 = périmé ou divergent, avec la liste des écarts).
+   (code 0 = cohérent et frais, 3 = obsolète mais historique intact, 4 = anomalie
+   d'intégrité, avec la liste des écarts).
 
 Le tableau de bord publié couvre **tout** le registre (toutes les issues
 `[T-REG] T-xxxx`) : un lecteur qui lit toutes les issues obtiendrait sinon

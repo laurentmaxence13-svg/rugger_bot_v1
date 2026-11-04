@@ -20,36 +20,55 @@ lui-même, sans qu'un humain lui recopie le contenu.
 | Outil | `tools/treg.py` sur la branche `claude/r01-treg` (bibliothèque standard Python, aucun réseau). Utiliser le commit indiqué dans le dernier rapport de #103 |
 | Politique de rejeu | `docs/treg/runs/S-002.policy.json` (mêmes règles que `docs/treg/agents.json`, sans la pause) |
 
-Le dernier commentaire de #103 qui contient `<!-- treg-heads v1 -->` est le
-**tableau de bord de référence**. Il couvre tout le registre. Pour chaque tâche,
-il donne le `seq`, l'`event_id`, le `digest` et l'`utc` du dernier événement,
-ainsi que `events`, `generated_utc` et `registry_digest`.
+Le **tableau de bord de référence** est le bloc `<!-- treg-heads v1 -->` dont la
+date `generated_utc` est la **plus récente**. On le cherche dans le **corps** de #103
+(tableau courant, régénéré par RUGGER 01) **et** dans ses commentaires
+(historique). Un tableau plus ancien, où qu'il se trouve, ne fait jamais foi. Pour
+chaque tâche, le bloc donne le `seq`, l'`event_id`, le `digest` et l'`utc` du
+dernier événement, ainsi que `events`, `generated_utc` et `registry_digest`.
+
+**Lire tout le registre.** Les issues et leurs commentaires sont paginés : il faut
+lire toutes les pages avant de conclure. Une lecture partielle apparaît comme une
+anomalie d'intégrité (`…_not_in_registry_read`).
 
 ## 2. Niveau A — connecteur GitHub seul, sans exécution de code
 
-1. Dans #103, prendre le dernier commentaire contenant `<!-- treg-heads v1 -->`.
-   Noter son lien, `generated_utc`, `events`, `registry_digest` et, pour chaque
-   tâche, `event_id` et `digest`.
-2. Lister les issues dont le titre commence par `[T-REG] T-`. Chaque tâche du
-   tableau doit avoir son issue, et inversement.
-3. Dans chaque issue, prendre le **dernier** commentaire `treg-event`. Son
-   `event_id` et son `digest` doivent être exactement ceux du tableau.
-4. Le nombre total de commentaires `treg-event` doit être égal à `events`.
-5. Verdict :
-   - `CURRENT` : tout concorde et `generated_utc` date de moins de 60 minutes ;
-   - `CURRENT_IDLE` : tout concorde, mais `generated_utc` est plus ancien (le
-     registre n'a pas bougé depuis) ;
-   - `DIVERGED` : sinon. Lister alors les écarts.
+1. Repérer le tableau de référence (§1) : noter son emplacement, `generated_utc`,
+   `events`, `registry_digest` et, pour chaque tâche, `seq`, `event_id` et `digest`.
+2. Lister toutes les issues dont le titre commence par `[T-REG] T-`.
+3. Pour chaque tâche, lire tous les commentaires `treg-event` de son issue, puis
+   classer :
 
-**Limite du niveau A** : sans calcul de SHA-256, il détecte un tableau périmé,
-incomplet ou divergent, mais pas un événement falsifié dont le digest aurait
-été recopié. Seul le niveau B détecte une falsification.
+| Constat | Classement |
+|---|---|
+| Le dernier événement a l'`event_id` et le `digest` du tableau | **à jour** |
+| L'événement de rang `seq` a l'`event_id` et le `digest` du tableau, et des événements le suivent | **obsolète** (`task_advanced`) : le registre a avancé, son historique est intact |
+| La tâche n'est pas dans le tableau, et son premier événement est postérieur à `generated_utc` | **obsolète** (`task_created_after_heads`) |
+| L'événement de rang `seq` a un autre `event_id` ou un autre `digest` | **intégrité** (`digest_mismatch_at_published_seq`) : historique réécrit |
+| L'issue a moins de `seq` événements | **intégrité** (`published_event_not_in_registry_read`) : événement supprimé, ou lecture incomplète |
+| La tâche n'est pas dans le tableau, alors que son premier événement est antérieur à `generated_utc` | **intégrité** (`task_omitted_from_heads`) : tableau incomplet |
+| Le tableau cite une tâche introuvable | **intégrité** (`task_not_in_registry_read`) |
+
+4. Verdict :
+   - `DIVERGED` : au moins une anomalie d'**intégrité**, même s'il y a aussi de
+     l'obsolescence ;
+   - `STALE` : aucune anomalie d'intégrité, mais au moins une tâche obsolète.
+     Le tableau est en retard, mais le registre reste lisible et cohérent ;
+   - `CURRENT` : tout est à jour et `generated_utc` date de moins de 60 minutes ;
+   - `CURRENT_IDLE` : tout est à jour, mais le tableau est plus ancien (le registre
+     n'a pas bougé).
+
+**Limite du niveau A** : sans calcul de SHA-256, il compare des valeurs recopiées.
+Il ne détecte donc pas un événement falsifié dont le digest aurait été recalculé
+et recopié partout. Seul le niveau B le détecte, car il recalcule chaque digest
+et la chaîne `prev_digest`.
 
 ## 3. Niveau B — connecteur GitHub et exécution de code (sans réseau)
 
-1. Enregistrer les commentaires de chaque issue `[T-REG] T-…` dans un fichier
-   JSON (liste d'objets `{"body": "<texte exact du commentaire>"}`), et ceux de
-   #103 dans `inbox.json`.
+1. Enregistrer les commentaires de chaque issue `[T-REG] T-…` (toutes les pages)
+   dans un fichier JSON, sous la forme d'une liste d'objets
+   `{"body": "<texte exact du commentaire>"}`. Pour #103, enregistrer dans
+   `inbox.json` **l'issue elle-même** (son corps) suivie de ses commentaires.
 2. Récupérer `tools/treg.py` et `docs/treg/runs/S-002.policy.json` au commit
    indiqué.
 3. Exécuter :
@@ -58,7 +77,14 @@ incomplet ou divergent, mais pas un événement falsifié dont le digest aurait
    python -B treg.py r04-verify --policy S-002.policy.json --registry c104.json c105.json c106.json c107.json c108.json c109.json --inbox inbox.json --now <UTC actuel, ex. 2026-11-04T08:00:00Z>
    ```
 
-4. Code 0 = `CURRENT` ou `CURRENT_IDLE` ; code 4 = `DIVERGED` ou `NO_HEADS`.
+4. Codes de retour :
+   - 0 = `CURRENT` ou `CURRENT_IDLE` ;
+   - 3 = `STALE` (tableau obsolète, registre cohérent) ;
+   - 4 = `DIVERGED` (anomalie d'intégrité) ou `NO_HEADS`.
+
+   La sortie liste séparément `integrity` et `stale`. Un digest faux, une chaîne
+   rompue ou une règle violée dans le registre arrête le rejeu avant tout verdict
+   (`refused`, code 2).
    La sortie contient une ligne prête à recopier :
    `RUGGER04-VERIFY | utc=… | heads_comment=… | registry_digest=… | events=… | tasks=… | wakes_not_journaled=… | verdict=…`.
 
@@ -85,7 +111,7 @@ RUGGER 04 le texte ci-dessous, sans y ajouter aucune valeur :
 > titre commence par `[T-REG] T-`. Applique `docs/treg/R04_PROCEDURE.md` (branche
 > `claude/r01-treg`), au niveau B si tu peux exécuter du code, sinon au niveau A.
 > Réponds par une seule ligne :
-> `R04-PROBE-ANSWER | probe=P-001 | nonce=<valeur du commentaire R04-ACCESS-PROBE P-001> | heads_comment=<lien> | registry_digest=<valeur> | events=<n> | last_events=T-0001:<event_id>,T-0002:…,T-0006:<event_id> | level=<A|B> | verdict=<CURRENT|CURRENT_IDLE|DIVERGED>`.
+> `R04-PROBE-ANSWER | probe=P-001 | nonce=<valeur du commentaire R04-ACCESS-PROBE P-001> | heads_comment=<lien> | registry_digest=<valeur> | events=<n> | last_events=T-0001:<event_id>,…,<dernière tâche>:<event_id> | level=<A|B> | verdict=<CURRENT|CURRENT_IDLE|STALE|DIVERGED> | anomalies=<liste ou aucune>`.
 > Si tu ne peux pas lire une source, écris `UNREADABLE:<source>` à la place de la
 > valeur, sans rien deviner.
 

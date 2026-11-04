@@ -436,40 +436,78 @@ def heads(state, *, generated_utc):
             'registry_digest': digest({k: v['digest'] for k, v in per_task.items()})}
 
 
-def verify_heads(published, state, *, now, max_age_minutes=60):
-    """Compare a published heads block with a freshly replayed snapshot."""
-    problems = []
-    current = heads(state, generated_utc=now)
+def classify_heads(published, state):
+    """Compare a published heads block with the replayed registry, task by task.
+
+    Returns (integrity, stale). `integrity` lists real anomalies: the block is malformed or
+    self-inconsistent, an event it names is absent or different in the registry (rewritten
+    or deleted history, or a partial read), a task it names is not in the registry, or a
+    task that already existed when the block was generated is missing from it. `stale` only
+    means the registry moved on consistently: a task has events after the published one, or
+    a task was created after the block. Stale never hides an integrity anomaly.
+    """
+    integrity, stale = [], []
+    tasks = published.get('tasks') if isinstance(published.get('tasks'), dict) else {}
+    generated = published.get('generated_utc')
     if published.get('schema') != 'rugger-treg-heads-v1':
-        problems.append('heads_schema')
-    if published.get('registry_digest') != digest({k: v['digest'] for k, v in published.get('tasks', {}).items()}):
-        problems.append('published_registry_digest_inconsistent')
-    for task_id in sorted(set(current['tasks']) | set(published.get('tasks', {}))):
-        mine, theirs = current['tasks'].get(task_id), published.get('tasks', {}).get(task_id)
-        if theirs is None:
-            problems.append('task_missing_from_published:' + task_id)
-        elif mine is None:
-            problems.append('task_unknown_in_registry:' + task_id)
-        elif mine['digest'] != theirs['digest']:
-            problems.append('stale_or_diverged:%s:published_seq=%s:registry_seq=%s' % (task_id, theirs['seq'], mine['seq']))
+        integrity.append('heads_schema')
+    if published.get('registry_digest') != digest({k: (v or {}).get('digest') for k, v in tasks.items()}):
+        integrity.append('published_registry_digest_inconsistent')
+    for task_id in sorted(set(state['log']) | set(tasks)):
+        log, head = state['log'].get(task_id, []), tasks.get(task_id)
+        if head is None:
+            if type(generated) is str and log[0]['utc'] > generated:
+                stale.append('task_created_after_heads:%s' % task_id)
+            else:
+                integrity.append('task_omitted_from_heads:%s' % task_id)
+            continue
+        if not log:
+            integrity.append('task_not_in_registry_read:%s' % task_id)
+            continue
+        seq = head.get('seq')
+        if type(seq) is not int or not 1 <= seq <= len(log):
+            integrity.append('published_event_not_in_registry_read:%s:published_seq=%s:registry_seq=%d'
+                             % (task_id, seq, len(log)))
+        elif log[seq - 1]['digest'] != head.get('digest') or log[seq - 1]['event_id'] != head.get('event_id'):
+            integrity.append('digest_mismatch_at_published_seq:%s:seq=%d' % (task_id, seq))
+        elif seq < len(log):
+            stale.append('task_advanced:%s:published_seq=%d:registry_seq=%d' % (task_id, seq, len(log)))
+    return integrity, stale
+
+
+def verify_heads(published, state, *, now, max_age_minutes=60):
+    """Compare a published heads block with a freshly replayed snapshot.
+
+    `consistent`: the block describes the registry exactly. `integrity_ok`: no real anomaly
+    (a stale block can be integrity_ok). `fresh`: generated less than `max_age_minutes` ago.
+    """
+    current = heads(state, generated_utc=now)
+    integrity, stale = classify_heads(published, state)
     age = (parse_utc(now) - parse_utc(published.get('generated_utc', now))).total_seconds() / 60
     fresh = 0 <= age <= max_age_minutes
-    if not fresh:
-        problems.append('published_heads_age_minutes:%d' % age)
-    return {'consistent': not [p for p in problems if not p.startswith('published_heads_age')], 'fresh': fresh,
-            'problems': problems, 'registry_digest': current['registry_digest']}
+    problems = integrity + stale + ([] if fresh else ['published_heads_age_minutes:%d' % age])
+    return {'consistent': not integrity and not stale, 'integrity_ok': not integrity, 'fresh': fresh,
+            'integrity': integrity, 'stale': stale, 'problems': problems,
+            'registry_digest': current['registry_digest']}
 
 
 def find_heads(inbox_comments):
-    """Latest `treg-heads` block among inbox comments (MCP dicts or raw bodies) -> (heads, reference)."""
+    """Most recent `treg-heads` block in the inbox -> (heads, reference).
+
+    Items are the inbox issue itself and/or its comments (MCP dicts with 'body', or raw
+    bodies). The block with the latest `generated_utc` wins, wherever it is (issue body or
+    comment), so an older table left in the issue body can never shadow a newer one.
+    """
     found = None
-    for comment in inbox_comments:
-        body = comment.get('body') if isinstance(comment, dict) else comment
+    for item in inbox_comments:
+        body = item.get('body') if isinstance(item, dict) else item
         if type(body) is str and HEADS_MARKER in body:
             match = re.search(re.escape(HEADS_MARKER) + r'\s*```json\n(.*?)\n```', body, re.S)
             if match:
-                ref = (comment.get('html_url') or comment.get('id')) if isinstance(comment, dict) else None
-                found = (json.loads(match.group(1)), ref)
+                block = json.loads(match.group(1))
+                ref = (item.get('html_url') or item.get('id')) if isinstance(item, dict) else None
+                if found is None or str(block.get('generated_utc', '')) >= str(found[0].get('generated_utc', '')):
+                    found = (block, ref)
     return found if found else (None, None)
 
 
@@ -478,8 +516,10 @@ def r04_verify(registry_comment_lists, inbox_comments, policy, *, now, max_age_m
 
     Read-only: the replay ignores the write-time pause (a reader never writes). Verdicts:
     CURRENT (heads match the registry and are recent), CURRENT_IDLE (match, older than
-    `max_age_minutes`, no event since), DIVERGED (registry changed or heads incomplete),
-    NO_HEADS (no heads block in the inbox).
+    `max_age_minutes`, no event since), STALE (the registry moved on consistently after the
+    heads: newer events or tasks; the replayed registry itself is valid), DIVERGED (integrity
+    anomaly, see classify_heads), NO_HEADS (no heads block in the inbox). Replay errors
+    (bad digest, broken chain, rule violation) raise before any verdict.
     """
     published, ref = find_heads(inbox_comments)
     snapshot = ingest(registry_comment_lists)
@@ -490,8 +530,14 @@ def r04_verify(registry_comment_lists, inbox_comments, policy, *, now, max_age_m
         result = {'verdict': 'NO_HEADS', 'problems': ['no_heads_block_in_inbox']}
     else:
         check = verify_heads(published, state, now=now, max_age_minutes=max_age_minutes)
-        verdict = 'DIVERGED' if not check['consistent'] else ('CURRENT' if check['fresh'] else 'CURRENT_IDLE')
-        result = {'verdict': verdict, 'problems': check['problems'], 'heads_generated_utc': published.get('generated_utc')}
+        if not check['integrity_ok']:
+            verdict = 'DIVERGED'
+        elif check['stale']:
+            verdict = 'STALE'
+        else:
+            verdict = 'CURRENT' if check['fresh'] else 'CURRENT_IDLE'
+        result = {'verdict': verdict, 'problems': check['problems'], 'integrity': check['integrity'],
+                  'stale': check['stale'], 'heads_generated_utc': published.get('generated_utc')}
     result.update(heads_comment=ref, registry_digest=current['registry_digest'], events=current['events'],
                   tasks={k: v['status'] for k, v in sorted(state['tasks'].items())},
                   inbox_reports=len(state['inbox']), wakes_not_journaled=len(missing),
@@ -807,7 +853,7 @@ def main(argv=None):
     p = sub.add_parser('r04-verify', help='RUGGER 04: inbox heads vs a full replay of the registry')
     p.add_argument('--policy', required=True)
     p.add_argument('--registry', nargs='+', required=True, help='saved comments of every [T-REG] task issue')
-    p.add_argument('--inbox', required=True, help='saved comments of the RUGGER04 inbox issue')
+    p.add_argument('--inbox', required=True, help='saved RUGGER04 inbox issue and/or its comments (JSON list)')
     p.add_argument('--now', required=True)
     p.add_argument('--max-age-minutes', type=int, default=60)
     args = parser.parse_args(argv)
@@ -832,7 +878,7 @@ def main(argv=None):
         result = r04_verify(lists, inbox if isinstance(inbox, list) else [inbox], policy, now=args.now,
                             max_age_minutes=args.max_age_minutes)
         print(json.dumps(result, indent=1, sort_keys=True))
-        return 0 if result['verdict'] in ('CURRENT', 'CURRENT_IDLE') else 4
+        return {'CURRENT': 0, 'CURRENT_IDLE': 0, 'STALE': 3}.get(result['verdict'], 4)
     if args.cmd == 'ingest':
         loaded = []
         for path in args.comments:
@@ -887,7 +933,9 @@ def main(argv=None):
             text = re.search(re.escape(HEADS_MARKER) + r'\s*```json\n(.*?)\n```', text, re.S).group(1)
         result = verify_heads(json.loads(text), state, now=args.now, max_age_minutes=args.max_age_minutes)
         print(json.dumps(result, sort_keys=True))
-        return 0 if result['consistent'] and result['fresh'] else 4
+        if not result['integrity_ok']:
+            return 4  # integrity anomaly
+        return 0 if result['consistent'] and result['fresh'] else 3  # 3 = obsolete, history consistent
     if args.cmd == 'dashboard':
         print(render_dashboard(state, generated_utc=args.now, policy=policy), end='')
         return 0

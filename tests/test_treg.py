@@ -495,22 +495,46 @@ def test_heads_match_last_event_of_each_task_and_registry_digest_is_recomputable
     for tid, head in h['tasks'].items():
         assert head['digest'] == state['log'][tid][-1]['digest'] and head['seq'] == len(state['log'][tid])
     assert h['registry_digest'] == treg.digest({k: v['digest'] for k, v in h['tasks'].items()})
-    assert treg.verify_heads(h, state, now='2026-11-04T10:30:00Z') == {
-        'consistent': True, 'fresh': True, 'problems': [], 'registry_digest': h['registry_digest']}
+    result = treg.verify_heads(h, state, now='2026-11-04T10:30:00Z')
+    assert result == {'consistent': True, 'integrity_ok': True, 'fresh': True, 'integrity': [], 'stale': [],
+                      'problems': [], 'registry_digest': h['registry_digest']}
 
 
-def test_verify_heads_detects_stale_divergent_and_old_dashboards():
+def test_verify_heads_separates_an_obsolete_dashboard_from_an_integrity_divergence():
     state, _ = treg.simulate_scenario(POLICY)
     old = treg.heads(state, generated_utc='2026-11-04T10:00:00Z')
     tid = 'T-0002'
     ev = treg.make_event(state, task_id=tid, from_agent='R01', type='wake', utc='2026-11-04T11:00:00Z',
                          payload={'to': 'R02', 'pointer': {'task_id': tid, 'event_id': state['log'][tid][-1]['event_id']}})
     newer, _ = treg.apply_event(state, ev, ACTIVE)
+    # Obsolete: the registry moved on after the dashboard, history unchanged.
     result = treg.verify_heads(old, newer, now='2026-11-04T12:30:00Z', max_age_minutes=60)
-    assert result['consistent'] is False and result['fresh'] is False
-    assert any(p.startswith('stale_or_diverged:T-0002') for p in result['problems'])
+    assert result['consistent'] is False and result['integrity_ok'] is True and result['fresh'] is False
+    n = len(state['log'][tid])
+    assert result['stale'] == ['task_advanced:T-0002:published_seq=%d:registry_seq=%d' % (n, n + 1)]
+    assert result['integrity'] == []
+    # A task created after the dashboard is obsolescence too.
+    created = treg.make_event(newer, task_id='T-0004', from_agent='OWNER', type='create', utc='2026-11-04T11:30:00Z',
+                              payload={'task': task('T-0004', kind='report', deps=('T-0003',))})
+    newest, _ = treg.apply_event(newer, created, ACTIVE)
+    assert treg.verify_heads(old, newest, now='2026-11-04T11:40:00Z')['stale'][-1] == 'task_created_after_heads:T-0004'
+    # Integrity: a task that existed when the dashboard was generated is missing from it.
+    omitted = copy.deepcopy(old); del omitted['tasks']['T-0003']
+    omitted['registry_digest'] = treg.digest({k: v['digest'] for k, v in omitted['tasks'].items()})
+    assert treg.verify_heads(omitted, state, now='2026-11-04T10:01:00Z')['integrity'] == ['task_omitted_from_heads:T-0003']
+    # Integrity: the event named by the dashboard differs in the registry (rewritten history).
+    rewritten = copy.deepcopy(old); rewritten['tasks']['T-0001']['digest'] = '0' * 64
+    rewritten['registry_digest'] = treg.digest({k: v['digest'] for k, v in rewritten['tasks'].items()})
+    check = treg.verify_heads(rewritten, newer, now='2026-11-04T10:01:00Z')
+    assert check['integrity_ok'] is False
+    assert check['integrity'] == ['digest_mismatch_at_published_seq:T-0001:seq=%d' % len(state['log']['T-0001'])]
+    # Integrity: the dashboard names an event the registry read does not contain (deleted or partial read).
+    truncated = copy.deepcopy(state); truncated['log'][tid] = truncated['log'][tid][:-2]
+    assert treg.verify_heads(old, truncated, now='2026-11-04T10:01:00Z')['integrity'] == [
+        'published_event_not_in_registry_read:T-0002:published_seq=%d:registry_seq=%d' % (n, n - 2)]
+    # Integrity: a self-inconsistent block.
     forged = copy.deepcopy(old); forged['tasks']['T-0001']['digest'] = '0' * 64
-    assert 'published_registry_digest_inconsistent' in treg.verify_heads(forged, state, now='2026-11-04T10:01:00Z')['problems']
+    assert 'published_registry_digest_inconsistent' in treg.verify_heads(forged, state, now='2026-11-04T10:01:00Z')['integrity']
 
 
 def test_verify_heads_cli_reads_the_published_dashboard_markdown(tmp_path, capsys):
@@ -526,7 +550,11 @@ def test_verify_heads_cli_reads_the_published_dashboard_markdown(tmp_path, capsy
     code = treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T10:20:00Z'])
     out = json.loads(capsys.readouterr().out)
     assert code == 0 and out['consistent'] and out['fresh']
-    assert treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T13:00:00Z']) == 4
+    # Old but consistent: obsolete (3), not an integrity failure (4).
+    assert treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T13:00:00Z']) == 3
+    capsys.readouterr()
+    board.write_text(board.read_text().replace(state['log']['T-0001'][-1]['digest'], '1' * 64))
+    assert treg.main(['verify-heads', str(snap), '--policy', str(pol), '--heads', str(board), '--now', '2026-11-04T10:20:00Z']) == 4
 
 
 # ---------------------------------------------------------------- planner closes producer tasks (S-002 finding)
@@ -826,3 +854,36 @@ def test_s003_run_policy_only_lifts_the_pause():
     assert run['owner_mandate_ref_sha256'] == '08ed4480f5e9e2afeec24084ae9e95b9f5232b56b49fa488234bb647d0c1f1d5'
     assert run['agents'] == POLICY['agents']  # S-003 runs on the current base rules, R02 mandate included
     assert_frozen_run_policy_never_looser_than_base(run)
+
+
+
+def test_r04_verify_calls_a_dashboard_stale_when_the_registry_only_moved_on(tmp_path, capsys):
+    lists = archived_registry()
+    s001 = lists[:3]  # dashboard generated when only S-001 existed, then S-002 happened
+    inbox = inbox_with_dashboard(s001, '2026-11-03T23:20:00Z')
+    stale = treg.r04_verify(lists, inbox, POLICY, now='2026-11-04T00:30:00Z')
+    assert stale['verdict'] == 'STALE' and stale['integrity'] == []
+    assert stale['stale'] == ['task_created_after_heads:T-0004', 'task_created_after_heads:T-0005',
+                              'task_created_after_heads:T-0006']
+    # The same S-001 dashboard dated after S-002 started would hide existing tasks: integrity anomaly.
+    hiding = inbox_with_dashboard(s001, '2026-11-03T23:50:00Z')
+    assert treg.r04_verify(lists, hiding, POLICY, now='2026-11-04T00:30:00Z')['verdict'] == 'DIVERGED'
+    paths = []
+    for i, comments in enumerate(lists):
+        path = tmp_path / ('c%d.json' % i)
+        path.write_text(json.dumps(comments), encoding='utf-8')
+        paths.append(str(path))
+    box = tmp_path / 'inbox.json'
+    box.write_text(json.dumps(inbox), encoding='utf-8')
+    assert treg.main(['r04-verify', '--policy', str(ROOT / 'docs' / 'treg' / 'agents.json'), '--registry', *paths,
+                      '--inbox', str(box), '--now', '2026-11-04T00:30:00Z']) == 3
+    assert json.loads(capsys.readouterr().out)['verdict'] == 'STALE'
+
+
+def test_find_heads_prefers_the_most_recent_block_wherever_it_is():
+    lists = archived_registry()
+    newer = inbox_with_dashboard(lists, '2026-11-04T00:00:00Z')[1]
+    older = dict(inbox_with_dashboard(lists[:3], '2026-11-03T23:20:00Z')[1], html_url='issue-body')
+    block, ref = treg.find_heads([newer, older])  # an older table listed after (e.g. the issue body) never wins
+    assert block['generated_utc'] == '2026-11-04T00:00:00Z' and ref == newer['html_url']
+    assert treg.find_heads([older, newer])[1] == newer['html_url']
