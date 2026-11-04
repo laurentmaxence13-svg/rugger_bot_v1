@@ -1,7 +1,9 @@
 # PROBE-PRIV — préparation à la privatisation de `laurentmaxence13-svg/rugger_bot_v1`
 
 Préparé le 2026-11-04 par RUGGER 01, coordinateur PROBE-PRIV (mandat du
-propriétaire). **Aucune modification de visibilité. Aucun dépôt créé.**
+propriétaire). **Aucune modification de visibilité. Aucun dépôt créé.** Les sondes de R01,
+R02 (T-0010, #114) et R03 (T-0011, #115) sont intégrées ; RUGGER 04 n'a pas
+été sondé (voir #103).
 Privatisation **non prête** : les accès de tous les agents, RUGGER 04 compris,
 ne sont pas validés.
 
@@ -12,7 +14,11 @@ ne sont pas validés.
 | Le dépôt est **public** | API GitHub `repos/laurentmaxence13-svg/rugger_bot_v1` : `private: false`, `visibility: public` (2026-11-04). Les anciennes notes T-REG disant « privé » étaient fausses ; elles sont corrigées |
 | Les conteneurs Claude Code Cloud ajoutent un jeton GitHub aux requêtes sortantes | un `curl` sans en-tête vers `api.github.com` reçoit `X-Oauth-Client-Id` et une limite de débit de 15000 : la requête est **authentifiée par le proxy**. Un test de lecture anonyme y est donc impossible : il faut un navigateur non connecté ou une autre machine |
 | Aucun code exécuté ne lit GitHub anonymement | recherche sur `main` @ `d9b950e`, #101 @ `16f1f22` et Census @ `25a9f59`. On trouve des liens de documentation, des URL `raw.githubusercontent.com` de dépôts **tiers** publics (solana-program, raydium-io), et un workflow qui télécharge des artefacts avec `GITHUB_TOKEN` en en-tête |
-| Aucun fichier de déploiement dans le dépôt | ni `render.yaml`, ni `vercel.json`, ni `Dockerfile` : Render et Vercel sont configurés dans leurs propres tableaux de bord |
+| Aucun fichier de déploiement dans le dépôt | ni `render.yaml`, ni `vercel.json`, ni `Dockerfile` : Render et Vercel sont configurés dans leurs propres tableaux de bord. **Ajout de R02** : `streamlit_app.py` et `.streamlit/config.toml` (sur `main`, #101, Census et `claude/r01-treg`) indiquent un déploiement **Streamlit Community Cloud** |
+| Forks, étoiles, Pages (R02) | `forks_count` = 0, aucun fork public ne survivrait à une privatisation ; 0 étoile, 0 observateur, pas de GitHub Pages |
+| Protections actives aujourd'hui (R02) | analyse de secrets, blocage des pushes, motifs non liés à un fournisseur, contrôles de validité et mises à jour de sécurité Dependabot : **toutes désactivées**. `main` n'est pas protégé et il y a 0 ruleset |
+| Droits des agents (R02) | le jeton des sessions d'agents dispose des droits **administrateur** sur le dépôt. Seules la politique et les filtres du proxy retiennent les agents : un agent pourrait techniquement changer la visibilité ou les réglages. La règle « aucune modification de visibilité » est donc déclarative |
+| Données déjà publiques (R02) | une privatisation ne retire pas ce qui a déjà été publié : environ 916 journaux d'exécution, 114 artefacts, les issues T-REG et l'historique git restent potentiellement copiés |
 
 ## 2. Dépendances à la visibilité publique (inventaire)
 
@@ -20,12 +26,15 @@ ne sont pas validés.
 |---|---|---|
 | Sessions Claude Code R01, R02, R03 | lecture et écriture via l'application GitHub Claude, si son installation couvre le dépôt privé | **à tester** sur un dépôt privé de test (§3) |
 | RUGGER 04 (claude.ai) | fonctionne s'il lit via un connecteur GitHub authentifié ; **cesse** s'il lit les pages publiques de façon anonyme | **à tester** : mode de lecture inconnu |
+| Streamlit Community Cloud (ajout de R02) | l'application déployée doit avoir accès au dépôt privé | à vérifier par le propriétaire dans Streamlit |
 | Render (service « Master » et état) | le déploiement depuis GitHub demande que l'application GitHub de Render ait accès au dépôt privé | à vérifier par le propriétaire dans Render |
 | Vercel (`rugger-wallet-master.vercel.app`) | idem avec l'application GitHub de Vercel | à vérifier par le propriétaire dans Vercel |
 | Codex ou autres outils (historique) | doivent avoir un accès authentifié | à vérifier si encore utilisés |
-| GitHub Actions (3 workflows automatiques et environ 49 manuels) | sur un dépôt **privé**, les minutes Actions sont décomptées du quota du compte (offre gratuite limitée). Au-delà, les tâches sont bloquées, ou facturées si une limite de dépense est fixée | le propriétaire doit vérifier son offre et sa consommation. **Risque de coût : décision du propriétaire** |
-| Fonctions de sécurité gratuites des dépôts publics | sur l'offre gratuite, un dépôt privé perd notamment l'analyse de secrets avec blocage des pushes et les règles de protection de branche (fonctions payantes en privé) | le propriétaire doit vérifier son offre |
+| GitHub Actions (3 workflows automatiques et environ 49 manuels ; selon R03, 23 sur 52 téléversent ou téléchargent des artefacts) | sur un dépôt **privé**, les minutes Actions sont décomptées du quota du compte (offre gratuite limitée). Au-delà, les tâches sont bloquées, ou facturées si une limite de dépense est fixée | le propriétaire doit vérifier son offre et sa consommation. **Risque de coût : décision du propriétaire** |
+| Fonctions de sécurité (correction de R02) | **aucune n'est activée aujourd'hui**, donc une privatisation ne ferait rien perdre de ce qui fonctionne. La mesure utile est d'**activer dès maintenant**, tant que le dépôt est public et que c'est gratuit, l'analyse de secrets et le blocage des pushes. En privé, sur l'offre gratuite, ces fonctions seraient payantes | décision et action du propriétaire : c'est une modification des protections du dépôt |
+| Preuves conservées seulement dans des artefacts Actions (R03) | 12 fichiers de validation citent 26 exécutions Actions comme provenance. Elles deviendraient non publiques, et leurs artefacts expirent de toute façon à la fin de la rétention | archiver dans le dépôt, avec SHA-256, toute preuve dont on dépend |
 | Liens publics (PR, exécutions, artefacts) cités dans les documents et le tableau de bord | deviennent inaccessibles aux visiteurs non connectés | sans effet sur les agents authentifiés |
+| Outil T-REG, recensement (« census ») et certifications | ne lisent que le git local : **non affectés** (R03) | — |
 | 114 artefacts Helius publics (#113) | la privatisation coupe leur lecture publique, mais n'efface ni ce qui a déjà été téléchargé ni l'historique | la rotation de la clé reste la mesure de fond (#113) |
 
 ## 3. Protocole du dépôt privé de test (préparé, **non créé**)
@@ -43,7 +52,9 @@ Le propriétaire seul crée le dépôt : RUGGER 01 ne crée aucun dépôt.
    RUGGER 04. Render et Vercel ne sont pas concernés à ce stade.
 3. **Ajout du dépôt aux sessions** R01, R02 et R03 (`add_repo`, accès en lecture).
 4. **Sonde PROBE-PRIV-T, une par agent, chacun dans sa session.** Chaque agent
-   lit les deux valeurs (fichier par git et par l'API, commentaire de l'issue).
+   lit les deux valeurs (fichier par git et par l'API, commentaire de l'issue),
+   et donne aussi le SHA-256 de `NONCE.txt` lu depuis le blob git et depuis
+   l'API (suggestion de R03).
    Il rapporte `PASS` / `FAIL` / `INSUFFICIENT EVIDENCE` avec les valeurs lues
    et l'heure UTC. RUGGER 04 fait de même par son connecteur, au niveau A ou B
    de `R04_PROCEDURE.md`.
