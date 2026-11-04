@@ -408,11 +408,21 @@ def order_events(events):
 
 
 def ingest(comment_lists):
-    """Snapshot from GitHub issue comments (lists of dicts with 'body', or raw bodies)."""
-    bodies = []
-    for item in comment_lists:
-        for comment in (item if isinstance(item, list) else [item]):
-            bodies.append(comment.get('body') if isinstance(comment, dict) else comment)
+    """Snapshot from GitHub issue comments (lists of dicts with 'body', or raw bodies).
+
+    Each list is one task issue. A task id whose events come from two different issues is
+    refused (`task_in_several_issues`): the first create wins (PROTOCOL.md §5) and a
+    duplicate issue must be renamed out of the `[T-REG] T-` prefix, never merged.
+    """
+    bodies, issue_of_task = [], {}
+    for position, item in enumerate(comment_lists):
+        item_bodies = [comment.get('body') if isinstance(comment, dict) else comment
+                       for comment in (item if isinstance(item, list) else [item])]
+        for event in parse_comments(item_bodies):
+            task_id = event.get('task_id') if isinstance(event, dict) else None
+            if issue_of_task.setdefault(task_id, position) != position:
+                raise TregError('task_in_several_issues:%s' % task_id)
+        bodies.extend(item_bodies)
     return {'schema': SCHEMA_SNAPSHOT, 'events': order_events(parse_comments(bodies))}
 
 

@@ -1013,3 +1013,20 @@ def test_r04_notice_and_report_are_data_only_and_bound_to_the_r04_session():
     assert treg.accept_r04_report(POLICY, line.replace('CURRENT', 'GREAT'), sender_session=r04)['reason'] == \
         'r04_report_verdict'
     assert POLICY['r04']['can_write_github'] is False
+
+
+def test_ingest_refuses_a_task_split_across_two_issues():
+    """2026-11-04: T-0027 was created in #133 (R03) and again in #135 (R01)."""
+    def body(event):
+        return treg.EVENT_MARKER + '\n```json\n' + json.dumps(event, sort_keys=True) + '\n```'
+    ev_a = {'schema': 'rugger-treg-event-v1', 'task_id': 'T-0099', 'event_id': 'T-0099-OWNER-0001',
+            'seq': 1, 'utc': '2026-11-04T22:55:13Z'}
+    ev_b = dict(ev_a, event_id='T-0099-R01-0002', seq=2, utc='2026-11-04T23:05:29Z')
+    ev_c = dict(ev_a, task_id='T-0100', event_id='T-0100-OWNER-0001')
+    with pytest.raises(treg.TregError, match='task_in_several_issues:T-0099'):
+        treg.ingest([[{'body': body(ev_a)}], [{'body': body(ev_b)}]])
+    # One issue per task is accepted; non-event comments are still ignored.
+    snapshot = treg.ingest([[{'body': body(ev_a)}, {'body': 'note'}, {'body': body(ev_b)}],
+                            [{'body': body(ev_c)}]])
+    assert [e['event_id'] for e in snapshot['events']] == [
+        'T-0099-OWNER-0001', 'T-0100-OWNER-0001', 'T-0099-R01-0002']
