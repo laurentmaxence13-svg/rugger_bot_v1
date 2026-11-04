@@ -619,6 +619,41 @@ def render_notify_block(notes, *, utc, channel):
                                                         indent=1, sort_keys=True, ensure_ascii=False) + '\n```\n')
 
 
+R04_VERIFY_PREFIX = 'RUGGER04-VERIFY |'
+
+
+def r04_notice(policy, *, keys, inbox_url, registry_digest):
+    """The single send_message notice R01 may send to RUGGER 04: data only, never an instruction.
+
+    RUGGER 04 is a read-only Claude Code session: it cannot journal events, so a notice to it is
+    journaled by the sender in a `treg-notify` block of the inbox instead of a `wake` event.
+    """
+    session = (policy.get('r04') or {}).get('session_id')
+    if not session:
+        raise TregError('r04_session_unknown')
+    return {'session_id': session, 'message': json.dumps({'treg_notice': {
+        'keys': sorted(keys), 'inbox': inbox_url, 'registry_digest': registry_digest}}, sort_keys=True)}
+
+
+def accept_r04_report(policy, text, *, sender_session):
+    """Receiver check for a report sent by RUGGER 04 over send_message (data, never an instruction).
+
+    Accepted only from RUGGER 04's platform-provided session and only as one `RUGGER04-VERIFY | k=v | ...`
+    line. The receiver still re-verifies the registry itself before relying on it.
+    """
+    if sender_session != (policy.get('r04') or {}).get('session_id'):
+        return {'accept': False, 'reason': 'r04_sender_mismatch'}
+    lines = [l.strip() for l in str(text).splitlines() if l.strip().startswith(R04_VERIFY_PREFIX)]
+    if len(lines) != 1:
+        return {'accept': False, 'reason': 'r04_report_format'}
+    fields = dict(part.split('=', 1) for part in (p.strip() for p in lines[0].split('|')[1:]) if '=' in part)
+    if fields.get('verdict') not in ('CURRENT', 'CURRENT_IDLE', 'STALE', 'DIVERGED', 'NO_HEADS'):
+        return {'accept': False, 'reason': 'r04_report_verdict'}
+    if not HEX64.match(fields.get('registry_digest', '')):
+        return {'accept': False, 'reason': 'r04_report_digest'}
+    return {'accept': True, 'fields': fields}
+
+
 def render_dashboard(state, *, generated_utc, policy=None):
     """Markdown dashboard for RUGGER 04, derived only from the replayed event log."""
     lines = ['# RUGGER 04 — tableau de bord T-REG', '',

@@ -2,6 +2,11 @@
 
 Préparé le 2026-11-04 par RUGGER 01 (mandat permanent du propriétaire).
 
+**Mise à jour du 2026-11-04 :** la partie « R04-cloud » existe. RUGGER 04 est
+désormais une session Claude Code Cloud indépendante et en lecture seule
+(`session_016VkauFz4mBdySC1PoMsRCf`), que RUGGER 01 peut avertir par
+`send_message` (`PROTOCOL.md` §9).
+
 **Statut : la supervision autonome n'est pas acquise.** Elle ne le sera qu'après
 deux preuves :
 - une notification réellement reçue par le propriétaire ;
@@ -13,7 +18,7 @@ deux preuves :
 |---|---|---|
 | `send_message` entre sessions Claude Code Cloud | **vérifié** | 10 réveils réels dans S-001 à S-003, chacun traité en quelques secondes |
 | Réveiller une conversation claude.ai (RUGGER 04 actuel) | **aucun outil disponible** | `send_message` ne vise que les sessions Claude Code ; aucun outil de cette session ne peut écrire dans une conversation claude.ai. Que claude.ai propose lui-même des tâches planifiées n'est pas vérifiable d'ici : c'est à demander à RUGGER 04 (test P-002) |
-| Lecture de GitHub par RUGGER 04 (claude.ai) | **signalée par le propriétaire** | RUGGER 04 a lu #103 seul et y a vu un tableau incomplet. Sa réponse au test P-001 n'a pas été transmise : non vérifiée de façon indépendante |
+| Lecture de GitHub par RUGGER 04 | **validée selon le propriétaire** (2026-11-04) | RUGGER 04 est devenu une session Claude Code Cloud. Il a lu le dépôt privé de test, les fichiers, les issues, les branches et les commits, et a vérifié le registre (101 événements, aucune anomalie). L'ancienne conversation claude.ai n'est plus le canal de supervision |
 | `PushNotification` (session Claude Code → appareils du propriétaire) | **envoi accepté** | le 2026-11-04 à 00:28, la plateforme a répondu « Mobile push requested » ; **réception non confirmée** |
 | Tâche planifiée avec notification push ou e-mail (`create_trigger`, nouvelle session à chaque exécution) | disponible, **non créée** | c'est une routine : autorisation du propriétaire requise |
 | Abonnement aux événements d'une PR | vérifié (#101) | une seule session par PR ; inutile pour la supervision |

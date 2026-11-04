@@ -2,13 +2,17 @@
 
 Préparé le 2026-11-03 par RUGGER 01, à la demande du propriétaire.
 
-**Statut : procédure prête, accès de RUGGER 04 non vérifié.** RUGGER 04 ne sera
-pas déclaré autonome avant qu'un test d'accès (§5) ait été réussi et contrôlé
-de façon indépendante.
+**Statut (2026-11-04) : RUGGER 04 est une session Claude Code Cloud indépendante**
+(`session_016VkauFz4mBdySC1PoMsRCf`). Selon le propriétaire, son accès authentifié
+est validé : lecture d'un dépôt privé, des fichiers, des issues, des branches et
+des commits, et vérification indépendante du registre (101 événements, aucune
+anomalie d'intégrité). Il est en **lecture seule** : il n'écrit jamais sur GitHub.
 
-RUGGER 04 (claude.ai) ne peut pas être réveillé par les autres agents. Il lit
-quand on le consulte. Cette procédure lui permet alors de tout vérifier
-lui-même, sans qu'un humain lui recopie le contenu.
+RUGGER 04 peut recevoir des avis `send_message` de RUGGER 01, ponctuels et sans
+aucune instruction (`PROTOCOL.md` §9). Il n'a aucun réveil récurrent. Cette
+procédure lui permet de tout vérifier lui-même, sans qu'un humain lui recopie le
+contenu. Les tests d'accès des §2 et §5 restent valables pour toute autre
+interface de lecture.
 
 ## 1. Sources
 

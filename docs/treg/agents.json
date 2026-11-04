@@ -37,8 +37,9 @@
     }
   },
   "r04": {
-    "role": "strategic advisor in claude.ai, read-only consumer",
-    "channel": "github_issue",
+    "role": "independent supervisor: Claude Code Cloud session, reads GitHub and verifies the registry, never writes to GitHub (owner statement 2026-11-04)",
+    "session_id": "session_016VkauFz4mBdySC1PoMsRCf",
+    "channel": "github_issue inbox (#103) + send_message notices (data only, no instruction)",
     "inbox_title": "RUGGER04 inbox (T-REG)",
     "can_write_github": false
   },

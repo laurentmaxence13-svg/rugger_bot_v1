@@ -25,7 +25,7 @@ ne sont pas validés.
 | Dépendance | Effet d'une privatisation | Vérification |
 |---|---|---|
 | Sessions Claude Code R01, R02, R03 | lecture et écriture via l'application GitHub Claude, si son installation couvre le dépôt privé | **à tester** sur un dépôt privé de test (§3) |
-| RUGGER 04 (claude.ai) | fonctionne s'il lit via un connecteur GitHub authentifié ; **cesse** s'il lit les pages publiques de façon anonyme | **à tester** : mode de lecture inconnu |
+| RUGGER 04 (session Claude Code Cloud depuis le 2026-11-04) | même canal authentifié que R01, R02 et R03 | **validé selon le propriétaire** : lecture du dépôt privé de test et du registre |
 | Streamlit Community Cloud (ajout de R02) | l'application déployée doit avoir accès au dépôt privé | à vérifier par le propriétaire dans Streamlit |
 | Render (service « Master » et état) | le déploiement depuis GitHub demande que l'application GitHub de Render ait accès au dépôt privé | à vérifier par le propriétaire dans Render |
 | Vercel (`rugger-wallet-master.vercel.app`) | idem avec l'application GitHub de Vercel | à vérifier par le propriétaire dans Vercel |

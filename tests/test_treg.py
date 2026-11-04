@@ -304,6 +304,9 @@ def assert_frozen_run_policy_never_looser_than_base(run):
         elif key == 'forbidden_actions_by_agent':
             for agent, actions in frozen[key].items():
                 assert set(actions) <= set(base[key][agent])
+        elif key == 'r04':  # descriptive (role, channel, session); RUGGER 04 must never write in either
+            assert frozen[key]['can_write_github'] is False and base[key]['can_write_github'] is False
+            assert frozen[key]['inbox_title'] == base[key]['inbox_title']
         else:
             assert frozen[key] == base[key]
 
@@ -992,3 +995,21 @@ def test_priv1_archived_probes_replay_with_every_wake_journaled():
         assert treg.accept_pointer(state, policy, receiver, {'task_id': wake_id[:6], 'event_id': wake_id},
                                    sender_session=sessions[sender])['accept']
     assert 'NOT READY' in state['inbox'][-1]['summary']
+
+
+
+def test_r04_notice_and_report_are_data_only_and_bound_to_the_r04_session():
+    r04 = POLICY['r04']['session_id']
+    notice = treg.r04_notice(POLICY, keys={'step_done:T-0015-R01-0005'}, inbox_url='https://x/issues/103',
+                             registry_digest='a' * 64)
+    assert notice['session_id'] == r04 and set(json.loads(notice['message'])) == {'treg_notice'}
+    line = ('RUGGER04-VERIFY | utc=2026-11-04T19:00:00Z | heads_comment=https://x/issues/103 | registry_digest=%s'
+            ' | events=101 | tasks=15 | wakes_not_journaled=3 | verdict=CURRENT' % ('b' * 64))
+    ok = treg.accept_r04_report(POLICY, 'R04 says:\n' + line, sender_session=r04)
+    assert ok['accept'] and ok['fields']['events'] == '101' and ok['fields']['verdict'] == 'CURRENT'
+    assert treg.accept_r04_report(POLICY, line, sender_session=POLICY['agents']['R01']['session_id'])['reason'] \
+        == 'r04_sender_mismatch'
+    assert treg.accept_r04_report(POLICY, 'no line', sender_session=r04)['reason'] == 'r04_report_format'
+    assert treg.accept_r04_report(POLICY, line.replace('CURRENT', 'GREAT'), sender_session=r04)['reason'] == \
+        'r04_report_verdict'
+    assert POLICY['r04']['can_write_github'] is False
