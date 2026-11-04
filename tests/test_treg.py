@@ -887,3 +887,25 @@ def test_find_heads_prefers_the_most_recent_block_wherever_it_is():
     block, ref = treg.find_heads([newer, older])  # an older table listed after (e.g. the issue body) never wins
     assert block['generated_utc'] == '2026-11-04T00:00:00Z' and ref == newer['html_url']
     assert treg.find_heads([older, newer])[1] == newer['html_url']
+
+
+def test_s003_archived_run_has_every_required_wake_journaled_and_accepted():
+    policy = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-003.policy.json').read_text(encoding='utf-8'))
+    events = json.loads((EVIDENCE / 'S-003' / 'events.json').read_text(encoding='utf-8'))['events']
+    state = treg.replay(events, policy)
+    assert {k: v['status'] for k, v in state['tasks'].items()} == {'T-0007': 'done', 'T-0008': 'done', 'T-0009': 'done'}
+    assert treg.pending_wakes(state) == []  # S-003: no required wake left unjournaled
+    sessions = {a: policy['agents'][a]['session_id'] for a in treg.AGENTS}
+    real = [('R03', 'T-0007-R01-0003', 'R01'), ('R01', 'T-0007-R03-0008', 'R03'),
+            ('R02', 'T-0008-R01-0005', 'R01'), ('R01', 'T-0008-R02-0008', 'R02')]
+    for receiver, wake_id, sender in real:
+        task_id = wake_id[:6]
+        check = treg.accept_pointer(state, policy, receiver, {'task_id': task_id, 'event_id': wake_id},
+                                    sender_session=sessions[sender])
+        assert check['accept'] and check['wake_event_id'] == wake_id
+    # The real negative tests of S-003, replayed: unjournaled (N1) and misaddressed (N2) pointers are refused.
+    assert treg.accept_pointer(state, policy, 'R03', {'task_id': 'T-0007', 'event_id': 'T-0007-OWNER-0001'})['reason'] \
+        == 'unjournaled_wake'
+    assert treg.accept_pointer(state, policy, 'R02', {'task_id': 'T-0007', 'event_id': 'T-0007-R01-0003'})['reason'] \
+        == 'wake_not_addressed_to_agent'
+    assert state['tasks']['T-0008']['evidence']['audit']['audited_commit'] == '0b41b13ba27352156ccd38690443605036703107'
