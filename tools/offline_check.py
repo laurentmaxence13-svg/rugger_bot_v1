@@ -22,19 +22,27 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
         relative = PurePosixPath(os.fsdecode(item))
         if relative.is_absolute() or ".." in relative.parts:
             raise SystemExit("Unsafe source path")
-        if relative.parts[0] not in ("bot", "tests"):
+        # Workflow definitions and root requirements*.txt are copied as plain data for
+        # the trigger guard test; they hold secret names only, never secret values,
+        # and are never executed.
+        workflow_file = (relative.parts[:2] == (".github", "workflows") and len(relative.parts) == 3
+                         and relative.suffix in (".yml", ".yaml")) \
+            or (len(relative.parts) == 1 and relative.name.startswith("requirements") and relative.suffix == ".txt")
+        if relative.parts[0] not in ("bot", "tests") and not workflow_file:
             # Explicit audit-only allowlist; do not import arbitrary tools, secrets or config.
             if relative.as_posix() not in ("tools/bitquery_dextrades_markout.py", "tools/bitquery_dextrades_pages.py", "tools/bitquery_dextrades_replay.py", "tools/bitquery_cross_protocol_audit.py", "tools/master_prospective_gate.py",
                                            "render_status_service.py",
                                            # Offline tools exercised by PR #90/#91/#98 tests.
                                            "tools/launchlab_baseline_report.py", "tools/master_feature_inventory.py",
-                                           "tools/dev_state.py", "docs/autonomy/BACKLOG.json"):
+                                           "tools/dev_state.py", "docs/autonomy/BACKLOG.json",
+                                           # Offline GitHub Actions trigger guard (P-PRIV correction).
+                                           "tools/workflow_trigger_guard.py"):
                 continue
         if relative.parts[:2] in (("bot", "bot"), ("tests", "tests")):
             continue
         # Compressed archives are accepted only as committed test fixtures.
         gz_fixture = relative.parts[:2] == ("tests", "fixtures") and relative.suffixes[-2:] == [".json", ".gz"]
-        if relative.suffix not in (".py", ".json") and not gz_fixture:
+        if relative.suffix not in (".py", ".json") and not gz_fixture and not workflow_file:
             continue
         source = repo / relative
         if not source.resolve().is_relative_to(repo) or source.is_symlink():
