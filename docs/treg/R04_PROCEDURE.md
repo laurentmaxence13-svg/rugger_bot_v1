@@ -14,7 +14,7 @@ lui-même, sans qu'un humain lui recopie le contenu.
 
 | Quoi | Où |
 |---|---|
-| Dépôt | `laurentmaxence13-svg/rugger_bot_v1` (privé : il faut un connecteur GitHub qui y donne accès) |
+| Dépôt | `laurentmaxence13-svg/rugger_bot_v1` : **public** au 2026-11-04 (lecture anonyme possible). Une privatisation est à l'étude : il faudra alors un connecteur GitHub authentifié, voir `PRIVATIZATION_PROBE.md` |
 | Inbox | issue **#103** « RUGGER04 inbox (T-REG) » : rapports et tableaux de bord |
 | Registre | toutes les issues dont le titre commence par `[T-REG] T-` (aujourd'hui #104 à #109). Une issue par tâche ; chaque commentaire commençant par `<!-- treg-event v1 -->` est un événement |
 | Outil | `tools/treg.py` sur la branche `claude/r01-treg` (bibliothèque standard Python, aucun réseau). Utiliser le commit indiqué dans le dernier rapport de #103 |

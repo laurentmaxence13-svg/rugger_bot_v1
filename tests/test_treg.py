@@ -957,3 +957,12 @@ def test_supervise_on_the_archived_registry_reports_the_three_reports_only():
     notes = treg.supervise(state, now='2026-11-04T00:30:00Z')
     assert [(n['kind'], n['task_id']) for n in notes] == [('step_done', 'T-0003'), ('step_done', 'T-0006'),
                                                          ('step_done', 'T-0009')]
+
+
+
+def test_priv1_run_policy_only_lifts_the_pause():
+    run = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'PRIV-1.policy.json').read_text(encoding='utf-8'))
+    assert run['paused'] is False and run['run_scope'] == 'probe-priv-1'
+    assert run['owner_mandate_ref_sha256'] == '4806c91e6104ece55077855fb2347c50edb608cc5675f04409b4b0340eb0bd02'
+    assert run['agents'] == POLICY['agents']
+    assert_frozen_run_policy_never_looser_than_base(run)

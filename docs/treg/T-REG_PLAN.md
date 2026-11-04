@@ -14,7 +14,7 @@ Aucune routine, aucun webhook, aucun workflow ajouté ou activé. Références :
 | Issues et labels GitHub (lecture) | **vérifié** | `list_issues` : 6 issues ouvertes ; `get_label bug` OK |
 | Écriture GitHub via MCP (issues, commentaires, PR) | **démontrée** (PR #100/#101 créées et éditées) | identité unique `laurentmaxence13-svg` pour toutes les sessions |
 | Distinguer un agent du propriétaire sur GitHub | **impossible avec les outils disponibles** | commentaires d'agents = `author_association: OWNER`, même `user` ; le champ `performed_via_github_app` n'est pas exposé par l'outil |
-| Protection de branche GitHub | **absente** | `list_branches` : `main` `"protected": false` ; dépôt privé sans offre payante |
+| Protection de branche GitHub | **absente** | `list_branches` : `main` `"protected": false`. Correction du 2026-11-04 : le dépôt est **public** (`visibility: public`), et non privé comme écrit au départ |
 | Restriction de push par session | **absente** | cette session a poussé sur une branche hors de sa branche désignée |
 | Abonnement aux événements de PR | **vérifié** (#101) | **une seule session par PR** ; livre commentaires, revues, CI |
 | Message entre sessions cloud (`send_message`) | **disponible, non testé** | l'outil dit que la cible peut répondre ; la description de `ListAgents` dit qu'une session cloud ne peut pas encore répondre → **contradiction à lever par un test autorisé** |

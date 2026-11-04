@@ -136,7 +136,7 @@ bail d'un autre agent n'est jamais repris (seul le propriétaire réassigne via
 Branches protégées par la politique : `main`, `integration/consolidation-20261103`,
 `claude/admiring-curie-r2gl1p`, `claude/autonomy-framework-20261103`,
 `claude/launchlab-trade-events`. **Ces règles ne sont pas imposées par GitHub**
-(dépôt privé sans protection de branche) : elles sont appliquées par chaque
+(dépôt **public** sans protection de branche active, vérifié le 2026-11-04 ; la note antérieure « dépôt privé » était fausse) : elles sont appliquées par chaque
 agent avant d'agir et contrôlées après coup.
 
 Liste commune interdite : fusion, force-push, suppression de branche, réécriture
