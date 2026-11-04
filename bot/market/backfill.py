@@ -266,8 +266,7 @@ class Backfill:
                 if details == 'full':
                     rows.append(dict(entry, signature=signature_of(entry)))
                 else:
-                    rows.append({'signature': entry['signature'], 'slot': slot,
-                                 'err': entry.get('err')})
+                    rows.append(dict(entry))
             token, pages = result.get('paginationToken'), pages + 1
             done = not token
             if done or pages >= self.segment_pages:
@@ -295,8 +294,7 @@ class Backfill:
                     reached_start = True
                     break
                 if row['slot'] <= self.window.slot_max:
-                    rows.append({'signature': row['signature'], 'slot': row['slot'],
-                                 'err': row.get('err')})
+                    rows.append(dict(row))      # whole row: blockTime, transactionIndex, err
             done = reached_start or len(page) < GSFA_PAGE
             before, pages = (page[-1]['signature'] if page else before), pages + 1
             if done or pages >= self.segment_pages:

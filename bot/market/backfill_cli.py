@@ -64,6 +64,9 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     r.add_argument('--segment-pages', type=int, default=50)
     v = sub.add_parser('verify', help='check an archive against its manifest; no network')
     v.add_argument('--out', type=Path, required=True)
+    x = sub.add_parser('export', help='per-pool archives + MANIFEST for the L1 replay; no network')
+    x.add_argument('--out', type=Path, required=True, help='verified program-window run directory')
+    x.add_argument('--pools-dir', type=Path, required=True)
     args = parser.parse_args(argv)
 
     def emit(obj):
@@ -74,7 +77,14 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
             result = verify(args.out)
             emit(result)
             return 0 if result['ok'] else 4
-        window = Window(args.address, args.slot_min, args.slot_max)
+        if args.command == 'export':
+            from bot.market.backfill_export import export_pools
+            export = export_pools(args.out, args.pools_dir)
+            emit({'pools_exported': len(export['pools']), 'skipped': len(export['skipped']),
+                  'active_near_window_end': sum(p['active_near_window_end']
+                                                for p in export['pools'])})
+            return 0
+        window =Window(args.address, args.slot_min, args.slot_max)
         costs = load_costs(args.costs)
         if args.command == 'plan':
             emit(plan(window, costs, expected_tx_per_slot=args.expected_tx_per_slot,

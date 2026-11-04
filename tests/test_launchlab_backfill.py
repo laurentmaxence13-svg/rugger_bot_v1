@@ -32,9 +32,11 @@ def _chain():
                          'blockTime': row.get('blockTime')}
             if sig in archive['transactions']:
                 bodies[sig] = archive['transactions'][sig]
-            else:   # failed: fixtures keep no body, synthesize a minimal one
+            else:   # failed: fixtures keep no body; a minimal one naming the pool account
                 bodies[sig] = {'slot': row['slot'], 'blockTime': row.get('blockTime'),
-                               'transaction': {'signatures': [sig], 'message': {}},
+                               'transactionIndex': row.get('transactionIndex'),
+                               'transaction': {'signatures': [sig],
+                                               'message': {'accountKeys': [archive['pool']]}},
                                'meta': {'err': row['err']}}
     return rows, bodies
 
@@ -264,3 +266,60 @@ def test_resume_with_different_parameters_is_refused(tmp_path):
 def test_cost_table_must_price_every_read_method():
     with pytest.raises(bf.BackfillError):
         bf.CreditBudget(1, 1, {'getTransaction': 1})
+
+
+# --------------------------------------------------------------------------- L1 export
+from bot.market import backfill_export as bx               # noqa: E402
+from bot.market.collector import PoolArchive, summarize      # noqa: E402
+
+
+def _fixture_archives():
+    manifest = json.loads((FIXTURES / 'MANIFEST.json').read_text())
+    return manifest, {p['pool']: PoolArchive.from_json(json.loads(gzip.decompress(
+        (FIXTURES / p['file']).read_bytes()))) for p in manifest['pools']}
+
+
+def test_export_rebuilds_the_certified_pool_archives_for_the_l1_replay(tmp_path):
+    code, _ = _run(tmp_path, FakeChain())
+    assert code == 0
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+    fixture_manifest, fixtures = _fixture_archives()
+    assert [p['pool'] for p in export['pools']] == sorted(fixtures) and export['skipped'] == {}
+    by_pool = {p['pool']: p for p in fixture_manifest['pools']}
+    written = json.loads((tmp_path / 'pools' / 'MANIFEST.json').read_text())
+    for entry in written['pools']:
+        data = (tmp_path / 'pools' / entry['file']).read_bytes()
+        assert entry['file'] == f"{entry['pool']}.json.gz"
+        assert entry['sha256'] == bx.hashlib.sha256(data).hexdigest()
+        assert entry['quote_mint'] == by_pool[entry['pool']]['quote_mint']      # from creation
+        exported = PoolArchive.from_json(json.loads(gzip.decompress(data)))
+        original = fixtures[entry['pool']]
+        assert exported.account is None and exported.signatures_complete
+        assert exported.transactions == original.transactions                  # identical bodies
+        assert [(r['signature'], r['err']) for r in exported.signatures] == \
+            [(r['signature'], r['err']) for r in original.signatures]          # same order, newest first
+        assert entry['signatures'] == by_pool[entry['pool']]['signatures']
+        mine, theirs = summarize(exported)[0], summarize(original)[0]
+        for key in ('complete', 'trades', 'signatures', 'transactions_missing', 'gaps',
+                    'first_block_time', 'last_block_time', 'max_progress_ppm'):
+            assert mine[key] == theirs[key], key
+
+
+def test_export_refuses_an_unverified_or_incomplete_window(tmp_path):
+    _run(tmp_path, FakeChain(drop_from_gsfa={sorted(ROWS)[0]}))
+    with pytest.raises(bf.BackfillError, match='window_not_verified_or_incomplete'):
+        bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+
+
+def test_export_skips_pools_created_before_the_window(tmp_path):
+    first = min(ROWS.values(), key=lambda r: r['slot'])
+    rpc = bf.open_rpc(URL, bf.CreditBudget(10**6, 10**9, bf.COST_PRESETS['public']),
+                      opener=FakeChain())
+    manifest = bf.Backfill(rpc, bf.Window(ADDRESS, first['slot'] + 1, SLOT_MAX),
+                           tmp_path / 'w').run()
+    assert manifest['complete']
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+    creators_cut = {p for p, a in _fixture_archives()[1].items()
+                    if min(r['slot'] for r in a.signatures) <= first['slot']}
+    assert creators_cut and set(export['skipped']) == creators_cut
+    assert not {p['pool'] for p in export['pools']} & set(export['skipped'])
