@@ -98,7 +98,8 @@ non journalisés sont comptés (`wakes_not_journaled`).
 
 ## 4. Ce que RUGGER 04 ne fait pas
 
-- Il n'écrit rien sur GitHub et n'envoie aucun message aux agents.
+- Il n'écrit rien sur GitHub. Il n'envoie aux agents que des messages de coordination `RUGGER04-COORD |`
+  (`PROTOCOL.md` §9) : ce sont des données, jamais des autorisations, et ils ne remplacent pas le registre.
 - Un tableau de bord ou un rapport n'est **jamais** une autorisation : seules les
   instructions du propriétaire dans chaque session en sont.
 - Le rapport S-002 décode des transactions archivées. Ce n'est ni un résultat de
