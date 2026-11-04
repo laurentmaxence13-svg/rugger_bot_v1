@@ -56,9 +56,18 @@ class BackfillError(RuntimeError):
 
 
 class CreditBudget:
-    """Request and credit caps, charged before each send (retries included)."""
+    """Request and credit caps, charged before each send (retries included).
 
-    def __init__(self, max_requests, max_credits, costs, *, used_requests=0, used_credits=0):
+    With a ``ledger`` file, every charge is written to disk atomically BEFORE the
+    request leaves, so spend survives any failure, exception or interrupt, and a
+    resume can never restart from a lower counter. The ledger pins the cost table:
+    a resume with a different table is refused (a cheaper table would hide spend).
+    """
+
+    SCHEMA = 'rugger-backfill-spend-v1'
+
+    def __init__(self, max_requests, max_credits, costs, *, used_requests=0, used_credits=0,
+                 ledger=None):
         if set(costs) != READ_METHODS or any(type(v) is not int or v < 0 for v in costs.values()):
             raise BackfillError('cost_table_must_price_every_read_method')
         if type(max_requests) is not int or type(max_credits) is not int \
@@ -67,6 +76,32 @@ class CreditBudget:
         self.max_requests, self.max_credits, self.costs = max_requests, max_credits, dict(costs)
         self.used, self.credits = used_requests, used_credits
         self.next_method = None
+        self.ledger, self.cap_history = (Path(ledger) if ledger else None), []
+        if self.ledger is not None:
+            self._open_ledger()
+
+    def _open_ledger(self):
+        self.ledger.parent.mkdir(parents=True, exist_ok=True)
+        if self.ledger.exists():
+            data = json.loads(self.ledger.read_text())
+            if data.get('schema') != self.SCHEMA:
+                raise BackfillError('unknown_spend_ledger')
+            if data['costs'] != dict(sorted(self.costs.items())):
+                raise BackfillError('cost_table_differs_from_spend_ledger')
+            self.used = max(self.used, data['requests'])
+            self.credits = max(self.credits, data['credits'])
+            self.cap_history = data.get('cap_history', [])
+        caps = {'max_requests': self.max_requests, 'max_credits': self.max_credits}
+        if not self.cap_history or self.cap_history[-1] != caps:
+            self.cap_history.append(caps)          # every cap change stays on record
+        self._write_ledger()
+
+    def _write_ledger(self):
+        if self.ledger is not None:
+            _write_atomic(self.ledger, json.dumps({
+                'schema': self.SCHEMA, 'requests': self.used, 'credits': self.credits,
+                'costs': dict(sorted(self.costs.items())), 'cap_history': self.cap_history},
+                indent=1, sort_keys=True).encode())
 
     @property
     def max_calls(self):            # JsonRpc.__repr__ compatibility
@@ -80,6 +115,7 @@ class CreditBudget:
             raise BudgetExhausted(f'credit_cap_reached:{self.max_credits}')
         self.used += 1
         self.credits += cost
+        self._write_ledger()           # on disk before the request is sent
 
     def snapshot(self):
         return {'requests': self.used, 'credits': self.credits, 'max_requests': self.max_requests,
@@ -395,7 +431,8 @@ def verify(out):
     manifest = json.loads((out / 'manifest.json').read_text())
     if manifest.get('schema') != SCHEMA_MANIFEST:
         raise BackfillError('unknown_manifest_schema')
-    problems = []
+    problems, tx_sigs, failed, check_sigs = [], [], 0, []
+    check_kind = {'gtfa': 'sig', 'rpc': 'chk'}[manifest['bodies']]
     for seg in manifest['segments']:
         path = out / seg['path']
         if not path.exists():
@@ -403,10 +440,30 @@ def verify(out):
             continue
         if _sha256(path) != seg['sha256']:
             problems.append(f'sha256_mismatch:{seg["path"]}')
-        elif len(read_segment(path)) != seg['rows']:
+            continue
+        rows = read_segment(path)
+        if len(rows) != seg['rows']:
             problems.append(f'row_count_mismatch:{seg["path"]}')
-    return {'ok': not problems, 'problems': problems, 'complete': manifest['complete'],
-            'transactions': manifest['totals']['transactions'],
+        if seg['kind'] == 'tx':
+            tx_sigs += [r['signature'] for r in rows]
+            failed += sum(1 for r in rows if (r.get('meta') or {}).get('err') is not None)
+        elif seg['kind'] == check_kind:
+            check_sigs += [r['signature'] for r in rows]
+    # Recompute what the manifest claims instead of trusting it.
+    if not problems:
+        totals = manifest['totals']
+        if (len(tx_sigs), failed, len(tx_sigs) - len(set(tx_sigs))) != (
+                totals['transactions'], totals['failed_transactions'],
+                totals['duplicate_signatures']):
+            problems.append('totals_differ_from_segments')
+        if manifest['check']:
+            equal = set(tx_sigs) == set(check_sigs)
+            if equal != manifest['reconciliation']['equal']:
+                problems.append('reconciliation_differs_from_segments')
+            if manifest['complete'] and not equal:
+                problems.append('complete_claimed_without_reconciliation')
+    return {'ok': not problems, 'problems': problems, 'complete': manifest['complete'] and not problems,
+            'transactions': len(tx_sigs),
             'manifest_sha256': _sha256(out / 'manifest.json')}
 
 

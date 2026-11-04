@@ -323,3 +323,81 @@ def test_export_skips_pools_created_before_the_window(tmp_path):
                     if min(r['slot'] for r in a.signatures) <= first['slot']}
     assert creators_cut and set(export['skipped']) == creators_cut
     assert not {p['pool'] for p in export['pools']} & set(export['skipped'])
+
+
+# --------------------------------------------------------------------------- R02 finding F1
+def _down(sent):
+    def opener(request, timeout):
+        sent.append(1)
+        raise OSError('provider down')
+    return opener
+
+
+def test_repeated_failures_never_send_more_than_the_cap(tmp_path):
+    sent = []
+    for _ in range(4):                               # each run dies on a transport failure
+        buf = io.StringIO()
+        code = cli.main(['run', '--network', '--slot-min', str(SLOT_MIN), '--slot-max',
+                         str(SLOT_MAX), '--max-requests', '7', '--max-credits', '1000000000', '--costs', 'public',
+                         '--out', str(tmp_path / 'w')], environ=ENV, opener=_down(sent), out=buf)
+        assert code in (2, 3)
+    assert len(sent) == 7                            # total sent across all runs == the cap
+    ledger = json.loads((tmp_path / 'w' / 'spend.json').read_text())
+    assert ledger['requests'] == 7
+
+
+def test_spend_is_on_disk_before_each_send(tmp_path):
+    seen = []
+
+    class Spy(FakeChain):
+        def __call__(self, request, timeout):
+            ledger = json.loads((tmp_path / 'w' / 'spend.json').read_text())
+            seen.append(ledger['requests'])
+            return super().__call__(request, timeout)
+    _run(tmp_path, Spy())
+    assert seen == list(range(1, len(seen) + 1))      # request n was recorded before it left
+
+
+def test_mid_segment_failure_keeps_the_spend(tmp_path):
+    replies = []
+
+    class Dies(FakeChain):
+        def __call__(self, request, timeout):
+            if len(replies) == 12:
+                raise OSError('connection reset')
+            replies.append(1)
+            return super().__call__(request, timeout)
+    code, _ = _run(tmp_path, Dies(), '--segment-pages', '50')
+    assert code == 2
+    ledger = json.loads((tmp_path / 'w' / 'spend.json').read_text())
+    assert ledger['requests'] == 12 + 5               # 12 replies + 1 attempt and 4 retries
+
+
+def test_resume_with_another_cost_table_is_refused(tmp_path):
+    code, _ = _run(tmp_path, FakeChain(), costs='helius-conservative')
+    assert code == 0
+    code, report = _run(tmp_path, FakeChain(), costs='public')
+    assert code == 2 and report['error'] == 'cost_table_differs_from_spend_ledger'
+
+
+def test_cap_changes_are_recorded_and_spend_stays_cumulative(tmp_path):
+    _run(tmp_path, FakeChain(), '--segment-pages', '2', caps=('1000', '700'),
+         costs='helius-conservative')
+    _run(tmp_path, FakeChain(), '--segment-pages', '2', caps=('1000', '100000'),
+         costs='helius-conservative')
+    ledger = json.loads((tmp_path / 'w' / 'spend.json').read_text())
+    assert ledger['cap_history'] == [{'max_requests': 1000, 'max_credits': 700},
+                                     {'max_requests': 1000, 'max_credits': 100000}]
+    manifest = json.loads((tmp_path / 'w' / 'manifest.json').read_text())
+    assert manifest['budget']['requests'] == ledger['requests']
+
+
+def test_verify_recomputes_instead_of_trusting_the_manifest(tmp_path):
+    _run(tmp_path, FakeChain(drop_from_gsfa={sorted(ROWS)[0]}))
+    path = tmp_path / 'w' / 'manifest.json'
+    forged = json.loads(path.read_text())
+    forged['complete'], forged['reconciliation']['equal'] = True, True
+    path.write_text(json.dumps(forged))
+    checked = bf.verify(tmp_path / 'w')
+    assert not checked['ok'] and not checked['complete']
+    assert 'reconciliation_differs_from_segments' in checked['problems']

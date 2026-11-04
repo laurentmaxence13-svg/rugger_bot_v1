@@ -116,13 +116,32 @@ Avec 4 300 créations par jour, ces durées sont divisées par 5,7.
 - **Pools CPMM après migration** : non couverts par la fenêtre du programme
   LaunchLab. Chaque adresse CPMM se télécharge avec `run --address <pool CPMM>`.
   La détection automatique des migrations n'est pas encore écrite.
+- **Contrôle par deux méthodes** : les deux listes viennent du même fournisseur.
+  Ce n'est pas une source indépendante ; la contre-vérification indépendante se
+  fait sur un échantillon d'environ 20 pools, avec Old Faithful ou un autre RPC.
 - **Format réel de `getTransactionsForAddress`** : il n'a été testé que sur les
   fixtures. Le premier lot P0 doit passer `export`, puis le rejeu L1, avant P1.
 
+## Cours SOL/USD causal (bloquant pour L1)
+
+Le rejeu L1 de RUGGER 01 (`f44a8be`) refuse les 113 décisions des fixtures pour
+la raison `sol_usd_rate_unavailable`. La collecte doit donc fournir, sur la même
+fenêtre de slots, un cours SOL/USD daté avec sa provenance, connu **avant**
+chaque décision. La forme exacte (horodatage, provenance, tolérance d'âge) est
+attendue de RUGGER 01. Les options, à chiffrer pendant P0 :
+
+| Option | Coût Helius | Vérifiabilité | Remarque |
+|---|---|---|---|
+| Trades d'un pool SOL/USDC de référence (Raydium ou Orca), avec `run --address <pool>` | 1 crédit par transaction au tarif prudent ; volume à mesurer | transactions signées sur la chaîne | même outil ; cours = dernier trade avant la décision |
+| Transactions de mise à jour du compte de prix Pyth SOL/USD | environ 1 transaction par slot, soit environ 216 000 crédits par jour au tarif prudent | signées sur la chaîne | volume élevé : à échantillonner |
+| Mises à jour Pyth signées historiques (service Hermes) | 0 crédit Helius ; service public distinct, à autoriser | signatures Wormhole vérifiables | ce n'est pas un appel Helius ; il faut l'accord du propriétaire |
+
 ## Dépassement et renouvellement (point f)
 
-1. **Dans l'outil** : `--max-requests` et `--max-credits` sont cumulés sur les
-   reprises et comptés avant chaque envoi.
+1. **Dans l'outil** : `--max-requests` et `--max-credits` sont comptés avant
+   chaque envoi. Le fichier `spend.json` est réécrit **avant** chaque requête : la
+   consommation survit à toute panne ou interruption. La table de coûts y est
+   figée, et chaque changement de plafond y est enregistré.
 2. **Chez Helius**, à confirmer sur leurs pages officielles, bloquées dans mon
    environnement : préférer des crédits prépayés, ou couper la facturation
    automatique des dépassements avant le premier appel.

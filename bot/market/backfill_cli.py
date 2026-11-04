@@ -97,12 +97,10 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                   'caps': {'max_requests': args.max_requests, 'max_credits': args.max_credits}})
             return 0
         url = endpoint_from_env(args.endpoint_env, environ)
-        used = {'requests': 0, 'credits': 0}
-        state_path = args.out / 'state.json'
-        if state_path.exists():
-            used = json.loads(state_path.read_text()).get('budget_used', used)
+        # spend.json is written before every send: caps stay cumulative after any
+        # failure or interrupt, and a resume cannot switch to a cheaper cost table.
         budget = CreditBudget(args.max_requests, args.max_credits, costs,
-                              used_requests=used['requests'], used_credits=used['credits'])
+                              ledger=args.out / 'spend.json')
         rpc = open_rpc(url, budget, opener=opener)
         job = Backfill(rpc, window, args.out, bodies=args.bodies, check=not args.no_check,
                        segment_pages=args.segment_pages, endpoint=endpoint_label(url),
