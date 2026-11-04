@@ -22,10 +22,12 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
         relative = PurePosixPath(os.fsdecode(item))
         if relative.is_absolute() or ".." in relative.parts:
             raise SystemExit("Unsafe source path")
-        # Workflow definitions are copied as plain data for the trigger guard test;
-        # they hold secret names only, never secret values, and are never executed.
-        workflow_file = relative.parts[:2] == (".github", "workflows") and len(relative.parts) == 3 \
-            and relative.suffix in (".yml", ".yaml")
+        # Workflow definitions and root requirements*.txt are copied as plain data for
+        # the trigger guard test; they hold secret names only, never secret values,
+        # and are never executed.
+        workflow_file = (relative.parts[:2] == (".github", "workflows") and len(relative.parts) == 3
+                         and relative.suffix in (".yml", ".yaml")) \
+            or (len(relative.parts) == 1 and relative.name.startswith("requirements") and relative.suffix == ".txt")
         if relative.parts[0] not in ("bot", "tests") and not workflow_file:
             # Explicit audit-only allowlist; do not import arbitrary tools, secrets or config.
             if relative.as_posix() not in ("tools/bitquery_dextrades_markout.py", "tools/bitquery_dextrades_pages.py", "tools/bitquery_dextrades_replay.py", "tools/bitquery_cross_protocol_audit.py", "tools/master_prospective_gate.py",

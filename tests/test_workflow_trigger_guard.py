@@ -156,7 +156,12 @@ def test_allowlisted_ci_is_accepted_and_cannot_widen_its_events():
 ])
 def test_automatic_ci_may_not_use_secrets_or_external_hosts(snippet, violation):
     text = OFFLINE_CI.replace('    runs-on: ubuntu-latest\n', '    runs-on: ubuntu-latest\n' + snippet, 1)
-    assert guard.check_workflow('offline-tests.yml', text) == [violation]
+    violations = guard.check_workflow('offline-tests.yml', text)
+    assert violation in violations
+    # Only the env key allowlist and, for malformed values, the fail-closed syntax rules may add to it.
+    extra = ('forbidden_env_in_automatic_workflow:', 'flow_mapping_in_automatic_workflow:',
+             'flow_sequence_in_automatic_workflow:')
+    assert [v for v in violations if not v.startswith(extra)] == [violation]
 
 
 @pytest.mark.parametrize('uses, violation', [
@@ -200,9 +205,9 @@ def test_github_token_github_or_loopback_urls_and_commented_secrets_are_allowed_
         '    runs-on: ubuntu-latest\n',
         '    runs-on: ubuntu-latest\n'
         '    # never add secrets.HELIUS_API_KEY or https://mainnet.helius-rpc.com here\n'
-        '    env:\n      GH: ${{ secrets.GITHUB_TOKEN }}\n'
-        '      DOC: https://github.com/actions/checkout\n'
-        '      SMOKE: http://127.0.0.1:8501/healthz\n', 1)
+        '    env:\n      PYTHONUTF8: ${{ secrets.GITHUB_TOKEN }}\n'
+        '      RUGGER_NO_DOTENV: https://github.com/actions/checkout\n'
+        '      PYTHONDONTWRITEBYTECODE: http://127.0.0.1:8501/healthz\n', 1)
     assert guard.check_workflow('offline-tests.yml', text) == []
 
 
@@ -211,7 +216,7 @@ def test_scan_directory_and_cli_exit_codes(tmp_path, capsys):
     (tmp_path / 'helius-manual.yml').write_text(MANUAL_ONLY, encoding='utf-8')
     (tmp_path / 'notes.txt').write_text('on: push\n', encoding='utf-8')
     assert guard.main([str(tmp_path)]) == 0
-    assert 'workflows=2 automatic=offline-tests.yml manual_only=1 violations=0' in capsys.readouterr().out
+    assert 'workflows=2 automatic=offline-tests.yml manual_only=1 requirements=0 violations=0' in capsys.readouterr().out
     (tmp_path / 'helius-probe.yaml').write_text(PROVIDER_PR, encoding='utf-8')
     assert guard.main([str(tmp_path)]) == 1
     assert 'VIOLATION helius-probe.yaml: automatic_trigger:pull_request' in capsys.readouterr().out
@@ -341,6 +346,99 @@ def test_allowed_shells_and_comments_are_accepted():
     assert guard.check_workflow('offline-tests.yml', text) == []
 
 
+# Residual bypasses reported by RUGGER 02 (T-0020, point 2) and related YAML forms.
+@pytest.mark.parametrize('old, new, violation', [
+    ('      - run: python', '      - {run: python -m bot.live.public_sol_forward_paper}\n      - run: python',
+     'flow_mapping_in_automatic_workflow:'),
+    ('      - run: python', '      - {uses: someone/net-action@v1}\n      - run: python', 'flow_mapping_in_automatic_workflow:'),
+    ('      - run: python', '      - "run": python -m bot.live.public_sol_forward_paper\n      - run: python',
+     'quoted_key_in_automatic_workflow:"run"'),
+    ('      - run: python', "      - 'uses': someone/net-action@v1\n      - run: python",
+     "quoted_key_in_automatic_workflow:'uses'"),
+    ('    steps:\n', '    env:\n      "BASH_ENV": tools/evil.sh\n    steps:\n', 'quoted_key_in_automatic_workflow:"BASH_ENV"'),
+    ('    steps:\n', '    env:\n      BASH_ENV: tools/evil.sh\n    steps:\n', 'forbidden_env_in_automatic_workflow:BASH_ENV'),
+    ('    steps:\n', '    env:\n      ENV: tools/evil.sh\n    steps:\n', 'forbidden_env_in_automatic_workflow:ENV'),
+    ('    steps:\n', '    env:\n      PYTEST_ADDOPTS: -p evil_plugin\n    steps:\n',
+     'forbidden_env_in_automatic_workflow:PYTEST_ADDOPTS'),
+    ('    steps:\n', '    env:\n      PYTEST_PLUGINS: evil_plugin\n    steps:\n',
+     'forbidden_env_in_automatic_workflow:PYTEST_PLUGINS'),
+    ('    steps:\n', '    env: ${{ fromJSON(github.event.pull_request.body) }}\n    steps:\n', 'env_not_block_mapping:'),
+    ('        with:\n          persist-credentials: false\n',
+     '        with:\n          persist-credentials: false\n          fetch-tags: true\n',
+     'forbidden_with_input_in_automatic_workflow:fetch-tags'),
+    ('    steps:\n', '    steps: [run: curl -s https://trawl.run]\n    other:\n', 'flow_sequence_in_automatic_workflow:'),
+    ('      - run: python', '      - &probe\n        name: probe\n      - run: python', 'yaml_anchor_or_tag_in_automatic_workflow:'),
+    ('      - run: python', '      - *probe\n      - run: python', 'yaml_anchor_or_tag_in_automatic_workflow:'),
+    ('      - run: python', '      - <<: *defaults\n        name: x\n      - run: python', 'yaml_anchor_or_tag_in_automatic_workflow:'),
+    ('      - run: python', '      - name: tagged\n        if: !contains(github.ref, x)\n      - run: python',
+     'yaml_anchor_or_tag_in_automatic_workflow:'),
+    ('jobs:\n', '---\njobs:\n', 'multiple_documents_in_automatic_workflow'),
+    ('      - run: python', '      - name: complex\n        ? run\n        : curl -s https://trawl.run\n      - run: python',
+     'complex_key_in_automatic_workflow:'),
+    ('    runs-on: ubuntu-latest\n', '    runs-on: ubuntu-latest\n    environment: production\n',
+     'forbidden_key_in_automatic_workflow:environment'),
+    ('    runs-on: ubuntu-latest\n', '    runs-on: ubuntu-latest\n    defaults:\n      run:\n        shell: bash\n',
+     'forbidden_key_in_automatic_workflow:defaults'),
+])
+def test_yaml_forms_the_guard_cannot_read_exactly_are_refused(old, new, violation):
+    assert OFFLINE_CI.count(old) == 1
+    violations = guard.check_workflow('offline-tests.yml', OFFLINE_CI.replace(old, new, 1))
+    assert any(v.startswith(violation) for v in violations), violations
+
+
+@pytest.mark.parametrize('indicator', ['>', '>-', '|-', '|+', '|2'])
+def test_only_literal_run_blocks_are_accepted(indicator):
+    block = OFFLINE_CI.replace(
+        '      - run: python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rfE -W error\n',
+        '      - run: %s\n          python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rfE -W error\n'
+        % indicator, 1)
+    violations = guard.check_workflow('offline-tests.yml', block)
+    assert 'run_block_not_literal:%s' % indicator in violations
+    literal = block.replace('run: %s\n' % indicator, 'run: |\n', 1)
+    assert guard.check_workflow('offline-tests.yml', literal) == []
+
+
+def test_scalar_flow_lists_and_expressions_stay_accepted():
+    text = OFFLINE_CI.replace('    runs-on: ubuntu-latest\n',
+                              '    runs-on: ubuntu-latest\n    strategy:\n      matrix:\n'
+                              '        python-version: ["3.12", \'3.13\']\n', 1)
+    text = text.replace('      - run: python', "      - if: ${{ !cancelled() && github.event_name != 'push' }}\n"
+                                              "        run: python", 1)
+    assert guard.check_workflow('offline-tests.yml', text) == []
+
+
+@pytest.mark.parametrize('line, violation', [
+    ('--index-url https://example.org/simple', 'pip_option_in_requirements:--index-url'),
+    ('--extra-index-url https://pypi.org/simple', 'pip_option_in_requirements:--extra-index-url'),
+    ('-i https://example.org/simple', 'pip_option_in_requirements:-i'),
+    ('-f ./wheels', 'pip_option_in_requirements:-f'),
+    ('--find-links=https://example.org/wheels', 'pip_option_in_requirements:--find-links=https://example.org/wheels'),
+    ('-e .', 'pip_option_in_requirements:-e'),
+    ('--trusted-host example.org', 'pip_option_in_requirements:--trusted-host'),
+    ('-r https://example.org/req.txt', 'pip_option_in_requirements:-r'),
+    ('git+https://github.com/x/y', 'url_in_requirements:'),
+    ('probe @ https://example.org/probe-1.0-py3-none-any.whl', 'url_in_requirements:'),
+    ('probe@file:///tmp/probe.whl', 'url_in_requirements:'),
+    ('aiohttp>=3.10 --global-option=x', 'pip_option_in_requirements:--global-option'),
+])
+def test_requirements_may_only_name_pypi_packages(line, violation):
+    violations = guard.requirements_violations('# header\naiohttp>=3.10,<4\n%s\n' % line)
+    assert any(v.startswith(violation) for v in violations), violations
+
+
+def test_plain_requirements_includes_hashes_and_markers_are_accepted():
+    text = ('# comment\n-r requirements.txt\n-c constraints.txt\nstreamlit>=1.39,<2\n'
+            'pandas==2.3.3 --hash=sha256:%s\n' % ('a' * 64) +
+            'numpy==2.3.4; python_version >= "3.11"  # pinned\ncryptography[ssh]>=46,<47\n')
+    assert guard.requirements_violations(text) == []
+
+
+def test_repository_requirements_only_name_pypi_packages():
+    files = guard.scan_requirements(ROOT)
+    assert files, 'requirements*.txt must be copied into the offline harness'
+    assert {name: v for name, v in files.items() if v} == {}
+
+
 # Mutations applied to the real workflow files: every bypass reported by RUGGER 02
 # (T-0018, point 2) and the other forbidden changes must be detected.
 REAL_MUTATIONS = [
@@ -376,6 +474,21 @@ REAL_MUTATIONS = [
      'forbidden_key_in_automatic_workflow:repository'),
     ('offline-tests.yml', 'permissions:\n  contents: read\n', 'permissions:\n  contents: write\n',
      'write_permission_in_automatic_workflow:write'),
+    # T-0020 residual bypasses, on the real files.
+    ('offline-tests.yml', '      - name: Python 3.13\n',
+     '      - {run: python -m bot.live.public_sol_forward_paper}\n      - name: Python 3.13\n',
+     'flow_mapping_in_automatic_workflow:'),
+    ('offline-tests.yml', '      - name: Python 3.13\n',
+     '      - "run": python -m bot.live.public_sol_forward_paper\n      - name: Python 3.13\n',
+     'quoted_key_in_automatic_workflow:'),
+    ('offline-tests.yml', '      PYTHONUTF8: "1"\n', '      PYTHONUTF8: "1"\n      BASH_ENV: tools/evil.sh\n',
+     'forbidden_env_in_automatic_workflow:BASH_ENV'),
+    ('rugger-isolated-ci.yml', '      PYTEST_DISABLE_PLUGIN_AUTOLOAD: \'1\'\n',
+     '      PYTEST_DISABLE_PLUGIN_AUTOLOAD: \'1\'\n      PYTEST_ADDOPTS: -p evil_plugin\n',
+     'forbidden_env_in_automatic_workflow:PYTEST_ADDOPTS'),
+    ('rugger-isolated-ci.yml', "        shell: bash\n        run: |\n          set -euo pipefail\n          python -B tools/offline_check.py",
+     "        shell: bash\n        run: >\n          set -euo pipefail\n          python -B tools/offline_check.py",
+     'run_block_not_literal:>'),
     ('paper-terminal-ci.yml', '          python -m compileall -q bot/dashboard\n',
      '          python -m compileall -q bot/dashboard\n          python -m bot.live.helius_probe\n',
      'unapproved_run_step:'),
@@ -408,3 +521,18 @@ def test_offline_harness_refuses_external_connections():
         socket.getaddrinfo('mainnet.helius-rpc.com', 443)
     with pytest.raises(AssertionError, match='external networking prohibited'):
         socket.create_connection(('192.0.2.1', 443), timeout=0.01)
+
+
+def test_requirements_mutation_is_detected_by_the_cli(tmp_path):
+    workflows = tmp_path / '.github' / 'workflows'
+    workflows.mkdir(parents=True)
+    for path in WORKFLOWS.iterdir():
+        if path.suffix in ('.yml', '.yaml'):
+            (workflows / path.name).write_text(path.read_text(encoding='utf-8'), encoding='utf-8')
+    for path in ROOT.glob('requirements*.txt'):
+        (tmp_path / path.name).write_text(path.read_text(encoding='utf-8'), encoding='utf-8')
+    assert guard.main([str(workflows)]) == 0
+    target = tmp_path / 'requirements.txt'
+    target.write_text(target.read_text(encoding='utf-8') + '--extra-index-url https://pypi.org.example/simple\n',
+                      encoding='utf-8')
+    assert guard.main([str(workflows)]) == 1

@@ -1,12 +1,12 @@
 {
  "schema": "rugger-legacy-pr-plan-v1",
- "generated_utc": "2026-11-04T20:05:00Z",
+ "generated_utc": "2026-11-04T20:25:00Z",
  "consolidation": {
   "branch": "integration/consolidation-20261103",
   "pr": 101,
   "sha": "16f1f22c56bf48407ef6627d809f9b0628e36fd8"
  },
- "method": "group A: git merge-base --is-ancestor <head> <consolidation>; group B: git cherry, then for each file changed by the PR, whether its head blob ever appears in the consolidation history (git log <consolidation> -- <file>)",
+ "method": "group A: git merge-base --is-ancestor <head> <consolidation>. Otherwise git cherry, then for each file the PR changes, whether its head blob ever appears in the consolidation history (git log --full-history <consolidation> -- <file>): group A2 when every version appears (integrated then replaced), group B when at least one never appears.",
  "prs": [
   {
    "pr": 35,
@@ -391,13 +391,10 @@
    "head": "fix/p3-fail-closed-liquidity-screen-20261101",
    "base": "research/prospective-master-evidence-20261031",
    "head_sha": "53d02de0fd95edc8528812ed35b37673af827a9c",
-   "group": "B",
+   "group": "A2",
    "head_is_ancestor_of_101": false,
    "commits_not_in_101": 1,
-   "files_never_in_101": [
-    ".github/workflows/paper-terminal-ci.yml",
-    "TERMINAL_PAPER.md"
-   ],
+   "files_never_in_101": [],
    "exposed_workflows": [
     "cpmm-prospective-markout-readonly.yml",
     "creator-paper-profitability-audit.yml",
@@ -1705,5 +1702,6 @@
     "trawl-verify-purchase-window.yml"
    ]
   }
- ]
+ ],
+ "correction": "2026-11-04: #56 moved from B to A2 after RUGGER 02 (T-0020) showed its files in #101 history (0efb212, 1ffabd0); the first computation used simplified history."
 }

@@ -31,10 +31,22 @@ Invariant enforced (decision D3 of the #101 consolidation, P-PRIV correction):
   - cannot alter an approved step from outside: no ``vars`` context, no
     ``PIP_INDEX_URL``/proxy/``PYTHONPATH``-style environment key, ``shell:``
     limited to bash, sh, pwsh, powershell, cmd or python, no
-    ``working-directory``, ``container``, ``services`` or self-hosted runner, no
+    ``working-directory``, ``container``, ``services``, ``defaults``,
+    ``environment`` or self-hosted runner, no
     ``actions/checkout`` input that fetches other code (``repository``, ``ref``,
     ``token``, ``ssh-key``...), and ``persist-credentials: false`` on every checkout;
-  - declares a top-level ``permissions:`` block and grants no ``write`` scope.
+  - declares a top-level ``permissions:`` block and grants no ``write`` scope;
+  - is written in a form the guard reads exactly (fail closed): outside ``on:``,
+    no flow mapping, no flow sequence other than a one-line list of scalars, no
+    quoted or complex (``?``) key, no YAML anchor, alias, merge key or tag, no
+    second document;
+    ``run:`` blocks use the literal ``|`` style only; ``env:`` and ``with:`` are
+    block mappings whose keys are in ``ALLOWED_ENV_KEYS`` and
+    ``ALLOWED_WITH_KEYS``.
+
+The repository's ``requirements*.txt`` files, installed by the approved
+``pip install`` steps, may only list PyPI requirements: no pip option other than
+``-r``/``-c`` on a local file and ``--hash``, no URL, VCS or direct reference.
 
 The parser reads only the top-level ``on:`` key. It understands the block
 mapping, block sequence, flow sequence, flow mapping and scalar forms, and fails
@@ -43,7 +55,11 @@ reported; no secret value is ever present in a workflow file or read here.
 
 Limits: static analysis cannot prove that repository code started by an
 approved step stays offline. Such code still gets no repository secret (the
-automatic workflows cannot reference any) and only a read-only ``GITHUB_TOKEN``. Test steps go through ``tools/offline_check.py``,
+automatic workflows cannot reference any) and only a read-only ``GITHUB_TOKEN``.
+Files read or executed by approved steps without being hashed here: the tests
+and ``bot/`` code run through the harness, ``bot/dashboard/app.py`` and the
+dashboard tests, ``LANCER_TERMINAL_PAPER.bat`` and ``LANCER_TERMINAL_PAPER.ps1``
+(Windows launcher: pip from PyPI, health check on 127.0.0.1). Test steps go through ``tools/offline_check.py``,
 whose harness refuses external socket connections (checked by
 ``tests/test_workflow_trigger_guard.py`` inside that harness). The other approved
 steps (``pip install`` from PyPI, the PAPER terminal smoke tests on loopback)
@@ -125,11 +141,21 @@ _LOOPBACK = frozenset({'127.0.0.1', 'localhost'})
 _ALLOWED_SHELLS = frozenset({'bash', 'sh', 'pwsh', 'powershell', 'cmd', 'python'})
 _SHELL_KEY = re.compile(r'^[ ]*(?:-[ ]+)?shell[ ]*:(?P<value>.*)$', re.M)
 _FORBIDDEN_KEYS = re.compile(
-    r'^[ ]*(?:-[ ]+)?(container|services|working-directory|repository|ref|token|ssh-key|ssh-known-hosts|'
-    r'github-server-url)[ ]*:', re.M)
-_FORBIDDEN_ENV = re.compile(
-    r'^[ ]*(?:-[ ]+)?(pip_index_url|pip_extra_index_url|pip_find_links|pip_trusted_host|pip_config_file|'
-    r'uv_index_url|http_proxy|https_proxy|all_proxy|pythonpath|pythonstartup|pythonhome|ld_preload)[ ]*:', re.M | re.I)
+    r'^[ ]*(?:-[ ]+)?(container|services|working-directory|defaults|environment|repository|ref|token|ssh-key|'
+    r'ssh-known-hosts|github-server-url)[ ]*:', re.M)
+ALLOWED_ENV_KEYS = frozenset({
+    'PYTHONDONTWRITEBYTECODE', 'PYTHONUTF8', 'RUGGER_NO_DOTENV', 'PYTEST_DISABLE_PLUGIN_AUTOLOAD',
+})
+ALLOWED_WITH_KEYS = frozenset({
+    'persist-credentials', 'python-version',            # checkout, setup-python
+    'name', 'path', 'retention-days', 'if-no-files-found',  # upload/download-artifact
+})
+_BLOCK_KEY = re.compile(r'^(?P<indent>[ ]*)(?P<dash>-[ ]+)?(?P<key>[A-Za-z0-9_.-]+)[ ]*:(?P<value>.*)$')
+_QUOTED_KEY = re.compile(r'''^(?:-[ ]+)?(["'])(?:(?!\1).)*\1[ ]*:''')
+_QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
+# A tag, anchor or alias starts a YAML node: at line start, after "key: ", "- " or in a flow list.
+_ANCHOR_OR_TAG = re.compile(r'(?:^|:[ ]+|-[ ]+|[\[,][ ]*)(?:[&*][A-Za-z0-9_-]|![^\s=])|<<[ ]*:')
+_REQ_INCLUDE = re.compile(r'^(?:-r|--requirement|-c|--constraint)[ =]+(?P<file>[A-Za-z0-9_./-]+)$')
 _VARS_WORD = re.compile(r'\bvars\b', re.I)
 _SELF_HOSTED = re.compile(r'\bself-hosted\b', re.I)
 _PERMISSIONS_TOP = re.compile(r'^permissions[ ]*:', re.M)
@@ -406,13 +432,141 @@ def unapproved_run_steps(name: str, text: str) -> list[str]:
             for step in run_steps(text) if run_step_hash(step) not in approved]
 
 
+def _structure_lines(code: str) -> list[tuple[int, str]]:
+    """(index, line) of YAML structure lines: block-scalar contents are skipped."""
+    lines = code.splitlines()
+    out, skip_column = [], None
+    for index, line in enumerate(lines):
+        indent = len(line) - len(line.lstrip(' '))
+        if skip_column is not None:
+            if not line.strip() or indent > skip_column:
+                continue
+            skip_column = None
+        if not line.strip():
+            continue
+        out.append((index, line))
+        match = _BLOCK_KEY.match(_strip_comment(line))
+        if match and match.group('value').strip()[:1] in ('|', '>'):
+            skip_column = len(match.group('indent')) + len(match.group('dash') or '')
+    return out
+
+
+def _outside_on(structure: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """Structure lines outside the top-level on: block (parsed by parse_triggers)."""
+    out, in_on = [], False
+    for index, line in structure:
+        if not line.startswith((' ', '-')):
+            in_on = bool(_ON_KEY.match(line))
+        if not in_on:
+            out.append((index, line))
+    return out
+
+
+def syntax_violations(text: str) -> list[str]:
+    """YAML forms the line-based checks could misread: refused in automatic workflows."""
+    found = []
+    for _, line in _outside_on(_structure_lines(_code_lines(text))):
+        body = _strip_comment(line).strip()
+        if body in ('---', '...'):
+            found.append('multiple_documents_in_automatic_workflow')
+            continue
+        if re.match(r'^(?:-[ ]+)?[?:](?:[ ]|$)', body):
+            found.append('complex_key_in_automatic_workflow:%s' % body[:60])
+        if _QUOTED_KEY.match(body):
+            found.append('quoted_key_in_automatic_workflow:%s' % re.sub(r'^-[ ]+', '', body).split(':', 1)[0])
+        bare = _QUOTED.sub('""', _EXPRESSION.sub('E', body))
+        if '{' in bare or '}' in bare:
+            found.append('flow_mapping_in_automatic_workflow:%s' % body[:60])
+        if '[' in bare or ']' in bare:
+            match = re.fullmatch(r'(?:-[ ]+)?[A-Za-z0-9_.-]+[ ]*:[ ]*\[(?P<items>[^\[\]:{}]*)\]', bare)
+            if not match:
+                found.append('flow_sequence_in_automatic_workflow:%s' % body[:60])
+        if _ANCHOR_OR_TAG.search(bare):
+            found.append('yaml_anchor_or_tag_in_automatic_workflow:%s' % body[:60])
+    for value in _run_indicators(text):
+        if value != '|':
+            found.append('run_block_not_literal:%s' % value)
+    return found
+
+
+def _run_indicators(text: str) -> list[str]:
+    indicators = []
+    for line in _code_lines(text).splitlines():
+        match = _RUN_KEY.match(line)
+        if match:
+            value = _strip_comment(match.group('value')).strip()
+            if value[:1] in ('|', '>'):
+                indicators.append(value)
+    return indicators
+
+
+def _block_children(structure: list[tuple[int, str]], key: str) -> tuple[list[str], list[str]]:
+    """Child keys of every ``key:`` block mapping, and keys given an inline value."""
+    children, inline = [], []
+    for position, (_, line) in enumerate(structure):
+        match = _BLOCK_KEY.match(_strip_comment(line))
+        if not match or match.group('key') != key:
+            continue
+        if match.group('value').strip():
+            inline.append(match.group('value').strip())
+            continue
+        column = len(match.group('indent')) + len(match.group('dash') or '')
+        child_indent = None
+        for _, follow in structure[position + 1:]:
+            indent = len(follow) - len(follow.lstrip(' '))
+            if indent <= column:
+                break
+            child_indent = indent if child_indent is None else child_indent
+            if indent == child_indent:
+                child = _BLOCK_KEY.match(_strip_comment(follow))
+                children.append(child.group('key') if child and not child.group('dash') else follow.strip())
+    return children, inline
+
+
+def mapping_key_violations(text: str) -> list[str]:
+    """env: and with: must be block mappings with allowlisted keys."""
+    structure = _outside_on(_structure_lines(_code_lines(text)))
+    found = []
+    for key, allowed, label in (('env', ALLOWED_ENV_KEYS, 'forbidden_env_in_automatic_workflow'),
+                                ('with', ALLOWED_WITH_KEYS, 'forbidden_with_input_in_automatic_workflow')):
+        children, inline = _block_children(structure, key)
+        found += ['%s:%s' % (label, child.upper() if key == 'env' else child)
+                  for child in children if child not in allowed]
+        found += ['%s_not_block_mapping:%s' % (key, value[:60]) for value in inline]
+    return found
+
+
+def requirements_violations(text: str) -> list[str]:
+    """A requirements file installed by an automatic workflow may only name PyPI packages."""
+    found = []
+    for raw in text.splitlines():
+        line = _strip_comment(raw).strip()
+        if not line:
+            continue
+        if line.startswith('-'):
+            include = _REQ_INCLUDE.match(line)
+            if not include or '://' in line:
+                found.append('pip_option_in_requirements:%s' % line.split()[0])
+            continue
+        if '://' in line or re.search(r'\b(?:git|hg|svn|bzr)\+', line) or re.search(r'\s@\s|^[^;]*@', line):
+            found.append('url_in_requirements:%s' % line[:60])
+        for option in re.findall(r'(?<!\S)(--?[A-Za-z][A-Za-z-]*)', line):
+            if option != '--hash':
+                found.append('pip_option_in_requirements:%s' % option)
+    return found
+
+
+def scan_requirements(root: Path) -> dict:
+    return {path.name: requirements_violations(path.read_text(encoding='utf-8'))
+            for path in sorted(root.glob('requirements*.txt')) if path.is_file()}
+
+
 def hardening_violations(text: str) -> list[str]:
     """Ways to change what an approved step does without changing its text."""
     code = _code_lines(text)
     found = []
     if any(_VARS_WORD.search(expr) for expr in _expressions(code)):
         found.append('vars_context_in_automatic_workflow')
-    found += ['forbidden_env_in_automatic_workflow:%s' % key.upper() for key in _FORBIDDEN_ENV.findall(code)]
     found += ['forbidden_key_in_automatic_workflow:%s' % key for key in _FORBIDDEN_KEYS.findall(code)]
     for value in _SHELL_KEY.findall(code):
         shell = _unquote(_strip_comment(value).strip())
@@ -443,6 +597,8 @@ def check_workflow(name: str, text: str) -> list[str]:
         violations += network_commands(text)
         violations += unapproved_run_steps(name, text)
         violations += hardening_violations(text)
+        violations += syntax_violations(text)
+        violations += mapping_key_violations(text)
     return violations
 
 
@@ -482,15 +638,19 @@ def main(argv: list[str]) -> int:
         return 0
     report = scan_directory(directory)
     bad = {name: entry['violations'] for name, entry in report.items() if entry['violations']}
+    root = directory.parent.parent if (directory.name, directory.parent.name) == ('workflows', '.github') else None
+    requirements = scan_requirements(root) if root else {}
+    bad.update({name: violations for name, violations in requirements.items() if violations})
     if as_json:
-        print(json.dumps({'workflows': report, 'violations': bad}, indent=1, sort_keys=True))
+        print(json.dumps({'workflows': report, 'requirements': requirements, 'violations': bad},
+                         indent=1, sort_keys=True))
     else:
         automatic = sorted(name for name, entry in report.items() if entry['automatic'])
-        print('workflows=%d automatic=%s manual_only=%d violations=%d'
+        print('workflows=%d automatic=%s manual_only=%d requirements=%d violations=%d'
               % (len(report), ','.join(automatic) or '-',
                  sum(1 for entry in report.values()
                      if entry['events'] is not None and set(entry['events']) <= MANUAL_EVENTS),
-                 sum(len(v) for v in bad.values())))
+                 len(requirements), sum(len(v) for v in bad.values())))
         for name, violations in sorted(bad.items()):
             print('VIOLATION %s: %s' % (name, ', '.join(violations)))
     return 1 if bad else 0
