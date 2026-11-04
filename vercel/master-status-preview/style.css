@@ -1,0 +1,28 @@
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:#080c12;color:#ecf2f8;--panel:#101923;--border:#273444;--secondary:#9baebf;--amber:#ffce77;--green:#45d9b6}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 75% 0%,#173046 0%,transparent 42%),#080c12}
+a{color:#b8d5ff;text-decoration:none}
+a:hover,a:focus-visible{text-decoration:underline}
+.page{max-width:1080px;margin:0 auto;padding:0 28px 50px}
+.bar{height:86px;display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px solid var(--border)}
+.brand{font-size:19px;letter-spacing:.12em;font-weight:800}.brand span{color:var(--green)}
+.wallet-link{font-size:13px;font-weight:600;border:1px solid #3b556d;padding:11px 14px;border-radius:9px}
+.hero{padding:70px 0 28px;max-width:840px}
+.eyebrow{text-transform:uppercase;letter-spacing:.17em;color:var(--green);font-size:11px;font-weight:800}
+h1{font-size:clamp(31px,5vw,54px);letter-spacing:-.045em;line-height:1.08;margin:18px 0}
+.description{font-size:16px;line-height:1.7;color:var(--secondary);max-width:725px}
+.notice{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:17px 22px;background:#2b251a;border:1px solid #69512d;border-radius:12px;margin:24px 0}
+.notice strong{color:var(--amber);font-size:23px}
+.notice span{color:#e9d4b7}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.metric,.detail{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:22px}
+.metric p{color:var(--secondary);font-size:13px;margin:0 0 18px}
+.metric strong{display:block;font-size:21px;letter-spacing:-.02em;margin:0 0 12px}
+.metric small{color:var(--secondary);line-height:1.5}
+.detail{margin-top:16px;padding:27px}
+h2{font-size:18px;margin:0 0 12px}
+.blocker{font-size:17px;font-weight:700;color:#ffce77;overflow-wrap:anywhere}
+.detail-note{font-size:13px;color:var(--secondary);line-height:1.6}
+.actions{display:flex;flex-wrap:wrap;gap:18px;margin-top:28px;font-size:13px}
+footer{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--secondary);font-size:12px;padding-top:26px}
+@media(max-width:700px){.page{padding:0 16px 34px}.hero{padding:42px 0 16px}.metrics{grid-template-columns:1fr}.bar{height:76px}.wallet-link{font-size:11px}.detail{padding:20px}}
