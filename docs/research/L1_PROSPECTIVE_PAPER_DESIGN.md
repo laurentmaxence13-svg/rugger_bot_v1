@@ -64,7 +64,7 @@ Les plafonds existants s'appliquent : 15 RPC par tranche de 30 s, plafond par d�
 
 **Constat, vérifié sur les fixtures.**
 - `bot/analyser/behavior_pipeline.wallet_graph_snapshot` compte tous les propriétaires de soldes, y compris le coffre de la courbe, dont le propriétaire est l'autorité LaunchLab `WLHv2UAZm6…`.
-- Part du coffre à la création : **98,5 %** sur 5pZ, **97,7 %** sur DVP. Sur ces deux pools, `top_holder_share` atteint au moins 0,9, ce qui déclenche le veto critique `concentration_extreme` (`bot/analyser/final_decision_engine.py:297, 306`).
+- Part du coffre à la création : **98,5 %** sur 5pZ, **97,8 %** (97,76 %) sur DVP. Sur ces deux pools, `top_holder_share` atteint au moins 0,9, ce qui déclenche le veto critique `concentration_extreme` (`bot/analyser/final_decision_engine.py:297, 306`).
 - Sur C7F9, le créateur a acheté 31,9 % dans la transaction de création : le coffre ne détient que **68,1 %**. À la dernière transaction stockée, il détient 577 208 727 jetons, contre 5 165 896 pour le premier détenteur hors créateur.
 - Le comptage du coffre fausse donc la concentration sur tout pool LaunchLab avant migration. Il rend le veto systématique quand le créateur n'a pas acheté une grosse part.
 
@@ -81,7 +81,9 @@ Le compter comme détenteur rend le veto systématique et masque la vraie concen
 - Le correctif rétablit un signal de risque réel, entre participants, sans ouvrir d'entrée injustifiée.
 
 **Correctif proposé.**
-- Exclure des statistiques de détenteurs les propriétaires des comptes de coffre du pool, **dérivés causalement de la transaction de création**, et non une adresse codée en dur.
+- Exclure des statistiques de détenteurs les propriétaires des comptes de coffre du pool, tirés de la seule transaction de création, sans adresse codée en dur.
+- **État actuel du code L1** (observation O-b de RUGGER 02) : le propriétaire du coffre est identifié par **heuristique**, comme le plus gros détenteur autre que le créateur dans la transaction de création. Le résultat est correct sur les 3 pools (autorité LaunchLab `WLHv2U…`).
+- Avant toute activation en production, il faudra identifier le coffre par son compte : compte de coffre de l'instruction de création et son propriétaire, ou adresse dérivée du programme (PDA).
 - Le créateur et tous les autres détenteurs restent comptés.
 
 Dans L1, le paramètre `excluded_owners` est **désactivé par défaut** : la production est inchangée, et le rejeu montre les deux variantes. L'activation en production change un veto de risque. Ce sera une modification distincte, auditée par RUGGER 02 et approuvée par le propriétaire.
@@ -148,10 +150,37 @@ Ensuite :
 - **Horloges modélisées** : `block_time` + 400 ms, avec `source_clock_verified=False`.
 - **SOL/USD** : absent ou supposé.
 - **Historique du créateur** : inconnu, `prior_launches=0`.
-- **Tentatives échouées** : non modélisées (0 par défaut, 34 % mesuré dans les fixtures).
+- **Tentatives échouées** : forfait par transaction propre, 0 par défaut, alors qu'environ un tiers des signatures des fixtures échouent (observation O-c de RUGGER 02).
+- **TP/SL** : évalués sur la valeur brute (O-c).
+- **Positions ouvertes en fin de données** : `open_at_end` est valorisé au marché (O-c). À rapporter à part, jamais comme cycle clos.
+- Ces trois points sont à corriger avant toute qualification.
 - **Bras identiques** : le bras Master et le bras de référence sont identiques par construction, car `early_sniping` figure dans toutes les priorités figées.
 - **Fenêtre courte** : 16 à 31 s par pool, sans élan à 60 s.
 - **Chemin ENTER** : couvert seulement par un test d'entrée forcée, qui n'est pas un résultat.
 - **Statut** : aucune donnée de rejeu n'est comptée comme cycle qualifié. Ces résultats restent en attente de qualification par RUGGER 02.
 
 **Ressource nécessaire pour un premier cycle réel** : les étapes 1 à 5 du §5 (oracle SOL/USD certifié, vérification v1, réceptions horodatées, banque à 7 comptes, coureur prospectif). Le premier lancement borné exige la rotation de `HELIUS_API_KEY` et un budget approuvé par le propriétaire.
+
+## 7. Critères de qualification des cycles `MASTER_RESEARCH_PAPER` (RUGGER 02, T-0028)
+
+Audit T-0028 : **PASS** sur `f44a8be`, avec les observations O-a, O-b et O-c traitées ci-dessus. Critères à respecter par tout futur cycle prospectif :
+
+- **Q1** : catégorie séparée. Jamais comptée dans `research_evidence` ni dans le seuil du Master sans proposition distincte, auditée et approuvée par le propriétaire.
+- **Q2** : les trois indicateurs ne sont vrais que sur preuve mécanique, revérifiée hors ligne par RUGGER 02 depuis les réponses RPC brutes conservées (`context.slot`, horodatages de réception, sha256 de l'endpoint, genesis), jamais depuis des indicateurs.
+- **Q3** : pré-enregistrement avant la première observation, empreinte publiée dans T-REG :
+  - `policy_sha256` du Master et de la référence ;
+  - paramètres, taille d'entrée, règle de sortie ;
+  - sélection de la cohorte et règles d'arrêt.
+
+  Rien n'est modifié en cours de campagne.
+- **Q4** : dénominateur complet. Toutes les décisions sont journalisées, WAIT compris, sans sélection a posteriori, avec un bras de référence apparié sur les mêmes observations.
+- **Q5** : entrées décidées par les seuls scoreurs réels, sans entrée forcée. Exécution au slot de décision plus la latence, avec une cotation as-of.
+- **Q6** : coûts complets :
+  - frais de base et de priorité, création de compte, frais du pool, glissement ;
+  - tentatives échouées au taux observé (pas 0) ;
+  - SOL/USD seulement depuis un oracle on-chain certifié, au plus 5 s avant ;
+  - positions ouvertes en fin de période rapportées à part, jamais comme gains clos.
+- **Q7** : intégrité du pool. Historique complet depuis la création, sans trou, et nombre de signatures rapproché. `counterfactual_divergence` et `migrated_unpriced` ne comptent jamais comme succès.
+- **Q8** : indépendance. Partition à créateurs disjoints (au moins 50 créateurs en réserve, au moins 20 groupes indépendants). Les cycles d'un même créateur ou de portefeuilles liés sont regroupés.
+- **Q9** : bundle archivé avec manifeste sha256, rejeu hors ligne identique à l'octet, audit de RUGGER 02 de chaque bundle de campagne.
+- **Q10** : objectif du propriétaire d'environ 200 cycles qualifiés. Comparaison nette avec la référence, hors échantillon, avec intervalles bootstrap par groupe de créateurs. Aucune rentabilité n'est revendiquée en dehors de ce cadre.
