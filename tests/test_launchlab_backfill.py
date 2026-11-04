@@ -282,7 +282,8 @@ def _fixture_archives():
 def test_export_rebuilds_the_certified_pool_archives_for_the_l1_replay(tmp_path):
     code, _ = _run(tmp_path, FakeChain())
     assert code == 0
-    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+    # The fixture window ends on the pools' last trades: they count as truncated.
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
     fixture_manifest, fixtures = _fixture_archives()
     assert [p['pool'] for p in export['pools']] == sorted(fixtures) and export['skipped'] == {}
     by_pool = {p['pool']: p for p in fixture_manifest['pools']}
@@ -318,7 +319,7 @@ def test_export_skips_pools_created_before_the_window(tmp_path):
     manifest = bf.Backfill(rpc, bf.Window(ADDRESS, first['slot'] + 1, SLOT_MAX),
                            tmp_path / 'w').run()
     assert manifest['complete']
-    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
     creators_cut = {p for p, a in _fixture_archives()[1].items()
                     if min(r['slot'] for r in a.signatures) <= first['slot']}
     assert creators_cut and set(export['skipped']) == creators_cut
@@ -401,3 +402,46 @@ def test_verify_recomputes_instead_of_trusting_the_manifest(tmp_path):
     checked = bf.verify(tmp_path / 'w')
     assert not checked['ok'] and not checked['complete']
     assert 'reconciliation_differs_from_segments' in checked['problems']
+
+
+# --------------------------------------------------------------------------- R02 T-0030 findings
+def test_export_keeps_only_sol_quoted_pools_for_l1(tmp_path, monkeypatch):
+    _run(tmp_path, FakeChain())
+    usd_pool = sorted(_fixture_archives()[1])[0]
+    real = bx.creation_quote_mint
+    usd1 = 'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB'
+    monkeypatch.setattr(bx, 'creation_quote_mint',
+                        lambda tx, pool, mint: usd1 if pool == usd_pool else real(tx, pool, mint))
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
+    assert export['skipped'] == {usd_pool: f'quote_not_sol:{usd1}'}
+    assert usd_pool not in {p['pool'] for p in export['pools']} and len(export['pools']) == 2
+    assert all(p['quote_mint'] == bx.WSOL_MINT for p in export['pools'])
+
+
+def test_truncated_pools_are_left_out_by_default(tmp_path):
+    _run(tmp_path, FakeChain())
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+    assert export['pools'] == []
+    assert set(export['skipped'].values()) == {'active_near_window_end'}
+    flagged = bx.export_pools(tmp_path / 'w', tmp_path / 'p2', include_truncated=True)
+    assert all(p['active_near_window_end'] for p in flagged['pools'])
+
+
+def test_export_refuses_bodies_without_transaction_index(tmp_path):
+    class Plain(FakeChain):
+        def getTransaction(self, signature, options):
+            body = dict(super().getTransaction(signature, options))
+            body.pop('transactionIndex', None)
+            return body
+    code, _ = _run(tmp_path, Plain(), '--bodies', 'rpc')
+    assert code == 0
+    with pytest.raises(bf.BackfillError, match='transaction_index_missing_use_gtfa_bodies'):
+        bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
+
+
+def test_quote_mint_requires_the_decoded_base_mint(tmp_path):
+    _run(tmp_path, FakeChain())
+    pool, archive = sorted(_fixture_archives()[1].items())[0]
+    creation = min(archive.transactions.values(), key=lambda t: (t['slot'], t['transactionIndex']))
+    with pytest.raises(bf.BackfillError, match='creation_quote_mint_not_found'):
+        bx.creation_quote_mint(creation, pool, 'NotTheBaseMint1111111111111111111111111111')

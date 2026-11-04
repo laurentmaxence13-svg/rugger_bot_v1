@@ -18,8 +18,13 @@ Rules, all offline:
   collector does.
 - ``account`` stays ``None``: the L1 replay never reads the pool account, and no
   account read is invented. ``quote_mint`` comes from the creation instruction.
-- Pools still trading close to ``slot_max`` are flagged ``active_near_window_end``:
-  their history is truncated by the window, not by the chain.
+- Only WSOL-quoted pools enter the L1 MANIFEST (the replay prices in SOL and
+  aborts on another quote); the others are counted as ``quote_not_sol:<mint>``.
+- Pools still trading within ``NEAR_END_SLOTS`` of ``slot_max`` have a history cut
+  by the window, not by the chain: they are left out (``active_near_window_end``)
+  unless ``include_truncated`` is set, in which case they are flagged.
+- Every body must carry an integer ``transactionIndex`` (the L1 ordering key):
+  windows fetched with ``--bodies rpc`` (plain getTransaction) are refused.
 """
 import gzip
 import hashlib
@@ -30,7 +35,7 @@ from bot.live.compiled_launchlab import compiled_launchlab_creations
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.market.backfill import LAUNCHLAB_PROGRAM, BackfillError, read_segment, verify
 from bot.market.collector import ARCHIVE_VERSION
-from bot.market.launchlab_events import EventDecodeError, extract_trade_events
+from bot.market.launchlab_events import WSOL_MINT, EventDecodeError, extract_trade_events
 
 SCHEMA_EXPORT = 'rugger-backfill-pool-export-v1'
 NEAR_END_SLOTS = 750            # about 5 minutes at 400 ms per slot (the L1 position horizon)
@@ -56,8 +61,8 @@ def account_keys(tx):
                 + list(loaded.get('readonly') or []) if isinstance(k, str)]
 
 
-def creation_quote_mint(tx, pool):
-    """Quote mint of ``pool`` in its LaunchLab initialize instruction (accounts[7])."""
+def creation_quote_mint(tx, pool, base_mint):
+    """Quote mint (accounts[7]) of the decoded creation: same pool AND base mint."""
     keys = _keys(tx)
     message = tx['transaction']['message']
     candidates = list(message.get('instructions') or [])
@@ -66,7 +71,7 @@ def creation_quote_mint(tx, pool):
     for ix in candidates:
         refs = ix.get('accounts') or []
         if (keys[ix['programIdIndex']] == LAUNCHLAB_PROGRAM and len(refs) >= 8
-                and keys[refs[5]] == pool):
+                and keys[refs[5]] == pool and keys[refs[6]] == base_mint):
             return keys[refs[7]]
     raise BackfillError(f'creation_quote_mint_not_found:{pool}')
 
@@ -79,7 +84,7 @@ def _signature_row(entry):
     return {k: row[k] for k in _SIG_FIELDS}
 
 
-def export_pools(window_dir, out_dir):
+def export_pools(window_dir, out_dir, *, include_truncated=False):
     window_dir, out_dir = Path(window_dir), Path(out_dir)
     checked = verify(window_dir)
     manifest = json.loads((window_dir / 'manifest.json').read_text())
@@ -90,7 +95,9 @@ def export_pools(window_dir, out_dir):
     slot_max = manifest['window']['slot_max']
     entries = [row for seg in manifest['segments'] if seg['kind'] == 'tx'
                for row in read_segment(window_dir / seg['path'])]
-    entries.sort(key=lambda e: (e['slot'], e.get('transactionIndex') or 0, e['signature']))
+    if any(type(e.get('transactionIndex')) is not int for e in entries):
+        raise BackfillError('transaction_index_missing_use_gtfa_bodies')
+    entries.sort(key=lambda e: (e['slot'], e['transactionIndex'], e['signature']))
 
     created, traded = {}, set()                        # pool -> creation entry; pools seen trading
     for entry in entries:
@@ -101,7 +108,7 @@ def export_pools(window_dir, out_dir):
         except ValueError:
             launches = []
         for launch in launches:
-            created.setdefault(launch['pool_state'], entry)
+            created.setdefault(launch['pool_state'], (entry, launch['mint']))
         try:
             traded.update(event.pool for event in extract_trade_events(entry))
         except EventDecodeError:
@@ -119,8 +126,20 @@ def export_pools(window_dir, out_dir):
     pools = []
     for pool in sorted(members):
         history = members[pool]
-        if history[0]['signature'] != created[pool]['signature']:
+        creation, base_mint = created[pool]
+        successful = [e for e in history if (e.get('meta') or {}).get('err') is None]
+        # A failed attempt may reference the pool before its creation (same slot):
+        # it stays listed; the creation must be the earliest SUCCESSFUL transaction.
+        if successful[0]['signature'] != creation['signature']:
             skipped[pool] = 'earliest_transaction_is_not_the_creation'
+            continue
+        quote_mint = creation_quote_mint(creation, pool, base_mint)
+        if quote_mint != WSOL_MINT:
+            skipped[pool] = f'quote_not_sol:{quote_mint}'
+            continue
+        near_end = history[-1]['slot'] > slot_max - NEAR_END_SLOTS
+        if near_end and not include_truncated:
+            skipped[pool] = 'active_near_window_end'
             continue
         transactions = {e['signature']: {k: v for k, v in e.items() if k != 'signature'}
                         for e in history if (e.get('meta') or {}).get('err') is None}
@@ -133,10 +152,10 @@ def export_pools(window_dir, out_dir):
         name = f'{pool}.json.gz'
         (out_dir / name).write_bytes(data)
         pools.append({'pool': pool, 'file': name, 'sha256': hashlib.sha256(data).hexdigest(),
-                      'quote_mint': creation_quote_mint(created[pool], pool),
+                      'quote_mint': quote_mint,
                       'signatures': len(signatures), 'transactions': len(transactions),
                       'first_slot': history[0]['slot'], 'last_slot': history[-1]['slot'],
-                      'active_near_window_end': history[-1]['slot'] > slot_max - NEAR_END_SLOTS})
+                      'active_near_window_end': near_end})
     export = {'schema': SCHEMA_EXPORT, 'version': 1, 'pools': pools,
               'source': {'window': manifest['window'],
                          'window_manifest_sha256': checked['manifest_sha256'],

@@ -28,8 +28,22 @@ fixtures d'origine.
 
 | Phase | Fenêtre | But | Plafond de crédits dans l'outil |
 |---|---|---|---|
-| P0, mesure | 1 jour (216 000 slots finalisés) | mesurer : transactions par slot, créations par jour, part SOL, créateurs, migrations, échecs, **crédits réels par page** | 1 000 000 |
+| P0, mesure | 1 jour (216 000 slots finalisés) | mesurer : transactions par slot, créations par jour, part SOL, créateurs, migrations, échecs, **crédits réels par page** ; collecter **la source SOL/USD causale** de la même fenêtre | 1 000 000 (programme) + plafond séparé pour la source SOL/USD |
 | P1, cohorte | N jours continus, N calculé après P0 | ≥ 200 cycles qualifiés selon le taux mesuré par L1 sur P0 | 9 500 000 moins la consommation de P0 |
+
+### Critères d'acceptation de P0 (avant tout P1)
+
+1. `verify` réussit et le manifeste est complet (rapprochement par deux méthodes).
+2. `export` produit au moins un pool SOL. Les pools écartés sont comptés par
+   raison : `quote_not_sol`, `creation_not_in_window`, `active_near_window_end`,
+   `earliest_transaction_is_not_the_creation`.
+3. **Le rejeu L1 sur l'export de P0 n'est plus bloqué par
+   `sol_usd_rate_unavailable`.** Il faut pour cela la source SOL/USD causale
+   ci-dessous, au format attendu par RUGGER 01.
+4. Contre-vérification sur un échantillon d'environ 20 pools exportés : comparer
+   `getSignaturesForAddress(pool)` aux signatures de l'archive. Cela écarte une
+   transaction qui toucherait le pool sans passer par le programme LaunchLab.
+5. Les crédits du tableau de bord Helius concordent avec `budget.credits`.
 
 ### P0 : commandes exactes
 
@@ -52,7 +66,13 @@ python -B tools/backfill_launchlab_window.py verify --out data/backfill/p0
 python -B tools/backfill_launchlab_window.py export --out data/backfill/p0 --pools-dir data/backfill/p0_pools
 ```
 
-- La même commande `run` reprend après une interruption.
+- `--before-signature` : sans ancre, `getSignaturesForAddress` part de la tête de
+  chaîne. Avec une fenêtre finissant une heure plus tôt (environ 9 000 slots, au
+  plus 27 000 transactions), cela ajoute au plus 27 pages, soit environ 270 crédits
+  au tarif prudent. Pour une fenêtre plus ancienne, fournir une signature proche
+  de `slot_max`.
+- La même commande `run` reprend après une interruption ; `spend.json` garde la
+  consommation, même après une panne.
 - `data/` est ignoré par git. L'archive se conserve hors du dépôt ; son
   `manifest.json` et son SHA-256 peuvent être commités.
 - Tout de suite après P0, relever sur le tableau de bord Helius les crédits
@@ -136,17 +156,37 @@ attendue de RUGGER 01. Les options, à chiffrer pendant P0 :
 | Transactions de mise à jour du compte de prix Pyth SOL/USD | environ 1 transaction par slot, soit environ 216 000 crédits par jour au tarif prudent | signées sur la chaîne | volume élevé : à échantillonner |
 | Mises à jour Pyth signées historiques (service Hermes) | 0 crédit Helius ; service public distinct, à autoriser | signatures Wormhole vérifiables | ce n'est pas un appel Helius ; il faut l'accord du propriétaire |
 
+Estimation pour P0 (1 jour), au tarif prudent de 1 crédit par transaction :
+- **pool SOL/USDC** : de l'ordre de 0,5 à 5 transactions par slot, soit 108 000 à
+  1 080 000 crédits. C'est une hypothèse, à mesurer : le plafond séparé
+  arrête la collecte, puis on échantillonne.
+- **oracle Pyth** : environ 216 000 crédits.
+- **Hermes** : 0 crédit Helius.
+
+Recommandation provisoire : Hermes si le propriétaire autorise ce service, sinon
+le compte Pyth sur la chaîne. Le choix final dépend de la forme exigée par
+RUGGER 01, encore attendue.
+
 ## Dépassement et renouvellement (point f)
 
-1. **Dans l'outil** : `--max-requests` et `--max-credits` sont comptés avant
-   chaque envoi. Le fichier `spend.json` est réécrit **avant** chaque requête : la
-   consommation survit à toute panne ou interruption. La table de coûts y est
-   figée, et chaque changement de plafond y est enregistré.
-2. **Chez Helius**, à confirmer sur leurs pages officielles, bloquées dans mon
-   environnement : préférer des crédits prépayés, ou couper la facturation
-   automatique des dépassements avant le premier appel.
-3. **Renouvellement** : noter la date d'échéance. Rétrograder ou annuler depuis
-   le tableau de bord avant cette date, sauf décision explicite de continuer.
+1. **Dans l'outil (vérifié par test)** : `--max-requests` et `--max-credits` sont
+   comptés avant chaque envoi, nouvelles tentatives comprises.
+   - Le fichier `spend.json` est réécrit **avant** chaque requête : la
+     consommation survit à toute panne ou interruption, et la reprise ne repart
+     jamais d'un compteur plus bas.
+   - La table de coûts y est figée, et chaque changement de plafond y est
+     enregistré.
+   - Ce point n'est vrai qu'à partir du commit `5fd0995`, qui corrige le défaut
+     F1 de T-0027.
+2. **Chez Helius (CONDITIONNEL, non vérifié)** : les pages officielles sont
+   bloquées dans mon environnement. Avant le paiement, le propriétaire confirme
+   sur ces pages comment acheter des crédits prépayés ou couper la facturation
+   automatique des dépassements. Sans cette confirmation, seul le plafond de
+   l'outil protège.
+3. **Renouvellement (CONDITIONNEL, à la charge du propriétaire)** :
+   - le jour du paiement, le propriétaire inscrit la date d'échéance (J + 30) ;
+   - il programme une annulation ou une rétrogradation à J + 27 ;
+   - la procédure exacte est à relever sur la page officielle de Helius.
 4. **Arrêts** : 10 M crédits consommés ; ou premier relevé montrant 100 crédits
    par page de 100 transactions alors que le plan supposait 10 ; ou échec de
    `verify` ou d'`export`.

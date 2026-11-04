@@ -67,6 +67,8 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     x = sub.add_parser('export', help='per-pool archives + MANIFEST for the L1 replay; no network')
     x.add_argument('--out', type=Path, required=True, help='verified program-window run directory')
     x.add_argument('--pools-dir', type=Path, required=True)
+    x.add_argument('--include-truncated', action='store_true',
+                   help='also export pools still trading near slot_max (flagged)')
     args = parser.parse_args(argv)
 
     def emit(obj):
@@ -79,7 +81,8 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
             return 0 if result['ok'] else 4
         if args.command == 'export':
             from bot.market.backfill_export import export_pools
-            export = export_pools(args.out, args.pools_dir)
+            export = export_pools(args.out, args.pools_dir,
+                                  include_truncated=args.include_truncated)
             emit({'pools_exported': len(export['pools']), 'skipped': len(export['skipped']),
                   'active_near_window_end': sum(p['active_near_window_end']
                                                 for p in export['pools'])})
