@@ -45,8 +45,10 @@ Invariant enforced (decision D3 of the #101 consolidation, P-PRIV correction):
     ``ALLOWED_WITH_KEYS``.
 
 The repository's ``requirements*.txt`` files, installed by the approved
-``pip install`` steps, may only list PyPI requirements: no pip option other than
-``-r``/``-c`` on a local file and ``--hash``, no URL, VCS or direct reference.
+``pip install`` steps, may only list PyPI requirements by name: no pip option other
+than ``--hash`` and ``-r``/``-c`` naming another root ``requirements*.txt`` (so every
+included file is scanned too), no URL, VCS or direct reference, no local path,
+directory or archive.
 
 The parser reads only the top-level ``on:`` key. It understands the block
 mapping, block sequence, flow sequence, flow mapping and scalar forms, and fails
@@ -155,7 +157,20 @@ _QUOTED_KEY = re.compile(r'''^(?:-[ ]+)?(["'])(?:(?!\1).)*\1[ ]*:''')
 _QUOTED = re.compile(r'"(?:[^"\\]|\\.)*"' + r"|'[^']*'")
 # A tag, anchor or alias starts a YAML node: at line start, after "key: ", "- " or in a flow list.
 _ANCHOR_OR_TAG = re.compile(r'(?:^|:[ ]+|-[ ]+|[\[,][ ]*)(?:[&*][A-Za-z0-9_-]|![^\s=])|<<[ ]*:')
-_REQ_INCLUDE = re.compile(r'^(?:-r|--requirement|-c|--constraint)[ =]+(?P<file>[A-Za-z0-9_./-]+)$')
+_REQ_INCLUDE = re.compile(r'^(?:-r|--requirement|-c|--constraint)[ =]+(?P<file>\S+)$')
+# Includes may only name another root requirements file: no directory part.
+_ROOT_REQUIREMENTS = re.compile(r'requirements[A-Za-z0-9_.-]*\.txt')
+# PEP 508 requirement by name only (PyPI): name, extras, version clauses, environment marker.
+_VERSION_CLAUSE = r'(?:===|==|~=|!=|<=|>=|<|>)[ ]*[A-Za-z0-9.*+!_-]+'
+_PYPI_REQUIREMENT = re.compile(
+    r'[A-Za-z0-9](?:[A-Za-z0-9._-]*[A-Za-z0-9])?'
+    r'(?:[ ]*\[[ ]*[A-Za-z0-9._-]+(?:[ ]*,[ ]*[A-Za-z0-9._-]+)*[ ]*\])?'
+    r'(?:[ ]*' + _VERSION_CLAUSE + r'(?:[ ]*,[ ]*' + _VERSION_CLAUSE + r')*)?'
+    r'(?:[ ]*;[^@]*)?')
+_HASH_OPTION = re.compile(r'[ ]+--hash[ =]+sha(?:256|384|512):[0-9a-f]+')
+# pip installs a line ending in an archive extension from a local file, not from PyPI.
+_ARCHIVE_NAME = re.compile(r'^[^ \[;<>=!~,]*\.(?:whl|zip|tar|tar\.gz|tgz|tar\.bz2|tbz|tar\.xz|txz|tlz|tar\.lz|tar\.lzma)'
+                           r'(?=$|[ \[;<>=!~,])', re.I)
 _VARS_WORD = re.compile(r'\bvars\b', re.I)
 _SELF_HOSTED = re.compile(r'\bself-hosted\b', re.I)
 _PERMISSIONS_TOP = re.compile(r'^permissions[ ]*:', re.M)
@@ -537,7 +552,13 @@ def mapping_key_violations(text: str) -> list[str]:
 
 
 def requirements_violations(text: str) -> list[str]:
-    """A requirements file installed by an automatic workflow may only name PyPI packages."""
+    """A requirements file installed by an automatic workflow may only name PyPI packages.
+
+    Accepted lines: a PEP 508 requirement by name (extras, version clauses, environment
+    marker, optional ``--hash``), or ``-r``/``-c`` naming another *root*
+    ``requirements*.txt`` file (itself scanned). Everything else is refused: other pip
+    options, URLs, VCS or direct references, and local paths, directories or archives.
+    """
     found = []
     for raw in text.splitlines():
         line = _strip_comment(raw).strip()
@@ -545,14 +566,20 @@ def requirements_violations(text: str) -> list[str]:
             continue
         if line.startswith('-'):
             include = _REQ_INCLUDE.match(line)
-            if not include or '://' in line:
+            if not include:
                 found.append('pip_option_in_requirements:%s' % line.split()[0])
+            elif not _ROOT_REQUIREMENTS.fullmatch(include.group('file')):
+                found.append('pip_include_not_root_requirements:%s' % include.group('file'))
             continue
-        if '://' in line or re.search(r'\b(?:git|hg|svn|bzr)\+', line) or re.search(r'\s@\s|^[^;]*@', line):
+        if '://' in line or re.search(r'\b(?:git|hg|svn|bzr)\+', line) or '@' in line.split(';', 1)[0]:
             found.append('url_in_requirements:%s' % line[:60])
+            continue
         for option in re.findall(r'(?<!\S)(--?[A-Za-z][A-Za-z-]*)', line):
             if option != '--hash':
                 found.append('pip_option_in_requirements:%s' % option)
+        requirement = _HASH_OPTION.sub('', line).strip()
+        if not _PYPI_REQUIREMENT.fullmatch(requirement) or _ARCHIVE_NAME.match(requirement):
+            found.append('not_a_pypi_requirement:%s' % line[:60])
     return found
 
 

