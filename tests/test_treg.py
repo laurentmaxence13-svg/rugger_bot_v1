@@ -1030,3 +1030,26 @@ def test_ingest_refuses_a_task_split_across_two_issues():
                             [{'body': body(ev_c)}]])
     assert [e['event_id'] for e in snapshot['events']] == [
         'T-0099-OWNER-0001', 'T-0100-OWNER-0001', 'T-0099-R01-0002']
+
+
+def test_ingest_groups_by_issue_url_and_accepts_the_same_issue_twice():
+    """R02 T-0029 observations O1 and O2."""
+    def body(event):
+        return treg.EVENT_MARKER + '\n```json\n' + json.dumps(event, sort_keys=True) + '\n```'
+    ev_a = {'schema': 'rugger-treg-event-v1', 'task_id': 'T-0099', 'event_id': 'T-0099-OWNER-0001',
+            'seq': 1, 'utc': '2026-11-04T22:55:13Z'}
+    ev_b = dict(ev_a, event_id='T-0099-R01-0002', seq=2, utc='2026-11-04T23:05:29Z')
+    issue = [{'body': body(ev_a)}, {'body': body(ev_b)}]
+    # O1: the same issue passed twice is a duplicate input, not two issues.
+    snapshot = treg.ingest([issue, copy.deepcopy(issue)])
+    assert [e['event_id'] for e in snapshot['events']] == ['T-0099-OWNER-0001', 'T-0099-R01-0002']
+    # O2: two issues concatenated in one list are told apart by issue_url.
+    url_133 = 'https://api.github.com/repos/o/r/issues/133'
+    url_135 = 'https://api.github.com/repos/o/r/issues/135'
+    mixed = [{'body': body(ev_a), 'issue_url': url_133}, {'body': body(ev_b), 'issue_url': url_135}]
+    with pytest.raises(treg.TregError, match='task_in_several_issues:T-0099'):
+        treg.ingest([mixed])
+    # Same event id with different content stays a conflict.
+    altered = dict(ev_b, utc='2026-11-04T23:59:59Z')
+    with pytest.raises(treg.TregError, match='event_id_conflict'):
+        treg.ingest([[{'body': body(ev_a)}, {'body': body(ev_b)}, {'body': body(altered)}]])

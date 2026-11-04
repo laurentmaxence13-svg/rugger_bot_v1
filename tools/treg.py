@@ -410,20 +410,34 @@ def order_events(events):
 def ingest(comment_lists):
     """Snapshot from GitHub issue comments (lists of dicts with 'body', or raw bodies).
 
-    Each list is one task issue. A task id whose events come from two different issues is
-    refused (`task_in_several_issues`): the first create wins (PROTOCOL.md §5) and a
-    duplicate issue must be renamed out of the `[T-REG] T-` prefix, never merged.
+    Comments are grouped by their GitHub ``issue_url`` when present, otherwise one list =
+    one issue. A task id whose events come from two different issues is refused
+    (`task_in_several_issues`): the first create wins (PROTOCOL.md §5) and a duplicate
+    issue must be renamed out of the `[T-REG] T-` prefix, never merged. The same issue
+    passed twice is a harmless duplicate input: identical events are kept once.
     """
-    bodies, issue_of_task = [], {}
+    groups = {}
     for position, item in enumerate(comment_lists):
-        item_bodies = [comment.get('body') if isinstance(comment, dict) else comment
-                       for comment in (item if isinstance(item, list) else [item])]
-        for event in parse_comments(item_bodies):
+        for comment in (item if isinstance(item, list) else [item]):
+            body = comment.get('body') if isinstance(comment, dict) else comment
+            url = comment.get('issue_url') if isinstance(comment, dict) else None
+            key = ('url', url) if type(url) is str and url else ('position', position)
+            groups.setdefault(key, []).append(body)
+    issue_of_task, events, seen = {}, [], {}
+    for key, bodies in groups.items():
+        for event in parse_comments(bodies):
+            event_id = event.get('event_id') if isinstance(event, dict) else None
             task_id = event.get('task_id') if isinstance(event, dict) else None
-            if issue_of_task.setdefault(task_id, position) != position:
+            previous = seen.get(event_id)
+            if previous is not None and previous == event:
+                continue  # the same issue (or comment) was passed twice
+            if issue_of_task.setdefault(task_id, key) != key:
                 raise TregError('task_in_several_issues:%s' % task_id)
-        bodies.extend(item_bodies)
-    return {'schema': SCHEMA_SNAPSHOT, 'events': order_events(parse_comments(bodies))}
+            if previous is not None:
+                raise TregError('event_id_conflict')
+            seen[event_id] = event
+            events.append(event)
+    return {'schema': SCHEMA_SNAPSHOT, 'events': order_events(events)}
 
 
 HEADS_MARKER = '<!-- treg-heads v1 -->'
