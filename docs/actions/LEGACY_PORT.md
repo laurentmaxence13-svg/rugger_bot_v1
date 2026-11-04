@@ -20,9 +20,15 @@ du propriétaire.** Audit de RUGGER 02 requis.
 | #82 | P3 : preuve Ed25519 par un second fournisseur (PublicNode) | **porté** (fusion sans conflit) | `a93f1d7` |
 | #86 | Vercel : aperçu NO-GO du Master en lecture seule | **porté** (fusion sans conflit) | `795cb9c` |
 
-Chaque PR portée est fusionnée telle quelle (`git merge --no-ff` de sa tête exacte) :
-l'historique et les auteurs d'origine sont conservés. Un dernier commit applique la règle
-D3 aux workflows apportés (§4).
+Chaque PR portée est fusionnée par `git merge --no-ff` de sa tête exacte : l'historique
+et les auteurs d'origine sont conservés. Un dernier commit applique la règle D3 aux
+workflows apportés (§4).
+
+Après la fusion à 3 voies, les fichiers de chaque PR sont identiques à ceux de sa tête,
+avec les exceptions suivantes (vérifiées par RUGGER 02, T-0024) :
+- le bloc `on:` des 3 workflows passés en manuel (§4) ;
+- `free-public-solana-forward-paper.yml`, qui reste dans sa version D3 de la base ;
+- `bot/live/public_sol_forward_paper.py` : le changement de #80 (`getSignaturesForAddress` borné) y est appliqué à l'identique ; le reste de l'écart avec la tête de #80 (points d'accès PublicNode) vient de la base `6792ae1`, conservée par la fusion.
 
 ## 1. #35 : déjà contenue dans #101
 
