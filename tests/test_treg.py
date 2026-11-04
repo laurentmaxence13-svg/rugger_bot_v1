@@ -909,3 +909,51 @@ def test_s003_archived_run_has_every_required_wake_journaled_and_accepted():
     assert treg.accept_pointer(state, policy, 'R02', {'task_id': 'T-0007', 'event_id': 'T-0007-R01-0003'})['reason'] \
         == 'wake_not_addressed_to_agent'
     assert state['tasks']['T-0008']['evidence']['audit']['audited_commit'] == '0b41b13ba27352156ccd38690443605036703107'
+
+
+# ---------------------------------------------------------------- supervision notifications (RUGGER 04 logic)
+def test_supervise_reports_each_completed_step_once():
+    state, _ = treg.simulate_scenario(POLICY)
+    notes = treg.supervise(state, now='2026-11-04T12:00:00Z')
+    assert [(n['kind'], n['task_id']) for n in notes] == [('step_done', 'T-0003')]
+    assert all(len(n['message']) < 200 for n in notes)
+    block = treg.render_notify_block(notes, utc='2026-11-04T12:00:01Z', channel='push')
+    sent = treg.sent_notifications([{'body': 'x'}, {'body': block}])
+    assert sent == {notes[0]['key']} and treg.supervise(state, now='2026-11-04T13:00:00Z', sent=sent) == []
+
+
+def test_supervise_flags_failed_audits_blocked_tasks_stalls_and_integrity():
+    log, submitted = submitted_log()
+    log.state, _ = treg.journal_wakes(log.state, ACTIVE, submitted, log.utc())
+    log.emit('T-0002', 'R02', 'transition', {'status_to': 'in_review'})
+    event, _ = log.emit('T-0002', 'R02', 'transition', {'status_to': 'changes_requested', 'findings': ['missing test']})
+    assert [n['kind'] for n in treg.supervise(log.state, now='2026-11-04T09:00:00Z')] == ['audit_failed', 'stalled']
+    log.state, _ = treg.journal_wakes(log.state, ACTIVE, event, log.utc())  # protocol: wake the author
+    kinds = [n['kind'] for n in treg.supervise(log.state, now='2026-11-04T09:00:00Z')]
+    assert kinds == ['audit_failed']
+    log.emit('T-0002', 'R01', 'transition', {'status_to': 'blocked', 'reason': 'quota_wakes_per_day'})
+    notes = treg.supervise(log.state, now='2026-11-04T09:00:00Z')
+    assert [n['kind'] for n in notes] == ['decision_needed'] and 'quota_wakes_per_day' in notes[0]['message']
+    # An unjournaled wake that is still useful stops the chain: flagged after 15 minutes.
+    log2, submitted2 = submitted_log()
+    assert treg.supervise(log2.state, now='2026-11-04T08:10:00Z') == []
+    assert [n['kind'] for n in treg.supervise(log2.state, now='2026-11-04T09:00:00Z')] == ['stalled']
+    # A ready task nobody claims for longer than stall_minutes.
+    log3 = Log()
+    log3.create(task())
+    assert [n['kind'] for n in treg.supervise(log3.state, now='2026-11-04T11:00:00Z', stall_minutes=60)] == ['stalled']
+    # An r04_verify integrity divergence always alerts.
+    alert = treg.supervise(log3.state, now='2026-11-04T08:02:00Z',
+                           r04={'verdict': 'DIVERGED', 'registry_digest': 'ab', 'integrity': ['task_omitted_from_heads:T-0001']})
+    assert [n['kind'] for n in alert] == ['integrity_alert']
+
+
+def test_supervise_on_the_archived_registry_reports_the_three_reports_only():
+    events = []
+    for run in ('S-001', 'S-002', 'S-003'):
+        events += json.loads((EVIDENCE / run / 'events.json').read_text(encoding='utf-8'))['events']
+    policy = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'S-003.policy.json').read_text(encoding='utf-8'))
+    state = treg.replay(treg.order_events(events), policy)
+    notes = treg.supervise(state, now='2026-11-04T00:30:00Z')
+    assert [(n['kind'], n['task_id']) for n in notes] == [('step_done', 'T-0003'), ('step_done', 'T-0006'),
+                                                         ('step_done', 'T-0009')]

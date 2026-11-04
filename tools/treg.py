@@ -548,6 +548,77 @@ def r04_verify(registry_comment_lists, inbox_comments, policy, *, now, max_age_m
     return result
 
 
+NOTIFY_MARKER = '<!-- treg-notify v1 -->'
+NOTIFY_KINDS = ('step_done', 'audit_failed', 'decision_needed', 'integrity_alert', 'stalled')
+
+
+def sent_notifications(inbox_comments):
+    """Keys of notifications already journaled in the inbox (`treg-notify` blocks)."""
+    keys = set()
+    for item in inbox_comments:
+        body = item.get('body') if isinstance(item, dict) else item
+        if type(body) is str and NOTIFY_MARKER in body:
+            for match in re.finditer(re.escape(NOTIFY_MARKER) + r'\s*```json\n(.*?)\n```', body, re.S):
+                keys.update(n['key'] for n in json.loads(match.group(1)).get('notifications', []))
+    return keys
+
+
+def supervise(state, *, now, sent=(), stall_minutes=120, r04=None):
+    """Notifications a supervisor owes the owner, computed only from the registry (read-only).
+
+    Kinds: step_done (a report task closed), audit_failed (changes requested by the reviewer),
+    decision_needed (a task is blocked: only the owner unblocks or cancels), stalled (a wake that
+    is still useful was never journaled, or an actionable task has not moved for
+    `stall_minutes`), integrity_alert (an r04_verify result `r04` with verdict DIVERGED).
+    Each has a stable `key`; keys in `sent` (already journaled in the inbox) are skipped,
+    so a notification is never sent twice. Messages stay under 200 characters.
+    """
+    at, notes = parse_utc(now), []
+
+    def add(kind, key, message, task_id=None):
+        if key not in sent:
+            notes.append({'kind': kind, 'key': key, 'task_id': task_id, 'message': message[:199]})
+
+    for task_id in sorted(state['tasks']):
+        task, log = state['tasks'][task_id], state['log'][task_id]
+        last = [e for e in log if e['type'] == 'transition'][-1:] or log[-1:]
+        last = last[0]
+        if task['status'] == 'done' and task['kind'] == 'report':
+            summary = ((task['evidence'].get('submitted') or {}).get('inbox') or {}).get('summary', '')
+            add('step_done', 'step_done:' + last['event_id'],
+                'RUGGER: %s terminé, rapport dans l\'inbox. %s' % (task_id, summary), task_id)
+        elif task['status'] == 'changes_requested':
+            add('audit_failed', 'audit_failed:' + last['event_id'],
+                'RUGGER: audit en échec sur %s (%s), corrections demandées par %s.'
+                % (task_id, task['title'], task.get('reviewer')), task_id)
+        elif task['status'] == 'blocked':
+            add('decision_needed', 'decision_needed:' + last['event_id'],
+                'RUGGER: %s bloquée (%s). Décision du propriétaire requise : débloquer ou annuler.'
+                % (task_id, task['evidence'].get('blocked_reason', 'raison non donnée')), task_id)
+        elif (task['status'] == 'authorized' and _deps_done(state, task)
+              and at - parse_utc(log[-1]['utc']) > timedelta(minutes=stall_minutes)):
+            add('stalled', 'stalled:%s:%s' % (task_id, log[-1]['event_id']),
+                'RUGGER: %s prête depuis plus de %d min mais non réservée par %s.'
+                % (task_id, stall_minutes, task['assignee']), task_id)
+    for due in pending_wakes(state):
+        if due['useful'] and at - parse_utc(due['utc']) > timedelta(minutes=15):
+            add('stalled', 'stalled_wake:%s:%s' % (due['pointer_event_id'], due['to']),
+                'RUGGER: réveil %s → %s non journalisé après %s ; chaîne arrêtée.'
+                % (due['from'], due['to'], due['pointer_event_id']), due['task_id'])
+    if r04 is not None and r04.get('verdict') == 'DIVERGED':
+        add('integrity_alert', 'integrity_alert:%s' % r04.get('registry_digest'),
+            'RUGGER: ALERTE intégrité du registre (%s). Ne rien valider avant vérification.'
+            % ', '.join(r04.get('integrity', [])[:2]))
+    return notes
+
+
+def render_notify_block(notes, *, utc, channel):
+    """Inbox comment journaling notifications (dedup source for the next supervisor run)."""
+    return (NOTIFY_MARKER + '\n```json\n' + json.dumps({'schema': 'rugger-treg-notify-v1', 'utc': utc,
+                                                         'channel': channel, 'notifications': notes},
+                                                        indent=1, sort_keys=True, ensure_ascii=False) + '\n```\n')
+
+
 def render_dashboard(state, *, generated_utc, policy=None):
     """Markdown dashboard for RUGGER 04, derived only from the replayed event log."""
     lines = ['# RUGGER 04 — tableau de bord T-REG', '',
@@ -844,6 +915,12 @@ def main(argv=None):
     p.add_argument('snapshot')
     p.add_argument('--policy', required=True)
     p.add_argument('--now', required=True)
+    p = sub.add_parser('supervise', help='notifications owed to the owner (read-only, deduplicated)')
+    p.add_argument('snapshot')
+    p.add_argument('--policy', required=True)
+    p.add_argument('--now', required=True)
+    p.add_argument('--inbox', default=None, help='saved inbox issue and comments, for already-sent keys')
+    p.add_argument('--stall-minutes', type=int, default=120)
     p = sub.add_parser('accept-pointer', help='receiver: act only on a wake journaled in the registry')
     p.add_argument('snapshot')
     p.add_argument('--policy', required=True)
@@ -938,6 +1015,15 @@ def main(argv=None):
         return 0 if result['consistent'] and result['fresh'] else 3  # 3 = obsolete, history consistent
     if args.cmd == 'dashboard':
         print(render_dashboard(state, generated_utc=args.now, policy=policy), end='')
+        return 0
+    if args.cmd == 'supervise':
+        sent = set()
+        if args.inbox:
+            with open(args.inbox, encoding='utf-8') as handle:
+                sent = sent_notifications(json.load(handle))
+        notes = supervise(state, now=args.now, sent=sent, stall_minutes=args.stall_minutes)
+        print(json.dumps({'notifications': notes, 'already_sent': len(sent)}, indent=1, sort_keys=True,
+                         ensure_ascii=False))
         return 0
     if args.cmd == 'accept-pointer':
         pointer = json.loads(args.pointer)
