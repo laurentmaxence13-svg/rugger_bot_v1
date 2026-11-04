@@ -642,7 +642,9 @@ def render_dashboard(state, *, generated_utc, policy=None):
             task_id, task['kind'], task['assignee'], task.get('reviewer') or '—', task['status'],
             ', '.join(task['depends_on']) or '—', len(state['log'].get(task_id, [])), ' ; '.join(proof) or '—'))
     lines += ['', '## Rapports reçus', '']
-    lines += ['- %s (tâches : %s)' % (entry['summary'], ', '.join(entry['task_refs'])) for entry in state['inbox']] or ['- aucun']
+    # One line per report: a multi-line summary would break the markdown list (and the next heading).
+    lines += ['- %s (tâches : %s)' % (' '.join(str(entry['summary']).split()), ', '.join(entry['task_refs']))
+              for entry in state['inbox']] or ['- aucun']
     lines += ['', '## Réveils entre agents', '']
     if policy is not None:
         lines += ['| Agent | Réveils journalisés (24 h glissantes) | Quota |', '|---|---|---|']

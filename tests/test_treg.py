@@ -966,3 +966,29 @@ def test_priv1_run_policy_only_lifts_the_pause():
     assert run['owner_mandate_ref_sha256'] == '4806c91e6104ece55077855fb2347c50edb608cc5675f04409b4b0340eb0bd02'
     assert run['agents'] == POLICY['agents']
     assert_frozen_run_policy_never_looser_than_base(run)
+
+
+
+def test_dashboard_keeps_each_report_on_one_line():
+    log = Log()
+    log.create(task('T-0001', kind='report', assignee='R02'))
+    for step in ({'status_to': 'claimed'}, {'status_to': 'in_progress'},
+                 {'status_to': 'submitted', 'inbox': {'summary': 'line one\n(2) line two', 'task_refs': ['T-0001']}},
+                 {'status_to': 'done'}):
+        log.emit('T-0001', 'R02', 'transition', step)
+    board = treg.render_dashboard(log.state, generated_utc='2026-11-04T10:00:00Z')
+    assert '- line one (2) line two (tâches : T-0001)' in board and '\n## Réveils entre agents' in board
+
+
+def test_priv1_archived_probes_replay_with_every_wake_journaled():
+    policy = json.loads((ROOT / 'docs' / 'treg' / 'runs' / 'PRIV-1.policy.json').read_text(encoding='utf-8'))
+    events = json.loads((EVIDENCE / 'PRIV-1' / 'events.json').read_text(encoding='utf-8'))['events']
+    state = treg.replay(events, policy)
+    assert {k: v['status'] for k, v in state['tasks'].items()} == {'T-0010': 'done', 'T-0011': 'done', 'T-0012': 'done'}
+    assert treg.pending_wakes(state) == []
+    sessions = {a: policy['agents'][a]['session_id'] for a in treg.AGENTS}
+    for receiver, wake_id, sender in (('R02', 'T-0010-R01-0002', 'R01'), ('R03', 'T-0011-R01-0002', 'R01'),
+                                      ('R01', 'T-0010-R02-0007', 'R02'), ('R01', 'T-0011-R03-0007', 'R03')):
+        assert treg.accept_pointer(state, policy, receiver, {'task_id': wake_id[:6], 'event_id': wake_id},
+                                   sender_session=sessions[sender])['accept']
+    assert 'NOT READY' in state['inbox'][-1]['summary']

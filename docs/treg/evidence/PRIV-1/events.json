@@ -1,0 +1,381 @@
+{
+ "events": [
+  {
+   "digest": "35b2a32ee96950eebfe99998d379233b2a97c431e28d08b767386a87013d2767",
+   "event_id": "T-0010-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PROBE-PRIV received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R02",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "4806c91e6104ece55077855fb2347c50edb608cc5675f04409b4b0340eb0bd02",
+      "scope": "probe-priv-1"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0012"
+      }
+     ],
+     "kind": "report",
+     "task_id": "T-0010",
+     "title": "PROBE-PRIV access and dependency probe, security side (R02)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0010",
+   "type": "create",
+   "utc": "2026-11-04T00:43:41Z"
+  },
+  {
+   "digest": "8c7ef0d4c4fd19b6f5e6d0646c23e747603b2cf94a3451be883faf48b0c478eb",
+   "event_id": "T-0010-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0010-OWNER-0001",
+     "task_id": "T-0010"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "35b2a32ee96950eebfe99998d379233b2a97c431e28d08b767386a87013d2767",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0010",
+   "type": "wake",
+   "utc": "2026-11-04T00:43:42Z"
+  },
+  {
+   "digest": "dc3a9b2c9ef45cd746f0ae7ff379f370584788dccf20e38e36fb702386b2e1f1",
+   "event_id": "T-0011-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PROBE-PRIV received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R03",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "4806c91e6104ece55077855fb2347c50edb608cc5675f04409b4b0340eb0bd02",
+      "scope": "probe-priv-1"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0012"
+      }
+     ],
+     "kind": "report",
+     "task_id": "T-0011",
+     "title": "PROBE-PRIV access and dependency probe, data side (R03)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0011",
+   "type": "create",
+   "utc": "2026-11-04T00:43:42Z"
+  },
+  {
+   "digest": "9f6d80ee45944de997920fd1b2e0079361e6aa8974abbb431138fdf1bd12eead",
+   "event_id": "T-0011-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0011-OWNER-0001",
+     "task_id": "T-0011"
+    },
+    "to": "R03"
+   },
+   "prev_digest": "dc3a9b2c9ef45cd746f0ae7ff379f370584788dccf20e38e36fb702386b2e1f1",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0011",
+   "type": "wake",
+   "utc": "2026-11-04T00:43:42Z"
+  },
+  {
+   "digest": "8823b001a975b41512ee690dc446e1ca47112794a049063894f52e5504f73b06",
+   "event_id": "T-0012-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PROBE-PRIV received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "4806c91e6104ece55077855fb2347c50edb608cc5675f04409b4b0340eb0bd02",
+      "scope": "probe-priv-1"
+     },
+     "depends_on": [
+      "T-0010",
+      "T-0011"
+     ],
+     "kind": "report",
+     "task_id": "T-0012",
+     "title": "PROBE-PRIV consolidation PASS/FAIL/INSUFFICIENT EVIDENCE to the inbox (#103)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0012",
+   "type": "create",
+   "utc": "2026-11-04T00:43:42Z"
+  },
+  {
+   "digest": "5ec9bf8c8146144ca96d1e9ad94214819b334a4124b7eb1e06b2d3698d7b5584",
+   "event_id": "T-0011-R03-0003",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "9f6d80ee45944de997920fd1b2e0079361e6aa8974abbb431138fdf1bd12eead",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0011",
+   "type": "transition",
+   "utc": "2026-11-04T00:45:43Z"
+  },
+  {
+   "digest": "d011ef7201de8bcf58c99751e6089d689e30efb253af1f5c7a3c879860bcd962",
+   "event_id": "T-0011-R03-0004",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "5ec9bf8c8146144ca96d1e9ad94214819b334a4124b7eb1e06b2d3698d7b5584",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0011",
+   "type": "transition",
+   "utc": "2026-11-04T00:45:55Z"
+  },
+  {
+   "digest": "b8be4d7308bc06648a9c52e89d7f9db2814b6a0c381ff2565c1639516690996c",
+   "event_id": "T-0010-R02-0003",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "8c7ef0d4c4fd19b6f5e6d0646c23e747603b2cf94a3451be883faf48b0c478eb",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0010",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:04Z"
+  },
+  {
+   "digest": "66f12de3aca9f5187b6d2e5fac84345a60e6fefb336e7b17ced406433d061426",
+   "event_id": "T-0010-R02-0004",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "b8be4d7308bc06648a9c52e89d7f9db2814b6a0c381ff2565c1639516690996c",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0010",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:04Z"
+  },
+  {
+   "digest": "f95389b1d78247a83d93e8931f1837dda21cdaa0a70a2bfc2830d1b17b415bac",
+   "event_id": "T-0010-R02-0005",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "inbox": {
+     "summary": "PROBE-PRIV R02 (security side), read-only, no visibility/setting/workflow/code change, no secret value read.\n(1) PASS - authenticated access: issue #103 read via the GitHub connector (treg-heads digests for T-0002, T-0005, T-0008 equal those R02 published); branch claude/r01-treg fetched at 8204f2a; write tool tools/treg.py @ 3449b8d sha256 6408cf39.\n(2) PASS - the session proxy authenticates GitHub requests: a curl with no Authorization header gets X-Oauth-Client-Id and X-RateLimit-Limit 15000 (anonymous = 60). No anonymous read test is valid from the R02 session.\n(3) INSUFFICIENT EVIDENCE - verified: repo public, forks 0 (no public fork would survive privatization), stars 0, watchers 0, no Pages; secret scanning, push protection, non-provider patterns, validity checks and Dependabot security updates are all DISABLED today; main not protected, 0 rulesets; the session token reports admin permission on the repo (only policy and proxy path filters restrain agents). Not verifiable from this session: environments, webhooks/deploy apps, Actions settings, repo secrets list, Pages (proxy returns 403 on these paths); content of the 114 Helius artifacts (#113, storage host blocked). Privatization does not retract data already public (about 916 job logs, 114 artifacts, T-REG issues, git history).\n(4) FAIL (doc corrections needed, non-blocking) - PRIVATIZATION_PROBE.md: (a) \"a private repo loses free secret scanning, push protection and branch protection\" - none is in use today, so nothing currently enabled would be lost; the actionable point is to enable secret scanning + push protection now while public. (b) Missing deployment: Streamlit Community Cloud (streamlit_app.py and .streamlit/config.toml on main, #101, Census, r01-treg) - its GitHub access to a private repo must be checked by the owner like Render and Vercel. (c) Missing: agent token has admin rights on the repo. (d) Missing: forks_count 0 verified. (e) Confirmed: no executed code reads this repo anonymously (only a UI link to Actions in bot/dashboard/app.py:166; 4 workflows download artifacts with GITHUB_TOKEN, unaffected).\nOwner actions suggested: enable secret scanning and push protection now; check Streamlit, Render and Vercel GitHub access before privatizing; rotate HELIUS_API_KEY (#113). Limits: metadata and static reads only; no anonymous test possible from cloud containers.",
+     "task_refs": [
+      "T-0010"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "66f12de3aca9f5187b6d2e5fac84345a60e6fefb336e7b17ced406433d061426",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0010",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:04Z"
+  },
+  {
+   "digest": "7e2d4ba4657ec896ac5c9ef3d2aebb25005e206b5feb7430881cb09d08fd2a02",
+   "event_id": "T-0010-R02-0006",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "f95389b1d78247a83d93e8931f1837dda21cdaa0a70a2bfc2830d1b17b415bac",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0010",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:11Z"
+  },
+  {
+   "digest": "1ab4ad35361382e9402f8e44fd23bc8d96d1d2d431a3f826aea37e3bcf0aaf62",
+   "event_id": "T-0010-R02-0007",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0010-R02-0006",
+     "task_id": "T-0010"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "7e2d4ba4657ec896ac5c9ef3d2aebb25005e206b5feb7430881cb09d08fd2a02",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0010",
+   "type": "wake",
+   "utc": "2026-11-04T00:47:11Z"
+  },
+  {
+   "digest": "1249c208ad3105d338890125889dc0d2d2147ff4669eb7475e540c1b18bb70b3",
+   "event_id": "T-0011-R03-0005",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "inbox": {
+     "summary": "PROBE-PRIV data side (R03 session, read-only, 0 provider calls, nothing changed). (1) PASS authenticated access: GitHub MCP read of #103 (body heads registry_digest d2a7a18f56ea, 61 events, 10 comments) and git ls-remote/fetch of claude/r01-treg = 8204f2ac206c, PRIVATIZATION_PROBE.md read at 8204f2a; limit: auth proven on the API path by headers, inferred for git (same proxy, remote URL carries no credential). (2) PASS proxy injects a token: curl to api.github.com with no auth header got X-Ratelimit-Limit 15000, X-Oauth-Client-Id and X-Oauth-Scopes present (values not shown); an anonymous read test is impossible from this container. (3) PASS inventory on 5 refs (main d9b950e, #101 16f1f22, Census 25a9f59, launchlab-trade-events 4f2875d, r01-treg 8204f2a): no executed code, collector, dataset or certification reads this repository anonymously; certified fixtures (T-0001/T-0004/T-0007) and evidence/p3 bundles live in git and were verified from git blobs; third-party raw URLs (solana-program, raydium-io) are pinned references with sha256, not fetched; real dependencies are on #101 only: 23 of 52 workflows upload/download artifacts (GITHUB_TOKEN, would consume private Actions minutes) and 12 validation files cite 26 Actions-run links as provenance, which become non-public and whose artifacts expire on retention regardless of visibility. Limit: ~100 other branches and Render/Vercel runtime config not inspected. (4) PASS review of PRIVATIZATION_PROBE.md: data facts in s1-s2 agree with this check; add (a) evidence held only in Actions artifacts should be archived into the repo with sha256 before relying on it, (b) the census runner and T-REG tool read only local git, so they are unaffected, (c) in s3 have each agent also report sha256 of NONCE.txt from git blob and from the API. Not a trading result.",
+     "task_refs": [
+      "T-0011"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "d011ef7201de8bcf58c99751e6089d689e30efb253af1f5c7a3c879860bcd962",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0011",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:31Z"
+  },
+  {
+   "digest": "0b2bb531f4f24b1f1d15c53390d8f1a1a9f09747b1dbcf32cf75286d1e5e31ba",
+   "event_id": "T-0011-R03-0006",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "1249c208ad3105d338890125889dc0d2d2147ff4669eb7475e540c1b18bb70b3",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0011",
+   "type": "transition",
+   "utc": "2026-11-04T00:47:51Z"
+  },
+  {
+   "digest": "ba317c1305759cca18904dad87e368da17bc2dc0a57f2bc81f7ca042fe3a6307",
+   "event_id": "T-0011-R03-0007",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0011-R03-0006",
+     "task_id": "T-0011"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "0b2bb531f4f24b1f1d15c53390d8f1a1a9f09747b1dbcf32cf75286d1e5e31ba",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0011",
+   "type": "wake",
+   "utc": "2026-11-04T00:47:51Z"
+  },
+  {
+   "digest": "80feddc3f2643f9aa168b7923687f09e664a97ed74695842bce67e0124f08c2d",
+   "event_id": "T-0012-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "8823b001a975b41512ee690dc446e1ca47112794a049063894f52e5504f73b06",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0012",
+   "type": "transition",
+   "utc": "2026-11-04T00:50:34Z"
+  },
+  {
+   "digest": "b25f062bc4b9a4c6743f12c998293c2a66bdd490e2b085868b14faa69fa0f11c",
+   "event_id": "T-0012-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "80feddc3f2643f9aa168b7923687f09e664a97ed74695842bce67e0124f08c2d",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0012",
+   "type": "transition",
+   "utc": "2026-11-04T00:50:34Z"
+  },
+  {
+   "digest": "f7f403e8fbf3d47e137d9925c6510d23baea6dbd982c2bc59c2a9a7c7a616d7b",
+   "event_id": "T-0012-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "inbox": {
+     "provider_calls": 0,
+     "report_comment": "https://github.com/laurentmaxence13-svg/rugger_bot_v1/issues/103#issuecomment-6619460220",
+     "summary": "PROBE-PRIV consolidated (read-only, no visibility/setting/deploy change). Authenticated access to #103 and claude/r01-treg: R01 PASS, R02 PASS, R03 PASS; R04 INSUFFICIENT EVIDENCE (not wakeable, answer not verified). Every cloud session proxy injects a GitHub token, so no anonymous read test is possible from agents. No executed code reads the repository anonymously (R01, R02, R03 agree). Access after privatization: INSUFFICIENT EVIDENCE for all agents (private test repository protocol prepared, not created). Findings: repository is PUBLIC; no security feature enabled today (enable secret scanning and push protection now: owner); agent token has admin rights; already-public data is not retracted; check Streamlit, Render, Vercel access and private Actions minutes; archive artifact-only evidence. Privatization NOT READY.",
+     "task_refs": [
+      "T-0010",
+      "T-0011"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "b25f062bc4b9a4c6743f12c998293c2a66bdd490e2b085868b14faa69fa0f11c",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0012",
+   "type": "transition",
+   "utc": "2026-11-04T00:51:14Z"
+  },
+  {
+   "digest": "603f65d325f8f839756c22e49aebfb480c17bf8d669983478cae6184f82099ac",
+   "event_id": "T-0012-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "f7f403e8fbf3d47e137d9925c6510d23baea6dbd982c2bc59c2a9a7c7a616d7b",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0012",
+   "type": "transition",
+   "utc": "2026-11-04T00:51:15Z"
+  }
+ ],
+ "schema": "rugger-treg-snapshot-v1"
+}
