@@ -12,7 +12,8 @@ on:
       - "tests/**"
       - "tools/**"
       - "requirements*.txt"
-      - ".github/workflows/offline-tests.yml"
+      # Any workflow change re-runs the trigger guard (tests/test_workflow_trigger_guard.py).
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
