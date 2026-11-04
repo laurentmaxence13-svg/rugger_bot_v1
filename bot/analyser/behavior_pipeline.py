@@ -148,14 +148,18 @@ def classify_creator_behavior(tx, mint, creator):
     }
 
 
-def wallet_graph_snapshot(cached, mint, signal_time, observed_at):
+def wallet_graph_snapshot(cached, mint, signal_time, observed_at, *,
+                          excluded_owners=()):
     """Summarise holder concentration and wallet links known by observation.
 
     The cache is often creator-focused rather than a full ledger, so the
     holder statistics are explicitly partial.  We count only transactions in
     ``[signal_time, observed_at]`` and never use a later balance to decide an
     entry.  Same-slot co-occurrence is an indicator, not proof of a bundle.
+    ``excluded_owners`` (for example a bonding-curve vault authority) are
+    left out of the holder statistics only; wallet links are unchanged.
     """
+    excluded = frozenset(excluded_owners)
     latest_holders = {}
     linked_wallets = set()
     edges = set()
@@ -193,8 +197,8 @@ def wallet_graph_snapshot(cached, mint, signal_time, observed_at):
     for participants in slots.values():
         if len(participants) >= 2:
             edges.update(combinations(sorted(participants), 2))
-    amounts = [amount for _timestamp, amount in latest_holders.values()
-               if amount > 0 and math.isfinite(amount)]
+    amounts = [amount for owner, (_timestamp, amount) in latest_holders.items()
+               if owner not in excluded and amount > 0 and math.isfinite(amount)]
     total = sum(amounts)
     top_share = max(amounts) / total if amounts and total > 0 else None
     return {

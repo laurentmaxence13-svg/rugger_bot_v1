@@ -146,8 +146,13 @@ def _bundle_shape(cached, mint, signal_time, observed_at):
 
 
 def build_features(cached, mint, creator, signal_time, observed_at,
-                   price_series, current_quote, prior_launches=0):
-    """Build features using only cache/quotes at or before ``observed_at``."""
+                   price_series, current_quote, prior_launches=0, *,
+                   excluded_holder_owners=()):
+    """Build features using only cache/quotes at or before ``observed_at``.
+
+    ``excluded_holder_owners`` is passed to :func:`wallet_graph_snapshot`;
+    the default keeps every observed owner in the holder statistics.
+    """
     relevant = []
     for timestamp, signature, tx in cached:
         if timestamp <= signal_time or timestamp > observed_at:
@@ -194,6 +199,7 @@ def build_features(cached, mint, creator, signal_time, observed_at,
     )
     wallet_graph = wallet_graph_snapshot(
         cached, mint, signal_time, observed_at,
+        excluded_owners=excluded_holder_owners,
     )
     return SignalFeatures(
         mint=mint,

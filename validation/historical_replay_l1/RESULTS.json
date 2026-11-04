@@ -1,0 +1,223 @@
+{
+ "base_commit": "bed623d8ea12d665e4c35d1f8c1e70b201b5f790",
+ "category": "HISTORICAL_REPLAY",
+ "committed_bundle": {
+  "path": "validation/historical_replay_l1/bundle_default.json",
+  "variant": "a_default"
+ },
+ "fixtures": "tests/fixtures/launchlab_sol_pools (3 pools, 113 decoded trades)",
+ "note": "Variants b-d use a DECLARED, unverified SOL/USD assumption and are sensitivity runs only. No variant produced an ENTER. Replay results are never fed to PaperLedger or research_evidence, are not Master trades, and stay pending RUGGER 02 qualification.",
+ "schema": "rugger-historical-research-replay-results-v1",
+ "variants": [
+  {
+   "bundle_sha256": "fa86f314f015277fc7a84f0124e5a04c4beaef00ab7caec05f91e3d255985270",
+   "command": "python -B tools/historical_research_replay.py --fixtures tests/fixtures/launchlab_sol_pools",
+   "file_sha256": "102f290119e382d5a59d7d93a9a5f0dba6f392f1bb4d593c1e68e4c9de941bae",
+   "params": {
+    "base_fee_lamports": 5000,
+    "exclude_launchlab_vault": false,
+    "exit_horizon_ms": 30000,
+    "failed_attempt_fee_lamports": 0,
+    "latency_slots": 2,
+    "priority_fee_lamports": 100000,
+    "receipt_latency_ms": 400,
+    "sol_usd": null,
+    "sol_usd_provenance": null
+   },
+   "params_sha256": "925ddc86ff32818d5f4bc81864418db4cd31481ad58b2d3da0d987540b6142f3",
+   "totals": {
+    "master": {
+     "blocking_reasons": {
+      "signed_creator_unverified": 11,
+      "sol_usd_rate_unavailable": 113
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    },
+    "reference": {
+     "blocking_reasons": {
+      "signed_creator_unverified": 11,
+      "sol_usd_rate_unavailable": 113
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    }
+   },
+   "variant": "a_default"
+  },
+  {
+   "bundle_sha256": "8f61ad57595e17fb64515d72aa94e4d6a8766a96619781199ed6409a1dc9da0c",
+   "command": "... --sol-usd 150 --sol-usd-provenance ASSUMED_DECLARED",
+   "file_sha256": "f19423a577cc5c48236c23b07489e4aa29fe7a4912eec5ece35238ce915cc7c1",
+   "params": {
+    "base_fee_lamports": 5000,
+    "exclude_launchlab_vault": false,
+    "exit_horizon_ms": 30000,
+    "failed_attempt_fee_lamports": 0,
+    "latency_slots": 2,
+    "priority_fee_lamports": 100000,
+    "receipt_latency_ms": 400,
+    "sol_usd": 150.0,
+    "sol_usd_provenance": "ASSUMED_DECLARED"
+   },
+   "params_sha256": "5af62f6f8277cd294cde6ff7cc3df6b124f2d611639019d531f9b9850107c631",
+   "totals": {
+    "master": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 113,
+      "critical_veto:concentration_extreme": 13,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 59,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    },
+    "reference": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 113,
+      "critical_veto:concentration_extreme": 13,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 59,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    }
+   },
+   "variant": "b_sol150"
+  },
+  {
+   "bundle_sha256": "8643698219b48dafcca669896def4007238ae2ee565fbf8b308b1c128cc48133",
+   "command": "... --sol-usd 150 --sol-usd-provenance ASSUMED_DECLARED --exclude-launchlab-vault",
+   "file_sha256": "6ea453cfc400cbe3e3ec04ec83d08aea509e9f74628118944143b233ce0e7524",
+   "params": {
+    "base_fee_lamports": 5000,
+    "exclude_launchlab_vault": true,
+    "exit_horizon_ms": 30000,
+    "failed_attempt_fee_lamports": 0,
+    "latency_slots": 2,
+    "priority_fee_lamports": 100000,
+    "receipt_latency_ms": 400,
+    "sol_usd": 150.0,
+    "sol_usd_provenance": "ASSUMED_DECLARED"
+   },
+   "params_sha256": "18df15654fad39f4e9abbd4b00d6dab56cc7a147a17261996ec124e18172647b",
+   "totals": {
+    "master": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 105,
+      "critical_veto:concentration_extreme": 11,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 52,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    },
+    "reference": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 105,
+      "critical_veto:concentration_extreme": 11,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 52,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    }
+   },
+   "variant": "c_sol150_novault"
+  },
+  {
+   "bundle_sha256": "400d003c8feee4bac6448f106a66affbb876bec39f185175353bfc18c3982880",
+   "command": "... --sol-usd 250 --sol-usd-provenance ASSUMED_DECLARED --exclude-launchlab-vault",
+   "file_sha256": "1fb6a8c93c000787bd50eaa8e5ff537fe85ae2a500c928ecd61ac73dfc19287d",
+   "params": {
+    "base_fee_lamports": 5000,
+    "exclude_launchlab_vault": true,
+    "exit_horizon_ms": 30000,
+    "failed_attempt_fee_lamports": 0,
+    "latency_slots": 2,
+    "priority_fee_lamports": 100000,
+    "receipt_latency_ms": 400,
+    "sol_usd": 250.0,
+    "sol_usd_provenance": "ASSUMED_DECLARED"
+   },
+   "params_sha256": "5cc35994d0ef79371d7920a7b8a3c026e008ea74a7c2211e6d79b7fca4cd4c68",
+   "totals": {
+    "master": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 105,
+      "critical_veto:concentration_extreme": 11,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 52,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    },
+    "reference": {
+     "blocking_reasons": {
+      "active_risk_or_score_refusal": 105,
+      "critical_veto:concentration_extreme": 11,
+      "critical_veto:vente_developpeur": 42,
+      "score_below_minimum": 52,
+      "signed_creator_unverified": 11
+     },
+     "closed_cycles": 0,
+     "decisions": 113,
+     "enter_decisions": 0,
+     "entries": 0,
+     "outcomes": {
+      "no_entry": 3
+     },
+     "pnl_lamports": null
+    }
+   },
+   "variant": "d_sol250_novault"
+  }
+ ]
+}
