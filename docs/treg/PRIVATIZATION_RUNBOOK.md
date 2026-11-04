@@ -11,14 +11,14 @@ déclenché, aucun réglage ni aucune permission n'est modifié par cette procé
 | Précondition | Statut | Preuve | Action restante |
 |---|---|---|---|
 | Accès authentifié de R01, R02 et R03 à un dépôt privé | **PASS** | lecture indépendante de `rugger_priv_probe` (privé), empreintes identiques (T-0013 à T-0015, #117 à #119) | aucune |
-| Accès de R04 | **PASS selon le propriétaire** | session Claude Code Cloud `session_016VkauFz4mBdySC1PoMsRCf` ; lecture du dépôt privé et du registre validée par le propriétaire | R04 confirme le tableau de bord après mise à jour (avis unique, `PROTOCOL.md` §9) |
-| Registre T-REG à jour | **PASS (R01)** | relu en direct sur GitHub : 101 événements, 15 tâches, `registry_digest` `7cb26be74263661d75dca1887b1b62e60c41240db96e08922e11c000da37a67c` ; corps de #103 régénéré ; `r04-verify` = `CURRENT` | contrôle indépendant par R02 (T-0016) et par R04 |
+| Accès de R04 | **INSUFFICIENT EVIDENCE** pour l'accès au privé (affirmation du propriétaire, non vérifiée indépendamment, relevé par R02 dans T-0016) ; **PASS** pour la lecture du registre | R04 a renvoyé `RUGGER04-VERIFY` depuis sa session : 104 événements, `112a6539…`, `CURRENT`, identique à R01 et R02 | une lecture de `rugger_priv_probe` par R04, publiée par empreinte, ou confirmée par R02 |
+| Registre T-REG à jour | **PASS** (R01, R02 et R04) | au moment de l'audit : 104 événements, 17 tâches, `registry_digest` `112a65393f4dcc4065b6dca6af39f6625d9c9318052b671776d6d35dbcbf9443`, `CURRENT` et 0 anomalie, constatés par R01, par R02 (T-0016, avec deux versions de l'outil) et par R04. Le compte augmente à chaque événement : toujours le recalculer | régénérer #103 après chaque série d'événements |
 | Render `rugger-master-readonly` | **INSUFFICIENT EVIDENCE** | branche `feat/render-readonly-master-service-20261101` (tête `5b0f4cc`), déploiement automatique désactivé, offre Free. Côté GitHub, aucune trace d'intégration Render : 0 déploiement, 0 statut | propriétaire : Render → service → Settings → *Repository*. Il doit voir « connecté via GitHub » (application GitHub de Render avec accès au dépôt), et non une « Public Git repository » |
 | Vercel `rugger-wallet-master` | **INSUFFICIENT EVIDENCE** | aucun statut, check-run ni déploiement GitHub de Vercel sur `1f8035c`. D'après la note de passation du 2026-11-02, la production contient des fichiers absents du dépôt : elle n'est pas construite depuis GitHub | propriétaire : Vercel → projet → Settings → *Git*. Repérer le dépôt connecté ; s'il l'est, l'application GitHub de Vercel doit avoir accès au dépôt privé |
 | Streamlit Community Cloud | **INSUFFICIENT EVIDENCE** | `streamlit_app.py` et `DEPLOYER_RUGGER_WALLET.md` décrivent un déploiement *à faire par le propriétaire* depuis `main`. Le dépôt ne contient aucune URL `*.streamlit.app` | propriétaire : share.streamlit.io → existe-t-il une application liée à ce dépôt ? Si oui, réautoriser Streamlit avec l'accès aux dépôts privés |
-| Coûts GitHub Actions | **FAIL (risque)** | 55 workflows actifs. Entre le 29 octobre et le 3 novembre (6 jours d'activité) : 3560 exécutions, dont 3410 sur `pull_request`, soit environ **2960 minutes facturables estimées** (jobs Linux, échantillon de 240 exécutions). Facturation **inaccessible** aux agents (le proxy limite les sessions au dépôt) | propriétaire : Settings → Billing → offre, minutes incluses, limite de dépense Actions à 0 $. Puis réduire les déclencheurs (§5) |
+| Coûts GitHub Actions | **FAIL (risque)** | 55 workflows actifs. Entre le 29 octobre et le 3 novembre (6 jours d'activité) : 3560 exécutions, dont 3410 sur `pull_request`, soit environ **2960 minutes facturables estimées** (R01, échantillon de 240 exécutions), confirmé par R02 (environ 2980). Quelques jobs tournent sous **Windows**, compté double en privé (3 sur 195 dans l'échantillon de R02). Facturation **inaccessible** aux agents (le proxy limite les sessions au dépôt) | propriétaire : Settings → Billing → offre, minutes incluses, limite de dépense Actions à 0 $. Puis réduire les déclencheurs (§5) |
 | Permissions | **FAIL** | le jeton des agents a les droits **administrateur** sur `rugger_bot_v1` et `rugger_priv_probe`. Aucune restriction par session n'est disponible : tous les agents passent par l'application GitHub Claude, avec les droits du propriétaire | décision du propriétaire sur l'accès réellement limité à la lecture (§6) ; ne rien révoquer avant |
-| Sécurité du dépôt | **PASS partiel** | historique scanné sans révéler de valeur (106 branches, 1138 commits, 10 motifs) : **0** occurrence, aucun fichier `.env` versionné, `.gitignore` couvre `.env`, `*.key` et `*keypair*.json`. Seul secret utilisé par les workflows : `HELIUS_API_KEY` | rotation de `HELIUS_API_KEY` (#113), puis activation de l'analyse de secrets et du blocage des pushes, gratuits tant que le dépôt est public |
+| Sécurité du dépôt | **PASS partiel** | historique scanné sans révéler de valeur (106 branches, 1138 commits, 10 motifs) : **0** occurrence, aucun fichier `.env` versionné, `.gitignore` couvre `.env`, `*.key` et `*keypair*.json`. Seul secret utilisé par les workflows : `HELIUS_API_KEY` | rotation de `HELIUS_API_KEY` (#113), puis activation de l'analyse de secrets et du blocage des pushes, gratuits tant que le dépôt est public. **Correction de R02** : sur l'offre gratuite, ces protections s'arrêtent quand le dépôt passe en privé. Après la bascule, la protection repose donc uniquement sur la rotation de la clé |
 
 ## 2. Risques encore ouverts
 
@@ -28,8 +28,9 @@ déclenché, aucun réglage ni aucune permission n'est modifié par cette procé
    compte). Ensuite, soit les jobs sont bloqués (limite de dépense à 0 $), soit
    ils sont facturés (limite plus élevée).
 2. **Fournisseur.** 22 fichiers de workflows, présents sur environ 30 à 35 branches,
-   se déclenchent sur `pull_request` avec `HELIUS_API_KEY`. Sur cette période,
-   1116 exécutions portent un nom de workflow fournisseur, dont 359 réussies.
+   se déclenchent sur `pull_request` avec `HELIUS_API_KEY`. Sur cette période, ces
+   22 workflows totalisent **1721 exécutions, dont 543 réussies et 898 non ignorées**
+   (correction de R02 ; R01 avait compté par nom de workflow : 1116 et 359).
    Combien ont réellement appelé Helius n'est pas établi sans les journaux.
 3. **Déploiements.** Render, Vercel et Streamlit peuvent perdre la capacité de
    reconstruire depuis GitHub. Rien ne prouve, de ce côté, qu'ils y soient
@@ -83,6 +84,17 @@ déclenché, aucun réglage ni aucune permission n'est modifié par cette procé
   - `master-prospective-evidence.yml`, `helius-prospective-campaign.yml`, `helius-pinned-root-diagnostic.yml` ;
   - `helius-pinned-index-creators.yml`, `helius-legacy-hints-crypto.yml`, `helius-historical-ed25519-replay.yml` ;
   - `helius-sol-forward-paper-cycle.yml`, `helius-signed-master-paper.yml`, `helius-rolling-signed-paper.yml`, `helius-recent-signed-sol-trades.yml`.
+- **Liste incomplète, signalée par R02 (T-0016).** Au prochain push sur leur PR,
+  **17 PR ouvertes** relanceraient aussi d'autres workflows hors CI :
+  - #48 : 10 workflows Helius, plus `master-strict-oos-audit`, `pinned-migration-readonly`,
+    `read-only-cli-validation`, `real-cpmm-bank-readonly` et 4 workflows `trawl-*`
+    qui contactent `trawl.run` ;
+  - #52 : 2 workflows Helius ;
+  - #35, #39, #45, #46, #47, #50, #53, #76, #77, #78, #79, #82, #86 et #89 :
+    workflows RPC publics ou étiquetés hors ligne.
+
+  Par ailleurs, **25 PR** lancent des workflows fournisseur dès qu'on leur pose une
+  étiquette. Avant la bascule : désactiver aussi ces workflows, ou fermer ces PR.
 - **CI hors ligne à conserver** : `offline-tests.yml`, `rugger-isolated-ci.yml`
   et `paper-terminal-ci.yml`. Pour la suite : `concurrency` avec annulation, une
   seule version de Python par PR, `timeout-minutes` court.
@@ -110,3 +122,24 @@ propriétaire. Aucun secret ne doit transiter par une conversation.
   - les minutes Actions consommées ne sont pas restituées ;
   - un retour en public réexpose tout le contenu, issues T-REG comprises ;
   - les données déjà copiées pendant la période publique restent dehors.
+
+## 8. Audit indépendant de RUGGER 02 (T-0016, #120)
+
+- **Registre : PASS**. Recalculé avec `treg.py` @ `b157e97` et @ `3449b8d` : instantané
+  identique, `verify-heads` cohérent.
+- **Procédure : FAIL**. Corrections (a) à (d) intégrées ci-dessus. L'ordre des
+  opérations et le retour arrière sont jugés corrects.
+- **Actions : FAIL**. Estimation confirmée ; décompte des workflows fournisseur
+  corrigé ; liste des déclencheurs complétée (§5).
+- **Accès et secrets : PASS avec réserves**. Les options A, B et C sont exactes.
+  L'option B n'est sûre qu'avec un jeton *fine-grained* limité à un dépôt, en
+  lecture seule, de courte durée, stocké dans un environnement R04 sans dépôt
+  attaché, et avec un test d'écriture qui doit échouer. Le script masqué de R01 ne
+  couvre ni les blobs `.json.gz`, ni `refs/pull/*` (64 commits n'y sont joignables
+  que par là), ni les résolutions de conflit, ni les clés base58, ni les jetons
+  génériques. Le scan plus large de R02 les couvre, avec **0** occurrence ; il a
+  aussi testé 74 valeurs de 64 octets comme paires Ed25519 : aucune n'est une paire
+  valide.
+- **Limites** : aucun test anonyme depuis les conteneurs ; facturation,
+  environnements et webhooks illisibles par les agents ; contenu des artefacts non
+  vérifié (#113).
