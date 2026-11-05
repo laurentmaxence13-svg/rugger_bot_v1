@@ -1,0 +1,117 @@
+name: Helius P0 getHealth (one read-only request, manual)
+
+# Owner request "Validation sécurisée Helius P0": confirm that the renewed
+# HELIUS_API_KEY secret is accepted. Exactly ONE JSON-RPC getHealth POST to
+# mainnet.helius-rpc.com, timeout 10 s, no retry, no redirect, no proxy.
+# No checkout, no repository code, no dependency install, no artifact, no
+# transaction, no write permission. The key and the URL holding it are never
+# printed. Result: step summary line HELIUS_P0_GETHEALTH=PASS or FAIL.
+# Manual only. Procedure, risks and rollback: docs/ops/HELIUS_P0_GETHEALTH.md.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type HELIUS-P0-GETHEALTH-ONCE to send one read-only getHealth request'
+        required: true
+        type: string
+
+permissions: {}
+
+concurrency:
+  group: helius-p0-gethealth
+  cancel-in-progress: false
+
+jobs:
+  gethealth-once:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.confirm == 'HELIUS-P0-GETHEALTH-ONCE' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: One read-only getHealth request (PASS or FAIL, key never printed)
+        timeout-minutes: 1
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          python3 -I -B - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+
+          ENDPOINT = 'https://mainnet.helius-rpc.com/?api-key='
+          BODY = b'{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+          TIMEOUT_S = 10
+          MAX_BYTES = 4096
+
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  return None
+
+
+          def build_opener():
+              return urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+
+
+          def emit(status, detail):
+              print('HELIUS_P0_GETHEALTH=%s %s' % (status, detail))
+              path = os.environ.get('GITHUB_STEP_SUMMARY')
+              if path:
+                  with open(path, 'a', encoding='utf-8') as summary:
+                      summary.write('### Helius P0 getHealth: %s\n\n`%s`\n' % (status, detail))
+              return 0 if status == 'PASS' else 1
+
+
+          def probe(opener, clock):
+              key = os.environ.get('HELIUS_API_KEY', '')
+              if not re.fullmatch(r'[A-Za-z0-9-]{20,64}', key):
+                  return emit('FAIL', 'reason=key_missing_or_malformed requests=0')
+              request = urllib.request.Request(
+                  ENDPOINT + key, data=BODY, method='POST',
+                  headers={'Content-Type': 'application/json', 'User-Agent': 'rugger-p0-gethealth/1'})
+              start = clock()
+              try:
+                  with opener.open(request, timeout=TIMEOUT_S) as response:
+                      status = response.status
+                      raw = response.read(MAX_BYTES + 1)
+              except urllib.error.HTTPError as exc:
+                  code = exc.code if type(exc.code) is int else 0
+                  return emit('FAIL', 'reason=http_status status=%d requests=1' % code)
+              except Exception as exc:
+                  return emit('FAIL', 'reason=transport_error type=%s requests=1' % type(exc).__name__)
+              elapsed = int((clock() - start) * 1000)
+              if status != 200:
+                  return emit('FAIL', 'reason=http_status status=%d requests=1' % status)
+              if len(raw) > MAX_BYTES:
+                  return emit('FAIL', 'reason=response_too_large requests=1')
+              try:
+                  doc = json.loads(raw)
+              except ValueError:
+                  return emit('FAIL', 'reason=not_json requests=1')
+              if type(doc) is not dict or doc.get('jsonrpc') != '2.0' or doc.get('id') != 1:
+                  return emit('FAIL', 'reason=bad_envelope requests=1')
+              if 'error' in doc:
+                  error = doc['error']
+                  code = error.get('code') if type(error) is dict else None
+                  return emit('FAIL', 'reason=rpc_error code=%s requests=1' % (code if type(code) is int else 'none'))
+              if doc.get('result') != 'ok':
+                  return emit('FAIL', 'reason=unexpected_result requests=1')
+              return emit('PASS', 'result=ok http=200 latency_ms=%d requests=1' % elapsed)
+
+
+          def main(opener=None, clock=time.monotonic):
+              try:
+                  return probe(opener or build_opener(), clock)
+              except BaseException as exc:
+                  return emit('FAIL', 'reason=internal_error type=%s' % type(exc).__name__)
+
+
+          if __name__ == '__main__':
+              sys.exit(main())
+          PY
