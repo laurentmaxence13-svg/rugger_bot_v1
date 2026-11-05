@@ -1,0 +1,626 @@
+{
+ "Rugger isolated LIVE / P3 regression": {
+  "n": 754,
+  "min_ceil": 1249,
+  "events": {
+   "pull_request": 732,
+   "push": 22
+  },
+  "concl": {
+   "success": 204,
+   "cancelled": 476,
+   "failure": 74
+  }
+ },
+ "Rugger strict read-only CLI contract": {
+  "n": 183,
+  "min_ceil": 191,
+  "events": {
+   "pull_request": 150,
+   "push": 33
+  },
+  "concl": {
+   "success": 181,
+   "failure": 2
+  }
+ },
+ "Rugger replay retained public Solana ProgramData": {
+  "n": 113,
+  "min_ceil": 113,
+  "events": {
+   "pull_request": 59,
+   "push": 54
+  },
+  "concl": {
+   "success": 105,
+   "cancelled": 8
+  }
+ },
+ "Observe two real migrated CPMM pool banks (READ ONLY)": {
+  "n": 118,
+  "min_ceil": 123,
+  "events": {
+   "pull_request": 118
+  },
+  "concl": {
+   "success": 95,
+   "cancelled": 19,
+   "failure": 4
+  }
+ },
+ "Discover one historical SOL LaunchLab migration (READ ONLY)": {
+  "n": 54,
+  "min_ceil": 55,
+  "events": {
+   "pull_request": 54
+  },
+  "concl": {
+   "failure": 42,
+   "cancelled": 12
+  }
+ },
+ "Verify pinned historical LaunchLab migrations (READ ONLY)": {
+  "n": 128,
+  "min_ceil": 134,
+  "events": {
+   "pull_request": 128
+  },
+  "concl": {
+   "success": 74,
+   "cancelled": 45,
+   "failure": 9
+  }
+ },
+ "Find public token ATA for unsigned SELL simulation (READ ONLY)": {
+  "n": 111,
+  "min_ceil": 115,
+  "events": {
+   "pull_request": 111
+  },
+  "concl": {
+   "failure": 8,
+   "success": 86,
+   "cancelled": 17
+  }
+ },
+ "Cross-provider signed LaunchLab migrations (READ ONLY)": {
+  "n": 122,
+  "min_ceil": 132,
+  "events": {
+   "pull_request": 122
+  },
+  "concl": {
+   "failure": 20,
+   "cancelled": 43,
+   "success": 59
+  }
+ },
+ "Independent public Solana RPC code comparison (READ ONLY)": {
+  "n": 2,
+  "min_ceil": 2,
+  "events": {
+   "pull_request": 2
+  },
+  "concl": {
+   "success": 1,
+   "failure": 1
+  }
+ },
+ "Public Solana program observation (strict READ ONLY)": {
+  "n": 3,
+  "min_ceil": 3,
+  "events": {
+   "pull_request": 3
+  },
+  "concl": {
+   "success": 3
+  }
+ },
+ "Strict creator-cluster PAPER profitability audit (NO LIVE)": {
+  "n": 2,
+  "min_ceil": 2,
+  "events": {
+   "pull_request": 2
+  },
+  "concl": {
+   "success": 2
+  }
+ },
+ "Bounded LaunchLab WebSocket forward PAPER probe (NO LIVE)": {
+  "n": 128,
+  "min_ceil": 142,
+  "events": {
+   "pull_request": 128
+  },
+  "concl": {
+   "success": 16,
+   "cancelled": 29,
+   "failure": 10,
+   "skipped": 73
+  }
+ },
+ "S1-qualified capacity to S2 conditional LaunchLab SELL (READ ONLY)": {
+  "n": 79,
+  "min_ceil": 79,
+  "events": {
+   "pull_request": 79
+  },
+  "concl": {
+   "skipped": 30,
+   "success": 35,
+   "cancelled": 11,
+   "failure": 3
+  }
+ },
+ "Reproduce two pinned Solana v1 receipts with Ed25519 (READ ONLY)": {
+  "n": 3,
+  "min_ceil": 3,
+  "events": {
+   "pull_request": 3
+  },
+  "concl": {
+   "success": 2,
+   "failure": 1
+  }
+ },
+ "Verify Raydium purchase windows via Trawl 402 quotes (NO PAYMENT)": {
+  "n": 6,
+  "min_ceil": 6,
+  "events": {
+   "pull_request": 6
+  },
+  "concl": {
+   "success": 5,
+   "failure": 1
+  }
+ },
+ "Trawl LaunchLab and CPMM automatic quotes (NO PAYMENT)": {
+  "n": 14,
+  "min_ceil": 14,
+  "events": {
+   "pull_request": 14
+  },
+  "concl": {
+   "success": 12,
+   "failure": 2
+  }
+ },
+ "Sample signed LaunchLab creation candidates (HELIUS READ ONLY)": {
+  "n": 233,
+  "min_ceil": 231,
+  "events": {
+   "pull_request": 233
+  },
+  "concl": {
+   "success": 63,
+   "cancelled": 17,
+   "failure": 3,
+   "skipped": 150
+  }
+ },
+ "Current active LaunchLab SOL pool scan (HELIUS READ ONLY)": {
+  "n": 115,
+  "min_ceil": 113,
+  "events": {
+   "pull_request": 115
+  },
+  "concl": {
+   "success": 55,
+   "cancelled": 12,
+   "skipped": 46,
+   "failure": 2
+  }
+ },
+ "Compare three post-upgrade Raydium pilot quote windows (NO PAYMENT)": {
+  "n": 3,
+  "min_ceil": 3,
+  "events": {
+   "pull_request": 3
+  },
+  "concl": {
+   "success": 3
+  }
+ },
+ "Master vs reference evidence sufficiency audit (NO LIVE)": {
+  "n": 59,
+  "min_ceil": 59,
+  "events": {
+   "pull_request": 59
+  },
+  "concl": {
+   "success": 59
+  }
+ },
+ "Verify both Trawl purchase pages and exact program IDs (NO PAYMENT)": {
+  "n": 1,
+  "min_ceil": 1,
+  "events": {
+   "pull_request": 1
+  },
+  "concl": {
+   "success": 1
+  }
+ },
+ "Verify four sampled historical LaunchLab receipts (READ ONLY)": {
+  "n": 44,
+  "min_ceil": 44,
+  "events": {
+   "pull_request": 44
+  },
+  "concl": {
+   "success": 34,
+   "cancelled": 10
+  }
+ },
+ "Verify sampled WSOL BUY and SELL separately (READ ONLY)": {
+  "n": 36,
+  "min_ceil": 36,
+  "events": {
+   "pull_request": 36
+  },
+  "concl": {
+   "success": 23,
+   "cancelled": 10,
+   "failure": 3
+  }
+ },
+ "Helius active-survivor LaunchLab S1-S2 cohort (READ ONLY)": {
+  "n": 130,
+  "min_ceil": 129,
+  "events": {
+   "pull_request": 130
+  },
+  "concl": {
+   "success": 34,
+   "cancelled": 31,
+   "failure": 2,
+   "skipped": 63
+  }
+ },
+ "Prospective two-bank CPMM markout (HELIUS READ ONLY)": {
+  "n": 92,
+  "min_ceil": 109,
+  "events": {
+   "pull_request": 92
+  },
+  "concl": {
+   "success": 48,
+   "cancelled": 43,
+   "failure": 1
+  }
+ },
+ "Simulate public CPMM SELL without signing (HELIUS READ ONLY)": {
+  "n": 98,
+  "min_ceil": 104,
+  "events": {
+   "pull_request": 98
+  },
+  "concl": {
+   "success": 53,
+   "cancelled": 18,
+   "failure": 27
+  }
+ },
+ "Index-first prospective LaunchLab cohort (HELIUS READ ONLY)": {
+  "n": 18,
+  "min_ceil": 18,
+  "events": {
+   "pull_request": 18
+  },
+  "concl": {
+   "failure": 17,
+   "cancelled": 1
+  }
+ },
+ "Prospective Master/Reference PAPER evidence (NO LIVE)": {
+  "n": 114,
+  "min_ceil": 139,
+  "events": {
+   "pull_request": 114
+  },
+  "concl": {
+   "failure": 7,
+   "cancelled": 21,
+   "success": 15,
+   "skipped": 71
+  }
+ },
+ "Reverify archived Helius LaunchLab Ed25519 creations (READ ONLY)": {
+  "n": 34,
+  "min_ceil": 36,
+  "events": {
+   "pull_request": 34
+  },
+  "concl": {
+   "skipped": 27,
+   "success": 5,
+   "failure": 2
+  }
+ },
+ "LaunchLab prospective creator campaign (PAPER READ ONLY)": {
+  "n": 71,
+  "min_ceil": 85,
+  "events": {
+   "pull_request": 71
+  },
+  "concl": {
+   "skipped": 64,
+   "cancelled": 3,
+   "success": 4
+  }
+ },
+ "Pinned signed LaunchLab root diagnosis (NO LIVE)": {
+  "n": 70,
+  "min_ceil": 65,
+  "events": {
+   "pull_request": 70
+  },
+  "concl": {
+   "skipped": 69,
+   "success": 1
+  }
+ },
+ "Three legacy-only LaunchLab hints cryptographic audit (READ ONLY)": {
+  "n": 68,
+  "min_ceil": 63,
+  "events": {
+   "pull_request": 68
+  },
+  "concl": {
+   "skipped": 67,
+   "success": 1
+  }
+ },
+ "Raydium index-first S1/S2 acquisition (PUBLIC PAPER READ ONLY)": {
+  "n": 64,
+  "min_ceil": 58,
+  "events": {
+   "pull_request": 64
+  },
+  "concl": {
+   "skipped": 62,
+   "success": 2
+  }
+ },
+ "Join signed Raydium creators and exact-lot PAPER quotes (NO ORDERS)": {
+  "n": 61,
+  "min_ceil": 55,
+  "events": {
+   "pull_request": 61
+  },
+  "concl": {
+   "skipped": 55,
+   "success": 5,
+   "failure": 1
+  }
+ },
+ "Verify two Raydium index-selected outer signed creators (NO LIVE)": {
+  "n": 62,
+  "min_ceil": 61,
+  "events": {
+   "pull_request": 62
+  },
+  "concl": {
+   "skipped": 61,
+   "success": 1
+  }
+ },
+ "Cross-campaign independent signed creator audit (PAPER OFFLINE)": {
+  "n": 54,
+  "min_ceil": 53,
+  "events": {
+   "pull_request": 54
+  },
+  "concl": {
+   "success": 19,
+   "skipped": 34,
+   "failure": 1
+  }
+ },
+ "PAPER terminal standalone smoke + evidence tests": {
+  "n": 34,
+  "min_ceil": 42,
+  "events": {
+   "pull_request": 28,
+   "push": 6
+  },
+  "concl": {
+   "success": 31,
+   "failure": 3
+  }
+ },
+ "Genuine SOL-quoted market frozen PAPER price cycle (NO ORDERS)": {
+  "n": 27,
+  "min_ceil": 27,
+  "events": {
+   "pull_request": 27
+  },
+  "concl": {
+   "skipped": 23,
+   "success": 3,
+   "failure": 1
+  }
+ },
+ "Helius recent signed LaunchLab SOL trades discovery (READ ONLY)": {
+  "n": 23,
+  "min_ceil": 22,
+  "events": {
+   "pull_request": 23
+  },
+  "concl": {
+   "skipped": 23
+  }
+ },
+ "Helius signed Master PAPER integration (READ ONLY)": {
+  "n": 31,
+  "min_ceil": 32,
+  "events": {
+   "pull_request": 31
+  },
+  "concl": {
+   "skipped": 28,
+   "success": 3
+  }
+ },
+ "Helius rolling signed-source PAPER stream (NO ORDERS)": {
+  "n": 30,
+  "min_ceil": 33,
+  "events": {
+   "pull_request": 30
+  },
+  "concl": {
+   "skipped": 28,
+   "success": 2
+  }
+ },
+ "Render live PAPER public-source verification (NO ORDERS)": {
+  "n": 21,
+  "min_ceil": 21,
+  "events": {
+   "pull_request": 21
+  },
+  "concl": {
+   "success": 1,
+   "skipped": 20
+  }
+ },
+ "Prospective signed SOL S1 then S2 independently quoted research (NO ORDERS)": {
+  "n": 15,
+  "min_ceil": 28,
+  "events": {
+   "pull_request": 15
+  },
+  "concl": {
+   "success": 4,
+   "failure": 4,
+   "skipped": 7
+  }
+ },
+ "Genuine Rugger Master PAPER Render status smoke (NO ORDERS)": {
+  "n": 20,
+  "min_ceil": 20,
+  "events": {
+   "pull_request": 20
+  },
+  "concl": {
+   "skipped": 19,
+   "success": 1
+  }
+ },
+ "Bounded free Raydium exact-lot quote probe for signed SOL mint (NO ORDERS)": {
+  "n": 16,
+  "min_ceil": 16,
+  "events": {
+   "pull_request": 16
+  },
+  "concl": {
+   "skipped": 15,
+   "success": 1
+  }
+ },
+ "Genuine Master signed S1 score replay over free Solana PAPER capture (NO ORDERS)": {
+  "n": 10,
+  "min_ceil": 18,
+  "events": {
+   "pull_request": 10
+  },
+  "concl": {
+   "skipped": 8,
+   "success": 2
+  }
+ },
+ "Reverify first signed SOL LaunchLab creator from a second free provider (NO ORDERS)": {
+  "n": 1,
+  "min_ceil": 1,
+  "events": {
+   "pull_request": 1
+  },
+  "concl": {
+   "success": 1
+  }
+ },
+ "One public Raydium index to independently signed SOL creator probe (NO ORDERS)": {
+  "n": 4,
+  "min_ceil": 4,
+  "events": {
+   "pull_request": 4
+  },
+  "concl": {
+   "failure": 4
+  }
+ },
+ "One free public Solana signed LaunchLab forward PAPER sample (NO ORDERS)": {
+  "n": 14,
+  "min_ceil": 25,
+  "events": {
+   "pull_request": 14
+  },
+  "concl": {
+   "skipped": 2,
+   "success": 12
+  }
+ },
+ "Bounded free public Solana signed creator cohort (NO ORDERS)": {
+  "n": 1,
+  "min_ceil": 5,
+  "events": {
+   "pull_request": 1
+  },
+  "concl": {
+   "success": 1
+  }
+ },
+ "One existing signed LaunchLab receipt via free public Solana RPC (NO ORDERS)": {
+  "n": 4,
+  "min_ceil": 4,
+  "events": {
+   "pull_request": 4
+  },
+  "concl": {
+   "success": 1,
+   "failure": 3
+  }
+ },
+ "Audit existing signed Helius archives (NO RPC, NO ORDERS)": {
+  "n": 1,
+  "min_ceil": 1,
+  "events": {
+   "pull_request": 1
+  },
+  "concl": {
+   "success": 1
+  }
+ },
+ "Offline test suite (no network, no secrets, no Helius)": {
+  "n": 25,
+  "min_ceil": 34,
+  "events": {
+   "pull_request": 25
+  },
+  "concl": {
+   "success": 19,
+   "failure": 3,
+   "cancelled": 3
+  }
+ },
+ ".github/workflows/bitquery-four-official-samples-once.yml": {
+  "n": 35,
+  "min_ceil": 0,
+  "events": {
+   "push": 35
+  },
+  "concl": {
+   "failure": 35
+  }
+ },
+ "Rugger Vercel genuine Master NO-GO preview (offline only)": {
+  "n": 1,
+  "min_ceil": 1,
+  "events": {
+   "pull_request": 1
+  },
+  "concl": {
+   "success": 1
+  }
+ }
+}

@@ -1,0 +1,15 @@
+# S-003 timeline (R01 notes, UTC, 2026-11-04)
+- 00:07:10 owner mandate in R02 session (permanent audit + S-003); 00:07:23 owner S-003 authorization in R03 session
+- 00:10:48 owner "mandat permanent d'autonomie maximale" message reaches R03 (human trigger) -> R03 starts reading registry at 00:11:00
+- 00:10:49 creates T-0007/T-0008/T-0009 (issues #110/#111/#112), posted 00:11:13-00:11:2x
+- 00:11:35 N1 sent to R03: unjournaled pointer T-0007-OWNER-0001 (delivered)
+- 00:11:38 R03 receives N1; 00:13:14 R03 accept-pointer -> unjournaled_wake rc=4; no action, no registry write (PASS)
+- R03 also flags criterion 3 of #110 (stored tx = MANIFEST signatures) as FAIL 2/3 -> spec error by R01
+- ~00:14 #110 body corrected; 00:14:19 OWNER link T-0007-OWNER-0002 (note: criteria correction, recorded by R01)
+- 00:14:20 journaled wake T-0007-R01-0003 -> R03 (posted before send); sent ~00:14:3x delivered
+- ~00:14:50 N2 sent to R02: pointer T-0007-R01-0003 (wake addressed to R03) -> expected wake_not_addressed_to_agent
+- 00:15:19-00:16:31 R03 claimed/in_progress/submitted(PASS, digest 5ce3f970, criteria as corrected)/done on #110; 00:16:31 wake T-0007-R03-0008 -> R01 (comment created 00:16:44)
+- 00:17:03 R03 message queued (after its wake comment); 00:17:06 R01 ReadNotifications; accept-pointer rc=0 (from-session R03); plan -> claim T-0008
+- 00:17:49 T-0008 claimed/in_progress posted; commit 0b41b13 pushed (claude/r01-t0008-s003)
+- 00:18:29 T-0008 submitted + chained wake T-0008-R01-0005 -> R02 (both posted before send); sent 00:19:04 delivered
+- 00:23:59 D1 duplicate resend of T-0008-R01-0005 to R02 (delivered); R02 wake T-0008-R02-0008 comment 00:22:06, message queued 00:22:08, read by R01 00:23:23, accept rc=0 from R02 session

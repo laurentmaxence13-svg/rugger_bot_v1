@@ -1,0 +1,656 @@
+{
+ "events": [
+  {
+   "digest": "55e71ba09fbbc603dcb9905d81e903244c18850c26545c3ee6ac9b0cdca0cbc5",
+   "event_id": "T-0013-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PRIV-T (private test repository read) received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R02",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "e584561b635509930f1126738e90a31543d6855e23eaed4e43e27fb0cc52cf96",
+      "scope": "probe-priv-2"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0015"
+      }
+     ],
+     "kind": "report",
+     "task_id": "T-0013",
+     "title": "PRIV-T independent read of the private test repository (R02)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0013",
+   "type": "create",
+   "utc": "2026-11-04T16:57:38Z"
+  },
+  {
+   "digest": "dc78610db534e9c05624f370ef51e3634530b1e422475446c58267d9c4f654c3",
+   "event_id": "T-0014-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PRIV-T (private test repository read) received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R03",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "e584561b635509930f1126738e90a31543d6855e23eaed4e43e27fb0cc52cf96",
+      "scope": "probe-priv-2"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0015"
+      }
+     ],
+     "kind": "report",
+     "task_id": "T-0014",
+     "title": "PRIV-T independent read of the private test repository (R03)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0014",
+   "type": "create",
+   "utc": "2026-11-04T16:57:38Z"
+  },
+  {
+   "digest": "63302e28c32fc6ebacffc947fdc63a36278375ed0cddda7beea946ce901fbf00",
+   "event_id": "T-0013-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0013-OWNER-0001",
+     "task_id": "T-0013"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "55e71ba09fbbc603dcb9905d81e903244c18850c26545c3ee6ac9b0cdca0cbc5",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0013",
+   "type": "wake",
+   "utc": "2026-11-04T16:57:39Z"
+  },
+  {
+   "digest": "b57e325cc6becdc6b90dcbf367d92be214b403c95950d737aaf0ac40871f283e",
+   "event_id": "T-0014-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0014-OWNER-0001",
+     "task_id": "T-0014"
+    },
+    "to": "R03"
+   },
+   "prev_digest": "dc78610db534e9c05624f370ef51e3634530b1e422475446c58267d9c4f654c3",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0014",
+   "type": "wake",
+   "utc": "2026-11-04T16:57:39Z"
+  },
+  {
+   "digest": "b7d268ae70b81828488e7e45a43b8bb4bc94c4c6c44d0741a058b5061c00f643",
+   "event_id": "T-0015-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate PRIV-T (private test repository read) received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "e584561b635509930f1126738e90a31543d6855e23eaed4e43e27fb0cc52cf96",
+      "scope": "probe-priv-2"
+     },
+     "depends_on": [
+      "T-0013",
+      "T-0014"
+     ],
+     "kind": "report",
+     "task_id": "T-0015",
+     "title": "PRIV-T consolidation of the three private-repository reads (hashes only)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0015",
+   "type": "create",
+   "utc": "2026-11-04T16:57:39Z"
+  },
+  {
+   "digest": "d7dc3b9e5bb05584c6eeaec69b178e5910a7c1094736c1203b3c30d62208cfe3",
+   "event_id": "T-0014-R03-0003",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "detail": "add_repo laurentmaxence13-svg/rugger_priv_probe (read) was refused by the platform permission check in the R03 session; no workaround attempted (no API read of the private repository through the session proxy); no value read. Owner: allow add_repo for this repository in the R03 session, then unblock.",
+    "reason": "owner_authorization_required",
+    "status_to": "blocked"
+   },
+   "prev_digest": "b57e325cc6becdc6b90dcbf367d92be214b403c95950d737aaf0ac40871f283e",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T16:59:40Z"
+  },
+  {
+   "digest": "7097b8dd60591628c8d1f325299d96fdbd51d814b6514659cd979f2bf1d8e089",
+   "event_id": "T-0013-R02-0003",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "63302e28c32fc6ebacffc947fdc63a36278375ed0cddda7beea946ce901fbf00",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0013",
+   "type": "transition",
+   "utc": "2026-11-04T17:00:08Z"
+  },
+  {
+   "digest": "cbd790006a495c8846a8f7f571c9731e287783843f959299903267f71f37feaf",
+   "event_id": "T-0013-R02-0004",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "7097b8dd60591628c8d1f325299d96fdbd51d814b6514659cd979f2bf1d8e089",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0013",
+   "type": "transition",
+   "utc": "2026-11-04T17:00:08Z"
+  },
+  {
+   "digest": "46e5152810b2583a97de39c27d0c5a0a5d09674211d00d0275ffe206588cec21",
+   "event_id": "T-0013-R02-0005",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "inbox": {
+     "summary": "PRIV-T R02: independent read of the private test repository laurentmaxence13-svg/rugger_priv_probe, read-only (no push, no comment, no setting change), not relying on R01, this registry or the public repo. Verdict: PASS.\nTool and authentication: session tool add_repo (read access) then git clone through the session git proxy; GitHub connector (get_file_contents, issue_read) and REST API through the session proxy, which authenticates requests (no identifier shown).\nObserved visibility: API private=true, visibility=private, forks 0. Commit read: main = ca526407c4baa91710a8e7bacefbb7cc4b9ef991 (git clone and API agree).\nNONCE.txt: git blob def1b8cb448784551ad0f0a6b06d07e89b38be91 (git hash-object and API sha identical); bytes sha256 632bad5b7df165e3207f27eb200804ae8be7ea7f6a5d6a63b7d56438c169545a, 157 bytes, identical by git and by API content.\nfile_nonce sha256 62e5563d8c239b556f939496d57c692fb11f421e9a24559958434dcebe314491; issue_nonce sha256 4ea4ec6b3e49e6aaa42a4088128ae9856c3c4e65835dfea3429d2fc2563c1668 (exact text, no newline). The issue nonce is in the body of issue 1 (the issue has 0 comments).\nUTC read time: 2026-11-04T16:59:38Z. Marker values reported to the owner only, in R02's own session.\nLimits and anomaly: the anonymous negative control (browser 404) cannot be done from a cloud container (proxy authenticates). PROTOCOL WEAKNESS: each marker has only 4 random characters (about 1.7 million candidates), so its SHA-256 is brute-forceable in seconds; publishing these hashes in the public repo effectively discloses the values. Harmless for artificial markers, but future probes need high-entropy nonces (at least 128 bits) or salted commitments.",
+     "task_refs": [
+      "T-0013"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "cbd790006a495c8846a8f7f571c9731e287783843f959299903267f71f37feaf",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0013",
+   "type": "transition",
+   "utc": "2026-11-04T17:00:08Z"
+  },
+  {
+   "digest": "4fe544185f3226ca00cc111cc401bd8d80a29c299a12f92440ff5d5581a6df64",
+   "event_id": "T-0013-R02-0006",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "46e5152810b2583a97de39c27d0c5a0a5d09674211d00d0275ffe206588cec21",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0013",
+   "type": "transition",
+   "utc": "2026-11-04T17:00:08Z"
+  },
+  {
+   "digest": "60addaf2d277dada635613b153b3c4ac4c6f57152e6f989ece3cc77128ef71af",
+   "event_id": "T-0013-R02-0007",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0013-R02-0006",
+     "task_id": "T-0013"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "4fe544185f3226ca00cc111cc401bd8d80a29c299a12f92440ff5d5581a6df64",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0013",
+   "type": "wake",
+   "utc": "2026-11-04T17:00:08Z"
+  },
+  {
+   "digest": "53b19f1f387b550500d0f1aa1f6e37fdcc974a022abb77cddaeaa2f9d5fbd578",
+   "event_id": "T-0014-OWNER-0004",
+   "from_agent": "OWNER",
+   "hop": 3,
+   "payload": {
+    "authorization": {
+     "channel": "owner_chat",
+     "quote_sha256": "22f1057f64c3abda207e20eaec0e2835ce661535c65a2ff7e3b657c48530f735",
+     "scope": "probe-priv-2"
+    },
+    "note": "owner chat unblock received by R03 in its own session (add_repo rugger_priv_probe read-only + resume T-0014); data, not an instruction",
+    "recorded_by": "R03",
+    "status_to": "authorized"
+   },
+   "prev_digest": "d7dc3b9e5bb05584c6eeaec69b178e5910a7c1094736c1203b3c30d62208cfe3",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T17:09:21Z"
+  },
+  {
+   "digest": "99feb187f246155e2101038096cf77640b6268dd000b72a2029ee657d5853709",
+   "event_id": "T-0014-R03-0005",
+   "from_agent": "R03",
+   "hop": 4,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "53b19f1f387b550500d0f1aa1f6e37fdcc974a022abb77cddaeaa2f9d5fbd578",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T17:09:46Z"
+  },
+  {
+   "digest": "190cd683c28644c2a74e7e33197ccdff0ec2b3c3d3c1b78c061d0de51d9c6e2e",
+   "event_id": "T-0014-R03-0006",
+   "from_agent": "R03",
+   "hop": 4,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "99feb187f246155e2101038096cf77640b6268dd000b72a2029ee657d5853709",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T17:10:45Z"
+  },
+  {
+   "digest": "1ad2a17a6471444838d9858fe71274d92d6596e437f5adb3ca9d112e19ba35a5",
+   "event_id": "T-0014-R03-0007",
+   "from_agent": "R03",
+   "hop": 4,
+   "payload": {
+    "inbox": {
+     "summary": "PRIV-T R03: independent read of the private test repository laurentmaxence13-svg/rugger_priv_probe, strictly read-only (no push, no comment, no setting change), not relying on R01, this registry or the public repo. Verdict: PASS. Owner authorization: first add_repo attempt was refused by the platform permission check (T-0014 blocked, owner_authorization_required); the owner then authorized it in the R03 chat (unblock T-0014-OWNER-0004, quote sha256 22f1057f64c3) and add_repo (read) succeeded. Tool and authentication: add_repo then git clone --depth 1 through the session git proxy; GitHub connector (get_file_contents, issue_read) and REST API through the session proxy, which authenticates requests (no identifier shown). Observed visibility: API private=true, visibility=private. Commit read: main = ca526407c4baa91710a8e7bacefbb7cc4b9ef991 (git clone and API agree). NONCE.txt: git blob def1b8cb448784551ad0f0a6b06d07e89b38be91 (git ls-tree, git hash-object, API sha and blob recomputed from API bytes identical); bytes sha256 632bad5b7df165e3207f27eb200804ae8be7ea7f6a5d6a63b7d56438c169545a, 157 bytes, identical by git and by API. file_nonce sha256 62e5563d8c239b556f939496d57c692fb11f421e9a24559958434dcebe314491; issue_nonce sha256 4ea4ec6b3e49e6aaa42a4088128ae9856c3c4e65835dfea3429d2fc2563c1668 (exact text, no newline; issue_nonce is in the body of issue 1, which has 0 comments). UTC read time: 2026-11-04T17:08:36Z. Comparison: all values identical to R02 (T-0013-R02-0005); no R01 read evidence found in #117/#118/#119 at read time. Marker values reported to the owner only, in the R03 session. Limits: anonymous negative control (browser 404) impossible from a cloud container; agree with R02 that 4-character markers make these sha256 brute-forceable, so this registry adds no secrecy beyond R02 identical published hashes; use 128-bit random markers next time.",
+     "task_refs": [
+      "T-0014"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "190cd683c28644c2a74e7e33197ccdff0ec2b3c3d3c1b78c061d0de51d9c6e2e",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T17:11:09Z"
+  },
+  {
+   "digest": "1a64d4f7c9ab709098edb3ceadbac75a86c24b494bb65d1e67344ae3491ede9c",
+   "event_id": "T-0014-R03-0008",
+   "from_agent": "R03",
+   "hop": 4,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "1ad2a17a6471444838d9858fe71274d92d6596e437f5adb3ca9d112e19ba35a5",
+   "schema": "rugger-treg-event-v1",
+   "seq": 8,
+   "task_id": "T-0014",
+   "type": "transition",
+   "utc": "2026-11-04T17:11:58Z"
+  },
+  {
+   "digest": "dbbace51ee8bfa5c1e54e578cfc07a9ee9bce954a7d36fac4916d38492768ad9",
+   "event_id": "T-0014-R03-0009",
+   "from_agent": "R03",
+   "hop": 4,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0014-R03-0008",
+     "task_id": "T-0014"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "1a64d4f7c9ab709098edb3ceadbac75a86c24b494bb65d1e67344ae3491ede9c",
+   "schema": "rugger-treg-event-v1",
+   "seq": 9,
+   "task_id": "T-0014",
+   "type": "wake",
+   "utc": "2026-11-04T17:11:58Z"
+  },
+  {
+   "digest": "cc7a77ff383d681b9f7d56e0e1697eb27d6aed5300409f020ba860511cf537e8",
+   "event_id": "T-0015-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "b7d268ae70b81828488e7e45a43b8bb4bc94c4c6c44d0741a058b5061c00f643",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0015",
+   "type": "transition",
+   "utc": "2026-11-04T17:13:32Z"
+  },
+  {
+   "digest": "8742a1ac5b97bc60eb2e971eaf4f3893b7083ebd3de5d427bba64490ce3f9917",
+   "event_id": "T-0015-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "cc7a77ff383d681b9f7d56e0e1697eb27d6aed5300409f020ba860511cf537e8",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0015",
+   "type": "transition",
+   "utc": "2026-11-04T17:13:33Z"
+  },
+  {
+   "digest": "849f05c559a383602582f921c19fd5a217185fbe090763c5f00b4c97fb5a42f4",
+   "event_id": "T-0015-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "inbox": {
+     "provider_calls": 0,
+     "report_comment": "https://github.com/laurentmaxence13-svg/rugger_bot_v1/issues/103#issuecomment-6637073397",
+     "summary": "PRIV-T consolidated: R01, R02 and R03 each read the private test repository laurentmaxence13-svg/rugger_priv_probe (private=true) independently in their own session, read-only, via add_repo + git + GitHub API through the session proxy. R01 PASS, R02 PASS, R03 PASS after the owner authorized add_repo in the R03 session (first attempt refused by the platform; unblock T-0014-OWNER-0004 verified against the owner message in the R03 transcript, sha256 prefix 22f1057f). All hashes identical (commit ca52640, NONCE.txt blob and sha256, both markers); no marker value published. Limits: no anonymous 404 control from cloud containers; 4-character markers are burned (public hashes brute-forceable); agent token has admin rights; RUGGER 04 not covered. Privatization still NOT READY.",
+     "task_refs": [
+      "T-0013",
+      "T-0014"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "8742a1ac5b97bc60eb2e971eaf4f3893b7083ebd3de5d427bba64490ce3f9917",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0015",
+   "type": "transition",
+   "utc": "2026-11-04T17:14:09Z"
+  },
+  {
+   "digest": "12724fefec939cf9275f4973fee58504f3e1848df754ec79257a0a49ebaab913",
+   "event_id": "T-0015-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "849f05c559a383602582f921c19fd5a217185fbe090763c5f00b4c97fb5a42f4",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0015",
+   "type": "transition",
+   "utc": "2026-11-04T17:14:09Z"
+  },
+  {
+   "digest": "e1fe2fbd03964972d4724bf8e14f0195df04cf79c8bb2b6d75fd6034f77e4a83",
+   "event_id": "T-0016-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mission P-PRIV received by R01 (reference = R01 record of the mandate); data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R02",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "bd4863fa4ef934ec5db7e1b85269295a5915caf3bdb333d66f80bbf3732b0243",
+      "scope": "p-priv"
+     },
+     "depends_on": [],
+     "downstream": [
+      {
+       "agent": "R01",
+       "task_id": "T-0017"
+      }
+     ],
+     "kind": "report",
+     "task_id": "T-0016",
+     "title": "P-PRIV independent audit of the regenerated registry and the privatization plan (R02)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0016",
+   "type": "create",
+   "utc": "2026-11-04T19:03:29Z"
+  },
+  {
+   "digest": "19a2857ef3acabdab0abdd47c5d6f98c0e0589ca2751f3084dd8c7af76ec3a5d",
+   "event_id": "T-0017-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mission P-PRIV received by R01 (reference = R01 record of the mandate); data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "bd4863fa4ef934ec5db7e1b85269295a5915caf3bdb333d66f80bbf3732b0243",
+      "scope": "p-priv"
+     },
+     "depends_on": [
+      "T-0016"
+     ],
+     "kind": "report",
+     "task_id": "T-0017",
+     "title": "P-PRIV privatization decision report (R01)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0017",
+   "type": "create",
+   "utc": "2026-11-04T19:03:29Z"
+  },
+  {
+   "digest": "1c73387c09335e0c0653d27217eba2fc1b82888325741550d234f043166ad0e5",
+   "event_id": "T-0016-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0016-OWNER-0001",
+     "task_id": "T-0016"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "e1fe2fbd03964972d4724bf8e14f0195df04cf79c8bb2b6d75fd6034f77e4a83",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0016",
+   "type": "wake",
+   "utc": "2026-11-04T19:03:30Z"
+  },
+  {
+   "digest": "1abb3b24806541388a454d1d44ea614b24badd53f61ef5304617be2eb0d4b510",
+   "event_id": "T-0016-R02-0003",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "1c73387c09335e0c0653d27217eba2fc1b82888325741550d234f043166ad0e5",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0016",
+   "type": "transition",
+   "utc": "2026-11-04T19:11:14Z"
+  },
+  {
+   "digest": "403f5c21837d86fc5dcf329850ba63683e41a3cb2d9e89a10a20775f251683eb",
+   "event_id": "T-0016-R02-0004",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "1abb3b24806541388a454d1d44ea614b24badd53f61ef5304617be2eb0d4b510",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0016",
+   "type": "transition",
+   "utc": "2026-11-04T19:11:14Z"
+  },
+  {
+   "digest": "76175c28d09ff106ff420bbb4d51e76e72fa44a7052fe5febf62fed435611d8b",
+   "event_id": "T-0016-R02-0005",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "inbox": {
+     "summary": "T-0016 R02 independent audit (read-only; no visibility, permission, billing or deployment change; no secret value read). Reference claude/r01-treg @ b157e97; tool tools/treg.py @ b157e97 (sha256 68745e74) cross-checked with 3449b8d (sha256 6408cf39).\n(1) REGISTRY - PASS. All 17 [T-REG] issues and #103 re-read via the REST API: r04-verify = CURRENT, 104 events, 17 tasks, registry_digest 112a65393f4dcc4065b6dca6af39f6625d9c9318052b671776d6d35dbcbf9443, integrity problems 0, wakes_not_journaled 3 (historical, 0 useful). The 3449b8d tool builds an identical snapshot and verify-heads confirms the same digest against the #103 treg-heads block (consistent, fresh). The b157e97 diff adds supervision/R04 functions only; write rules unchanged.\n(2) RUNBOOK section 1 - FAIL (corrections needed; NOT READY verdict confirmed). R01/R02/R03 access row confirmed (R02 #117 and R03 #118 hashes identical). Corrections: (a) registry row is stale (101 events, 15 tasks, 7cb26be7) - current 104/17/112a6539; (b) R04 access is the owner's statement, not independently verified by R02 (INSUFFICIENT EVIDENCE from the audit side); (c) Actions FAIL confirmed but see point 3; (d) security row: enabling secret scanning and push protection while public is right, but on a free plan these stop on a private repo, so after the switch the protection rests on the key rotation only - say so; (e) order of operations and rollback are sound.\n(3) ACTIONS - FAIL (partly confirmed). Recomputed over all 3560 runs (2026-10-29 17:56 to 2026-11-03 19:48 UTC): 3410 pull_request + 150 push confirmed. Billable minutes: 200-run random sample of non-skipped runs, job durations rounded up per job, about 1.19 min per run, extrapolated about 2980 min over 2515 non-skipped runs - confirms the about 2960 estimate (3 of 195 sampled jobs ran on Windows, billed 2x on private repos). WRONG: the 22 listed provider workflows have 1721 runs, 543 success, 898 non-skipped (runbook: 1116 and 359). INCOMPLETE section 5 list: on the next push of their open PR, 17 open PRs would auto-run non-CI workflows: #48 (10 Helius plus master-strict-oos-audit, pinned-migration-readonly, read-only-cli-validation, real-cpmm-bank-readonly and 4 trawl-* contacting trawl.run), #52 (2 Helius), #35, #39, #45, #46, #47, #50, #53, #76 to #79, #82, #86, #89 (public RPC or offline-labelled workflows); 25 PRs run provider workflows on a label only. Disable those workflows too, or close the PRs, before the switch.\n(4) ACCESS AND SECRETS - PASS with reserves. Options A/B/C are accurately described: A is admin, so R04's no-write rule is declarative; B is the right next step if the token is fine-grained, single-repo, read-only, short-lived, stored only in an R04-only environment with no repo attached, with an owner-run write test that must fail; C is correct that a personal repo cannot grant a read-only collaborator role. secret_scan_masked.py masks values (counts only) and its 0-finding result agrees with R02's own T-C1 scan, but it misses compressed .json.gz blobs, refs/pull/* (64 commits reachable only there), merge conflict resolutions, base58 Solana keys and generic tokens (sk-, JWT, Bearer, URL credentials). R02's broader scan covered these, 0 findings, and an Ed25519 keypair test found 0 valid keypairs among 74 64-byte values.\nLimits: no anonymous test from cloud containers; billing, environments and webhooks are not readable by agents; artifact contents unverified (#113).",
+     "task_refs": [
+      "T-0016"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "403f5c21837d86fc5dcf329850ba63683e41a3cb2d9e89a10a20775f251683eb",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0016",
+   "type": "transition",
+   "utc": "2026-11-04T19:11:14Z"
+  },
+  {
+   "digest": "bc25e9365d761cc4ba3a3683e414addfd1673fc3380b6209dcc33ccd70ee127a",
+   "event_id": "T-0016-R02-0006",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "76175c28d09ff106ff420bbb4d51e76e72fa44a7052fe5febf62fed435611d8b",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0016",
+   "type": "transition",
+   "utc": "2026-11-04T19:11:15Z"
+  },
+  {
+   "digest": "b01b41c30bb62f6e0d096cd870b61b6050b1ccf09cfc1f35b38ccd1964e00fea",
+   "event_id": "T-0016-R02-0007",
+   "from_agent": "R02",
+   "hop": 2,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0016-R02-0006",
+     "task_id": "T-0016"
+    },
+    "to": "R01"
+   },
+   "prev_digest": "bc25e9365d761cc4ba3a3683e414addfd1673fc3380b6209dcc33ccd70ee127a",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0016",
+   "type": "wake",
+   "utc": "2026-11-04T19:11:15Z"
+  },
+  {
+   "digest": "c62c512e0a0d75e5d1c0902cb88ea1c972e72f476782fcaa45073ad13a6739c1",
+   "event_id": "T-0017-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "19a2857ef3acabdab0abdd47c5d6f98c0e0589ca2751f3084dd8c7af76ec3a5d",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0017",
+   "type": "transition",
+   "utc": "2026-11-04T19:14:17Z"
+  },
+  {
+   "digest": "cd376d6ccf9996be19d067589d7cff961791b11b670d0d493b5b844d2bb4d415",
+   "event_id": "T-0017-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "c62c512e0a0d75e5d1c0902cb88ea1c972e72f476782fcaa45073ad13a6739c1",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0017",
+   "type": "transition",
+   "utc": "2026-11-04T19:14:17Z"
+  },
+  {
+   "digest": "6f930c7cd24f79412aa3f09c1d841d0cdfcf92988592ee2b0e8d6c99717c50be",
+   "event_id": "T-0017-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "inbox": {
+     "provider_calls": 0,
+     "report_comment": "https://github.com/laurentmaxence13-svg/rugger_bot_v1/issues/103#issuecomment-6639721966",
+     "summary": "P-PRIV decision: NOT READY TO PRIVATIZE. PASS: R01/R02/R03 private-repo access (identical hashes), registry (104 events, 17 tasks, registry_digest 112a6539, CURRENT, 0 integrity anomaly, checked by R01, R02 and R04), single R04 notice (journaled before sending, received, reply accepted from the R04 session). INSUFFICIENT EVIDENCE: R04 private-repo access (owner statement only), Render, Vercel and Streamlit GitHub connections (no GitHub-side trace; dashboards and URLs inaccessible to agents). FAIL: GitHub Actions cost (about 2960 billable minutes in 6 active days; 1721 provider-workflow runs; 17 open PRs would auto-run non-CI workflows; billing unreadable by agents), permissions (admin token for every agent), repository security (secret scanning and push protection off; HELIUS_API_KEY exposure via public artifacts unresolved). Owner actions listed in the decision report and runbook (claude/r01-treg @ d446186).",
+     "task_refs": [
+      "T-0016"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "cd376d6ccf9996be19d067589d7cff961791b11b670d0d493b5b844d2bb4d415",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0017",
+   "type": "transition",
+   "utc": "2026-11-04T19:14:33Z"
+  },
+  {
+   "digest": "78ca14f0837a97aee02102c8ee56ea74010e7f5a4bfcac97cee55aa4f75277b1",
+   "event_id": "T-0017-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "6f930c7cd24f79412aa3f09c1d841d0cdfcf92988592ee2b0e8d6c99717c50be",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0017",
+   "type": "transition",
+   "utc": "2026-11-04T19:14:34Z"
+  }
+ ],
+ "schema": "rugger-treg-snapshot-v1"
+}

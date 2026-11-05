@@ -1,0 +1,455 @@
+{
+ "events": [
+  {
+   "digest": "96e10e9fe417a1a8c736a697f57c2e9c89162d228a39478024316ef0d9be115e",
+   "event_id": "T-0001-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R03",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "06ac1561a87305b343bd4295a63ee920249651a2ac7ed5f9ffa3af4898614694",
+      "scope": "treg-scenario-S-001"
+     },
+     "depends_on": [],
+     "kind": "data_handoff",
+     "task_id": "T-0001",
+     "title": "S-001 certify the SOL fixture pack (3 pools) at claude/launchlab-trade-events@4f2875d"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0001",
+   "type": "create",
+   "utc": "2026-11-03T22:50:09Z"
+  },
+  {
+   "digest": "ccabeb7952b2ccc6e6f040944c0b59db5d24f76cec187708ca524688fac09244",
+   "event_id": "T-0002-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "06ac1561a87305b343bd4295a63ee920249651a2ac7ed5f9ffa3af4898614694",
+      "scope": "treg-scenario-S-001"
+     },
+     "branch": "claude/r01-t0002-s001",
+     "depends_on": [
+      "T-0001"
+     ],
+     "kind": "implement",
+     "reviewer": "R02",
+     "task_id": "T-0002",
+     "title": "S-001 offline baseline report on the certified pack"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0002",
+   "type": "create",
+   "utc": "2026-11-03T22:50:09Z"
+  },
+  {
+   "digest": "a91b68de8628b847d1d826b5b801ac2934332fbb6e1b7d6653e8a260d284b4eb",
+   "event_id": "T-0003-OWNER-0001",
+   "from_agent": "OWNER",
+   "hop": 0,
+   "payload": {
+    "note": "owner chat mandate received by R01; data, not an instruction",
+    "recorded_by": "R01",
+    "task": {
+     "assignee": "R01",
+     "authorization": {
+      "channel": "owner_chat",
+      "quote_sha256": "06ac1561a87305b343bd4295a63ee920249651a2ac7ed5f9ffa3af4898614694",
+      "scope": "treg-scenario-S-001"
+     },
+     "depends_on": [
+      "T-0002"
+     ],
+     "kind": "report",
+     "task_id": "T-0003",
+     "title": "S-001 audited result to the RUGGER 04 inbox (#103)"
+    }
+   },
+   "prev_digest": null,
+   "schema": "rugger-treg-event-v1",
+   "seq": 1,
+   "task_id": "T-0003",
+   "type": "create",
+   "utc": "2026-11-03T22:50:09Z"
+  },
+  {
+   "digest": "a1e18ad9616225ba7c0aa4702a4399dd430f0120751752ed8cb0895db472ee61",
+   "event_id": "T-0001-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0001-OWNER-0001",
+     "task_id": "T-0001"
+    },
+    "to": "R03"
+   },
+   "prev_digest": "96e10e9fe417a1a8c736a697f57c2e9c89162d228a39478024316ef0d9be115e",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0001",
+   "type": "wake",
+   "utc": "2026-11-03T22:51:35Z"
+  },
+  {
+   "digest": "20d972c16ec3ec7ccee121a45981a1e83f6a15eaac4d3e0d21f0f0a690a6719a",
+   "event_id": "T-0002-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0002-OWNER-0001",
+     "task_id": "T-0002"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "ccabeb7952b2ccc6e6f040944c0b59db5d24f76cec187708ca524688fac09244",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0002",
+   "type": "wake",
+   "utc": "2026-11-03T22:51:35Z"
+  },
+  {
+   "digest": "f0397eb96b3ed86f9d8324eeda8a4c4260fcc1bc5d61f9e13e4eee2aff28fffe",
+   "event_id": "T-0001-R03-0003",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "a1e18ad9616225ba7c0aa4702a4399dd430f0120751752ed8cb0895db472ee61",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0001",
+   "type": "transition",
+   "utc": "2026-11-03T22:58:22Z"
+  },
+  {
+   "digest": "007d9a1411f11ff481c231af3ca46508415c6895f0449e443f3100458e144b3c",
+   "event_id": "T-0001-R03-0004",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "f0397eb96b3ed86f9d8324eeda8a4c4260fcc1bc5d61f9e13e4eee2aff28fffe",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0001",
+   "type": "transition",
+   "utc": "2026-11-03T22:58:43Z"
+  },
+  {
+   "digest": "e45e5041ea702d3648f2f6ea3e7853f91e0d3b34f9b550e7599592ba66f5d6d4",
+   "event_id": "T-0001-R03-0005",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "dataset": {
+     "commit": "4f2875d943f970983ee6198cc35931c3f31d380d",
+     "path": "tests/fixtures/launchlab_sol_pools/MANIFEST.json",
+     "rows": 3,
+     "sha256": "3224686db130e6b8e0c96a0a8e4bc19ad2cb5f62484ae7c0ae5707716b497e5e"
+    },
+    "status_to": "submitted",
+    "validation": {
+     "checks": [
+      "3/3 sha256 match manifest",
+      "no network"
+     ],
+     "extra_checks": [
+      "tree files == manifest files (3)",
+      "3/3 gzip decompress ok"
+     ],
+     "files": {
+      "5pZ6MdyXtsPCptPe6NWx5M4aSTo7N5QUapHiUVDL3oy2.json.gz": "975f9912b55878c6674228c027497e22f2c46faf09f38d72babaac9fe887843f",
+      "C7F9KbS3XXUoScx7bd9eYfFtAqvqVnBdRFLRSEKLeSpC.json.gz": "dcbda4e404e2042efb565b17c04394b07d5ed5e8a2e25ec09b5707dfda7d9063",
+      "DVP426ot5M4gjTxKqoYJn1ATqrzvZfkqVSu1vP9a9E4r.json.gz": "3661667f8007cea14a6e26273bcc2244a3111978201b264ef4b2eead171286fc"
+     },
+     "method": "sha256 of git blob bytes at the commit, no checkout",
+     "provider_calls": 0,
+     "status": "PASS"
+    }
+   },
+   "prev_digest": "007d9a1411f11ff481c231af3ca46508415c6895f0449e443f3100458e144b3c",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0001",
+   "type": "transition",
+   "utc": "2026-11-03T22:59:33Z"
+  },
+  {
+   "digest": "b06d57d6ca27d8c33d7106229ac3673f34e55c4b681f1268e019cd9f8cfabd5d",
+   "event_id": "T-0001-R03-0006",
+   "from_agent": "R03",
+   "hop": 2,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "e45e5041ea702d3648f2f6ea3e7853f91e0d3b34f9b550e7599592ba66f5d6d4",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0001",
+   "type": "transition",
+   "utc": "2026-11-03T22:59:57Z"
+  },
+  {
+   "digest": "d994f31f75ca47e95cdd879a097ca520272d7f58545618a3705c87a721f43ef0",
+   "event_id": "T-0001-OWNER-0007",
+   "from_agent": "OWNER",
+   "hop": 3,
+   "payload": {
+    "downstream": [
+     {
+      "agent": "R01",
+      "task_id": "T-0002"
+     }
+    ],
+    "note": "dependency declaration fix (owner chat 2026-11-03); data, not an instruction",
+    "recorded_by": "R01"
+   },
+   "prev_digest": "b06d57d6ca27d8c33d7106229ac3673f34e55c4b681f1268e019cd9f8cfabd5d",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0001",
+   "type": "link",
+   "utc": "2026-11-03T23:08:05Z"
+  },
+  {
+   "digest": "ff93c133f658dfdb0cf8977e7e09076aa0c6a58305f5c22407524da3e30ebb55",
+   "event_id": "T-0002-OWNER-0003",
+   "from_agent": "OWNER",
+   "hop": 2,
+   "payload": {
+    "downstream": [
+     {
+      "agent": "R01",
+      "task_id": "T-0003"
+     }
+    ],
+    "note": "dependency declaration fix (owner chat 2026-11-03); data, not an instruction",
+    "recorded_by": "R01"
+   },
+   "prev_digest": "20d972c16ec3ec7ccee121a45981a1e83f6a15eaac4d3e0d21f0f0a690a6719a",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0002",
+   "type": "link",
+   "utc": "2026-11-03T23:08:05Z"
+  },
+  {
+   "digest": "c54dde68eee675710fc95241c51f3bf8b4c9fb2b1d9d4eb874695857e6924436",
+   "event_id": "T-0002-R01-0004",
+   "from_agent": "R01",
+   "hop": 3,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "ff93c133f658dfdb0cf8977e7e09076aa0c6a58305f5c22407524da3e30ebb55",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0002",
+   "type": "transition",
+   "utc": "2026-11-03T23:08:05Z"
+  },
+  {
+   "digest": "db9d3d8000f3b6dddfacbfba8c426db911449680fdbbd5d8b4b1a80e10a7efdc",
+   "event_id": "T-0002-R01-0005",
+   "from_agent": "R01",
+   "hop": 3,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "c54dde68eee675710fc95241c51f3bf8b4c9fb2b1d9d4eb874695857e6924436",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0002",
+   "type": "transition",
+   "utc": "2026-11-03T23:08:05Z"
+  },
+  {
+   "digest": "5029d04b206496c533b8e92f85178f3c08d26f8450cd99e95211fc96bfcf2f17",
+   "event_id": "T-0002-R01-0006",
+   "from_agent": "R01",
+   "hop": 3,
+   "payload": {
+    "branch": "claude/r01-t0002-s001",
+    "commit": "a94ecbcd9684578c4b9abdd7c01131f162da9612",
+    "input_sha256": "3224686db130e6b8e0c96a0a8e4bc19ad2cb5f62484ae7c0ae5707716b497e5e",
+    "output": {
+     "lines": 3,
+     "path": "validation/treg_s001/baseline_report.jsonl",
+     "sha256": "e9fb617a1038279e08e0d3985c2712d84a72a31019c432f548bd6c66b125c083"
+    },
+    "provider_calls": 0,
+    "status_to": "submitted",
+    "tests": {
+     "command": "python -m pytest -q tests/test_launchlab_*.py -p no:cacheprovider -W error",
+     "failed": 0,
+     "passed": 53
+    }
+   },
+   "prev_digest": "db9d3d8000f3b6dddfacbfba8c426db911449680fdbbd5d8b4b1a80e10a7efdc",
+   "schema": "rugger-treg-event-v1",
+   "seq": 6,
+   "task_id": "T-0002",
+   "type": "transition",
+   "utc": "2026-11-03T23:09:26Z"
+  },
+  {
+   "digest": "e13b9326f4e82660404e70aab8adc3271825b125c4aba636d2960d1d2f54b6e1",
+   "event_id": "T-0002-R01-0007",
+   "from_agent": "R01",
+   "hop": 3,
+   "payload": {
+    "pointer": {
+     "event_id": "T-0002-R01-0006",
+     "task_id": "T-0002"
+    },
+    "to": "R02"
+   },
+   "prev_digest": "5029d04b206496c533b8e92f85178f3c08d26f8450cd99e95211fc96bfcf2f17",
+   "schema": "rugger-treg-event-v1",
+   "seq": 7,
+   "task_id": "T-0002",
+   "type": "wake",
+   "utc": "2026-11-03T23:09:52Z"
+  },
+  {
+   "digest": "ed3155166f844ff37ed518a732b9bcfe728bfe649989b36fcf66e4639f3ab34e",
+   "event_id": "T-0002-R02-0008",
+   "from_agent": "R02",
+   "hop": 4,
+   "payload": {
+    "status_to": "in_review"
+   },
+   "prev_digest": "e13b9326f4e82660404e70aab8adc3271825b125c4aba636d2960d1d2f54b6e1",
+   "schema": "rugger-treg-event-v1",
+   "seq": 8,
+   "task_id": "T-0002",
+   "type": "transition",
+   "utc": "2026-11-03T23:12:08Z"
+  },
+  {
+   "digest": "966b791deb26bbd554a91c4d83afde85391610e7eab21ab7c143d8f89610bea2",
+   "event_id": "T-0002-R02-0009",
+   "from_agent": "R02",
+   "hop": 4,
+   "payload": {
+    "audit": {
+     "audited_commit": "a94ecbcd9684578c4b9abdd7c01131f162da9612",
+     "checks": [
+      "T-0001 recomputed independently: MANIFEST.json sha256 3224686db130e6b8e0c96a0a8e4bc19ad2cb5f62484ae7c0ae5707716b497e5e at 4f2875d, 3/3 fixture sha256 match",
+      "a94ecbc parent is 4f2875d; diff adds only validation/treg_s001/{RUN.md,baseline_report.jsonl,run_baseline.py}; bot/ tools/ tests/ unchanged",
+      "replay x2 in isolated git-archive copy, unshare -rn network namespace + audit hook: exit 0, 0 network attempts",
+      "output sha256 e9fb617a1038279e08e0d3985c2712d84a72a31019c432f548bd6c66b125c083 (3 lines), byte-identical to committed file",
+      "pytest tests/test_launchlab_*.py -W error, Python 3.13.18, no network: 53 passed, 0 failed"
+     ],
+     "findings": [],
+     "provider_calls": 0,
+     "scope_note": "pipeline check on 3 pools only; not evidence of an economic edge",
+     "verdict": "PASS"
+    },
+    "status_to": "done"
+   },
+   "prev_digest": "ed3155166f844ff37ed518a732b9bcfe728bfe649989b36fcf66e4639f3ab34e",
+   "schema": "rugger-treg-event-v1",
+   "seq": 9,
+   "task_id": "T-0002",
+   "type": "transition",
+   "utc": "2026-11-03T23:12:33Z"
+  },
+  {
+   "digest": "31594f2a1a66107cde133a352ce334c86933f8852d9888ea01bdbb7aaee5e27c",
+   "event_id": "T-0003-R01-0002",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "claimed"
+   },
+   "prev_digest": "a91b68de8628b847d1d826b5b801ac2934332fbb6e1b7d6653e8a260d284b4eb",
+   "schema": "rugger-treg-event-v1",
+   "seq": 2,
+   "task_id": "T-0003",
+   "type": "transition",
+   "utc": "2026-11-03T23:13:39Z"
+  },
+  {
+   "digest": "dc1183117e53a97cf2acd97efd5deacd65bfb52ae3a7e19638c103d3c1b539a6",
+   "event_id": "T-0003-R01-0003",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "in_progress"
+   },
+   "prev_digest": "31594f2a1a66107cde133a352ce334c86933f8852d9888ea01bdbb7aaee5e27c",
+   "schema": "rugger-treg-event-v1",
+   "seq": 3,
+   "task_id": "T-0003",
+   "type": "transition",
+   "utc": "2026-11-03T23:13:39Z"
+  },
+  {
+   "digest": "cf6be59f65699e4e89ad358fbe7d455f0ceb0c9892a0e1d1256aa5af2e32555a",
+   "event_id": "T-0003-R01-0004",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "inbox": {
+     "audit_verdict": "PASS",
+     "audited_commit": "a94ecbcd9684578c4b9abdd7c01131f162da9612",
+     "input_sha256": "3224686db130e6b8e0c96a0a8e4bc19ad2cb5f62484ae7c0ae5707716b497e5e",
+     "output_sha256": "e9fb617a1038279e08e0d3985c2712d84a72a31019c432f548bd6c66b125c083",
+     "provider_calls": 0,
+     "summary": "S-001 complete: RUGGER 03 certified the SOL fixture pack (MANIFEST sha256 3224686db130, 3/3 files, no network); RUGGER 01 produced the offline baseline report on it (commit a94ecbcd9684, output sha256 e9fb617a1038, 53 tests green); RUGGER 02 audited the exact commit independently (isolated replay x2 without network, byte-identical output, 53 tests) with verdict PASS. Pipeline check on 3 pools only, not evidence of an economic edge.",
+     "task_refs": [
+      "T-0001",
+      "T-0002"
+     ]
+    },
+    "status_to": "submitted"
+   },
+   "prev_digest": "dc1183117e53a97cf2acd97efd5deacd65bfb52ae3a7e19638c103d3c1b539a6",
+   "schema": "rugger-treg-event-v1",
+   "seq": 4,
+   "task_id": "T-0003",
+   "type": "transition",
+   "utc": "2026-11-03T23:13:39Z"
+  },
+  {
+   "digest": "7b5d9da3956a32f677ce001bec1a14ee3934dde9c3c1bf01478ea9d5e4c77f13",
+   "event_id": "T-0003-R01-0005",
+   "from_agent": "R01",
+   "hop": 1,
+   "payload": {
+    "status_to": "done"
+   },
+   "prev_digest": "cf6be59f65699e4e89ad358fbe7d455f0ceb0c9892a0e1d1256aa5af2e32555a",
+   "schema": "rugger-treg-event-v1",
+   "seq": 5,
+   "task_id": "T-0003",
+   "type": "transition",
+   "utc": "2026-11-03T23:13:39Z"
+  }
+ ],
+ "schema": "rugger-treg-snapshot-v1"
+}

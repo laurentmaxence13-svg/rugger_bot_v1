@@ -1,0 +1,8 @@
+PROBE-PRIV | agent=01 | nonce=PV-71A4 | utc=2026-11-04T00:45:04Z | session=session_016VkauGn9vY4RpyfxsRgDKo
+1 visibility: public (API private=false, visibility=public)                                  -> FACT
+2 authenticated #103 (MCP issue_read get/labels/comments)                                   -> PASS
+3 authenticated claude/r01-treg (MCP get_file_contents @ec11326; git ls-remote/push via proxy) -> PASS
+4 anonymous read test from this container                                                    -> INSUFFICIENT EVIDENCE (proxy injects a GitHub App token: X-Oauth-Client-Id, rate limit 15000)
+5 runtime code anonymous GitHub reads (main d9b950e, #101 16f1f22, Census 25a9f59)            -> PASS (none; doc links, third-party public raw URLs, GITHUB_TOKEN-authenticated workflow only)
+6 post-privatization access of R01                                                           -> INSUFFICIENT EVIDENCE (needs private test repo, protocol prepared not created)
+7 external deps (Render, Vercel, R04 claude.ai, Actions minutes, free security features)     -> INSUFFICIENT EVIDENCE (owner-side checks)

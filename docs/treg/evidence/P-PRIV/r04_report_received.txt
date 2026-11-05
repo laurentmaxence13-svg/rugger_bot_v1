@@ -1,0 +1,1 @@
+RUGGER04-VERIFY | utc=2026-11-04T19:05:50Z | heads_comment=None | registry_digest=112a65393f4dcc4065b6dca6af39f6625d9c9318052b671776d6d35dbcbf9443 | events=104 | tasks=17 | wakes_not_journaled=3 | verdict=CURRENT
