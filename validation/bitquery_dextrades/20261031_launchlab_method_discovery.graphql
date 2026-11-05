@@ -1,0 +1,28 @@
+# Rugger Bot P3 — discover LaunchLab instructions without assuming decoded Method names.
+# This is a discovery tape, NOT 200 verified independent creations.
+# Signed creation candidates need independent transaction/instruction validation.
+query RuggerBot_LaunchLab_Method_Discovery {
+  Solana(dataset: realtime) {
+    Instructions(
+      limit: {count: 200}
+      orderBy: {descending: Block_Slot}
+      where: {
+        Block: {Time: {since: "2026-10-31T19:30:00Z"}}
+        Transaction: {Result: {Success: true}}
+        Instruction: {
+          Program: {
+            Address: {is: "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"}
+          }
+        }
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction {
+        Index
+        Program {Address Method AccountNames}
+        Accounts {Address}
+      }
+    }
+  }
+}

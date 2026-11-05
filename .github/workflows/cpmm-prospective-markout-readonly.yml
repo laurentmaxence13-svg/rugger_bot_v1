@@ -1,0 +1,53 @@
+name: Prospective two-bank CPMM markout (HELIUS READ ONLY)
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-CPMM-PROSPECTIVE-MARKOUT-READONLY to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helius-collection
+  cancel-in-progress: false
+
+jobs:
+  prospective-no-trade:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-CPMM-PROSPECTIVE-MARKOUT-READONLY'
+    runs-on: ubuntu-latest
+    environment: helius-collection
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared live dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Confirm preregistration precedes later Helius bank, without signing
+        shell: bash
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.cpmm_prospective_markout

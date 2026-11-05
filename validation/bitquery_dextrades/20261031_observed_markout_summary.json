@@ -1,0 +1,39 @@
+{
+  "schema": "rugger-bitquery-dextrades-observed-markout-v1",
+  "report_generated_from": "User-supplied Bitquery DEXTrades JSON normalized offline to CSV; script reproduction requires CSV supplied separately",
+  "source_sha256": "8bae639d8e5b4ed16d8ba7b20684169b73630b92277c11d1815cac5548ab747b",
+  "source_records": 200,
+  "time_window_utc": {
+    "start": "2026-10-31T18:28:50Z",
+    "end": "2026-10-31T18:30:04Z",
+    "seconds": 74
+  },
+  "protocol_counts": {
+    "raydium_launchpad": 26,
+    "raydium_cp_swap": 174
+  },
+  "distinct_signatures": 138,
+  "distinct_pools": 73,
+  "wsol_swap_rows": 133,
+  "wsol_pool_token_groups": 37,
+  "observed_buy_side_rows": 57,
+  "no_strict_future_opposite_swap": 30,
+  "ambiguous_first_exit_slot": 19,
+  "strict_first_opposite_side_markouts": 8,
+  "unique_pools_with_markouts": 6,
+  "future_trade_token_amount_ge_entry_traded_amount": 4,
+  "observed_gross_price_difference_pct": {
+    "min": "-2.60059855",
+    "median": "-1.917854085",
+    "max": "-0.49939109",
+    "positive_count": 0,
+    "negative_count": 8
+  },
+  "observed_not_executable": true,
+  "realized_pnl_sol": null,
+  "master_vs_baseline_edge_sol": null,
+  "qualified_creator_cohort_size": 0,
+  "qualified_buy_sell_cycles": 0,
+  "gate": "NO_GO_EXECUTABLE_EXITS_AND_CREATOR_COHORT_MISSING",
+  "instructions": "This report is NOT backtest performance. Third-party swaps do not imply our own executable entry/exit prices; 8 markouts are correlated across 6 pools; no costs, holdings, creator cohorts or as-of policies."
+}

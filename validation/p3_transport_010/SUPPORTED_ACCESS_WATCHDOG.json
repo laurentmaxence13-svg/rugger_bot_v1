@@ -1,0 +1,11 @@
+{
+  "child_execution_count": 1,
+  "child_exit_code": 0,
+  "deadline_ms": 23000,
+  "diagnostic_plan": "p3-010-transport-diagnostic-v1",
+  "elapsed_ms": 2668.5043319994293,
+  "market_acquisition": false,
+  "process_deadline_exceeded": false,
+  "retry_performed": false,
+  "termination_reserve_ms": 2000
+}

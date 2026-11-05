@@ -8,7 +8,10 @@ except ImportError:  # Permet les tests qui n'ont pas besoin de charger .env.
         return False
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+# Offline demo/report entry points opt out before importing the engine.
+# Normal supervised PAPER operation preserves the existing configuration path.
+if os.getenv("RUGGER_NO_DOTENV") != "1":
+    load_dotenv(BASE_DIR / ".env")
 
 @dataclass(frozen=True)
 class Settings:

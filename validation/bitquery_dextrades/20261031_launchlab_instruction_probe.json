@@ -1,0 +1,42 @@
+{
+  "schema": "rugger-launchlab-instruction-probe-v1",
+  "source_sha256": "607f2a1832bd340e7aef46cac5d84989260b20594d3f372c1d0082ffe99d2f67",
+  "observed_rows": 100,
+  "distinct_signatures": 50,
+  "method_counts": {
+    "TradeEvent": 50,
+    "sell_exact_in": 50
+  },
+  "time_utc": {
+    "start": "2026-10-31T19:14:12Z",
+    "end": "2026-10-31T19:14:21Z"
+  },
+  "launchlab_sell_pools": 2,
+  "pool_evidence": [
+    {
+      "pool": "DTzT9kXSnvvUyunS1ppGPprbKackDugyu2MjeouGWE7C",
+      "base_mint": "GKUK8JVALmuR1gXy9rASroDme8WJADpkrJPo5FjXjhP5",
+      "quote_mint": "So11111111111111111111111111111111111111112",
+      "sales_in_probe": 49,
+      "market_swaps_in_prior_399": 0
+    },
+    {
+      "pool": "36CnJXNugbqqGT8HELnuEhpz1Grg84m4DB1Qv1JfYZY9",
+      "base_mint": "77Y3yn2MVChMgCtcsFqj3byHn2cpvGkfHKRXvXdD4XMR",
+      "quote_mint": "WXMRyRZhsa19ety5erZhHg4N3xj3EVN92u94422teJp",
+      "sales_in_probe": 1,
+      "market_swaps_in_prior_399": 3,
+      "prior_swaps_utc": [
+        "2026-10-31T18:28:35Z",
+        "2026-10-31T18:29:12Z"
+      ]
+    }
+  ],
+  "verified_creations": 0,
+  "verified_migrations": 0,
+  "realized_pnl_sol": null,
+  "master_vs_reference_pnl_sol": null,
+  "gate": "NO_GO_MISSING_CREATION_PROOFS_AND_EXECUTABLE_EXITS",
+  "note": "50 TradeEvent + 50 sell_exact_in rows represent 50 transaction signatures, not 100 distinct trades. A prior market-swap pool overlaps the later instruction sample; this is not a completed lifecycle.",
+  "next_query": "validation/bitquery_dextrades/20261031_launchlab_lifecycle_query.graphql"
+}

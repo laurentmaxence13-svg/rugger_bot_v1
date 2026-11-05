@@ -1,4 +1,4 @@
-# Rugger Bot V1 — scanner Solana en simulation
+# Rugger Bot V1 — moteur Solana en simulation
 
 
 ## Nouveau : terminal PAPER visuel — double clic Windows
@@ -7,7 +7,30 @@ Le terminal local est accessible sur **http://localhost:8501** après avoir doub
 
 Les trades de l'ancien moteur PAPER, les décisions du Master et les projections hypothétiques S1/S2 sont affichés séparément. Aucun achat réel, aucune clé de wallet et aucune preuve de rentabilité Master ne sont impliqués. **[Guide d'installation et d'utilisation](TERMINAL_PAPER.md)**.
 
-Cette V1 ne peut ni acheter ni vendre. Elle ne contient aucun code de signature de transaction.
+Entrées, suivi, sorties et portefeuille fonctionnent en **PAPER**. Le dépôt contient
+aussi un moteur d'exécution LIVE **désarmé** (`bot/live`) : aucun ordre réel n'est
+autorisé ni activé, aucune clé n'est présente. La rentabilité n'est pas démontrée.
+État courant et décisions : **[PROJECT_STATUS.md](PROJECT_STATUS.md)**.
+
+L'inventaire atomique et les sorties complètes/partielles/refusées sont maintenant
+reliés au portefeuille. Démonstration économique synthétique sans réseau :
+
+```sh
+python -B -m bot economic-demo --output work/atomic-demo-next
+```
+
+Voir [l'intégration économique P3](P3_ATOMIC_INVENTORY_RELEASE.md) pour les
+quantités, frais, résultats, reprise et conditions encore manquantes sur marché.
+
+Lancer une démonstration complète sans réseau ni `.env` (dossier neuf) :
+
+```sh
+python -B -m bot demo --output work/demo-001
+```
+
+Le rapport contient le cycle exécuté et un tableau de bord avec provenance des
+métriques. Voir [la livraison fonctionnelle](RUGGER_V1_FUNCTIONAL_RELEASE.md)
+pour les commandes, résultats, reprise et limites du modèle.
 
 ## Préparation des données P3
 
@@ -32,10 +55,11 @@ La voie `paper_trader` autonome ne partage pas la garde mémoire du scanner int�
 - se connecte à Solana via Helius ;
 - écoute en WebSocket les transactions qui mentionnent le programme Raydium Launchpad ;
 - récupère la transaction confirmée via `getTransaction` ;
-- cherche une instruction SPL `initializeMint` / `initializeMint2` ;
+- reconnaît une instruction de création LaunchLab et ses comptes mint/créateur/pool ;
 - enregistre le mint, la signature, le slot, l'heure et un `deployer_candidate` dans SQLite.
 
-`deployer_candidate` = premier signataire / fee payer observé. Ce n'est pas une preuve d'identité du créateur.
+`deployer_candidate` provient du compte créateur de l'instruction LaunchLab.
+Ce n'est pas une preuve d'identité de la personne ni de son comportement futur.
 
 ## Installation Windows
 1. Décompresser le ZIP.

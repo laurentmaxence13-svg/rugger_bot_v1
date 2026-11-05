@@ -1,0 +1,58 @@
+{
+  "active_policy_changed": false,
+  "date": "2026-10-28",
+  "endurance": {
+    "conflicts_refused": 1000,
+    "duplicates_ignored": 1000,
+    "events": 1000,
+    "financial_state_unchanged": true,
+    "immutable_snapshots": 10,
+    "interrupted_transactions_rolled_back": 1000,
+    "invariant_checks": 7054,
+    "report_sha256": "b37349f7efc0c450c0b7461b522ad90649b3aa70ea3bd5b2c6a72ee9fb9925cd",
+    "restarts": 10,
+    "snapshot_bytes_verified": true,
+    "source_hashes_verified": true,
+    "sqlite_backup_operations": 20
+  },
+  "first_verified_remote_commit": "2c5e18cd17dd15e77deda7e796886c921cff0b46",
+  "first_verified_tree": "5cb30af8266895de4c2157c1df4961c1e04167da",
+  "full": {
+    "command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+    "passed": 1831,
+    "seconds": 10.33,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "market_network_requests": 0,
+  "new_market_observations": 0,
+  "promotion_allowed": false,
+  "real_orders": false,
+  "research": {
+    "candidates": 24,
+    "disjoint_consumed_windows_required": true,
+    "financial_results_unchanged": true,
+    "full_report_sha256": "87e4cd45130888f07c1196d6518d0f97e1840eaf3ddf5fb6fd4736e882679b14",
+    "holdout_baseline_comparisons": 3,
+    "legacy_consumed_unknown_bounds_rejected": true,
+    "plan_hash_unchanged": true,
+    "public_cli_byte_identical": true
+  },
+  "schema": "rugger-master-shadow-integration-validation-v1",
+  "scope": "offline software and synthetic economic mechanism validation; no market edge",
+  "source_sha256": {
+    "bot/__main__.py": "481961a3c18edb0b252a4f2eceeab4b152ad21866797eaa2baf9976d9c30ca87",
+    "bot/analyser/functional_report.py": "e7f8196876f059a700f7aafa5bdb0dce47480c9c233c3fa4f2aa4e4d1281c8ee",
+    "bot/analyser/paper_engine.py": "66eea99e40a78730f1545785362bcd02af072c4437869c77023e4cd618512098",
+    "bot/master_audit.py": "cf3c86d2936fab581e8225320f36f903f80a7052c5506e9ef0e7fef9d8f2cc3c",
+    "bot/master_decision.py": "cb409f0a381bc9053c1e2c8afa8160050bcb0d3543d982419efed4b0f4a875a8",
+    "bot/master_endurance.py": "f1e267dd739a2620fd48150e6afd499a34a4cd5b6e847f4a33e7fe99c75e9b1e",
+    "bot/master_positions.py": "93c48109228aa7231886c6f488cfddeeadce6311b54eb06cddae87f18486545e",
+    "bot/operations.py": "a117a72db7204b9ffffffbcd8b73ab724c8c80ed9b3420a11f6c6a69718e22a6",
+    "bot/p4_experiment.py": "c9455f356eae07ef412a2676ce6228fad098227025305f028e289bc06f127575",
+    "bot/policy_research.py": "0787ccb051ef5f394dd998acc217f4b5b49c0b232e5a241787160b8eb45efaa8"
+  },
+  "strict_market_economic_cycles": 0
+}

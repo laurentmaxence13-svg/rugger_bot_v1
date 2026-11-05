@@ -1,0 +1,45 @@
+{
+  "active_exit007": {
+    "reason": "observed_rpc_429_cooldown_not_captured_in_previous_source_code",
+    "status": "NOT_EXECUTED"
+  },
+  "code_commit": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+  "control006": {
+    "elapsed_ms": 6216,
+    "known_history_transactions": 35,
+    "new_burn_atomic": "483733206530",
+    "new_transactions": 10,
+    "preregistered_commit": "57eef76d2598bf55c78ff41c141ff6448e572050",
+    "received_transactions_of_known_history": 23,
+    "remaining_transactions": 12,
+    "requests_used": 11,
+    "source": "43fb90ee9dec2721bada12ed7c50b9745a41da24",
+    "stopped_on_http": 429
+  },
+  "economic_verdict": "INSUFFICIENT DATA",
+  "evidence_bundles": 9,
+  "evidence_events": 605,
+  "financial_spend": false,
+  "ledger_mutated": false,
+  "local_equivalent_commit": "d87e8e8d9077ebbd77e0f09a9874f7bec3f12e99",
+  "new_regressions": {
+    "active_exit_protocol": 8,
+    "inventory_qualification": 13,
+    "rpc_retry_after": 15
+  },
+  "real_orders": false,
+  "schema": "p3-continuation-006-validation-v1",
+  "strategy_thresholds_changed": false,
+  "tested_tree": "b049d1ef153287bd9d9cd78c52e583e79e3bcf54",
+  "tests": {
+    "elapsed_seconds": 4.54,
+    "failed": 0,
+    "passed": 1415,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  },
+  "total_confirmed_burn_atomic": "513119481705",
+  "unexplained_supply_deficit_atomic": "466423024095"
+}

@@ -1,0 +1,108 @@
+name: Bounded LaunchLab WebSocket forward PAPER probe (NO LIVE)
+# Explicit experiment only; never spend runner minutes on every PR update.
+# Label this PR 'run-ws-probe' to request a run; no orders are sent.
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-WS-FORWARD-PAPER to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helius-collection
+  cancel-in-progress: false
+
+jobs:
+  offline-contract:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-WS-FORWARD-PAPER'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact submitted code with credentials removed
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install pinned-range dependencies and pytest
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt "pytest>=8,<9"
+      - name: Validate bounded, non-financial WebSocket telemetry
+        run: |
+          python -m pytest -q tests/test_live_solana_v1_readonly.py tests/test_live_compiled_launchlab.py tests/test_live_helius_ws_forward_paper.py tests/test_live_helius_ws_signed_creation_probe.py tests/test_live_helius_s1_capacity_then_s2.py
+
+  mainnet-no-orders-probe:
+    needs: offline-contract
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-WS-FORWARD-PAPER'
+    runs-on: ubuntu-latest
+    environment: helius-collection
+    timeout-minutes: 3
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout with no persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install dependencies for read-only receiver
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Observe up to 25 seconds of real LaunchLab program logs
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.helius_ws_forward_paper --seconds 25 --max-events 100
+      - name: Cross-check captured signatures with finalized signed instructions
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          sleep 8
+          python -B -m bot.live.helius_ws_signed_creation_probe
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
+        if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsiF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -iname "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Retain only sanitized public logs for 30 days
+        if: always() && steps.helius_key_canary.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: paper-helius-ws-${{ github.run_id }}
+          path: |
+            paper_artifacts/paper_helius_log_stream.json
+            paper_artifacts/paper_helius_verified_creations.json
+          if-no-files-found: warn
+          retention-days: 30

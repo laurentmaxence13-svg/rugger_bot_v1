@@ -1,0 +1,5 @@
+{"certificate_verification": true, "credentials_used": false, "elapsed_ms": 3.525812, "hostname_verification": true, "ipv4_ipv6_policy": "AF_UNSPEC", "no_proxy_bypass": true, "phase": "configuration_checked", "proxy_matches_managed_policy": true, "sequence": 1, "wall_time_ms": 1793221998590}
+{"elapsed_ms": 3.581004, "phase": "proxy_system_resolver_started", "sequence": 2, "wall_time_ms": 1793221998590}
+{"elapsed_ms": 4.077563, "ipv4_count": 1, "ipv6_count": 0, "phase": "proxy_system_resolver_completed", "result_count": 1, "sequence": 3, "wall_time_ms": 1793221998591}
+{"elapsed_ms": 4.093416, "phase": "proxy_tcp_started", "sequence": 4, "wall_time_ms": 1793221998591}
+{"elapsed_ms": 4.111253, "error_type": "PermissionError", "phase": "diagnostic_stopped", "reason": "proxy_resolver_or_tcp_error", "sequence": 5, "wall_time_ms": 1793221998591}

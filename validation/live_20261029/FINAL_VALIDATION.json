@@ -1,0 +1,45 @@
+{
+  "schema": "rugger-live-checkpoint-validation-v1",
+  "source_remote_commit": "6b43c94ab95ec7b4943e2b574ebf780a82d972d9",
+  "source_local_commit": "3f291f139d0574021b182224191e64f7f78fe3e0",
+  "tested_tree": "a6e5a7091efde57d9e11596369f4ad2f09414f89",
+  "tests_passed": 2529,
+  "tests_skipped": 1,
+  "subtests_passed": 242,
+  "test_elapsed_seconds": 22.15,
+  "stderr_bytes": 0,
+  "warnings_as_errors": true,
+  "isolated_without_network_dotenv_or_user_database": true,
+  "source_files": 255,
+  "all_current_source_hashes_match": true,
+  "live_ready_to_arm": false,
+  "live_execution_verified": false,
+  "economic_edge_validated": false,
+  "current_mode": "LIVE_PREPARED_default; no_owner_envelope_or_signer_activation",
+  "all_financial_operations_this_work": 0,
+  "new_market_acquisitions_after_recovery": 0,
+  "separate_program_diagnostic_requests": 2,
+  "program_diagnostic_scope": "genesis_and_executable_program_accounts_only; no_wallet_or_pool",
+  "program_observation": {
+    "ELF_bytes": 2560000,
+    "ELF_sha256": "4c87da8e9fdeda6daf9d141e409577733d6248ae78f694557176fe2709a09657",
+    "deployment_slot": 446221802,
+    "evidence_scope": "public_RPC_observation_of_current_code_bytes_not_code_approval",
+    "independently_approved": false,
+    "observed_slot": 462966622,
+    "program_id": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+    "programdata_address": "D2QX47Tv2uhNNwFcnLCyJtLMZ4WGmc7eXxvyEmD6zNUh",
+    "source_build_matches_deployed_code": null,
+    "upgrade_authority": "FytDrVzDybM1TwFQPGb8qaxZR7dBCzNeqT3vtQsceZQK"
+  },
+  "remaining_technical_gates": [
+    "independently_match_deployed_ELF_to_reviewed_source_build",
+    "retain_successful_unsigned_RPC_buy_and_sell_simulation_receipts_on_exact_supported_route",
+    "complete_operational_frame_cost_anti_rug_clock_provider_assembly_on_real_services",
+    "validate_migration_exit_route_and_Token2022_support_or_explicit_supported_universe_safety"
+  ],
+  "remaining_economic_gates": [
+    "independent_causal_strategy_features_and_own_applicable_costs",
+    "independent_creator_holdout_and_complete_exit_cycles; currently0"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "archive": "report.json.gz",
+  "bank_size_cases": 32,
+  "compressed_bytes": 21850,
+  "compressed_sha256": "b4816268f91f5ca211de1858899e0f654e27b6d3c07295256f28e0d244b70eb7",
+  "cost_scenarios_scope": "Hypothetical irreversible extra costs; refundable rent and required funding remain unknown",
+  "csv_unknown_values": "empty_fields_not_zero",
+  "distinct_mints": 4,
+  "new_market_requests": 0,
+  "replay_command": "python -B tools/compare_position_sizes.py --output NEW.json",
+  "schema": "p3-position-size-study-artifact-v1",
+  "source_anchors": [
+    {
+      "compressed_sha256": "ff4429972bf4ef0c763d5ca7b9a4629b52b04251d0ebcb7dbd370f5be03ff7fe",
+      "plan_sha256": "6639407545df5accb89f80d48fdfa91a7dcd651ab54c154138743c6c57f680e9",
+      "records": 1030,
+      "run_id": "active_exit_007",
+      "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+      "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b"
+    },
+    {
+      "compressed_sha256": "5533179529dc97bc26f362c51219d902109c42a2e40458e558d3d3ef10a1aa73",
+      "plan_sha256": "33f5085fe3bd43714bec7372cd1be6848fb458e3401a70a9358553dde8128a17",
+      "records": 55,
+      "run_id": "prospective_008",
+      "source_revision": "39fe7fd072b7076da49c88b4550cc08dcdbb57dc",
+      "tail_hash": "02fcae70a4e391a493890eb29e3bd71c19a25ce26202fb9209d42cfc934f15f6"
+    }
+  ],
+  "source_banks": 8,
+  "source_revision": "249c7b6637d7c0cdf980b029474e4b0a576f237c",
+  "source_tree": "a5a4ccb99119ee38a6604f3f96cb0ba00c40f3ba",
+  "strict_economic_cycles": 0,
+  "uncompressed_bytes": 558754,
+  "uncompressed_sha256": "74d546c5c6bba5431c07d7490aae086b9b15d2b22cc3626b0fd7a7667b505aef"
+}

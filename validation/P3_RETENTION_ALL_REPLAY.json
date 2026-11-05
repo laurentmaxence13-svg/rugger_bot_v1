@@ -1,0 +1,168 @@
+{
+  "bundles": [
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 1,
+        "checkpoint": 1,
+        "fx": 1,
+        "gap": 1,
+        "quote_attempt": 2,
+        "request": 3,
+        "transaction": 5
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 2,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 2,
+      "records": 14,
+      "run_id": "pr19_access_smoke",
+      "tail_hash": "8b58554decb33663ec9310db9d32cc9e070a36107f80b73db6020538e3edeac5"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 4,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 104,
+        "checkpoint": 4,
+        "discovery": 1,
+        "gap": 3,
+        "pool_snapshot": 6,
+        "quote_attempt": 12,
+        "request": 15,
+        "transaction": 40
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 4,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 4,
+      "records": 185,
+      "run_id": "launchlab_001",
+      "tail_hash": "fd63fa7df085160ad0977bf4bbe580abdd3967e3426c1b056eb9ecd6a2809873"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 2,
+        "checkpoint": 1,
+        "request": 3,
+        "transaction": 2
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 0,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 0,
+      "records": 8,
+      "run_id": "version_diagnostic",
+      "tail_hash": "9d0cb59c6d51b936d1fe646e0a2a7c39c91282689e1a3c37f96e9a0e97fff5f2"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 1,
+        "checkpoint": 2,
+        "launch": 1,
+        "request": 3,
+        "transaction": 1
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 0,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 0,
+      "records": 8,
+      "run_id": "creation_diagnostic",
+      "tail_hash": "96b4603c6746e2fb7500a08b1e1c2626b36d428378a5b28bb3cb26034b4a28ec"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 106,
+        "checkpoint": 6,
+        "discovery": 1,
+        "gap": 1,
+        "launch": 2,
+        "pool_snapshot": 6,
+        "quote_attempt": 12,
+        "request": 15,
+        "transaction": 33
+      },
+      "legacy_snapshot_analyses_reproduced": 4,
+      "provider_quote_bodies_missing": 4,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 4,
+      "records": 182,
+      "run_id": "launchlab_002",
+      "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "candidate_decision": 106,
+        "checkpoint": 6,
+        "discovery": 1,
+        "gap": 1,
+        "launch": 2,
+        "pool_snapshot": 6,
+        "quote_attempt": 12,
+        "request": 15,
+        "transaction": 3
+      },
+      "legacy_snapshot_analyses_reproduced": 4,
+      "provider_quote_bodies_missing": 0,
+      "provider_quote_bodies_retained": 4,
+      "provider_quotes": 4,
+      "quote_semantic_replays": {
+        "REPLAYED": 4
+      },
+      "records": 152,
+      "run_id": "retention_003",
+      "tail_hash": "914901e885fa97c87e7e81f0bd2750d0092a4cfb7a12f709c5402c993ed75fce"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "checkpoint": 4,
+        "request": 8,
+        "transaction": 7
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 0,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 0,
+      "records": 19,
+      "run_id": "mint_history_004",
+      "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2"
+    },
+    {
+      "analyses_missing_explicit_replay_inputs": 0,
+      "complete_raw_replay_declared": false,
+      "kind_counts": {
+        "checkpoint": 2,
+        "request": 5,
+        "transaction": 5
+      },
+      "legacy_snapshot_analyses_reproduced": 0,
+      "provider_quote_bodies_missing": 0,
+      "provider_quote_bodies_retained": 0,
+      "provider_quotes": 0,
+      "records": 12,
+      "run_id": "mint_history_005",
+      "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce"
+    }
+  ],
+  "bundles_verified": 8,
+  "economic_validation": "INSUFFICIENT DATA",
+  "integrity_vs_git_index": "PASS",
+  "legacy_snapshot_analyses_reproduced": 8,
+  "network_used": false,
+  "provider_authenticity_certified": false,
+  "records_verified": 580,
+  "schema": "p3-offline-evidence-verification-v1",
+  "sqlite_used": false
+}

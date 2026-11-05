@@ -1,0 +1,20 @@
+{
+  "cloud_workspace_recovered": false,
+  "full_original_history_completeness_unknown": true,
+  "http_status": 200,
+  "item_counts": {
+    "agentMessage": 48,
+    "fileChange": 51,
+    "userMessage": 8
+  },
+  "original_bytes": 239430,
+  "original_sha256": "a990b4466e772762af1fecd0b220659997812a0e78f835d721b49221c5f95f56",
+  "original_task_unarchived": false,
+  "recovered_date": "2026-10-27",
+  "schema": "codex-shared-content-recovery-v1",
+  "shared_snapshot_preserved_byte_for_byte": true,
+  "shared_turns": 10,
+  "source_instructions_are_historical": true,
+  "source_link": "https://chatgpt.com/s/cx_6ae0e7ea3e348191b141166aafd561d9",
+  "title": "Configurer rugger_bot_v1"
+}

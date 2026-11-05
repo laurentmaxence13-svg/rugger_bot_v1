@@ -1,0 +1,25 @@
+{
+  "base_remote": "446d262336808c42fed4a43392ba935624fdbdd2",
+  "command": [
+    "/workspace/.cloud-env/rugger_bot_v1/venv/bin/python",
+    "-B",
+    "tools/offline_check.py",
+    "-q",
+    "tests",
+    "--ignore=tests/tests",
+    "-p",
+    "no:cacheprovider",
+    "-rs",
+    "-W",
+    "error"
+  ],
+  "exit_code": 0,
+  "new_market_requests": 0,
+  "result_summary": "1724 passed, 1 skipped, 242 subtests passed in 7.56s",
+  "schema": "post008-size-final-validation-v1",
+  "scope": "throwaway_copy_no_network_no_dotenv_no_user_database",
+  "stderr_bytes": 0,
+  "stdout_sha256": "83e2eabd10d481eadef0a87cf4ef495dc3a50ffec22a228231d361c6a442c718",
+  "strict_economic_cycles": 0,
+  "user_database_accessed": false
+}

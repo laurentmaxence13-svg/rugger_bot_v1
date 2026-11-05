@@ -1,0 +1,18 @@
+{
+  "addresses": [
+    "So11111111111111111111111111111111111111112"
+  ],
+  "commitment": "finalized",
+  "encoding": "base64",
+  "max_elapsed_ms": 5000,
+  "max_requests": 1,
+  "plan_id": "health-before-007",
+  "registered_at_ms": 1793133803544,
+  "retry": false,
+  "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+  "rpc_method": "getMultipleAccounts",
+  "schema": "p3-rpc-health-once-v1",
+  "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+  "source_revision_role": "base_before_probe",
+  "success_claim": "one_valid_WSOL_mint_read_at_receipt_not_future_quota"
+}

@@ -1,0 +1,14 @@
+{
+  "bank_analyses_reproduced": 8,
+  "complete_indicative_market_pairs": 8,
+  "events": 142,
+  "net_market_pnl_sol": null,
+  "network_used": false,
+  "provider_quote_bodies_replayed": 12,
+  "report_bytes_sha256": "2f4342d2ea46ebc1a8a255a7131e5add2b4f770a214f6aeae88deabb504cfeb6",
+  "report_reproduced_exactly": true,
+  "schema": "p3-011-offline-replay-verification-v1",
+  "sqlite_used": false,
+  "strict_cycles": 0,
+  "tail_hash": "40532579c596a58c0676ca55a074da302c737293b6841377b4fa00fd1bcff997"
+}

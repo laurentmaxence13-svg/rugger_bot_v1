@@ -1,0 +1,86 @@
+{
+  "data_kind": "synthetic_except_prepared_protocol_metadata",
+  "databases_uploaded": false,
+  "files": {
+    "COMPARISON_SUMMARY.json": {
+      "bytes": 10135,
+      "sha256": "20160203d9164adeb8f55ba04a706abc6d55c0715640c271efcef88eca5ee6dd"
+    },
+    "FINAL_VALIDATION.json": {
+      "bytes": 1494,
+      "sha256": "93736848b966390716dfe42c5f770ec47c9ec9e64c1817684a18598f8ea30ff6"
+    },
+    "FULL_TESTS.txt": {
+      "bytes": 2435,
+      "sha256": "2d049812c8c340d6713b96b2e577a921a97ba9e41bf637aec586131209e7e22c"
+    },
+    "P3_PREPARED_PLAN.json": {
+      "bytes": 2536,
+      "sha256": "db3d419f9c3e2fec3a10d1af29a567bba6f3590d67f7e559da4d10437414d58a"
+    },
+    "comparisons/abstention.input.json": {
+      "bytes": 71480,
+      "sha256": "3447a5ed0134f2b7d4ac9c1cf5d4387e177c967471aaecb775d11b113f57c41f"
+    },
+    "comparisons/abstention.report.json.gz": {
+      "bytes": 13525,
+      "sha256": "d2db8a9554901c0641e7dc0fefa6469c7bbdc950d3cbc254ee443549f391158e"
+    },
+    "comparisons/partial.input.json": {
+      "bytes": 46754,
+      "sha256": "3e5f7f072ecb1c583571402b454028d6f221875d199d149e3d76b5d1bf70bcc0"
+    },
+    "comparisons/partial.report.json.gz": {
+      "bytes": 9243,
+      "sha256": "5e4a14ca1279f137ed144cba8804f4094eb9acdcc1bbf23e3fdee0ecf34cd00d"
+    },
+    "comparisons/qualified.input.json": {
+      "bytes": 30506,
+      "sha256": "504b44aa17f505fcfd9fb93c54ffb775d0fecad23076197c5aa9ced9d8bec422"
+    },
+    "comparisons/qualified.report.json.gz": {
+      "bytes": 26091,
+      "sha256": "6d038269219d9753178da259fe7f81e51127602b20aa41732aa656bd72e0a921"
+    },
+    "comparisons/refused.input.json": {
+      "bytes": 28741,
+      "sha256": "ae641955abbe83f2b5fdf8b9ca20aa0ebe0512e72c670f595a6ee36889215a2e"
+    },
+    "comparisons/refused.report.json.gz": {
+      "bytes": 8035,
+      "sha256": "4465c6fd28ab88d84fe7496deb8ff0100df6aef496dcefc889d24795969a70b3"
+    },
+    "endurance/SOURCE_CONTROL.json": {
+      "bytes": 565,
+      "sha256": "cdffb9a2bdcefa37212062487dbf9e080c9fcb52b8d5f5d1cfb0e9406c0ae2a6"
+    },
+    "endurance/after.json": {
+      "bytes": 8225,
+      "sha256": "ecf7893066bb2ffc61c865612eae3e4bfe26c4c1a1994ae89fa51f71dc95cd81"
+    },
+    "endurance/before.json": {
+      "bytes": 8228,
+      "sha256": "6faf2428461178039c763e8bfad2f16a4845938003de31a9bfe34aba95b3877c"
+    },
+    "endurance/comparison.json": {
+      "bytes": 13110,
+      "sha256": "6e79753ff73e7c0876d696cc9319bad8a0974e8c59a8f9b6ca053d374f7e5f03"
+    },
+    "endurance/prior_interruption.json": {
+      "bytes": 8229,
+      "sha256": "7caac831c424e2e4378afbffcb92264d2ffccf9832de4f3dbdb4c4749c4e26ba"
+    },
+    "p4_paired.input.json": {
+      "bytes": 75451,
+      "sha256": "0c86c0a2452222c5d200edde1398cf7602df8d9f220ba5816ac294b38c0aec7c"
+    },
+    "p4_paired.report.json.gz": {
+      "bytes": 5293,
+      "sha256": "0ef4a723a48b2eb67e1d4b6a0da3415e416b296999afee8ddd7e0a3195c163f9"
+    }
+  },
+  "new_market_observations": 0,
+  "promotion_allowed": false,
+  "schema": "rugger-master-v2-artifacts-v1",
+  "strict_market_economic_cycles": 0
+}

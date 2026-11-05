@@ -1,0 +1,28 @@
+name: Trawl LaunchLab and CPMM automatic quotes (NO PAYMENT)
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unattended-only-http402-quotes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Ask for four unpaid quotes (no x402 client, wallet or secrets)
+        run: |
+          set -euo pipefail
+          python -B -m bot.p3.trawl_no_payment_quote

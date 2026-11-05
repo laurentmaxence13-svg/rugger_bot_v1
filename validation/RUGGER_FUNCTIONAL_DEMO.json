@@ -1,0 +1,97 @@
+{
+  "assumed_cost_sol": 0.02,
+  "assumed_round_trip_cost_bps": 200.0,
+  "atomic_token_inventory_observed": false,
+  "blockchain_execution_verified": false,
+  "data_kind": "synthetic",
+  "database_file": "paper.sqlite",
+  "economic_profitability_verified": false,
+  "entry_price_usd": 0.001,
+  "exit_price_usd": 0.0012,
+  "exit_reason": "TP",
+  "final_capital_sol": 10.18,
+  "gross_paper_pnl_sol": 0.19999999999999996,
+  "initial_capital_sol": 10.0,
+  "latency_scope": "scanner delay is a fixed synthetic 1000ms sample; quote acquisition measures local fixture code only, never HTTP",
+  "net_paper_pnl_sol": 0.17999999999999997,
+  "network_requests": 0,
+  "paper_only": true,
+  "position_sol": 1.0,
+  "private_keys_used": false,
+  "real_orders_enabled": false,
+  "recovery_fetch_count": 1,
+  "report_file": "paper_report.json",
+  "restart_scope": "PAPER SQLite connection reopened; recovery receipt reloaded; no process-restart claim",
+  "scanner_scope": "synthetic subscribed stream and two real backfill passes; coverage relative to fixture anchor",
+  "schema": "rugger-functional-demo-v1",
+  "strategy_mode": "shadow_final",
+  "strategy_thresholds_modified": false,
+  "trace": [
+    {
+      "detection_latency_ms": 1000,
+      "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+      "recovery_fetches": 1,
+      "stage": "detection_and_parser",
+      "time": 1700000001
+    },
+    {
+      "baseline_entry_refused": true,
+      "caught_up_entry_allowed": true,
+      "stage": "scanner_gate",
+      "time": 1700000003
+    },
+    {
+      "cooldown_seconds": 0,
+      "last_price_usd": 0.001,
+      "messages": [
+        "[PIPELINE] 4vJ9JU1bJJE9 -> PRIX_OK (liq=$20000)",
+        "[ANALYSE] 4vJ9JU1bJJE9 | prix=$0.001 | liquidite=$20000.0 | volume5m=$N/D | createur_precedents=0 | score=50.0 | DECISION=ENTRY_PAPER_AUTORISEE | raison=score et r\u00e8gles de risque",
+        "[PIPELINE] 4vJ9JU1bJJE9 -> DECISION_ENTRY (score=50.0; risk=creator_nouveau,comportement_inconnu,serie_prix_courte,metriques_marche_inconnues)",
+        "[PIPELINE] 4vJ9JU1bJJE9 -> TRADE_PAPER_OUVERT (position virtuelle ouverte)",
+        "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=0.001 USD score=50.0/100 size=1.000000 SOL capital=10.000000 SOL score=50.0/100 risk=creator_nouveau,comportement_inconnu,serie_prix_courte,metriques_marche_inconnues"
+      ],
+      "position_state": "open",
+      "stage": "entry",
+      "time": 1700000003
+    },
+    {
+      "completed_notification_ignored_after_restart": true,
+      "ledger_connection_reopened": true,
+      "stage": "restart",
+      "time": 1700000003
+    },
+    {
+      "cooldown_seconds": 0,
+      "last_price_usd": 0.00105,
+      "messages": [
+        "[PIPELINE] 4vJ9JU1bJJE9 -> PRIX_OK (liq=$20000)",
+        "[ANALYSE] 4vJ9JU1bJJE9 | prix=$0.00105 | liquidite=$20000.0 | volume5m=$N/D | createur_precedents=0 | score=54.0 | DECISION=ENTRY_PAPER_AUTORISEE | raison=score et r\u00e8gles de risque",
+        "[PIPELINE] 4vJ9JU1bJJE9 -> DECISION_ENTRY (score=54.0; risk=creator_nouveau,comportement_inconnu,metriques_marche_inconnues)"
+      ],
+      "position_state": "open",
+      "stage": "follow",
+      "time": 1700000004
+    },
+    {
+      "cooldown_seconds": 0,
+      "last_price_usd": 0.0012,
+      "messages": [
+        "[PIPELINE] 4vJ9JU1bJJE9 -> PRIX_OK (liq=$20000)",
+        "[PIPELINE] 4vJ9JU1bJJE9 -> DECISION_ENTRY (score=54.0; risk=creator_nouveau,comportement_inconnu,metriques_marche_inconnues)",
+        "[PIPELINE] 4vJ9JU1bJJE9 -> TRADE_PAPER_FERME (TP simulated net=+18.00% PnL=+0.180000 SOL capital=10.180000 SOL)",
+        "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP simulated net=+18.00% PnL=+0.180000 SOL capital=10.180000 SOL score=54.0/100 risk=creator_nouveau,comportement_inconnu,metriques_marche_inconnues"
+      ],
+      "position_state": "closed",
+      "stage": "exit",
+      "time": 1700000005
+    }
+  ],
+  "valuation_scope": {
+    "account_currency": "SOL",
+    "economic_pnl_verified": false,
+    "execution_prices_verified": false,
+    "fx_observed_at_entry_and_exit": false,
+    "observed_price_currency": "USD",
+    "return_conversion_assumption": "constant_SOL_USD"
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "batch_max_elapsed_ms": 30000,
+  "batch_sizes": [
+    20,
+    2
+  ],
+  "creation_signature": "3umbNJxM9hFM6GAebVd6pj86q7Hj5ete5ygjVE6BcPpr73XWQQPQ5Ron5Nv9tw94XJdmoBBirs1d8fNFwVU4mADa",
+  "creation_slot": 461979373,
+  "creation_transaction_index": 50,
+  "endpoint_kind": "historical_alias",
+  "evidence_pins": [
+    {
+      "path": "/workspace/rugger_bot_v1/evidence/p3/launchlab_002",
+      "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790"
+    },
+    {
+      "path": "/workspace/rugger_bot_v1/evidence/p3/mint_history_004",
+      "tail_hash": "4f115ac378f61427ad26f41a6da25675a43e9c4fc739aab7990edcb9eec7fbc2"
+    },
+    {
+      "path": "/workspace/rugger_bot_v1/evidence/p3/mint_history_005",
+      "tail_hash": "1c1812f6f41acc37a6d0a3e66ba4a335ef2666667bf4ab670c5afc443b1bdcce"
+    }
+  ],
+  "first_snapshot_slot": 461982938,
+  "imported_module_sha256": {
+    "bot/p3/campaign.py": "b8be3286ceb38257f309141f0ca842b7911ae5a71ff7d99017f7c5b4e6dbbae4",
+    "bot/p3/collect.py": "c8ac1d18009669ae13e0aaa7ae7d9e438c60aa7f6a1758d2cbbe41da6c2ffd31",
+    "bot/p3/evidence.py": "9e3da01797d87a53ecdd4a69a50e59caaf18d4d9593eec9d1d41e27f6575e139",
+    "bot/p3/quotes.py": "43993191176cbc361fa069b7f05787537ef4a58d265d28d4e5dbcdea82425c18",
+    "bot/p3/store.py": "80a6fb05a053b8106d8c8f10fc756544a4107bf02f3762c5de1fbb486ff33e05"
+  },
+  "max_requests": 22,
+  "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+  "new_page_requests": 0,
+  "overall_max_elapsed_ms": 60000,
+  "plan_id": "mint-history-006",
+  "prior_confirmed_burn_sum_atomic": "29386275175",
+  "quote_requests": 0,
+  "reconciliation_policy": "No risk guard relaxed automatically; combine distinct burn evidence with prior005 and cross-check integer pre/post token balances offline, disclose same-slot ordering and unknown instructions.",
+  "registered_at_ms": 1793129942685,
+  "reused_script_sha256": "1d02a18f67dd114e3d4860d1f1df7e64422b5bf99910d1f9e18f177165ffd4f6",
+  "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+  "rpc_methods": [
+    "getTransaction"
+  ],
+  "schema": "p3-remaining-historical-transactions-plan-v1",
+  "script_sha256": "9a26c5298c8d5b43ca9c4f2fd0355a3e4376c44f93c313fe5a31008e7b441ea5",
+  "selection": "reconstruct_received_004_page_successful_rows_in_closed_slot_interval_exclude_original_creation_and_all_retained_bodies004005_sort_slot_then_signature",
+  "source_revision": "43fb90ee9dec2721bada12ed7c50b9745a41da24",
+  "stop_all_batches_on_first_source_or_evidence_error": true,
+  "target_supply_deficit_atomic": "979542505800",
+  "transactions": [
+    {
+      "signature": "4wAuccYwB2tLp4BsWtXYLzQpCXUnv5QW1TjNHw58rhdQX5rkxwZ9LPQ5hQzphduDmdJLoUmNJ3V1ujnswnqGeDVB",
+      "slot": 461979373
+    },
+    {
+      "signature": "4okgNWsnPdjNuALYEBckn2g2uz2VdHWQBthNvbNYmKb1Z9ahfZV3eLPBCq3vS8SJWqk1992Nf8irnorjHw1cnTRu",
+      "slot": 461979398
+    },
+    {
+      "signature": "5YJe66ukKXxZ373PXqJqEmanQ6vggcewTjtWRMGRbFZamGnTXB8fAAyFPuW2Mw5qSwik5srQJvn3z3KHZe2ExTqz",
+      "slot": 461979398
+    },
+    {
+      "signature": "5eb7FA5K6fykJL1Q91USD1dbq3tT8Ye7x2NXhknp8ThWdeWrdxW95gz5m8X7osB7ZZkz5H3zXynPsDo8LfFSDv2q",
+      "slot": 461979398
+    },
+    {
+      "signature": "4GXXGbWFPSPEY7HLwhsqx4ccUXvDKURWPjNBXwagYTE6rzhpPXFojtTy6F2ceo2ZvEwRSzuKvsGZq1gKzM5XUxPw",
+      "slot": 461979498
+    },
+    {
+      "signature": "jzJBesvA28pG9ThP1R7p1Rg6ba8xWB4CRCDgJ7zsHDLbcsgsosS2JTsZeTRgmW9kpzwFGZt9AJN6f5wmE4KrfSc",
+      "slot": 461979669
+    },
+    {
+      "signature": "2RqoQg7RLKND91yZy3igvu9pgfrv4uw75ELgyc44WGfEMNiM3RPmK9MtQSdoecF4ASrGqL1oEKpb7xekqfzQZJ1H",
+      "slot": 461979685
+    },
+    {
+      "signature": "nxSwbtbhBJtsiVgEJXRoUSQ3GxYHMcBe737AqEorLkvwuBSw2imohjVvbYf8RDyVhgNKbZGicuXsagmcmFSirbq",
+      "slot": 461979747
+    },
+    {
+      "signature": "662CF4WenipRBHKwvSxXgd83FSzRNL9FFoTZGbDZbucXiSvr93G3tz2xETaXFRoLXDhZuwrbuk1g69XJfiNUjtKh",
+      "slot": 461980132
+    },
+    {
+      "signature": "3LaSZ3kLEG3sHaNPF6w82aobyaJvca5g8uKhX8rTtKJkwaX95wLPoLi5Z8CR55mS5Nkc2WXoU5Rtj55WhJoZBiS8",
+      "slot": 461980615
+    },
+    {
+      "signature": "2rGAnwufZWsB2HoiXVFJqs9PwCcJzT6uFmSyGcPZsot7xFJAvdbdLsEzhKeAT9w8HTSHgmtdKaaJMGWpgF2nk9SF",
+      "slot": 461980619
+    },
+    {
+      "signature": "3SqFigS7L6AZXXU1oeR69cLcg8Z6Q4f6HxCcZovwTpL2vSi8PWuPedseSzvh9DCueQcPnxt6MyCUPij1uKyyApqk",
+      "slot": 461980619
+    },
+    {
+      "signature": "5PJeBEWiTzUnsnZjau8UWh6KmeiDDqVqyDTNpFTzUQ4iDQ4gfj1CafR9pJiazwoNLQWwgXATqTMK8K6bfAxhG5PB",
+      "slot": 461980619
+    },
+    {
+      "signature": "5qnchHEwu9sQW4rnzEJaAiHizQPZes6SShwyjUR6C14D9kVuWAAy6xBjYK5nSQrhMg9xqTDqdGnKaFb8oPaLUiSR",
+      "slot": 461980619
+    },
+    {
+      "signature": "67UpQjSXmSW7Bd8obN9zoEiJA6H5N473jKBvdnckp6sByGMNL6TePcRAmwpeu3q3TFhy24Ez43bzsb5iphwM8uve",
+      "slot": 461980619
+    },
+    {
+      "signature": "6HgvM5sGzfE8xqNKfkdGLcAN4AE6yYHi3PkQ6kDoNNKiMhe7gmatCYQ1xmx1p6a7JNTZaGQ1iRmNMkQQy7Gzy1F",
+      "slot": 461980619
+    },
+    {
+      "signature": "aiKTAGPjwyrMi5PgPc3BEwsu5byymALuzGHQTsgtHdEndyFhBhBRmutoJcEGYVfjZU9uNcdEyoCKUsXSZMzM1ZN",
+      "slot": 461980619
+    },
+    {
+      "signature": "xnQobsKRhk2Nw7BAB9PuomC5iLVXe31ZbEGQe3xiiwjL3faqYBmBvuehzPbPCM5cNZUo5bxxLG1Ykq4SZodEvTm",
+      "slot": 461980619
+    },
+    {
+      "signature": "3E2ovu37XUPjz8PmAt9Hbv19aMnYsSi9pv89FXyfhSUF7ykVwsGLhUw55HPynLMCwG7LYgeWzNEWSfmxZA8saPTd",
+      "slot": 461980620
+    },
+    {
+      "signature": "3M2UqhCQkBeqWnkmc5TgcHWnaohe2ijdcQXn6ApCHxR49UzLW2is2SDZzVKgBEzQYy1n6quSrU3futDvndcjMbPV",
+      "slot": 461980651
+    },
+    {
+      "signature": "2R9rzmswQa5wSGu2Z4eLbXq3CvsvYBqjKKHTCGekdZL39zTW3q1q8aurWDA7hCHvvuBwziPKp82wMVAKZAAuSZVk",
+      "slot": 461981346
+    },
+    {
+      "signature": "2ivNY9iX3cuG7SmjnrsAgxTCsCTeGFVpU8qcnnUgzNoqJ6cFuMrL5ojPpRYc5VDG2g7F3YBJs4yyw1gqCTzn245U",
+      "slot": 461982193
+    }
+  ],
+  "wire_retries": 0
+}

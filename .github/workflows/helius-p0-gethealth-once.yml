@@ -6,28 +6,32 @@ name: Helius P0 getHealth (one read-only request, manual)
 # No checkout, no repository code, no dependency install, no artifact, no
 # transaction, no write permission. The key and the URL holding it are never
 # printed. Result: step summary line HELIUS_P0_GETHEALTH=PASS or FAIL.
-# Manual only. Procedure, risks and rollback: docs/ops/HELIUS_P0_GETHEALTH.md.
+# Manual only, under the Helius lock (environment approval, kill switch, main only):
+# docs/ops/HELIUS_WORKFLOW_LOCK.md. Procedure: docs/ops/HELIUS_P0_GETHEALTH.md.
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: 'Type HELIUS-P0-GETHEALTH-ONCE to send one read-only getHealth request'
+        description: 'Type RUN-HELIUS-P0-GETHEALTH-ONCE to send one read-only getHealth request; the helius-collection environment approval is also required'
         required: true
         type: string
 
 permissions: {}
 
 concurrency:
-  group: helius-p0-gethealth
+  group: helius-collection
   cancel-in-progress: false
 
 jobs:
   gethealth-once:
     if: >-
       github.event_name == 'workflow_dispatch' &&
-      inputs.confirm == 'HELIUS-P0-GETHEALTH-ONCE' &&
-      github.repository == 'laurentmaxence13-svg/rugger_bot_v1'
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-P0-GETHEALTH-ONCE'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 2
     steps:
       - name: One read-only getHealth request (PASS or FAIL, key never printed)

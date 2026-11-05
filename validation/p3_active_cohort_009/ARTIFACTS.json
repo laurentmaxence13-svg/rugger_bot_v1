@@ -1,0 +1,64 @@
+{
+  "evidence_bundle": "evidence/p3/active_cohort_009",
+  "evidence_tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+  "files": {
+    "ADMISSIBILITY.json": {
+      "bytes": 2307,
+      "sha256": "e0e43455e369b0e808b1786ac6b4ed361ed438393da281b38f34984932fdd52b"
+    },
+    "CLEANUP_INTERRUPTION.json": {
+      "bytes": 592,
+      "sha256": "5149290b986f7347a51821935469ed95ac49f71ef8c15e631df779b2a41bb8e2"
+    },
+    "FINAL_FULL_TESTS.txt": {
+      "bytes": 2515,
+      "sha256": "f310023b7959a4020822c172406fa6160f851450a6c6ab27ac3f254aa97f8a5f"
+    },
+    "FINAL_VALIDATION.json": {
+      "bytes": 1737,
+      "sha256": "20d4ca9fae86742b11e2f07e9e5ba7e44292b631c8efdf326f7fefb899da2789"
+    },
+    "MASTER_REFERENCE_REPORT.json": {
+      "bytes": 9755,
+      "sha256": "72565a39bdf27a18a26393427395bc3af62ae160faa1326829f019bf78ff3ff5"
+    },
+    "PLAN.json": {
+      "bytes": 3458,
+      "sha256": "83b12163ab907c611c0efc7e962fcbcf5809eb75bd228fe881abfbb9a89f7884"
+    },
+    "PREREGISTRATION.json": {
+      "bytes": 2210,
+      "sha256": "8299e5e36860a60da61a009118164ec611ca338b230a4b97d6969afd07aa1921"
+    },
+    "PREREGISTRATION.md": {
+      "bytes": 1551,
+      "sha256": "c463c88fc3e725b0d509cdd4abe23ed0be01980ccf74616cdf7736bf54485826"
+    },
+    "PUBLICATION_RECEIPT.json": {
+      "bytes": 486,
+      "sha256": "dade70a0ad297ab8dc20dc9dc5040c64e8f3f14315815bd21dcaeea74520b27d"
+    },
+    "RESULT.json": {
+      "bytes": 3075,
+      "sha256": "c8588817910490c9d433f5b96ff26c1d494f7e620a4878f69cc0712aff6fd1c4"
+    },
+    "SOURCE_FULL_TESTS.txt": {
+      "bytes": 2515,
+      "sha256": "d7ee10dd66f888cd1390cb7b13664c62658278c465a4a9565922375d619e7da1"
+    },
+    "SOURCE_REVIEW.json": {
+      "bytes": 2991,
+      "sha256": "5b5d20ce96feb2671f51a87548a4dea00ecdba6d667a8cb5181ba74e7839884b"
+    },
+    "SOURCE_VALIDATION.json": {
+      "bytes": 1272,
+      "sha256": "2302cb445edae6a118c32d261fded66a3189e0597033a54423eac1c3f9ba3e3b"
+    },
+    "TRANSPORT_PREFLIGHT.json": {
+      "bytes": 1022,
+      "sha256": "6809c9825a165ff6dc3824ce170d1047607c5793fe3893b230d7aa28d95a4b97"
+    }
+  },
+  "schema": "p3-active-cohort-009-artifact-index-v1",
+  "sqlite_uploaded": false
+}

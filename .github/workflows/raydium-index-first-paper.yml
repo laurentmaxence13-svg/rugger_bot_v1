@@ -1,0 +1,83 @@
+name: Raydium index-first S1/S2 acquisition (PUBLIC PAPER READ ONLY)
+
+# One bounded >=0.1 SOL research cohort. No triggers on commits,
+# no signed transactions, no wallet, no trades, no paid data.
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  preregistered-index-cohort:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-index-cohort' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+    steps:
+      - name: Exact checked-out source without authentication persistence
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared public read-only dependencies and offline tests
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Confirm provider source and no-orders cohort invariants offline
+        run: |
+          python -m pytest -q tests/test_p3_active_cohort_campaign.py tests/test_p3_campaign.py
+      - name: Freeze exact preregistered source and sampling policy BEFORE first network request
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, time
+          from bot.p3.active_cohort_campaign import make_plan, validate_plan
+          revision=os.environ["GITHUB_SHA"]
+          plan=make_plan(registered_at_ms=time.time_ns()//1_000_000-1000,
+                         source_revision=revision)
+          validate_plan(plan)
+          root=pathlib.Path("paper_artifacts")
+          root.mkdir(parents=True,exist_ok=True)
+          with (root/"index_first_plan.json").open("x",encoding="utf-8") as out:
+              json.dump(plan,out,sort_keys=True)
+          print(json.dumps(dict(phase="INDEX_PLAN_FROZEN_BEFORE_ACQUISITION",
+              research_lamports=plan["acquisition"]["criteria"]["research_input_lamports"],
+              max_network_requests=plan["acquisition"]["criteria"]["max_requests"],
+              creation_verified=False,financial_orders_submitted=0)))
+          PY
+      - name: One bounded Raydium public index + on-chain coherent snapshots and indicative quotes
+        run: |
+          python -B -m bot.p3.active_cohort_campaign \
+            --plan paper_artifacts/index_first_plan.json \
+            --db paper_artifacts/index_first_journal.sqlite \
+            --output paper_artifacts/index_first_report.json \
+            --network
+      - name: Reconcile every provider full-position quote with the hash-verified journal
+        run: |
+          python -m pytest -q tests/test_index_quote_roundtrip_audit.py
+          python -B -m bot.p3.index_quote_roundtrip_audit \
+            --report paper_artifacts/index_first_report.json \
+            --journal paper_artifacts/index_first_journal.sqlite \
+            --output paper_artifacts/index_first_exact_lot_audit.json
+      - name: Public report and journal retained; no wallet data
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: rugger-index-first-${{ github.run_id }}
+          path: |
+            paper_artifacts/index_first_plan.json
+            paper_artifacts/index_first_report.json
+            paper_artifacts/index_first_exact_lot_audit.json
+            paper_artifacts/index_first_journal.sqlite
+          retention-days: 14
+          if-no-files-found: warn

@@ -253,7 +253,8 @@ def constant_product_projection(pool, *, input_lamports, fee_rates_ppm, base_vau
 
 def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
                      input_lamports=1_000_000_000, share_fee_rate_ppm=0,
-                     discriminator_pins=None, evidence_profile='legacy'):
+                     discriminator_pins=None, evidence_profile='legacy',
+                     compute_projection=True):
     """Interpret one caller-supplied getMultipleAccounts bank snapshot.
 
     accounts maps public address to the RPC account value. All seven accounts
@@ -261,6 +262,9 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
     and timestamps; this function neither fetches nor proves that acquisition.
     Pins must originate in an independent audited account schema, not sampled
     from the very accounts being validated.
+    compute_projection=False performs the identical raw identity/security
+    validation without requiring a new BUY to be admissible. Sell routing can
+    then validate its own exact quantity, including near fundraising limits.
     The opt-in published_metadata_v1 profile applies independent IDL/PDA checks
     and the audited metadata-only Token-2022 subset. Legacy campaign replays keep
     their original interpretation by default; new analyses never rewrite them.
@@ -279,6 +283,10 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         'real_orders_enabled':False,
     }
     try:
+        if type(compute_projection) is not bool:
+            raise SnapshotEvidenceError('explicit_projection_boolean_required')
+        if not compute_projection:
+            report['projection_requested'] = False
         if evidence_profile not in ('legacy', 'published_metadata_v1'):
             raise SnapshotEvidenceError('unsupported_evidence_profile')
         qualified = evidence_profile == 'published_metadata_v1'
@@ -329,6 +337,28 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
             metadata_only=qualified, expected_address=addresses['mint_b'])
         vault_a, vault_a_raw = _vault(accounts.get(addresses['vault_a']),'base_vault', metadata_only=qualified)
         vault_b, vault_b_raw = _vault(accounts.get(addresses['vault_b']),'quote_vault', metadata_only=qualified)
+        raw_by_role = dict(zip(ACCOUNT_ROLES,
+            (pool_raw,config_raw,platform_raw,base_raw,quote_raw,vault_a_raw,vault_b_raw)))
+        decoded_facts = {
+            'base_mint':_json_safe(base),
+            'quote_mint':_json_safe(quote), 'base_vault':_json_safe(vault_a),
+            'quote_vault':_json_safe(vault_b),
+            'account_data_sha256':{role:hashlib.sha256(raw).hexdigest() for role,raw in raw_by_role.items()},
+        }
+        if qualified:
+            # A failed relation must not erase independently decoded evidence.
+            # These are observations, not a burn explanation or reconciliation.
+            # Keep the legacy report shape unchanged for historical replays.
+            report['facts'].update(decoded_facts)
+            supply_matches = base['supply_atomic'] == pool['supply']
+            report['facts']['supply_consistency'] = {
+                'context_slot':context_slot,
+                'mint_supply_atomic':str(base['supply_atomic']),
+                'pool_supply_atomic':str(pool['supply']),
+                'mint_minus_pool_atomic':str(base['supply_atomic']-pool['supply']),
+                'matches':supply_matches,
+                'reconciliation_status':'not_required' if supply_matches else 'unresolved',
+            }
         if (pool['decimals_a'] != base['decimals'] or pool['decimals_b'] != 9
                 or quote['decimals'] != 9 or pool['decimals_a'] > 18
                 or base['supply_atomic'] != pool['supply']):
@@ -336,14 +366,7 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         if (vault_a['mint'] != addresses['mint_a'] or vault_b['mint'] != SOL_MINT
                 or vault_a['authority'] != vault_b['authority']):
             raise SnapshotEvidenceError('vault_mint_or_authority_mismatch')
-        raw_by_role = dict(zip(ACCOUNT_ROLES,
-            (pool_raw,config_raw,platform_raw,base_raw,quote_raw,vault_a_raw,vault_b_raw)))
-        report['facts'].update({
-            'base_mint':_json_safe(base),
-            'quote_mint':_json_safe(quote), 'base_vault':_json_safe(vault_a),
-            'quote_vault':_json_safe(vault_b),
-            'account_data_sha256':{role:hashlib.sha256(raw).hexdigest() for role,raw in raw_by_role.items()},
-        })
+        report['facts'].update(decoded_facts)
         if discriminator_pins is None:
             report['identity_status']='owner_layout_relations_checked_discriminator_uncertified'
             report['blocking_reasons'].append('account_discriminators_not_certified')
@@ -383,6 +406,8 @@ def analyze_snapshot(accounts, *, context_slot, expected_mint, pool_address,
         report['facts']['share_fee_assumption_ppm']=str(share_fee_rate_ppm)
         if flags:
             report['blocking_reasons'].extend(flags)
+            return report
+        if not compute_projection:
             return report
         report['conditional_projection']=constant_product_projection(
             pool,input_lamports=input_lamports,

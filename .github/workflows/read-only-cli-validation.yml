@@ -1,0 +1,47 @@
+name: Rugger strict read-only CLI contract
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: push, pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cli-never-sends:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install only synthetic test dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+      - name: Validate populated synthetic plan, explicitly offline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,sys,os
+          sys.path.insert(0,'tests')
+          from test_live_readonly_plan import _plan
+          with open(os.environ['RUNNER_TEMP']+'/readonly-fixture-plan.json','w') as f:
+              json.dump(_plan(),f)
+          PY
+          python -B tools/run_readonly_cpmm_preflight.py --plan "$RUNNER_TEMP/readonly-fixture-plan.json" --validate-only > "$RUNNER_TEMP/validated.json"
+          grep '"new_RPC_requests": 0' "$RUNNER_TEMP/validated.json"
+          grep '"live_execution_authorized": false' "$RUNNER_TEMP/validated.json"
+      - name: Reject unconfigured public mainnet template
+        shell: bash
+        run: |
+          set -euo pipefail
+          if python -B tools/run_readonly_cpmm_preflight.py --plan validation/live_readonly/mainnet_plan_template.json --validate-only > /dev/null 2>&1; then
+            echo 'SECURITY FAILURE: non-executable template was accepted'
+            exit 1
+          fi
+          echo 'Unconfigured template correctly refused'

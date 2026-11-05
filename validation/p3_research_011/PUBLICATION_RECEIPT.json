@@ -1,0 +1,9 @@
+{
+  "market_requests_before_receipt": 0,
+  "plan_remote_commit": "7016e3469e5a09658be12ddb3488f7b5ca0604ac",
+  "plan_sha256": "76f9aff77d32b7da4112c370a2ea816447379823876898ca563886846d233ce8",
+  "remote_plan_blob_matched_local": true,
+  "schema": "p3-011-publication-receipt-v1",
+  "source_remote_commit": "ae89a344bec3855c2cb6f26f75bab4865ac73ac0",
+  "verified_at_ms": 1793254880933
+}

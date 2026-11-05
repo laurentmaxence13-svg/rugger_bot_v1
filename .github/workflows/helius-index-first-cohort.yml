@@ -1,0 +1,55 @@
+name: Index-first prospective LaunchLab cohort (HELIUS READ ONLY)
+# Official Raydium index returned HTTP 403 from GitHub-hosted runners.
+# This experiment remains a manual diagnostic, NOT a P3 proof and NOT a
+# failing production/CI gate. Independent on-chain page checks continue.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-INDEX-FIRST-COHORT to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: helius-collection
+  cancel-in-progress: false
+
+jobs:
+  frozen-index-selection-before-market-outcomes:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-INDEX-FIRST-COHORT'
+    runs-on: ubuntu-latest
+    environment: helius-collection
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout immutable SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install pinned repository dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Select cohort from Raydium index before source accounts and S2
+        shell: bash
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.p3.helius_index_prospective_cohort

@@ -1,0 +1,34 @@
+{
+  "schema": "rugger-bitquery-cross-protocol-evidence-v1",
+  "source": "normalized_swaps.csv from two authenticated Bitquery IDE DEXTrades JSON exports on 2026-10-31",
+  "source_sha256": "701a324146f76104e68badcafb92995aad42942a66f1a98bfccf128aa39f7da9",
+  "source_rows": 399,
+  "source_window_utc": [
+    "2026-10-31T18:27:53Z",
+    "2026-10-31T18:30:04Z"
+  ],
+  "counts": {
+    "raydium_launchpad": 61,
+    "raydium_cp_swap": 338
+  },
+  "unique_mints_both_sides": {
+    "raydium_launchpad": 32,
+    "raydium_cp_swap": 112
+  },
+  "shared_token_mints_excluding_wsol": 3,
+  "shared_wsol_quoted_token_mints": 0,
+  "cross_protocol_same_transaction_signatures": 4,
+  "shared_token_mints": [
+    "72yxYmhLgDGwdyi2b9GjDynBB6VuG3kDxNKqDbzXh5bi",
+    "BZFYNPeQAEW3HWQ4DNsTVahC1n4ZjTgn6jB2nnBbB96W",
+    "WXMRyRZhsa19ety5erZhHg4N3xj3EVN92u94422teJp"
+  ],
+  "same_signature_cross_program_routes": "Four signatures include both LaunchLab and CPMM swaps. All four are same-slot multi-program trade observations, not proof of token migration.",
+  "possible_migration_candidates_verified": 0,
+  "verified_creator_cohort_size": 0,
+  "realized_profitability_sol": null,
+  "master_vs_reference_net_pnl_sol": null,
+  "gate": "NO_GO_NO_VERIFIED_TOKEN_LIFECYCLE_OR_EXECUTABLE_EXITS",
+  "next_step": "Require decoded LaunchLab creation and graduation/migration instructions, creators and full execution-quality quote data before migration claims; acquire further historic swaps as inputs.",
+  "read_only": true
+}

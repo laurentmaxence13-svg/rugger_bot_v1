@@ -1,0 +1,89 @@
+{
+  "additional_fee_evidence": "unknown_not_zero",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "full_position_closures_verified": 0,
+  "ledger_mutated": false,
+  "max_source_age_ms": 5000,
+  "new_network_requests": 0,
+  "pairs": [
+    {
+      "buy_id": 12,
+      "mint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_quote_body_missing"
+      ],
+      "run_id": "pr19_access_smoke",
+      "sell_id": 13
+    },
+    {
+      "buy_id": 137,
+      "mint": "uhnBg2De8nv5yT9BCdJTrGbZ3b72Q9tVfx8CZkGSs1T",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_quote_body_missing"
+      ],
+      "run_id": "launchlab_001",
+      "sell_id": 138
+    },
+    {
+      "buy_id": 171,
+      "mint": "3EqK3FnX43yQDEU8wefNNL3SpTtCLpje3PdxLaNRZs8h",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_quote_body_missing"
+      ],
+      "run_id": "launchlab_001",
+      "sell_id": 172
+    },
+    {
+      "buy_id": 122,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_quote_body_missing"
+      ],
+      "run_id": "launchlab_002",
+      "sell_id": 123
+    },
+    {
+      "buy_id": 168,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_quote_body_missing"
+      ],
+      "run_id": "launchlab_002",
+      "sell_id": 169
+    },
+    {
+      "buy_id": 120,
+      "mint": "E55EcueRm4iTPfZsnsdHiz9eyoW6g7wNX76qPkXmoA4N",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_source_time_unknown"
+      ],
+      "run_id": "retention_003",
+      "sell_id": 121
+    },
+    {
+      "buy_id": 138,
+      "mint": "D4BSGwDF6rZ4ZwjgGwy4tXm5ZSv58Zgh42Li4UBNtm1M",
+      "net_pnl_lamports": null,
+      "qualification": "UNQUALIFIED",
+      "reasons": [
+        "buy_source_time_unknown"
+      ],
+      "run_id": "retention_003",
+      "sell_id": 139
+    }
+  ],
+  "pairs_checked": 7,
+  "schema": "p3-archived-quote-pair-admission-v1"
+}

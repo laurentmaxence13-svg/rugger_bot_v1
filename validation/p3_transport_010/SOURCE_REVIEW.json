@@ -1,0 +1,32 @@
+{
+  "causal_health_features_and_own_costs_missing": true,
+  "checked_at_ms": 1793221655700,
+  "discovery": {
+    "anonymous_reads": true,
+    "contract_confirmed": true,
+    "global_completeness_or_causal_order_guaranteed": false,
+    "official_doc": "https://docs.raydium.io/api-reference/launch-mint-v1-endpoints/discovery/list-mints-with-sorting",
+    "query": {
+      "sort": "new"
+    },
+    "sort_enum": [
+      "marketCap",
+      "new",
+      "lastTrade",
+      "hotToken"
+    ],
+    "url": "https://launch-mint-v1.raydium.io/get/list"
+  },
+  "documentation_agent_calls": 6,
+  "documentation_calls_are_not_market_acquisition": true,
+  "quotes": {
+    "documented_sourceTimeMs_contextSlot_actualInputAmount_guarantee": false,
+    "kind": "indicative expected-output preview; no executed transaction",
+    "official_doc": "https://docs.raydium.io/api-reference/route-api-v2-endpoints/compute/compute-swap-quote-base-input",
+    "url": "https://transaction-v1.raydium.io/compute/swap-base-in"
+  },
+  "reference_initial_lamports": "1000000000",
+  "research_lamports": "100000000",
+  "scaling_allowed": false,
+  "schema": "p3-010-source-review-v1"
+}

@@ -1,0 +1,24 @@
+# Bitquery Solana.DEXTrades PAGE 3; repeat oldest slot for overlap.
+# Read-only query: export result JSON, then merge offline.
+query RuggerBot_Swaps_Page3 {
+  Solana(dataset: realtime) {
+    DEXTrades(
+      limit: {count: 200}
+      orderBy: {descending: Block_Slot}
+      where: {
+        Block: {Slot: {le: "463789255"}}
+        Transaction: {Result: {Success: true}}
+        Trade: {Dex: {ProtocolName: {in: ["raydium_launchpad", "raydium_cp_swap"]}}}
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Trade {
+        Dex {ProtocolName ProgramAddress}
+        Market {MarketAddress}
+        Buy {Amount AmountInUSD Currency {Symbol MintAddress Decimals}}
+        Sell {Amount AmountInUSD Currency {Symbol MintAddress Decimals}}
+      }
+    }
+  }
+}

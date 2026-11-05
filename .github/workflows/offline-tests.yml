@@ -1,0 +1,59 @@
+name: Offline test suite (no network, no secrets, no Helius)
+
+# Runs the repository's offline unit tests on Ubuntu for pull requests that
+# touch code, tests, tools or dependencies. It deliberately references no
+# repository secret, calls no RPC or market API, and cannot sign or submit
+# any transaction.
+
+on:
+  pull_request:
+    paths:
+      - "bot/**"
+      - "tests/**"
+      - "tools/**"
+      - "requirements*.txt"
+      # Any workflow change re-runs the trigger guard (tests/test_workflow_trigger_guard.py).
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: offline-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUTF8: "1"
+      RUGGER_NO_DOTENV: "1"
+    steps:
+      - name: Checkout exact commit without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Python 3.13
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies (PyPI only, no credentials)
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt -r requirements-dashboard.txt pytest
+
+      - name: Record toolchain and exact revision
+        run: |
+          python --version
+          python -m pytest --version
+          git rev-parse HEAD
+
+      - name: Run offline suite (isolated copy, warnings as errors)
+        env:
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD: "1"
+        run: |
+          python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rfE -W error

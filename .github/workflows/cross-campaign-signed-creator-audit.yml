@@ -1,0 +1,95 @@
+name: Cross-campaign independent signed creator audit (PAPER OFFLINE)
+
+# No provider network calls, orders, wallet or paid data.
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: rugger-cross-campaign-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-campaign-proof:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-cross-campaign-audit' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTEST_DISABLE_PLUGIN_AUTOLOAD: '1'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Immutable source checkout, no credentials persisted
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Offline falsification tests for creator dedup and source provenance
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+          python -m pytest -q tests/test_cross_campaign_signed_cohort.py tests/test_cross_source_creator_overlap.py tests/test_three_source_finalized_creator_join.py tests/test_p4_creator_disjoint_shadow_audit.py tests/test_p4_future_holdout_protocol.py tests/test_p4_actual_master_reference_freeze.py tests/test_prospective_campaign_funnel.py tests/test_live_helius_prospective_campaign.py
+      - name: Fetch four pinned public read-only campaign archives
+        run: |
+          mkdir -p paper_artifacts/campaign_41256274821 paper_artifacts/campaign_41257191511 paper_artifacts/campaign_41266654485 paper_artifacts/campaign_41281300922 paper_artifacts/pinned_finalized paper_artifacts/helius_replayed
+          gh run download 41256274821 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-creator-campaign-41256274821 \
+            --dir paper_artifacts/campaign_41256274821
+          gh run download 41257191511 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-creator-campaign-41257191511 \
+            --dir paper_artifacts/campaign_41257191511
+          gh run download 41266654485 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-creator-campaign-41266654485 \
+            --dir paper_artifacts/campaign_41266654485
+          gh run download 41281300922 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-creator-campaign-41281300922 \
+            --dir paper_artifacts/campaign_41281300922
+          gh run download 41260115617 --repo "$GITHUB_REPOSITORY" \
+            --name verified-index-creator-proof-41260115617 \
+            --dir paper_artifacts/pinned_finalized
+          gh run download 41281435552 --repo "$GITHUB_REPOSITORY" \
+            --name finalized-creation-replay-41281435552 \
+            --dir paper_artifacts/helius_replayed
+      - name: Verify every window hash and deduplicate creators across runs
+        run: |
+          python -B -m bot.p3.cross_campaign_signed_cohort \
+            --campaign 41256274821:paper_artifacts/campaign_41256274821/prospective_41256274821_summary.json \
+            --campaign 41257191511:paper_artifacts/campaign_41257191511/prospective_41257191511_summary.json \
+            --campaign 41266654485:paper_artifacts/campaign_41266654485/prospective_41266654485_summary.json \
+            --campaign 41281300922:paper_artifacts/campaign_41281300922/prospective_41281300922_summary.json \
+            --output paper_artifacts/cross_campaign_signed_creator_audit.json
+      - name: Reconcile upstream finalized index creators against prospective signed candidates
+        run: |
+          python -B -m bot.p3.cross_source_creator_overlap \
+            --pinned paper_artifacts/pinned_finalized/pinned_index_signed_proof_41260115617.json \
+            --prospective paper_artifacts/cross_campaign_signed_creator_audit.json \
+            --output paper_artifacts/cross_source_creator_overlap.json
+      - name: Bind independently replayed historical Ed25519 creator to both archived sources
+        run: |
+          python -B -m bot.p3.three_source_finalized_creator_join \
+            --pinned paper_artifacts/pinned_finalized/pinned_index_signed_proof_41260115617.json \
+            --prospective paper_artifacts/cross_campaign_signed_creator_audit.json \
+            --replay paper_artifacts/helius_replayed/finalized_campaign_replay_41281435552.json \
+            --output paper_artifacts/three_source_finalized_creator_join.json
+      - name: Retain verified cross-run evidence report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cross-campaign-signed-creator-${{ github.run_id }}
+          path: |
+            paper_artifacts/cross_campaign_signed_creator_audit.json
+            paper_artifacts/cross_source_creator_overlap.json
+            paper_artifacts/three_source_finalized_creator_join.json
+          if-no-files-found: warn
+          retention-days: 30

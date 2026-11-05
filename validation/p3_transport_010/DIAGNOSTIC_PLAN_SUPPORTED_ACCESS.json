@@ -1,0 +1,31 @@
+{
+  "authentication": false,
+  "base_remote_commit": "298f3053718efbe3a1d4781e0731a53c3b205390",
+  "child_deadline_seconds": 23,
+  "diagnostic_id": "P3-010-supported-executor-network-access",
+  "execution_count": 1,
+  "http_library_proxy_resolution": "up_to_one_per_connected_origin; OS DNS packet count unknown",
+  "market_acquisition": false,
+  "max_elapsed_seconds": 25,
+  "max_explicit_proxy_system_resolver_operations": 1,
+  "max_explicit_proxy_tcp_handshakes": 1,
+  "max_http_requests": 3,
+  "method": "HEAD",
+  "origins": [
+    "https://launch-mint-v1.raydium.io/",
+    "https://api.mainnet.solana.com/",
+    "https://transaction-v1.raydium.io/"
+  ],
+  "previous_diagnostic": "Stopped locally with PermissionError before HTTP; zero market or HTTP requests",
+  "proxy_bypass": false,
+  "read_response_bodies": false,
+  "readiness_scope": "HTTPS peer reachability only; no assertion discovery contents or economic admissibility",
+  "redirects": false,
+  "registered_at_ms": 1793222057718,
+  "requested_executor_permission": "supported exec_command with_additional_permissions network.enabled=true; preserve managed proxy",
+  "retry": false,
+  "schema": "p3-010-transport-diagnostic-v1",
+  "source_rule": "no query; no token; no RPC; no quote; HEAD root only",
+  "stop_on_first_blocking_error": true,
+  "tls_verification": true
+}

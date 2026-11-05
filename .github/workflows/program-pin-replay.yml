@@ -1,0 +1,35 @@
+name: Rugger replay retained public Solana ProgramData
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: push, pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rugger-retained-program-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  replay-archived-mainnet-program:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - name: Checkout pinned source and original archived public read
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up isolated Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Prove offline replay matches archived public program bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          sha256sum bot/live/program_pin.py validation/live_20261029/replay_program_pin.py
+          python -B validation/live_20261029/replay_program_pin.py

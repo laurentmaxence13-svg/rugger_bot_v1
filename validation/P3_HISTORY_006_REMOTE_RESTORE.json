@@ -1,0 +1,13 @@
+{
+  "archive_git_blob": "0769c53fcafa21e0290f98ad381e30c1be09e74c",
+  "events": 25,
+  "no_new_market_requests": true,
+  "original_sqlite_copied": false,
+  "qualification_reproduced_identically": true,
+  "remote_commit": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098",
+  "restored_from": "GitHub file API base64, immutable commit",
+  "schema": "p3-history006-remote-restore-v1",
+  "source_journal_used": false,
+  "total_confirmed_burn_atomic": "513119481705",
+  "unexplained_supply_deficit_atomic": "466423024095"
+}

@@ -1,0 +1,472 @@
+{
+  "schema": "paper-engine-report-v1",
+  "paper_only": true,
+  "real_orders_enabled": false,
+  "private_keys_used": false,
+  "timestamp": 1700000003,
+  "cached_helius_transactions": 1,
+  "launches_observed": 1,
+  "quotes_recorded": 2,
+  "launches_with_quotes": 1,
+  "quote_coverage": 1.0,
+  "quoted_mints_total": 1,
+  "quoted_mints_without_identified_launch": 0,
+  "quote_coverage_scope": "identified_launch_mints",
+  "market_detection_coverage": null,
+  "decision_count": 2,
+  "rejected_decisions": 0,
+  "accepted_decisions": 2,
+  "average_score": 52.0,
+  "open_paper_positions": 0,
+  "closed_paper_positions": 1,
+  "strategy_mode": "shadow_final",
+  "shadow_open_positions": 0,
+  "shadow_closed_positions": 0,
+  "average_net_return": -0.300015,
+  "net_return_after_costs": -0.030001500000000014,
+  "max_drawdown": -0.030001500000000014,
+  "win_rate": 0.0,
+  "assumed_cost_bps_total": 0.15,
+  "initial_capital_sol": 10.0,
+  "realized_capital_sol": 9.699985,
+  "pnl_sol": -0.300015,
+  "profit_factor": 0.0,
+  "performance_data_complete": true,
+  "capital_reconciled": true,
+  "incomplete_closed_trades": 0,
+  "inconsistent_closed_trades": 0,
+  "invalid_position_closed_trades": 0,
+  "equity_basis": "realized_sol",
+  "valuation_scope": {
+    "account_currency": "SOL",
+    "observed_price_currency": "USD",
+    "return_conversion_assumption": "native_SOL_quote_amounts",
+    "fx_observed_at_entry_and_exit": false,
+    "economic_pnl_verified": false,
+    "execution_prices_verified": false,
+    "native_inventory_positions": 1,
+    "legacy_positions_without_atomic_inventory": 0,
+    "native_inventory_acquired": false,
+    "native_net_basis": "SOL_quote_proceeds_minus_exact_allocated_basis_and_extra_fees",
+    "fx_required_for_sol_pnl": false,
+    "usd_marks_scope": "exit_triggers_only; not_native_PnL_conversion"
+  },
+  "market_data_coverage": {
+    "quotes": 2,
+    "volume_5m": 0.0,
+    "volume_24h": 0.0,
+    "price_change_5m": 0.0,
+    "price_change_1h": 0.0,
+    "txns_5m": 0.0,
+    "market_cap": 0.0,
+    "fdv": 0.0,
+    "fee_bps": 0.0,
+    "depth_usd": 0.0,
+    "slippage_bps_est": 0.0
+  },
+  "quote_provenance": {
+    "quotes": 2,
+    "source_counts": {
+      "synthetic_atomic_demo": 2
+    },
+    "unknown_source_quotes": 0,
+    "funding_known_quotes": 0,
+    "funding_unknown_quotes": 2,
+    "funding_coverage": 0.0,
+    "collection_time_field": "timestamp",
+    "provider_timestamp_known_quotes": 0,
+    "provider_timestamp_unknown_quotes": 2,
+    "provider_age_measurable_quotes": 0,
+    "provider_age_seconds": null,
+    "freshness_status": "unknown_no_provider_quote_timestamp",
+    "conflicting_quote_keys": 0,
+    "rejected_conflicting_observations": 0,
+    "conflict_history_complete": false,
+    "duplicate_policy": "first_observation_retained_repeats_not_processed"
+  },
+  "rejection_reasons": {},
+  "validation_status": "synthetic_atomic_integration_only",
+  "launch_time_diagnostics": {
+    "dated_mints": 1,
+    "undated_mints": 0,
+    "dated_candidate_rows": 1,
+    "undated_candidate_rows": 0,
+    "undated_only_mints": 0,
+    "undated_mints_with_quotes": 0,
+    "undated_mints_excluded_from_new_entries": 0,
+    "undated_candidate_rows_excluded_from_new_entries": 0,
+    "undated_status_counts": {},
+    "undated_mints_without_audit": 0
+  },
+  "functional_dashboard": {
+    "schema": "rugger-functional-dashboard-v1",
+    "paper_only": true,
+    "real_orders_enabled": false,
+    "data_kind": "synthetic",
+    "performance_data_complete": true,
+    "capital_reconciled": true,
+    "valuation_scope": {
+      "account_currency": "SOL",
+      "observed_price_currency": "USD",
+      "return_conversion_assumption": "constant_SOL_USD",
+      "fx_observed_at_entry_and_exit": false,
+      "economic_pnl_verified": false,
+      "execution_prices_verified": false,
+      "native_quote_inventory_present": true,
+      "native_return_basis": "exact_SOL_lamport_legs_no_FX_required",
+      "legacy_return_basis": "USD_marks_with_constant_SOL_USD_assumption",
+      "native_fx_required": false
+    },
+    "economic_pnl_verified": false,
+    "economic_verdict": "INSUFFICIENT DATA",
+    "metrics": {
+      "tokens_unique_detected": {
+        "value": 1,
+        "unit": "mints",
+        "source": "launch_candidates+research_launches",
+        "reliability": "recorded",
+        "scope": "recorded_mints_not_complete_market_universe"
+      },
+      "analysis_decisions": {
+        "value": 2,
+        "unit": "decisions",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "opportunities_analysed": {
+        "value": 1,
+        "unit": "mints",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "decisions_accepted": {
+        "value": 2,
+        "unit": "decisions",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "decisions_rejected": {
+        "value": 0,
+        "unit": "decisions",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "opportunities_accepted": {
+        "value": 1,
+        "unit": "mints",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "opportunities_rejected": {
+        "value": 0,
+        "unit": "mints",
+        "source": "paper_decisions",
+        "reliability": "recorded",
+        "scope": "cumulative; repeated_mints_may_have_both_accepted_and_rejected_decisions"
+      },
+      "positions_open": {
+        "value": 0,
+        "unit": "positions",
+        "source": "paper_trades.status",
+        "reliability": "recorded",
+        "scope": "database_cumulative"
+      },
+      "positions_closed": {
+        "value": 1,
+        "unit": "positions",
+        "source": "paper_trades.status",
+        "reliability": "recorded",
+        "scope": "database_cumulative"
+      },
+      "positions_without_qualified_exit": {
+        "value": 0,
+        "unit": "positions",
+        "source": "caller_exit_qualification_by_mint",
+        "reliability": "attested",
+        "scope": "currently_open_positions"
+      },
+      "positions_with_unknown_exit_qualification": {
+        "value": 0,
+        "unit": "positions",
+        "source": "caller_exit_qualification_by_mint",
+        "reliability": "recorded",
+        "scope": "currently_open_positions"
+      },
+      "capital_initial_sol": {
+        "value": 10.0,
+        "unit": "SOL",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "capital_final_sol": {
+        "value": 9.699985,
+        "unit": "SOL",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "pnl_net_sol": {
+        "value": -0.300015,
+        "unit": "SOL",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "portfolio_return": {
+        "value": -0.030001500000000014,
+        "unit": "fraction",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "win_rate": {
+        "value": 0.0,
+        "unit": "fraction",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "profit_factor": {
+        "value": 0.0,
+        "unit": "ratio",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "max_drawdown": {
+        "value": -0.030001500000000014,
+        "unit": "fraction",
+        "source": "paper_engine._realized_metrics",
+        "reliability": "model_only",
+        "scope": "realized_ledger_equity; excludes_unrealized_positions"
+      },
+      "average_gain_sol": {
+        "value": null,
+        "unit": "SOL",
+        "source": "paper_trades.pnl_sol",
+        "reliability": "unknown",
+        "scope": "winning_closed_positions",
+        "reason": "required_data_not_recorded"
+      },
+      "average_loss_sol": {
+        "value": -0.300015,
+        "unit": "SOL",
+        "source": "paper_trades.pnl_sol",
+        "reliability": "model_only",
+        "scope": "losing_closed_positions; negative_values"
+      },
+      "net_expectancy_sol": {
+        "value": -0.300015,
+        "unit": "SOL",
+        "source": "paper_trades.pnl_sol",
+        "reliability": "model_only",
+        "scope": "mean_of_closed_ledger_positions_not_population_expectation"
+      },
+      "modeled_cost_sol": {
+        "value": 1.5e-05,
+        "unit": "SOL",
+        "source": "legacy_position_sol*cost_bps/10000+exact_native_recognized_extra_fees",
+        "reliability": "model_only",
+        "scope": "realized_events; excludes_unrecognized_capitalized_entry_fees; never_recounts_pool_fees"
+      },
+      "pnl_gross_sol": {
+        "value": -0.3,
+        "unit": "SOL",
+        "source": "pnl_net_sol+modeled_cost_sol",
+        "reliability": "model_only",
+        "scope": "before_legacy_stored_cost_and_native_recognized_extra_fees; native_pool_fees_stay_embedded; not_executed_profit"
+      },
+      "capital_available_sol": {
+        "value": 9.699985,
+        "unit": "SOL",
+        "source": "paper_trader._paper_free_capital",
+        "reliability": "model_only",
+        "scope": "database_cumulative"
+      },
+      "capital_committed_sol": {
+        "value": 0.0,
+        "unit": "SOL",
+        "source": "paper_trader._paper_free_capital",
+        "reliability": "model_only",
+        "scope": "database_cumulative"
+      },
+      "observed_execution_fees_sol": {
+        "value": null,
+        "unit": "SOL",
+        "source": "not_in_legacy_ledger",
+        "reliability": "unknown",
+        "scope": "database_cumulative",
+        "reason": "network_priority_ata_failure_costs_not_observed"
+      },
+      "realized_slippage_sol": {
+        "value": null,
+        "unit": "SOL",
+        "source": "not_in_legacy_ledger",
+        "reliability": "unknown",
+        "scope": "database_cumulative",
+        "reason": "execution_prices_and_effective_sizes_not_observed"
+      },
+      "scanner_detection_latency_p50_ms": {
+        "value": 1000,
+        "unit": "ms",
+        "source": "launch_candidates.detection_latency_ms; chain_block_time_based",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "scanner_detection_latency_p95_ms": {
+        "value": 1000,
+        "unit": "ms",
+        "source": "launch_candidates.detection_latency_ms; chain_block_time_based",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "scanner_detection_latency_p99_ms": {
+        "value": 1000,
+        "unit": "ms",
+        "source": "launch_candidates.detection_latency_ms; chain_block_time_based",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "quote_acquisition_latency_p50_ms": {
+        "value": 0.004577,
+        "unit": "ms",
+        "source": "caller_supplied_measured_latency_samples_ms",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "quote_acquisition_latency_p95_ms": {
+        "value": 0.004897,
+        "unit": "ms",
+        "source": "caller_supplied_measured_latency_samples_ms",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "quote_acquisition_latency_p99_ms": {
+        "value": 0.004897,
+        "unit": "ms",
+        "source": "caller_supplied_measured_latency_samples_ms",
+        "reliability": "recorded",
+        "scope": "observed_samples_nearest_rank; not_execution_latency_guarantee"
+      },
+      "positions_with_atomic_inventory": {
+        "value": 1,
+        "unit": "positions",
+        "source": "paper_token_inventory",
+        "reliability": "recorded_projected_inventory",
+        "scope": "paper_token_inventory_persistence; not_blockchain_execution"
+      },
+      "positions_fully_settled": {
+        "value": 1,
+        "unit": "positions",
+        "source": "paper_token_inventory",
+        "reliability": "recorded_projected_inventory",
+        "scope": "paper_token_inventory_persistence; not_blockchain_execution"
+      },
+      "positions_open_partial": {
+        "value": 0,
+        "unit": "positions",
+        "source": "paper_token_inventory",
+        "reliability": "recorded_projected_inventory",
+        "scope": "paper_token_inventory_persistence; not_blockchain_execution"
+      },
+      "positions_with_remaining_inventory": {
+        "value": 0,
+        "unit": "positions",
+        "source": "paper_token_inventory",
+        "reliability": "recorded_projected_inventory",
+        "scope": "paper_token_inventory_persistence; not_blockchain_execution"
+      },
+      "legacy_positions_inventory_unknown": {
+        "value": 0,
+        "unit": "positions",
+        "source": "paper_token_inventory",
+        "reliability": "recorded_projected_inventory",
+        "scope": "paper_token_inventory_persistence; not_blockchain_execution"
+      }
+    },
+    "atomic_inventory": {
+      "schema": "paper-atomic-inventory-report-v1",
+      "available": true,
+      "positions": [
+        {
+          "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+          "acquired_atomic": "25000000",
+          "remaining_atomic": "0",
+          "token_decimals": 6,
+          "entry_budget_lamports": "1000000000",
+          "entry_extra_lamports": "5000",
+          "cost_basis_total_lamports": "1000005000",
+          "cost_basis_remaining_lamports": "0",
+          "realized_pnl_lamports": "-300015000",
+          "version": 1,
+          "source_provenance": "synthetic",
+          "inventory_basis": "expected_buy_output",
+          "entry_decision_ms": 1700000001020,
+          "last_settlement_ms": 1700000002040,
+          "entry_fee_provenance": "synthetic",
+          "liquidated_atomic": "25000000",
+          "settled_fraction": "1",
+          "position_state": "fully_settled",
+          "settled_legs": 1,
+          "settled_exit_legs": [
+            {
+              "id": "e8c61a372699a24ebba5fc754da131503d4c89c5237b69bc6be4f8cf2b38b561",
+              "decision_ms": 1700000002040,
+              "quantity_atomic": "25000000",
+              "proceeds_lamports": "700000000",
+              "extra_fee_lamports": "10000",
+              "allocated_basis_lamports": "1000005000",
+              "pnl_lamports": "-300015000",
+              "fee_provenance": "synthetic"
+            }
+          ],
+          "inventory_consistent": true,
+          "acquisition_executed": false
+        }
+      ],
+      "positions_with_atomic_inventory": 1,
+      "positions_fully_settled": 1,
+      "positions_open_partial": 0,
+      "positions_with_remaining_inventory": 0,
+      "legacy_positions_inventory_unknown": 0,
+      "realized_pnl_lamports": "-300015000",
+      "settled_exit_extra_fee_lamports": "10000",
+      "entry_extra_fee_capitalized_lamports": "5000",
+      "recognized_extra_fee_lamports": "15000",
+      "quantity_scope": "per_mint_atomic_text; never_sum_different_tokens",
+      "reliability": "projected_paper_inventory_not_blockchain_execution",
+      "attempts": {
+        "accepted": 1,
+        "rejected": 0,
+        "unknown": 0
+      },
+      "inventory_consistent": true,
+      "recognized_fee_scope": "settled_exit_extra_plus_entry_extra_only_when_allocation_unambiguous; pool_fees_stay_in_quotes"
+    },
+    "latency_sample_counts": {
+      "scanner_detection": {
+        "valid_samples": 1,
+        "missing_or_invalid_samples": 0
+      },
+      "quote_acquisition": {
+        "valid_samples": 2,
+        "missing_or_invalid_samples": 0
+      }
+    },
+    "missing_data_counts": {
+      "decisions_without_classifiable_permission": 0,
+      "closed_ledger_records_incomplete": 0,
+      "closed_ledger_records_inconsistent": 0,
+      "price_observations_without_provider_source_time": 2,
+      "open_positions_with_unknown_exit_qualification": 0
+    },
+    "metrics_unknown_count": 3,
+    "missing_count_scope": "categories_may_overlap; do_not_sum_as_unique_events"
+  }
+}

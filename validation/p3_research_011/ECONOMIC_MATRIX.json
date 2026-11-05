@@ -1,0 +1,90 @@
+[
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "100000000",
+    "conditional_quoted_delta_lamports": "-2749377",
+    "elapsed_after_inventory_decision_ms": 2,
+    "exit_phase": "initial",
+    "expected_quote_output_lamports": "97250623",
+    "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+    "projected_quantity_atomic": "604318709293",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "100000000",
+    "conditional_quoted_delta_lamports": "-2749377",
+    "elapsed_after_inventory_decision_ms": 19646,
+    "exit_phase": "followup",
+    "expected_quote_output_lamports": "97250623",
+    "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+    "projected_quantity_atomic": "604318709293",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "1000000000",
+    "conditional_quoted_delta_lamports": "-50711207",
+    "elapsed_after_inventory_decision_ms": 5,
+    "exit_phase": "initial",
+    "expected_quote_output_lamports": "949288793",
+    "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+    "projected_quantity_atomic": "5970080462587",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "1000000000",
+    "conditional_quoted_delta_lamports": "-50711207",
+    "elapsed_after_inventory_decision_ms": 20707,
+    "exit_phase": "followup",
+    "expected_quote_output_lamports": "949288793",
+    "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+    "projected_quantity_atomic": "5970080462587",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "100000000",
+    "conditional_quoted_delta_lamports": "-3084445",
+    "elapsed_after_inventory_decision_ms": 2,
+    "exit_phase": "initial",
+    "expected_quote_output_lamports": "96915555",
+    "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+    "projected_quantity_atomic": "3114722229888",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "100000000",
+    "conditional_quoted_delta_lamports": "-3084445",
+    "elapsed_after_inventory_decision_ms": 20485,
+    "exit_phase": "followup",
+    "expected_quote_output_lamports": "96915555",
+    "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+    "projected_quantity_atomic": "3114722229888",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "1000000000",
+    "conditional_quoted_delta_lamports": "-81701720",
+    "elapsed_after_inventory_decision_ms": 1,
+    "exit_phase": "initial",
+    "expected_quote_output_lamports": "918298280",
+    "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+    "projected_quantity_atomic": "30305442885780",
+    "source_timing_qualified": false
+  },
+  {
+    "actual_inputs_explicit": true,
+    "budget_lamports": "1000000000",
+    "conditional_quoted_delta_lamports": "-81701720",
+    "elapsed_after_inventory_decision_ms": 20152,
+    "exit_phase": "followup",
+    "expected_quote_output_lamports": "918298280",
+    "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+    "projected_quantity_atomic": "30305442885780",
+    "source_timing_qualified": false
+  }
+]
