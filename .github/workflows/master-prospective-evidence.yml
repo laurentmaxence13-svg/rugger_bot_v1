@@ -124,8 +124,8 @@ jobs:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
-          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
-          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          if grep -rqsiF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -iname "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
           echo 'HELIUS_KEY_CANARY=PASS'
       - name: Retain only public observations, no secrets or wallet data
         if: always() && steps.helius_key_canary.outcome == 'success'
@@ -185,8 +185,8 @@ jobs:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
-          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
-          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          if grep -rqsiF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -iname "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
           echo 'HELIUS_KEY_CANARY=PASS'
       - name: Archive public read-only historical sample including source gaps
         if: always() && steps.helius_key_canary.outcome == 'success'
@@ -247,8 +247,8 @@ jobs:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
-          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
-          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          if grep -rqsiF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -iname "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
           echo 'HELIUS_KEY_CANARY=PASS'
       - name: Keep bounded public early records; no keys or signed trades
         if: always() && steps.helius_key_canary.outcome == 'success'

@@ -72,7 +72,8 @@ with a strict block-YAML reader that fails closed:
 * artifacts: an ``upload-artifact`` step is allowed only in a key job, after the
   reviewed key canary step (``HELIUS_CANARY_RUN``, id ``helius_key_canary``, run
   after every other step that names the key) and only when that canary succeeded;
-  paths stay under ``paper_artifacts/``, retention at most
+  paths stay under ``paper_artifacts/`` and end in ``.json``; the canary matches the key
+  in any letter case; retention at most
   ``HELIUS_MAX_RETENTION_DAYS`` days;
 * one workflow-level concurrency group ``helius-collection`` without cancellation,
   workflow permissions limited to ``read``/``none`` on ``contents`` and
@@ -146,11 +147,12 @@ HELIUS_MAX_RETENTION_DAYS = 30
 HELIUS_CANARY_ID = 'helius_key_canary'
 HELIUS_SECRET_VALUE = '${{ secrets.HELIUS_API_KEY }}'
 HELIUS_UPLOAD_IF = "always() && steps.helius_key_canary.outcome == 'success'"
-# Reviewed canary: refuses to publish any artifact file whose content or name holds the key.
+# Reviewed canary: refuses to publish any artifact file whose content or name holds the key,
+# in any letter case (T-0037 O1). Uploads are limited to .json files (helius_violations).
 HELIUS_CANARY_RUN = (
     'if [ -z "${HELIUS_API_KEY}" ]; then echo \'HELIUS_KEY_CANARY=FAIL empty_key\'; exit 1; fi\n'
-    'if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo \'HELIUS_KEY_CANARY=FAIL key_found\'; exit 1; fi\n'
-    'if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then '
+    'if grep -rqsiF -- "${HELIUS_API_KEY}" paper_artifacts; then echo \'HELIUS_KEY_CANARY=FAIL key_found\'; exit 1; fi\n'
+    'if [ -n "$(find paper_artifacts -iname "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then '
     'echo \'HELIUS_KEY_CANARY=FAIL key_in_file_name\'; exit 1; fi\n'
     "echo 'HELIUS_KEY_CANARY=PASS'")
 _HELIUS_PREFIX = re.compile(
@@ -963,6 +965,8 @@ def _helius_step(job_name, position, step, key_job, canary_seen, later_key_steps
             paths = [line.strip() for line in str(with_.get('path') or '').splitlines() if line.strip()]
             if not paths or any(not p.startswith('paper_artifacts/') or '..' in p for p in paths):
                 found.append('helius_upload_path_outside_paper_artifacts:%s' % label)
+            if any(not p.endswith('.json') for p in paths):
+                found.append('helius_upload_not_json:%s' % label)
             if not _int_at_most(with_.get('retention-days'), HELIUS_MAX_RETENTION_DAYS):
                 found.append('helius_upload_retention_not_bounded:%s' % label)
     env = step.get('env')

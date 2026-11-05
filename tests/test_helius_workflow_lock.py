@@ -147,7 +147,10 @@ GATE_EXPR = "inputs.confirm == '%s'" % PHRASE
     (mutate(CANARY_STEP, ''), 'helius_upload_without_prior_key_canary:collect.steps[2]'),
     (mutate("        if: always() && steps.helius_key_canary.outcome == 'success'\n", '        if: always()\n'),
      'helius_upload_not_gated_by_canary:collect.steps[3]'),
-    (mutate("grep -rqsF", "grep -rqF"), 'helius_canary_run_not_reviewed:collect.steps[2]'),
+    (mutate("grep -rqsiF", "grep -rqsF"), 'helius_canary_run_not_reviewed:collect.steps[2]'),
+    (mutate('-iname', '-name'), 'helius_canary_run_not_reviewed:collect.steps[2]'),
+    (mutate('          path: paper_artifacts/demo_*.json\n', '          path: paper_artifacts/demo_*\n'),
+     'helius_upload_not_json:collect.steps[3]'),
     (mutate('        id: helius_key_canary\n        if: always()\n', '        id: helius_key_canary\n        if: success()\n'),
      'helius_canary_must_run_always:collect.steps[2]'),
     (mutate('          path: paper_artifacts/demo_*.json\n', '          path: ~/.config\n'),
@@ -340,6 +343,9 @@ def test_uploading_workflows_all_carry_the_canary():
      'HELIUS_KEY_CANARY=FAIL key_found', 1),
     ({'sub/deep.bin': 'xx%syy' % FAKE_KEY}, FAKE_KEY, 'HELIUS_KEY_CANARY=FAIL key_found', 1),
     ({'%s.json' % FAKE_KEY: '{}'}, FAKE_KEY, 'HELIUS_KEY_CANARY=FAIL key_in_file_name', 1),
+    # T-0037 O1: any letter case.
+    ({'a.json': '{"k": "%s"}' % FAKE_KEY.upper()}, FAKE_KEY, 'HELIUS_KEY_CANARY=FAIL key_found', 1),
+    ({'%s.json' % FAKE_KEY.upper(): '{}'}, FAKE_KEY, 'HELIUS_KEY_CANARY=FAIL key_in_file_name', 1),
     ({'a.json': '{}'}, '', 'HELIUS_KEY_CANARY=FAIL empty_key', 1),
 ])
 def test_canary_refuses_any_artifact_holding_the_key(tmp_path, files, key, expected, code):
@@ -351,4 +357,4 @@ def test_canary_refuses_any_artifact_holding_the_key(tmp_path, files, key, expec
     result = subprocess.run(['bash', '-e', '-c', guard.HELIUS_CANARY_RUN], cwd=tmp_path, capture_output=True,
                             text=True, env={'PATH': '/usr/bin:/bin', 'HELIUS_API_KEY': key}, timeout=30)
     assert (result.returncode, result.stdout.strip()) == (code, expected)
-    assert FAKE_KEY not in result.stdout + result.stderr
+    assert FAKE_KEY.lower() not in (result.stdout + result.stderr).lower()
