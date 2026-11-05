@@ -162,15 +162,29 @@ def check_trade(values):
     return tuple(issues)
 
 
-def implied_fee_rate_ppm(values):
+def implied_fee_rate_ppm(values, *, include_share=True):
     """Smallest total ppm rate whose ceil-fee on the basis equals the event fee.
 
     The on-chain rate is the sum of configured rates; the event only reveals the
     rounded fee, so several rates may be compatible. The smallest one is
     returned; exactness of the whole trade is then re-checked by ``check_trade``.
+
+    ``include_share=False`` drops the *observed trader's* optional share fee from
+    the rate (the basis still uses the full fee). A replayed own order sends
+    ``share_fee_rate=0`` (see ``bot/live/route.py``), so it must not inherit a
+    third party's share fee.
     """
     fees = (values['protocol_fee'] + values['platform_fee']
             + values['creator_fee'] + values['share_fee'])
+    if not include_share:
+        rate_fees = fees - values['share_fee']
+        if values['side'] == BUY:
+            basis = values['amount_in']
+        else:
+            basis = values['amount_out'] + fees
+        if basis <= 0 or rate_fees == 0:
+            return 0
+        return min(((rate_fees - 1) * FEE_DENOMINATOR) // basis + 1, FEE_DENOMINATOR - 1)
     if values['side'] == BUY:
         basis = values['amount_in']
     else:
