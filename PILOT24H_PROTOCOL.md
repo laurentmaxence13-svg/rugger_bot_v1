@@ -23,3 +23,8 @@ sinon EVALUABLE avec estimation ponctuelle seulement (aucun test d'inférence : 
 ## Observation 24h
 Autorisée seulement après validation audit/runtime/guardrails, Helius lecture seule sur quota gratuit existant.
 Non démarrée par cette exécution. Bilan prévu le 08/11 à 12:00 CET, ou BLOCKED motivé.
+
+## Adaptateur offline (issue #195)
+`bot/p3/pilot24h_offline.py` : lecture SQLite en lecture seule de la table `events` de l'observateur (#184/#191, non importé, aucun réseau), validation (anti-lookahead recv<chain_time, causalité, slippage jamais 0 par défaut, entiers), mapping vers le vocabulaire du protocole, `check_decisions_causal`, `build_ledger` (refuse si le digest préenregistré ne correspond pas ; net = None si un coût est inconnu) et `recompute_ledger`.
+**Constat prouvé par le code** : les lignes de l'observateur ne contiennent ni créateur, ni mint, ni jambe SOL, ni coûts → 0 cycle qualifiable, 0 créateur ; `qualification_report` le dit explicitement.
+Moteurs (branche `integration/consolidation-20261103`) : MASTER = `bot/master_decision.py::MasterDecisionOrchestrator` ; référence = `bot/master_comparison.py` (« current_final_decision_engine_and_native_ledger », `bot/p4_experiment.py`). Absents de `main`. Non branchés ici.
