@@ -22,5 +22,9 @@
  },
  "repository": {
   "full_name": "laurentmaxence13-svg/rugger_bot_v1"
+ },
+ "sender": {
+  "login": "laurentmaxence13-svg",
+  "type": "User"
  }
 }

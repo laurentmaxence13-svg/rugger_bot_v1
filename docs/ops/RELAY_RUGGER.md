@@ -79,3 +79,15 @@ Aucun exécuteur GitHub réel (CREATE_ISSUE/ADD_LABEL) n'est écrit ; `send` est
 2. Un runner Actions est éphémère : la base SQLite n'y est pas durable. Il faut un hôte persistant ou un autre registre (décision propriétaire).
 3. Le sender réel n'est pas implémenté (aucun jeton/PAT fourni ni inventé).
 4. Aucun événement Claude ne peut être garanti tant que (1) n'est pas testé.
+
+## Correctifs d'autorisation (#208, audit #207) — NON ACTIVÉ
+
+| # | Défaut | Statut | Preuve |
+|---|---|---|---|
+| P0-1 | expéditeur non autorisé accepté | **corrigé** : allowlist `sender.login` + `comment.user.login` (identiques) + `author_association` OWNER/MEMBER ; bots : allowlist vide (identité réelle inconnue) ; données manquantes refusées | `Adversarial.test_p0_1_*` |
+| P0-2 | dépôt `evil/fork` accepté | **corrigé** : `full_name` strictement égal (casse comprise), sur tous les événements | `test_p0_2_*` |
+| P0-3 | complétion d'une tâche jamais lancée | **corrigé** : agent RUNNING sur exactement ce numéro d'issue, sinon refus sans effet | `test_p0_3_*` |
+| P1-4 | dédup | **corrigé** : clés `comment:<id>`, `delivery:<id>`, `issue-done:<n>` réservées dans la MÊME transaction que les effets | `test_p1_4_*` |
+| P1-5 | sender réel absent / idempotence après crash | **NON corrigé** | — |
+| P1-6 | SQLite sur Actions éphémère | **NON corrigé** : options = hôte persistant, registre externe (décision propriétaire) | — |
+| P1-7 | GITHUB_TOKEN déclenche-t-il Claude Code Cloud ? | **NON prouvé** ; GitHub App = autorisation distincte, aucun secret ajouté | — |
