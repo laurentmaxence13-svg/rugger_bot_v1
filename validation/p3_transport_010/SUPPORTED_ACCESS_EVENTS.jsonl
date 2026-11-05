@@ -1,0 +1,30 @@
+{"certificate_verification": true, "credentials_used": false, "elapsed_ms": 3.628505, "hostname_verification": true, "ipv4_ipv6_policy": "AF_UNSPEC", "no_proxy_bypass": true, "phase": "configuration_checked", "proxy_matches_managed_policy": true, "sequence": 1, "wall_time_ms": 1793222063343}
+{"elapsed_ms": 3.683978, "phase": "proxy_system_resolver_started", "sequence": 2, "wall_time_ms": 1793222063343}
+{"elapsed_ms": 4.440042, "ipv4_count": 1, "ipv6_count": 0, "phase": "proxy_system_resolver_completed", "result_count": 1, "sequence": 3, "wall_time_ms": 1793222063344}
+{"elapsed_ms": 4.495895, "phase": "proxy_tcp_started", "sequence": 4, "wall_time_ms": 1793222063344}
+{"elapsed_ms": 5.006224, "phase": "proxy_tcp_completed", "sequence": 5, "wall_time_ms": 1793222063344}
+{"elapsed_ms": 5.667301, "ordinal": 0, "origin": "https://launch-mint-v1.raydium.io/", "phase": "diagnostic_head_attempt", "sequence": 6, "wall_time_ms": 1793222063345}
+{"elapsed_ms": 5.769213, "phase": "request_started", "sequence": 7, "wall_time_ms": 1793222063345}
+{"elapsed_ms": 5.844935, "phase": "connection_started", "sequence": 8, "wall_time_ms": 1793222063345}
+{"elapsed_ms": 5.885886, "family": 0, "host_role": "configured_proxy", "phase": "dns_started", "sequence": 9, "wall_time_ms": 1793222063345}
+{"elapsed_ms": 7.713733, "host_role": "configured_proxy", "ipv4_count": 1, "ipv6_count": 0, "phase": "dns_completed", "result_count": 1, "sequence": 10, "wall_time_ms": 1793222063347}
+{"elapsed_ms": 294.582595, "phase": "connection_ready", "sequence": 11, "wall_time_ms": 1793222063634}
+{"elapsed_ms": 294.691637, "phase": "request_headers_sent", "sequence": 12, "wall_time_ms": 1793222063634}
+{"elapsed_ms": 1047.353227, "http_status": 200, "phase": "response_headers_received", "sequence": 13, "wall_time_ms": 1793222064386}
+{"elapsed_ms": 1047.419947, "http_status": 200, "ordinal": 0, "phase": "diagnostic_head_response", "sequence": 14, "tls_verification_enabled": true, "wall_time_ms": 1793222064387}
+{"elapsed_ms": 1047.443462, "ordinal": 1, "origin": "https://api.mainnet.solana.com/", "phase": "diagnostic_head_attempt", "sequence": 15, "wall_time_ms": 1793222064387}
+{"elapsed_ms": 1047.541317, "phase": "request_started", "sequence": 16, "wall_time_ms": 1793222064387}
+{"elapsed_ms": 1047.626774, "phase": "connection_started", "sequence": 17, "wall_time_ms": 1793222064387}
+{"elapsed_ms": 1177.078656, "phase": "connection_ready", "sequence": 18, "wall_time_ms": 1793222064516}
+{"elapsed_ms": 1177.17525, "phase": "request_headers_sent", "sequence": 19, "wall_time_ms": 1793222064516}
+{"elapsed_ms": 2053.179499, "http_status": 200, "phase": "response_headers_received", "sequence": 20, "wall_time_ms": 1793222065392}
+{"elapsed_ms": 2053.252618, "http_status": 200, "ordinal": 1, "phase": "diagnostic_head_response", "sequence": 21, "tls_verification_enabled": true, "wall_time_ms": 1793222065392}
+{"elapsed_ms": 2053.27438, "ordinal": 2, "origin": "https://transaction-v1.raydium.io/", "phase": "diagnostic_head_attempt", "sequence": 22, "wall_time_ms": 1793222065392}
+{"elapsed_ms": 2053.34109, "phase": "request_started", "sequence": 23, "wall_time_ms": 1793222065392}
+{"elapsed_ms": 2053.413297, "phase": "connection_started", "sequence": 24, "wall_time_ms": 1793222065393}
+{"elapsed_ms": 2136.220547, "phase": "connection_ready", "sequence": 25, "wall_time_ms": 1793222065475}
+{"elapsed_ms": 2136.306134, "phase": "request_headers_sent", "sequence": 26, "wall_time_ms": 1793222065475}
+{"elapsed_ms": 2520.53472, "http_status": 200, "phase": "response_headers_received", "sequence": 27, "wall_time_ms": 1793222065860}
+{"elapsed_ms": 2520.607679, "http_status": 200, "ordinal": 2, "phase": "diagnostic_head_response", "sequence": 28, "tls_verification_enabled": true, "wall_time_ms": 1793222065860}
+{"elapsed_ms": 2521.142744, "evidence_scope": "HTTPS_peer_connectivity_only; no_market_content_or_API_readiness_claim", "origins_with_http_response": 3, "phase": "diagnostic_completed", "sequence": 29, "wall_time_ms": 1793222065860}
+{"elapsed_ms": 2521.73836, "phase": "asyncio_cleanup_completed", "sequence": 30, "wall_time_ms": 1793222065861}

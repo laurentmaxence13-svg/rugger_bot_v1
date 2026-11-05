@@ -1,0 +1,12 @@
+{
+  "schema": "p3-012-actual-remote-restore-v1",
+  "remote_commit": "98b1570d4b6316e743b2b55b9478c47a0c7c86ee",
+  "downloaded_archive_and_manifest_and_report": true,
+  "bytes_match_local_original": true,
+  "events": 159,
+  "tail": "3cac1bf300e3023d5ade20336bccd3420d63469a417d148a0b32026bb3487523",
+  "raw_banks_replayed": 25,
+  "report_reproduced_exactly": true,
+  "new_market_requests": 0,
+  "strict_cycles": 0
+}

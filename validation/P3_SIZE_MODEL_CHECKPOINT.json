@@ -1,0 +1,13 @@
+{
+  "base_remote": "747e4e4c7a82f58f7d2d6764665abcba3b4b1a64",
+  "command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+  "elapsed_seconds": 7.72,
+  "failed": 0,
+  "network_requests": 0,
+  "passed": 1721,
+  "real_orders": 0,
+  "schema": "post008-model-checkpoint-v1",
+  "scope": "isolated_source_copy_no_dotenv_or_user_database",
+  "skipped": 1,
+  "subtests_passed": 242
+}

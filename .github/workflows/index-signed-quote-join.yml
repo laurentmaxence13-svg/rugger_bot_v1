@@ -1,0 +1,77 @@
+name: Join signed Raydium creators and exact-lot PAPER quotes (NO ORDERS)
+
+# Historic public evidence archive reconciliation; no provider data fetch.
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  signed-provider-evidence-join:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.action == 'labeled' &&
+       github.event.label.name == 'run-index-proof-join' &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Exact source without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Test offline signed identity and quote evidence invariants
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements-live.txt 'pytest>=8,<10'
+          python -m pytest -q tests/test_index_proof_quote_join.py tests/test_index_crossrun_dedup.py tests/test_index_universe_overlap.py tests/test_p4_paired_research_ledger.py tests/test_p4_actual_master_reference_freeze.py tests/test_signed_creator_cost_upper_bound.py
+      - name: Fetch the two existing PUBLIC immutable GitHub Actions archives only
+        run: |
+          mkdir -p paper_artifacts/p3_index paper_artifacts/p3_index_prior paper_artifacts/p3_signed
+          gh run download 41259451370 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-index-first-41259451370 \
+            --dir paper_artifacts/p3_index_prior
+          gh run download 41259745202 --repo "$GITHUB_REPOSITORY" \
+            --name rugger-index-first-41259745202 \
+            --dir paper_artifacts/p3_index
+          gh run download 41260115617 --repo "$GITHUB_REPOSITORY" \
+            --name verified-index-creator-proof-41260115617 \
+            --dir paper_artifacts/p3_signed
+      - name: Reconcile signed creators with full position quote evidence without Master PnL
+        run: |
+          python -B -m bot.p3.index_proof_quote_join \
+            --index paper_artifacts/p3_index/index_first_report.json \
+            --quotes paper_artifacts/p3_index/index_first_exact_lot_audit.json \
+            --signed paper_artifacts/p3_signed/pinned_index_signed_proof_41260115617.json \
+            --output paper_artifacts/index_signed_and_quotes_join.json
+      - name: Confirm 100-row provider index overlap without counting duplicate creators
+        run: |
+          python -B -m bot.p3.index_universe_overlap \
+            --reports paper_artifacts/p3_index_prior/index_first_report.json paper_artifacts/p3_index/index_first_report.json \
+            --output paper_artifacts/index_universe_overlap.json
+      - name: Report one-sided costs upper bound without inventing Master profitability
+        run: |
+          python -B -m bot.p3.signed_creator_cost_upper_bound \
+            --join paper_artifacts/index_signed_and_quotes_join.json \
+            --output paper_artifacts/index_cost_upper_bound.json
+      - name: Archive only conservative joined public evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: index-authenticated-quotes-${{ github.run_id }}
+          path: |
+            paper_artifacts/index_signed_and_quotes_join.json
+            paper_artifacts/index_universe_overlap.json
+            paper_artifacts/index_cost_upper_bound.json
+          if-no-files-found: warn
+          retention-days: 30

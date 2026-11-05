@@ -1,0 +1,64 @@
+# Rugger Bot P3/P4 — successful swaps of the SIGNED LaunchLab creation discovered on 2026-10-31.
+# Creator transaction: 5ChzJu18kFKtWe8PVE98YyBrJzS3PqnwqkscfrtdJ8jcN8oGCCoBL18ZjFvmCXsqnYt3SJFcPvVBNTHdocDx8CWi
+# Created mint: 5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f
+# Initial LaunchLab pool: EwZxoy5QpQBxo13AHp9fvh11f49CanyFJXXmpSjVtpbP
+# Query both BUY and SELL legs and ALL DEX protocols to avoid silently dropping post-migration routes.
+# Time is UTC. In Bitquery IDE, run now while the Solana DEXTrades realtime retention still includes 2026-10-31.
+# Page results by slot if needed; do not equate another wallet's trades with the Master PAPER fills.
+
+query RuggerBot_SignedLaunch_BothSides_AllVenues {
+  Solana(dataset: realtime) {
+    DEXTrades(
+      limit: {count: 200}
+      orderBy: {ascending: Block_Slot}
+      where: {
+        Block: {Time: {since: "2026-10-31T19:40:00Z"}}
+        Transaction: {Result: {Success: true}}
+        any: [
+          {
+            Trade: {
+              Buy: {
+                Currency: {
+                  MintAddress: {
+                    is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"
+                  }
+                }
+              }
+            }
+          }
+          {
+            Trade: {
+              Sell: {
+                Currency: {
+                  MintAddress: {
+                    is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction {ExternalSeqNumber InternalSeqNumber}
+      Trade {
+        Dex {ProtocolName ProgramAddress}
+        Market {MarketAddress}
+        Buy {
+          Amount
+          AmountInUSD
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+        Sell {
+          Amount
+          AmountInUSD
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+      }
+    }
+  }
+}

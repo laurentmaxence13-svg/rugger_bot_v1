@@ -1,0 +1,40 @@
+{
+  "schema": "rugger-interruption-recovery-v1",
+  "saved_at_ms": 1793294256596,
+  "remote_base": "58468d8396ad493834ce1bfb4e3e91bfa8dd1865",
+  "purpose": "immediate_preservation_before_further_repairs",
+  "files_preserved": 33,
+  "live_ready_to_arm": false,
+  "live_execution_verified": false,
+  "economic_edge_validated": false,
+  "known_pending_checks": [
+    "runtime_future_embedded_source_availability_red_tests",
+    "runtime_actual_scanner_disconnect_final_gate_red_test",
+    "native_position_manager_targeted_failures_require_repair",
+    "whole_combined_source_full_suite_not_yet_run"
+  ],
+  "p3_012": {
+    "acquisition_complete": true,
+    "do_not_rerun": true,
+    "requests": 12,
+    "snapshots": 25,
+    "universe": 100,
+    "events": 159,
+    "tail_hash": "3cac1bf300e3023d5ade20336bccd3420d63469a417d148a0b32026bb3487523",
+    "replay_reproduced": true,
+    "strict_economic_cycles": 0,
+    "conditional_lots": 2,
+    "paired_admission_decisions": 12
+  },
+  "publication_excludes": [
+    "user_databases",
+    "local_capture_sqlite",
+    "dotenv",
+    "keys_or_wallet_files"
+  ],
+  "resume_commands": [
+    "/workspace/.cloud-env/rugger_bot_v1/venv/bin/python -B validation/p3_asof_012/reproduce.py",
+    "/workspace/.cloud-env/rugger_bot_v1/venv/bin/python -B tools/offline_check.py -q tests/test_live_runtime_review.py tests/test_live_positions.py tests/test_live_signer.py -p no:cacheprovider -W error",
+    "/workspace/.cloud-env/rugger_bot_v1/venv/bin/python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error"
+  ]
+}

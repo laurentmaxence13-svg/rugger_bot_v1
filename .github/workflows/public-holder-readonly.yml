@@ -1,0 +1,44 @@
+name: Find public token ATA for unsigned SELL simulation (READ ONLY)
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: rugger-public-holder-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  public-holder-observation:
+    runs-on: ubuntu-latest
+    # Secrets never run on forks or unrelated pull requests.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout exact SHA without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Install declared live dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r requirements-live.txt
+      - name: Search public SPL token holders only
+        shell: bash
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          set -euo pipefail
+          git rev-parse HEAD
+          python -B -m bot.live.public_holder_probe

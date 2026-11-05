@@ -6,6 +6,7 @@ No database initialization, schema migration, or network activity is allowed.
 """
 from __future__ import annotations
 
+from contextlib import closing
 import json
 import math
 from pathlib import Path
@@ -35,7 +36,9 @@ def read_paper_db(path):
         return result
     uri="file:"+quote(source.resolve().as_posix(),safe="/:")+"?mode=ro"
     # SQLite allows concurrent reads while the existing PAPER engine writes.
-    with sqlite3.connect(uri,uri=True,timeout=1) as con:
+    # closing(): sqlite3's own context manager commits but never closes, which
+    # keeps the PAPER DB file open on Windows until garbage collection.
+    with closing(sqlite3.connect(uri,uri=True,timeout=1)) as con:
         con.execute("PRAGMA query_only=ON")
         name=str(source.name)
         result["sources"].append(dict(fichier=name,

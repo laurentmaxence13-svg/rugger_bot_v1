@@ -1,0 +1,86 @@
+{
+  "code_commit": "f50d226b9f437e9d0e3bccb171671f450fb7bd23",
+  "cost_fix_regression": {
+    "actual_model_gross_sol": 0.2,
+    "closing_assumption_bps": 1000,
+    "entry_assumption_bps": 200,
+    "gross_reconstructed_after_sol": 0.2,
+    "gross_reconstructed_before_sol": 0.12,
+    "historical_rows_rewritten": false,
+    "net_pnl_unchanged_sol": 0.1,
+    "rollback_verified": true,
+    "stored_cost_after_bps": 1000,
+    "stored_cost_before_bps": 200
+  },
+  "date": "2026-10-27",
+  "demo": {
+    "assumed_cost_sol": 0.02,
+    "command": "python -B -m bot demo --output work/functional-demo-001",
+    "data_kind": "synthetic",
+    "economic_profitability_verified": false,
+    "executed_output_directory": "/workspace/work/functional-release-demo-001",
+    "final_capital_sol": 10.18,
+    "gross_paper_pnl_sol": 0.2,
+    "initial_capital_sol": 10,
+    "net_paper_pnl_sol": 0.18,
+    "position_sol": 1.0,
+    "restart_scope": "SQLite connection and recovery object reopened; report read in a second process tested"
+  },
+  "economic_verdict": "INSUFFICIENT DATA",
+  "evidence": {
+    "bundles": 11,
+    "records": 1639,
+    "snapshot_analyses_reproduced": 10,
+    "sqlite_uploaded": false
+  },
+  "financial_spend": false,
+  "local_equivalent_commit": "4da94d3bccfd660389fd1b7ff8770d2a8a1e013e",
+  "private_keys_used": false,
+  "private_ledger_mutated": false,
+  "proof_sha256": {
+    "P3_ACTIVE_EXIT_007.json": "342aea51deb38d9f5d10de4122676cdc43ecb7bd555d3bb417aabf7dc7661b18",
+    "P3_ACTIVE_EXIT_007_ANALYSIS.json": "217a70ef1620fbe8b59e3d059feaf91e8a88fca3cd3617706ee6f58b8ff5dc7a",
+    "P3_RPC_HEALTH_ONCE.json": "e9431d4cc4f28e48258c789646a001a9d0231842985a342ea41b47c7f1801951",
+    "RUGGER_FUNCTIONAL_DEMO.json": "f5282b96484adf2e3854273b56620a23ce91b7fc50b34c22dfd42293d65e88d4",
+    "RUGGER_FUNCTIONAL_EVIDENCE_REPLAY.json": "8032b1149fa9a614b795f3a866442d3479d41a1c9fed0673e5ba454fb09e457b",
+    "RUGGER_FUNCTIONAL_MARKET_EVALUATION.json": "47ffbdc794ad8d7ee064cd493d9eda1c46b9da941d62ab255b498d407741b308",
+    "RUGGER_FUNCTIONAL_PAPER_REPORT.json": "88798f5d490730d4976c3c06b8c385ff059fba1b808e6460354d7e9fd7bf17ef"
+  },
+  "public_reads": {
+    "control007": {
+      "elapsed_ms": 19871,
+      "fixed_sell_quantity_atomic": "18765447579",
+      "full_position_cycles": 0,
+      "indicative_sell_quotes": 2,
+      "net_pnl_lamports": null,
+      "preregistered_plan_available_at_commit": "380a13667d741b515b4b00b8f0f257531eff4a3f",
+      "requests": 12,
+      "sell_output_lamports": "519914",
+      "source_revision": "fb8584dcf4c0fbbcd7c936169b4f7d7301821098"
+    },
+    "health": {
+      "elapsed_ms": 1087,
+      "future_quota_certified": false,
+      "http_status": 200,
+      "preregistered_commit": "ce70a4bbf190bf6360d5cce031fe89b0f5be2e0e",
+      "requests": 1
+    }
+  },
+  "real_orders": false,
+  "schema": "rugger-functional-release-validation-v1",
+  "status": "FUNCTIONAL_PAPER_RELEASE_CANDIDATE",
+  "strategy_thresholds_changed": false,
+  "tested_tree": "c343ad51f418c04e2d18e8d050877996e585a0f4",
+  "tests": {
+    "command": "python -B tools/offline_check.py -q tests --ignore=tests/tests -p no:cacheprovider -rs -W error",
+    "elapsed_seconds": 5.31,
+    "failed": 0,
+    "network_prohibited": true,
+    "passed": 1435,
+    "skip_reason": "user_database_absent",
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests_passed": 242,
+    "warnings_as_errors": true
+  }
+}

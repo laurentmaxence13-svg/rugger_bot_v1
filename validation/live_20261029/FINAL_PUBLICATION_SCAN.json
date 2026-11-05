@@ -1,0 +1,82 @@
+{
+  "paths": [
+    {
+      "path": "LIVE_EXECUTION_CHECKPOINT.md",
+      "bytes": 7281,
+      "sha256": "29eaac0f21aacca380f08e7bf99f48a7d25de61228adc5d4a42bd678c3ba5a1d"
+    },
+    {
+      "path": "validation/live_20261029/FINAL_FULL_TESTS.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation/live_20261029/FINAL_FULL_TESTS.txt",
+      "bytes": 3163,
+      "sha256": "9d5718c85c4fb34637737b6cbd2a65f37626386da8a295f0be38a91bfca96ce0"
+    },
+    {
+      "path": "validation/live_20261029/FINAL_SAFETY_TESTS.txt",
+      "bytes": 192,
+      "sha256": "70dc50b65bedb4967c0111d34840660aaf92090183312efe04e8b0e1b2b4d63d"
+    },
+    {
+      "path": "validation/live_20261029/FINAL_SOURCE_MANIFEST.json",
+      "bytes": 36849,
+      "sha256": "14aff8989530775ef2433ed3b2a0975b8bbd918f6e6373e3970b39bd7585da2b"
+    },
+    {
+      "path": "validation/live_20261029/FINAL_VALIDATION.json",
+      "bytes": 2110,
+      "sha256": "ede17eb4112772a0dfe4cab4cfe6bc921b644c86441de4b8b7796e79f71dddd7"
+    },
+    {
+      "path": "validation/live_20261029/NATIVE_RUNTIME_TESTS.txt",
+      "bytes": 192,
+      "sha256": "1a7f21ebeae67a381a4171ab94d7a7c358263e12404aa6750cc7ff7e42329a22"
+    },
+    {
+      "path": "validation/live_20261029/PROGRAM_REGISTRATION_READBACK.json",
+      "bytes": 205,
+      "sha256": "5635f5f8d62cfb57d6d58c69b9837e82c5004b83fbfd8e2b0a1b4e37e7d4bf15"
+    },
+    {
+      "path": "validation/live_20261029/PROGRAM_WATCHDOG.json",
+      "bytes": 215,
+      "sha256": "572b31a65a17e40fce12fab9ba8b1009020035ddce3e34262465652078ed21dc"
+    },
+    {
+      "path": "validation/live_20261029/RECOVERED_RED_TESTS.txt",
+      "bytes": 15186,
+      "sha256": "4e4d0b13935775a5a9f39125140efe00fffaf233ec5580216a3d0a04cf911fbf"
+    },
+    {
+      "path": "validation/live_20261029/VALIDATED_CODE_READBACK.json",
+      "bytes": 1490,
+      "sha256": "a4b180f682d9cd68b2113781a82101341039bb6823d30ecfc205e27804df572c"
+    },
+    {
+      "path": "validation/live_20261029/program-probe.json.gz",
+      "bytes": 369733,
+      "sha256": "82ba9899b930b5515190f9ee64a475f1f6736230ca47c3bf3532da0838e29a34"
+    },
+    {
+      "path": "validation/live_20261029/reproduce_program_probe.py",
+      "bytes": 1823,
+      "sha256": "264383f3541d538494dda585e29eef079f29fd082d8410cba3e8c5b161d04359"
+    },
+    {
+      "path": "CODEX_CONTINUATION.md",
+      "bytes": 44371,
+      "sha256": "d94a7d28014ebe22c5f76a954d5a9481eb2ae0b858032aba8b958b102b61cce8"
+    },
+    {
+      "path": "PROJECT_STATUS.md",
+      "bytes": 38471,
+      "sha256": "f69216ada5e06a7be0e568325536235afd552a2ba68453f78feb661736ce4547"
+    }
+  ],
+  "secret_pattern_matches": 0,
+  "private_configuration_and_databases_excluded": true,
+  "scope": "code_tests_documentation_public_blockchain_data_only"
+}

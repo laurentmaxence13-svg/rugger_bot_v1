@@ -1,0 +1,41 @@
+{
+  "capture_elapsed_ms": 2342,
+  "events": 47,
+  "network_used": false,
+  "original_report_bytes_sha256": "b927cf25f8453b4c89bd86931d8ffbe55921458c3187219ec661467c84b3878e",
+  "original_report_exactly_reproduced": true,
+  "qualified_economic_cycles": 0,
+  "raw_discovery_response_retained": false,
+  "requests": 4,
+  "retained_discovery_rows": 100,
+  "schema": "p3-010-offline-recovery-verification-v1",
+  "six_analyses_reproduced": [
+    {
+      "mint": "3EWcNCziEQjjsNNqgj4KzF6idG5UBjuWG3GQP2Anbonk",
+      "slot": 462625157
+    },
+    {
+      "mint": "7t3y1f2NukpPdaSzYnU3rdLVBCyQVdhf9rJYMEwRJ9pw",
+      "slot": 462625157
+    },
+    {
+      "mint": "DkvJvgLawc4TToQtKP8PJvNwYo9s65MQkX4y2guDdCiN",
+      "slot": 462625157
+    },
+    {
+      "mint": "AFVbiHTLLH4o8qjaVpWys6D78SL573cPaeWe21jytray",
+      "slot": 462625157
+    },
+    {
+      "mint": "4NsR2QMxp59geg74NmggW7BBGU9epHZJMzfNGXKxYJnG",
+      "slot": 462625157
+    },
+    {
+      "mint": "25mbv6mFYBq8S6kXVNefEiqomcBBuGSsRbJck5gnaxmk",
+      "slot": 462625157
+    }
+  ],
+  "sqlite_used": false,
+  "tail_hash": "1d2afec81a12cc6abfac5f5d1afaa5cca08846f70585ab8a54d83f8a69caf66d",
+  "universe_rows": 100
+}

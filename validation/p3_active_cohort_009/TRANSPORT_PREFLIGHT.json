@@ -1,0 +1,33 @@
+{
+  "automatic_transport_retry_disabled": true,
+  "automatic_transport_retry_supported": true,
+  "checked_at_ms": 1793219191506,
+  "cookies_disabled": true,
+  "default_ca_available": true,
+  "future_quota_certified": false,
+  "market_requests": 0,
+  "netrc_lookup_disabled": true,
+  "no_market_requests_performed": true,
+  "remote_availability_verified": false,
+  "routes": {
+    "discovery": {
+      "environment_proxy_selected": true,
+      "proxy_matches_managed_host": true,
+      "proxy_port_matches_managed_policy": true
+    },
+    "quotes": {
+      "environment_proxy_selected": true,
+      "proxy_matches_managed_host": true,
+      "proxy_port_matches_managed_policy": true
+    },
+    "rpc": {
+      "environment_proxy_selected": true,
+      "proxy_matches_managed_host": true,
+      "proxy_port_matches_managed_policy": true
+    }
+  },
+  "runtime_configured_credentials": 0,
+  "schema": "p3-active-cohort-local-transport-preflight-v1",
+  "tls_certificate_verification_required": true,
+  "transport_ready": true
+}

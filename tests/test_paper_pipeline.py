@@ -11,6 +11,7 @@ from bot.analyser.paper_trader import MarketQuote, setup
 class PaperPipelineTests(unittest.TestCase):
     def make_db(self):
         con = sqlite3.connect(':memory:')
+        self.addCleanup(con.close)
         con.execute('''CREATE TABLE launch_candidates(
           id INTEGER PRIMARY KEY, protocol TEXT, signature TEXT UNIQUE,
           slot INTEGER, block_time INTEGER, detected_at TEXT, mint TEXT,

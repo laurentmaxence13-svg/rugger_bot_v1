@@ -1,0 +1,41 @@
+{
+  "collected": "2026-11-02",
+  "contents": "Raw getTransaction results and pool account facts for three SOL-quoted LaunchLab pools whose history is complete from launch. Public chain data; no credential, RPC URL or secret.",
+  "pools": [
+    {
+      "fee_rate_ppm": 10000,
+      "file": "5pZ6MdyXtsPCptPe6NWx5M4aSTo7N5QUapHiUVDL3oy2.json.gz",
+      "first_block_time": 1793658226,
+      "last_block_time": 1793658242,
+      "pool": "5pZ6MdyXtsPCptPe6NWx5M4aSTo7N5QUapHiUVDL3oy2",
+      "quote_mint": "So11111111111111111111111111111111111111112",
+      "sha256": "975f9912b55878c6674228c027497e22f2c46faf09f38d72babaac9fe887843f",
+      "signatures": 38,
+      "trades": 11
+    },
+    {
+      "fee_rate_ppm": 12500,
+      "file": "C7F9KbS3XXUoScx7bd9eYfFtAqvqVnBdRFLRSEKLeSpC.json.gz",
+      "first_block_time": 1793658217,
+      "last_block_time": 1793658248,
+      "pool": "C7F9KbS3XXUoScx7bd9eYfFtAqvqVnBdRFLRSEKLeSpC",
+      "quote_mint": "So11111111111111111111111111111111111111112",
+      "sha256": "dcbda4e404e2042efb565b17c04394b07d5ed5e8a2e25ec09b5707dfda7d9063",
+      "signatures": 133,
+      "trades": 100
+    },
+    {
+      "fee_rate_ppm": 18000,
+      "file": "DVP426ot5M4gjTxKqoYJn1ATqrzvZfkqVSu1vP9a9E4r.json.gz",
+      "first_block_time": 1793658227,
+      "last_block_time": 1793658256,
+      "pool": "DVP426ot5M4gjTxKqoYJn1ATqrzvZfkqVSu1vP9a9E4r",
+      "quote_mint": "So11111111111111111111111111111111111111112",
+      "sha256": "3661667f8007cea14a6e26273bcc2244a3111978201b264ef4b2eead171286fc",
+      "signatures": 2,
+      "trades": 2
+    }
+  ],
+  "source": "Public Solana mainnet read-only RPC: getSignaturesForAddress, getTransaction (json, maxSupportedTransactionVersion 1), getAccountInfo; commitment finalized.",
+  "version": 1
+}

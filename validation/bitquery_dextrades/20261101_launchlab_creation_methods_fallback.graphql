@@ -1,0 +1,34 @@
+# Rugger Bot — Bitquery LaunchLab creation-only fallback (READ-ONLY).
+# Based on Raydium's LaunchLab initialize_v2 / initialize_with_token_2022 methods.
+# Historical/retrieved confirmations only: NOT prospective entry timestamps.
+# Keep the full transaction signature and block slot so Helius can independently
+# cryptographically verify the exact signed outer creation before using a creator.
+# Method naming may vary by Bitquery decoder. Validate the schema in Bitquery IDE
+# and fall back to 20261031_launchlab_method_discovery.graphql if no rows appear.
+# No subscription, no purchase or transaction execution is initiated by this file.
+query RuggerBot_LaunchLab_Initialize_Methods_20261101 {
+  Solana(dataset: realtime) {
+    Instructions(
+      limit: {count: 200}
+      orderBy: {descending: Block_Slot}
+      where: {
+        Block: {Time: {since: "2026-11-01T00:00:00Z"}}
+        Transaction: {Result: {Success: true}}
+        Instruction: {
+          Program: {
+            Address: {is: "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj"}
+            Method: {in: ["initialize_v2", "initialize_with_token_2022", "initialize_with_token2022"]}
+          }
+        }
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction {
+        Index
+        Program {Address Method AccountNames}
+        Accounts {Address}
+      }
+    }
+  }
+}

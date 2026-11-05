@@ -1,0 +1,38 @@
+# Next GOAT observation after second Bitquery page, with intentional slot overlap.
+# Last seen slot 463813363 at 2026-10-31 19:54:06 UTC.
+# Deduplicate previously seen signatures, and prefer router's user-facing leg.
+# This is third-party trade observation, not Master Trader execution.
+query RuggerBot_GOAT_Continue_463813363 {
+  Solana(dataset: realtime) {
+    DEXTrades(
+      limit: {count: 200}
+      orderBy: {ascending: Block_Slot}
+      where: {
+        Block: {Slot: {ge: "463813363"}}
+        Transaction: {Result: {Success: true}}
+        any: [
+          {Trade: {Buy: {Currency: {MintAddress: {is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"}}}}},
+          {Trade: {Sell: {Currency: {MintAddress: {is: "5AWBTmZzYZ3twtKQLe1eziWw9yMcUyUiR6iRnCpXPv7f"}}}}}
+        ]
+      }
+    ) {
+      Block {Time Slot}
+      Transaction {Signature Signer}
+      Instruction {ExternalSeqNumber InternalSeqNumber}
+      Trade {
+        Dex {ProtocolName ProgramAddress}
+        Market {MarketAddress}
+        Buy {
+          Amount
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+        Sell {
+          Amount
+          Currency {MintAddress Symbol}
+          Account {Address Owner}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "active_policy_changed": false,
+  "cases": [
+    {
+      "case": "retained",
+      "data_kind": "synthetic",
+      "frame_count": 1,
+      "future_observations_excluded": 0,
+      "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+      "qualified_economic_cycles": 0,
+      "refused_quotes": 0,
+      "selected_count": 1,
+      "universe_size": 2,
+      "unknown_candidate_count": 0
+    },
+    {
+      "case": "refused",
+      "data_kind": "synthetic",
+      "frame_count": 1,
+      "future_observations_excluded": 0,
+      "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+      "qualified_economic_cycles": 0,
+      "refused_quotes": 1,
+      "selected_count": 1,
+      "universe_size": 2,
+      "unknown_candidate_count": 0
+    },
+    {
+      "case": "features_missing",
+      "data_kind": "synthetic",
+      "frame_count": 0,
+      "future_observations_excluded": 0,
+      "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+      "qualified_economic_cycles": 0,
+      "refused_quotes": 0,
+      "selected_count": 1,
+      "universe_size": 2,
+      "unknown_candidate_count": 1
+    },
+    {
+      "case": "provider_clock_missing",
+      "data_kind": "synthetic",
+      "frame_count": 1,
+      "future_observations_excluded": 0,
+      "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+      "qualified_economic_cycles": 0,
+      "refused_quotes": 0,
+      "selected_count": 1,
+      "universe_size": 2,
+      "unknown_candidate_count": 0
+    },
+    {
+      "case": "future_features",
+      "data_kind": "synthetic",
+      "frame_count": 1,
+      "future_observations_excluded": 1,
+      "integrity": "verified_hash_chain_against_caller_retained_anchor_not_authenticated",
+      "qualified_economic_cycles": 0,
+      "refused_quotes": 0,
+      "selected_count": 1,
+      "universe_size": 2,
+      "unknown_candidate_count": 0
+    }
+  ],
+  "data_kind": "synthetic",
+  "date": "2026-10-28",
+  "economic_cycles_qualified": 0,
+  "market_network_requests": 0,
+  "network_collector_hook_activated": false,
+  "new_market_observations": 0,
+  "prepared_plan_sha256": "eda0383a8c94dac263f9d2c5f116d5c69533ca5bf11bd52b5a7c037efb8d6580",
+  "prepared_plan_status": "PREPARED_NOT_EXECUTED",
+  "schema": "rugger-master-p3-acquisition-validation-v1",
+  "scope": "Prepared bounded acquisition contract and actual offline producer/adapter tests, no live market collection or profitability",
+  "source_authentication_verified": false,
+  "source_sha256": {
+    "MASTER_P3_ACQUISITION.md": "e8721a007d5a537291aa48aaffb406432667e55e3fabd8dc6806c1ddd8641289",
+    "bot/p3/cohort.py": "ea618f105b25d615a8da761ce10be7e7fdbd12dc356b0c6533bddf4e59e874e7",
+    "tests/test_p3_master_acquisition.py": "09c530c0efd281fe4608ca5ff184931086bc3e948caff0914226d75a020e2e46"
+  },
+  "tests": {
+    "new_acquisition_cases": 27,
+    "passed": 55,
+    "seconds": 0.88,
+    "warnings_as_errors": true
+  }
+}

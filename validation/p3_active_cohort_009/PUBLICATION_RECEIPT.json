@@ -1,0 +1,12 @@
+{
+  "market_requests_before_receipt": 0,
+  "merged": false,
+  "plan_blob_sha": "bb0ea25dbfca590a5f20d426fb1c5c76242c72cf",
+  "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+  "pr": 22,
+  "pr_state": "open",
+  "publication_commit": "d09db2998014580d2c2b47110b22471480eb24c8",
+  "publication_readback_completed_at_ms": 1793219793793,
+  "schema": "p3-active-cohort-publication-receipt-v1",
+  "source_commit": "4d967d0839134db878f47bfbeba3108780ca71c4"
+}

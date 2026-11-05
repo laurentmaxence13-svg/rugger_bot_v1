@@ -1,0 +1,27 @@
+name: Compare three post-upgrade Raydium pilot quote windows (NO PAYMENT)
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-pilot-no-payments:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUGGER_NO_DOTENV: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.11'
+      - name: Compare six unpaid LaunchLab + CPMM quotes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.p3.trawl_compare_pilot_ranges

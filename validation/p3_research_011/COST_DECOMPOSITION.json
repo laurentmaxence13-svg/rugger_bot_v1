@@ -1,0 +1,291 @@
+{
+  "followup_quote_amounts_equal_initial": true,
+  "no_aggregate_pnl": "each lot has two mutually exclusive horizons; sum not a portfolio result",
+  "observed_quote_pairs_only_not_executions": true,
+  "route_pool_id_checks": [
+    {
+      "id": 58,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "buy",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 63,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 67,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "buy",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 72,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 76,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "buy",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 81,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 85,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "buy",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 90,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 117,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 121,
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "DpMcLGPcCbhfi6v3yAv9cQ1HXDC35jFtzer5bLfaN6jm"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 125,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    },
+    {
+      "id": 129,
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "pool_id_matches_screened": true,
+      "quote_side": "sell",
+      "route_pool_ids": [
+        "5tAaEM5Rq5GLhdPnUQ4msFA5yTX5bC85fJbrH9UhQxPY"
+      ],
+      "same_bank_context_verified": false
+    }
+  ],
+  "rows": [
+    {
+      "budget_lamports": "100000000",
+      "conditional_quote_delta_lamports": "-2749377",
+      "conditional_quote_delta_sol": "-0.002749377",
+      "cost_hypotheses": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2749377",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2754377",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-2849377",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-3749377",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "extra_net_proceeds_for_break_even_before_unknown_costs_lamports": "2749377",
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "quantity_atomic": "604318709293",
+      "quoted_roundtrip_drag_pct": "2.749377",
+      "quoted_sell_output_lamports": "97250623",
+      "reported_route_fees_sum_lamports": "2481021",
+      "required_quote_exit_growth_pct": "2.827104768264569369391083500",
+      "unattributed_gap_is_not_certified_market_impact": true,
+      "unattributed_quote_gap_after_reported_fees_lamports": "268356"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_quote_delta_lamports": "-50711207",
+      "conditional_quote_delta_sol": "-0.050711207",
+      "cost_hypotheses": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-50711207",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-50716207",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-50811207",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-51711207",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "extra_net_proceeds_for_break_even_before_unknown_costs_lamports": "50711207",
+      "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+      "quantity_atomic": "5970080462587",
+      "quoted_roundtrip_drag_pct": "5.0711207",
+      "quoted_sell_output_lamports": "949288793",
+      "reported_route_fees_sum_lamports": "24516314",
+      "required_quote_exit_growth_pct": "5.342021034477755601187214300",
+      "unattributed_gap_is_not_certified_market_impact": true,
+      "unattributed_quote_gap_after_reported_fees_lamports": "26194893"
+    },
+    {
+      "budget_lamports": "100000000",
+      "conditional_quote_delta_lamports": "-3084445",
+      "conditional_quote_delta_sol": "-0.003084445",
+      "cost_hypotheses": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-3084445",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-3089445",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-3184445",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-4084445",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "extra_net_proceeds_for_break_even_before_unknown_costs_lamports": "3084445",
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "quantity_atomic": "3114722229888",
+      "quoted_roundtrip_drag_pct": "3.084445",
+      "quoted_sell_output_lamports": "96915555",
+      "reported_route_fees_sum_lamports": "2476780",
+      "required_quote_exit_growth_pct": "3.182610882226284521612655500",
+      "unattributed_gap_is_not_certified_market_impact": true,
+      "unattributed_quote_gap_after_reported_fees_lamports": "607665"
+    },
+    {
+      "budget_lamports": "1000000000",
+      "conditional_quote_delta_lamports": "-81701720",
+      "conditional_quote_delta_sol": "-0.08170172",
+      "cost_hypotheses": [
+        {
+          "assumed_additional_costs_lamports": "0",
+          "certified_profit": false,
+          "conditional_net_lamports": "-81701720",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "5000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-81706720",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "100000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-81801720",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        },
+        {
+          "assumed_additional_costs_lamports": "1000000",
+          "certified_profit": false,
+          "conditional_net_lamports": "-82701720",
+          "provenance": "explicit_hypothesis_not_observed_cost"
+        }
+      ],
+      "extra_net_proceeds_for_break_even_before_unknown_costs_lamports": "81701720",
+      "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+      "quantity_atomic": "30305442885780",
+      "quoted_roundtrip_drag_pct": "8.170172",
+      "quoted_sell_output_lamports": "918298280",
+      "reported_route_fees_sum_lamports": "24124029",
+      "required_quote_exit_growth_pct": "8.897078626783445570648351900",
+      "unattributed_gap_is_not_certified_market_impact": true,
+      "unattributed_quote_gap_after_reported_fees_lamports": "57577691"
+    }
+  ],
+  "schema": "p3-011-conditional-cost-analysis-v1",
+  "unchanged_quote_amounts_do_not_prove_freshness_or_unchanged_market": true
+}

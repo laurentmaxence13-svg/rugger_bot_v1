@@ -1,0 +1,24 @@
+name: Master vs reference evidence sufficiency audit (NO LIVE)
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-data-no-go-is-an-expected-audit-result:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      RUGGER_NO_DOTENV: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Verify read-only economic evidence gates
+        run: |
+          set -euo pipefail
+          python -B -m bot.p3.master_oos_readiness

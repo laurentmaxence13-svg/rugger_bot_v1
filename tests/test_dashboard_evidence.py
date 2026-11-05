@@ -1,4 +1,5 @@
 """Safety and integration tests for the real PAPER terminal evidence adapters."""
+from contextlib import closing
 import io
 import json
 from pathlib import Path
@@ -142,7 +143,7 @@ class DashboardEvidenceTest(unittest.TestCase):
     def test_local_paper_engine_db_real_quote_history_readonly(self):
         with tempfile.TemporaryDirectory() as d:
             db=Path(d)/"rugger_bot.db"
-            with sqlite3.connect(db) as con:
+            with closing(sqlite3.connect(db)) as con, con:
                 con.executescript("""
                     CREATE TABLE paper_portfolio(id INT,initial_capital_sol REAL,realized_capital_sol REAL);
                     INSERT INTO paper_portfolio VALUES(1,10,9.97);
@@ -177,7 +178,7 @@ class DashboardEvidenceTest(unittest.TestCase):
             self.assertEqual(result["positions"][0]["strategie"],"SHADOW_BASELINE")
             self.assertEqual(result["decisions"][0]["decision"],"WAIT")
             self.assertEqual(len(result["summary"]),2)
-            with sqlite3.connect(db) as con:
+            with closing(sqlite3.connect(db)) as con, con:
                 self.assertEqual(con.execute("SELECT COUNT(*) FROM paper_trades").fetchone()[0],2)
 
     def test_missing_db_is_not_created(self):

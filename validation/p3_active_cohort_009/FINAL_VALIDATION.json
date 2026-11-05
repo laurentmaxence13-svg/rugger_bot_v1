@@ -1,0 +1,47 @@
+{
+  "active_policy_changed": false,
+  "actual_acquisition_source_commit": "4d967d0839134db878f47bfbeba3108780ca71c4",
+  "capture": {
+    "attempts": 1,
+    "elapsed_ms": 8009,
+    "error_type": "TimeoutError",
+    "http_status": null,
+    "market_response_received": false,
+    "provider": "raydium_launch_mint_index"
+  },
+  "cleanup": {
+    "cause_unproven": true,
+    "future_watchdog_tested_on_local_child": true,
+    "manual_interruption_after_ms": 200951,
+    "new_watchdog_used_on_009": false,
+    "process_stalled": true,
+    "report_recovery_tested": true
+  },
+  "date": "2026-10-28",
+  "full": {
+    "passed": 1936,
+    "seconds": 13.21,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests": 242,
+    "warnings_as_errors": true
+  },
+  "new_market_observations": 0,
+  "old_bundles_preserved": 12,
+  "plan_sha256": "8fda8c60481952ac466d90e7c566e4bee751b44766a3c1ce13db99a5dec52d93",
+  "preregistration_commit": "d09db2998014580d2c2b47110b22471480eb24c8",
+  "published_before_first_request": true,
+  "real_transactions": false,
+  "schema": "p3-active-cohort-009-final-validation-v1",
+  "source_sha256": {
+    "bot/master_comparison.py": "83dd0c1ad5fe66762da7ba93fd436d1cf09eb40dee7090f2902a7eb9c8539bdb",
+    "bot/p3/active_cohort_campaign.py": "487889f22309ba01e6c4b26af33c18369a745700661aed4362254471521d20ae",
+    "tests/test_p3_active_cohort_campaign.py": "fe888976582fa8da433fe6bdc83a26228a53f27762776cd92dc740bf00625f1e",
+    "tools/run_p3_active_cohort.py": "c380b129c00f6325525b9cd5ed14a20f6fb16c447d66c0ab19de39b86ddd936e"
+  },
+  "spend": false,
+  "strict_qualified_economic_cycles": 0,
+  "tail_hash": "fcacf5774468d680d85bb05987e691eb581759d82c25e38edbdce898eb40c78d",
+  "total_bundles": 13,
+  "total_records": 1698
+}

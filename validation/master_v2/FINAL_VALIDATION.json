@@ -1,0 +1,43 @@
+{
+  "active_policy_changed": false,
+  "date": "2026-10-28",
+  "endurance": {
+    "after_ms": 30278.58429099979,
+    "after_report_builds": 1,
+    "before_ms": 120246.36008699963,
+    "before_report_builds": 1031,
+    "identical_logical_and_financial_evidence": true,
+    "invariant_checks": 7054,
+    "ratio": 3.971333630771584,
+    "single_paired_run": true,
+    "source_copies_verified": true
+  },
+  "full": {
+    "passed": 1915,
+    "seconds": 12.03,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests": 242,
+    "warnings_as_errors": true
+  },
+  "market_archives": {
+    "banks": 8,
+    "identity_qualified_banks": 6,
+    "mints": 4,
+    "sessions": 2
+  },
+  "new_market_observations": 0,
+  "promotion_allowed": false,
+  "qualified_public_cli_reproduced": true,
+  "real_orders": false,
+  "schema": "rugger-master-v2-final-validation-v1",
+  "source_sha256": {
+    "bot/analyser/paper_engine.py": "8f09cdeacca28b3214fc77edb8c2662720d7e8e3fccdb36133316e99e410002b",
+    "bot/master_comparison.py": "766216a00da4b2421b7660785217a56e8bcc5c8a4cc8f843c03071f1b3247000",
+    "bot/master_endurance.py": "82e645f7169d20179f03351613bdb0279abb5ee6c87e0d790fb976a142e760e6",
+    "bot/p3/cohort.py": "744286cb469c169aa6e4c6dfe4f222d3d9b4344fb0d4a4592309db56810fd08d",
+    "tools/benchmark_master_endurance.py": "dae21cb01f7c82048b8f2cf02477fc030266024d3acbab5515cd32c1ff923cc1"
+  },
+  "strict_market_economic_cycles": 0,
+  "verified_prior_remote_commit": "a51850e0607d8160d1ae0dadf22fae6f3dcedc49"
+}

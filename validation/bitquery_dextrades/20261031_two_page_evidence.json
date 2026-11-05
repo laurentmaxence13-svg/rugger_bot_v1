@@ -1,0 +1,60 @@
+{
+  "schema": "rugger-bitquery-dextrades-two-page-evidence-v1",
+  "date_utc": "2026-10-31",
+  "source_files": [
+    {
+      "label": "page1",
+      "sha256": "82e457d4e916718de0866721520dedd5f3d8ac0eabe44b71d1c60c3729efadc2",
+      "records": 200,
+      "slot_max": 463789861,
+      "slot_min": 463789516
+    },
+    {
+      "label": "page2",
+      "sha256": "3b599257da25b9b4e42641a778c783d46189bda873e00a14850aa76615a5b0d7",
+      "records": 200,
+      "slot_max": 463789516,
+      "slot_min": 463789255
+    },
+    {
+      "label": "duplicate_page2_upload",
+      "sha256": "3b599257da25b9b4e42641a778c783d46189bda873e00a14850aa76615a5b0d7",
+      "records_used": 0
+    }
+  ],
+  "page_overlap_removed": 1,
+  "observed_swaps": 399,
+  "normalized_swaps_csv_sha256": "701a324146f76104e68badcafb92995aad42942a66f1a98bfccf128aa39f7da9",
+  "markouts_csv_sha256": "508b272c52a6bc770fadd68c512b18d723dea8507a19b746ba401c3d79e1bc4a",
+  "time_utc": {
+    "oldest": "2026-10-31T18:27:53Z",
+    "newest": "2026-10-31T18:30:04Z",
+    "span_seconds": 131
+  },
+  "protocols": {
+    "raydium_launchpad": 61,
+    "raydium_cp_swap": 338
+  },
+  "distinct_signatures": 298,
+  "token_wsol_swaps": 281,
+  "token_wsol_entry_observations": 102,
+  "no_later_opposite_side_observation": 45,
+  "ambiguous_first_exit_slot": 31,
+  "observed_causal_price_markouts": 26,
+  "markout_pools": 15,
+  "observed_price_differences_pct": {
+    "median": "-2.08872240",
+    "min": "-5.61603178",
+    "max": "-0.49929250",
+    "positive": 0,
+    "negative": 26
+  },
+  "next_page_inclusive_slot": 463789255,
+  "creator_cohort_verified": false,
+  "executable_exit_proven": false,
+  "master_vs_baseline_net_pnl_sol": null,
+  "economic_gate": "NO_GO_EXECUTABLE_EXITS_AND_CREATOR_COHORT_MISSING",
+  "interpretation": "Third-party swaps over only 131 seconds. Price differences are not trade fills, backtest results, or evidence of realized profits/losses. Multiple samples from same pools are correlated.",
+  "reproduction": "python tools/bitquery_dextrades_replay.py page1.json page2.json --out /tmp/bitquery_replay",
+  "safety": "No transaction or order placement. No secrets or paid requests."
+}

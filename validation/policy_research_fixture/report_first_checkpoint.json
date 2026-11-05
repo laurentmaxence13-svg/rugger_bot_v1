@@ -1,0 +1,2674 @@
+{
+  "active_policy_changed": false,
+  "assignments": {
+    "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi": "development",
+    "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5": "validation"
+  },
+  "corpus_sha256": "a509644f744cfcccf5b1c40dcb58936f59b7a9e91537b615b6e23173413f9304",
+  "creator_independence_verified": false,
+  "data_kind": "synthetic",
+  "development": [
+    {
+      "candidate": {
+        "id": "early_sniping:baseline",
+        "overrides": {},
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "early_sniping:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "run": {
+        "all_entered_positions_liquidated": false,
+        "average_loss_sol": null,
+        "average_win_sol": null,
+        "candidate_count": 1,
+        "closed_positions": 0,
+        "economic_profitability_verified": false,
+        "entered_positions": 0,
+        "execution_verified": false,
+        "exit_attempts": 0,
+        "full_extra_costs_lamports": null,
+        "known_modeled_extra_costs_lamports": "0",
+        "legs": [],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": null,
+        "portfolio_pnl_sol": null,
+        "portfolio_return": null,
+        "positions": [],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.0,
+        "realized_pnl_sol": 0,
+        "split": "development",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 1,
+        "win_rate": null
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:baseline",
+        "overrides": {},
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "run": {
+        "all_entered_positions_liquidated": false,
+        "average_loss_sol": null,
+        "average_win_sol": null,
+        "candidate_count": 1,
+        "closed_positions": 0,
+        "economic_profitability_verified": false,
+        "entered_positions": 0,
+        "execution_verified": false,
+        "exit_attempts": 0,
+        "full_extra_costs_lamports": null,
+        "known_modeled_extra_costs_lamports": "0",
+        "legs": [],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": null,
+        "portfolio_pnl_sol": null,
+        "portfolio_return": null,
+        "positions": [],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.0,
+        "realized_pnl_sol": 0,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "awaiting_research_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 1,
+        "win_rate": null
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "run": {
+        "all_entered_positions_liquidated": false,
+        "average_loss_sol": null,
+        "average_win_sol": null,
+        "candidate_count": 1,
+        "closed_positions": 0,
+        "economic_profitability_verified": false,
+        "entered_positions": 0,
+        "execution_verified": false,
+        "exit_attempts": 0,
+        "full_extra_costs_lamports": null,
+        "known_modeled_extra_costs_lamports": "0",
+        "legs": [],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": null,
+        "portfolio_pnl_sol": null,
+        "portfolio_return": null,
+        "positions": [],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.0,
+        "realized_pnl_sol": 0,
+        "split": "development",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 1,
+        "win_rate": null
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:baseline",
+        "overrides": {},
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp7-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp7-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 7
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp14-sl5",
+        "overrides": {
+          "sl_pct": 5,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:tp14-sl8",
+        "overrides": {
+          "sl_pct": 8,
+          "tp_pct": 14
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:score-liquidity",
+        "overrides": {
+          "min_liquidity": 3000,
+          "min_score": 60
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:confirmation-exit",
+        "overrides": {
+          "confirmation_delay_ms": 30000,
+          "hold_seconds": 900,
+          "trailing_stop_pct": 3.5
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "ENTRY 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "EXIT 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": null,
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:size-0.10",
+        "overrides": {
+          "position_lamports": 100000000
+        },
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": null,
+        "eligible": false,
+        "objective": null,
+        "tail_loss_sol": null
+      },
+      "run": {
+        "all_entered_positions_liquidated": false,
+        "average_loss_sol": null,
+        "average_win_sol": null,
+        "candidate_count": 1,
+        "closed_positions": 0,
+        "economic_profitability_verified": false,
+        "entered_positions": 0,
+        "execution_verified": false,
+        "exit_attempts": 0,
+        "full_extra_costs_lamports": null,
+        "known_modeled_extra_costs_lamports": "0",
+        "legs": [],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": null,
+        "portfolio_pnl_sol": null,
+        "portfolio_return": null,
+        "positions": [],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.0,
+        "realized_pnl_sol": 0,
+        "split": "development",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 100000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-0",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 115000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-1",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 130000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-2",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          },
+          {
+            "decision_at_ms": 145000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi-3",
+            "message": "INVENTORY ENTRY REFUSED 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi reason=buy_inventory_evidence_missing",
+            "mint": "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+          }
+        ],
+        "unentered_candidates": 1,
+        "win_rate": null
+      }
+    }
+  ],
+  "execution_verified": false,
+  "freeze_basis": "development_only_before_holdout_replay",
+  "frozen_candidate_ids": [
+    "early_sniping:baseline",
+    "confirmed_momentum:baseline",
+    "adaptive_hybrid:baseline"
+  ],
+  "holdout": [
+    {
+      "candidate": {
+        "id": "early_sniping:baseline",
+        "overrides": {},
+        "strategy": "early_sniping"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "validation",
+        "strategy": "early_sniping",
+        "trace": [
+          {
+            "decision_at_ms": 300000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-0",
+            "message": "ENTRY gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 315000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-1",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 330000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-2",
+            "message": "EXIT gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 345000,
+            "decision_reason": "early_qualified",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-3",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "confirmed_momentum:baseline",
+        "overrides": {},
+        "strategy": "confirmed_momentum"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "900"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "900",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "validation",
+        "strategy": "confirmed_momentum",
+        "trace": [
+          {
+            "decision_at_ms": 300000,
+            "decision_reason": "awaiting_observed_confirmation",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-0",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 315000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-1",
+            "message": "ENTRY gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 simulated price=1.02 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 330000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-2",
+            "message": "EXIT gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 reason=TP inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 345000,
+            "decision_reason": "confirmed_momentum",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-3",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    },
+    {
+      "candidate": {
+        "id": "adaptive_hybrid:baseline",
+        "overrides": {},
+        "strategy": "adaptive_hybrid"
+      },
+      "metrics": {
+        "dispersion_sol": 0.0,
+        "eligible": true,
+        "expectancy_sol": 0.199985,
+        "objective": 0.199985,
+        "position_count": 1,
+        "scope": "net_fixture_or_conditional_quote_outcomes; not certified market edge",
+        "tail_loss_sol": 0
+      },
+      "run": {
+        "all_entered_positions_liquidated": true,
+        "average_loss_sol": null,
+        "average_win_sol": 0.199985,
+        "candidate_count": 1,
+        "closed_positions": 1,
+        "economic_profitability_verified": false,
+        "entered_positions": 1,
+        "execution_verified": false,
+        "exit_attempts": 1,
+        "full_extra_costs_lamports": "15000",
+        "known_modeled_extra_costs_lamports": "15000",
+        "legs": [
+          {
+            "extra_fee_lamports": "10000",
+            "pnl_lamports": "199985000",
+            "proceeds_lamports": "1200000000",
+            "quantity_atomic": "1000"
+          }
+        ],
+        "max_realized_drawdown": 0,
+        "net_expectancy_per_entered_position_sol": 0.199985,
+        "portfolio_pnl_sol": 0.19998499999999986,
+        "portfolio_return": 0.019998499999999985,
+        "positions": [
+          {
+            "acquired_atomic": "1000",
+            "entry_cost_known": true,
+            "liquidated_fraction": 1.0,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5",
+            "realized_pnl_lamports": "199985000",
+            "remaining_atomic": "0",
+            "remaining_cost_basis_lamports": "0"
+          }
+        ],
+        "profit_factor": null,
+        "qualification_failures": 0,
+        "realized_capital_sol": 10.199985,
+        "realized_pnl_sol": 0.199985,
+        "split": "validation",
+        "strategy": "adaptive_hybrid",
+        "trace": [
+          {
+            "decision_at_ms": 300000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": true,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-0",
+            "message": "ENTRY gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 simulated price=1 USD score=72.0/100 size=1.000000 SOL capital=10.000000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 315000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-1",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 330000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-2",
+            "message": "EXIT gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5 reason=RESEARCH_HORIZON inventory=projected remaining=0 PnL=+0.199985000 SOL",
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          },
+          {
+            "decision_at_ms": 345000,
+            "decision_reason": "known_creator_early",
+            "decision_score": 72.0,
+            "enter_intent": false,
+            "frame_id": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5-3",
+            "message": null,
+            "mint": "gBxS1f6uyyGPuW5MzGBukidSb71jdsCb5fZaoSzULE5"
+          }
+        ],
+        "unentered_candidates": 0,
+        "win_rate": 1.0
+      }
+    }
+  ],
+  "holdout_evaluation_key": "32d3b57ad0c58ef63c48f78cccb49b608f1a6d54c6edc617ccdf524bf5109f30",
+  "market_winner": null,
+  "network_requests": 0,
+  "plan_sha256": "0c91c3bde1365b448fc981a137c49ff619ab141a1b21cbf2a9bd18221df4717d",
+  "promotion_allowed": false,
+  "promotion_blockers": [
+    "independent_market_economic_cycles_not_verified",
+    "production_activation_not_authorized",
+    "synthetic_results_only",
+    "insufficient_validation_creator_groups"
+  ],
+  "registry": {
+    "active_policy_changed": false,
+    "current_shadow": null,
+    "evaluated_holdouts": [
+      "32d3b57ad0c58ef63c48f78cccb49b608f1a6d54c6edc617ccdf524bf5109f30"
+    ],
+    "previous_shadows": [],
+    "schema": "rugger-shadow-policy-registry-v1",
+    "version": 0
+  },
+  "schema": "rugger-policy-research-report-v1",
+  "scope": "Structured exploratory optimization; no market-profitability claim",
+  "validation_creator_groups": 1
+}

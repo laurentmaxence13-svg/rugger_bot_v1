@@ -1,0 +1,29 @@
+{
+  "addresses": [
+    "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+    "D2QX47Tv2uhNNwFcnLCyJtLMZ4WGmc7eXxvyEmD6zNUh"
+  ],
+  "automatic_code_approval": false,
+  "execution_source_revision": "6b43c94ab95ec7b4943e2b574ebf780a82d972d9",
+  "expected_genesis_hash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+  "market_pool_or_wallet_reads": false,
+  "max_requests": 2,
+  "max_transport_elapsed_seconds": 16,
+  "methods": [
+    "getGenesisHash",
+    "getMultipleAccounts"
+  ],
+  "minimum_context_slot": 462881057,
+  "no_fallback": true,
+  "no_retry": true,
+  "process_watchdog_seconds": 18,
+  "public_anonymous_free_RPC": true,
+  "registered_at_ms": 1793295142148,
+  "rpc_source": "https://api.mainnet.solana.com",
+  "schema": "rugger-program-only-read-plan-v1",
+  "script_sha256": "0b4459b16f74225a69602a2c8765e0478115363c570266a0e874cd33a83d7a65",
+  "send_allowed": false,
+  "signatures_allowed": false,
+  "stop_first_error": true,
+  "termination_reserve_seconds": 2
+}

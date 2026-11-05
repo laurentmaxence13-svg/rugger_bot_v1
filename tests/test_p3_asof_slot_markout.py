@@ -1,0 +1,108 @@
+"""Isolated slot-markout orchestration tests, not economic market evidence.
+
+Full repository tests with real LaunchLab account decoding remain required.
+"""
+import copy
+import sys
+from types import ModuleType
+import pytest
+
+from bot.p3.asof_slot_markout import evaluate_asof_slot_markout as markout
+
+
+@pytest.fixture
+def case(monkeypatch):
+    cohort=ModuleType('bot.p3.cohort')
+    def screen(a, *, size_lamports,available_at_ms,decision_at_ms,expected_mint,expected_pool):
+        assert size_lamports in (100000000,1000000000)
+        assert available_at_ms==900 and decision_at_ms==1000
+        assert a['mint']==expected_mint and a['pool_address']==expected_pool
+        return {'own_entry_projection':{'buy_output_atomic':str(size_lamports*10)},
+                'observed_full_exit_capacity':True}
+    cohort.classify_snapshot=screen
+    launchlab=ModuleType('bot.p3.launchlab')
+    launchlab.SnapshotEvidenceError=type('SnapshotEvidenceError',(ValueError,),{})
+    def sell(pool,*,input_token_atomic,fee_rates_ppm,quote_vault_lamports,curve_type,share_fee_rate_ppm):
+        assert fee_rates_ppm==(2500,10000,5000)
+        assert type(pool['status']) is int and pool['status']==0
+        assert quote_vault_lamports==5003000000
+        assert curve_type==0 and share_fee_rate_ppm==0
+        return {'output_lamports':str(input_token_atomic//10+10000)}
+    launchlab.observed_sell_projection=sell
+    monkeypatch.setitem(sys.modules,'bot.p3.cohort',cohort)
+    monkeypatch.setitem(sys.modules,'bot.p3.launchlab',launchlab)
+    from test_p3_research_integration import research_snapshot
+    s1,_=research_snapshot();s1['context_slot']=101
+    s2=copy.deepcopy(s1);s2['context_slot']=102
+    mint,pool=s1['mint'],s1['pool_address']
+    gate=ModuleType('bot.p3.research_gate')
+    gate.assess_research_only=lambda a,s:{'research_only':True}
+    monkeypatch.setitem(sys.modules,'bot.p3.research_gate',gate)
+    selected={'schema':'p3-asof-flow-research-selection-v1',
+              'selected_using_future_quotes_or_S2':False,
+              'trade_allowed':False,'original_strict_selection_unchanged':True,
+              'decision_at_ms':1000,
+              'selected':[{'mint':mint,'pool':pool,'decision_slot':101,
+                           'universe_index':0,'trade_allowed':False}],
+              'original_strict_selection':{'records':[{'universe_index':0,
+                    'source_row':{'snapshot':s1,'snapshot_available_at_ms':900}}]}}
+    return selected,s2
+
+
+def go(selection,s2,**changes):
+    params=dict(s2_available_at_ms=2000,exit_decision_at_ms=2001,
+                budget_lamports=100000000,
+                extra_cost_lower_lamports=5000,extra_cost_upper_lamports=30000)
+    params.update(changes)
+    return markout(selection,s2,**params)
+
+
+def test_markout_is_conditional_not_profit_or_fills(case):
+    sel,s2=case; original=copy.deepcopy((sel,s2))
+    r=go(sel,s2)
+    assert r['status']=='CONDITIONAL_BANK_MARKOUT'
+    assert r['entry_slot']==101 and r['exit_slot']==102
+    assert r['projected_entry_quantity_atomic']=='1000000000'
+    assert r['S2_sell_proceeds_lamports']=='100010000'
+    assert r['net_conditional_upper_lamports']=='5000'
+    assert r['net_conditional_lower_lamports']=='-20000'
+    assert r['net_market_pnl_sol'] is None and r['market_profitability_verified'] is False
+    assert r['missing_self_entry_market_impact'] is True
+    assert r['execution_verified'] is False
+    assert (sel,s2)==original
+
+
+@pytest.mark.parametrize('change',[
+    {'s2_available_at_ms':999}, {'exit_decision_at_ms':1999},
+    {'exit_decision_at_ms':8000}, {'budget_lamports':0},
+    {'extra_cost_lower_lamports':40000}, {'extra_cost_upper_lamports':-1},
+])
+def test_inconsistent_clocks_or_costs_refused(case,change):
+    sel,s2=case
+    assert go(sel,s2,**change)['status']=='REFUSED'
+
+
+def test_same_slot_not_future_evidence(case):
+    sel,s2=case;s2['context_slot']=101
+    assert go(sel,s2)['status']=='REFUSED'
+
+
+def test_wrong_pool_or_mint_refused(case):
+    sel,s2=case;s2['pool_address']='OtherPool'
+    assert go(sel,s2)['status']=='REFUSED'
+
+
+def test_safety_flags_and_supply_failure_not_ignored(case):
+    sel,s2=case;s2['risk_flags']=['freeze_authority']
+    assert go(sel,s2)['status']=='REFUSED'
+    s2['risk_flags']=[]
+    s2['facts']['supply_consistency']['matches']=False
+    assert go(sel,s2)['status']=='REFUSED'
+
+
+def test_exact_size_changes_quantity_and_result(case):
+    sel,s2=case
+    r=go(sel,s2,budget_lamports=1000000000)
+    assert r['projected_entry_quantity_atomic']=='10000000000'
+    assert r['S2_sell_proceeds_lamports']=='1000010000'
+    assert r['net_market_pnl_sol'] is None

@@ -1,0 +1,144 @@
+{
+  "analysis_network_requests": 0,
+  "bundle_records": 1030,
+  "creation_verified": false,
+  "data_kind": "market_observation",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "full_buy_quantity_exit_quotes": 0,
+  "indicative_sell_quotes_available": 2,
+  "interpretation": "Two small fixed-size current-state sale estimates are available and match retained curve arithmetic. Their quantity is a small fraction of the independent 1 SOL buy estimate; no full-position liquidation, future exit or net return is established.",
+  "mint": "BdYsVstg6EZ3oSXgb6pXeqDa2KTikyVtehFcqzGRponk",
+  "net_pnl_lamports": null,
+  "normalization_checks": [
+    {
+      "http_status": 200,
+      "normalization_reproduced": true,
+      "observation_id": 1020,
+      "outcome": "quoted",
+      "phase": "initial",
+      "retained_body_digest_verified": true,
+      "side": "buy",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "http_status": 200,
+      "normalization_reproduced": true,
+      "observation_id": 1021,
+      "outcome": "quoted",
+      "phase": "initial",
+      "retained_body_digest_verified": true,
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "http_status": 200,
+      "normalization_reproduced": true,
+      "observation_id": 1028,
+      "outcome": "quoted",
+      "phase": "followup",
+      "retained_body_digest_verified": true,
+      "side": "buy",
+      "source_slot": null,
+      "source_time_ms": null
+    },
+    {
+      "http_status": 200,
+      "normalization_reproduced": true,
+      "observation_id": 1029,
+      "outcome": "quoted",
+      "phase": "followup",
+      "retained_body_digest_verified": true,
+      "side": "sell",
+      "source_slot": null,
+      "source_time_ms": null
+    }
+  ],
+  "phase_checks": [
+    {
+      "all_public_PDA_checks_pass": true,
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot"
+      ],
+      "both_provider_routes_use_observed_pool": true,
+      "buy_expected_output_atomic": "34076309234009",
+      "buy_minimum_output_atomic": "33735546141668",
+      "diagnostic_sale_covers_whole_independent_buy": false,
+      "diagnostic_sale_vs_buy_expected_percent": "0.0550688968401296783445089108765",
+      "diagnostic_sale_vs_buy_minimum_percent": "0.0556251483233648119205052683850",
+      "diagnostic_sell_input_atomic": "18765447579",
+      "diagnostic_sell_output_lamports": "519914",
+      "independent_curve_calculation_matches_provider": true,
+      "independent_curve_fee_lamports": "6582",
+      "independent_gross_sell_lamports": "526496",
+      "observed_net_curve_tokens_sold_atomic": "1876544757972",
+      "phase": "initial",
+      "quantity_fixed_before_snapshot": false,
+      "slot": 462210629,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 9,
+      "spendable_quote_vault_lamports": "52558502",
+      "supply_consistency": {
+        "context_slot": 462210629,
+        "matches": true,
+        "mint_minus_pool_atomic": "0",
+        "mint_supply_atomic": "1000000000000000",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "not_required"
+      },
+      "uncovered_buy_expected_quantity_atomic": "34057543786430"
+    },
+    {
+      "all_public_PDA_checks_pass": true,
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot"
+      ],
+      "both_provider_routes_use_observed_pool": true,
+      "buy_expected_output_atomic": "34076309234009",
+      "buy_minimum_output_atomic": "33735546141668",
+      "diagnostic_sale_covers_whole_independent_buy": false,
+      "diagnostic_sale_vs_buy_expected_percent": "0.0550688968401296783445089108765",
+      "diagnostic_sale_vs_buy_minimum_percent": "0.0556251483233648119205052683850",
+      "diagnostic_sell_input_atomic": "18765447579",
+      "diagnostic_sell_output_lamports": "519914",
+      "independent_curve_calculation_matches_provider": true,
+      "independent_curve_fee_lamports": "6582",
+      "independent_gross_sell_lamports": "526496",
+      "observed_net_curve_tokens_sold_atomic": "1876544757972",
+      "phase": "followup",
+      "quantity_fixed_before_snapshot": true,
+      "slot": 462210706,
+      "snapshot_analysis_reproduced": true,
+      "snapshot_id": 1023,
+      "spendable_quote_vault_lamports": "52558502",
+      "supply_consistency": {
+        "context_slot": 462210706,
+        "matches": true,
+        "mint_minus_pool_atomic": "0",
+        "mint_supply_atomic": "1000000000000000",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "not_required"
+      },
+      "uncovered_buy_expected_quantity_atomic": "34057543786430"
+    }
+  ],
+  "positions_acquired": 0,
+  "provider_quote_bodies_replayed": 4,
+  "qualified_economic_cycles": 0,
+  "remaining_limits": [
+    "quote source timestamps and slots absent",
+    "creation transaction not verified in control",
+    "network/priority/ATA/failure costs unknown",
+    "no inventory acquired",
+    "one selected market case is not strategy expectancy evidence"
+  ],
+  "requests_in_control": 12,
+  "schema": "p3-active-exit-007-offline-analysis-v1",
+  "strict_exit_qualified": false,
+  "tail_hash": "2d2bf40400d62903995ad9ae0d746d5775a12decbd29819b37ea09fd505c2e0b"
+}

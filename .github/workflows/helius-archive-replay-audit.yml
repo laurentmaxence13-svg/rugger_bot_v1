@@ -1,0 +1,54 @@
+name: Audit existing signed Helius archives (NO RPC, NO ORDERS)
+
+# Re-check existing Nov 1 GitHub Actions evidence, not a new Helius capture.
+# Artifacts have finite retention. This workflow fails closed if expired.
+on:
+  # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit-existing-signed-source:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      RUGGER_NO_DOTENV: '1'
+      RUGGER_LIVE_ENABLED: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Checkout code without persisted credentials
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Python 3.11
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.11'
+      - name: Download only two existing historical signed GitHub Actions archives
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rugger-existing-signed-evidence
+          for item in '13087467272 90s' '13087923724 180s'; do
+            read -r id name <<< "$item"
+            curl --fail --silent --show-error --location --retry 2 \
+              --header "Authorization: Bearer ${GH_TOKEN}" \
+              --header "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}/zip" \
+              --output "/tmp/rugger-existing-signed-evidence/${name}.zip"
+            test "$(wc -c < "/tmp/rugger-existing-signed-evidence/${name}.zip")" -lt 1000000
+          done
+      - name: Check immutable source hashes and genuine Master NO-GO
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -B -m bot.p3.helius_signed_archive_audit /tmp/rugger-existing-signed-evidence/90s.zip
+          python -B -m bot.p3.helius_signed_archive_audit /tmp/rugger-existing-signed-evidence/180s.zip

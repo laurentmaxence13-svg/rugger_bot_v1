@@ -1,0 +1,115 @@
+{
+  "analysis_code_sha256": "a1df95c731c90f743df424837ea0aeff579622d1ff0a89a171c563ed77ad2588",
+  "bundle": "launchlab_002",
+  "economic_verdict": "INSUFFICIENT DATA",
+  "historical_quote_bodies_missing": 4,
+  "historical_results_modified": false,
+  "network_used": false,
+  "observations": [
+    {
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        "original_platform_admin_seed_not_retained"
+      ],
+      "candidate_eligible": false,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "period": "initial",
+      "projection_available": true,
+      "real_orders_enabled": false,
+      "snapshot_observation_id": 108,
+      "supply_consistency": {
+        "context_slot": 461982896,
+        "matches": true,
+        "mint_minus_pool_atomic": "0",
+        "mint_supply_atomic": "1000000000000000",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "not_required"
+      }
+    },
+    {
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        "mint_supply_or_decimals_mismatch"
+      ],
+      "candidate_eligible": false,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "period": "initial",
+      "projection_available": false,
+      "real_orders_enabled": false,
+      "snapshot_observation_id": 127,
+      "supply_consistency": {
+        "context_slot": 461982938,
+        "matches": false,
+        "mint_minus_pool_atomic": "-979542505800",
+        "mint_supply_atomic": "999020457494200",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "unresolved"
+      }
+    },
+    {
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        "original_platform_admin_seed_not_retained"
+      ],
+      "candidate_eligible": false,
+      "mint": "21PBTbsqgAdVZ9H98tJpQKf4ufywQmVT8TKroUw1Adpk",
+      "period": "followup",
+      "projection_available": true,
+      "real_orders_enabled": false,
+      "snapshot_observation_id": 171,
+      "supply_consistency": {
+        "context_slot": 461983012,
+        "matches": true,
+        "mint_minus_pool_atomic": "0",
+        "mint_supply_atomic": "1000000000000000",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "not_required"
+      }
+    },
+    {
+      "blocking_reasons": [
+        "execution_not_verified",
+        "additional_execution_costs_unknown",
+        "creation_transaction_not_verified_by_snapshot",
+        "mint_supply_or_decimals_mismatch"
+      ],
+      "candidate_eligible": false,
+      "mint": "BNbNtWCfULYXXDNbm4VanecLox1geFsgKbWooke8iTFm",
+      "period": "followup",
+      "projection_available": false,
+      "real_orders_enabled": false,
+      "snapshot_observation_id": 177,
+      "supply_consistency": {
+        "context_slot": 461983014,
+        "matches": false,
+        "mint_minus_pool_atomic": "-979542505800",
+        "mint_supply_atomic": "999020457494200",
+        "pool_supply_atomic": "1000000000000000",
+        "reconciliation_status": "unresolved"
+      }
+    }
+  ],
+  "provider_rejections": [
+    {
+      "http_status": 200,
+      "observation_id": 123,
+      "provider_body_available": false,
+      "reason": "provider_rejected"
+    },
+    {
+      "http_status": 200,
+      "observation_id": 169,
+      "provider_body_available": false,
+      "reason": "provider_rejected"
+    }
+  ],
+  "schema": "p3-offline-exit-diagnostics-v1",
+  "sqlite_used": false,
+  "tail_hash": "8932cf725770daba7a9deddd12d0e29805c1ed1eae22bc57d18fb1d001eb8790"
+}

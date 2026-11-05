@@ -1,0 +1,30 @@
+{
+  "creation_lookup": false,
+  "evidence_profile": "published_metadata_v1",
+  "fee_reference": "latest_successful_transaction_in_one_row_page_of_first_selected_pool",
+  "followup_delay_ms": 15000,
+  "index_sort": "new",
+  "input_lamports": 1000000000,
+  "logical_unavailability_continuation": [
+    "provider_rejected",
+    "route_unavailable"
+  ],
+  "max_elapsed_ms": 60000,
+  "max_index_rows": 100,
+  "max_requests": 20,
+  "p4_holdout_policy": "future_preregistered_after_model_freeze_excluding_development_creators",
+  "p4_scope": "instrumental_development_only",
+  "partial_divisor": 4,
+  "partial_rule": "prefixed_quarter_after_initial_full_provider_rejected_only",
+  "plan_id": "prospective-inventory-008",
+  "reference_cash_lamports": 10000000000,
+  "registered_at_ms": 1793146573968,
+  "rpc_endpoint": "https://api.mainnet-beta.solana.com",
+  "sample_size": 3,
+  "schema": "p3-prospective-inventory-v1",
+  "selection": "first_three_unique_mints_and_pools_native_SOL_before_market_outcomes",
+  "slippage_bps": 100,
+  "source_error_policy": "stop_after_persisting_first_http_transport_or_malformed_error",
+  "source_revision": "39fe7fd072b7076da49c88b4550cc08dcdbb57dc",
+  "stop_on_provider_rejection": false
+}

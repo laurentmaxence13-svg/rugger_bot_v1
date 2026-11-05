@@ -1,0 +1,27 @@
+{
+  "active_policy_changed": false,
+  "base_remote_commit": "d0e57c68d3702967ee8ccfefe2e6e51713e82e99",
+  "full": {
+    "passed": 1926,
+    "seconds": 12.72,
+    "skipped": 1,
+    "stderr_bytes": 0,
+    "subtests": 242,
+    "warnings_as_errors": true
+  },
+  "market_requests": 0,
+  "new_active_runner_cases": 9,
+  "preregistration_status": "source_ready_plan_not_yet_published",
+  "schema": "p3-active-cohort-source-validation-v1",
+  "source_sha256": {
+    "bot/p3/active_cohort_campaign.py": "1dc0bdee23adfe5d9b9942f6aba1642300e98e66cba3e43057802e4c031ec3ce",
+    "bot/p3/campaign.py": "d026cd2df6ebafdf8af96e59c1772ebd1a75d14e0a7a20e26f90bd1c84e30c46",
+    "bot/p3/cohort.py": "744286cb469c169aa6e4c6dfe4f222d3d9b4344fb0d4a4592309db56810fd08d",
+    "bot/p3/collect.py": "082b79b17e90bf509b9344a59834fe0b13c289bd8158d65548df269e9de0c549",
+    "bot/p3/inventory_provider.py": "92f39796917333772d8b3ae70fda0d148aa01e6016d29a07cf07ef188b5fc7ea",
+    "bot/p3/prospective_campaign.py": "4d626c0900edeacad09f2c6ad7d1a4108c322c9f08fbdc6e89f17829f28d8035",
+    "bot/p3/quotes.py": "43993191176cbc361fa069b7f05787537ef4a58d265d28d4e5dbcdea82425c18",
+    "bot/p3/store.py": "80a6fb05a053b8106d8c8f10fc756544a4107bf02f3762c5de1fbb486ff33e05"
+  },
+  "transport_redaction_cases": 2
+}

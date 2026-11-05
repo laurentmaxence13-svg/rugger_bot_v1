@@ -1,0 +1,24 @@
+{
+  "comparison": "report.json must reproduce byte-for-byte; output path must not exist",
+  "data_kind": "synthetic",
+  "files": {
+    "input.json": {
+      "bytes": 48311,
+      "sha256": "dad8ec0b7315e39e6c1b2ab6baffdc4fa5ce41eb797fb8c45918de39a050c4c4"
+    },
+    "report.json": {
+      "bytes": 99475,
+      "sha256": "87e4cd45130888f07c1196d6518d0f97e1840eaf3ddf5fb6fd4736e882679b14"
+    },
+    "report_first_checkpoint.json": {
+      "bytes": 99260,
+      "sha256": "c7929cc25bd51cb2455a370eaab40a8788deef82921b52d2dd60dc75c9855dbc"
+    }
+  },
+  "historical_report": "report_first_checkpoint.json preserves first-checkpoint output before explicit disjoint-window registry; new registry adds boundaries, no financial result changed",
+  "network_requests": 0,
+  "promotion_allowed": false,
+  "reproduce": "python -B -m bot policy-research --input validation/policy_research_fixture/input.json --output /tmp/rugger-new-policy-report.json",
+  "schema": "rugger-reproducible-policy-fixture-v2",
+  "strict_market_economic_cycles": 0
+}

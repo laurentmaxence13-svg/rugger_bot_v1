@@ -1,0 +1,255 @@
+Offline validation: 253 source/fixture files copied; no .env, Git metadata or user database.
+FFF...........F......................................................... [ 78%]
+....................                                                     [100%]
+=================================== FAILURES ===================================
+_ test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame[features_available_at_ms] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-22/test_processing_delay_cannot_m0')
+field = 'features_available_at_ms'
+
+    @pytest.mark.parametrize('field',['features_available_at_ms','research_evidence'])
+    def test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame(tmp_path,field):
+        async def scenario():
+            _,frame,health,capital=qualified()
+            source_at=frame['available_at_ms'];now=source_at+1
+            if field=='features_available_at_ms':frame[field]=source_at+1
+            else:frame[field]['available_at_ms']=source_at+1
+            health['observed_at_ms']=capital['observed_at_ms']=now
+            async def context():return dict(health=health,capital=capital)
+            async def route(*_):raise AssertionError('Shadow runtime must not request execution route')
+            journal=ExecutionJournal(tmp_path/'private-review.sqlite')
+            engine=SimpleNamespace(journal=journal,mode=Mode.SHADOW,result=lambda *_:None)
+            runtime=LiveRuntime(engine=engine,decision_context_provider=context,
+                route_request_provider=route,clock_ms=lambda:now)
+            try:
+                with pytest.raises(ValueError,match='future|source|asof|causal'):
+                    await runtime.observe(frame)
+            finally:journal.close()
+>       asyncio.run(scenario())
+
+tests/test_live_runtime_review.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario():
+        _,frame,health,capital=qualified()
+        source_at=frame['available_at_ms'];now=source_at+1
+        if field=='features_available_at_ms':frame[field]=source_at+1
+        else:frame[field]['available_at_ms']=source_at+1
+        health['observed_at_ms']=capital['observed_at_ms']=now
+        async def context():return dict(health=health,capital=capital)
+        async def route(*_):raise AssertionError('Shadow runtime must not request execution route')
+        journal=ExecutionJournal(tmp_path/'private-review.sqlite')
+        engine=SimpleNamespace(journal=journal,mode=Mode.SHADOW,result=lambda *_:None)
+        runtime=LiveRuntime(engine=engine,decision_context_provider=context,
+            route_request_provider=route,clock_ms=lambda:now)
+        try:
+>           with pytest.raises(ValueError,match='future|source|asof|causal'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+tests/test_live_runtime_review.py:33: Failed
+_ test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame[research_evidence] _
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-22/test_processing_delay_cannot_m1')
+field = 'research_evidence'
+
+    @pytest.mark.parametrize('field',['features_available_at_ms','research_evidence'])
+    def test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame(tmp_path,field):
+        async def scenario():
+            _,frame,health,capital=qualified()
+            source_at=frame['available_at_ms'];now=source_at+1
+            if field=='features_available_at_ms':frame[field]=source_at+1
+            else:frame[field]['available_at_ms']=source_at+1
+            health['observed_at_ms']=capital['observed_at_ms']=now
+            async def context():return dict(health=health,capital=capital)
+            async def route(*_):raise AssertionError('Shadow runtime must not request execution route')
+            journal=ExecutionJournal(tmp_path/'private-review.sqlite')
+            engine=SimpleNamespace(journal=journal,mode=Mode.SHADOW,result=lambda *_:None)
+            runtime=LiveRuntime(engine=engine,decision_context_provider=context,
+                route_request_provider=route,clock_ms=lambda:now)
+            try:
+                with pytest.raises(ValueError,match='future|source|asof|causal'):
+                    await runtime.observe(frame)
+            finally:journal.close()
+>       asyncio.run(scenario())
+
+tests/test_live_runtime_review.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario():
+        _,frame,health,capital=qualified()
+        source_at=frame['available_at_ms'];now=source_at+1
+        if field=='features_available_at_ms':frame[field]=source_at+1
+        else:frame[field]['available_at_ms']=source_at+1
+        health['observed_at_ms']=capital['observed_at_ms']=now
+        async def context():return dict(health=health,capital=capital)
+        async def route(*_):raise AssertionError('Shadow runtime must not request execution route')
+        journal=ExecutionJournal(tmp_path/'private-review.sqlite')
+        engine=SimpleNamespace(journal=journal,mode=Mode.SHADOW,result=lambda *_:None)
+        runtime=LiveRuntime(engine=engine,decision_context_provider=context,
+            route_request_provider=route,clock_ms=lambda:now)
+        try:
+>           with pytest.raises(ValueError,match='future|source|asof|causal'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+tests/test_live_runtime_review.py:33: Failed
+_____ test_actual_scanner_disconnect_during_final_rpc_prevents_submission ______
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-22/test_actual_scanner_disconnect0')
+
+    def test_actual_scanner_disconnect_during_final_rpc_prevents_submission(tmp_path):
+        async def scenario():
+            engine,order,rpc,signer,clock=configured(tmp_path)
+            health=ScannerHealth(require_observations=True,
+                clock_ms=lambda:clock[0],monotonic_ms=lambda:clock[0])
+            task=health.start_task(asyncio.Event().wait(),'counterreview-scanner')
+            health.observe_rpc(True);health.observe_websocket('subscribed')
+            original_provider=engine.evidence_provider
+            class BoundOperationalEvidence:
+                async def __call__(self,*args):return await original_provider(*args)
+                def assert_operational_now(self):
+                    if not health.permits_entries() or not health.services_fresh(max_age_ms=1000):
+                        raise ValueError('current_scanner_service_disconnected')
+            engine.evidence_provider=BoundOperationalEvidence()
+            original_height=rpc.get_block_height
+            async def disconnected_height():
+                value=await original_height()
+                if signer.calls:health.observe_websocket('disconnected')
+                return value
+            rpc.get_block_height=disconnected_height
+            try:
+                with pytest.raises(ValueError,match='disconnected'):
+                    await engine.execute(json.loads(order.rebuild_request_json)['decision_id'],order)
+                assert not rpc.send_calls
+            finally:
+                task.cancel();await asyncio.gather(task,return_exceptions=True)
+>       asyncio.run(scenario())
+
+tests/test_live_runtime_review.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    async def scenario():
+        engine,order,rpc,signer,clock=configured(tmp_path)
+        health=ScannerHealth(require_observations=True,
+            clock_ms=lambda:clock[0],monotonic_ms=lambda:clock[0])
+        task=health.start_task(asyncio.Event().wait(),'counterreview-scanner')
+        health.observe_rpc(True);health.observe_websocket('subscribed')
+        original_provider=engine.evidence_provider
+        class BoundOperationalEvidence:
+            async def __call__(self,*args):return await original_provider(*args)
+            def assert_operational_now(self):
+                if not health.permits_entries() or not health.services_fresh(max_age_ms=1000):
+                    raise ValueError('current_scanner_service_disconnected')
+        engine.evidence_provider=BoundOperationalEvidence()
+        original_height=rpc.get_block_height
+        async def disconnected_height():
+            value=await original_height()
+            if signer.calls:health.observe_websocket('disconnected')
+            return value
+        rpc.get_block_height=disconnected_height
+        try:
+>           with pytest.raises(ValueError,match='disconnected'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           Failed: DID NOT RAISE ValueError
+
+tests/test_live_runtime_review.py:60: Failed
+____ test_partial_reduction_then_final_close_preserves_exact_remaining_cost ____
+
+tmp_path = PosixPath('/tmp/pytest-of-agent/pytest-22/test_partial_reduction_then_fi0')
+
+    def test_partial_reduction_then_final_close_preserves_exact_remaining_cost(tmp_path):
+        engine,order,plan,rpc,clock=filled(tmp_path)
+        held=order.expected_output;half=held//2
+        frame=frame_for(order,held,partial=half)
+        frame.update(features=dict(mint=order.mint,observed_at=1,momentum_60s=-1,
+            tx_buys_5m=1,tx_sells_5m=2),features_available_at_ms=1200)
+        result=evaluate(engine,order,frame)
+        assert result['action']=='REDUCE' and result['input_quantity_atomic']==str(half)
+        sell=frame['prepared_partial_exits'][0];clock[0]=1200
+        decision=json.loads(sell.rebuild_request_json)['decision_id']
+>       submitted=asyncio.run(engine.execute(decision,sell))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_live_positions.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:195: in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/runners.py:118: in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <bot.live.engine.ExecutionEngine object at 0x7f762a315640>
+decision_id = 'exit-frame-1'
+order = PreparedLaunchLabOrder(transaction=PreparedTransaction(message=b'\x01\x00\n\x10\x16\x16\x16\x16\x16\x16\x16\x16\x16\x1...nt_exempt_lamports":2039280,"side":"SELL","slippage_bps":100,"wallet":"2VDW9dFE1ZXz4zWAbaBDQFynNVdRpQ73HyfSHMzBSL6Z"}')
+
+    async def execute(self, decision_id, order):
+        order = validate_prepared_order(order)
+        if json.loads(order.rebuild_request_json)['decision_id'] != decision_id:
+            raise ValueError('decision_id_not_bound_to_prepared_route')
+        if order.transaction.required_signers != (order.user,):
+            raise ValueError('exact_isolated_wallet_signer_required')
+        record = order_record(order)
+        if not self.journal.create(decision_id, record, self.clock_ms()):
+            # A duplicate can only inspect/recover its original signature; it
+            # never silently reconstructs, re-signs or re-sends an order.
+            return self.result(decision_id)
+        if self.mode is Mode.RESEARCH:
+            return self.result(decision_id)
+        if self.journal.killed:
+            raise ValueError('persistent_kill_switch_active')
+        height = await self.rpc.get_block_height()
+        if type(height) is not int or height > order.transaction.last_valid_block_height:
+            self.journal.release_unsent(decision_id, self.clock_ms(), 'blockhash_expired_before_simulation')
+            return self.result(decision_id)
+        simulation = await self.rpc.simulate_transaction(order.transaction.unsigned_transaction(), sig_verify=False)
+        if type(simulation) is not dict or 'err' not in simulation or simulation['err'] is not None:
+            self.journal.transition(decision_id, ('PREPARED',), 'SIMULATION_FAILED', self.clock_ms(), failure_type='simulation_refused')
+            return self.result(decision_id)
+        simulation_slot = simulation.get('context_slot')
+        if type(simulation_slot) is not int or simulation_slot < order.source_slot:
+>           raise ValueError('simulation_bank_precedes_observed_route')
+E           ValueError: simulation_bank_precedes_observed_route
+
+bot/live/engine.py:285: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_live_runtime_review.py::test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame[features_available_at_ms]
+FAILED tests/test_live_runtime_review.py::test_processing_delay_cannot_make_future_data_part_of_earlier_source_frame[research_evidence]
+FAILED tests/test_live_runtime_review.py::test_actual_scanner_disconnect_during_final_rpc_prevents_submission
+FAILED tests/test_live_positions.py::test_partial_reduction_then_final_close_preserves_exact_remaining_cost
+4 failed, 88 passed in 1.03s

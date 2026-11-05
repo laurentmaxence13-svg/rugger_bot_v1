@@ -1,0 +1,24 @@
+[
+  {
+    "followup_real_a": "628873252768491",
+    "followup_real_b": "42478068677",
+    "followup_slot": 462778085,
+    "initial_real_a": "628873252768491",
+    "initial_real_b": "42478068677",
+    "initial_slot": 462777990,
+    "mint": "Ev5yE7hgt6nLjugY7o8P1tiBAdRfLoQ2zAzv3N7YpSpF",
+    "net_reserve_change_is_not_gross_volume_or_independent_buyer_count": true,
+    "pool_account_data_hash_equal": true
+  },
+  {
+    "followup_real_a": "63809513392877",
+    "followup_real_b": "1896858290",
+    "followup_slot": 462778085,
+    "initial_real_a": "63809513392877",
+    "initial_real_b": "1896858290",
+    "initial_slot": 462777990,
+    "mint": "6NPuKFJh1tsYsdMEmnYpgkYoWggLaXV7i6rfHVUMVocs",
+    "net_reserve_change_is_not_gross_volume_or_independent_buyer_count": true,
+    "pool_account_data_hash_equal": true
+  }
+]
