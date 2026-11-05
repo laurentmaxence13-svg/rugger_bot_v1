@@ -1,0 +1,41 @@
+{
+  "protocol_id": "rugger03-prereg-v1",
+  "status": "DRAFT_NOT_FROZEN_UNTIL_OWNER_APPROVES_AND_COMMIT_SHA_RECORDED",
+  "issue": 158,
+  "paper_only": true,
+  "network_during_authoring": false,
+  "targets": {"min_independent_verified_creators": 50, "min_complete_paper_cycles": 20},
+  "creator_independence": {
+    "verified_creation": "successful signed tx containing a recognised LaunchLab initialize instruction, signature+slot recorded, mint/pool match",
+    "independent_when": ["distinct creator wallet", "not funded by another cohort creator in the lookback window (funding lookback must be declared before collection)", "not sharing a fee payer with another cohort creator"],
+    "unknown_funding_counts_as": "NOT_VERIFIED_INDEPENDENT",
+    "one_creator_one_counted_launch": true
+  },
+  "cohort_sampling": {
+    "rule": "every verified creation in the declared time window, in on-chain slot order; no filter on price, volume or outcome",
+    "denominator_includes": ["failed", "unquoted", "unsupported_state", "never_migrated", "rejected"],
+    "split": {"design": "chronological", "development_fraction": 0.5, "holdout_fraction": 0.5, "holdout_untouched_until_decisions_frozen": true}
+  },
+  "cycle_definition": {
+    "complete_cycle": "paper BUY at decision time using only data available_at <= decision, then paper SELL by a rule fixed beforehand, both priced from timestamped exact-size quotes or reserves",
+    "exploitable_requires": ["source time known", "full fee set known", "exit observed or explicit forced-mark rule declared in advance"],
+    "unknown_costs": "cycle excluded from P&L but kept in denominator and reported"
+  },
+  "costs_net_pnl": {
+    "units": "lamports and atomic token units, Decimal only",
+    "components": ["curve_or_pool_fee", "network_base_fee", "priority_fee", "account_creation_rent_if_any", "slippage_vs_quote", "failed_attempt_cost", "latency_adverse_move"],
+    "latency_assumption_slots": "declared before collection, sensitivity at 1x and 2x",
+    "fx": "SOL-native; no USD conversion unless point-in-time source with source timestamp"
+  },
+  "comparison": {
+    "arms": ["MASTER", "REFERENCE"],
+    "same_observations": true,
+    "decisions_frozen_before_results": true,
+    "master_availability": "NOT on this branch; on origin/feat/master-live-integration-20261029 (bot/master_decision.py) and origin/integration/consolidation-20261103; genuine frame not fully reconstructible from TradeEvents alone",
+    "primary_metric": "mean net P&L per eligible observation in SOL (WAIT counts as 0 with cost 0), paired difference MASTER-REFERENCE",
+    "uncertainty": "paired bootstrap over creators (cluster), 95% interval, seed declared",
+    "profitability_demonstrated_only_if": "holdout paired difference lower 95% bound > 0 AND MASTER total net P&L > 0 AND targets met AND no unknown-cost exclusion above 20% of cycles"
+  },
+  "bias_register": ["survivorship (disappearing pools)", "selection on discovery API ordering", "look-ahead via late USD/creator-history/holder snapshots", "quote != fill", "receipt time != chain time", "regime dependence of a short window", "multiple testing over strategy variants", "creator Sybil clustering", "unknown holder data treated as zero"],
+  "stop_rules": {"max_budget_usd": 0, "paid_api_requires_owner_authorisation": true, "live_trading": false, "secrets": false}
+}
