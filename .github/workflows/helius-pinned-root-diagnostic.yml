@@ -4,18 +4,28 @@ name: Pinned signed LaunchLab root diagnosis (NO LIVE)
 on:
   # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-PINNED-ROOT-DIAGNOSTIC to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 permissions:
   contents: read
+
+concurrency:
+  group: helius-collection
+  cancel-in-progress: false
 
 jobs:
   current-root-only:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.action == 'labeled' &&
-       github.event.label.name == 'run-pinned-root' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-PINNED-ROOT-DIAGNOSTIC'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 4
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -37,8 +47,18 @@ jobs:
         env:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: python -B -m bot.live.helius_pinned_root_diagnostic
-      - name: Retain public posthoc diagnostic; no wallet or provider secret
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Retain public posthoc diagnostic; no wallet or provider secret
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: pinned-root-diagnostic-${{ github.run_id }}

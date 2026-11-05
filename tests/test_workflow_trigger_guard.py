@@ -46,6 +46,44 @@ jobs:
       - run: python -m bot.live.helius_probe
 """
 
+def locked(name='helius-manual.yml'):
+    """Smallest Helius workflow that satisfies the Helius lock (manual, gated, environment)."""
+    return """name: Helius probe (manual, locked)
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type %s'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: helius-collection
+  cancel-in-progress: false
+jobs:
+  probe:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == '%s'
+    runs-on: ubuntu-latest
+    environment: helius-collection
+    timeout-minutes: 5
+    steps:
+      - name: Probe
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: python -m bot.live.helius_probe
+""" % (guard.helius_phrase(name), guard.helius_phrase(name))
+
+
+def non_helius(violations):
+    return [v for v in violations if not v.startswith('helius_')]
+
+
 OFFLINE_CI = """name: Offline test suite
 on:
   pull_request:
@@ -99,11 +137,16 @@ def test_unreadable_triggers_fail_closed(text, reason):
 
 
 def test_provider_workflow_with_pull_request_is_refused():
-    assert guard.check_workflow('helius-probe.yml', PROVIDER_PR) == ['automatic_trigger:pull_request']
+    violations = guard.check_workflow('helius-probe.yml', PROVIDER_PR)
+    assert non_helius(violations) == ['automatic_trigger:pull_request']
+    assert 'helius_dispatch_without_required_confirm_input' in violations
 
 
-def test_manual_only_provider_workflow_is_accepted_even_with_secrets():
-    assert guard.check_workflow('helius-probe.yml', MANUAL_ONLY) == []
+def test_manual_only_helius_workflow_needs_the_helius_lock():
+    # Manual-only is no longer enough for a workflow that names HELIUS_API_KEY.
+    violations = guard.check_workflow('helius-probe.yml', MANUAL_ONLY)
+    assert non_helius(violations) == [] and violations
+    assert guard.check_workflow('helius-manual.yml', locked()) == []
 
 
 @pytest.mark.parametrize('trigger', [
@@ -160,7 +203,7 @@ def test_automatic_ci_may_not_use_secrets_or_external_hosts(snippet, violation):
     assert violation in violations
     # Only the env key allowlist and, for malformed values, the fail-closed syntax rules may add to it.
     extra = ('forbidden_env_in_automatic_workflow:', 'flow_mapping_in_automatic_workflow:',
-             'flow_sequence_in_automatic_workflow:')
+             'flow_sequence_in_automatic_workflow:', 'helius_')
     assert [v for v in violations if not v.startswith(extra)] == [violation]
 
 
@@ -213,7 +256,7 @@ def test_github_token_github_or_loopback_urls_and_commented_secrets_are_allowed_
 
 def test_scan_directory_and_cli_exit_codes(tmp_path, capsys):
     (tmp_path / 'offline-tests.yml').write_text(OFFLINE_CI, encoding='utf-8')
-    (tmp_path / 'helius-manual.yml').write_text(MANUAL_ONLY, encoding='utf-8')
+    (tmp_path / 'helius-manual.yml').write_text(locked(), encoding='utf-8')
     (tmp_path / 'notes.txt').write_text('on: push\n', encoding='utf-8')
     assert guard.main([str(tmp_path)]) == 0
     assert 'workflows=2 automatic=offline-tests.yml manual_only=1 requirements=0 violations=0' in capsys.readouterr().out

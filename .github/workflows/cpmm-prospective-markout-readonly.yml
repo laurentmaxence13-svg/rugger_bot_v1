@@ -2,22 +2,29 @@ name: Prospective two-bank CPMM markout (HELIUS READ ONLY)
 on:
   # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-CPMM-PROSPECTIVE-MARKOUT-READONLY to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: rugger-prospective-cpmm-${{ github.ref }}
-  cancel-in-progress: true
+  group: helius-collection
+  cancel-in-progress: false
 
 jobs:
   prospective-no-trade:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-CPMM-PROSPECTIVE-MARKOUT-READONLY'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 5
     env:
       RUGGER_NO_DOTENV: '1'

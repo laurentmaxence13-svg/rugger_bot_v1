@@ -4,22 +4,27 @@ name: Prospective Master/Reference PAPER evidence (NO LIVE)
 on:
   # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-MASTER-PROSPECTIVE-EVIDENCE to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: master-prospective-${{ github.ref }}
-  cancel-in-progress: true
+  group: helius-collection
+  cancel-in-progress: false
 
 jobs:
   strict-offline-contract:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.action == 'labeled' &&
-       github.event.label.name == 'run-master-evidence' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-MASTER-PROSPECTIVE-EVIDENCE'
     runs-on: ubuntu-latest
     timeout-minutes: 4
     env:
@@ -52,10 +57,13 @@ jobs:
   bounded-public-mainnet-observation:
     needs: strict-offline-contract
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-MASTER-PROSPECTIVE-EVIDENCE'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 5
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -109,8 +117,18 @@ jobs:
           python -B -m bot.p3.conditional_market_markout \
             --input paper_artifacts/paper_signed_creations_asof_banks.json \
             --output paper_artifacts/conditional_signed_bank_markouts.json
-      - name: Retain only public observations, no secrets or wallet data
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Retain only public observations, no secrets or wallet data
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: master-prospective-observation-${{ github.run_id }}
@@ -129,10 +147,13 @@ jobs:
     # Keep it after forward observation to avoid concurrent Helius quota pressure.
     needs: [strict-offline-contract, bounded-public-mainnet-observation]
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-MASTER-PROSPECTIVE-EVIDENCE'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 4
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -157,8 +178,18 @@ jobs:
           HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
         run: |
           python -B -m bot.live.helius_launchlab_cohort_probe
-      - name: Archive public read-only historical sample including source gaps
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Archive public read-only historical sample including source gaps
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: master-independent-historical-creators-${{ github.run_id }}
@@ -173,10 +204,13 @@ jobs:
     needs: [strict-offline-contract, independent-finalized-creation-discovery]
     if: >-
       always() && needs.strict-offline-contract.result == 'success' &&
-      (github.event_name == 'workflow_dispatch' ||
-       (github.event_name == 'pull_request' &&
-        github.event.pull_request.head.repo.full_name == github.repository))
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-MASTER-PROSPECTIVE-EVIDENCE'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 4
     env:
       PYTHONDONTWRITEBYTECODE: '1'
@@ -206,8 +240,18 @@ jobs:
           python -B -m bot.p3.conditional_market_markout \
             --input paper_artifacts/helius_early_signed_s1_s2.json \
             --output paper_artifacts/conditional_early_markouts.json
-      - name: Keep bounded public early records; no keys or signed trades
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Keep bounded public early records; no keys or signed trades
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: master-early-confirmed-evidence-${{ github.run_id }}

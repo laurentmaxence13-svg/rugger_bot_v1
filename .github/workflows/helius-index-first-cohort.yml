@@ -4,22 +4,29 @@ name: Index-first prospective LaunchLab cohort (HELIUS READ ONLY)
 # failing production/CI gate. Independent on-chain page checks continue.
 on:
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-INDEX-FIRST-COHORT to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: rugger-index-cohort-${{ github.ref }}
-  cancel-in-progress: true
+  group: helius-collection
+  cancel-in-progress: false
 
 jobs:
   frozen-index-selection-before-market-outcomes:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.pull_request.head.repo.full_name == github.repository &&
-       github.event.pull_request.head.ref == 'fix/current-launchlab-migration-abi-20261030')
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-INDEX-FIRST-COHORT'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 5
     env:
       RUGGER_NO_DOTENV: '1'

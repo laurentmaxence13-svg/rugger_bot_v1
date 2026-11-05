@@ -44,6 +44,42 @@ Invariant enforced (decision D3 of the #101 consolidation, P-PRIV correction):
     block mappings whose keys are in ``ALLOWED_ENV_KEYS`` and
     ``ALLOWED_WITH_KEYS``.
 
+Every manual workflow:
+
+* references the ``secrets`` context only as ``${{ secrets.NAME }}`` with ``NAME``
+  in ``ALLOWED_MANUAL_SECRETS`` (today only ``HELIUS_API_KEY``): ``toJSON(secrets)``,
+  ``secrets[...]``, a ``secrets:`` key or any other secret name is refused.
+
+A *Helius workflow* is any workflow that names ``HELIUS_API_KEY``. On top of the
+manual-only trigger it must satisfy the Helius lock (``helius_violations``), read
+with a strict block-YAML reader that fails closed:
+
+* ``workflow_dispatch`` declares a required string input ``confirm``; every job is
+  gated by exactly ``HELIUS_GATE``: manual event, ``refs/heads/main``, this
+  repository, the repository variable ``HELIUS_COLLECTION_ENABLED == 'true'`` and
+  ``inputs.confirm == 'RUN-<WORKFLOW STEM>'`` (only ``always()`` and
+  ``needs.<job>.result == ...`` may precede it, never ``||``). A job whose condition
+  starts with ``github.event_name == 'pull_request'`` and has no ``||`` can never run
+  (no ``pull_request`` trigger) and is exempt, unless it names the key;
+* every job that names the key declares ``environment: helius-collection`` (the
+  owner holds the key only in that environment, with required reviewers and a
+  ``main``-only branch policy: see docs/ops/HELIUS_WORKFLOW_LOCK.md), runs on
+  ``ubuntu-latest`` for at most ``HELIUS_MAX_JOB_MINUTES`` minutes, with only
+  allowlisted actions pinned to a commit SHA and checkouts without ``ref`` or
+  credentials;
+* the key appears only as ``HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}`` in a
+  step ``env:`` mapping; no ``inputs`` expression is interpolated anywhere;
+* artifacts: an ``upload-artifact`` step is allowed only in a key job, after the
+  reviewed key canary step (``HELIUS_CANARY_RUN``, id ``helius_key_canary``, run
+  after every other step that names the key) and only when that canary succeeded;
+  paths stay under ``paper_artifacts/``, retention at most
+  ``HELIUS_MAX_RETENTION_DAYS`` days;
+* one workflow-level concurrency group ``helius-collection`` without cancellation,
+  workflow permissions limited to ``read``/``none`` on ``contents`` and
+  ``actions``, no job-level permissions, no wallet-like secret or environment
+  name, ``RUGGER_LIVE_ENABLED`` only ``'0'``, no ``sendTransaction`` or ``--live`` in a
+  ``run:`` step.
+
 The repository's ``requirements*.txt`` files, installed by the approved
 ``pip install`` steps, may only list PyPI requirements by name: no pip option other
 than ``--hash`` and ``-r``/``-c`` naming another root ``requirements*.txt`` (so every
@@ -96,6 +132,31 @@ ALLOWED_HOSTS = frozenset({
     # Loopback only: local smoke test of the PAPER terminal on the runner itself.
     '127.0.0.1', 'localhost',
 })
+
+# Secrets a manual workflow may name. Adding one needs a review of this guard.
+ALLOWED_MANUAL_SECRETS = frozenset({'HELIUS_API_KEY'})
+
+# Helius lock (see helius_violations and docs/ops/HELIUS_WORKFLOW_LOCK.md).
+HELIUS_SECRET = 'HELIUS_API_KEY'
+HELIUS_ENVIRONMENT = 'helius-collection'
+HELIUS_CONCURRENCY_GROUP = 'helius-collection'
+HELIUS_REPOSITORY = 'laurentmaxence13-svg/rugger_bot_v1'
+HELIUS_MAX_JOB_MINUTES = 10
+HELIUS_MAX_RETENTION_DAYS = 30
+HELIUS_CANARY_ID = 'helius_key_canary'
+HELIUS_SECRET_VALUE = '${{ secrets.HELIUS_API_KEY }}'
+HELIUS_UPLOAD_IF = "always() && steps.helius_key_canary.outcome == 'success'"
+# Reviewed canary: refuses to publish any artifact file whose content or name holds the key.
+HELIUS_CANARY_RUN = (
+    'if [ -z "${HELIUS_API_KEY}" ]; then echo \'HELIUS_KEY_CANARY=FAIL empty_key\'; exit 1; fi\n'
+    'if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo \'HELIUS_KEY_CANARY=FAIL key_found\'; exit 1; fi\n'
+    'if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then '
+    'echo \'HELIUS_KEY_CANARY=FAIL key_in_file_name\'; exit 1; fi\n'
+    "echo 'HELIUS_KEY_CANARY=PASS'")
+_HELIUS_PREFIX = re.compile(
+    r"^(?:always\(\) && )?(?:needs\.[A-Za-z0-9_-]+\.result == '(?:success|failure|skipped|cancelled)' && )*$")
+_WALLET_NAME = re.compile(r'PRIVATE|KEYPAIR|SECRET_KEY|SEED|MNEMONIC|WALLET', re.I)
+_HELIUS_PERMISSION_SCOPES = frozenset({'contents', 'actions'})
 
 _ON_KEY = re.compile(r'''^(?:on|"on"|'on')\s*:(?P<rest>.*)$''')
 _TOP_KEY = re.compile(r'^[^\s#-]')
@@ -609,6 +670,418 @@ def hardening_violations(text: str) -> list[str]:
     return found
 
 
+class WorkflowParseError(ValueError):
+    """The strict block-YAML reader cannot read the file with certainty."""
+
+
+_MAP_ITEM = re.compile(r'^(?P<key>[A-Za-z0-9_.-]+)[ ]*:(?:[ ]+(?P<value>.*)|$)')
+_BLOCK_SCALAR = re.compile(r'^[|>][+-]?$')
+
+
+def _yaml_scalar(raw: str):
+    raw = _strip_comment(raw).strip()
+    if raw == '':
+        return None
+    if raw[0] == '"':
+        if len(raw) < 2 or not raw.endswith('"'):
+            raise WorkflowParseError('unterminated double-quoted scalar')
+        try:
+            return json.loads(raw)
+        except ValueError:
+            raise WorkflowParseError('unsupported double-quoted escape') from None
+    if raw[0] == "'":
+        if len(raw) < 2 or not raw.endswith("'"):
+            raise WorkflowParseError('unterminated single-quoted scalar')
+        return raw[1:-1].replace("''", "'")
+    if raw in ('{}', '[]'):
+        return {} if raw == '{}' else []
+    if raw[0] == '[':
+        if not raw.endswith(']'):
+            raise WorkflowParseError('flow sequence must end on its line')
+        try:
+            items = _split_top_level(raw[1:-1])
+        except TriggerParseError as error:
+            raise WorkflowParseError(str(error)) from None
+        if any(item[:1] in ('[', '{') for item in items):
+            raise WorkflowParseError('nested flow collection')
+        return [_yaml_scalar(item) for item in items]
+    if raw[0] in '{&*!%@`|>' or raw.startswith(('<<', '? ')):
+        raise WorkflowParseError('unsupported YAML form: %s' % raw[:30])
+    return raw
+
+
+class _Lines:
+    def __init__(self, text: str):
+        self.lines = text.replace('\r\n', '\n').replace('\r', '\n').split('\n')
+
+    def significant(self, index: int) -> int:
+        while index < len(self.lines):
+            stripped = self.lines[index].strip()
+            if stripped and not stripped.startswith('#'):
+                if stripped in ('---', '...'):
+                    raise WorkflowParseError('multiple documents')
+                return index
+            index += 1
+        return index
+
+    def indent(self, index: int) -> int:
+        line = self.lines[index]
+        indent = len(line) - len(line.lstrip(' '))
+        if line[indent:indent + 1] == '\t':
+            raise WorkflowParseError('tab indentation')
+        return indent
+
+
+def _block_scalar(src: _Lines, index: int, key_indent: int, indicator: str):
+    body, position = [], index
+    while position < len(src.lines):
+        line = src.lines[position]
+        if line.strip() and len(line) - len(line.lstrip(' ')) <= key_indent:
+            break
+        body.append(line)
+        position += 1
+    while body and not body[-1].strip():
+        body.pop()
+    content = [line for line in body if line.strip()]
+    if not content:
+        return '', position
+    indent = min(len(line) - len(line.lstrip(' ')) for line in content)
+    rows = [line[indent:] if line.strip() else '' for line in body]
+    if indicator[0] == '|':
+        text = '\n'.join(rows)
+    else:
+        # YAML folding: a break between two normal lines becomes a space; breaks next
+        # to more-indented lines are kept; each empty line keeps one newline.
+        text, previous, empty = '', None, 0
+        for row in rows:
+            if not row:
+                empty += 1
+                continue
+            kind = 'more' if row.startswith(' ') else 'normal'
+            if previous is None:
+                text += '\n' * empty
+            elif previous == kind == 'normal':
+                text += '\n' * empty if empty else ' '
+            else:
+                text += '\n' * (empty + 1)
+            text += row
+            previous, empty = kind, 0
+    if not indicator.endswith('-'):
+        text += '\n'
+    return text, position
+
+
+def _parse_node(src: _Lines, index: int, indent: int):
+    index = src.significant(index)
+    if index >= len(src.lines) or src.indent(index) != indent:
+        raise WorkflowParseError('unexpected indentation at line %d' % (index + 1))
+    if src.lines[index][indent:].startswith('-'):
+        return _parse_sequence(src, index, indent)
+    return _parse_mapping(src, index, indent)
+
+
+def _mapping_value(src: _Lines, index: int, key_indent: int, value, allow_same_indent_sequence=True):
+    """Value of a mapping key given its inline text; returns (value, next_index)."""
+    if value is not None and _BLOCK_SCALAR.match(_strip_comment(value).strip()):
+        return _block_scalar(src, index + 1, key_indent, _strip_comment(value).strip())
+    following = src.significant(index + 1)
+    deeper = following < len(src.lines) and src.indent(following) > key_indent
+    same_seq = (allow_same_indent_sequence and following < len(src.lines)
+                and src.indent(following) == key_indent
+                and src.lines[following][key_indent:].startswith('- '))
+    if value is None or not _strip_comment(value).strip():
+        if deeper:
+            return _parse_node(src, following, src.indent(following))
+        if same_seq:
+            return _parse_sequence(src, following, key_indent)
+        return None, index + 1
+    if deeper:
+        raise WorkflowParseError('multi-line plain scalar at line %d' % (index + 1))
+    return _yaml_scalar(value), index + 1
+
+
+def _parse_mapping(src: _Lines, index: int, indent: int, first_line=None):
+    result = {}
+    while True:
+        index = src.significant(index)
+        if index >= len(src.lines):
+            return result, index
+        if first_line is None:
+            if src.indent(index) < indent:
+                return result, index
+            if src.indent(index) > indent:
+                raise WorkflowParseError('unexpected indentation at line %d' % (index + 1))
+            body = src.lines[index][indent:]
+        else:
+            body, first_line = first_line, None
+        if body.startswith('-'):
+            return result, index
+        match = _MAP_ITEM.match(body)
+        if not match:
+            raise WorkflowParseError('unreadable mapping entry at line %d' % (index + 1))
+        key = match.group('key')
+        if key in result:
+            raise WorkflowParseError('duplicate key %s' % key)
+        result[key], index = _mapping_value(src, index, indent, match.group('value'))
+
+
+def _parse_sequence(src: _Lines, index: int, indent: int):
+    result = []
+    while True:
+        index = src.significant(index)
+        if index >= len(src.lines) or src.indent(index) != indent or not src.lines[index][indent:].startswith('-'):
+            if index < len(src.lines) and src.indent(index) > indent:
+                raise WorkflowParseError('unexpected indentation at line %d' % (index + 1))
+            return result, index
+        body = src.lines[index][indent:]
+        if body.strip() == '-':
+            following = src.significant(index + 1)
+            if following >= len(src.lines) or src.indent(following) <= indent:
+                result.append(None)
+                index += 1
+                continue
+            node, index = _parse_node(src, following, src.indent(following))
+            result.append(node)
+            continue
+        if not body.startswith('- '):
+            raise WorkflowParseError('unreadable sequence entry at line %d' % (index + 1))
+        rest = body[2:].lstrip(' ')
+        item_indent = indent + (len(body) - len(rest))
+        if _MAP_ITEM.match(rest):
+            node, index = _parse_mapping(src, index, item_indent, first_line=rest)
+            result.append(node)
+        else:
+            if src.significant(index + 1) < len(src.lines) and src.indent(src.significant(index + 1)) > indent \
+                    and not src.lines[src.significant(index + 1)][src.indent(src.significant(index + 1)):].startswith('-'):
+                raise WorkflowParseError('multi-line sequence scalar at line %d' % (index + 1))
+            result.append(_yaml_scalar(rest))
+            index += 1
+
+
+def parse_workflow(text: str) -> dict:
+    """Read a workflow written in the block-YAML subset; raise WorkflowParseError otherwise.
+
+    Supported: block mappings and sequences, plain and quoted scalars, ``|``/``>``
+    block scalars, ``{}``/``[]`` and one-line flow sequences of scalars. Scalars stay
+    strings (``true``, ``5``...). Anchors, aliases, tags, flow mappings, complex or
+    quoted keys, duplicate keys and multi-line plain scalars are refused.
+    """
+    src = _Lines(text)
+    start = src.significant(0)
+    if start >= len(src.lines):
+        raise WorkflowParseError('empty document')
+    node, end = _parse_node(src, start, 0)
+    if src.significant(end) < len(src.lines):
+        raise WorkflowParseError('trailing content at line %d' % (src.significant(end) + 1))
+    if not isinstance(node, dict):
+        raise WorkflowParseError('document is not a mapping')
+    return node
+
+
+def helius_phrase(name: str) -> str:
+    """Per-workflow confirmation phrase: RUN- and the file stem in upper case."""
+    return 'RUN-' + re.sub(r'\.ya?ml$', '', name).upper()
+
+
+def helius_gate(name: str) -> str:
+    return ("github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && "
+            "github.repository == '%s' && vars.HELIUS_COLLECTION_ENABLED == 'true' && "
+            "inputs.confirm == '%s'" % (HELIUS_REPOSITORY, helius_phrase(name)))
+
+
+def _normal(expression) -> str:
+    return ' '.join(str(expression or '').split())
+
+
+def is_helius_workflow(text: str) -> bool:
+    return HELIUS_SECRET in _code_lines(text)
+
+
+def manual_secret_violations(text: str) -> list[str]:
+    """Secrets in a manual workflow: plain ``secrets.NAME`` forms of allowlisted names only."""
+    code = _code_lines(text)
+    found = []
+    for expression in _expressions(code):
+        if expression == '${{ unclosed':
+            found.append('unclosed_expression')
+            continue
+        if not _SECRETS_WORD.search(expression):
+            continue
+        rest = _SECRET_NAME.sub('', expression)
+        if _SECRETS_WORD.search(rest):
+            found.append('secrets_context_not_plain:%s' % _normal(expression)[:60])
+        found += ['secret_not_allowlisted:%s' % name for name in _SECRET_NAME.findall(expression)
+                  if name not in ALLOWED_MANUAL_SECRETS and name.upper() != 'GITHUB_TOKEN']
+    if _SECRETS_KEY.search(code):
+        found.append('secrets_key_in_manual_workflow')
+    return found
+
+
+def _walk(node, path=()):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _walk(value, path + (key,))
+    elif isinstance(node, list):
+        for position, value in enumerate(node):
+            yield from _walk(value, path + (position,))
+    else:
+        yield path, node
+
+
+def _names_key(node) -> bool:
+    return any(HELIUS_SECRET in str(value) or HELIUS_SECRET in [str(p) for p in path]
+               for path, value in _walk(node))
+
+
+def _int_at_most(value, limit) -> bool:
+    return isinstance(value, str) and value.isdigit() and 0 < int(value) <= limit
+
+
+def _helius_step(job_name, position, step, key_job, canary_seen, later_key_steps):
+    found = []
+    label = '%s.steps[%d]' % (job_name, position)
+    if not isinstance(step, dict):
+        return ['helius_step_not_mapping:%s' % label]
+    uses = step.get('uses')
+    if uses is not None:
+        action, _, version = str(uses).partition('@')
+        if action.lower() not in ALLOWED_ACTIONS or not _SHA.fullmatch(version):
+            found.append('helius_action_not_allowed:%s' % uses)
+        if action.lower() == 'actions/checkout':
+            with_ = step.get('with') or {}
+            if not isinstance(with_, dict) or with_.get('persist-credentials') != 'false' \
+                    or set(with_) - {'persist-credentials'}:
+                found.append('helius_checkout_must_only_set_persist_credentials_false:%s' % label)
+        if action.lower() == 'actions/upload-artifact':
+            if not key_job:
+                found.append('helius_upload_outside_key_job:%s' % label)
+            if not canary_seen or later_key_steps:
+                found.append('helius_upload_without_prior_key_canary:%s' % label)
+            if _normal(step.get('if')) != HELIUS_UPLOAD_IF:
+                found.append('helius_upload_not_gated_by_canary:%s' % label)
+            with_ = step.get('with') or {}
+            paths = [line.strip() for line in str(with_.get('path') or '').splitlines() if line.strip()]
+            if not paths or any(not p.startswith('paper_artifacts/') or '..' in p for p in paths):
+                found.append('helius_upload_path_outside_paper_artifacts:%s' % label)
+            if not _int_at_most(with_.get('retention-days'), HELIUS_MAX_RETENTION_DAYS):
+                found.append('helius_upload_retention_not_bounded:%s' % label)
+    env = step.get('env')
+    if env is not None and not isinstance(env, dict):
+        found.append('helius_step_env_not_mapping:%s' % label)
+        env = {}
+    for env_name, value in (env or {}).items():
+        if _WALLET_NAME.search(env_name):
+            found.append('helius_wallet_like_env:%s' % env_name)
+        if env_name == HELIUS_SECRET:
+            if str(value) != HELIUS_SECRET_VALUE:
+                found.append('helius_key_env_value:%s' % label)
+            if not key_job:
+                found.append('helius_key_outside_key_job:%s' % label)
+        elif 'secrets' in str(value):
+            found.append('helius_secret_in_other_env:%s' % env_name)
+        if env_name == 'RUGGER_LIVE_ENABLED' and str(value) != '0':
+            found.append('helius_live_enabled:%s' % label)
+    run = step.get('run')
+    if run is not None:
+        text = str(run)
+        if 'secrets' in text or HELIUS_SECRET_VALUE in text:
+            found.append('helius_secret_in_run:%s' % label)
+        if re.search(r'\$\{\{[^}]*\binputs\b', text) or 'github.event.inputs' in text:
+            found.append('helius_inputs_interpolated_in_run:%s' % label)
+        if re.search(r'sendTransaction|--live\b', text):
+            found.append('helius_transaction_or_live_in_run:%s' % label)
+    for key in ('with',):
+        for path, value in _walk(step.get(key)):
+            if 'secrets' in str(value):
+                found.append('helius_secret_in_with:%s' % label)
+    if step.get('id') == HELIUS_CANARY_ID:
+        if normalize_run_step(str(run or '').splitlines()) != HELIUS_CANARY_RUN:
+            found.append('helius_canary_run_not_reviewed:%s' % label)
+        if _normal(step.get('if')) != 'always()':
+            found.append('helius_canary_must_run_always:%s' % label)
+        if set(env or {}) != {HELIUS_SECRET} or uses is not None:
+            found.append('helius_canary_shape:%s' % label)
+    return found
+
+
+def helius_violations(name: str, text: str) -> list[str]:
+    """Helius lock rules for a workflow that names HELIUS_API_KEY (see module docstring)."""
+    try:
+        doc = parse_workflow(text)
+    except WorkflowParseError as error:
+        return ['helius_unparseable:%s' % error]
+    found = []
+    on = doc.get('on')
+    dispatch = on.get('workflow_dispatch') if isinstance(on, dict) else None
+    confirm = ((dispatch or {}).get('inputs') or {}).get('confirm') if isinstance(dispatch, dict) else None
+    if not isinstance(on, dict) or set(on) != {'workflow_dispatch'} or not isinstance(confirm, dict) \
+            or confirm.get('required') != 'true' or confirm.get('type') != 'string':
+        found.append('helius_dispatch_without_required_confirm_input')
+    permissions = doc.get('permissions')
+    if not isinstance(permissions, dict) or set(permissions) - _HELIUS_PERMISSION_SCOPES \
+            or any(value not in ('read', 'none') for value in permissions.values()):
+        found.append('helius_workflow_permissions')
+    if doc.get('concurrency') != {'group': HELIUS_CONCURRENCY_GROUP, 'cancel-in-progress': 'false'}:
+        found.append('helius_concurrency_group')
+    if _names_key(doc.get('env')) or 'secrets' in str(doc.get('env') or ''):
+        found.append('helius_key_in_workflow_env')
+    for path, value in _walk(doc):
+        if path and isinstance(path[-1], str) and path[-1] in ('secrets',):
+            found.append('helius_secrets_key')
+    jobs = doc.get('jobs')
+    if not isinstance(jobs, dict) or not jobs:
+        return found + ['helius_no_jobs']
+    gate = helius_gate(name)
+    for job_name, job in jobs.items():
+        if not isinstance(job, dict):
+            found.append('helius_job_not_mapping:%s' % job_name)
+            continue
+        key_job = _names_key(job)
+        condition = _normal(job.get('if'))
+        inert = (condition.startswith("github.event_name == 'pull_request' &&") and '||' not in condition
+                 and not key_job)
+        if not inert:
+            if '||' in condition or not condition.endswith(gate) \
+                    or not _HELIUS_PREFIX.match(condition[:len(condition) - len(gate)]):
+                found.append('helius_job_not_gated:%s' % job_name)
+        if 'permissions' in job:
+            found.append('helius_job_permissions:%s' % job_name)
+        if _names_key(job.get('env')) or 'secrets' in str(job.get('env') or ''):
+            found.append('helius_key_in_job_env:%s' % job_name)
+        for env_name in (job.get('env') or {}) if isinstance(job.get('env'), dict) else ():
+            if _WALLET_NAME.search(env_name):
+                found.append('helius_wallet_like_env:%s' % env_name)
+            if env_name == 'RUGGER_LIVE_ENABLED' and str(job['env'][env_name]) != '0':
+                found.append('helius_live_enabled:%s' % job_name)
+        if key_job and job.get('environment') != HELIUS_ENVIRONMENT:
+            found.append('helius_key_job_without_environment:%s' % job_name)
+        if not inert:
+            if not _int_at_most(job.get('timeout-minutes'), HELIUS_MAX_JOB_MINUTES):
+                found.append('helius_job_timeout:%s' % job_name)
+            if job.get('runs-on') != 'ubuntu-latest':
+                found.append('helius_runner:%s' % job_name)
+            for forbidden in ('container', 'services', 'defaults', 'uses', 'secrets'):
+                if forbidden in job:
+                    found.append('helius_job_key_%s:%s' % (forbidden, job_name))
+        if inert:
+            continue        # can never run (no pull_request trigger) and does not name the key
+        steps = job.get('steps') or []
+        if not isinstance(steps, list):
+            found.append('helius_steps_not_list:%s' % job_name)
+            continue
+        key_positions = [i for i, step in enumerate(steps)
+                         if isinstance(step, dict) and step.get('id') != HELIUS_CANARY_ID and _names_key(step)]
+        canary_positions = [i for i, step in enumerate(steps)
+                            if isinstance(step, dict) and step.get('id') == HELIUS_CANARY_ID]
+        for position, step in enumerate(steps):
+            canary_seen = any(c < position for c in canary_positions)
+            later = [k for k in key_positions if canary_positions and k > canary_positions[0]]
+            found += _helius_step(job_name, position, step, key_job, canary_seen, later)
+        if len(canary_positions) > 1:
+            found.append('helius_several_canaries:%s' % job_name)
+    return found
+
+
 def check_workflow(name: str, text: str) -> list[str]:
     """Return the violations of one workflow file (empty list when compliant)."""
     try:
@@ -626,6 +1099,10 @@ def check_workflow(name: str, text: str) -> list[str]:
         violations += hardening_violations(text)
         violations += syntax_violations(text)
         violations += mapping_key_violations(text)
+    else:
+        violations += manual_secret_violations(text)
+    if is_helius_workflow(text):
+        violations += helius_violations(name, text)
     return violations
 
 

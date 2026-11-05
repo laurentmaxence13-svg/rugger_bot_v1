@@ -4,24 +4,30 @@ name: Reverify archived Helius LaunchLab Ed25519 creations (READ ONLY)
 on:
   # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-HISTORICAL-ED25519-REPLAY to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 permissions:
   contents: read
   actions: read
 
 # Never interrupt a running bounded verification for unrelated PR labels.
 concurrency:
-  group: rugger-finalized-replay-${{ github.ref }}
+  group: helius-collection
   cancel-in-progress: false
 
 jobs:
   finalized-signed-creation-replay:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-       github.event.action == 'labeled' &&
-       github.event.label.name == 'run-finalized-replay' &&
-       github.event.pull_request.head.repo.full_name == github.repository)
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-HISTORICAL-ED25519-REPLAY'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 5
     env:
       RUGGER_NO_DOTENV: '1'
@@ -56,8 +62,18 @@ jobs:
           python -B -m bot.p3.finalized_campaign_replay \
             --summary paper_artifacts/replay_source/prospective_41266654485_summary.json \
             --output paper_artifacts/finalized_campaign_replay_${{ github.run_id }}.json
-      - name: Archive signed message evidence and explicit refusal states
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Archive signed message evidence and explicit refusal states
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: finalized-creation-replay-${{ github.run_id }}

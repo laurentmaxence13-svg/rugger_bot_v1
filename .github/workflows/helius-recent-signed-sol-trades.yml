@@ -3,20 +3,28 @@ name: Helius recent signed LaunchLab SOL trades discovery (READ ONLY)
 on:
   # Manual only (integration 2026-11-03, D3): automatic triggers removed: pull_request.
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type RUN-HELIUS-RECENT-SIGNED-SOL-TRADES to run this Helius collection; the helius-collection environment approval is also required'
+        required: true
+        type: string
 permissions:
   contents: read
 
 concurrency:
-  group: signed-recent-active-pool-discovery-${{ github.event.pull_request.number }}
+  group: helius-collection
   cancel-in-progress: false
 
 jobs:
   bounded-signed-sol-trade-discovery:
     if: >-
-      github.event.action == 'labeled' &&
-      github.event.label.name == 'run-signed-recent-sol-pools-once' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'laurentmaxence13-svg/rugger_bot_v1' &&
+      vars.HELIUS_COLLECTION_ENABLED == 'true' &&
+      inputs.confirm == 'RUN-HELIUS-RECENT-SIGNED-SOL-TRADES'
     runs-on: ubuntu-latest
+    environment: helius-collection
     timeout-minutes: 4
     env:
       RUGGER_NO_DOTENV: '1'
@@ -26,7 +34,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha }}
       - name: Python 3.11
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
@@ -43,8 +50,18 @@ jobs:
         run: |
           python -B -m bot.live.helius_recent_signed_trade_pools \
             --network --output paper_artifacts/signed_active_sol_pools_${{ github.run_id }}.json
-      - name: Retain the signed-trade candidate denominator and refusals
+      - name: Refuse to publish any file that contains the Helius key
+        id: helius_key_canary
         if: always()
+        env:
+          HELIUS_API_KEY: ${{ secrets.HELIUS_API_KEY }}
+        run: |
+          if [ -z "${HELIUS_API_KEY}" ]; then echo 'HELIUS_KEY_CANARY=FAIL empty_key'; exit 1; fi
+          if grep -rqsF -- "${HELIUS_API_KEY}" paper_artifacts; then echo 'HELIUS_KEY_CANARY=FAIL key_found'; exit 1; fi
+          if [ -n "$(find paper_artifacts -name "*${HELIUS_API_KEY}*" 2>/dev/null | head -n 1)" ]; then echo 'HELIUS_KEY_CANARY=FAIL key_in_file_name'; exit 1; fi
+          echo 'HELIUS_KEY_CANARY=PASS'
+      - name: Retain the signed-trade candidate denominator and refusals
+        if: always() && steps.helius_key_canary.outcome == 'success'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: verified-recent-sol-launchlab-trades-${{ github.run_id }}
