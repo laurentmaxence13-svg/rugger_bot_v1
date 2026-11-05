@@ -24,6 +24,7 @@ from bot.market.collector import MAX_TX_VERSION, BudgetExhausted
 from bot.market.sol_usd_collect import describe_filter, point_from_transaction
 
 MAX_FALLBACK = 3
+SAMPLE_SEGMENT_ROWS = 500
 GRIDS = (2, 4)
 
 
@@ -115,7 +116,9 @@ class SampledBackfill(Backfill):
             if not kept:
                 stats['no_swap_found'] += 1
             previous = targets[position]
-            if len(batch) >= self.segment_pages * 100:
+            # Small sample segments (500 bodies by default): an interruption re-fetches
+            # at most one segment (R02 observation O1 on T-0033); spend stays capped.
+            if len(batch) >= SAMPLE_SEGMENT_ROWS:
                 self._commit('tx', batch, 'sample', position + 1, False)
                 batch = []
         self._commit('tx', batch, 'sample', len(targets), True)

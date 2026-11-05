@@ -781,3 +781,12 @@ def test_custom_filter_requires_all_fields():
     built = su.swap_filter_from_args('custom', program='P', discriminators=['00' * 8],
                                      pool_account_index=2, min_sol_lamports=5)
     assert built.pool_account_index == 2 and built.min_sol_lamports == 5
+
+
+def test_sample_commits_small_segments(tmp_path, monkeypatch):
+    monkeypatch.setattr(ss, 'SAMPLE_SEGMENT_ROWS', 3)
+    code, report = _sample(tmp_path, DensePool())
+    assert code == 0 and report['complete']
+    sizes = [json.loads((tmp_path / 's' / 'manifest.json').read_text())['segments']]
+    tx_rows = [s['rows'] for s in sizes[0] if s['kind'] == 'tx']
+    assert len(tx_rows) > 1 and max(tx_rows) <= 3

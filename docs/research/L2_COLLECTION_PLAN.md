@@ -281,6 +281,12 @@ Couverture (O2) : la densité est seulement rapportée, pas imposée. En P0, mes
 part des décisions L1 en `sol_usd_stale` ou `sol_usd_rate_unavailable`, et la
 consigner avec le rapport.
 
+Index de transaction (O2 de RUGGER 02 sur T-0033) : `getTransaction` standard ne
+donne pas toujours `transactionIndex`. Un point sans index ne sert que les décisions
+d'un slot strictement postérieur. En P0, consigner la part des points sans index et
+la part des décisions refusées pour cette raison. Avec Helius, `sample` recopie
+l'index de la ligne de signatures quand le corps n'en a pas.
+
 ```bash
 python -B tools/backfill_launchlab_window.py sol-usd-series --out data/backfill/p0_solusdc --pool <pool SOL/USDC> --sol-vault <réserve WSOL> --usdc-vault <réserve USDC> --series-out data/backfill/p0_sol_usd.json.gz
 ```
