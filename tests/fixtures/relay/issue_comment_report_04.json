@@ -2,7 +2,12 @@
  "action": "created",
  "comment": {
   "id": 5,
-  "body": "Rapport.\nSTATUS: COMPLETED\nNEXT_TASK:\n  agent: rugger-02\n  title: Audit PR 198 relais\n  criteria: verifier atomicite outbox et dedup par delivery ID sur fixtures\n"
+  "body": "Rapport.\nSTATUS: COMPLETED\nNEXT_TASK:\n  agent: rugger-02\n  title: Audit PR 198 relais\n  criteria: verifier atomicite outbox et dedup par delivery ID sur fixtures\n",
+  "user": {
+   "login": "laurentmaxence13-svg",
+   "type": "User"
+  },
+  "author_association": "OWNER"
  },
  "issue": {
   "number": 200,
@@ -21,5 +26,9 @@
  },
  "repository": {
   "full_name": "laurentmaxence13-svg/rugger_bot_v1"
+ },
+ "sender": {
+  "login": "laurentmaxence13-svg",
+  "type": "User"
  }
 }

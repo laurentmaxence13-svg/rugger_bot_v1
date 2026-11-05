@@ -12,6 +12,40 @@ from datetime import datetime, timezone
 from tools import relay_planner as rp, relay_store as rs, relay_payload as rpl
 
 HANDLED = ("issues", "issue_comment", "workflow_run")
+ALLOWED_REPO = "laurentmaxence13-svg/rugger_bot_v1"
+# Explicit allowlists (no wildcard). Humans: owner only. Bots: none until the owner names one
+# (the real identity of the Claude Code Cloud / GitHub App actor is UNKNOWN, not guessed).
+ALLOWED_USERS = frozenset({"laurentmaxence13-svg"})
+ALLOWED_BOTS = frozenset()
+ALLOWED_ASSOCIATIONS = frozenset({"OWNER", "MEMBER"})
+
+
+def _login_ok(user) -> bool:
+    if not isinstance(user, dict) or not isinstance(user.get("login"), str):
+        return False
+    if user.get("type") == "Bot":
+        return user["login"] in ALLOWED_BOTS
+    return user["login"] in ALLOWED_USERS
+
+
+def authorize(event_name: str, payload: dict) -> str | None:
+    """None if authorised, else the refusal reason. Missing data => refusal (fail-closed)."""
+    repo = payload.get("repository")
+    if not isinstance(repo, dict) or repo.get("full_name") != ALLOWED_REPO:
+        return "refused: repository is not exactly " + ALLOWED_REPO
+    if not _login_ok(payload.get("sender")):
+        return "refused: sender missing or not allowlisted"
+    if event_name == "issue_comment":
+        c = payload.get("comment")
+        if not isinstance(c, dict) or not _login_ok(c.get("user")):
+            return "refused: comment author missing or not allowlisted"
+        if c["user"]["login"] != payload["sender"]["login"]:
+            return "refused: comment author differs from sender"
+        if c.get("author_association") not in ALLOWED_ASSOCIATIONS:
+            return "refused: author_association not OWNER/MEMBER"
+        if not isinstance(c.get("id"), int):
+            return "refused: comment id missing"
+    return None
 
 
 def utcnow() -> datetime:
@@ -34,6 +68,9 @@ def handle_webhook(con, event_name: str, delivery_id: str, payload: dict, now: d
         return {"handled": False, "reason": "kill switch ON: no action", "decision": None}
     if event_name not in HANDLED or not delivery_id or not isinstance(payload, dict):
         return {"handled": False, "reason": "unsupported/malformed event", "decision": None}
+    bad = authorize(event_name, payload)
+    if bad:
+        return {"handled": False, "reason": bad, "decision": None}
     act = payload.get("action")
 
     if event_name == "workflow_run":
@@ -77,14 +114,21 @@ def handle_webhook(con, event_name: str, delivery_id: str, payload: dict, now: d
     else:
         return {"handled": False, "reason": "event not a completion", "decision": None}
 
+    # Proven prior launch: the agent must be RUNNING on exactly this issue (WAITING/READY/COMPLETED/BLOCKED refused).
+    cur = rs.load_state(con)["agents"][agent]
+    if cur["state"] != "RUNNING" or cur["issue"] != n:
+        return {"handled": False, "reason": f"refused: {agent} not RUNNING on #{n} (state={cur['state']}, issue={cur['issue']})", "decision": None}
     if con.execute("SELECT 1 FROM processed WHERE key=?", (f"issue-done:{n}",)).fetchone():
         return {"handled": False, "reason": f"issue #{n} completion already processed", "decision": None}
+    # Dedup keys (comment id, delivery id, issue completion) are claimed in the SAME transaction as the effects.
+    keys = [f"delivery:{delivery_id}", f"issue-done:{n}"]
+    if event_name == "issue_comment":
+        keys.append(f"comment:{payload['comment']['id']}")
     ev = {"id": delivery_id, "action": "closed",
           "issue": {"number": n, "state": "closed", "labels": labels, "last_comment": body}}
-    dec = rs.process_event(con, ev, now)
+    dec = rs.process_event(con, ev, now, tuple(keys))
     if not dec["actions"] and "idempotent" in dec.get("reason", ""):
         return {"handled": False, "reason": dec["reason"], "decision": None}
-    con.execute("INSERT OR IGNORE INTO processed(key,at) VALUES(?,?)", (f"issue-done:{n}", now.isoformat()))
     return {"handled": True, "reason": dec.get("reason", ""), "decision": dec}
 
 

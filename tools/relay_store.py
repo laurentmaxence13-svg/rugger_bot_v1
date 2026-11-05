@@ -45,12 +45,16 @@ def load_state(con) -> dict:
     return st
 
 
-def apply_decision(con, decision: dict, now: datetime, key: str | None = None) -> bool:
+def apply_decision(con, decision: dict, now: datetime, key: str | None = None, extra_keys: tuple = ()) -> bool:
     """Atomically persist a planner decision. Returns False if `key` was already processed."""
     con.execute("BEGIN IMMEDIATE")
     try:
         if key is not None:
             if con.execute("INSERT OR IGNORE INTO processed(key,at) VALUES(?,?)", (key, now.isoformat())).rowcount == 0:
+                con.execute("ROLLBACK")
+                return False
+        for k in extra_keys:  # same transaction: all dedup keys claimed atomically with the effects
+            if con.execute("INSERT OR IGNORE INTO processed(key,at) VALUES(?,?)", (k, now.isoformat())).rowcount == 0:
                 con.execute("ROLLBACK")
                 return False
         pending_label = next((x["label"] for x in decision.get("actions", []) if x["type"] == "ADD_LABEL"), None)
@@ -105,7 +109,7 @@ def run_outbox(con, send) -> list:
     return done
 
 
-def process_event(con, event: dict, now: datetime) -> dict:
+def process_event(con, event: dict, now: datetime, extra_keys: tuple = ()) -> dict:
     """decide -> persist atomically. Duplicate delivery of the same event is a no-op."""
     dec = rp.decide(event, load_state(con), now)
     key = f"{event.get('id')}:{(event.get('issue') or {}).get('number')}"
@@ -114,7 +118,7 @@ def process_event(con, event: dict, now: datetime) -> dict:
         apply_decision(con, dec, now, None)
         return dec
     dec["actions"] = [a for a in dec["actions"] if a["type"] != "MARK_PROCESSED"]
-    if not apply_decision(con, dec, now, key):
+    if not apply_decision(con, dec, now, key, extra_keys):
         return {"actions": [], "reason": "idempotent: event already processed"}
     return dec
 
