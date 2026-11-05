@@ -108,6 +108,17 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     sm.add_argument('--out', type=Path, required=True)
     sm.add_argument('--before-signature', default=None)
     _filter_args(sm)
+    cs = sub.add_parser('compare-series',
+                        help='consistency check of two SOL/USD series; exit 4 = stop; no network')
+    cs.add_argument('--a', type=Path, required=True, help='reference series file')
+    cs.add_argument('--b', type=Path, required=True, help='independent second series file')
+    cs.add_argument('--start-second', type=int, default=None)
+    cs.add_argument('--end-second', type=int, default=None)
+    cs.add_argument('--step-seconds', type=int, default=1)
+    cs.add_argument('--max-median', default='0.003', help='pre-registered, as a decimal')
+    cs.add_argument('--max-p99', default='0.01', help='pre-registered, as a decimal')
+    cs.add_argument('--min-compared', type=int, default=1000)
+    cs.add_argument('--report-out', type=Path, default=None)
     s2 = sub.add_parser('sol-usd-series',
                         help='causal SOL/USD series from a SOL/USDC pool window; no network')
     s2.add_argument('--out', type=Path, required=True, help='verified window of the pool address')
@@ -164,6 +175,17 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
             emit({k: manifest[k] for k in ('complete', 'stopped_by', 'totals', 'budget',
                                             'endpoint', 'sampling')})
             return 0 if manifest['complete'] else 3
+        if args.command == 'compare-series':
+            from fractions import Fraction
+            from bot.market.sol_usd_compare import compare, load_series_document
+            result = compare(load_series_document(args.a), load_series_document(args.b),
+                             start_second=args.start_second, end_second=args.end_second,
+                             step_seconds=args.step_seconds, max_median=Fraction(args.max_median),
+                             max_p99=Fraction(args.max_p99), min_compared=args.min_compared)
+            if args.report_out is not None:
+                args.report_out.write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+            emit(result)
+            return 0 if result['verdict'] == 'PASS' else 4
         if args.command == 'sol-usd-series':
             from bot.market.sol_usd_collect import build_series, density, write_series
             report = {}

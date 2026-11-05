@@ -217,6 +217,9 @@ Qualité de chaque point (constat B1 de RUGGER 02 sur T-0032) :
   compte du pool ;
 - un aller-retour ou plusieurs passages par le même pool (`multi_swap`) laissent un
   petit résidu net, qui donnerait un prix absurde : ils sont rejetés ;
+- un swap combiné à une autre instruction du programme du pool sur ce même pool,
+  par exemple un dépôt ou un retrait, est rejeté (`other_pool_instruction`, T-0034).
+  Un passage par un agrégateur, qui appelle le pool par CPI, reste accepté ;
 - une variation nette inférieure à `--min-sol-lamports` (0,1 SOL par défaut) est
   rejetée comme poussière (`below_min_size`) ;
 - chaque rejet est compté par motif dans `<série>.report.json`.
@@ -263,9 +266,14 @@ besoin d'un autre type de pool (point 3).
 - en cas de dépassement, arrêter P1 et revoir le choix du pool. Aucun rejeu n'est
   compté sur une série qui échoue.
 
-L'outil de comparaison (`compare-series`, hors réseau, testé) reste à écrire. Ce
-sera une tâche distincte, avec audit de RUGGER 02, une fois les audits de T-0032 et
-T-0033 terminés.
+Outil (T-0034, hors réseau) : `compare-series`. Il applique la règle de temps de la
+spécification : décision à B × 1000 + 400 ms, point disponible à la fin de sa
+seconde, âge d'au plus 5 s. Le code de sortie est la règle d'arrêt : 0 = PASS,
+4 = FAIL ou INSUFFICIENT.
+
+```bash
+python -B tools/backfill_launchlab_window.py compare-series --a data/backfill/p0_sol_usd.json.gz --b data/backfill/p0_sol_usd_second.json.gz --max-median 0.003 --max-p99 0.01 --min-compared 1000 --report-out data/backfill/p0_sol_usd_compare.json
+```
 
 **3. Préréglages supplémentaires** (Raydium AMM v4, CLMM, Orca Whirlpool), si P0
 montre qu'aucun pool CPMM ne passe le point 1 :

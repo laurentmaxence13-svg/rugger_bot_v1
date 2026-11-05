@@ -72,33 +72,49 @@ SWAP_FILTERS = {
         3),
 }
 REJECTIONS = ('failed', 'no_vault_balance', 'same_direction', 'no_swap_instruction',
-              'multi_swap', 'below_min_size', 'price_rounds_to_zero')
+              'multi_swap', 'other_pool_instruction', 'below_min_size', 'price_rounds_to_zero')
 
 
-def swap_instruction_count(tx, pool, swap_filter):
-    """Outer and inner instructions that are a swap of ``swap_filter`` on ``pool``."""
+def pool_instruction_counts(tx, pool, swap_filter):
+    """(swaps, others): instructions of the pool program that touch ``pool``.
+
+    ``swaps`` = matching swap instructions (discriminator + pool at its position);
+    ``others`` = every other instruction of that program referencing the pool at any
+    position (a deposit, a withdrawal...). A deposit or withdrawal in the same
+    transaction moves the vaults too, so the net deltas are no longer a swap price
+    (R02 observation on T-0032 and T-0033). Instructions of other programs (an
+    aggregator calling the pool by CPI) are not counted.
+    """
     keys = account_keys(tx)
     message = (tx.get('transaction') or {}).get('message') or {}
     instructions = list(message.get('instructions') or [])
     for group in (tx.get('meta') or {}).get('innerInstructions') or []:
         instructions.extend(group.get('instructions') or [])
-    count = 0
+    swaps = others = 0
     for ix in instructions:
         program, refs = ix.get('programIdIndex'), ix.get('accounts') or []
         if type(program) is not int or not 0 <= program < len(keys):
             continue
-        if keys[program] != swap_filter.program or len(refs) <= swap_filter.pool_account_index:
+        if keys[program] != swap_filter.program:
             continue
-        ref = refs[swap_filter.pool_account_index]
-        if type(ref) is not int or not 0 <= ref < len(keys) or keys[ref] != pool:
+        touched = [i for i, ref in enumerate(refs)
+                   if type(ref) is int and 0 <= ref < len(keys) and keys[ref] == pool]
+        if not touched:
             continue
         try:
             data = b58decode(ix.get('data') or '')
         except EventDecodeError:
-            continue
-        if data[:8] in swap_filter.discriminators:
-            count += 1
-    return count
+            data = b''
+        if data[:8] in swap_filter.discriminators and swap_filter.pool_account_index in touched:
+            swaps += 1
+        else:
+            others += 1
+    return swaps, others
+
+
+def swap_instruction_count(tx, pool, swap_filter):
+    """Matching swap instructions on ``pool`` (see :func:`pool_instruction_counts`)."""
+    return pool_instruction_counts(tx, pool, swap_filter)[0]
 
 
 def canonical_sha256(obj):
@@ -144,11 +160,13 @@ def point_from_transaction(entry, *, pool, sol_vault, usdc_vault, swap_filter, r
     d_sol, d_usdc = values
     if d_sol == 0 or d_usdc == 0 or (d_sol > 0) == (d_usdc > 0):
         return reject('same_direction')
-    swaps = swap_instruction_count(entry, pool, swap_filter)
+    swaps, others = pool_instruction_counts(entry, pool, swap_filter)
     if swaps == 0:
         return reject('no_swap_instruction')
     if swaps > 1:
         return reject('multi_swap')
+    if others:
+        return reject('other_pool_instruction')
     if abs(d_sol) < swap_filter.min_sol_lamports:
         return reject('below_min_size')
     price = Fraction(abs(d_usdc), 10 ** 6) / Fraction(abs(d_sol), 10 ** 9)

@@ -790,3 +790,77 @@ def test_sample_commits_small_segments(tmp_path, monkeypatch):
     sizes = [json.loads((tmp_path / 's' / 'manifest.json').read_text())['segments']]
     tx_rows = [s['rows'] for s in sizes[0] if s['kind'] == 'tx']
     assert len(tx_rows) > 1 and max(tx_rows) <= 3
+
+
+# --------------------------------------------------------------------------- T-0034
+from bot.market import sol_usd_compare as sc                   # noqa: E402
+
+DEPOSIT = bytes(range(8))                                      # not a swap discriminator
+
+
+def test_swap_combined_with_a_deposit_on_the_same_pool_is_rejected():
+    tx = _pool_tx('c', 10, 0, 100, -2 * 10**9, 300 * 10**6)
+    other = {'programIdIndex': 4, 'accounts': [0, 3, 1, 2], 'data': b58encode(DEPOSIT + bytes(8))}
+    tx['transaction']['message']['instructions'].append(other)
+    rejected = {}
+    assert _single(tx, rejected=rejected) is None and rejected == {'other_pool_instruction': 1}
+    assert su.pool_instruction_counts(tx, SOL_POOL, CPMM) == (1, 1)
+
+
+def test_inner_deposit_is_seen_and_aggregator_cpi_is_kept():
+    tx = _pool_tx('i', 10, 0, 100, -2 * 10**9, 300 * 10**6)
+    tx['meta']['innerInstructions'] = [{'index': 0, 'instructions': [
+        {'programIdIndex': 4, 'accounts': [3], 'data': b58encode(DEPOSIT)}]}]
+    assert _single(tx) is None                                  # inner withdraw on the pool
+    agg = _pool_tx('g', 10, 0, 100, -2 * 10**9, 300 * 10**6, swaps=0)
+    keys = agg['transaction']['message']['accountKeys']
+    keys.append('AggregatorProgram1111111111111111111111111')
+    agg['transaction']['message']['instructions'] = [
+        {'programIdIndex': len(keys) - 1, 'accounts': [0, 3, 1, 2], 'data': b58encode(bytes(8))}]
+    agg['meta']['innerInstructions'] = [{'index': 0, 'instructions': [_swap_ix(3)]}]
+    point = _single(agg)                                        # the CPI swap is the only one
+    assert point is not None and point['price'] == 150 * 10**8
+
+
+def _series(points):
+    return {'schema': 'rugger-sol-usd-series-v1', 'label': 'SYNTHETIC_TEST_FIXTURE',
+            'points': [{'schema': 'rugger-sol-usd-point-v1', 'slot': 1000 + i,
+                        'transaction_index': 0, 'block_time': bt, 'received_at_ms': None,
+                        'publish_time': None, 'price': price, 'exponent': -8, 'confidence': None,
+                        'source_kind': 'sol_usdc_pool_last_trade', 'source_ref': 'P',
+                        'evidence_sha256': '0' * 64, 'signature': f's{i}'}
+                       for i, (bt, price) in enumerate(points)]}
+
+
+def test_compare_identical_series_pass_and_shifted_fail():
+    base = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
+    same = sc.compare(base, base, min_compared=50)
+    assert same['verdict'] == 'PASS' and same['deviation']['max'] == '0.000000000'
+    shifted = _series([(t, 1515 * 10**7) for t in range(5000, 5100)])    # +1 %
+    result = sc.compare(shifted, base, min_compared=50)
+    assert result['verdict'] == 'FAIL' and result['deviation']['median'] == '0.010000000'
+    assert sc.compare(base, base, min_compared=10_000)['verdict'] == 'INSUFFICIENT'
+
+
+def test_compare_uses_the_spec_timing_rule():
+    # One point at second 100: usable from second 101 (end of its second) to 104 (age 4.4 s).
+    a = _series([(100, 150 * 10**8)])
+    seen = [s for s in range(99, 107) if sc._Reader(a).at(s * 1000 + 400) is not None]
+    assert seen == [101, 102, 103, 104]
+    b = _series([(t, 150 * 10**8) for t in range(95, 110)])
+    report = sc.compare(a, b, start_second=99, end_second=106, min_compared=1)
+    assert report['seconds']['compared'] == 4 and report['seconds']['missing']['a'] == 4
+
+
+def test_compare_series_cli_exit_code_is_the_stop_rule(tmp_path):
+    base = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
+    far = _series([(t, 160 * 10**8) for t in range(5000, 5100)])
+    for name, doc in (('a.json', base), ('b.json', far)):
+        (tmp_path / name).write_text(json.dumps(doc))
+    buf = io.StringIO()
+    code = cli.main(['compare-series', '--a', str(tmp_path / 'b.json'), '--b', str(tmp_path / 'a.json'),
+                     '--min-compared', '50', '--report-out', str(tmp_path / 'r.json')], out=buf)
+    assert code == 4 and json.loads((tmp_path / 'r.json').read_text())['verdict'] == 'FAIL'
+    buf = io.StringIO()
+    assert cli.main(['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'a.json'),
+                     '--min-compared', '50'], out=buf) == 0
