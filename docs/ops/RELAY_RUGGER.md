@@ -64,3 +64,18 @@ Un `on: schedule: cron: "17 * * * *"` appelant `watchdog()` sur la base d'état,
 
 ### Limites restantes
 Aucun exécuteur GitHub réel (CREATE_ISSUE/ADD_LABEL) n'est écrit ; `send` est injecté. Le filtre FORBIDDEN reste lexical. La concurrence multi-processus repose sur SQLite (un seul hôte).
+
+## Exécuteur événementiel (#200) — NON ACTIVÉ
+
+- `tools/relay_executor.py` : `handle_webhook` (issues labeled/closed, issue_comment avec contrat `STATUS:`, workflow_run en échec), dédup par delivery ID (SQLite), `drain_outbox` après commit, `catchup` (watchdog + promotion), `dry_run_send` (affiche seulement).
+- COMPLETED + NEXT_TASK valide → une ligne outbox contenant titre, critères **et label** : une seule création d'issue étiquetée. BLOCKED/format ambigu/domaine interdit → escalade, aucune tâche.
+- Quotas : 1 run/agent (sinon file d'attente), 2/h/agent, 6/j/agent, 16/j global, fail-closed. Heures UTC aware obligatoires (naïf refusé).
+- Kill switch : `relay_store.set_kill_switch(con, True, now)` ; retour arrière : `relay_store.rollback_pending(con)` (annule les envois non faits).
+- Preuve : `tests/test_relay_executor.py` + fixtures `tests/fixtures/relay/` (payloads au format webhook ; forme reconstituée, pas capturée).
+- Workflow `relay-executor.yml` : inerte (branche non par défaut + garde `vars.RELAY_ENABLED`), dry-run, aucune permission/secret modifié.
+
+### Limites exactes (non résolues)
+1. **GITHUB_TOKEN** : selon la documentation GitHub (non re-vérifiée dans cette session : docs.github.com injoignable), les événements créés avec `GITHUB_TOKEN` ne lancent pas de nouveaux workflows (sauf `workflow_dispatch`/`repository_dispatch`). Une issue/label posés par le relais avec ce jeton ne déclencherait donc pas un workflow ; seule une GitHub App (ou `repository_dispatch`) est à étudier. Si le routine Claude reçoit bien les webhooks de ces événements : **inconnu**, à tester sur issue de test sûre avec plafond de coût.
+2. Un runner Actions est éphémère : la base SQLite n'y est pas durable. Il faut un hôte persistant ou un autre registre (décision propriétaire).
+3. Le sender réel n'est pas implémenté (aucun jeton/PAT fourni ni inventé).
+4. Aucun événement Claude ne peut être garanti tant que (1) n'est pas testé.

@@ -1,0 +1,11 @@
+{
+ "action": "completed",
+ "workflow_run": {
+  "id": 77,
+  "conclusion": "failure",
+  "name": "relay"
+ },
+ "repository": {
+  "full_name": "laurentmaxence13-svg/rugger_bot_v1"
+ }
+}
