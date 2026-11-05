@@ -278,6 +278,7 @@ class _PoolObserver:
             else:
                 shared['sol_usd_point'] = dict(
                     slot=point['slot'], transaction_index=point['transaction_index'],
+                    price=point['price'], exponent=point['exponent'],
                     source_kind=point['source_kind'], source_ref=point['source_ref'],
                     evidence_sha256=point['evidence_sha256'], age_ms=age,
                     available_ms=sol_usd_available_ms(point), verification=SOL_USD_VERIFICATION)
