@@ -75,7 +75,7 @@ Le journal de chaque décision indique le point retenu, son âge et son instant 
 
 **Conséquence pratique.** En rejeu, D vaut `block_time × 1000 + 400`. Un point horodaté dans la même seconde que la décision est donc toujours refusé : l'âge minimal effectif est de 1400 ms, pour un point publié pendant la seconde précédente.
 
-**Densité requise.** Une décision de la seconde B n'est servie que par un point publié pendant l'une des secondes B − 4 à B − 1. Il faut donc au moins un point toutes les 4 s sur la vie de chaque pool ; un point par seconde est recommandé. Sinon, les décisions concernées restent WAIT (`sol_usd_stale`).
+**Densité requise : au moins un point par seconde** sur la vie de chaque pool (observation O2 de T-0031). Une décision de la seconde B n'est servie que par un point publié pendant l'une des secondes B − 4 à B − 1, et le plus récent de ces points fixe l'âge : avec un point par seconde, l'âge reste de 1400 à 2399 ms. Au-delà de 4 s sans point, les décisions concernées restent WAIT (`sol_usd_stale`).
 
 ## 5. Ce que la série ne change pas
 
@@ -90,5 +90,5 @@ Le MANIFEST de la collecte peut fournir `entry_cutoff_slot` et `window_slot_max`
 
 - **Entrée** : aucune entrée de recherche après `entry_cutoff_slot`. Les décisions concernées restent journalisées en WAIT, avec le motif `after_entry_cutoff_slot`.
 - **Sortie** : un cycle n'est clos que si sa sortie a lieu au plus tard au slot `window_slot_max`. Sinon, son résultat est `open_at_window_end` : il n'est jamais compté comme cycle clos, et sa valeur de marché est seulement indiquée dans `mark_pnl_lamports`.
-- **Contrôle** : le rejeu exige que `window_slot_max − entry_cutoff_slot` soit au moins égal à `ceil(exit_horizon_ms / 400) + 2 × latency_slots`, soit 79 slots avec les paramètres actuels. Les pools encore actifs près de la fin de la fenêtre **doivent être gardés** dans l'export.
+- **Contrôle** : le rejeu exige que `window_slot_max − entry_cutoff_slot` soit au moins égal à `ceil(exit_horizon_ms / 350) + 2 × latency_slots`, soit **90 slots** avec les paramètres actuels. 350 ms est une borne basse de la durée d'un slot (la moyenne est d'environ 400 ms) : des slots plus rapides demandent plus de slots pour couvrir l'horizon de sortie (observation O1 de T-0031). Les pools encore actifs près de la fin de la fenêtre **doivent être gardés** dans l'export.
 - **Compatibilité** : sans ces champs, le comportement est inchangé et les fixtures ne sont pas affectées.

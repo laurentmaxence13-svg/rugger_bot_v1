@@ -114,7 +114,9 @@ class ReplayParams:
                               priority_fee_lamports=self.priority_fee_lamports)
 
 
-SLOT_MS_FLOOR = 400     # average Solana slot; a gap is checked conservatively in slots
+# Lower bound of a Solana slot (the average is about 400 ms): faster slots need more of
+# them to cover the exit horizon, so the minimum window gap is sized on this floor (T-0031 O1).
+SLOT_MS_FLOOR = 350
 
 
 def collection_window(entry, manifest, params):
