@@ -51,6 +51,41 @@ class FakeRpc:
         raise AssertionError(method)
 
 
+@pytest.fixture(autouse=True)
+def _observers_are_always_closed(monkeypatch):
+    """Anti-regression for the sqlite3 connection leak (issue #194).
+
+    Every ``Observer`` built during a test is tracked; at teardown (also after a failed
+    assertion or an exception) its connection is closed so nothing is left to the GC, whose
+    deferred ``ResourceWarning`` used to be blamed on an unrelated later test under ``-W error``.
+    A test that forgot to call ``close()`` itself now fails here, naming the leak.
+    """
+    created, closed = [], set()
+    real_init, real_close = ob.Observer.__init__, ob.Observer.close
+
+    def init(self, *a, **kw):
+        real_init(self, *a, **kw)
+        created.append(self)
+
+    def close(self):
+        closed.add(id(self))
+        real_close(self)
+
+    monkeypatch.setattr(ob.Observer, '__init__', init)
+    monkeypatch.setattr(ob.Observer, 'close', close)
+    yield
+    leaked = [o for o in created if id(o) not in closed]
+    for o in leaked:
+        real_close(o)
+    assert not leaked, f'{len(leaked)} Observer(s) not closed by the test (sqlite connection leak)'
+
+
+def test_close_is_idempotent(tmp_path):
+    o, _ = make(tmp_path)
+    o.close()
+    o.close()                                   # closing twice is harmless
+
+
 def make(tmp_path, rpc=None, clock=None, **kw):
     clock = clock or Clock()
     cfg = ob.ObserverConfig(db_path=str(tmp_path / 'o.db'), journal_path=str(tmp_path / 'j.jsonl'),
@@ -608,6 +643,7 @@ def test_b7_failure_during_enumeration_commit_leaves_cursor_and_pending_untouche
         o._enumerate(ob.LAUNCHLAB_PROGRAM)
     o.con = real
     assert o.pending_count() == 0 and o._get(f'cursor:{ob.LAUNCHLAB_PROGRAM}') is None
+    o.close()
 
 
 def test_b7_anchor_with_empty_page_sets_nothing_then_anchors_when_rows_appear(tmp_path):
