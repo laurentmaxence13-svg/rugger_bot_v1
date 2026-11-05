@@ -11,8 +11,8 @@ if str(ROOT) not in sys.path:
 from bot.dashboard.evidence import _source,load_local,load_uploaded,parse_documents,synthetic_demo
 from bot.dashboard.local_db import read_paper_db
 from bot.dashboard.research_view import (EMPTY_SECTIONS,BundleRefused,committed_bundles,cycle_rows,
-                                         decision_rows,load_results_registry,pool_rows,summary,
-                                         verify_bundle)
+                                         decision_rows,load_results_registry,markdown_escape,
+                                         pool_rows,summary,verify_bundle)
 
 
 def money(x,sign=False):
@@ -167,19 +167,27 @@ def link_table(rows,columns,empty):
 
 def render_bundle(document,verification):
     s=summary(document,verification)
-    st.markdown(f"### {verification['name']}")
+    st.markdown("### "+markdown_escape(verification["name"]))
     st.info(f"Étiquette : **{s['label']}**. Rejeu de recherche sur des données on-chain archivées : "
             "pas un trade du Master, non compté dans le seuil de 50 cycles et 20 créateurs, aucun ordre.")
     if s["label_reasons"]:
-        st.warning("SYNTHETIC : "+" ; ".join(s["label_reasons"])+".")
-    variant=f" (variante {verification['registry_variant']})" if verification["registry_variant"] else ""
-    st.success(f"sha256 vérifié à l'affichage : fichier `{verification['file_sha256']}`, "
-               f"bundle `{verification['bundle_sha256']}` · {verification['status']}{variant}")
+        st.warning("SYNTHETIC : "+" ; ".join(markdown_escape(r) for r in s["label_reasons"])+".")
+    hashes=(f"fichier `{verification['file_sha256']}`, bundle `{verification['bundle_sha256']}`")
+    if verification["status"]=="VERIFIED_AGAINST_RESULTS_REGISTRY":
+        st.success(f"sha256 vérifié à l'affichage contre le registre RESULTS.json "
+                   f"(VERIFIED_AGAINST_RESULTS_REGISTRY, variante "
+                   f"{markdown_escape(verification['registry_variant'])}) : {hashes}")
+    else:
+        st.warning(f"Bundle cohérent avec lui-même mais absent du registre RESULTS.json "
+                   f"(SELF_CONSISTENT_NOT_IN_REGISTRY) : {hashes}. Personne d'autre ne l'a enregistré.")
     a,b,c,d=st.columns(4)
     a.metric("Pools",s["pools"])
     b.metric("Décisions journalisées",s["decisions"])
     c.metric("ENTER (recherche)",s["entries"])
     d.metric("Cycles clos",s["closed_cycles"])
+    if s["marked_positions"]:
+        st.caption(f"Positions valorisées à la marque, jamais vendues : {s['marked_positions']} "
+                   "(hors cycles clos et hors P&L).")
     st.caption("Horloge de source vérifiée : "+str(s["source_clock_verified"])+
                " · SOL/USD vérifié : "+str(s["sol_usd_verified"])+
                " · Statut de preuve : "+str(s["research_evidence_status"]))
@@ -228,7 +236,8 @@ def render_research():
         except BundleRefused as exc:
             refused.append(dict(name=_source(uploaded.name),reason=str(exc)))
     for row in refused:
-        st.error(f"Bundle refusé ({row['name']}) : {row['reason']}. Rien n'en est affiché.")
+        st.error(f"Bundle refusé ({markdown_escape(row['name'])}) : {markdown_escape(row['reason'])}. "
+                 "Rien n'en est affiché.")
     if not loaded:
         st.info("Aucun bundle de rejeu vérifié.")
     for document,verification in loaded:

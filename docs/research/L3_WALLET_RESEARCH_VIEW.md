@@ -23,10 +23,11 @@ Un bundle n'est affiché que si toutes les conditions suivantes sont remplies :
 
 1. Le fichier fait au plus 8 Mo et le JSON est valide, sans `NaN` ni `Infinity`.
 2. Le schéma et la catégorie sont `HISTORICAL_REPLAY`.
-3. Les drapeaux `master_operational_trade`, `counted_in_master_gate`, `admissible_in_paper_ledger` et `financial_order_submitted` valent exactement `false`.
+3. Les drapeaux `master_operational_trade`, `counted_in_master_gate`, `admissible_in_paper_ledger`, `financial_order_submitted`, `sol_usd_verified` et `source_clock_verified` valent exactement `false`, et `research_evidence_status` vaut `PENDING_R02_QUALIFICATION`. Aucun producteur ne peut encore poser ces vérifications, et seul RUGGER 02 qualifie une preuve, jamais à l'intérieur d'un bundle (correctif B2 de T-0035).
 4. Le `bundle_sha256` recalculé, avec le même JSON canonique que le rejeu, est égal à la valeur déclarée.
 5. Si ce `bundle_sha256` figure dans `validation/historical_replay_l1/RESULTS.json`, le sha256 du fichier doit aussi être celui du registre. Le statut est alors `VERIFIED_AGAINST_RESULTS_REGISTRY`.
-6. Un bundle importé qui ne figure pas dans le registre reçoit au mieux le statut `SELF_CONSISTENT_NOT_IN_REGISTRY` : il est cohérent avec lui-même, mais aucun tiers ne l'a enregistré.
+6. Un bundle importé qui ne figure pas dans le registre reçoit au mieux le statut `SELF_CONSISTENT_NOT_IN_REGISTRY` : il est cohérent avec lui-même, mais aucun tiers ne l'a enregistré. Il est affiché sous un avertissement, jamais sous le bandeau vert.
+7. Tout texte venant d'un bundle et rendu en Markdown (provenance, nom de fichier, motif) est échappé et borné à 200 caractères.
 
 Sinon, le bundle est refusé avec son motif et rien n'en est affiché.
 
@@ -42,7 +43,8 @@ Sinon, le bundle est refusé avec son motif et rien n'en est affiché.
   - lien Solscan de la transaction.
 - **Cycles BUY→SELL** :
   - achat, vente, frais et P&L en SOL, convertis exactement depuis les lamports ;
-  - un cycle `open_at_window_end` n'a pas de P&L, seulement une valeur de marché indiquée à part ;
+  - seul un cycle `closed` a un P&L et compte comme cycle clos ;
+  - une position `open_at_end` (jamais vendue, valorisée au dernier cours) ou `open_at_window_end` n'a pas de P&L : sa valeur de marché est indiquée à part et n'entre dans aucun total (correctif B1 de T-0035) ;
   - sans cycle, le P&L reste **vide**, jamais égal à zéro.
 
 Pour cela, le journal du rejeu indique désormais la mantisse et l'exposant du point SOL/USD utilisé (`price`, `exponent`). Le bundle par défaut, sans série, est inchangé.

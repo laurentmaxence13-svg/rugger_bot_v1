@@ -39,9 +39,17 @@ RESULTS_SCHEMA = 'rugger-historical-research-replay-results-v1'
 RESULTS_PATH = 'validation/historical_replay_l1/RESULTS.json'
 LABELS = ('HISTORICAL_REPLAY', 'PROSPECTIVE_PAPER', 'SYNTHETIC', 'REAL')
 ARM_NAMES = {'master': 'MASTER (recherche)', 'reference': 'RÉFÉRENCE (recherche)'}
-# Flags that must be exactly False for a research bundle to be shown at all.
+# Flags that must be exactly False for a research bundle to be shown at all. No
+# producer can set the two verification flags yet (no audited verifier exists).
 MUST_BE_FALSE = ('master_operational_trade', 'counted_in_master_gate',
-                 'admissible_in_paper_ledger', 'financial_order_submitted')
+                 'admissible_in_paper_ledger', 'financial_order_submitted',
+                 'sol_usd_verified', 'source_clock_verified')
+# Only R02 can qualify research evidence, and never inside a bundle.
+REQUIRED_EVIDENCE_STATUS = 'PENDING_R02_QUALIFICATION'
+CLOSED = 'closed'
+# Positions valued at a mark, never sold: their value is shown apart, never as P&L.
+MARKED = ('open_at_end', 'open_at_window_end')
+_MARKDOWN = set('\\`*_{}[]()#+-.!|<>~=$&')
 _B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 
 
@@ -51,6 +59,12 @@ class BundleRefused(ValueError):
 
 def _refuse_constant(name):
     raise BundleRefused(f'json_constant_refused:{name}')
+
+
+def markdown_escape(value, limit=200):
+    """Text from a bundle rendered through Markdown: escaped, single line, bounded."""
+    text = ' '.join(str(value).split())[:limit]
+    return ''.join('\\' + char if char in _MARKDOWN else char for char in text)
 
 
 def canonical_sha256(document):
@@ -137,6 +151,8 @@ def verify_bundle(raw, *, registry=None, name='bundle'):
     for flag in MUST_BE_FALSE:
         if flags.get(flag) is not False:
             raise BundleRefused(f'bundle_flag_must_be_false:{flag}')
+    if flags.get('research_evidence_status') != REQUIRED_EVIDENCE_STATUS:
+        raise BundleRefused('bundle_research_evidence_status')
     declared = document.get('bundle_sha256')
     body = {key: value for key, value in document.items() if key != 'bundle_sha256'}
     recomputed = canonical_sha256(body)
@@ -199,7 +215,7 @@ def pool_rows(document):
     for pool in document['pools']:
         intents = Counter((row['arm'], row['intent']) for row in pool['journal'])
         reasons = Counter(reason for row in pool['journal'] for reason in row['blocking_reasons'])
-        closed = sum(arm.get('outcome') == 'closed' for arm in pool['arms'].values())
+        closed = sum(arm.get('outcome') == CLOSED for arm in pool['arms'].values())
         links = external_links(pool.get('mint'), pool.get('pool'))
         rows.append(dict(
             label=label, pool=pool['pool'], mint=pool.get('mint'), creator=pool.get('creator'),
@@ -230,7 +246,11 @@ def decision_rows(document):
 
 
 def cycle_rows(document):
-    """Research BUY->SELL cycles; [] when none (the P&L is then empty, never zero)."""
+    """Research BUY->SELL cycles; [] when none (the P&L is then empty, never zero).
+
+    Only an ``outcome == 'closed'`` row has a P&L. ``open_at_end`` (never sold, valued
+    at the last mark) and ``open_at_window_end`` keep their mark in ``mark_pnl_sol``.
+    """
     label, _reasons = bundle_labels(document)
     rows = []
     for pool in document['pools']:
@@ -238,6 +258,12 @@ def cycle_rows(document):
             if trade.get('outcome') in (None, 'no_entry'):
                 continue
             fees = (trade.get('tx_costs') or 0) + (trade.get('failed_attempt_costs') or 0)
+            closed = trade['outcome'] == CLOSED
+            mark = None
+            if trade['outcome'] == 'open_at_end':
+                mark = trade.get('pnl_lamports')
+            elif trade['outcome'] == 'open_at_window_end':
+                mark = trade.get('mark_pnl_lamports')
             rows.append(dict(
                 label=label, pool=pool['pool'], mint=pool.get('mint'),
                 arm=ARM_NAMES.get(arm, arm), outcome=trade['outcome'],
@@ -247,11 +273,11 @@ def cycle_rows(document):
                 exit_transaction=transaction_link(trade.get('exit_signature')),
                 exit_trigger=trade.get('exit_trigger'),
                 buy_sol=_sol(trade.get('spent')),
-                sell_sol=_sol(trade.get('received')) if trade.get('pnl_lamports') is not None else None,
+                sell_sol=_sol(trade.get('received')) if closed else None,
                 fees_sol=_sol(fees), failed_attempt_fees_modelled=document['flags'].get(
                     'failed_attempt_fees_modelled'),
-                pnl_sol=_sol(trade.get('pnl_lamports')),
-                mark_pnl_sol=_sol(trade.get('mark_pnl_lamports'))))
+                pnl_sol=_sol(trade.get('pnl_lamports')) if closed else None,
+                mark_pnl_sol=_sol(mark)))
     return rows
 
 
@@ -259,13 +285,14 @@ def summary(document, verification):
     label, reasons = bundle_labels(document)
     flags = document['flags']
     cycles = cycle_rows(document)
-    closed = [row for row in cycles if row['pnl_sol'] is not None]
+    closed = [row for row in cycles if row['outcome'] == CLOSED and row['pnl_sol'] is not None]
     return dict(
         label=label, label_reasons=reasons, verification=verification,
         pools=len(document['pools']),
         decisions=sum(len(pool['journal']) for pool in document['pools']),
         entries=sum(row['action'] == 'ENTER' for row in decision_rows(document)),
         closed_cycles=len(closed),
+        marked_positions=sum(row['outcome'] in MARKED for row in cycles),
         pnl_sol_by_arm={arm: round(sum(r['pnl_sol'] for r in closed if r['arm'] == arm), 9)
                         for arm in sorted({r['arm'] for r in closed})} or None,
         sol_usd_verified=flags.get('sol_usd_verified'),

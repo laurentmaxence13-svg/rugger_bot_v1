@@ -75,6 +75,11 @@ def test_tampering_is_refused_or_never_shown_as_registered(committed):
     (lambda d: d.update(category='REAL'), 'bundle_category'),
     (lambda d: d['flags'].update(category='PROSPECTIVE_PAPER'), 'bundle_category'),
     (lambda d: d.update(schema='rugger-dual-arm-live-like-paper-ledger-v1'), 'bundle_schema_not_supported'),
+    # T-0035 B2: verification or qualification claims no producer can make yet.
+    (lambda d: d['flags'].update(sol_usd_verified=True), 'bundle_flag_must_be_false:sol_usd_verified'),
+    (lambda d: d['flags'].update(source_clock_verified=True), 'bundle_flag_must_be_false:source_clock_verified'),
+    (lambda d: d['flags'].pop('sol_usd_verified'), 'bundle_flag_must_be_false:sol_usd_verified'),
+    (lambda d: d['flags'].update(research_evidence_status='QUALIFIED_BY_R02'), 'bundle_research_evidence_status'),
 ])
 def test_bundle_claiming_real_or_operational_status_is_refused(committed, mutate, reason):
     (document, _v), registry = committed
@@ -219,3 +224,56 @@ def test_research_tab_renders_with_the_committed_bundle():
 def test_committed_bundle_is_reproduced_by_the_replay(committed):
     (document, _v), _r = committed
     assert hrr.run_replay(FIXTURES)['bundle_sha256'] == document['bundle_sha256']
+
+
+def test_open_at_end_is_a_mark_never_a_closed_cycle(committed):
+    """T-0035 B1: a position valued at the last mark, never sold, stays out of the P&L."""
+    (document, _v), _r = committed
+    edited = copy.deepcopy(document)
+    edited['pools'][0]['arms']['master'].update(
+        outcome='open_at_end', spent=100_000_000, received=180_000_000, tx_costs=210_000,
+        pnl_lamports=79_790_000, entry_slot=10, exit_slot=None)
+    rows = rv.cycle_rows(edited)
+    assert len(rows) == 1
+    row = rows[0]
+    assert (row['outcome'], row['pnl_sol'], row['sell_sol'], row['mark_pnl_sol']) == (
+        'open_at_end', None, None, 0.07979)
+    s = rv.summary(edited, {})
+    assert (s['closed_cycles'], s['pnl_sol_by_arm'], s['marked_positions']) == (0, None, 1)
+    assert sum(p['closed_cycles'] for p in rv.pool_rows(edited)) == 0
+
+
+def test_markdown_escape():
+    escaped = rv.markdown_escape('ASSUMED [x](javascript:alert(1)) *b* _i_ `c`\n# h')
+    assert escaped == 'ASSUMED \\[x\\]\\(javascript:alert\\(1\\)\\) \\*b\\* \\_i\\_ \\`c\\` \\# h'
+    assert len(rv.markdown_escape('a' * 500)) == 200
+
+
+def _render_forged_bundle():
+    import copy as _copy
+    import json as _json
+    from pathlib import Path as _Path
+    from bot.dashboard import app
+    from bot.dashboard import research_view as _rv
+    root = _Path(app.ROOT)
+    document = _json.loads((root / 'validation/historical_replay_l1/bundle_default.json').read_bytes())
+    forged = _copy.deepcopy(document)
+    forged['flags'].update(sol_usd=150.0, sol_usd_provenance='[click](https://evil.example) **x**')
+    body = {k: v for k, v in forged.items() if k != 'bundle_sha256'}
+    forged = dict(body, bundle_sha256=_rv.canonical_sha256(body))
+    doc, verification = _rv.verify_bundle(_json.dumps(forged).encode(), registry={}, name='forged_[x].json')
+    app.render_bundle(doc, verification)
+
+
+def test_unregistered_bundle_is_a_warning_and_its_text_is_escaped():
+    """T-0035 B2/O1: no green banner for an unregistered bundle; bundle text cannot inject Markdown."""
+    pytest.importorskip('streamlit')
+    from streamlit.testing.v1 import AppTest
+    app = AppTest.from_function(_render_forged_bundle, default_timeout=60).run()
+    assert list(app.exception) == []
+    assert list(app.success) == []
+    warnings = [w.value for w in app.warning]
+    assert any('SELF_CONSISTENT_NOT_IN_REGISTRY' in w for w in warnings)
+    synthetic = next(w for w in warnings if w.startswith('SYNTHETIC'))
+    assert '\\[click\\]\\(https://evil' in synthetic and '\\*\\*x\\*\\*' in synthetic
+    assert any('forged\\_\\[x\\]' in m.value for m in app.markdown)
