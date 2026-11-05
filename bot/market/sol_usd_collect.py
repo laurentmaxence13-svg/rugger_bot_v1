@@ -9,8 +9,11 @@ Output: ``rugger-sol-usd-series-v1`` exactly as specified by RUGGER 01 (T-0031 @
 - price in USD per SOL = |delta USDC| / |delta SOL| from the vaults' raw token
   balances (pre/postTokenBalances), computed with exact fractions and rounded half-even
   to a mantissa at ``exponent = -8``; never interpolated or averaged;
-- ``slot``, ``transaction_index`` (real, required) and ``block_time`` come from the
-  signed transaction; ``signature`` is its signature; ``evidence_sha256`` is the
+- ``slot``, ``transaction_index`` and ``block_time`` come from the signed transaction.
+  ``transaction_index`` is the real position when the provider gives it; otherwise it
+  is ``null``, which the spec allows (usable only from a strictly earlier slot). A
+  ``null`` point sharing its slot with another point is dropped: its order inside the
+  slot is unknown and the series must stay strictly sorted; ``signature`` is its signature; ``evidence_sha256`` is the
   SHA-256 of that raw transaction (canonical JSON, sorted keys, no spaces);
 - points are strictly sorted by ``(slot, transaction_index)``.
 
@@ -82,11 +85,13 @@ def point_from_transaction(entry, *, pool, sol_vault, usdc_vault):
     mantissa = _half_even(price * Fraction(10) ** -EXPONENT)
     if mantissa < 1:
         return None
-    if type(entry.get('transactionIndex')) is not int or type(entry.get('slot')) is not int:
-        raise BackfillError('sol_usd_point_needs_slot_and_transaction_index')
+    if type(entry.get('slot')) is not int:
+        raise BackfillError('sol_usd_point_needs_a_slot')
+    index = entry.get('transactionIndex')
     raw = {k: v for k, v in entry.items() if k != 'signature'}
     return {'schema': POINT_SCHEMA, 'slot': entry['slot'],
-            'transaction_index': entry['transactionIndex'], 'block_time': entry.get('blockTime'),
+            'transaction_index': index if type(index) is int else None,
+            'block_time': entry.get('blockTime'),
             'received_at_ms': None, 'publish_time': None, 'price': mantissa, 'exponent': EXPONENT,
             'confidence': None, 'source_kind': SOURCE_KIND, 'source_ref': pool,
             'evidence_sha256': canonical_sha256(raw), 'signature': entry['signature']}
@@ -105,14 +110,17 @@ def build_series(window_dir, *, pool, sol_vault, usdc_vault, label='COLLECTED'):
         raise BackfillError('window_address_is_not_the_pool')
     entries = [row for seg in manifest['segments'] if seg['kind'] == 'tx'
                for row in read_segment(window_dir / seg['path'])]
-    if any(type(e.get('transactionIndex')) is not int for e in entries):
-        raise BackfillError('transaction_index_missing_use_gtfa_bodies')
-    entries.sort(key=lambda e: (e['slot'], e['transactionIndex']))
     points = [p for p in (point_from_transaction(e, pool=pool, sol_vault=sol_vault,
                                                  usdc_vault=usdc_vault) for e in entries) if p]
+    per_slot = {}
+    for point in points:
+        per_slot[point['slot']] = per_slot.get(point['slot'], 0) + 1
+    # A null index has an unknown place inside its slot: keep it only when alone there.
+    points = [p for p in points if p['transaction_index'] is not None or per_slot[p['slot']] == 1]
+    points.sort(key=lambda p: (p['slot'], p['transaction_index'] or 0))
     if not points:
         raise BackfillError('no_swap_in_window')
-    keys = [(p['slot'], p['transaction_index']) for p in points]
+    keys = [(p['slot'], p['transaction_index'] or 0) for p in points]
     if any(b <= a for a, b in zip(keys, keys[1:])):
         raise BackfillError('series_positions_not_strictly_increasing')
     return {'schema': SERIES_SCHEMA, 'label': label, 'points': points}

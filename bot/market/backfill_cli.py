@@ -71,6 +71,23 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                    help='entry_cutoff_slot = slot_max - this gap (minimum 79)')
     x.add_argument('--sol-usd-series', type=Path, default=None,
                    help='series file built by the sol-usd-series command')
+    sm = sub.add_parser('sample', help='grid-sampled SOL/USDC pool collection; dry run unless '
+                                      '--network')
+    sm.add_argument('--network', action='store_true', help='actually send read-only requests')
+    sm.add_argument('--endpoint-env', default='RUGGER_BACKFILL_RPC_URL')
+    sm.add_argument('--pool', required=True, help='the SOL/USDC pool (window address)')
+    sm.add_argument('--sol-vault', required=True)
+    sm.add_argument('--usdc-vault', required=True)
+    sm.add_argument('--slot-min', type=int, required=True)
+    sm.add_argument('--slot-max', type=int, required=True)
+    sm.add_argument('--grid-seconds', type=int, choices=(2, 4), default=4)
+    sm.add_argument('--costs', default='helius-conservative')
+    sm.add_argument('--max-requests', type=int, required=True)
+    sm.add_argument('--max-credits', type=int, required=True)
+    sm.add_argument('--expected-tx-per-slot', type=float, default=5.0,
+                    help='volume assumption used only by the dry-run estimate')
+    sm.add_argument('--out', type=Path, required=True)
+    sm.add_argument('--before-signature', default=None)
     s2 = sub.add_parser('sol-usd-series',
                         help='causal SOL/USD series from a SOL/USDC pool window; no network')
     s2.add_argument('--out', type=Path, required=True, help='verified window of the pool address')
@@ -101,6 +118,30 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                   'window_slot_max': export['window_slot_max'],
                   'sol_usd_series': export['sol_usd_series']})
             return 0
+        if args.command == 'sample':
+            from bot.market.sol_usd_sample import SampledBackfill, plan_sample
+            window = Window(args.pool, args.slot_min, args.slot_max)
+            costs = load_costs(args.costs)
+            estimate = plan_sample(window, costs, expected_tx_per_slot=args.expected_tx_per_slot,
+                                   grid_seconds=args.grid_seconds)
+            if not args.network:
+                emit({'dry_run': True, 'requests_sent': 0, 'estimate': estimate,
+                      'caps': {'max_requests': args.max_requests,
+                               'max_credits': args.max_credits},
+                      'message': 'no request sent; add --network to run (owner decision)'})
+                return 0
+            url = endpoint_from_env(args.endpoint_env, environ)
+            budget = CreditBudget(args.max_requests, args.max_credits, costs,
+                                  ledger=args.out / 'spend.json')
+            job = SampledBackfill(open_rpc(url, budget, opener=opener), window, args.out,
+                                  pool=args.pool, sol_vault=args.sol_vault,
+                                  usdc_vault=args.usdc_vault, grid_seconds=args.grid_seconds,
+                                  endpoint=endpoint_label(url),
+                                  before_signature=args.before_signature)
+            manifest = job.run()
+            emit({k: manifest[k] for k in ('complete', 'stopped_by', 'totals', 'budget',
+                                            'endpoint', 'sampling')})
+            return 0 if manifest['complete'] else 3
         if args.command == 'sol-usd-series':
             from bot.market.sol_usd_collect import build_series, density, write_series
             document = build_series(args.out, pool=args.pool, sol_vault=args.sol_vault,

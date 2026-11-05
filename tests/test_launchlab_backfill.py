@@ -581,3 +581,141 @@ def test_series_file_is_referenced_by_the_export_manifest(tmp_path):
     assert (tmp_path / 'pools' / 'sol_usd_series.json.gz').read_bytes() == \
         (tmp_path / 'series.json.gz').read_bytes()
     assert su.density(document)['max_gap_s'] == 2
+
+
+# --------------------------------------------------------------------------- sampled SOL/USDC
+from bot.market import sol_usd_sample as ss                    # noqa: E402
+
+
+def _dense_txs(count=100, *, with_index=True):
+    """One tx per slot, 2.5 slots per second; every 7th a liquidity add, every 11th failed."""
+    txs = []
+    for k in range(count):
+        liquidity, failed = k % 7 == 3, k % 11 == 5
+        d_sol = 5 * 10**9 if liquidity else -10**9
+        d_usdc = 750 * 10**6 if liquidity else (150 + k % 3) * 10**6
+        txs.append((f'd{k:03d}', 2000 + k, 0 if with_index else None, 9000 + (k * 2) // 5,
+                    d_sol, d_usdc, {'Custom': 1} if failed else None))
+    return txs
+
+
+class DensePool(PoolChain):
+    def __init__(self, txs=None, *, strip_index=False):
+        super().__init__(txs or _dense_txs())
+        self.strip = strip_index
+        if strip_index:
+            for row in self.rows.values():
+                row.pop('transactionIndex')
+
+    def getSignaturesForAddress(self, address, options):
+        assert address == SOL_POOL
+        order = sorted(self.rows.values(), key=lambda r: r['slot'], reverse=True)
+        sigs = [r['signature'] for r in order]
+        start = sigs.index(options['before']) + 1 if 'before' in options else 0
+        return order[start:start + options['limit']]
+
+    def getTransaction(self, signature, options):
+        assert options['maxSupportedTransactionVersion'] == MAX_TX_VERSION
+        body = dict(self.bodies[signature])
+        if self.strip:
+            body.pop('transactionIndex')
+        return body
+
+
+def _sample(tmp_path, chain, *extra, grid='4', caps=('100000', '100000000'), out='s',
+            network=True):
+    buf = io.StringIO()
+    args = ['sample', '--pool', SOL_POOL, '--sol-vault', SOL_VAULT, '--usdc-vault', USDC_VAULT,
+            '--slot-min', '2000', '--slot-max', '2099', '--grid-seconds', grid,
+            '--costs', 'public', '--max-requests', caps[0], '--max-credits', caps[1],
+            '--out', str(tmp_path / out), *extra]
+    code = cli.main((['sample', '--network'] + args[1:]) if network else args,
+                    environ=ENV, opener=chain, out=buf)
+    return code, json.loads(buf.getvalue())
+
+
+def test_sample_dry_run_sends_nothing(tmp_path):
+    def forbidden(*_a, **_k):
+        raise AssertionError('network used')
+    code, report = _sample(tmp_path, forbidden, network=False)
+    assert code == 0 and report['requests_sent'] == 0 and not (tmp_path / 's').exists()
+    assert report['estimate']['grid_seconds'] == 4 and report['estimate']['credits'] == 0
+
+
+def test_select_targets_takes_the_last_success_at_each_grid_second():
+    rows = [{'signature': 'a', 'blockTime': 10, 'err': None},
+            {'signature': 'b', 'blockTime': 11, 'err': None},
+            {'signature': 'c', 'blockTime': 13, 'err': {'x': 1}},
+            {'signature': 'd', 'blockTime': 13, 'err': None},
+            {'signature': 'e', 'blockTime': 19, 'err': None}]
+    assert [rows[i]['signature'] for i in ss.select_targets(rows, 4)] == ['a', 'd', 'e']
+    assert [rows[i]['signature'] for i in ss.select_targets(rows, 2)] == ['a', 'b', 'd', 'e']
+    with pytest.raises(bf.BackfillError, match='grid_seconds_must_be_2_or_4'):
+        ss.select_targets(rows, 3)
+
+
+def test_sample_grid_4_gives_a_dense_enough_series_with_few_calls(tmp_path):
+    chain = DensePool()
+    code, report = _sample(tmp_path, chain)
+    assert code == 0 and report['complete']
+    fetched = sum(1 for m, _ in chain.calls if m == 'getTransaction')
+    sampling = report['sampling']
+    assert sampling['grid_seconds'] == 4 and fetched == sampling['fetched']
+    assert fetched < 100 // 3                                  # far fewer than the 100 bodies
+    document = su.build_series(tmp_path / 's', pool=SOL_POOL, sol_vault=SOL_VAULT,
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+    assert su.density(document)['max_gap_s'] <= 4
+    assert all(p['source_kind'] == 'sol_usdc_pool_last_trade' for p in document['points'])
+    four = len(document['points'])
+    code, _ = _sample(tmp_path, DensePool(), grid='2', out='s2')
+    two = su.build_series(tmp_path / 's2', pool=SOL_POOL, sol_vault=SOL_VAULT,
+                          usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+    assert code == 0 and len(two['points']) > four and su.density(two)['max_gap_s'] <= 2
+
+
+def test_sample_steps_back_from_a_non_swap(tmp_path):
+    # blockTime = 9000 + (2k)//5: the grid second 9000 + 4m targets d(10m+2); d052 is a
+    # liquidity add (52 % 7 == 3), so its grid second must step back to d051.
+    rows = [{'signature': s, 'slot': sl, 'blockTime': bt, 'err': e, 'transactionIndex': i}
+            for s, sl, i, bt, _ds, _du, e in _dense_txs()]
+    targets = [rows[i]['signature'] for i in ss.select_targets(rows, 4)]
+    assert targets[:2] == ['d002', 'd012'] and 'd052' in targets
+    code, report = _sample(tmp_path, DensePool())
+    assert code == 0 and report['sampling']['fallbacks'] >= 1
+    stored = {r['signature'] for p in (tmp_path / 's').glob('tx-*.jsonl.gz')
+              for r in bf.read_segment(p)}
+    assert not {f'd{k:03d}' for k in range(100) if k % 7 == 3} & stored    # no liquidity tx kept
+    assert 'd051' in stored and 'd052' not in stored
+
+
+def test_sample_caps_are_cumulative_and_resume_selects_the_same(tmp_path):
+    reference_chain = DensePool()
+    _sample(tmp_path, reference_chain, out='ref')
+    reference = {r['signature'] for p in (tmp_path / 'ref').glob('tx-*.jsonl.gz')
+                 for r in bf.read_segment(p)}
+    chain = DensePool()
+    code, report = _sample(tmp_path, chain, caps=('6', '100000000'))
+    assert code == 3 and report['stopped_by'] == 'request_cap_reached:6' and len(chain.calls) == 6
+    code, report = _sample(tmp_path, DensePool(), caps=('1000', '100000000'))
+    assert code == 0 and report['complete']
+    resumed = {r['signature'] for p in (tmp_path / 's').glob('tx-*.jsonl.gz')
+               for r in bf.read_segment(p)}
+    assert resumed == reference and report['totals']['duplicate_signatures'] == 0
+    ledger = json.loads((tmp_path / 's' / 'spend.json').read_text())
+    assert ledger['requests'] == report['budget']['requests']
+
+
+def test_sample_resume_with_another_grid_is_refused(tmp_path):
+    _sample(tmp_path, DensePool())
+    code, report = _sample(tmp_path, DensePool(), grid='2')
+    assert code == 2 and report['error'] == 'resume_sampling_parameters_differ_from_state'
+
+
+def test_series_without_provider_index_keeps_only_unambiguous_points(tmp_path):
+    code, _ = _sample(tmp_path, DensePool(strip_index=True))
+    assert code == 0
+    document = su.build_series(tmp_path / 's', pool=SOL_POOL, sol_vault=SOL_VAULT,
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+    assert document['points'] and all(p['transaction_index'] is None for p in document['points'])
+    slots = [p['slot'] for p in document['points']]
+    assert slots == sorted(set(slots))                       # one point per slot, strictly sorted

@@ -178,14 +178,38 @@ précède chaque décision des fixtures :
 
 Le critère d'acceptation 3 de P0 est donc atteignable avec cette source.
 
+Même contrôle avec la collecte échantillonnée (T-0033), sur un marché synthétique
+sans trou de plus de 1 s : 13 transactions téléchargées sur 202 listées, série avec
+un écart maximal de 4 s, aucun motif `sol_usd_*` dans le rejeu, et décisions
+identiques à un cours déclaré de 150 $ (0 différence sur 226 lignes). Avec un
+marché synthétique troué (jusqu'à 8 s sans trade), 14 décisions passent en
+`sol_usd_stale`, comme prévu.
+
 ### P0 : série SOL/USD, commandes
 
 Le propriétaire choisit un pool SOL/USDC de référence et relève, une seule fois,
 l'adresse de ses deux réserves (WSOL et USDC) dans le compte du pool.
 
+Collecte **échantillonnée** (T-0033) : la liste complète des signatures du pool,
+puis `getTransaction` seulement pour le dernier trade réussi de chaque pas de grille
+(4 s par défaut, 2 s en option), avec un repli borné si ce trade n'est pas un swap.
+Plafond séparé de 300 000 crédits en P0 (dossier `--out` et `spend.json` distincts).
+
 ```bash
-RUGGER_BACKFILL_RPC_URL='<URL Helius>' python -B tools/backfill_launchlab_window.py run --network --endpoint-env RUGGER_BACKFILL_RPC_URL --address <pool SOL/USDC> --slot-min <slot_min> --slot-max <slot_max> --max-requests 20000 --max-credits 1200000 --costs helius-conservative --out data/backfill/p0_solusdc
+python -B tools/backfill_launchlab_window.py sample --pool <pool SOL/USDC> --sol-vault <réserve WSOL> --usdc-vault <réserve USDC> --slot-min <slot_min> --slot-max <slot_max> --grid-seconds 4 --costs helius-conservative --max-requests 30000 --max-credits 300000 --out data/backfill/p0_solusdc
 ```
+
+Sans `--network`, cette commande affiche seulement l'estimation. Pour lancer la
+collecte, ajouter `--network --endpoint-env RUGGER_BACKFILL_RPC_URL`, avec l'URL
+Helius dans cette variable.
+
+Coût par jour au tarif prudent (10 crédits par appel d'archive) : environ 239 000 à
+248 000 crédits sur une grille de 4 s. Au tarif probable (1 crédit) : environ 24 000
+à 25 000.
+
+Limite réelle : si le pool SOL/USDC lui-même reste plus de 4 s sans trade, les
+décisions concernées restent WAIT (`sol_usd_stale`), quelle que soit la grille. La
+densité du pool choisi se vérifie avec `density.max_gap_s`.
 
 ```bash
 python -B tools/backfill_launchlab_window.py sol-usd-series --out data/backfill/p0_solusdc --pool <pool SOL/USDC> --sol-vault <réserve WSOL> --usdc-vault <réserve USDC> --series-out data/backfill/p0_sol_usd.json.gz
