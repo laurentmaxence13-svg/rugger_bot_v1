@@ -1,0 +1,64 @@
+{
+  "protocol_id": "rugger03-prereg-v2-candidate",
+  "status": "CANDIDATE_NOT_FROZEN__OWNER_MUST_FREEZE_BY_RECORDING_COMMIT_SHA_BEFORE_ANY_COLLECTION",
+  "supersedes_draft": "rugger03-prereg-v1 (issue 158)",
+  "audit_inputs": {"draft_issue": 158, "audit_issue": 160, "consolidation_issue": 164},
+  "paper_only": true,
+  "targets": {"min_independent_verified_creators": 50, "min_complete_paper_cycles": 20},
+  "insufficient_data_rule": "if either target is not met the only permitted verdict is INSUFFICIENT_DATA",
+  "req1_preregistration": {
+    "freeze_mechanism": "owner records commit SHA of this file and protocol_hash; any later edit invalidates the freeze and requires a new SHA before new collection",
+    "must_declare_before_collection": ["universe", "inclusion_criteria", "time_window_utc", "funding_lookback", "latency_slots", "max_free_rpc_requests", "forced_exit_rule", "bootstrap_seed", "reference_engine_ref", "master_engine_ref"],
+    "values_declared_by_owner": null
+  },
+  "req2_deduplication": {
+    "analysis_unit": "mint (one counted launch per creator wallet)",
+    "record_counts_are_not_entities": true,
+    "cross_bundle_signature_dedup": "key=(signature); keep earliest available_at_ms; report all dropped duplicates",
+    "report_must_include": ["records", "distinct_mints", "distinct_signatures", "duplicates_dropped"],
+    "bootstrap_cluster": "creator"
+  },
+  "req3_time_and_causality": {
+    "required_fields": ["source_time_ms", "available_at_ms"],
+    "unknown_source_time_policy": "label source_time_unknown; excluded from any decision input and from cycles; counted and reported",
+    "causal_rule": "a decision at time t may use only records with available_at_ms <= t and known source_time_ms",
+    "decision_inputs_frozen_before_results": true
+  },
+  "req4_causal_criteria": {
+    "same_replayed_journal_for_both_arms": true,
+    "same_costs_slippage_latency_for_both_arms": true,
+    "parameters_frozen_before_results": true,
+    "no_threshold_change_after_results": true,
+    "split": {"design": "chronological", "development_fraction": 0.5, "holdout_fraction": 0.5, "holdout_untouched_until_freeze": true},
+    "master_source_refs_not_on_this_branch": ["origin/feat/master-live-integration-20261029", "origin/integration/consolidation-20261103"],
+    "master_reconstructibility_caveat": "authentic MASTER frame not reconstructible from TradeEvents alone (USD, holders, creator history missing)"
+  },
+  "req5_transactions": {
+    "documented_count_in_local_evidence": 81,
+    "documented_distinct_signatures": 79,
+    "note": "81 transaction records, 79 distinct signatures; the 80 stated in report 152 is superseded",
+    "count_is_pinned_by_test": true
+  },
+  "req6_migration": {
+    "capture_required": ["migration transaction signature+slot", "CPMM pool address", "pool state at migration"],
+    "currently_supported_in_bot_p3_launchlab": "unknown_for_migration_states; no migration kind exists in the evidence schema",
+    "unexplained_unsupported_or_unverified_state_allowed": 0,
+    "never_migrated_stays_in_denominator": true
+  },
+  "req7_non_vacuous_tests": {
+    "schema_kinds": ["candidate_decision", "transaction", "request", "quote_attempt", "checkpoint", "pool_snapshot", "gap", "launch", "discovery", "fx"],
+    "cycle_claims_must_be_derived_from": "paired buy and sell quote_attempt/pool_snapshot records with executable_confirmed true, never from absent kinds",
+    "negative_cases": "synthetic, labelled synthetic=true, never mixed with provenance=live",
+    "native_pytest_and_full_suite_run_required_before_acceptance": true
+  },
+  "req8_costs_thresholds": {
+    "units": "integer lamports and atomic token units",
+    "components": ["curve_or_pool_fee", "network_base_fee", "priority_fee", "account_creation_rent", "slippage_vs_quote", "failed_attempt_cost", "latency_adverse_move"],
+    "unknown_cost": "cycle excluded from P&L, kept in denominator, reported; exclusions must be <= 20% of cycles",
+    "latency_sensitivity_multipliers": [1, 2],
+    "fx": "SOL native; USD only with strict point-in-time source timestamp",
+    "profitability_demonstrated_only_if": "holdout paired-difference lower 95% bound > 0 AND MASTER total net P&L > 0 AND both targets met AND unknown-cost exclusions <= 20%",
+    "interval_method": "paired cluster bootstrap by creator, 95%, seed declared by owner"
+  },
+  "stop_rules": {"max_budget_usd": 0, "paid_api_requires_owner_authorisation": true, "live_trading": false, "secrets": false, "network_during_authoring": false}
+}
