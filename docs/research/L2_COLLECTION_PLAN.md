@@ -230,6 +230,53 @@ ce programme.
 Biais connu (O1) : le prix est un prix d'exécution, frais du pool et impact
 compris, et non un prix médian. Préférer un pool à faibles frais.
 
+### Choix du pool de référence SOL/USDC (proposition, à valider)
+
+Seul le préréglage `raydium-cpmm` existe aujourd'hui. Or l'essentiel de la liquidité
+SOL/USDC est probablement sur d'autres types de pools (Raydium AMM v4 ou CLMM, Orca
+Whirlpool). Ce n'est pas vérifié : mon environnement n'a pas de réseau. Un pool CPMM
+peu liquide donnerait un prix d'exécution décalé, et fausserait les décisions du
+Master. Le pool se choisit donc sur des mesures de P0, avec des seuils fixés
+**avant** la collecte.
+
+**1. Critère de choix**, mesuré sur la liste de signatures de P0 (déjà payée par
+`sample`, sans appel en plus) et sur les transactions échantillonnées :
+
+| Mesure | Source | Seuil proposé |
+|---|---|---|
+| Swaps réussis par minute | liste `getSignaturesForAddress` (lignes sans `err`) | ≥ 30 |
+| Secondes de grille servies par un point de moins de 4 s | `sample` + `density` | ≥ 99 % |
+| Écart maximal entre deux swaps | `density.max_gap_s` | ≤ 4 s sur ≥ 99 % de la fenêtre |
+| Liquidité des deux réserves, en dollars | `postTokenBalances` des transactions échantillonnées | ≥ 1 M$ |
+| Frais du pool | configuration du pool, lue une fois par le propriétaire | ≤ 0,25 % |
+
+Un pool qui manque un seuil n'est pas utilisé. On passe au candidat suivant, au
+besoin d'un autre type de pool (point 3).
+
+**2. Contrôle de cohérence**, arrêt si le seuil est dépassé :
+- construire une **seconde série** sur un échantillon d'environ 1 000 secondes de
+  grille de P0. Elle vient d'un second pool indépendant (autre pool, idéalement
+  d'un autre type), ou d'Hermes si le propriétaire l'autorise ;
+- à chaque seconde commune, comparer les deux prix « as-of » :
+  `écart = |p1 − p2| / p2` ;
+- seuils fixés à l'avance : médiane ≤ 0,3 % et 99ᵉ centile ≤ 1 % ;
+- en cas de dépassement, arrêter P1 et revoir le choix du pool. Aucun rejeu n'est
+  compté sur une série qui échoue.
+
+L'outil de comparaison (`compare-series`, hors réseau, testé) reste à écrire. Ce
+sera une tâche distincte, avec audit de RUGGER 02, une fois les audits de T-0032 et
+T-0033 terminés.
+
+**3. Préréglages supplémentaires** (Raydium AMM v4, CLMM, Orca Whirlpool), si P0
+montre qu'aucun pool CPMM ne passe le point 1 :
+- chaque préréglage est épinglé depuis l'IDL ou le code source officiel du
+  programme, avec le dépôt, le commit et le chemin, comme `bot/live/cpmm_swap.py`
+  l'est pour CPMM ;
+- il est couvert par des tests hors réseau (aller-retour, passage multi-étapes,
+  poussière) ;
+- il passe par l'audit de RUGGER 02 avant usage ;
+- aucun discriminateur n'est écrit de mémoire.
+
 Couverture (O2) : la densité est seulement rapportée, pas imposée. En P0, mesurer la
 part des décisions L1 en `sol_usd_stale` ou `sol_usd_rate_unavailable`, et la
 consigner avec le rapport.
