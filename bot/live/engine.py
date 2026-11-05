@@ -489,9 +489,13 @@ class ExecutionEngine:
         status = await self.rpc.signature_status(row['signature'])
         now = self.clock_ms()
         if status is None:
+            if row['state'] == 'REORG_PENDING':
+                # Already quarantined: blockhash expiry must not erase the reorg evidence.
+                return self.result(decision_id)
             if row['state'] == 'CONFIRMED':
                 self.journal.transition(decision_id, ('CONFIRMED',), 'REORG_PENDING', now)
                 self.journal.kill('confirmation_disappeared', now)
+                return self.result(decision_id)
             height = await self.rpc.get_block_height()
             lifetime = json.loads(row['order_json'])['transaction']['last_valid_block_height']
             if type(height) is not int:
