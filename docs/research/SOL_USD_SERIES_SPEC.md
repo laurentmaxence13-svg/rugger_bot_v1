@@ -71,7 +71,7 @@ Une mise à jour Hermes porte un slot **Pythnet**, qui n'est pas un slot Solana.
    - âge > **5000 ms** → `sol_usd_stale`. Ce plafond correspond à celui de `native_asof_signal_bridge` et ne peut pas être relevé.
 6. Les prix passés de chaque décision utilisent le point as-of de leur propre événement. Un événement sans point valide est omis.
 
-Le journal de chaque décision indique le point retenu, son âge et son instant de disponibilité `available_ms`, toujours ≤ `modelled_receipt_ms`.
+Le journal de chaque décision indique le point retenu (avec sa mantisse `price` et son exposant `exponent`), son âge et son instant de disponibilité `available_ms`, toujours ≤ `modelled_receipt_ms`.
 
 **Conséquence pratique.** En rejeu, D vaut `block_time × 1000 + 400`. Un point horodaté dans la même seconde que la décision est donc toujours refusé : l'âge minimal effectif est de 1400 ms, pour un point publié pendant la seconde précédente.
 

@@ -36,7 +36,11 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
                                            "tools/launchlab_baseline_report.py", "tools/master_feature_inventory.py",
                                            "tools/dev_state.py", "docs/autonomy/BACKLOG.json",
                                            # Offline GitHub Actions trigger guard (P-PRIV correction).
-                                           "tools/workflow_trigger_guard.py"):
+                                           "tools/workflow_trigger_guard.py",
+                                           # Committed L1 replay bundle and its results registry, read as
+                                           # data by the Rugger Wallet research view tests (L3).
+                                           "validation/historical_replay_l1/bundle_default.json",
+                                           "validation/historical_replay_l1/RESULTS.json"):
                 continue
         if relative.parts[:2] in (("bot", "bot"), ("tests", "tests")):
             continue
