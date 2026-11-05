@@ -44,7 +44,8 @@ from bot.market.replay import ExecutionModel, Strategy, replay
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4.native_asof_signal_bridge import NativeQuote
 from bot.p4_experiment import POLICY as P4_POLICY, decide_prefix
-from bot.p4.sol_usd_series import MAX_AGE_MS as SOL_USD_MAX_AGE_MS, VERIFICATION as SOL_USD_VERIFICATION, price_usd
+from bot.p4.sol_usd_series import (MAX_AGE_MS as SOL_USD_MAX_AGE_MS, VERIFICATION as SOL_USD_VERIFICATION,
+                                    available_ms as sol_usd_available_ms, price_usd)
 
 CATEGORY = 'HISTORICAL_REPLAY'
 SCHEMA = 'rugger-historical-research-replay-v1'
@@ -277,7 +278,7 @@ class _PoolObserver:
                     slot=point['slot'], transaction_index=point['transaction_index'],
                     source_kind=point['source_kind'], source_ref=point['source_ref'],
                     evidence_sha256=point['evidence_sha256'], age_ms=age,
-                    verification=SOL_USD_VERIFICATION)
+                    available_ms=sol_usd_available_ms(point), verification=SOL_USD_VERIFICATION)
         if blocked:
             wait = dict(intent='WAIT', blocking_reasons=blocked + common)
             return dict(shared=shared, decisions={arm: wait for arm in ARMS}, exit_conditions=None)
@@ -479,7 +480,7 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None):
             'window_slot_max; otherwise open_at_window_end (never a closed cycle)')
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
-            label=sol_usd_series.label, sha256=sol_usd_series.sha256,
+            label=sol_usd_series.label, ordering=sol_usd_series.ordering, sha256=sol_usd_series.sha256,
             points=len(sol_usd_series.points), max_age_ms=SOL_USD_MAX_AGE_MS,
             verification=SOL_USD_VERIFICATION)
         bundle['flags']['sol_usd_source'] = 'series:' + sol_usd_series.label
