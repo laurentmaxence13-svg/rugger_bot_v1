@@ -21,7 +21,7 @@ import json
 
 from bot.market.backfill import Backfill, BackfillError, _write_atomic, read_segment
 from bot.market.collector import MAX_TX_VERSION, BudgetExhausted
-from bot.market.sol_usd_collect import point_from_transaction
+from bot.market.sol_usd_collect import describe_filter, point_from_transaction
 
 MAX_FALLBACK = 3
 GRIDS = (2, 4)
@@ -51,8 +51,8 @@ def select_targets(rows, grid_seconds):
 class SampledBackfill(Backfill):
     """Listing phase, then a grid-sampled getTransaction phase (no full body download)."""
 
-    def __init__(self, rpc, window, out, *, pool, sol_vault, usdc_vault, grid_seconds=4,
-                 segment_pages=50, endpoint='unset', before_signature=None):
+    def __init__(self, rpc, window, out, *, pool, sol_vault, usdc_vault, swap_filter,
+                 grid_seconds=4, segment_pages=50, endpoint='unset', before_signature=None):
         if window.address != pool:
             raise BackfillError('window_address_is_not_the_pool')
         if grid_seconds not in GRIDS:
@@ -61,11 +61,11 @@ class SampledBackfill(Backfill):
                          segment_pages=segment_pages, endpoint=endpoint,
                          before_signature=before_signature)
         sampling = {'grid_seconds': grid_seconds, 'pool': pool, 'sol_vault': sol_vault,
-                    'usdc_vault': usdc_vault}
+                    'usdc_vault': usdc_vault, 'swap_filter': describe_filter(swap_filter)}
         if self.state.setdefault('sampling', sampling) != sampling:
             raise BackfillError('resume_sampling_parameters_differ_from_state')
         self.pool, self.sol_vault, self.usdc_vault = pool, sol_vault, usdc_vault
-        self.grid_seconds = grid_seconds
+        self.grid_seconds, self.swap_filter = grid_seconds, swap_filter
 
     def _listed_ascending(self):
         rows = [r for s in self.state['segments'] if s['kind'] == 'sig'
@@ -74,8 +74,8 @@ class SampledBackfill(Backfill):
 
     def _is_swap(self, body, signature):
         return point_from_transaction(dict(body, signature=signature), pool=self.pool,
-                                      sol_vault=self.sol_vault,
-                                      usdc_vault=self.usdc_vault) is not None
+                                      sol_vault=self.sol_vault, usdc_vault=self.usdc_vault,
+                                      swap_filter=self.swap_filter) is not None
 
     def _sample_phase(self):
         current = self._phase('sample')

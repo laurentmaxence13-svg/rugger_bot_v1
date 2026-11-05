@@ -44,6 +44,25 @@ def _window_args(p):
                    help='cost preset (helius-conservative, public) or JSON file')
 
 
+def _filter_args(p):
+    p.add_argument('--pool-kind', default='raydium-cpmm', choices=('raydium-cpmm', 'custom'),
+                   help='swap filter preset; custom needs --swap-program, --swap-discriminator, '
+                        '--pool-account-index, verified against the pool IDL')
+    p.add_argument('--swap-program', default=None)
+    p.add_argument('--swap-discriminator', action='append', default=[],
+                   help='8-byte hex prefix of a swap instruction (repeatable)')
+    p.add_argument('--pool-account-index', type=int, default=None)
+    p.add_argument('--min-sol-lamports', type=int, default=100_000_000)
+
+
+def _filter(args):
+    from bot.market.sol_usd_collect import swap_filter_from_args
+    return swap_filter_from_args(args.pool_kind, program=args.swap_program,
+                                 discriminators=args.swap_discriminator,
+                                 pool_account_index=args.pool_account_index,
+                                 min_sol_lamports=args.min_sol_lamports)
+
+
 def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest='command', required=True)
@@ -88,6 +107,7 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                     help='volume assumption used only by the dry-run estimate')
     sm.add_argument('--out', type=Path, required=True)
     sm.add_argument('--before-signature', default=None)
+    _filter_args(sm)
     s2 = sub.add_parser('sol-usd-series',
                         help='causal SOL/USD series from a SOL/USDC pool window; no network')
     s2.add_argument('--out', type=Path, required=True, help='verified window of the pool address')
@@ -96,6 +116,7 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     s2.add_argument('--usdc-vault', required=True)
     s2.add_argument('--series-out', type=Path, required=True)
     s2.add_argument('--label', default='COLLECTED', choices=('COLLECTED', 'SYNTHETIC_TEST_FIXTURE'))
+    _filter_args(s2)
     args = parser.parse_args(argv)
 
     def emit(obj):
@@ -135,7 +156,8 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                                   ledger=args.out / 'spend.json')
             job = SampledBackfill(open_rpc(url, budget, opener=opener), window, args.out,
                                   pool=args.pool, sol_vault=args.sol_vault,
-                                  usdc_vault=args.usdc_vault, grid_seconds=args.grid_seconds,
+                                  usdc_vault=args.usdc_vault, swap_filter=_filter(args),
+                                  grid_seconds=args.grid_seconds,
                                   endpoint=endpoint_label(url),
                                   before_signature=args.before_signature)
             manifest = job.run()
@@ -144,9 +166,16 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
             return 0 if manifest['complete'] else 3
         if args.command == 'sol-usd-series':
             from bot.market.sol_usd_collect import build_series, density, write_series
+            report = {}
             document = build_series(args.out, pool=args.pool, sol_vault=args.sol_vault,
-                                    usdc_vault=args.usdc_vault, label=args.label)
-            emit(dict(write_series(document, args.series_out), density=density(document)))
+                                    usdc_vault=args.usdc_vault, swap_filter=_filter(args),
+                                    label=args.label, report=report)
+            result = dict(write_series(document, args.series_out), density=density(document),
+                          candidates=report)
+            # The rejection journal stays next to the series (the series format is fixed).
+            args.series_out.with_name(args.series_out.name + '.report.json').write_text(
+                json.dumps(result, indent=1, sort_keys=True) + '\n')
+            emit(result)
             return 0
         window =Window(args.address, args.slot_min, args.slot_max)
         costs = load_costs(args.costs)

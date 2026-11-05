@@ -460,13 +460,27 @@ def test_quote_mint_requires_the_decoded_base_mint(tmp_path):
 
 # --------------------------------------------------------------------------- SOL/USD series
 from bot.market import sol_usd_collect as su                  # noqa: E402
+from bot.market.launchlab_events import b58encode              # noqa: E402
 
 SOL_POOL = 'SyntheticSoLUsdcPooL1111111111111111111111111'
 SOL_VAULT = 'SyntheticSoLVauLt11111111111111111111111111'
 USDC_VAULT = 'SyntheticUsdcVauLt1111111111111111111111111'
 
 
-def _pool_tx(sig, slot, index, block_time, d_sol, d_usdc, *, err=None):
+CPMM = su.SWAP_FILTERS['raydium-cpmm']
+OTHER_POOL = 'SomeOtherPooL111111111111111111111111111111'
+
+
+def _swap_ix(pool_key_index):
+    data = sorted(CPMM.discriminators)[0] + bytes(16)
+    return {'programIdIndex': 4, 'accounts': [0, 0, 0, pool_key_index], 'data': b58encode(data)}
+
+
+def _pool_tx(sig, slot, index, block_time, d_sol, d_usdc, *, err=None, swaps=None,
+             other_pool_swaps=0):
+    """Synthetic SOL/USDC CPMM transaction; ``swaps`` = swap instructions on the pool."""
+    if swaps is None:
+        swaps = 1 if (d_sol > 0) != (d_usdc > 0) else 0
     pre_sol, pre_usdc = 1_000 * 10**9, 150_000 * 10**6
     balances = lambda sol, usdc: [                                  # noqa: E731
         {'accountIndex': 1, 'mint': su.WSOL_MINT, 'owner': SOL_POOL,
@@ -476,7 +490,10 @@ def _pool_tx(sig, slot, index, block_time, d_sol, d_usdc, *, err=None):
     return {'slot': slot, 'transactionIndex': index, 'blockTime': block_time,
             'transaction': {'signatures': [sig],
                             'message': {'accountKeys': ['Payer11111111111111111111111111111111111111',
-                                                        SOL_VAULT, USDC_VAULT, SOL_POOL]}},
+                                                        SOL_VAULT, USDC_VAULT, SOL_POOL, CPMM.program,
+                                                        OTHER_POOL],
+                                        'instructions': [_swap_ix(3)] * swaps
+                                        + [_swap_ix(5)] * other_pool_swaps}},
             'meta': {'err': err, 'preTokenBalances': balances(pre_sol, pre_usdc),
                      'postTokenBalances': balances(pre_sol + d_sol, pre_usdc + d_usdc)}}
 
@@ -487,7 +504,7 @@ POOL_TXS = [
     ('s2', 100, 9, 1000, 2 * 10**9, -301 * 10**6, None),      # sells 2 SOL for 301 USDC
     ('s3', 101, 0, 1001, 5 * 10**9, 750 * 10**6, None),       # liquidity add: no price
     ('s4', 102, 4, 1001, -10**9, 151 * 10**6, {'Custom': 1}),  # failed: no price
-    ('s5', 103, 1, 1002, -3, 1, None),                        # tiny swap, exact fraction
+    ('s5', 103, 1, 1002, -3, 1, None),                        # tiny swap: below the minimum size
 ]
 
 
@@ -530,16 +547,16 @@ def _pool_window(tmp_path, chain=None):
 
 def test_series_points_follow_the_spec_exactly(tmp_path):
     document = su.build_series(_pool_window(tmp_path), pool=SOL_POOL, sol_vault=SOL_VAULT,
-                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+                               usdc_vault=USDC_VAULT, swap_filter=CPMM,
+                               label='SYNTHETIC_TEST_FIXTURE')
     assert document['schema'] == 'rugger-sol-usd-series-v1'
     points = document['points']
-    assert [p['signature'] for p in points] == ['s1', 's2', 's5']      # no liquidity, no failure
-    # s5: 1 micro-USDC for 3 lamports = 333.333... USD per SOL -> 33333333333 at 10^-8.
-    assert [p["price"] for p in points] == [150 * 10**8, 150_50000000, 33333333333]
+    assert [p['signature'] for p in points] == ['s1', 's2']      # no liquidity, failure, dust
+    assert [p["price"] for p in points] == [150 * 10**8, 150_50000000]
     keys = {'schema', 'slot', 'transaction_index', 'block_time', 'received_at_ms',
             'publish_time', 'price', 'exponent', 'confidence', 'source_kind', 'source_ref',
             'evidence_sha256', 'signature'}
-    for point, (sig, slot, index, block_time, *_rest) in zip(points, [POOL_TXS[i] for i in (0, 1, 4)]):
+    for point, (sig, slot, index, block_time, *_rest) in zip(points, [POOL_TXS[i] for i in (0, 1)]):
         assert set(point) == keys and point['exponent'] == -8
         assert (point['slot'], point['transaction_index'], point['block_time']) == (slot, index, block_time)
         assert point['source_kind'] == 'sol_usdc_pool_last_trade' and point['source_ref'] == SOL_POOL
@@ -553,12 +570,12 @@ def test_series_half_even_rounding_and_refusals(tmp_path):
     window = _pool_window(tmp_path)
     with pytest.raises(bf.BackfillError, match='window_address_is_not_the_pool'):
         su.build_series(window, pool='Other1111111111111111111111111111111111111',
-                        sol_vault=SOL_VAULT, usdc_vault=USDC_VAULT)
+                        sol_vault=SOL_VAULT, usdc_vault=USDC_VAULT, swap_filter=CPMM)
     with pytest.raises(bf.BackfillError, match='vault_mint_or_decimals_mismatch'):
-        su.build_series(window, pool=SOL_POOL, sol_vault=USDC_VAULT, usdc_vault=SOL_VAULT)
+        su.build_series(window, pool=SOL_POOL, sol_vault=USDC_VAULT, usdc_vault=SOL_VAULT, swap_filter=CPMM)
     with pytest.raises(bf.BackfillError, match='series_label'):
         su.build_series(window, pool=SOL_POOL, sol_vault=SOL_VAULT, usdc_vault=USDC_VAULT,
-                        label='MADE_UP')
+                        label='MADE_UP', swap_filter=CPMM)
 
 
 def bf_fraction(a, b):
@@ -568,19 +585,20 @@ def bf_fraction(a, b):
 
 def test_series_file_is_referenced_by_the_export_manifest(tmp_path):
     document = su.build_series(_pool_window(tmp_path), pool=SOL_POOL, sol_vault=SOL_VAULT,
-                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+                               usdc_vault=USDC_VAULT, swap_filter=CPMM,
+                               label='SYNTHETIC_TEST_FIXTURE')
     digests = su.write_series(document, tmp_path / 'series.json.gz')
     _run(tmp_path, FakeChain())
     export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools',
                              sol_usd_series=tmp_path / 'series.json.gz')
     ref = export['sol_usd_series']
-    assert ref['file'] == 'sol_usd_series.json.gz' and ref['points'] == 3
+    assert ref['file'] == 'sol_usd_series.json.gz' and ref['points'] == 2
     assert ref['file_sha256'] == digests['file_sha256']
     assert ref['canonical_sha256'] == digests['canonical_sha256'] == su.canonical_sha256(document)
     assert ref['source_kinds'] == ['sol_usdc_pool_last_trade']
     assert (tmp_path / 'pools' / 'sol_usd_series.json.gz').read_bytes() == \
         (tmp_path / 'series.json.gz').read_bytes()
-    assert su.density(document)['max_gap_s'] == 2
+    assert su.density(document)['max_gap_s'] == 0
 
 
 # --------------------------------------------------------------------------- sampled SOL/USDC
@@ -663,13 +681,13 @@ def test_sample_grid_4_gives_a_dense_enough_series_with_few_calls(tmp_path):
     assert sampling['grid_seconds'] == 4 and fetched == sampling['fetched']
     assert fetched < 100 // 3                                  # far fewer than the 100 bodies
     document = su.build_series(tmp_path / 's', pool=SOL_POOL, sol_vault=SOL_VAULT,
-                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE', swap_filter=CPMM)
     assert su.density(document)['max_gap_s'] <= 4
     assert all(p['source_kind'] == 'sol_usdc_pool_last_trade' for p in document['points'])
     four = len(document['points'])
     code, _ = _sample(tmp_path, DensePool(), grid='2', out='s2')
     two = su.build_series(tmp_path / 's2', pool=SOL_POOL, sol_vault=SOL_VAULT,
-                          usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+                          usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE', swap_filter=CPMM)
     assert code == 0 and len(two['points']) > four and su.density(two)['max_gap_s'] <= 2
 
 
@@ -715,7 +733,51 @@ def test_series_without_provider_index_keeps_only_unambiguous_points(tmp_path):
     code, _ = _sample(tmp_path, DensePool(strip_index=True))
     assert code == 0
     document = su.build_series(tmp_path / 's', pool=SOL_POOL, sol_vault=SOL_VAULT,
-                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE', swap_filter=CPMM)
     assert document['points'] and all(p['transaction_index'] is None for p in document['points'])
     slots = [p['slot'] for p in document['points']]
     assert slots == sorted(set(slots))                       # one point per slot, strictly sorted
+
+
+# --------------------------------------------------------------------------- R02 B1 on T-0032
+def _single(tx, **kw):
+    return su.point_from_transaction(dict(tx, signature='x'), pool=SOL_POOL, sol_vault=SOL_VAULT,
+                                     usdc_vault=USDC_VAULT, swap_filter=CPMM, **kw)
+
+
+def test_round_trip_on_the_pool_is_rejected_as_multi_swap():
+    # Two swaps through the pool leave a 1-lamport / 0.01 USDC residue: 10 000 000 USD per SOL.
+    rejected = {}
+    tx = _pool_tx('r', 10, 0, 100, 1, -10_000, swaps=2)
+    assert _single(tx, rejected=rejected) is None and rejected == {'multi_swap': 1}
+
+
+def test_multi_hop_route_with_one_swap_on_this_pool_is_kept():
+    tx = _pool_tx('h', 10, 0, 100, -2 * 10**9, 300 * 10**6, swaps=1, other_pool_swaps=2)
+    point = _single(tx)
+    assert point is not None and point['price'] == 150 * 10**8
+
+
+def test_dust_and_missing_swap_instruction_are_rejected_and_counted(tmp_path):
+    rejected = {}
+    assert _single(_pool_tx('d', 10, 0, 100, -10**6, 150_000), rejected=rejected) is None
+    assert _single(_pool_tx('n', 10, 1, 100, -10**9, 150 * 10**6, swaps=0),
+                   rejected=rejected) is None
+    assert rejected == {'below_min_size': 1, 'no_swap_instruction': 1}
+    report = {}
+    su.build_series(_pool_window(tmp_path), pool=SOL_POOL, sol_vault=SOL_VAULT,
+                    usdc_vault=USDC_VAULT, swap_filter=CPMM, label='SYNTHETIC_TEST_FIXTURE',
+                    report=report)
+    assert report['accepted'] == 2 and report['candidates'] == 5
+    assert report['rejected'] == {'below_min_size': 1, 'failed': 1, 'same_direction': 1}
+
+
+def test_custom_filter_requires_all_fields():
+    with pytest.raises(bf.BackfillError, match='custom_filter_needs'):
+        su.swap_filter_from_args('custom', program='P')
+    with pytest.raises(bf.BackfillError, match='discriminator_must_be_8_bytes_hex'):
+        su.swap_filter_from_args('custom', program='P', discriminators=['abcd'],
+                                 pool_account_index=2)
+    built = su.swap_filter_from_args('custom', program='P', discriminators=['00' * 8],
+                                     pool_account_index=2, min_sol_lamports=5)
+    assert built.pool_account_index == 2 and built.min_sol_lamports == 5

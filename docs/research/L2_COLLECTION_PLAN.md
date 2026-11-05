@@ -211,6 +211,29 @@ Limite réelle : si le pool SOL/USDC lui-même reste plus de 4 s sans trade, les
 décisions concernées restent WAIT (`sol_usd_stale`), quelle que soit la grille. La
 densité du pool choisi se vérifie avec `density.max_gap_s`.
 
+Qualité de chaque point (constat B1 de RUGGER 02 sur T-0032) :
+- un point n'est retenu que si la transaction porte **exactement une** instruction de
+  swap sur le pool, reconnue par le programme, le discriminateur et la position du
+  compte du pool ;
+- un aller-retour ou plusieurs passages par le même pool (`multi_swap`) laissent un
+  petit résidu net, qui donnerait un prix absurde : ils sont rejetés ;
+- une variation nette inférieure à `--min-sol-lamports` (0,1 SOL par défaut) est
+  rejetée comme poussière (`below_min_size`) ;
+- chaque rejet est compté par motif dans `<série>.report.json`.
+
+Le seul préréglage est `--pool-kind raydium-cpmm`, dont les discriminateurs sont
+épinglés dans l'IDL Raydium (`bot/live/cpmm_swap.py`). Pour un pool d'un autre type
+(Raydium AMM v4, CLMM, Orca), utiliser `--pool-kind custom` avec `--swap-program`,
+`--swap-discriminator` et `--pool-account-index`, après vérification dans l'IDL de
+ce programme.
+
+Biais connu (O1) : le prix est un prix d'exécution, frais du pool et impact
+compris, et non un prix médian. Préférer un pool à faibles frais.
+
+Couverture (O2) : la densité est seulement rapportée, pas imposée. En P0, mesurer la
+part des décisions L1 en `sol_usd_stale` ou `sol_usd_rate_unavailable`, et la
+consigner avec le rapport.
+
 ```bash
 python -B tools/backfill_launchlab_window.py sol-usd-series --out data/backfill/p0_solusdc --pool <pool SOL/USDC> --sol-vault <réserve WSOL> --usdc-vault <réserve USDC> --series-out data/backfill/p0_sol_usd.json.gz
 ```
