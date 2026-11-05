@@ -1,7 +1,14 @@
-import glob, json, unittest
+import glob, json, os, unittest
 from bot.market import launchlab_program_decoder as D
 from bot.market.launchlab_events import EventDecodeError
 from bot.market.signature_backfill import BackfillError, BackfillState, run_backfill
+
+
+# Portable: resolved from this file, not from the working directory (the offline harness runs
+# in an isolated copy where only bot/ and tests/ exist). tests/fixtures/launchlab_tx.json is a
+# byte-identical copy of the repository-root launchlab_tx.json (same sha256), no data altered.
+FIXTURES = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures')
+LAUNCHLAB_TX = os.path.join(FIXTURES, 'launchlab_tx.json')
 
 
 def _tx(path):
@@ -13,7 +20,7 @@ def _tx(path):
 class DecoderTests(unittest.TestCase):
     def test_fixture_verified_discriminators(self):
         seen = set()
-        for p in glob.glob('tests/fixtures/launchlab_trades/*.json') + ['launchlab_tx.json']:
+        for p in sorted(glob.glob(os.path.join(FIXTURES, 'launchlab_trades', '*.json'))) + [LAUNCHLAB_TX]:
             for dec, _, pid in D.classify_transaction(_tx(p)):
                 self.assertEqual(pid, D.LAUNCHLAB_PROGRAM)
                 seen.add(dec.kind)
@@ -35,10 +42,10 @@ class DecoderTests(unittest.TestCase):
             D.classify_transaction({'foo': 1})
 
     def test_failed_tx_ignored_and_links(self):
-        tx = _tx('launchlab_tx.json')
+        tx = _tx(LAUNCHLAB_TX)
         tx = json.loads(json.dumps(tx)); tx['meta']['err'] = {'x': 1}
         self.assertEqual(D.classify_transaction(tx), [])
-        links = D.link_evidence(D.classify_transaction(_tx('launchlab_tx.json')))
+        links = D.link_evidence(D.classify_transaction(_tx(LAUNCHLAB_TX)))
         self.assertEqual(links['trade'], 'proven')
         for k in ('creation', 'graduation', 'migration', 'cpmm_pool'):
             self.assertEqual(links[k], 'unproven')
