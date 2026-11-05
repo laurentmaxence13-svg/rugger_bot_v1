@@ -38,3 +38,29 @@ Limite assumée : la liste d'exclusion est un filtre lexical (faux positifs poss
 2. Auditer d'abord la question d'événements ci-dessus sur une issue de test.
 3. Kill-switch : variable de dépôt `RELAY_ENABLED` ≠ `true` ⇒ no-op. Retour arrière : supprimer le workflow.
 Aucune de ces étapes n'est exécutée.
+
+---
+## Mise à jour mandat #196 (toujours NON ACTIVÉ)
+
+### Pourquoi un label posé par `GITHUB_TOKEN` ne peut pas être supposé déclencher la routine
+- Documenté par GitHub : les événements produits avec le `GITHUB_TOKEN` d'Actions ne déclenchent **pas** de nouveaux *workflows* (anti-boucle), à l'exception de `workflow_dispatch`/`repository_dispatch`. Le webhook `issues.labeled` est quand même émis, mais ce que la routine Claude reçoit n'est **pas démontré** : elle dépend de l'abonnement de la routine et de l'identité de l'acteur, que je ne peux pas vérifier ici. → **inconnu, à tester une fois sur une issue de test avec accord du propriétaire**. Ne jamais bâtir le relais sur cette hypothèse ; le watchdog et le propriétaire restent le filet.
+- Preuve indirecte dans ce dépôt : le déclenchement actuel de #196 provient d'un label posé par le propriétaire, pas d'un bot.
+
+### Ajouts (code, testé hors réseau : `python -m unittest tests.test_relay_planner tests.test_relay_store`)
+| Besoin #196 | Implémentation | Tests |
+|---|---|---|
+| (1) stockage durable + idempotence transactionnelle | `tools/relay_store.py` : SQLite, `processed` PK, `launches` PK(dedupe), **outbox** écrite dans la même transaction `BEGIN IMMEDIATE`; l'appel GitHub se fait *après* commit (`run_outbox`), 3 essais max puis FAILED | `Durable.*` (redémarrage, doublon, rollback, retry, envoi unique) |
+| (2) WAITING→READY | `relay_planner.promote()` ; `ENQUEUE` n'écrase plus l'état RUNNING (bug du prototype : `SET_STATE WAITING` perdait le run) | `Promotion.*` |
+| (3) payload GitHub | `tools/relay_payload.py` + `label_names()` (objets `{"name":..}` et chaînes) ; payload mal formé ou sans delivery id ⇒ refus | `Payload.*` |
+| (4) rapports réels | `normalize_report()` : seul `STATUS:` unique est fiable ; formats #185 (`VERDICT : BLOCKED`), #190 (`État final : BLOCKED partiel`), #181 (`statut : PRÉPARATION PARTIELLE`) ⇒ BLOCKED non fiable + escalade, **jamais COMPLETED**, même avec un bloc NEXT_TASK | `Reports.*` |
+| (5) watchdog | `relay_planner.watchdog(state, now)` appelable par un planificateur, indépendant de tout événement ; départ inconnu ⇒ fail-closed ; ne se répète pas | `Watchdog.*` |
+| (6) quotas fail-closed | ledger illisible/corrompu ⇒ quota « dépassé » ; droits minimaux : `permissions: contents: read` pour la CI ; futur exécuteur : `issues: write` seul | `Watchdog.test_corrupt_ledger_fails_closed` |
+
+### Watchdog : scheduler proposé, NON activé
+Un `on: schedule: cron: "17 * * * *"` appelant `watchdog()` sur la base d'état, derrière `RELAY_ENABLED == 'true'`. Les workflows planifiés sont retardés/désactivés après 60 jours d'inactivité : le watchdog doit lui-même être surveillé. Non ajouté.
+
+### CI
+`.github/workflows/relay-planner-ci.yml` (lecture seule, `pull_request` filtré sur `tools/**`, `tests/test_relay_*`) ; présent **uniquement sur la branche de PR** — à retirer avant tout merge vers `main` si le propriétaire ne veut pas ce workflow. Résultats à lire sur le SHA exact du commit, par PR.
+
+### Limites restantes
+Aucun exécuteur GitHub réel (CREATE_ISSUE/ADD_LABEL) n'est écrit ; `send` est injecté. Le filtre FORBIDDEN reste lexical. La concurrence multi-processus repose sur SQLite (un seul hôte).
