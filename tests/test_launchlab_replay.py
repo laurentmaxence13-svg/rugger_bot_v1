@@ -145,3 +145,36 @@ def test_no_entry_when_strategy_never_buys():
     timeline = _timeline([('buy', 10**9)] * 3)
     result = run(timeline, Scripted(enter_at=99, spend=1), ZERO_COST)
     assert result.outcome == 'no_entry' and result.pnl is None and result.spent == 0
+
+
+# --- share fee of a third party must not leak into our own fills --------------
+
+def _timeline_with_share(share_fee):
+    base = _timeline([('buy', 10**9)] * 3)
+    ev = list(base.events)
+    first = ev[0]
+    assert first.protocol_fee > share_fee
+    ev[0] = replace(first, protocol_fee=first.protocol_fee - share_fee, share_fee=share_fee)
+    return build_timeline(POOL, ev), first
+
+
+def test_own_rate_excludes_third_party_share_fee():
+    share = 3_000_000
+    timeline, original = _timeline_with_share(share)
+    no_share = run(_timeline([('buy', 10**9)] * 3), Scripted(0, 10**8, 1),
+                   ExecutionModel(latency_slots=0, priority_fee_lamports=0, base_fee_lamports=0))
+    res = run(timeline, Scripted(0, 10**8, 1),
+              ExecutionModel(latency_slots=0, priority_fee_lamports=0, base_fee_lamports=0))
+    # Total event fee is unchanged; only 3_000_000 of it was a share fee, so our
+    # rate must be strictly lower than the all-in rate, and below the 12_500 ppm.
+    assert res.fee_rate_ppm < no_share.fee_rate_ppm
+    expected = ((original.protocol_fee - share - 1) * 1_000_000) // 10**9 + 1
+    assert res.fee_rate_ppm == expected
+
+
+def test_explicit_model_rate_is_unaffected_by_share_exclusion():
+    timeline, _ = _timeline_with_share(3_000_000)
+    res = run(timeline, Scripted(0, 10**8, 1),
+              ExecutionModel(latency_slots=0, fee_rate_ppm=RATE, priority_fee_lamports=0,
+                             base_fee_lamports=0))
+    assert res.fee_rate_ppm == RATE and res.fee_rate_source == 'model'

@@ -11,13 +11,17 @@ Execution model (every assumption is explicit and reported):
   12500 and 18000 ppm are all observed): by default it is read from the last
   real event at the decision index, i.e. from pool state at decision time. An
   explicit ``fee_rate_ppm`` overrides it; the rate used and its source are
-  recorded in ``TradeResult``.
+  recorded in ``TradeResult``. The inferred rate excludes the observed trader's
+  optional share fee: our orders send ``share_fee_rate=0``.
 * **Own impact** -- after our buy, every later real trade is replayed with the
   same exact-in amount on the shifted curve (other traders' sizes unchanged).
   If a replayed trade becomes impossible the run stops as
   ``counterfactual_divergence`` instead of guessing.
 * **Costs** -- per transaction: ``base_fee_lamports + priority_fee_lamports``;
-  token account rent is assumed refunded by closing the account after exit.
+  token account rent (ATA / temporary WSOL) is assumed fully refunded by closing
+  the account in the exit transaction: no rent is charged, but it is locked while
+  the position is held and NOT refunded for ``open_at_end`` (assumption, untested
+  against real receipts).
 * **Migration / end of data** -- a position still open when the curve reaches
   its migration boundary is ``migrated_unpriced`` (CPMM exit not modelled; no
   P&L is credited). A position open at the end of observed data is marked to
@@ -115,11 +119,12 @@ def _replay_real(state, event):
     return sell_exact_in(state, event.amount_in, rate).after
 
 
-def _event_rate(event):
+def _event_rate(event, include_share=True):
     return implied_fee_rate_ppm({
         'side': event.side, 'amount_in': event.amount_in, 'amount_out': event.amount_out,
         'protocol_fee': event.protocol_fee, 'platform_fee': event.platform_fee,
-        'creator_fee': event.creator_fee, 'share_fee': event.share_fee})
+        'creator_fee': event.creator_fee, 'share_fee': event.share_fee},
+        include_share=include_share)
 
 
 def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
@@ -145,7 +150,9 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
         return result
     result.decision_index = k
     if model.fee_rate_ppm is None:
-        rate, result.fee_rate_source = _event_rate(events[k]), 'pool_event_at_decision'
+        # Own orders carry share_fee_rate=0: never inherit a third party's share fee.
+        rate, result.fee_rate_source = (_event_rate(events[k], include_share=False),
+                                        'pool_event_at_decision')
     else:
         rate, result.fee_rate_source = model.fee_rate_ppm, 'model'
     result.fee_rate_ppm = rate
