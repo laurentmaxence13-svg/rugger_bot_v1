@@ -1,0 +1,21 @@
+{
+ "action": "closed",
+ "issue": {
+  "number": 200,
+  "state": "closed",
+  "title": "t",
+  "labels": [
+   {
+    "id": 1,
+    "name": "rugger-04-run",
+    "color": "ededed"
+   }
+  ],
+  "user": {
+   "login": "o"
+  }
+ },
+ "repository": {
+  "full_name": "laurentmaxence13-svg/rugger_bot_v1"
+ }
+}

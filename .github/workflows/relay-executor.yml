@@ -1,0 +1,30 @@
+# DRAFT — NOT ACTIVATED (#200). issues/issue_comment/schedule triggers only run from the DEFAULT branch,
+# so this file is inert while it lives on a PR branch. Even after a merge it stays inert unless the
+# repo variable RELAY_ENABLED == 'true'. Dry-run only: no issue is created, no secret is used.
+name: relay executor (draft, dry-run)
+on:
+  issues:
+    types: [closed, labeled]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: "17 * * * *"   # catch-up control (hourly)
+permissions:
+  contents: read
+concurrency:
+  group: relay-executor
+  cancel-in-progress: false
+jobs:
+  relay:
+    if: ${{ vars.RELAY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.11"
+      - run: python -m unittest tests.test_relay_planner tests.test_relay_store tests.test_relay_executor
+      # Real execution (sender + durable DB) intentionally absent: needs owner decision, see docs/ops/RELAY_RUGGER.md
