@@ -67,8 +67,18 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     x = sub.add_parser('export', help='per-pool archives + MANIFEST for the L1 replay; no network')
     x.add_argument('--out', type=Path, required=True, help='verified program-window run directory')
     x.add_argument('--pools-dir', type=Path, required=True)
-    x.add_argument('--include-truncated', action='store_true',
-                   help='also export pools still trading near slot_max (flagged)')
+    x.add_argument('--entry-cutoff-gap-slots', type=int, default=160,
+                   help='entry_cutoff_slot = slot_max - this gap (minimum 79)')
+    x.add_argument('--sol-usd-series', type=Path, default=None,
+                   help='series file built by the sol-usd-series command')
+    s2 = sub.add_parser('sol-usd-series',
+                        help='causal SOL/USD series from a SOL/USDC pool window; no network')
+    s2.add_argument('--out', type=Path, required=True, help='verified window of the pool address')
+    s2.add_argument('--pool', required=True)
+    s2.add_argument('--sol-vault', required=True)
+    s2.add_argument('--usdc-vault', required=True)
+    s2.add_argument('--series-out', type=Path, required=True)
+    s2.add_argument('--label', default='COLLECTED', choices=('COLLECTED', 'SYNTHETIC_TEST_FIXTURE'))
     args = parser.parse_args(argv)
 
     def emit(obj):
@@ -82,10 +92,20 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
         if args.command == 'export':
             from bot.market.backfill_export import export_pools
             export = export_pools(args.out, args.pools_dir,
-                                  include_truncated=args.include_truncated)
+                                  entry_cutoff_gap_slots=args.entry_cutoff_gap_slots,
+                                  sol_usd_series=args.sol_usd_series)
             emit({'pools_exported': len(export['pools']), 'skipped': len(export['skipped']),
                   'active_near_window_end': sum(p['active_near_window_end']
-                                                for p in export['pools'])})
+                                                for p in export['pools']),
+                  'entry_cutoff_slot': export['entry_cutoff_slot'],
+                  'window_slot_max': export['window_slot_max'],
+                  'sol_usd_series': export['sol_usd_series']})
+            return 0
+        if args.command == 'sol-usd-series':
+            from bot.market.sol_usd_collect import build_series, density, write_series
+            document = build_series(args.out, pool=args.pool, sol_vault=args.sol_vault,
+                                    usdc_vault=args.usdc_vault, label=args.label)
+            emit(dict(write_series(document, args.series_out), density=density(document)))
             return 0
         window =Window(args.address, args.slot_min, args.slot_max)
         costs = load_costs(args.costs)

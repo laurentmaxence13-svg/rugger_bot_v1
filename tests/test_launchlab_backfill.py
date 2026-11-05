@@ -282,8 +282,7 @@ def _fixture_archives():
 def test_export_rebuilds_the_certified_pool_archives_for_the_l1_replay(tmp_path):
     code, _ = _run(tmp_path, FakeChain())
     assert code == 0
-    # The fixture window ends on the pools' last trades: they count as truncated.
-    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
     fixture_manifest, fixtures = _fixture_archives()
     assert [p['pool'] for p in export['pools']] == sorted(fixtures) and export['skipped'] == {}
     by_pool = {p['pool']: p for p in fixture_manifest['pools']}
@@ -319,7 +318,7 @@ def test_export_skips_pools_created_before_the_window(tmp_path):
     manifest = bf.Backfill(rpc, bf.Window(ADDRESS, first['slot'] + 1, SLOT_MAX),
                            tmp_path / 'w').run()
     assert manifest['complete']
-    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
     creators_cut = {p for p, a in _fixture_archives()[1].items()
                     if min(r['slot'] for r in a.signatures) <= first['slot']}
     assert creators_cut and set(export['skipped']) == creators_cut
@@ -412,19 +411,31 @@ def test_export_keeps_only_sol_quoted_pools_for_l1(tmp_path, monkeypatch):
     usd1 = 'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB'
     monkeypatch.setattr(bx, 'creation_quote_mint',
                         lambda tx, pool, mint: usd1 if pool == usd_pool else real(tx, pool, mint))
-    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools', include_truncated=True)
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
     assert export['skipped'] == {usd_pool: f'quote_not_sol:{usd1}'}
     assert usd_pool not in {p['pool'] for p in export['pools']} and len(export['pools']) == 2
     assert all(p['quote_mint'] == bx.WSOL_MINT for p in export['pools'])
 
 
-def test_truncated_pools_are_left_out_by_default(tmp_path):
+def test_m1_keeps_pools_active_near_the_end_and_writes_the_window(tmp_path):
     _run(tmp_path, FakeChain())
     export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools')
-    assert export['pools'] == []
-    assert set(export['skipped'].values()) == {'active_near_window_end'}
-    flagged = bx.export_pools(tmp_path / 'w', tmp_path / 'p2', include_truncated=True)
-    assert all(p['active_near_window_end'] for p in flagged['pools'])
+    assert len(export['pools']) == 3 and export['skipped'] == {}      # no survival filter
+    assert all(p['active_near_window_end'] for p in export['pools'])  # flagged only
+    written = json.loads((tmp_path / 'pools' / 'MANIFEST.json').read_text())
+    assert written['window_slot_max'] == SLOT_MAX
+    assert written['entry_cutoff_slot'] == SLOT_MAX - bx.DEFAULT_CUTOFF_GAP_SLOTS
+    assert written['window_slot_max'] - written['entry_cutoff_slot'] >= bx.MIN_CUTOFF_GAP_SLOTS
+
+
+def test_m1_gap_bounds_are_enforced(tmp_path):
+    _run(tmp_path, FakeChain())
+    with pytest.raises(bf.BackfillError, match='entry_cutoff_gap_slots_below_79'):
+        bx.export_pools(tmp_path / 'w', tmp_path / 'p1', entry_cutoff_gap_slots=78)
+    with pytest.raises(bf.BackfillError, match='window_shorter_than_entry_cutoff_gap'):
+        bx.export_pools(tmp_path / 'w', tmp_path / 'p2', entry_cutoff_gap_slots=SLOT_MAX - SLOT_MIN)
+    exact = bx.export_pools(tmp_path / 'w', tmp_path / 'p3', entry_cutoff_gap_slots=79)
+    assert exact['window_slot_max'] - exact['entry_cutoff_slot'] == 79
 
 
 def test_export_refuses_bodies_without_transaction_index(tmp_path):
@@ -445,3 +456,128 @@ def test_quote_mint_requires_the_decoded_base_mint(tmp_path):
     creation = min(archive.transactions.values(), key=lambda t: (t['slot'], t['transactionIndex']))
     with pytest.raises(bf.BackfillError, match='creation_quote_mint_not_found'):
         bx.creation_quote_mint(creation, pool, 'NotTheBaseMint1111111111111111111111111111')
+
+
+# --------------------------------------------------------------------------- SOL/USD series
+from bot.market import sol_usd_collect as su                  # noqa: E402
+
+SOL_POOL = 'SyntheticSoLUsdcPooL1111111111111111111111111'
+SOL_VAULT = 'SyntheticSoLVauLt11111111111111111111111111'
+USDC_VAULT = 'SyntheticUsdcVauLt1111111111111111111111111'
+
+
+def _pool_tx(sig, slot, index, block_time, d_sol, d_usdc, *, err=None):
+    pre_sol, pre_usdc = 1_000 * 10**9, 150_000 * 10**6
+    balances = lambda sol, usdc: [                                  # noqa: E731
+        {'accountIndex': 1, 'mint': su.WSOL_MINT, 'owner': SOL_POOL,
+         'uiTokenAmount': {'amount': str(sol), 'decimals': 9}},
+        {'accountIndex': 2, 'mint': su.USDC_MINT, 'owner': SOL_POOL,
+         'uiTokenAmount': {'amount': str(usdc), 'decimals': 6}}]
+    return {'slot': slot, 'transactionIndex': index, 'blockTime': block_time,
+            'transaction': {'signatures': [sig],
+                            'message': {'accountKeys': ['Payer11111111111111111111111111111111111111',
+                                                        SOL_VAULT, USDC_VAULT, SOL_POOL]}},
+            'meta': {'err': err, 'preTokenBalances': balances(pre_sol, pre_usdc),
+                     'postTokenBalances': balances(pre_sol + d_sol, pre_usdc + d_usdc)}}
+
+
+# (signature, slot, index, block_time, delta SOL vault, delta USDC vault, err)
+POOL_TXS = [
+    ('s1', 100, 3, 1000, -10**9, 150 * 10**6, None),          # buys 1 SOL for 150 USDC
+    ('s2', 100, 9, 1000, 2 * 10**9, -301 * 10**6, None),      # sells 2 SOL for 301 USDC
+    ('s3', 101, 0, 1001, 5 * 10**9, 750 * 10**6, None),       # liquidity add: no price
+    ('s4', 102, 4, 1001, -10**9, 151 * 10**6, {'Custom': 1}),  # failed: no price
+    ('s5', 103, 1, 1002, -3, 1, None),                        # tiny swap, exact fraction
+]
+
+
+class PoolChain(FakeChain):
+    def __init__(self, txs=POOL_TXS):
+        super().__init__()
+        self.bodies = {s: _pool_tx(s, sl, i, bt, ds, du, err=e) for s, sl, i, bt, ds, du, e in txs}
+        self.rows = {s: {'signature': s, 'slot': b['slot'], 'err': b['meta']['err'],
+                         'blockTime': b['blockTime'], 'transactionIndex': b['transactionIndex']}
+                     for s, b in self.bodies.items()}
+
+    def getSignaturesForAddress(self, address, options):
+        assert address == SOL_POOL
+        order = sorted(self.rows.values(), key=lambda r: (r['slot'], r['transactionIndex']),
+                       reverse=True)
+        sigs = [r['signature'] for r in order]
+        start = sigs.index(options['before']) + 1 if 'before' in options else 0
+        return order[start:start + options['limit']]
+
+    def getTransactionsForAddress(self, address, options):
+        assert address == SOL_POOL
+        slot = options['filters']['slot']
+        order = sorted((r for r in self.rows.values() if slot['gte'] <= r['slot'] <= slot['lte']),
+                       key=lambda r: (r['slot'], r['transactionIndex']))
+        start = int(options.get('paginationToken') or 0)
+        page = order[start:start + options['limit']]
+        token = str(start + len(page)) if start + len(page) < len(order) else None
+        data = [self.bodies[r['signature']] if options['transactionDetails'] == 'full' else r
+                for r in page]
+        return {'data': data, 'paginationToken': token}
+
+
+def _pool_window(tmp_path, chain=None):
+    rpc = bf.open_rpc(URL, bf.CreditBudget(10**6, 10**9, bf.COST_PRESETS['public']),
+                      opener=chain or PoolChain())
+    manifest = bf.Backfill(rpc, bf.Window(SOL_POOL, 100, 103), tmp_path / 'sol').run()
+    assert manifest['complete']
+    return tmp_path / 'sol'
+
+
+def test_series_points_follow_the_spec_exactly(tmp_path):
+    document = su.build_series(_pool_window(tmp_path), pool=SOL_POOL, sol_vault=SOL_VAULT,
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+    assert document['schema'] == 'rugger-sol-usd-series-v1'
+    points = document['points']
+    assert [p['signature'] for p in points] == ['s1', 's2', 's5']      # no liquidity, no failure
+    # s5: 1 micro-USDC for 3 lamports = 333.333... USD per SOL -> 33333333333 at 10^-8.
+    assert [p["price"] for p in points] == [150 * 10**8, 150_50000000, 33333333333]
+    keys = {'schema', 'slot', 'transaction_index', 'block_time', 'received_at_ms',
+            'publish_time', 'price', 'exponent', 'confidence', 'source_kind', 'source_ref',
+            'evidence_sha256', 'signature'}
+    for point, (sig, slot, index, block_time, *_rest) in zip(points, [POOL_TXS[i] for i in (0, 1, 4)]):
+        assert set(point) == keys and point['exponent'] == -8
+        assert (point['slot'], point['transaction_index'], point['block_time']) == (slot, index, block_time)
+        assert point['source_kind'] == 'sol_usdc_pool_last_trade' and point['source_ref'] == SOL_POOL
+        assert point['publish_time'] is None and point['received_at_ms'] is None
+        body = PoolChain().bodies[sig]
+        assert point['evidence_sha256'] == su.canonical_sha256(body)    # sha256 of the raw tx
+
+
+def test_series_half_even_rounding_and_refusals(tmp_path):
+    assert su._half_even(bf_fraction(5, 2)) == 2 and su._half_even(bf_fraction(7, 2)) == 4
+    window = _pool_window(tmp_path)
+    with pytest.raises(bf.BackfillError, match='window_address_is_not_the_pool'):
+        su.build_series(window, pool='Other1111111111111111111111111111111111111',
+                        sol_vault=SOL_VAULT, usdc_vault=USDC_VAULT)
+    with pytest.raises(bf.BackfillError, match='vault_mint_or_decimals_mismatch'):
+        su.build_series(window, pool=SOL_POOL, sol_vault=USDC_VAULT, usdc_vault=SOL_VAULT)
+    with pytest.raises(bf.BackfillError, match='series_label'):
+        su.build_series(window, pool=SOL_POOL, sol_vault=SOL_VAULT, usdc_vault=USDC_VAULT,
+                        label='MADE_UP')
+
+
+def bf_fraction(a, b):
+    from fractions import Fraction
+    return Fraction(a, b)
+
+
+def test_series_file_is_referenced_by_the_export_manifest(tmp_path):
+    document = su.build_series(_pool_window(tmp_path), pool=SOL_POOL, sol_vault=SOL_VAULT,
+                               usdc_vault=USDC_VAULT, label='SYNTHETIC_TEST_FIXTURE')
+    digests = su.write_series(document, tmp_path / 'series.json.gz')
+    _run(tmp_path, FakeChain())
+    export = bx.export_pools(tmp_path / 'w', tmp_path / 'pools',
+                             sol_usd_series=tmp_path / 'series.json.gz')
+    ref = export['sol_usd_series']
+    assert ref['file'] == 'sol_usd_series.json.gz' and ref['points'] == 3
+    assert ref['file_sha256'] == digests['file_sha256']
+    assert ref['canonical_sha256'] == digests['canonical_sha256'] == su.canonical_sha256(document)
+    assert ref['source_kinds'] == ['sol_usdc_pool_last_trade']
+    assert (tmp_path / 'pools' / 'sol_usd_series.json.gz').read_bytes() == \
+        (tmp_path / 'series.json.gz').read_bytes()
+    assert su.density(document)['max_gap_s'] == 2

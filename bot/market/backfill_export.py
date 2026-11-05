@@ -20,9 +20,14 @@ Rules, all offline:
   account read is invented. ``quote_mint`` comes from the creation instruction.
 - Only WSOL-quoted pools enter the L1 MANIFEST (the replay prices in SOL and
   aborts on another quote); the others are counted as ``quote_not_sol:<mint>``.
-- Pools still trading within ``NEAR_END_SLOTS`` of ``slot_max`` have a history cut
-  by the window, not by the chain: they are left out (``active_near_window_end``)
-  unless ``include_truncated`` is set, in which case they are flagged.
+- Window rule M1 (anti survival bias, spec T-0031 section 6): EVERY complete SOL
+  pool is kept, including pools still trading near ``slot_max`` (flagged
+  ``active_near_window_end`` for information). The MANIFEST carries
+  ``entry_cutoff_slot = slot_max - entry_cutoff_gap_slots`` and ``window_slot_max =
+  slot_max``: the L1 replay admits no entry after the cutoff and counts a cycle only
+  if it exits by ``window_slot_max``. The gap must be at least ``MIN_CUTOFF_GAP_SLOTS``.
+- An optional SOL/USD series file (``bot.market.sol_usd_collect``) is copied next to
+  the archives and referenced in the MANIFEST with its file and canonical SHA-256.
 - Every body must carry an integer ``transactionIndex`` (the L1 ordering key):
   windows fetched with ``--bodies rpc`` (plain getTransaction) are refused.
 """
@@ -38,7 +43,9 @@ from bot.market.collector import ARCHIVE_VERSION
 from bot.market.launchlab_events import WSOL_MINT, EventDecodeError, extract_trade_events
 
 SCHEMA_EXPORT = 'rugger-backfill-pool-export-v1'
-NEAR_END_SLOTS = 750            # about 5 minutes at 400 ms per slot (the L1 position horizon)
+NEAR_END_SLOTS = 750            # information flag only: last trade within ~5 minutes of slot_max
+MIN_CUTOFF_GAP_SLOTS = 79       # L1 minimum: ceil(30 s exit horizon / 400 ms) + 2 x 2 latency slots
+DEFAULT_CUTOFF_GAP_SLOTS = 160  # about twice the minimum, margin for slots shorter than 400 ms
 _SIG_FIELDS = ('blockTime', 'confirmationStatus', 'err', 'memo', 'signature', 'slot',
                'transactionIndex')
 
@@ -84,7 +91,8 @@ def _signature_row(entry):
     return {k: row[k] for k in _SIG_FIELDS}
 
 
-def export_pools(window_dir, out_dir, *, include_truncated=False):
+def export_pools(window_dir, out_dir, *, entry_cutoff_gap_slots=DEFAULT_CUTOFF_GAP_SLOTS,
+                 sol_usd_series=None):
     window_dir, out_dir = Path(window_dir), Path(out_dir)
     checked = verify(window_dir)
     manifest = json.loads((window_dir / 'manifest.json').read_text())
@@ -93,6 +101,11 @@ def export_pools(window_dir, out_dir, *, include_truncated=False):
     if manifest['window']['address'] != LAUNCHLAB_PROGRAM:
         raise BackfillError('export_needs_a_launchlab_program_window')
     slot_max = manifest['window']['slot_max']
+    if type(entry_cutoff_gap_slots) is not int or entry_cutoff_gap_slots < MIN_CUTOFF_GAP_SLOTS:
+        raise BackfillError(f'entry_cutoff_gap_slots_below_{MIN_CUTOFF_GAP_SLOTS}')
+    entry_cutoff_slot = slot_max - entry_cutoff_gap_slots
+    if entry_cutoff_slot <= manifest['window']['slot_min']:
+        raise BackfillError('window_shorter_than_entry_cutoff_gap')
     entries = [row for seg in manifest['segments'] if seg['kind'] == 'tx'
                for row in read_segment(window_dir / seg['path'])]
     if any(type(e.get('transactionIndex')) is not int for e in entries):
@@ -137,10 +150,7 @@ def export_pools(window_dir, out_dir, *, include_truncated=False):
         if quote_mint != WSOL_MINT:
             skipped[pool] = f'quote_not_sol:{quote_mint}'
             continue
-        near_end = history[-1]['slot'] > slot_max - NEAR_END_SLOTS
-        if near_end and not include_truncated:
-            skipped[pool] = 'active_near_window_end'
-            continue
+        near_end = history[-1]['slot'] > slot_max - NEAR_END_SLOTS     # kept (M1), flagged only
         transactions = {e['signature']: {k: v for k, v in e.items() if k != 'signature'}
                         for e in history if (e.get('meta') or {}).get('err') is None}
         signatures = [_signature_row(e) for e in reversed(history)]       # newest first
@@ -156,7 +166,21 @@ def export_pools(window_dir, out_dir, *, include_truncated=False):
                       'signatures': len(signatures), 'transactions': len(transactions),
                       'first_slot': history[0]['slot'], 'last_slot': history[-1]['slot'],
                       'active_near_window_end': near_end})
-    export = {'schema': SCHEMA_EXPORT, 'version': 1, 'pools': pools,
+    series_ref = None
+    if sol_usd_series is not None:
+        from bot.market.sol_usd_collect import canonical_sha256
+        source = Path(sol_usd_series)
+        data = source.read_bytes()
+        document = json.loads(gzip.decompress(data) if source.suffix == '.gz' else data)
+        name = 'sol_usd_series.json.gz' if source.suffix == '.gz' else 'sol_usd_series.json'
+        (out_dir / name).write_bytes(data)
+        kinds = sorted({p['source_kind'] for p in document['points']})
+        series_ref = {'file': name, 'file_sha256': hashlib.sha256(data).hexdigest(),
+                      'canonical_sha256': canonical_sha256(document), 'label': document['label'],
+                      'source_kinds': kinds, 'points': len(document['points'])}
+    export = {'schema': SCHEMA_EXPORT, 'version': 2, 'pools': pools,
+              'entry_cutoff_slot': entry_cutoff_slot, 'window_slot_max': slot_max,
+              'entry_cutoff_gap_slots': entry_cutoff_gap_slots, 'sol_usd_series': series_ref,
               'source': {'window': manifest['window'],
                          'window_manifest_sha256': checked['manifest_sha256'],
                          'endpoint': manifest['endpoint']},

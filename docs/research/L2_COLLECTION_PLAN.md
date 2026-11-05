@@ -144,28 +144,60 @@ Avec 4 300 créations par jour, ces durées sont divisées par 5,7.
 
 ## Cours SOL/USD causal (bloquant pour L1)
 
-Le rejeu L1 de RUGGER 01 (`f44a8be`) refuse les 113 décisions des fixtures pour
-la raison `sol_usd_rate_unavailable`. La collecte doit donc fournir, sur la même
+Le rejeu L1 de RUGGER 01 (`f44a8be`) refusait les 113 décisions des fixtures pour
+la raison `sol_usd_rate_unavailable`. Le format est désormais fixé par
+`docs/research/SOL_USD_SERIES_SPEC.md` (T-0031 @ `1c28f76`, audit PASS de
+RUGGER 02). La collecte doit donc fournir, sur la même
 fenêtre de slots, un cours SOL/USD daté avec sa provenance, connu **avant**
 chaque décision. La forme exacte (horodatage, provenance, tolérance d'âge) est
 attendue de RUGGER 01. Les options, à chiffrer pendant P0 :
 
 | Option | Coût Helius | Vérifiabilité | Remarque |
 |---|---|---|---|
-| Trades d'un pool SOL/USDC de référence (Raydium ou Orca), avec `run --address <pool>` | 1 crédit par transaction au tarif prudent ; volume à mesurer | transactions signées sur la chaîne | même outil ; cours = dernier trade avant la décision |
-| Transactions de mise à jour du compte de prix Pyth SOL/USD | environ 1 transaction par slot, soit environ 216 000 crédits par jour au tarif prudent | signées sur la chaîne | volume élevé : à échantillonner |
+| Trades d'un pool SOL/USDC de référence (Raydium ou Orca), avec `run --address <pool>` puis `sol-usd-series` | 1 crédit par transaction au tarif prudent ; volume à mesurer | transactions signées sur la chaîne | **seule source sur la chaîne possible en historique** (`sol_usdc_pool_last_trade`) ; cours = variation des deux réserves dans la transaction |
+| Compte de prix Pyth SOL/USD (`pyth_onchain_account`) | — | la preuve exigée est le compte brut à chaque mise à jour | **impossible en historique** : le RPC ne donne pas l'état passé d'un compte ; possible seulement en collecte continue (abonnement au compte) |
 | Mises à jour Pyth signées historiques (service Hermes) | 0 crédit Helius ; service public distinct, à autoriser | signatures Wormhole vérifiables | ce n'est pas un appel Helius ; il faut l'accord du propriétaire |
 
 Estimation pour P0 (1 jour), au tarif prudent de 1 crédit par transaction :
 - **pool SOL/USDC** : de l'ordre de 0,5 à 5 transactions par slot, soit 108 000 à
-  1 080 000 crédits. C'est une hypothèse, à mesurer : le plafond séparé
-  arrête la collecte, puis on échantillonne.
-- **oracle Pyth** : environ 216 000 crédits.
-- **Hermes** : 0 crédit Helius.
+  1 080 000 crédits. C'est une hypothèse, à mesurer : un plafond séparé
+  (`--out` distinct, donc `spend.json` distinct) arrête la collecte.
+- **Hermes** : 0 crédit Helius, si le propriétaire autorise ce service.
 
-Recommandation provisoire : Hermes si le propriétaire autorise ce service, sinon
-le compte Pyth sur la chaîne. Le choix final dépend de la forme exigée par
-RUGGER 01, encore attendue.
+Densité exigée par la spécification : au moins un point toutes les 4 s pendant la
+vie de chaque pool, un par seconde recommandé. `sol-usd-series` affiche l'écart
+maximal entre deux points (`density.max_gap_s`).
+
+Contrôle croisé hors ligne (T-0032, copie isolée, non commité), avec le code de
+RUGGER 01 @ `1c28f76` et une série synthétique à 150 $ placée dans la seconde qui
+précède chaque décision des fixtures :
+- le chargeur de RUGGER 01 accepte la série ;
+- le motif `sol_usd_rate_unavailable` disparaît des 113 décisions ;
+- les décisions sont identiques à celles d'un cours déclaré de 150 $ (226 lignes de
+  journal, 0 différence).
+
+Le critère d'acceptation 3 de P0 est donc atteignable avec cette source.
+
+### P0 : série SOL/USD, commandes
+
+Le propriétaire choisit un pool SOL/USDC de référence et relève, une seule fois,
+l'adresse de ses deux réserves (WSOL et USDC) dans le compte du pool.
+
+```bash
+RUGGER_BACKFILL_RPC_URL='<URL Helius>' python -B tools/backfill_launchlab_window.py run --network --endpoint-env RUGGER_BACKFILL_RPC_URL --address <pool SOL/USDC> --slot-min <slot_min> --slot-max <slot_max> --max-requests 20000 --max-credits 1200000 --costs helius-conservative --out data/backfill/p0_solusdc
+```
+
+```bash
+python -B tools/backfill_launchlab_window.py sol-usd-series --out data/backfill/p0_solusdc --pool <pool SOL/USDC> --sol-vault <réserve WSOL> --usdc-vault <réserve USDC> --series-out data/backfill/p0_sol_usd.json.gz
+```
+
+```bash
+python -B tools/backfill_launchlab_window.py export --out data/backfill/p0 --pools-dir data/backfill/p0_pools --sol-usd-series data/backfill/p0_sol_usd.json.gz
+```
+
+L'export écrit `entry_cutoff_slot` (`slot_max − 160` par défaut, minimum 79) et
+`window_slot_max` (règle M1) et garde tous les pools SOL complets. Le rejeu L1 se
+lance ensuite avec `--sol-usd-series`.
 
 ## Dépassement et renouvellement (point f)
 
@@ -178,6 +210,11 @@ RUGGER 01, encore attendue.
      enregistré.
    - Ce point n'est vrai qu'à partir du commit `5fd0995`, qui corrige le défaut
      F1 de T-0027.
+   - **Plafonds approuvés** : une reprise peut relever un plafond (chaque
+     changement reste inscrit dans `spend.json`). Le propriétaire ne relance qu'avec
+     les plafonds qu'il a approuvés (observation O-a de RUGGER 02).
+   - Le registre de dépense est propre à chaque dossier `--out`. La vraie limite
+     globale reste celle fixée chez le fournisseur (O-b).
 2. **Chez Helius (CONDITIONNEL, non vérifié)** : les pages officielles sont
    bloquées dans mon environnement. Avant le paiement, le propriétaire confirme
    sur ces pages comment acheter des crédits prépayés ou couper la facturation
