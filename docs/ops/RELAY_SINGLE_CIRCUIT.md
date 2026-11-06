@@ -51,6 +51,13 @@ Permissions ou réglages manquants, **à décider par le propriétaire** (rien n
 | 3. TOCTOU entre RUNNING et COMPLETED | `relay_store.transact` : la lecture d'état, la vérification RUNNING sur l'issue, l'authentification du rapport, la revendication des clés de déduplication et les effets se font dans **une seule** transaction `BEGIN IMMEDIATE`. Le chemin `issues.labeled` est décidé sous le même verrou. | `P1_3_*` : écrivain concurrent inséré au milieu, 8 livraisons parallèles → 1 seul successeur |
 | 4. `since` invalide | `relay_planner.parse_since` : un horodatage absent, malformé ou naïf donne `None`. `decide` réutilise `watchdog` → agent BLOCKED et escalade, jamais d'exception. L'exécuteur bloque l'agent si son heure de lancement est corrompue. | `P1_4_*` |
 
+Audit RUGGER 02 de #215 @ `2c37c6d` : BLOCKED sur deux points, corrigés ensuite (tests `R02AuditBlockers215`,
+rouge 2/2 puis vert) :
+- **B1** : le kill switch était lu hors verrou. Il est désormais relu sous `BEGIN IMMEDIATE`, dans
+  `transact` et dans `apply_decision`.
+- **B2** : `issue_url` est désormais **obligatoire**. Sans lui, le commentaire est refusé, aussi bien
+  sur `issue_comment` que sur `issues.closed`.
+
 Identité du bot : `ALLOWED_BOTS` reste **vide**. L'identité réelle de l'acteur Claude Cloud / GitHub
 App est **inconnue** et n'est pas devinée. Conséquence : un rapport posté par un acteur bot est refusé.
 **Limite importante** : tous les agents écrivent aujourd'hui sous le compte du propriétaire. La liste
@@ -59,7 +66,7 @@ propriétaire humain ». C'est le point P1-5, qui reste ouvert.
 
 Rouge → vert : sur `tools/` de `582ea25` (head #209), les nouveaux tests donnent **18 échecs sur
 73** (4 FAIL, 14 ERROR). Les 52 tests existants passent sur l'ancien comme sur le nouveau code.
-Sur la branche corrigée : **73/73 OK**. Ils exigent maintenant des heures UTC explicites et des
+Sur la branche corrigée : **73/73 OK** (puis **75/75** avec les tests B1/B2). Ils exigent maintenant des heures UTC explicites et des
 `delivery_id` `gha-run:<n>`, conformément au contrat.
 
 ## 3. Circuit unique proposé (NON activé)

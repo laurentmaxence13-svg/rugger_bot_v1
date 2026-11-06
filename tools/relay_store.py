@@ -63,6 +63,9 @@ def apply_decision(con, decision: dict, now: datetime, key: str | None = None, e
     """Atomically persist a planner decision. Returns False if `key` was already processed."""
     con.execute("BEGIN IMMEDIATE")
     try:
+        if kill_switch_on(con):  # same rule as transact(): the switch is honoured under the lock
+            con.execute("ROLLBACK")
+            return False
         if not _claim_keys(con, ((key,) if key is not None else ()) + tuple(extra_keys), now):
             con.execute("ROLLBACK")
             return False
@@ -82,6 +85,9 @@ def transact(con, now: datetime, build) -> dict:
     decision applied only if `apply` is true; otherwise everything is rolled back (no side effect)."""
     con.execute("BEGIN IMMEDIATE")
     try:
+        if kill_switch_on(con):  # re-read under the write lock (R02 audit #215, B1)
+            con.execute("ROLLBACK")
+            return {"applied": False, "reason": "kill switch ON: no action", "decision": None}
         out = build(con)
         if not out.get("apply"):
             con.execute("ROLLBACK")

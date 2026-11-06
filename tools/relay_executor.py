@@ -67,9 +67,9 @@ def authenticate_report(comment, issue_number: int, since) -> str | None:
         return "refused: report comment id missing"
     if not isinstance(comment.get("body"), str):
         return "refused: report comment body missing"
-    url = comment.get("issue_url")
-    if url is not None and url != f"https://api.github.com/repos/{ALLOWED_REPO}/issues/{issue_number}":
-        return "refused: report comment belongs to another issue or repository"
+    # issue_url is mandatory: without it the comment cannot be bound to this issue (R02 audit #215, B2)
+    if comment.get("issue_url") != f"https://api.github.com/repos/{ALLOWED_REPO}/issues/{issue_number}":
+        return "refused: report comment issue_url missing or bound to another issue/repository"
     created = _parse_gh_time(comment.get("created_at"))
     start = rp.parse_since(since)
     if created is None or start is None:

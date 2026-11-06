@@ -264,3 +264,39 @@ class SingleCircuitMissionLock(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class R02AuditBlockers215(Base):
+    """RUGGER 02 audit of PR #215 @ 2c37c6d: B1 (kill switch read outside the lock), B2 (issue_url optional)."""
+
+    def test_b1_kill_switch_set_between_check_and_transaction_stops_completion(self):
+        real = rs.kill_switch_on
+        state = {"calls": 0}
+
+        def racing_kill_switch_on(con):
+            state["calls"] += 1
+            res = real(con)
+            if state["calls"] == 1:  # executor's early check passes, then the owner flips the switch
+                other = sqlite3.connect(self.path, timeout=0, isolation_level=None)
+                rs.set_kill_switch(other, True, NOW)
+                other.close()
+            return res
+
+        rs.kill_switch_on = racing_kill_switch_on
+        try:
+            r = rx.handle_webhook(self.con, "issue_comment", "gha-run:8000", fx("issue_comment_report_04.json"), NOW)
+        finally:
+            rs.kill_switch_on = real
+        self.assertFalse(r["handled"], r)
+        self.assertIn("kill switch", r["reason"])
+        self.assertEqual(self.outbox(), 0)
+        self.assertEqual(self.agent()["state"], "RUNNING")
+
+    def test_b2_comment_without_issue_url_is_refused_on_both_paths(self):
+        p = fx("issue_comment_report_04.json"); p["comment"].pop("issue_url")
+        r = rx.handle_webhook(self.con, "issue_comment", "gha-run:8001", p, NOW)
+        self.assertFalse(r["handled"], r); self.assertIn("issue", r["reason"])
+        c = owner_comment(); c.pop("issue_url")
+        r = rx.handle_webhook(self.con, "issues", "gha-run:8002", fx("issues_closed_04.json"), NOW, report_comment=c)
+        self.assertFalse(r["handled"], r); self.assertIn("issue", r["reason"])
+        self.assertEqual(self.outbox(), 0)
