@@ -4,7 +4,9 @@ The fake chain replays the three certified SOL pool archives of T-0007
 (tests/fixtures/launchlab_sol_pools, 173 signatures, 59 failed) through the real
 JsonRpc client, so request building, metering and parsing are all exercised.
 """
+from fractions import Fraction
 import gzip
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -822,45 +824,192 @@ def test_inner_deposit_is_seen_and_aggregator_cpi_is_kept():
     assert point is not None and point['price'] == 150 * 10**8
 
 
-def _series(points):
+def _series(points, *, ref='PoolA', tag='a', received_delay_ms=None):
+    """Synthetic series; ``tag`` keeps the evidence of two series disjoint."""
+    def received(bt):
+        return None if received_delay_ms is None else bt * 1000 + received_delay_ms
     return {'schema': 'rugger-sol-usd-series-v1', 'label': 'SYNTHETIC_TEST_FIXTURE',
             'points': [{'schema': 'rugger-sol-usd-point-v1', 'slot': 1000 + i,
-                        'transaction_index': 0, 'block_time': bt, 'received_at_ms': None,
+                        'transaction_index': 0, 'block_time': bt, 'received_at_ms': received(bt),
                         'publish_time': None, 'price': price, 'exponent': -8, 'confidence': None,
-                        'source_kind': 'sol_usdc_pool_last_trade', 'source_ref': 'P',
-                        'evidence_sha256': '0' * 64, 'signature': f's{i}'}
+                        'source_kind': 'sol_usdc_pool_last_trade', 'source_ref': ref,
+                        'evidence_sha256': hashlib.sha256(f'{tag}{i}'.encode()).hexdigest(),
+                        'signature': f'{tag}{i}'}
                        for i, (bt, price) in enumerate(points)]}
 
 
-def test_compare_identical_series_pass_and_shifted_fail():
-    base = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
-    same = sc.compare(base, base, min_compared=50)
-    assert same['verdict'] == 'PASS' and same['deviation']['max'] == '0.000000000'
-    shifted = _series([(t, 1515 * 10**7) for t in range(5000, 5100)])    # +1 %
-    result = sc.compare(shifted, base, min_compared=50)
-    assert result['verdict'] == 'FAIL' and result['deviation']['median'] == '0.010000000'
-    assert sc.compare(base, base, min_compared=10_000)['verdict'] == 'INSUFFICIENT'
+def _pair(seconds=range(5000, 6200), price_b=150 * 10**8):
+    a = _series([(t, 150 * 10**8) for t in seconds])
+    b = _series([(t, price_b) for t in seconds], ref='PoolB', tag='b')
+    return a, b
+
+
+def _thresholds(**changes):
+    # Test values only (the owner validates the real ones before they are frozen).
+    doc = {'schema': 'rugger-compare-thresholds-v1', 'max_median': '0.003', 'max_p99': '0.01',
+           'min_compared': 1000, 'max_missing_share': '0.01', 'step_seconds': 1, 'window': None}
+    doc.update(changes)
+    return doc
+
+
+def _treg_event(payload, *, event_id='T-9001-OWNER-0001', from_agent='OWNER', kind='create'):
+    event = {'schema': 'rugger-treg-event-v1', 'event_id': event_id, 'task_id': event_id[:6],
+             'seq': 1, 'prev_digest': None, 'from_agent': from_agent, 'type': kind, 'hop': 0,
+             'utc': '2026-11-06T18:00:00Z', 'payload': payload}
+    event['digest'] = sc.sha256_of(event)
+    return event
+
+
+def _registry(tmp_path, *events):
+    path = tmp_path / 'snap.json'
+    path.write_text(json.dumps({'schema': 'rugger-treg-snapshot-v1', 'events': list(events)}))
+    return path
+
+
+def _prereg(tmp_path, thresholds=None):
+    event = _treg_event({'compare_series_thresholds': thresholds or _thresholds(), 'task': {}})
+    return sc.load_preregistration(_registry(tmp_path, event), event['event_id'])
+
+
+def test_compare_preregistered_pass_fail_and_insufficient(tmp_path):
+    doc, ref = _prereg(tmp_path)
+    a, b = _pair()
+    same = sc.compare(a, b, thresholds=doc, preregistration=ref)
+    assert same['verdict'] == 'PASS' and same['failed_checks'] == []
+    assert same['seconds']['missing_share'] == '0.000000000'      # no end-of-window artefact
+    assert same['preregistration']['event_id'] == 'T-9001-OWNER-0001'
+    shifted = sc.compare(_pair(price_b=1485 * 10**7)[0], _pair(price_b=1485 * 10**7)[1],
+                         thresholds=doc, preregistration=ref)                      # ~1 %
+    assert shifted['verdict'] == 'FAIL' and shifted['failed_checks'] == ['median', 'p99']
+    short = _pair(seconds=range(5000, 5500))
+    small = sc.compare(*short, thresholds=doc, preregistration=ref)
+    assert small['verdict'] == 'INSUFFICIENT' and small['failed_checks'] == ['min_compared']
+
+
+def test_compare_without_preregistration_never_passes():
+    a, b = _pair()
+    report = sc.compare(a, b, thresholds=_thresholds())
+    assert report['verdict'] == 'NOT_PREREGISTERED' and report['failed_checks'] == []
+    assert sc.compare(a, b)['verdict'] == 'NOT_PREREGISTERED'
+
+
+def test_o1_one_second_in_two_missing_fails_on_coverage(tmp_path):
+    # R02 O1: each point of b is usable for exactly one decision second (received 4.4 s
+    # after its block second), one second in two. Deviation and count alone would PASS.
+    doc, ref = _prereg(tmp_path)
+    seconds = range(5000, 9000)
+    a = _series([(t, 150 * 10**8) for t in seconds])
+    b = _series([(t, 150 * 10**8) for t in seconds if t % 2 == 0], ref='PoolB', tag='b',
+                received_delay_ms=4400)
+    report = sc.compare(a, b, thresholds=doc, preregistration=ref)
+    assert report['checks']['min_compared'] and report['checks']['median'] and report['checks']['p99']
+    assert report['verdict'] == 'FAIL' and report['failed_checks'] == ['coverage']
+    # Alternating inside the window; the 3-second run is b's start (first usable at 5004).
+    assert report['seconds']['compared'] == 2000 and report['seconds']['longest_missing_run'] == 3
+    assert Fraction(report['seconds']['missing_share']) > Fraction(49, 100)
+
+
+def test_o1_a_second_series_that_stops_early_is_missing_on_the_union_window(tmp_path):
+    doc, ref = _prereg(tmp_path)
+    a = _series([(t, 150 * 10**8) for t in range(5000, 8600)])
+    b = _series([(t, 150 * 10**8) for t in range(5000, 6100)], ref='PoolB', tag='b')
+    report = sc.compare(a, b, thresholds=doc, preregistration=ref)
+    assert report['window_rule'] == 'union_of_usable_spans'
+    assert report['seconds']['missing']['b'] > 2400 and report['failed_checks'] == ['coverage']
+    late = sc.compare(b, a, thresholds=doc, preregistration=ref)            # order does not matter
+    assert late['failed_checks'] == ['coverage']
+
+
+def test_o2_preregistration_event_is_checked(tmp_path):
+    good = _treg_event({'compare_series_thresholds': _thresholds()})
+    tampered = json.loads(json.dumps(good))
+    tampered['payload']['compare_series_thresholds']['max_p99'] = '0.5'   # digest not updated
+    cases = {
+        'preregistration_event_digest_mismatch': [tampered],
+        'preregistration_must_be_an_owner_create_event': [
+            _treg_event({'compare_series_thresholds': _thresholds()}, from_agent='R03')],
+        'preregistration_event_not_found_once': [good, good],
+    }
+    for code, events in cases.items():
+        with pytest.raises(bf.BackfillError, match=code):
+            sc.load_preregistration(_registry(tmp_path, *events), good['event_id'])
+    transition = _treg_event({'compare_series_thresholds': _thresholds()}, kind='transition')
+    with pytest.raises(bf.BackfillError, match='owner_create_event'):
+        sc.load_preregistration(_registry(tmp_path, transition), transition['event_id'])
+    for bad in (_thresholds(max_median=0.003), _thresholds(max_median='1.5'),
+                _thresholds(min_compared=0), _thresholds(window={'start_second': 9}),
+                {k: v for k, v in _thresholds().items() if k != 'max_missing_share'},
+                dict(_thresholds(), extra=1)):
+        event = _treg_event({'compare_series_thresholds': bad})
+        with pytest.raises(bf.BackfillError, match='threshold'):
+            sc.load_preregistration(_registry(tmp_path, event), event['event_id'])
+    with pytest.raises(bf.BackfillError, match='not_a_treg_snapshot'):
+        path = tmp_path / 'x.json'
+        path.write_text(json.dumps({'events': [good]}))
+        sc.load_preregistration(path, good['event_id'])
+
+
+def test_o2_cli_refuses_a_divergent_override_and_uses_the_registry(tmp_path):
+    a, b = _pair()
+    event = _treg_event({'compare_series_thresholds': _thresholds()})
+    snap = _registry(tmp_path, event)
+    for name, doc in (('a.json', a), ('b.json', b)):
+        (tmp_path / name).write_text(json.dumps(doc))
+    base = ['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'b.json'),
+            '--registry', str(snap), '--preregistration-event', event['event_id']]
+    for extra, code in ((['--max-median', '0.01'], 'max_median'), (['--max-p99', '0.02'], 'max_p99'),
+                        (['--min-compared', '10'], 'min_compared'),
+                        (['--max-missing-share', '0.5'], 'max_missing_share'),
+                        (['--step-seconds', '2'], 'step_seconds'),
+                        (['--start-second', '5100'], 'start_second')):
+        buf = io.StringIO()
+        assert cli.main(base + extra, out=buf) == 2
+        assert json.loads(buf.getvalue())['error'] == 'cli_value_differs_from_preregistration:' + code
+    buf = io.StringIO()
+    assert cli.main(base + ['--max-median', '0.0030', '--report-out', str(tmp_path / 'r.json')],
+                    out=buf) == 0                                       # equal value accepted
+    report = json.loads((tmp_path / 'r.json').read_text())
+    assert report['verdict'] == 'PASS' and report['preregistration']['digest'] == event['digest']
+    assert report['thresholds']['sha256'] == sc.sha256_of(_thresholds())
+    buf = io.StringIO()
+    explore = ['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'b.json'),
+               '--max-median', '0.003', '--max-p99', '0.01', '--max-missing-share', '0.01',
+               '--min-compared', '1000']
+    assert cli.main(explore, out=buf) == 4                              # never PASS unregistered
+    assert json.loads(buf.getvalue())['verdict'] == 'NOT_PREREGISTERED'
+    buf = io.StringIO()
+    assert cli.main(base[:5] + ['--registry', str(snap)], out=buf) == 2
+
+
+def test_o2_registered_window_is_the_only_window(tmp_path):
+    window = {'start_second': 5100, 'end_second': 6150}
+    doc, ref = _prereg(tmp_path, _thresholds(window=window))
+    report = sc.compare(*_pair(), thresholds=doc, preregistration=ref)
+    assert report['window_rule'] == 'registered'
+    assert (report['seconds']['start'], report['seconds']['end']) == (5100, 6150)
+    with pytest.raises(bf.BackfillError, match='window_and_step'):
+        sc.compare(*_pair(), thresholds=doc, preregistration=ref, window=(5000, 5050))
+    with pytest.raises(bf.BackfillError, match='end_second'):
+        sc.reconcile_overrides(sc.parse_thresholds(doc), {'end_second': 6000})
+
+
+def test_series_that_are_not_independent_fail(tmp_path):
+    doc, ref = _prereg(tmp_path)
+    a, b = _pair()
+    itself = sc.compare(a, a, thresholds=doc, preregistration=ref)
+    assert itself['verdict'] == 'FAIL' and itself['failed_checks'] == ['independent']
+    assert itself['independence']['identical_documents']
+    same_pool = _series([(t, 150 * 10**8) for t in range(5000, 6200)], ref='PoolA', tag='b')
+    report = sc.compare(a, same_pool, thresholds=doc, preregistration=ref)
+    assert report['failed_checks'] == ['independent']
+    assert report['independence']['shared_source_refs'] == ['PoolA']
 
 
 def test_compare_uses_the_spec_timing_rule():
     # One point at second 100: usable from second 101 (end of its second) to 104 (age 4.4 s).
     a = _series([(100, 150 * 10**8)])
     seen = [s for s in range(99, 107) if sc._Reader(a).at(s * 1000 + 400) is not None]
-    assert seen == [101, 102, 103, 104]
-    b = _series([(t, 150 * 10**8) for t in range(95, 110)])
-    report = sc.compare(a, b, start_second=99, end_second=106, min_compared=1)
+    assert seen == [101, 102, 103, 104] and sc._Reader(a).span_seconds() == (101, 104)
+    b = _series([(t, 150 * 10**8) for t in range(95, 110)], ref='PoolB', tag='b')
+    report = sc.compare(a, b, window=(99, 106))
     assert report['seconds']['compared'] == 4 and report['seconds']['missing']['a'] == 4
-
-
-def test_compare_series_cli_exit_code_is_the_stop_rule(tmp_path):
-    base = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
-    far = _series([(t, 160 * 10**8) for t in range(5000, 5100)])
-    for name, doc in (('a.json', base), ('b.json', far)):
-        (tmp_path / name).write_text(json.dumps(doc))
-    buf = io.StringIO()
-    code = cli.main(['compare-series', '--a', str(tmp_path / 'b.json'), '--b', str(tmp_path / 'a.json'),
-                     '--min-compared', '50', '--report-out', str(tmp_path / 'r.json')], out=buf)
-    assert code == 4 and json.loads((tmp_path / 'r.json').read_text())['verdict'] == 'FAIL'
-    buf = io.StringIO()
-    assert cli.main(['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'a.json'),
-                     '--min-compared', '50'], out=buf) == 0

@@ -262,17 +262,59 @@ besoin d'un autre type de pool (point 3).
   d'un autre type), ou d'Hermes si le propriétaire l'autorise ;
 - à chaque seconde commune, comparer les deux prix « as-of » :
   `écart = |p1 − p2| / p2` ;
-- seuils fixés à l'avance : médiane ≤ 0,3 % et 99ᵉ centile ≤ 1 % ;
+- seuils figés dans T-REG avant l'analyse (voir ci-dessous) ;
 - en cas de dépassement, arrêter P1 et revoir le choix du pool. Aucun rejeu n'est
   compté sur une série qui échoue.
 
-Outil (T-0034, hors réseau) : `compare-series`. Il applique la règle de temps de la
-spécification : décision à B × 1000 + 400 ms, point disponible à la fin de sa
-seconde, âge d'au plus 5 s. Le code de sortie est la règle d'arrêt : 0 = PASS,
-4 = FAIL ou INSUFFICIENT.
+Outil (T-0034, complété par #212 pour les observations O1/O2 de RUGGER 02, hors
+réseau) : `compare-series`. Il applique la règle de temps de la spécification :
+décision à B × 1000 + 400 ms, point disponible à la fin de sa seconde, âge d'au plus
+5 s. Le verdict est PASS seulement si **toutes** les conditions tiennent :
+
+| Contrôle | Règle |
+|---|---|
+| Couverture (O1) | part des secondes de la fenêtre où l'une des séries n'a pas de point utilisable ≤ `max_missing_share` |
+| Fenêtre | par défaut l'**union** des périodes utilisables des deux séries : une série qui commence tard, s'arrête tôt ou manque une seconde sur deux compte ses trous |
+| Volume | secondes comparées ≥ `min_compared` |
+| Écart | médiane ≤ `max_median` et 99ᵉ centile ≤ `max_p99` |
+| Indépendance | aucune preuve de transaction (`evidence_sha256`) ni référence de source (`source_ref`) commune ; une série comparée à elle-même échoue |
+
+Le rapport donne aussi les secondes manquantes par série, la plus longue suite de
+secondes manquantes et le SHA-256 des deux séries. Code de sortie : 0 = PASS,
+4 = tout le reste (FAIL, INSUFFICIENT, NOT_PREREGISTERED), 2 = refus.
+
+**Pré-enregistrement (O2).** Les seuils ne viennent que d'un événement `create`
+d'auteur OWNER du registre T-REG, clé de charge utile `compare_series_thresholds`,
+schéma `rugger-compare-thresholds-v1` (toutes les clés obligatoires, décimaux en
+chaînes) :
+
+```json
+{"schema": "rugger-compare-thresholds-v1", "max_median": "0.003", "max_p99": "0.01", "min_compared": 1000, "max_missing_share": "0.01", "step_seconds": 1, "window": null}
+```
+
+L'outil lit l'instantané écrit par `treg.py ingest`, recalcule l'empreinte de
+l'événement et refuse : un événement absent ou en double, une empreinte fausse, un
+auteur autre que OWNER, un type autre que `create`, un document invalide, et toute
+valeur passée en ligne de commande qui diffère de la valeur enregistrée (une valeur
+égale est acceptée). Sans pré-enregistrement, les statistiques sont calculées mais le
+verdict est `NOT_PREREGISTERED` : jamais PASS. Le rapport cite l'événement
+(identifiant, empreinte, date) ; l'auditeur vérifie qu'il est sur GitHub et antérieur
+à l'exécution.
+
+**Valeurs proposées, NON figées** : elles attendent la validation du propriétaire.
+L'événement de gel ne sera écrit qu'après cette validation.
+
+| Seuil | Proposé | Motif |
+|---|---|---|
+| `max_median` | 0,003 (0,3 %) | ordre de grandeur des frais d'un pool de référence (≤ 0,25 %, critère du point 1) : deux pools denses ne s'écartent durablement que d'environ un frais |
+| `max_p99` | 0,01 (1 %) | tolère les secondes de mouvement rapide, où les deux pools ne se mettent pas à jour à la même seconde ; un écart de 1 % sur le taux décale d'autant la valeur en dollars ; au plus 1 % des secondes comparées peuvent dépasser cet écart |
+| `min_compared` | 1 000 secondes | taille de l'échantillon du contrôle prévue plus haut ; avec 1 000 valeurs, le 99ᵉ centile repose sur environ 10 secondes |
+| `max_missing_share` | 0,01 (1 %) | même exigence que le critère du pool de référence (≥ 99 % des secondes de grille servies) |
+| `step_seconds` | 1 | chaque seconde de décision de la spécification |
+| `window` | null | union des deux séries ; une fenêtre fixe ne doit être enregistrée que si elle est choisie avant de voir les données |
 
 ```bash
-python -B tools/backfill_launchlab_window.py compare-series --a data/backfill/p0_sol_usd.json.gz --b data/backfill/p0_sol_usd_second.json.gz --max-median 0.003 --max-p99 0.01 --min-compared 1000 --report-out data/backfill/p0_sol_usd_compare.json
+python -B tools/backfill_launchlab_window.py compare-series --a data/backfill/p0_sol_usd.json.gz --b data/backfill/p0_sol_usd_second.json.gz --registry treg_snapshot.json --preregistration-event T-XXXX-OWNER-0001 --report-out data/backfill/p0_sol_usd_compare.json
 ```
 
 **3. Préréglages supplémentaires** (Raydium AMM v4, CLMM, Orca Whirlpool), si P0

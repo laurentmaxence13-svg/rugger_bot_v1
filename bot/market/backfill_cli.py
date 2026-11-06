@@ -63,6 +63,45 @@ def _filter(args):
                                  min_sol_lamports=args.min_sol_lamports)
 
 
+def _compare_series(args, emit):
+    """Exit 0 only for a PASS under thresholds frozen in T-REG; 4 otherwise (stop P1)."""
+    from bot.market.sol_usd_compare import (
+        compare, load_preregistration, load_series_document, reconcile_overrides, parse_thresholds,
+    )
+    if (args.registry is None) != (args.preregistration_event is None):
+        raise BackfillError('registry_and_preregistration_event_go_together')
+    overrides = {'max_median': args.max_median, 'max_p99': args.max_p99,
+                 'max_missing_share': args.max_missing_share, 'min_compared': args.min_compared,
+                 'step_seconds': args.step_seconds, 'start_second': args.start_second,
+                 'end_second': args.end_second}
+    a, b = load_series_document(args.a), load_series_document(args.b)
+    if args.registry is not None:
+        thresholds, reference = load_preregistration(args.registry, args.preregistration_event)
+        reconcile_overrides(parse_thresholds(thresholds), overrides)
+        result = compare(a, b, thresholds=thresholds, preregistration=reference)
+    else:
+        # Exploratory run: statistics only, the verdict is NOT_PREREGISTERED (exit 4).
+        if (args.start_second is None) != (args.end_second is None):
+            raise BackfillError('start_and_end_second_go_together')
+        window = None if args.start_second is None else (args.start_second, args.end_second)
+        names = ('max_median', 'max_p99', 'max_missing_share', 'min_compared')
+        thresholds = None
+        if all(overrides[n] is not None for n in names):
+            thresholds = {'schema': 'rugger-compare-thresholds-v1',
+                          'max_median': args.max_median, 'max_p99': args.max_p99,
+                          'max_missing_share': args.max_missing_share,
+                          'min_compared': args.min_compared, 'step_seconds': args.step_seconds or 1,
+                          'window': None if window is None else {'start_second': window[0],
+                                                                 'end_second': window[1]}}
+            result = compare(a, b, thresholds=thresholds)
+        else:
+            result = compare(a, b, window=window, step_seconds=args.step_seconds or 1)
+    if args.report_out is not None:
+        args.report_out.write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
+    emit(result)
+    return 0 if result['verdict'] == 'PASS' else 4
+
+
 def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest='command', required=True)
@@ -112,12 +151,18 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                         help='consistency check of two SOL/USD series; exit 4 = stop; no network')
     cs.add_argument('--a', type=Path, required=True, help='reference series file')
     cs.add_argument('--b', type=Path, required=True, help='independent second series file')
+    cs.add_argument('--registry', type=Path, default=None,
+                    help='T-REG snapshot written by treg.py ingest (pre-registered thresholds)')
+    cs.add_argument('--preregistration-event', default=None,
+                    help='event_id of the OWNER create event holding compare_series_thresholds')
     cs.add_argument('--start-second', type=int, default=None)
     cs.add_argument('--end-second', type=int, default=None)
-    cs.add_argument('--step-seconds', type=int, default=1)
-    cs.add_argument('--max-median', default='0.003', help='pre-registered, as a decimal')
-    cs.add_argument('--max-p99', default='0.01', help='pre-registered, as a decimal')
-    cs.add_argument('--min-compared', type=int, default=1000)
+    cs.add_argument('--step-seconds', type=int, default=None)
+    cs.add_argument('--max-median', default=None, help='decimal; must equal the registered value')
+    cs.add_argument('--max-p99', default=None, help='decimal; must equal the registered value')
+    cs.add_argument('--max-missing-share', default=None,
+                    help='decimal; must equal the registered value')
+    cs.add_argument('--min-compared', type=int, default=None)
     cs.add_argument('--report-out', type=Path, default=None)
     s2 = sub.add_parser('sol-usd-series',
                         help='causal SOL/USD series from a SOL/USDC pool window; no network')
@@ -176,16 +221,7 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                                             'endpoint', 'sampling')})
             return 0 if manifest['complete'] else 3
         if args.command == 'compare-series':
-            from fractions import Fraction
-            from bot.market.sol_usd_compare import compare, load_series_document
-            result = compare(load_series_document(args.a), load_series_document(args.b),
-                             start_second=args.start_second, end_second=args.end_second,
-                             step_seconds=args.step_seconds, max_median=Fraction(args.max_median),
-                             max_p99=Fraction(args.max_p99), min_compared=args.min_compared)
-            if args.report_out is not None:
-                args.report_out.write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
-            emit(result)
-            return 0 if result['verdict'] == 'PASS' else 4
+            return _compare_series(args, emit)
         if args.command == 'sol-usd-series':
             from bot.market.sol_usd_collect import build_series, density, write_series
             report = {}
