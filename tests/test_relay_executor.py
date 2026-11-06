@@ -17,14 +17,14 @@ class E2E(unittest.TestCase):
     def count(self, table="outbox"): return self.con.execute(f"select count(*) from {table}").fetchone()[0]
 
     def test_full_chain_creates_exactly_one_labeled_task(self):
-        r = rx.handle_webhook(self.con, "issues", "D1", fx("issues_labeled_04.json"), NOW)
+        r = rx.handle_webhook(self.con, "issues", "gha-run:7000", fx("issues_labeled_04.json"), NOW)
         self.assertTrue(r["handled"])
         self.assertEqual(rs.load_state(self.con)["agents"]["rugger-04"]["issue"], 200)
-        r = rx.handle_webhook(self.con, "issue_comment", "D2", fx("issue_comment_report_04.json"), NOW + timedelta(minutes=5))
+        r = rx.handle_webhook(self.con, "issue_comment", "gha-run:7001", fx("issue_comment_report_04.json"), NOW + timedelta(minutes=5))
         self.assertTrue(r["handled"])
         # redelivery of the same comment, and the later close event: no second task
-        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "D2", fx("issue_comment_report_04.json"), NOW)["handled"])
-        self.assertFalse(rx.handle_webhook(self.con, "issues", "D3", fx("issues_closed_04.json"), NOW, last_comment="STATUS: COMPLETED")["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "gha-run:7001", fx("issue_comment_report_04.json"), NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issues", "gha-run:7002", fx("issues_closed_04.json"), NOW, last_comment="STATUS: COMPLETED")["handled"])
         self.assertEqual(self.count(), 1)
         self.assertEqual(len(rx.drain_outbox(self.con, self.sent.append, NOW)), 1)
         self.assertEqual(rx.drain_outbox(self.con, self.sent.append, NOW), [])
@@ -33,46 +33,46 @@ class E2E(unittest.TestCase):
         self.assertEqual(self.sent[0]["agent"], "rugger-02")
         self.assertEqual(rs.load_state(self.con)["agents"]["rugger-02"]["state"], "RUNNING")
         # successor issue labeled (GitHub App case): attaches issue number, no duplicate
-        rx.handle_webhook(self.con, "issues", "D4", fx("issues_labeled_02_by_relay.json"), NOW)
+        rx.handle_webhook(self.con, "issues", "gha-run:7003", fx("issues_labeled_02_by_relay.json"), NOW)
         self.assertEqual(rs.load_state(self.con)["agents"]["rugger-02"]["issue"], 201)
         self.assertEqual(self.count(), 1)
 
     def test_blocked_escalates_without_task(self):
         p = fx("issue_comment_report_04.json"); p["comment"]["body"] = "STATUS: BLOCKED\nowner needed"
-        rx.handle_webhook(self.con, "issues", "L0", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
-        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "B1", p, NOW)["handled"])
+        rx.handle_webhook(self.con, "issues", "gha-run:7004", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
+        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "gha-run:7005", p, NOW)["handled"])
         self.assertEqual((self.count(), self.count("escalations")), (0, 1))
 
     def test_kill_switch_and_rollback(self):
-        rx.handle_webhook(self.con, "issues", "L0", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
-        rx.handle_webhook(self.con, "issue_comment", "D2", fx("issue_comment_report_04.json"), NOW)
+        rx.handle_webhook(self.con, "issues", "gha-run:7004", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
+        rx.handle_webhook(self.con, "issue_comment", "gha-run:7001", fx("issue_comment_report_04.json"), NOW)
         rs.set_kill_switch(self.con, True, NOW)
         self.assertEqual(rx.drain_outbox(self.con, self.sent.append, NOW), [])
-        self.assertFalse(rx.handle_webhook(self.con, "issues", "D1", fx("issues_labeled_04.json"), NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issues", "gha-run:7000", fx("issues_labeled_04.json"), NOW)["handled"])
         self.assertEqual(rs.rollback_pending(self.con), 1)
         self.assertEqual(self.con.execute("select status from outbox").fetchone()[0], "CANCELLED")
         self.assertEqual(self.sent, [])
 
     def test_naive_time_and_concurrent_label_refused(self):
-        self.assertFalse(rx.handle_webhook(self.con, "issues", "N", fx("issues_labeled_04.json"), datetime(2026, 11, 6))["handled"])
-        rx.handle_webhook(self.con, "issues", "D1", fx("issues_labeled_04.json"), NOW)
+        self.assertFalse(rx.handle_webhook(self.con, "issues", "gha-run:7006", fx("issues_labeled_04.json"), datetime(2026, 11, 6))["handled"])
+        rx.handle_webhook(self.con, "issues", "gha-run:7000", fx("issues_labeled_04.json"), NOW)
         p = fx("issues_labeled_04.json"); p["issue"]["number"] = 300
-        rx.handle_webhook(self.con, "issues", "D9", p, NOW)
+        rx.handle_webhook(self.con, "issues", "gha-run:7007", p, NOW)
         self.assertEqual(rs.load_state(self.con)["agents"]["rugger-04"]["issue"], 200)
         self.assertEqual(self.count("escalations"), 1)
 
     def test_quota_per_hour_blocks_creation(self):
-        rx.handle_webhook(self.con, "issues", "L0", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
+        rx.handle_webhook(self.con, "issues", "gha-run:7004", fx("issues_labeled_04.json"), NOW)  # proven launch first (P0-3)
         for i in range(2):
             self.con.execute("insert into launches values(?,?,?)", (f"x{i}", "rugger-02", (NOW - timedelta(minutes=10)).isoformat()))
-        rx.handle_webhook(self.con, "issue_comment", "Q", fx("issue_comment_report_04.json"), NOW)
+        rx.handle_webhook(self.con, "issue_comment", "gha-run:7008", fx("issue_comment_report_04.json"), NOW)
         self.assertEqual(self.count(), 0)
         self.assertEqual(self.count("escalations"), 1)
 
     def test_workflow_failure_and_catchup_watchdog(self):
-        self.assertTrue(rx.handle_webhook(self.con, "workflow_run", "W1", fx("workflow_run_failed.json"), NOW)["handled"])
-        self.assertFalse(rx.handle_webhook(self.con, "workflow_run", "W1", fx("workflow_run_failed.json"), NOW)["handled"])
-        rx.handle_webhook(self.con, "issues", "D1", fx("issues_labeled_04.json"), NOW)
+        self.assertTrue(rx.handle_webhook(self.con, "workflow_run", "gha-run:7009", fx("workflow_run_failed.json"), NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "workflow_run", "gha-run:7009", fx("workflow_run_failed.json"), NOW)["handled"])
+        rx.handle_webhook(self.con, "issues", "gha-run:7000", fx("issues_labeled_04.json"), NOW)
         rx.catchup(self.con, NOW + timedelta(hours=7))
         self.assertEqual(rs.load_state(self.con)["agents"]["rugger-04"]["state"], "BLOCKED")
 
@@ -81,7 +81,7 @@ class Adversarial(unittest.TestCase):
     """Audit #207 scenarios. Each must be refused with NO state/outbox/escalation side effect."""
     def setUp(self):
         self.con = rs.open_db(os.path.join(tempfile.mkdtemp(), "r.db"))
-        rx.handle_webhook(self.con, "issues", "L", fx("issues_labeled_04.json"), NOW)  # agent RUNNING on #200
+        rx.handle_webhook(self.con, "issues", "gha-run:7010", fx("issues_labeled_04.json"), NOW)  # agent RUNNING on #200
 
     def snap(self):
         c = self.con
@@ -91,7 +91,7 @@ class Adversarial(unittest.TestCase):
     def refused(self, mutate, why):
         p = fx("issue_comment_report_04.json"); mutate(p)
         before = self.snap()
-        r = rx.handle_webhook(self.con, "issue_comment", "A1", p, NOW)
+        r = rx.handle_webhook(self.con, "issue_comment", "gha-run:7011", p, NOW)
         self.assertFalse(r["handled"], r)
         self.assertIn(why, r["reason"])
         self.assertEqual(self.snap(), before)
@@ -126,11 +126,11 @@ class Adversarial(unittest.TestCase):
 
     def test_p0_2_wrong_repository_on_issues_event(self):
         p = fx("issues_labeled_04.json"); p["repository"]["full_name"] = "evil/fork"
-        self.assertFalse(rx.handle_webhook(self.con, "issues", "A2", p, NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issues", "gha-run:7012", p, NOW)["handled"])
 
     def test_p0_3_completion_of_never_launched_task(self):
         con = rs.open_db(os.path.join(tempfile.mkdtemp(), "w.db"))  # rugger-04 WAITING, never launched
-        r = rx.handle_webhook(con, "issue_comment", "A3", fx("issue_comment_report_04.json"), NOW)
+        r = rx.handle_webhook(con, "issue_comment", "gha-run:7013", fx("issue_comment_report_04.json"), NOW)
         self.assertFalse(r["handled"]); self.assertIn("not RUNNING", r["reason"])
         self.assertEqual(con.execute("select count(*) from outbox").fetchone()[0], 0)
         self.assertEqual(rs.load_state(con)["agents"]["rugger-04"]["state"], "WAITING")
@@ -140,29 +140,29 @@ class Adversarial(unittest.TestCase):
         self.refused(m, "not RUNNING on #999")
 
     def test_p0_3_completed_agent_cannot_complete_again(self):
-        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "OK", fx("issue_comment_report_04.json"), NOW)["handled"])
+        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "gha-run:7014", fx("issue_comment_report_04.json"), NOW)["handled"])
         p = fx("issue_comment_report_04.json"); p["comment"]["id"] = 6
         before = self.snap()
-        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "A4", p, NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "gha-run:7015", p, NOW)["handled"])
         self.assertEqual(self.snap(), before)
 
     def test_p1_4_double_comment_new_delivery_id(self):
-        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "D-a", fx("issue_comment_report_04.json"), NOW)["handled"])
+        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "gha-run:7016", fx("issue_comment_report_04.json"), NOW)["handled"])
         before = self.snap()
-        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "D-b", fx("issue_comment_report_04.json"), NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "gha-run:7017", fx("issue_comment_report_04.json"), NOW)["handled"])
         self.assertEqual(self.snap(), before)
         self.assertEqual(before[0], 1)
 
     def test_p1_4_redelivery_same_delivery_id_different_comment(self):
-        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "D-x", fx("issue_comment_report_04.json"), NOW)["handled"])
+        self.assertTrue(rx.handle_webhook(self.con, "issue_comment", "gha-run:7018", fx("issue_comment_report_04.json"), NOW)["handled"])
         p = fx("issue_comment_report_04.json"); p["comment"]["id"] = 77
-        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "D-x", p, NOW)["handled"])
+        self.assertFalse(rx.handle_webhook(self.con, "issue_comment", "gha-run:7018", p, NOW)["handled"])
         self.assertEqual(self.snap()[0], 1)
 
     def test_workflow_run_requires_authorised_sender_and_repo(self):
         for mut in (lambda p: p.pop("sender"), lambda p: p["repository"].update(full_name="evil/fork")):
             p = fx("workflow_run_failed.json"); mut(p)
-            self.assertFalse(rx.handle_webhook(self.con, "workflow_run", "WX", p, NOW)["handled"])
+            self.assertFalse(rx.handle_webhook(self.con, "workflow_run", "gha-run:7019", p, NOW)["handled"])
         self.assertEqual(self.snap()[1], 0)
 
 
