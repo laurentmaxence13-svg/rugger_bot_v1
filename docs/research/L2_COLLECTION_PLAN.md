@@ -80,6 +80,60 @@ python -B tools/backfill_launchlab_window.py export --out data/backfill/p0 --poo
   Cette comparaison tranche le tarif : 10 crédits par page de 100 transactions,
   ou 100.
 
+## Tarifs officiels vérifiés le 2026-11-06
+
+Relevés par RUGGER 03 sur les pages publiques, avec l'empreinte SHA-256 de la page
+téléchargée. Le relevé Helius recoupe celui de RUGGER 04 du même jour. Aucun appel
+d'API ; ces pages ne sont pas des devis.
+
+**Helius** (www.helius.dev/pricing, 2026-11-06T18:13Z, sha256 `b6794b16…`)
+
+| Offre | Prix par mois | Crédits inclus | Crédit supplémentaire | Requêtes par seconde |
+|---|---|---|---|---|
+| Free | 0 $ | 1 M | — | 10 |
+| Developer | 49 $ | 10 M | 5 $ par million | 50 |
+| Business | 499 $ | 100 M | 5 $ par million | 200 |
+| Professional | 999 $ | 200 M | 5 $ par million | 500 |
+
+- Un appel RPC coûte 1 crédit. Les exceptions sont `getProgramAccounts` et
+  `getTransfersByAddress` (10 crédits), et `getTransactionsForAddress` : 10
+  crédits par tranche de 100 transactions complètes renvoyées, arrondi au
+  supérieur, minimum 10 ; une réponse avec signatures seulement coûte 10 crédits.
+- `getSignaturesForAddress` et `getTransaction` ne sont pas dans les exceptions :
+  1 crédit chacun.
+- La page annonce des limites d'« autoscaling » réglables, le suivi de la
+  consommation en temps réel et des alertes.
+- Le **tarif probable** des sections suivantes est donc le **tarif officiel**. Le
+  tarif prudent reste celui de l'outil (préréglage `helius-conservative`) : il
+  compte 10 fois trop, ce qui fait arrêter la collecte trop tôt mais jamais trop
+  tard. Avec ce préréglage, `--max-credits 9500000` correspond à environ 0,95 M
+  crédits réels. Pour utiliser les 10 M, il faut un préréglage aux valeurs
+  officielles (1, 1 et 10) : c'est un changement de code, à faire dans une tâche
+  dédiée auditée par RUGGER 02, pas dans ce document.
+
+**Autres fournisseurs** (même jour ; « NC » = non confirmé sur la page publique)
+
+| Fournisseur | Page, sha256 | Prix relevé | Ce que cela couvre pour L2 |
+|---|---|---|---|
+| Bitquery | bitquery.io/pricing, `924c64c6…` | Personal 29 $, Pro 69 $, Scale 199 $ par mois en facturation annuelle (100 k, 1 M et 5 M points) ; points en plus 35 $ par million (Personal) | offres en temps réel seulement (trades sur 30 jours glissants). L'historique Solana est un module séparé : trades (`DEXTradeByTokens`) 210 $ par mois, ou transferts et transactions 350 $ par mois, en tarif annuel (« 30 % de moins » qu'en mensuel, donc environ 300 et 500 $ par mois en mensuel, valeurs déduites). Données de trades déjà décodées, pas de transactions brutes : **ne remplace pas** la source L1, utile seulement en contrôle croisé. |
+| Triton One | triton.one/pricing, `3a590510…` | paiement à l'usage : dépôt minimal de 125 $ (stablecoins), valable 12 mois ; RPC standard, gRPC unaire, comptes et requêtes de registre : 10 $ par million d'appels plus 0,08 $ par Go | `getSignaturesForAddress` et `getTransaction` standards. La facturation de l'historique (« How is historical data billed? ») n'est pas lisible dans la page statique : **NC**, à demander dans le devis. |
+| Chainstack | chainstack.com/pricing, `0888edd5…` | Developer gratuit (3 M unités de requête) ; Growth 49 $ par mois (20 M unités, 15 $ par million en plus) ; Pro 199 $ par mois (80 M unités, 12,5 $ par million en plus). Une requête d'archive vaut 2 unités. | l'archive Solana est un « module » des offres payantes, sans prix affiché : **NC**. |
+| Old Faithful | docs.old-faithful.net, `6623e6d5…` | logiciel libre, sans prix | archives CAR de tout l'historique Solana, servies par un serveur RPC/gRPC que l'on héberge. Le coût est le stockage et la machine, non chiffrés ici. |
+| Dune | docs.dune.com (facturation de l'API), `3d7b0b10…` | l'API exige un essai actif ou une offre payante ; facturation en crédits selon le calcul consommé | la grille de prix (dune.com/pricing) reste bloquée par le réseau : **NC**. |
+| Axiom | docs.axiom.trade (index `llms.txt` de 38 pages, `f1d30ff5…`) | frais de trading nets de 0,95 % (Wood) à 0,75 % (Champion), remise comprise (page « Axiom Fees », `4010e788…`) | aucune page d'API, de SDK, de WebSocket ou de point d'accès dans la documentation officielle : rien à intégrer, liens sortants seulement. Ces frais sont ceux d'un trade réel fait sur Axiom ; ils ne s'appliquent pas aux cycles PAPER. |
+
+Coût en dollars d'une collecte de 30 jours du programme (1,3 à 19,4 M
+transactions, hypothèse non mesurée), avec les tarifs relevés :
+
+| Option | Calcul | Total |
+|---|---|---|
+| Helius Developer, `getTransactionsForAddress` | 0,13 à 1,95 M crédits, plus le contrôle `getSignaturesForAddress` (≤ 20 000 crédits), plus la série SOL/USD échantillonnée (environ 0,75 M) : de 0,85 à 2,7 M, sous les 10 M inclus | **49 $** |
+| Triton, `getTransaction` une par une | 13 à 194 $ d'appels, plus 16 à 233 Go à 12 Ko par transaction, soit 1 à 19 $ | 14 à 213 $ (dépôt minimal 125 $) ; historique **NC** |
+| Chainstack Growth, `getTransaction` en archive | 2,6 à 38,8 M unités, pour 20 M incluses | 49 à 331 $ (18,8 M unités en plus à 15 $ par million) ; module d'archive **NC** |
+
+La recommandation ne change pas : Helius Developer, 1 mois, au plus 100 $ HT,
+avec P0 d'abord et le relevé du tableau de bord comparé à `budget.credits`.
+
 ## Estimation prudente des crédits
 
 L'outil compte avec le tarif le plus élevé trouvé dans les sources Helius :
@@ -365,11 +419,12 @@ lance ensuite avec `--sol-usd-series`.
      les plafonds qu'il a approuvés (observation O-a de RUGGER 02).
    - Le registre de dépense est propre à chaque dossier `--out`. La vraie limite
      globale reste celle fixée chez le fournisseur (O-b).
-2. **Chez Helius (CONDITIONNEL, non vérifié)** : les pages officielles sont
-   bloquées dans mon environnement. Avant le paiement, le propriétaire confirme
-   sur ces pages comment acheter des crédits prépayés ou couper la facturation
-   automatique des dépassements. Sans cette confirmation, seul le plafond de
-   l'outil protège.
+2. **Chez Helius (vérifié en partie le 2026-11-06)** : la page de tarifs annonce
+   des limites d'« autoscaling » réglables, le suivi en temps réel et des alertes,
+   et 5 $ par million de crédits au-delà des 10 M. Elle ne dit pas si la limite
+   peut être mise à zéro, c'est-à-dire si le dépassement peut être coupé. Avant
+   le paiement, le propriétaire le vérifie dans le tableau de bord. Sans cette
+   confirmation, seul le plafond de l'outil protège.
 3. **Renouvellement (CONDITIONNEL, à la charge du propriétaire)** :
    - le jour du paiement, le propriétaire inscrit la date d'échéance (J + 30) ;
    - il programme une annulation ou une rétrogradation à J + 27 ;
