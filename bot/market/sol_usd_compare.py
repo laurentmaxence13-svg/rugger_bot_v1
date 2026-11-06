@@ -20,6 +20,7 @@ network.
 """
 from fractions import Fraction
 import gzip
+import hashlib
 import json
 from pathlib import Path
 
@@ -28,6 +29,50 @@ from bot.market.backfill import BackfillError
 MAX_AGE_MS = 5000
 DECISION_OFFSET_MS = 400
 SCHEMA = 'rugger-backfill-series-comparison-v1'
+REGISTRY_SCHEMA = 'rugger-t0034-thresholds-v1'
+THRESHOLD_KEYS = ('max_median', 'max_p99', 'min_compared', 'max_missing_rate')
+DEFAULT_REGISTRY = Path(__file__).resolve().parents[2] / 'docs' / 'research' / 'T0034_THRESHOLDS.json'
+
+
+def registry_digest(thresholds):
+    """SHA-256 of the canonical threshold values (the value that is frozen)."""
+    canonical = json.dumps({k: thresholds[k] for k in THRESHOLD_KEYS}, sort_keys=True,
+                           separators=(',', ':'))
+    return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+def load_frozen_thresholds(path=DEFAULT_REGISTRY, overrides=None):
+    """Thresholds from the T-REG file; refuses anything not frozen or any divergent override.
+
+    The file must be ``status == 'FROZEN'``, carry ``owner_validation`` and a matching
+    ``digest``. An override (CLI) is accepted only if it equals the frozen value.
+    """
+    path = Path(path)
+    try:
+        reg = json.loads(path.read_text())
+    except (OSError, ValueError):
+        raise BackfillError(f'threshold_registry_unreadable:{path.name}')
+    if type(reg) is not dict or reg.get('schema') != REGISTRY_SCHEMA:
+        raise BackfillError('threshold_registry_bad_schema')
+    th = reg.get('thresholds')
+    if type(th) is not dict or set(th) != set(THRESHOLD_KEYS):
+        raise BackfillError('threshold_registry_bad_thresholds')
+    if reg.get('status') != 'FROZEN':
+        raise BackfillError('threshold_registry_not_frozen')
+    if not reg.get('owner_validation'):
+        raise BackfillError('threshold_registry_without_owner_validation')
+    if reg.get('digest') != registry_digest(th):
+        raise BackfillError('threshold_registry_digest_mismatch')
+    values = {'max_median': Fraction(th['max_median']), 'max_p99': Fraction(th['max_p99']),
+              'min_compared': int(th['min_compared']),
+              'max_missing_rate': Fraction(th['max_missing_rate'])}
+    for key, given in (overrides or {}).items():
+        if given is None:
+            continue
+        given = int(given) if key == 'min_compared' else Fraction(given)
+        if given != values[key]:
+            raise BackfillError(f'threshold_override_diverges:{key}')
+    return values, reg['digest']
 
 
 def load_series_document(path):
@@ -102,7 +147,8 @@ def _decimal(value, digits=9):
 
 
 def compare(document_a, document_b, *, start_second=None, end_second=None, step_seconds=1,
-            max_median=Fraction(3, 1000), max_p99=Fraction(1, 100), min_compared=1000):
+            max_median=Fraction(3, 1000), max_p99=Fraction(1, 100), min_compared=1000,
+            max_missing_rate=Fraction(1, 10), registry_digest_hex=None):
     """Verdict PASS / FAIL / INSUFFICIENT with the deviation statistics."""
     if type(step_seconds) is not int or step_seconds < 1:
         raise BackfillError('step_seconds_must_be_a_positive_integer')
@@ -128,7 +174,13 @@ def compare(document_a, document_b, *, start_second=None, end_second=None, step_
             worst = (deviation, second, a, b)
     ordered = sorted(deviations)
     median, p99 = _nearest_rank(ordered, Fraction(1, 2)), _nearest_rank(ordered, Fraction(99, 100))
-    if len(ordered) < min_compared:
+    total = len(range(start, end + 1, step_seconds))
+    missing_total = total - len(ordered)
+    missing_rate = Fraction(missing_total, total) if total else Fraction(1)
+    # O1: temporal coverage gate, threshold fixed before the analysis; never PASS above it.
+    if missing_rate > max_missing_rate:
+        verdict = 'FAIL_COVERAGE'
+    elif len(ordered) < min_compared:
         verdict = 'INSUFFICIENT'
     elif median <= max_median and p99 <= max_p99:
         verdict = 'PASS'
@@ -136,7 +188,11 @@ def compare(document_a, document_b, *, start_second=None, end_second=None, step_
         verdict = 'FAIL'
     return {'schema': SCHEMA, 'verdict': verdict,
             'thresholds': {'max_median': _decimal(max_median), 'max_p99': _decimal(max_p99),
-                           'min_compared': min_compared},
+                           'min_compared': min_compared,
+                           'max_missing_rate': _decimal(max_missing_rate),
+                           'registry_digest': registry_digest_hex},
+            'coverage': {'seconds_total': total, 'seconds_missing': missing_total,
+                         'missing_rate': _decimal(missing_rate)},
             'seconds': {'start': start, 'end': end, 'step': step_seconds,
                         'compared': len(ordered), 'missing': missing},
             'deviation': {'median': _decimal(median), 'p99': _decimal(p99),

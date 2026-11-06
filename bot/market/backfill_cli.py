@@ -115,9 +115,11 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     cs.add_argument('--start-second', type=int, default=None)
     cs.add_argument('--end-second', type=int, default=None)
     cs.add_argument('--step-seconds', type=int, default=1)
-    cs.add_argument('--max-median', default='0.003', help='pre-registered, as a decimal')
-    cs.add_argument('--max-p99', default='0.01', help='pre-registered, as a decimal')
-    cs.add_argument('--min-compared', type=int, default=1000)
+    cs.add_argument('--max-median', default=None, help='must equal the frozen T-REG value')
+    cs.add_argument('--max-p99', default=None, help='must equal the frozen T-REG value')
+    cs.add_argument('--min-compared', type=int, default=None, help='must equal the frozen T-REG value')
+    cs.add_argument('--max-missing-rate', default=None, help='must equal the frozen T-REG value')
+    cs.add_argument('--thresholds', type=Path, default=None, help='T-REG threshold file (default: docs/research/T0034_THRESHOLDS.json)')
     cs.add_argument('--report-out', type=Path, default=None)
     s2 = sub.add_parser('sol-usd-series',
                         help='causal SOL/USD series from a SOL/USDC pool window; no network')
@@ -176,12 +178,15 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                                             'endpoint', 'sampling')})
             return 0 if manifest['complete'] else 3
         if args.command == 'compare-series':
-            from fractions import Fraction
-            from bot.market.sol_usd_compare import compare, load_series_document
+            from bot.market.sol_usd_compare import (DEFAULT_REGISTRY, compare, load_frozen_thresholds,
+                                                    load_series_document)
+            frozen, digest = load_frozen_thresholds(
+                args.thresholds or DEFAULT_REGISTRY,
+                {'max_median': args.max_median, 'max_p99': args.max_p99,
+                 'min_compared': args.min_compared, 'max_missing_rate': args.max_missing_rate})
             result = compare(load_series_document(args.a), load_series_document(args.b),
                              start_second=args.start_second, end_second=args.end_second,
-                             step_seconds=args.step_seconds, max_median=Fraction(args.max_median),
-                             max_p99=Fraction(args.max_p99), min_compared=args.min_compared)
+                             step_seconds=args.step_seconds, registry_digest_hex=digest, **frozen)
             if args.report_out is not None:
                 args.report_out.write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
             emit(result)
