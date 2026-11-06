@@ -271,8 +271,14 @@ spécification : décision à B × 1000 + 400 ms, point disponible à la fin de 
 seconde, âge d'au plus 5 s. Le code de sortie est la règle d'arrêt : 0 = PASS,
 4 = FAIL ou INSUFFICIENT.
 
+Seuils figés (T-REG, mission #212) : `docs/research/T0034_THRESHOLDS.json`. Statut
+`PROPOSED` tant que le propriétaire n'a pas validé ; `compare-series` refuse alors de
+s'exécuter. Une fois `FROZEN` (avec `owner_validation` et `digest`), toute option CLI
+de seuil divergente est refusée. O1 : une part de secondes sans point utilisable
+supérieure à `max_missing_rate` donne `FAIL_COVERAGE` (jamais PASS).
+
 ```bash
-python -B tools/backfill_launchlab_window.py compare-series --a data/backfill/p0_sol_usd.json.gz --b data/backfill/p0_sol_usd_second.json.gz --max-median 0.003 --max-p99 0.01 --min-compared 1000 --report-out data/backfill/p0_sol_usd_compare.json
+python -B tools/backfill_launchlab_window.py compare-series --a data/backfill/p0_sol_usd.json.gz --b data/backfill/p0_sol_usd_second.json.gz --report-out data/backfill/p0_sol_usd_compare.json
 ```
 
 **3. Préréglages supplémentaires** (Raydium AMM v4, CLMM, Orca Whirlpool), si P0

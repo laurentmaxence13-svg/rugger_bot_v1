@@ -10,8 +10,10 @@ import json
 from pathlib import Path
 
 import pytest
+from fractions import Fraction
 
 from bot.market import backfill as bf
+from bot.market.backfill import BackfillError
 from bot.market import backfill_cli as cli
 from bot.market.collector import MAX_TX_VERSION
 
@@ -852,15 +854,76 @@ def test_compare_uses_the_spec_timing_rule():
     assert report['seconds']['compared'] == 4 and report['seconds']['missing']['a'] == 4
 
 
+def _registry(tmp_path, **changes):
+    th = {'max_median': '0.003', 'max_p99': '0.01', 'min_compared': 50, 'max_missing_rate': '0.10'}
+    th.update(changes)
+    doc = {'schema': sc.REGISTRY_SCHEMA, 'status': 'FROZEN', 'owner_validation': 'test-fixture',
+           'thresholds': th, 'digest': sc.registry_digest(th)}
+    path = tmp_path / 'reg.json'
+    path.write_text(json.dumps(doc))
+    return path
+
+
+def test_o1_large_holes_are_never_pass_and_full_coverage_passes():
+    a = _series([(t, 150 * 10**8) for t in range(5000, 5200)])
+    b = _series([(t, 150 * 10**8) for t in range(5000, 5200) if (t // 10) % 2 == 0])
+    report = sc.compare(a, b, min_compared=1, max_missing_rate=Fraction(1, 10))
+    assert report['verdict'] == 'FAIL_COVERAGE'
+    assert Fraction(report['coverage']['missing_rate']) > Fraction(1, 10)
+    full = sc.compare(a, a, min_compared=1, max_missing_rate=Fraction(1, 10))
+    assert full['verdict'] == 'PASS'
+
+
+def test_o1_half_of_the_seconds_absent_with_step_two_alignment():
+    # B has a point only on seconds whose index is even and the age window is cut: use a
+    # reader-level check that 1 s over 2 absent means missing_rate 0.5 > any sane threshold.
+    a = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
+    b = _series([(t, 150 * 10**8) for t in range(5000, 5100) if (t // 6) % 2 == 0])
+    report = sc.compare(a, b, min_compared=1, start_second=5006, end_second=5095,
+                        max_missing_rate=Fraction(1, 10))
+    assert report['verdict'] == 'FAIL_COVERAGE'
+
+
+def test_o2_registry_refuses_unfrozen_unvalidated_tampered_and_divergent(tmp_path):
+    ok = _registry(tmp_path)
+    values, digest = sc.load_frozen_thresholds(ok, {'max_median': '0.003', 'min_compared': 50})
+    assert values['max_missing_rate'] == Fraction(1, 10) and digest
+    with pytest.raises(BackfillError, match='threshold_override_diverges:max_p99'):
+        sc.load_frozen_thresholds(ok, {'max_p99': '0.02'})
+    doc = json.loads(ok.read_text())
+    for mutate, message in ((lambda d: d.update(status='PROPOSED'), 'not_frozen'),
+                            (lambda d: d.update(owner_validation=None), 'without_owner_validation'),
+                            (lambda d: d['thresholds'].update(max_p99='0.5'), 'digest_mismatch')):
+        bad = json.loads(json.dumps(doc))
+        mutate(bad)
+        (tmp_path / 'bad.json').write_text(json.dumps(bad))
+        with pytest.raises(BackfillError, match=message):
+            sc.load_frozen_thresholds(tmp_path / 'bad.json')
+
+
+def test_o2_repository_registry_is_proposed_and_consistent_not_yet_frozen():
+    doc = json.loads(sc.DEFAULT_REGISTRY.read_text())
+    assert doc['status'] == 'PROPOSED' and doc['digest'] == sc.registry_digest(doc['thresholds'])
+    with pytest.raises(BackfillError, match='not_frozen'):
+        sc.load_frozen_thresholds()
+
+
 def test_compare_series_cli_exit_code_is_the_stop_rule(tmp_path):
     base = _series([(t, 150 * 10**8) for t in range(5000, 5100)])
     far = _series([(t, 160 * 10**8) for t in range(5000, 5100)])
     for name, doc in (('a.json', base), ('b.json', far)):
         (tmp_path / name).write_text(json.dumps(doc))
+    reg = str(_registry(tmp_path))
     buf = io.StringIO()
     code = cli.main(['compare-series', '--a', str(tmp_path / 'b.json'), '--b', str(tmp_path / 'a.json'),
-                     '--min-compared', '50', '--report-out', str(tmp_path / 'r.json')], out=buf)
-    assert code == 4 and json.loads((tmp_path / 'r.json').read_text())['verdict'] == 'FAIL'
+                     '--thresholds', reg, '--report-out', str(tmp_path / 'r.json')], out=buf)
+    report = json.loads((tmp_path / 'r.json').read_text())
+    assert code == 4 and report['verdict'] == 'FAIL' and report['thresholds']['registry_digest']
     buf = io.StringIO()
     assert cli.main(['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'a.json'),
-                     '--min-compared', '50'], out=buf) == 0
+                     '--thresholds', reg], out=buf) == 0
+    # A divergent CLI override is refused (no verdict), as is the unfrozen repository file.
+    assert cli.main(['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'a.json'),
+                     '--thresholds', reg, '--max-p99', '0.5'], out=io.StringIO()) != 0
+    assert cli.main(['compare-series', '--a', str(tmp_path / 'a.json'), '--b', str(tmp_path / 'a.json')],
+                    out=io.StringIO()) != 0

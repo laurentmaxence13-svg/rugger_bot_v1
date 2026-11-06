@@ -1,0 +1,20 @@
+{
+ "digest": "aa47495ed5e653f4b18a6e82264cf6ac022fe593cb5b39666dbd37766acddc78",
+ "how_to_freeze": "Owner validates in issue #212, then a commit sets status FROZEN, fills owner_validation (comment URL) and keeps digest equal to registry_digest(thresholds). compare-series refuses any other status and any divergent CLI override.",
+ "owner_validation": null,
+ "rationale": {
+  "max_median": "0.3 % : pre-registered in docs/research/L2_COLLECTION_PLAN.md (point 2).",
+  "max_missing_rate": "PROPOSED 10 % of the seconds of the compared range with no usable point on at least one side. Motivated: a 1-second-of-2 gap is 50 % and must fail; sparse grid-sampled series legitimately miss some seconds, 10 % keeps >= 90 % of the range comparable. Not derived from data: the owner must validate or change it before freezing.",
+  "max_p99": "1 % : pre-registered in the same plan.",
+  "min_compared": "1000 seconds : sample size named in the plan."
+ },
+ "schema": "rugger-t0034-thresholds-v1",
+ "status": "PROPOSED",
+ "task": "T-0034 / issue #142 / mission #212",
+ "thresholds": {
+  "max_median": "0.003",
+  "max_missing_rate": "0.10",
+  "max_p99": "0.01",
+  "min_compared": 1000
+ }
+}
