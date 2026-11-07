@@ -475,8 +475,8 @@ Une configuration choisie sur un segment ne peut plus servir de preuve sur ce m�
 ### 7.1 Contraintes P0
 
 **Durée maximale de détention** [CALCUL, vérifié par `tests/test_master_v2_slot_horizon.py`] :
-- avec une latence de 2 slots : `max_hold_s ≤ 30`, car ceil(31 000 / 200) + 4 = 159 ≤ 160 ;
-- avec une latence de 4 slots : `max_hold_s ≤ 29`, car ceil(30 000 / 200) + 8 = 158 ≤ 160, alors que 30 s donnerait 163.
+- avec une latence de 2 slots : `max_hold_s ≤ 28`, car ceil(29 000 / 190) + 4 = 157 ≤ 160 (plancher de 190 ms sous 60 s, commit `75a55d8`) ;
+- avec une latence de 4 slots : `max_hold_s ≤ 27`, car ceil(28 000 / 190) + 8 = 156 ≤ 160, alors que 28 s donnerait 161. Le protocole retient 25 s : 145 slots côté V2, 140 côté garde L1.
 
 Le code refuse toute fenêtre trop courte (`harness.py:191-192`). Le test vérifie le refus pour 31, 45 et 54 s. Les anciennes limites de 54 et 53 s reposaient sur le plancher erroné de 350 ms ; elles sont retirées.
 
