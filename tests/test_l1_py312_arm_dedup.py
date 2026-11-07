@@ -79,7 +79,8 @@ def test_cli_reports_only_the_compared_arm_and_names_the_excluded_one(capsys, mo
     out = capsys.readouterr().out
     assert 'python 3.12.3 reference=3.12 reproducible=True' in out
     assert '  [reference] decisions=113' in out and '  [master] decisions=' not in out
-    assert '  [master] excluded from the economic comparison: duplicate of [reference] (kept in the bundle)' in out
+    assert ('  [master] excluded from the economic comparison: identical to [reference] on this bundle '
+            '(kept in the bundle)') in out
     assert 'master=' not in out.split('bundle_sha256')[0].split('\n', 1)[1]
 
 
@@ -96,6 +97,9 @@ def test_bundle_files_are_written_under_the_reference_python_only(tmp_path, caps
     assert 'reproducible=False' in capsys.readouterr().out
     cli.main(['--fixtures', str(PACK), '--out', str(out), '--allow-non-reference-python'])
     assert out.exists() and 'reproducible=False' in capsys.readouterr().out
+    companion = json.loads((tmp_path / 'bundle.json.python.json').read_text('utf-8'))
+    assert companion == dict(bundle_sha256=DEFAULT_BUNDLE_SHA, python='%d.%d.%d' % version,
+                             reference_python='3.12', reproducible=False)
 
 
 def test_bundle_file_under_the_reference_python(tmp_path, capsys, monkeypatch):
@@ -105,6 +109,15 @@ def test_bundle_file_under_the_reference_python(tmp_path, capsys, monkeypatch):
     cli.main(['--fixtures', str(PACK), '--out', str(out)])
     assert json.loads(out.read_text('utf-8'))['bundle_sha256'] == DEFAULT_BUNDLE_SHA
     assert 'reproducible=True' in capsys.readouterr().out
+    companion = json.loads((tmp_path / 'bundle.json.python.json').read_text('utf-8'))
+    assert companion['reproducible'] is True and companion['python'] == '3.12.12'
+
+
+def test_python_version_is_numeric_on_any_interpreter(monkeypatch):
+    import sys
+    cli = _cli()
+    assert cli.python_version() == tuple(sys.version_info[:3])
+    assert all(type(part) is int for part in cli.python_version())
 
 
 def test_reference_interpreter_is_pinned_in_both_offline_ci_suites():

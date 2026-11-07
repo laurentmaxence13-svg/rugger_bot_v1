@@ -92,8 +92,9 @@ EXCLUSION_RULE = ('a pool whose history is not complete for a reason other than 
 # MASTER arm stays in the bundle but its duplicate is left out of the economic comparison.
 REFERENCE_PYTHON = (3, 12)
 DUPLICATE_ARM_RULE = ('an arm whose decision intents and trade rows are all equal to those of the '
-                      'reference arm is a duplicate: it stays in the bundle (historical code and '
-                      'fingerprints unchanged) but is excluded from the economic comparison')
+                      'reference arm on this bundle is identical to it here: it stays in the bundle '
+                      '(historical code and fingerprints unchanged) but is excluded from the economic '
+                      'comparison of this bundle only')
 
 
 @dataclass(frozen=True)

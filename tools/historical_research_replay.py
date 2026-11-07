@@ -11,7 +11,6 @@ entries, Master-gate evidence or operational Master trades.
 import argparse
 import json
 from pathlib import Path
-import platform
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +25,7 @@ DEFAULT_FIXTURES = ROOT / 'tests' / 'fixtures' / 'launchlab_sol_pools'
 
 def python_version():
     """(major, minor, micro) of the running interpreter (patched in tests)."""
-    return tuple(int(part) for part in platform.python_version_tuple()[:3])
+    return tuple(sys.version_info[:3])          # integers even on pre-release interpreters (R02 O2)
 
 
 def summary_lines(bundle, top=6):
@@ -49,8 +48,8 @@ def summary_lines(bundle, top=6):
                f"outcomes={totals['outcomes']} pnl_lamports={totals['pnl_lamports']}")
         yield f'    top blocking reasons: {reasons or "-"}'
     for row in comparison['excluded']:
-        yield (f"  [{row['arm']}] excluded from the economic comparison: duplicate of "
-               f"[{row['duplicate_of']}] (kept in the bundle)")
+        yield (f"  [{row['arm']}] excluded from the economic comparison: identical to "
+               f"[{row['duplicate_of']}] on this bundle (kept in the bundle)")
     yield f"params_sha256 {bundle['params_sha256']}"
     yield f"bundle_sha256 {bundle['bundle_sha256']}"
 
@@ -94,6 +93,12 @@ def main(argv=None):
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(bundle, sort_keys=True, indent=1, allow_nan=False) + '\n',
                             encoding='utf-8')
+        # File-level provenance next to the bundle, whose content (and hash) is unchanged (R02 O1).
+        companion = args.out.with_name(args.out.name + '.python.json')
+        companion.write_text(json.dumps(dict(
+            bundle_sha256=bundle['bundle_sha256'], python='.'.join(map(str, version)),
+            reference_python='.'.join(map(str, REFERENCE_PYTHON)), reproducible=reference),
+            sort_keys=True, indent=1) + '\n', encoding='utf-8')
     print('python %s reference=%s reproducible=%s' % ('.'.join(map(str, version)),
                                                       '.'.join(map(str, REFERENCE_PYTHON)), reference))
     for line in summary_lines(bundle):

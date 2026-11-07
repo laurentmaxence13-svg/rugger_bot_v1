@@ -11,7 +11,7 @@ Mise en œuvre sur la branche locale `claude/r01-py312-arm-dedup`, issue de `e21
 ## 1. Python 3.12, interpréteur de référence
 
 - `REFERENCE_PYTHON = (3, 12)` (`bot/p4/historical_research_replay.py`). Les empreintes de bundle reproductibles sont celles de Python 3.12, et les quatre bundles enregistrés y sont reproduits à l'octet près.
-- `tools/historical_research_replay.py` affiche toujours l'interpréteur utilisé et s'il s'agit de la référence. Il refuse d'écrire un bundle (`--out`) sous une autre version, sauf avec `--allow-non-reference-python` : le résultat est alors explicitement marqué non reproductible (`reproducible=False`). La simple consultation, sans fichier écrit, reste possible sous toute version.
+- `tools/historical_research_replay.py` affiche toujours l'interpréteur utilisé et s'il s'agit de la référence. Il refuse d'écrire un bundle (`--out`) sous une autre version, sauf avec `--allow-non-reference-python`. Chaque bundle écrit est accompagné d'un fichier `<out>.python.json` : empreinte du bundle, interpréteur, référence et `reproducible`, faux hors 3.12. Le bundle lui-même ne change pas. La simple consultation, sans fichier écrit, reste possible sous toute version.
 - Les deux suites CI hors ligne utilisent Python 3.12 (`offline-tests.yml`, auparavant en 3.13, et `rugger-isolated-ci.yml`, auparavant en 3.11). Les déclencheurs ne changent pas. Seuls les repères de texte des tests de mutation du garde-fou suivent le nouveau nom d'étape.
 - Origine : l'écart O3. Sous Python 3.11, la somme des flottants n'est pas compensée, et `top_holder_share` diffère au dernier bit.
 
@@ -19,7 +19,8 @@ Mise en œuvre sur la branche locale `claude/r01-py312-arm-dedup`, issue de `e21
 
 - Le code historique et le contenu du bundle ne changent pas : les deux bras `master` et `reference` y restent, et toutes les empreintes sont inchangées.
 - `economic_comparison(bundle)` ne retient que les bras distincts. Un bras dont toutes les intentions journalisées et toutes les lignes de trade sont égales à celles du bras `reference` est listé dans `excluded`, avec la règle `DUPLICATE_ARM_RULE`. Dès qu'un bras diffère, il est comparé.
-- L'outil en ligne de commande n'affiche plus que les bras comparés. Il nomme le bras exclu : `[master] excluded from the economic comparison: duplicate of [reference] (kept in the bundle)`.
+- L'outil en ligne de commande n'affiche plus que les bras comparés. Il nomme le bras exclu : `[master] excluded from the economic comparison: identical to [reference] on this bundle (kept in the bundle)`. L'égalité est jugée sur le bundle examiné seulement. Une future politique indépendante, qui ne ferait que des WAIT sur un jeu donné, y serait aussi « identique », sans être pour autant un doublon en général.
+- Les workflows de collecte manuels restent sous Python 3.11. Les résultats rejoués n'en dépendent pas, puisque l'écriture d'un bundle impose 3.12. Les aligner relève du propriétaire.
 - Tant qu'aucune politique MASTER indépendante n'existe, le comparatif ne contient qu'un seul bras, celui du scoreur.
 
 ## 3. Tests
