@@ -175,7 +175,17 @@ class ReplayParams:
 # window gaps and embargoes are sized on this floor (T-0031 O1). The committed fixtures
 # (slots 4646xxxxx) measure 210-222 ms per slot, not the nominal 400 ms: the former 350 ms
 # floor let horizons overrun their windows (tests/test_master_v2_slot_horizon.py).
+# Measured on P0 by RUGGER 03 with the 1 s block_time bound, the floor holds at 200 ms
+# for spans of 60 s or more; shorter spans use 190 ms (R02 decision C1, finding C3).
 SLOT_MS_FLOOR = 200
+SLOT_MS_FLOOR_SHORT = 190
+SHORT_HORIZON_MS = 60_000
+
+
+def slots_for_ms(duration_ms):
+    """Most slots a duration can span, on the floor that applies to its length."""
+    floor = SLOT_MS_FLOOR_SHORT if duration_ms < SHORT_HORIZON_MS else SLOT_MS_FLOOR
+    return -(-duration_ms // floor)
 
 
 def collection_window(entry, manifest, params):
@@ -191,7 +201,7 @@ def collection_window(entry, manifest, params):
         return None
     if type(cutoff) is not int or type(end) is not int or not 0 < cutoff < end:
         raise ValueError('invalid_collection_window')
-    minimum_gap = -(-params.exit_horizon_ms // SLOT_MS_FLOOR) + 2 * params.latency_slots
+    minimum_gap = slots_for_ms(params.exit_horizon_ms) + 2 * params.latency_slots
     if end - cutoff < minimum_gap:
         raise ValueError('collection_window_gap_shorter_than_exit_horizon')
     return dict(entry_cutoff_slot=cutoff, window_slot_max=end, minimum_gap_slots=minimum_gap)

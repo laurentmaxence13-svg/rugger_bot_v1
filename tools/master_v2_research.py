@@ -210,7 +210,14 @@ def main(argv=None):
     try:
         if args.command == 'run':
             policy = POLICIES[args.policy](**_pairs(args.param, 'param'))
-            rule, params = ExitRule(**_pairs(args.exit, 'exit')), ReplayParams(**_pairs(args.replay, 'replay'))
+            replay = _pairs(args.replay, 'replay')
+            rule, params = ExitRule(**_pairs(args.exit, 'exit')), ReplayParams(**replay)
+            # R02 O3: an explicit zero latency or an L1 horizon shorter than the hold is refused.
+            if 'latency_slots' in replay and params.latency_slots < 1:
+                raise ValueError('replay_latency_slots_below_1')
+            if ('exit_horizon_ms' in replay and rule.max_hold_s is not None
+                    and params.exit_horizon_ms < rule.max_hold_s * 1000):
+                raise ValueError('replay_exit_horizon_shorter_than_max_hold')
             record = preregister(args.fixtures, policy, rule, params)
             at = args.at or datetime.now(timezone.utc).isoformat(timespec='seconds')
             entry, new = registry.register(args.registry, record, registered_at=at)   # before the replay

@@ -158,7 +158,7 @@ BLOCK_TIME_RESOLUTION_S = 1   # ages and holds are read on whole-second block ti
 
 
 def _slots(seconds, params):
-    return -(-(seconds * 1000) // hrr.SLOT_MS_FLOOR) + 2 * params.latency_slots
+    return hrr.slots_for_ms(seconds * 1000) + 2 * params.latency_slots
 
 
 def hold_gap_slots(exit_rule, params):

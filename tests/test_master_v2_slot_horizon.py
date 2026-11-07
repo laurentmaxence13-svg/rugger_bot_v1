@@ -39,7 +39,7 @@ def _slot_times(path):
 
 
 def test_slot_floor_is_below_every_measured_fixture_slot():
-    assert hrr.SLOT_MS_FLOOR == 200
+    assert (hrr.SLOT_MS_FLOOR, hrr.SLOT_MS_FLOOR_SHORT, hrr.SHORT_HORIZON_MS) == (200, 190, 60_000)
     archives = sorted(PACK.glob('*.json.gz'))
     assert len(archives) == 3
     for path in archives:
@@ -48,7 +48,7 @@ def test_slot_floor_is_below_every_measured_fixture_slot():
         assert last_slot - first_slot >= 70
         # block_time has a 1 s resolution: take the fastest slot compatible with it.
         fastest_ms = 1000 * (last_time - first_time - 1) / (last_slot - first_slot)
-        assert fastest_ms >= hrr.SLOT_MS_FLOOR, path.name
+        assert fastest_ms >= hrr.SLOT_MS_FLOOR_SHORT, path.name
         assert 1000 * (last_time - first_time) / (last_slot - first_slot) < 350   # the old floor was wrong
 
 
@@ -75,24 +75,35 @@ def test_an_undeclared_policy_has_no_entry_age_bound():
     assert h.Policy().max_entry_age_s() is None
 
 
+def test_slot_floor_depends_on_the_duration_r02_c1_c3():
+    """R02 C1: 200 ms is shown on P0 for spans >= 60 s only; 190 ms below (C3)."""
+    assert hrr.slots_for_ms(59_999) == 316 and hrr.slots_for_ms(30_000) == 158     # 190 ms
+    assert hrr.slots_for_ms(60_000) == 300 and hrr.slots_for_ms(347_000) == 1735   # 200 ms
+    assert hrr.slots_for_ms(0) == 0
+
+
 def test_hold_gap_counts_block_time_rounding_on_the_slot_floor():
     params = hrr.ReplayParams()
     assert params.latency_slots == 2
-    assert h.hold_gap_slots(h.ExitRule(max_hold_s=30), params) == 155 + 4      # ceil(31 000 / 200) + 2 x 2
-    assert h.hold_gap_slots(h.ExitRule(max_hold_s=31), params) == 160 + 4
+    assert h.hold_gap_slots(h.ExitRule(max_hold_s=30), params) == 164 + 4      # ceil(31 000 / 190) + 2 x 2
+    assert h.hold_gap_slots(h.ExitRule(max_hold_s=60), params) == 305 + 4      # 61 s: 200 ms floor
     p0 = dict(entry_cutoff_slot=466_442_576, window_slot_max=466_442_736)     # P0: 160-slot gap
-    assert h.policy_window({}, p0, params, h.ExitRule(max_hold_s=30))['minimum_gap_slots'] == 159
-    for hold in (31, 45, 54):
+    # L1 defaults (30 s horizon, latency 2) need ceil(30 000 / 190) + 4 = 162 > 160: refused (R02 C3).
+    with pytest.raises(ValueError, match='collection_window_gap_shorter_than_exit_horizon'):
+        hrr.collection_window({}, p0, params)
+    revised = hrr.ReplayParams(latency_slots=4, exit_horizon_ms=25_000)      # the P0 protocol
+    assert hrr.collection_window({}, p0, revised)['minimum_gap_slots'] == 132 + 8
+    assert h.policy_window({}, p0, revised, h.ExitRule(max_hold_s=25))['minimum_gap_slots'] == 137 + 8
+    for hold in (28, 30, 45):
         with pytest.raises(ValueError, match='collection_window_gap_shorter_than_max_hold'):
-            h.policy_window({}, p0, params, h.ExitRule(max_hold_s=hold))
-    assert hrr.collection_window({}, p0, params)['minimum_gap_slots'] == 154      # L1 30 s horizon still fits
+            h.policy_window({}, p0, revised, h.ExitRule(max_hold_s=hold))
 
 
 def test_outcome_horizon_covers_entry_age_hold_and_rounding():
     params = hrr.ReplayParams()
     rule = h.ExitRule(max_hold_s=45)
     assert h.outcome_horizon_slots(pol.FillMomentum(), rule, params) == 1735 + 4    # ceil(347 000 / 200) + 4
-    assert h.outcome_horizon_slots(pol.NoTrade(), rule, params) == 235 + 4
+    assert h.outcome_horizon_slots(pol.NoTrade(), rule, params) == 248 + 4      # 47 s on 190 ms
     assert h.outcome_horizon_slots(pol.ImmediateSnipe(), h.ExitRule(stop_loss=0.1), params) is None
     assert h.outcome_horizon_slots(h.Policy(), rule, params) is None
 
@@ -114,7 +125,7 @@ def test_evaluate_embargo_covers_the_longest_outcome_horizon(tmp_path, capsys):
     snipe = _run(cli, tmp_path, capsys, reg, 'snipe', '--policy', 'immediate-snipe', '--exit', 'max_hold_s=45')
     fill = _run(cli, tmp_path, capsys, reg, 'fill', '--policy', 'fill-momentum', '--exit', 'max_hold_s=45')
     entries = registry.load(reg)
-    assert cli.required_embargo_slots([snipe]) == 260 + 4                      # (5 + 45 + 2) s
+    assert cli.required_embargo_slots([snipe]) == 274 + 4                      # (5 + 45 + 2) s on 190 ms
     assert cli.required_embargo_slots([snipe, fill]) == 1739                   # (300 + 45 + 2) s
     with pytest.raises(ValueError, match='embargo_shorter_than_outcome_horizon:1739'):
         cli.evaluate([snipe, fill], registry_entries=entries, embargo_slots=1738, n_boot=200)
@@ -152,11 +163,12 @@ def test_replay_parameters_are_explicit_and_pre_registered(tmp_path, capsys):
     assert slow['params']['exit_horizon_ms'] == 25000
     assert base['preregistration_sha256'] != slow['preregistration_sha256']
     assert len(registry.load(reg)) == 2
-    assert cli.required_embargo_slots([slow]) == 160 + 8          # ceil((5 + 25 + 2) s / 200 ms) + 2 x 4
+    assert cli.required_embargo_slots([slow]) == 169 + 8          # ceil((5 + 25 + 2) s / 190 ms) + 2 x 4
     p0 = dict(entry_cutoff_slot=466_442_576, window_slot_max=466_442_736)
     params = hrr.ReplayParams(latency_slots=4, exit_horizon_ms=25_000)
-    assert h.policy_window({}, p0, params, h.ExitRule(max_hold_s=25))['minimum_gap_slots'] == 130 + 8
-    for bad in (['--replay', 'latency_slots=-1'], ['--replay', 'no_such_field=1'], ['--replay', 'latency_slots']):
+    assert h.policy_window({}, p0, params, h.ExitRule(max_hold_s=25))['minimum_gap_slots'] == 137 + 8
+    for bad in (['--replay', 'latency_slots=-1'], ['--replay', 'no_such_field=1'], ['--replay', 'latency_slots'],
+                ['--replay', 'latency_slots=0'], ['--replay', 'exit_horizon_ms=24000']):   # R02 O3
         with pytest.raises(SystemExit):
             cli.main(['run', '--fixtures', str(PACK), '--registry', str(tmp_path / 'x.jsonl'), '--policy',
                       'immediate-snipe', '--exit', 'max_hold_s=25', '--out', str(tmp_path / 'x.json'), *bad])
