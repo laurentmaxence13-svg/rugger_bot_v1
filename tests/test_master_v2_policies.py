@@ -95,8 +95,8 @@ def test_fixed_delay_enters_at_or_after_its_target(delay):
 
 def test_lifecycle_table_is_policy_free_and_complete():
     from bot.master_v2.lifecycle import HORIZONS_S, lifecycle_table
-    rows, excluded = lifecycle_table(PACK)
-    assert len(rows) == 3 and excluded == []
+    rows, excluded, segment = lifecycle_table(PACK, segment='all')
+    assert len(rows) == 3 and excluded == [] and segment == 'all'
     for row in rows:
         assert row['peak_multiple'] >= row['final_multiple']
         assert row['peak_multiple'] >= max(row[f'multiple_at_{h}s'] for h in HORIZONS_S) - 1e-12

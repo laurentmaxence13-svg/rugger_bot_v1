@@ -27,12 +27,27 @@ Ce banc n'est **ni** une politique opérationnelle, **ni** une source pour le re
 
 Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P&L. Les positions ouvertes, migrées ou invalorisables sont comptées par issue, toujours hors P&L.
 
+### Garde-fous ajoutés après l'audit de RUGGER 02 (B1 et O1 à O6, rapport `3ae70926…`)
+
+- **Fenêtre de collecte M1 (B1).** Quand le MANIFEST fixe `entry_cutoff_slot` et `window_slot_max`, aucune entrée n'est admise après la coupure. Le refus est journalisé et définitif : `NO_TRADE`, motif `after_entry_cutoff_slot`. Un cycle ne compte comme clos que si sa sortie tombe au plus tard à `window_slot_max`, sinon `open_at_window_end`, hors P&L. C'est `_apply_window` du rejeu L1.
+  - L'écart de la fenêtre doit couvrir la détention bornée de la règle de sortie : `ceil(max_hold_s × 1000 / 350) + 2 × latence` slots.
+  - Sans `max_hold_s`, une fenêtre est refusée.
+  - **Sur P0** (écart de 160 slots), cela impose `max_hold_s ≤ 54`.
+- **Pré-enregistrement lié (O2).** L'empreinte couvre la politique, la sortie, les paramètres de rejeu, le **code** (empreinte des modules qui décident et comptent), les **données** (MANIFEST) et les **fenêtres**.
+- **Registre d'essais (O3, O6).** `bot/master_v2/registry.py` tient un fichier JSON Lines chaîné par SHA-256, en ajout seul.
+  - Chaque `run` y inscrit son pré-enregistrement **avant** le rejeu.
+  - `evaluate` refuse un bundle non inscrit, refuse d'omettre un essai inscrit sur les mêmes données (le DSR compte donc tous les essais) et ne descelle le holdout que pour des empreintes inscrites.
+  - La tête de chaîne (`registry_head`) doit être ancrée hors de l'outil : message à RUGGER 02, ou T-REG quand GitHub reviendra.
+- **Embargo (O1).** `evaluate` exige un embargo d'au moins la plus longue détention bornée des exécutions comparées, plus la latence.
+- **Placebo à population égale (O4).** `placebo-random-entry` exige, comme les challengers, un créateur signé.
+- **Cycle de vie (O5).** Par défaut, le relevé ne décrit que le segment d'exploration. `--segment all` doit être demandé explicitement.
+
 ## 3. Protocole d'exploration P0 (proposé à RUGGER 03, après audit de RUGGER 02)
 
 Les 514 pools P0 ont déjà servi au diagnostic. Ils ne peuvent donc être qu'un jeu d'**exploration**. La validation finale exige une fenêtre nouvelle, collectée après le gel des règles et seulement avec l'accord du propriétaire.
 
 1. `lifecycle` sur les 514 pools : comment et à quelle vitesse les lancements montent puis s'effondrent.
-2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec une seule règle de sortie fixée à l'avance. L'entrée immédiate est-elle récompensée après coûts ?
+2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec une seule règle de sortie fixée à l'avance, de détention au plus 54 s sur P0. L'entrée immédiate est-elle récompensée après coûts ?
 3. Placebos : `placebo-no-trade` et `placebo-random-entry`.
 4. Familles : `immediate-snipe`, `delayed-confirmation` et `fill-momentum`, chacune avec ses paramètres par défaut.
 5. `evaluate` sur l'ensemble des exécutions. Tous les essais entrent dans le DSR, et le segment `holdout` reste scellé.

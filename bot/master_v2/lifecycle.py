@@ -8,6 +8,7 @@ evidence of a profitable rule.
 from fractions import Fraction
 
 from bot.market.collector import summarize
+from bot.master_v2.validation import SEGMENTS, chronological_split
 from bot.p4 import historical_research_replay as hrr
 
 HORIZONS_S = (5, 15, 30, 60, 120, 300, 900)
@@ -43,12 +44,29 @@ def pool_lifecycle(archive):
     return row
 
 
-def lifecycle_table(fixtures_dir):
-    """(rows, excluded) for every MANIFEST pool."""
-    rows, excluded = [], []
-    for entry, archive in hrr.load_fixtures(fixtures_dir)[2]:
+def lifecycle_table(fixtures_dir, *, segment='exploration', embargo_slots=750):
+    """(rows, excluded, segment) for the pools of one chronological segment.
+
+    The lifecycle reads each pool's whole future (peak, multiples), so by default
+    only the exploration segment is described: later segments, above all the
+    holdout, must not inform the design (R02 O5). ``segment='all'`` is explicit.
+    """
+    archives = hrr.load_fixtures(fixtures_dir)[2]
+    table, excluded = [], []
+    for entry, archive in archives:
+        summary, timeline = summarize(archive)
         try:
-            rows.append(pool_lifecycle(archive))
+            hrr.usable_timeline(archive, summary, timeline)
         except hrr.PoolExcluded as exc:
             excluded.append(dict(pool=archive.pool, file=entry['file'], reasons=exc.reasons))
-    return rows, excluded
+            continue
+        facts = hrr.creation_facts(archive)
+        table.append(dict(pool=archive.pool, creator=facts['creator'], created_slot=facts['creation_slot']))
+    if segment == 'all':
+        chosen = {row['pool'] for row in table}
+    else:
+        if segment not in SEGMENTS[:-1]:
+            raise ValueError('invalid_lifecycle_segment')
+        chosen = set(chronological_split(table, embargo_slots=embargo_slots)[segment])
+    rows = [pool_lifecycle(archive) for _entry, archive in archives if archive.pool in chosen]
+    return rows, excluded, segment

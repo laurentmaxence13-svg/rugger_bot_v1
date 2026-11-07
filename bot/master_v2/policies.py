@@ -25,6 +25,7 @@ class RandomEntry(Policy):
     """Enter at a pseudo-random decision age, drawn from the pool id (deterministic placebo)."""
     max_age_s: int = 120
     salt: str = 'v1'
+    require_signed_creator: bool = True       # same population as the challengers (R02 O4)
     name = 'placebo-random-entry'
 
     def params(self):
@@ -35,6 +36,8 @@ class RandomEntry(Policy):
         return int.from_bytes(digest[:4], 'big') % (self.max_age_s + 1)
 
     def decide(self, features, facts):
+        if self.require_signed_creator and not facts.get('signed_creator_verified'):
+            return 'NO_TRADE', ['signed_creator_unverified']
         if features['age_s'] > self.max_age_s:
             return 'NO_TRADE', ['placebo_window_closed']
         if features['age_s'] >= self.target_age(facts.get('pool', '')):

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 """MASTER V2 research runs and evaluation (offline; no network, keys or orders).
 
-  python -B tools/master_v2_research.py run --fixtures DIR --policy delayed-confirmation \
-      --param min_age_s=30 --exit stop_loss=0.3 --exit max_hold_s=120 --out run.json
-  python -B tools/master_v2_research.py evaluate run1.json run2.json ... [--holdout --unseal SHA ...]
+  python -B tools/master_v2_research.py run --fixtures DIR --registry trials.jsonl \
+      --policy delayed-confirmation --param min_age_s=30 --exit stop_loss=0.3 --exit max_hold_s=40 \
+      --out run.json
+  python -B tools/master_v2_research.py evaluate --registry trials.jsonl run1.json run2.json ... \
+      [--holdout --unseal SHA ...]
+  python -B tools/master_v2_research.py lifecycle --fixtures DIR --out life.json [--segment exploration]
+
+Every ``run`` is appended to the hash-chained trial registry BEFORE its replay.
 
 ``evaluate`` splits pools chronologically (exploration / train / validation / holdout,
 creators disjoint, embargo at boundaries) and reports closed-cycle metrics per
@@ -20,8 +25,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from bot.master_v2 import policies  # noqa: E402
-from bot.master_v2.harness import ExitRule, run_policy  # noqa: E402
+from datetime import datetime, timezone  # noqa: E402
+
+from bot.master_v2 import policies, registry  # noqa: E402
+from bot.master_v2.harness import ExitRule, hold_gap_slots, preregister, run_policy  # noqa: E402
 from bot.master_v2.lifecycle import lifecycle_table  # noqa: E402
 from bot.master_v2.validation import (  # noqa: E402
     SEGMENTS, bootstrap_mean_ci, chronological_split, cycle_metrics, deflated_sharpe_ratio,
@@ -67,11 +74,32 @@ def _cycles(bundle, pools):
     return rows
 
 
-def evaluate(bundles, *, holdout=False, unseal=(), embargo_slots=750, n_boot=10_000):
-    """Per-run, per-segment metrics; the holdout only for unsealed pre-registrations."""
+def required_embargo_slots(bundles):
+    """Embargo covering every bundle's bounded hold plus latency (R02 O1)."""
+    needs = [hold_gap_slots(ExitRule(**b['exit_rule']), ReplayParams(**b['params'])) for b in bundles]
+    if any(need is None for need in needs):
+        raise ValueError('evaluation_requires_bounded_max_hold_s')
+    return max(needs)
+
+
+def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slots=None, n_boot=10_000):
+    """Per-run, per-segment metrics; the holdout only for registered, unsealed pre-registrations."""
     manifests = {b['fixtures']['manifest_sha256'] for b in bundles}
     if len(manifests) != 1:
         raise ValueError('runs_on_different_fixtures')
+    manifest_sha256 = manifests.pop()
+    registered = registry.trials_for(registry_entries, manifest_sha256)
+    given = {b['preregistration_sha256'] for b in bundles}
+    if given - registered:
+        raise ValueError('unregistered_runs:%d' % len(given - registered))
+    if registered - given:
+        raise ValueError('registered_trials_missing:%d' % len(registered - given))   # DSR counts all trials
+    if set(unseal) - registered:
+        raise ValueError('unseal_of_unregistered_preregistration')
+    required = required_embargo_slots(bundles)
+    embargo_slots = max(750, required) if embargo_slots is None else embargo_slots
+    if embargo_slots < required:
+        raise ValueError('embargo_shorter_than_max_hold:%d' % required)
     table = {}
     for bundle in bundles:
         for pool in bundle['pools']:
@@ -103,7 +131,8 @@ def evaluate(bundles, *, holdout=False, unseal=(), embargo_slots=750, n_boot=10_
                                          if len(usable) >= 2 and len(returns) >= 3 else None)
             row['segments'][segment] = metrics
         runs.append(row)
-    return dict(split={k: len(v) for k, v in split.items()}, trials=len(bundles), runs=runs,
+    return dict(split={k: len(v) for k, v in split.items()}, trials=len(registered), runs=runs,
+                embargo_slots=embargo_slots, registry_head=registry_entries[-1]['entry_sha256'],
                 holdout_unsealed=sorted(set(unseal)) if holdout else [])
 
 
@@ -116,28 +145,44 @@ def main(argv=None):
     run.add_argument('--param', action='append', help='policy parameter key=value')
     run.add_argument('--exit', action='append', help='exit rule key=value')
     run.add_argument('--out', type=Path, required=True)
+    run.add_argument('--registry', type=Path, required=True, help='append-only trial registry (JSON lines)')
+    run.add_argument('--at', default=None, help='registration time (default: now, UTC ISO 8601)')
     life = sub.add_parser('lifecycle')
     life.add_argument('--fixtures', type=Path, required=True)
     life.add_argument('--out', type=Path, required=True)
+    life.add_argument('--segment', choices=('exploration', 'train', 'validation', 'all'),
+                      default='exploration')
+    life.add_argument('--embargo-slots', type=int, default=750)
     ev = sub.add_parser('evaluate')
     ev.add_argument('bundles', type=Path, nargs='+')
+    ev.add_argument('--registry', type=Path, required=True)
     ev.add_argument('--holdout', action='store_true')
     ev.add_argument('--unseal', action='append', default=[])
-    ev.add_argument('--embargo-slots', type=int, default=750)
+    ev.add_argument('--embargo-slots', type=int, default=None)
     args = parser.parse_args(argv)
     try:
         if args.command == 'run':
             policy = POLICIES[args.policy](**_pairs(args.param, 'param'))
-            bundle = run_policy(args.fixtures, policy, ExitRule(**_pairs(args.exit, 'exit')), ReplayParams())
+            rule, params = ExitRule(**_pairs(args.exit, 'exit')), ReplayParams()
+            record = preregister(args.fixtures, policy, rule, params)
+            at = args.at or datetime.now(timezone.utc).isoformat(timespec='seconds')
+            entry, new = registry.register(args.registry, record, registered_at=at)   # before the replay
+            bundle = run_policy(args.fixtures, policy, rule, params)
+            if bundle['preregistration_sha256'] != entry['preregistration_sha256']:
+                raise ValueError('preregistration_mismatch')
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(json.dumps(bundle, sort_keys=True, indent=1, allow_nan=False) + '\n',
                                 encoding='utf-8')
             print(json.dumps(dict(policy=bundle['policy'], outcomes=bundle['outcomes'], metrics=bundle['metrics'],
                                   preregistration_sha256=bundle['preregistration_sha256'],
-                                  bundle_sha256=bundle['bundle_sha256']), sort_keys=True))
+                                  bundle_sha256=bundle['bundle_sha256'], registry_index=entry['index'],
+                                  newly_registered=new, registry_head=registry.head(args.registry)),
+                             sort_keys=True))
         elif args.command == 'lifecycle':
-            rows, excluded = lifecycle_table(args.fixtures)
-            doc = dict(schema='rugger-master-v2-lifecycle-v1', pools=rows, excluded_pools=excluded)
+            rows, excluded, segment = lifecycle_table(args.fixtures, segment=args.segment,
+                                                      embargo_slots=args.embargo_slots)
+            doc = dict(schema='rugger-master-v2-lifecycle-v1', segment=segment, pools=rows,
+                       excluded_pools=excluded)
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(json.dumps(doc, sort_keys=True, indent=1, allow_nan=False) + '\n',
                                 encoding='utf-8')
@@ -146,9 +191,10 @@ def main(argv=None):
             if args.unseal and not args.holdout:
                 parser.error('unseal_requires_holdout')
             bundles = [json.loads(path.read_text(encoding='utf-8')) for path in args.bundles]
-            print(json.dumps(evaluate(bundles, holdout=args.holdout, unseal=args.unseal,
+            print(json.dumps(evaluate(bundles, registry_entries=registry.load(args.registry),
+                                      holdout=args.holdout, unseal=args.unseal,
                                       embargo_slots=args.embargo_slots), sort_keys=True, indent=1))
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, KeyError) as exc:
         parser.error(str(exc))
 
 
