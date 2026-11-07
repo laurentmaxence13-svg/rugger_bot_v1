@@ -131,3 +131,34 @@ def test_evaluate_embargo_covers_the_longest_outcome_horizon(tmp_path, capsys):
     cli.POLICIES[Unbounded.name] = Unbounded
     with pytest.raises(ValueError, match='evaluation_requires_bounded_entry_age'):
         cli.required_embargo_slots([dict(fill, policy=Unbounded.name, policy_params={})])
+
+
+def _cli():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('mv2r', Path(__file__).parents[1] / 'tools' / 'master_v2_research.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_replay_parameters_are_explicit_and_pre_registered(tmp_path, capsys):
+    """R02 O1: 2 slots are ~0.43 s at 214 ms per slot; latency is set explicitly per run."""
+    cli = _cli()
+    reg = tmp_path / 'trials.jsonl'
+    base = _run(cli, tmp_path, capsys, reg, 'base', '--policy', 'immediate-snipe', '--exit', 'max_hold_s=25')
+    slow = _run(cli, tmp_path, capsys, reg, 'slow', '--policy', 'immediate-snipe', '--exit', 'max_hold_s=25',
+                '--replay', 'latency_slots=4', '--replay', 'exit_horizon_ms=25000')
+    assert base['params']['latency_slots'] == 2 and slow['params']['latency_slots'] == 4
+    assert slow['params']['exit_horizon_ms'] == 25000
+    assert base['preregistration_sha256'] != slow['preregistration_sha256']
+    assert len(registry.load(reg)) == 2
+    assert cli.required_embargo_slots([slow]) == 160 + 8          # ceil((5 + 25 + 2) s / 200 ms) + 2 x 4
+    p0 = dict(entry_cutoff_slot=466_442_576, window_slot_max=466_442_736)
+    params = hrr.ReplayParams(latency_slots=4, exit_horizon_ms=25_000)
+    assert h.policy_window({}, p0, params, h.ExitRule(max_hold_s=25))['minimum_gap_slots'] == 130 + 8
+    for bad in (['--replay', 'latency_slots=-1'], ['--replay', 'no_such_field=1'], ['--replay', 'latency_slots']):
+        with pytest.raises(SystemExit):
+            cli.main(['run', '--fixtures', str(PACK), '--registry', str(tmp_path / 'x.jsonl'), '--policy',
+                      'immediate-snipe', '--exit', 'max_hold_s=25', '--out', str(tmp_path / 'x.json'), *bad])
+        capsys.readouterr()
+    assert not (tmp_path / 'x.jsonl').exists()                     # nothing registered on a refused run

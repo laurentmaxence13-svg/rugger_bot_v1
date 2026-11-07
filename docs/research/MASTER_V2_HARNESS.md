@@ -58,8 +58,15 @@ Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P
 
 Les 514 pools P0 ont déjà servi au diagnostic. Ils ne peuvent donc être qu'un jeu d'**exploration**. La validation finale exige une fenêtre nouvelle, collectée après le gel des règles et seulement avec l'accord du propriétaire.
 
-1. `lifecycle` sur les 514 pools : comment et à quelle vitesse les lancements montent puis s'effondrent.
-2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec une seule règle de sortie fixée à l'avance, de détention au plus 30 s sur P0. L'entrée immédiate est-elle récompensée après coûts ?
+0. **Paramètres communs**, fixés avant tout résultat :
+   - latence de 4 slots (`--replay latency_slots=4`), soit environ 0,86 s à 214,5 ms par slot. Avant la mesure de P0 par RUGGER 03, les 2 slots par défaut visaient environ 800 ms à 400 ms par slot ; ils ne représentent plus que 0,43 s (R02, O1) ;
+   - détention maximale de 25 s, avec `exit_horizon_ms=25000`.
+
+   Sur P0, l'écart de 160 slots dure environ 34 s. Ces valeurs y tiennent même si le plancher de slot devait descendre à 175 ms : 26 000 / 175, arrondi au-dessus, donne 149 slots, plus 8 de latence, soit 157 ≤ 160.
+
+   Avant tout rejeu, RUGGER 03 vérifie sur P0, par fenêtres glissantes, que les slots ne sont jamais plus courts que le plancher de 200 ms (condition C1 de RUGGER 02).
+1. `lifecycle` sur le segment d'exploration de P0 : comment et à quelle vitesse les lancements montent puis s'effondrent.
+2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec les deux mêmes règles de sortie pour tous, fixées à l'avance : E_SHORT (détention de 25 s seule) et E_SL (stop-loss de 10 %, prise de profit de 20 %, détention de 25 s). L'entrée immédiate est-elle récompensée après coûts ?
 3. Placebos : `placebo-no-trade` et `placebo-random-entry`.
 4. Familles : `immediate-snipe`, `delayed-confirmation` et `fill-momentum`, chacune avec ses paramètres par défaut.
 5. `evaluate` sur l'ensemble des exécutions. Tous les essais entrent dans le DSR, et le segment `holdout` reste scellé.

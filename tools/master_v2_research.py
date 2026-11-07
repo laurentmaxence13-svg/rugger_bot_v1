@@ -3,7 +3,7 @@
 
   python -B tools/master_v2_research.py run --fixtures DIR --registry trials.jsonl \
       --policy delayed-confirmation --param min_age_s=30 --exit stop_loss=0.3 --exit max_hold_s=40 \
-      --out run.json
+      [--replay latency_slots=4] --out run.json
   python -B tools/master_v2_research.py evaluate --registry trials.jsonl run1.json run2.json ... \
       [--holdout --unseal SHA ...]
   python -B tools/master_v2_research.py lifecycle --fixtures DIR --out life.json [--segment exploration]
@@ -189,6 +189,8 @@ def main(argv=None):
     run.add_argument('--policy', choices=sorted(POLICIES), required=True)
     run.add_argument('--param', action='append', help='policy parameter key=value')
     run.add_argument('--exit', action='append', help='exit rule key=value')
+    run.add_argument('--replay', action='append',
+                     help='replay parameter key=value (e.g. latency_slots=4); hashed in the pre-registration')
     run.add_argument('--out', type=Path, required=True)
     run.add_argument('--registry', type=Path, required=True, help='append-only trial registry (JSON lines)')
     run.add_argument('--at', default=None, help='registration time (default: now, UTC ISO 8601)')
@@ -208,7 +210,7 @@ def main(argv=None):
     try:
         if args.command == 'run':
             policy = POLICIES[args.policy](**_pairs(args.param, 'param'))
-            rule, params = ExitRule(**_pairs(args.exit, 'exit')), ReplayParams()
+            rule, params = ExitRule(**_pairs(args.exit, 'exit')), ReplayParams(**_pairs(args.replay, 'replay'))
             record = preregister(args.fixtures, policy, rule, params)
             at = args.at or datetime.now(timezone.utc).isoformat(timespec='seconds')
             entry, new = registry.register(args.registry, record, registered_at=at)   # before the replay
