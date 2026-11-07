@@ -34,7 +34,7 @@ from pathlib import Path
 from bot.market.collector import summarize
 from bot.market.replay import Strategy, replay
 from bot.master_v2.features import native_features
-from bot.master_v2.validation import cycle_metrics, preregistration
+from bot.master_v2.validation import preregistration
 from bot.p4 import historical_research_replay as hrr
 
 SCHEMA = 'rugger-master-v2-research-v1'
@@ -230,10 +230,8 @@ def run_policy(fixtures_dir, policy, exit_rule, params=None):
             excluded.append(dict(pool=archive.pool, file=entry['file'], reasons=exc.reasons))
     if len(pools) + len(excluded) != len(archives):
         raise ValueError('pool_accounting_mismatch')
-    cycles = [dict(pool=p['pool'], creator=p['creator'], pnl_lamports=p['trade']['pnl_lamports'],
-                   cost_lamports=p['trade']['spent'] + p['trade']['tx_costs'] + p['trade']['failed_attempt_costs'],
-                   order_key=(p['trade']['exit_slot'], p['pool']))
-              for p in pools if p['trade']['outcome'] == 'closed']
+    # No aggregate over all pools (R02 U1): totals would mix in the holdout; per-segment
+    # outcomes and metrics come from tools/master_v2_research.py evaluate only.
     bundle = dict(
         schema=SCHEMA, category=hrr.CATEGORY, policy_status='MASTER_RESEARCH',
         policy=policy.name, policy_params=policy.params(), exit_rule=asdict(exit_rule),
@@ -241,8 +239,6 @@ def run_policy(fixtures_dir, policy, exit_rule, params=None):
         code_sha256=registration['code_sha256'], windows_sha256=registration['windows_sha256'],
         fixtures=dict(manifest_sha256=manifest_sha256, files=digests),
         pools=pools, excluded_pools=excluded,
-        outcomes=dict(sorted(Counter(p['trade']['outcome'] for p in pools).items())),
-        metrics=cycle_metrics(cycles),
         flags=dict(admissible_in_paper_ledger=False, counted_in_master_gate=False,
                    master_operational_trade=False, financial_order_submitted=False,
                    sol_usd_used=False, open_positions_in_pnl=False))

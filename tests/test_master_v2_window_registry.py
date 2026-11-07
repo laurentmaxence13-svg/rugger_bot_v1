@@ -222,3 +222,58 @@ def test_a_run_is_registered_before_its_replay(tmp_path, monkeypatch):
     assert len(entries) == 1 and not (tmp_path / 'r.json').exists()
     assert entries[0]['preregistration_sha256'] == h.preregister(
         PACK, pol.ImmediateSnipe(), h.ExitRule(max_hold_s=30))['preregistration_sha256']
+
+
+@pytest.mark.parametrize('cutoff,intent', [(464661848, 'NO_TRADE'), (464661849, 'ENTER')])
+def test_cutoff_bound_is_exact(tmp_path, cutoff, intent):
+    """Index 11 of C7F9 trades at slot 464661849: refused at cutoff+1, admitted at the cutoff (R02 T1)."""
+    events = summarize(_archive())[1].events
+    assert events[11].slot == 464661849 and events[10].slot == 464661848
+    window = h.policy_window({}, dict(entry_cutoff_slot=cutoff, window_slot_max=cutoff + 10_000),
+                             hrr.ReplayParams(), RULE)
+    record = h.run_policy_pool(_archive(), _Script(enter_at=11), RULE, hrr.ReplayParams(),
+                               quote_mint=WSOL_MINT, window=window)
+    last = record['journal'][-1]
+    assert last['index'] == 11 and last['intent'] == intent
+    if intent == 'NO_TRADE':
+        assert last['reasons'] == ['after_entry_cutoff_slot'] and record['trade']['entry_index'] is None
+    else:
+        assert record['trade']['decision_index'] == 11
+
+
+def test_rewritten_middle_line_with_recomputed_hash_breaks_the_chain(tmp_path):
+    """Rewriting a line and recomputing its own digest still breaks the next link (R02 T2)."""
+    path = tmp_path / 'trials.jsonl'
+    for letter in 'abc':
+        registry.register(path, _record(letter * 64), registered_at='2026-11-07T00:00:00+00:00')
+    lines = path.read_text().splitlines()
+    middle = json.loads(lines[1])
+    middle['policy'] = 'rewritten'
+    middle['entry_sha256'] = registry._digest(middle)
+    path.write_text('\n'.join([lines[0], json.dumps(middle, sort_keys=True, separators=(',', ':')), lines[2]]) + '\n')
+    with pytest.raises(ValueError, match='registry_chain_broken_at:2'):
+        registry.load(path)
+
+
+def test_evaluate_publishes_open_positions_and_a_pessimistic_mean(tmp_path, capsys):
+    cli = _cli()
+    reg = tmp_path / 'trials.jsonl'
+    out = tmp_path / 'snipe.json'
+    cli.main(['run', '--fixtures', str(PACK), '--registry', str(reg), '--policy', 'immediate-snipe',
+              '--exit', 'max_hold_s=600', '--out', str(out), '--at', '2026-11-07T00:00:00+00:00'])
+    capsys.readouterr()
+    doc = json.loads(out.read_text('utf-8'))
+    result = cli.evaluate([doc], registry_entries=registry.load(reg), embargo_slots=1719, n_boot=200)
+    seen = 0
+    for segment in result['runs'][0]['segments'].values():
+        open_positions = segment['open_positions']
+        assert set(open_positions) == {'count', 'marked', 'mark_pnl_lamports', 'unpriced'}
+        assert open_positions['count'] == open_positions['marked'] + open_positions['unpriced']
+        assert sum(segment['outcomes'].values()) >= segment['n'] + open_positions['count']
+        entered = segment['n'] + open_positions['count']
+        expected = (((segment['mean_return'] or 0) * segment['n'] - open_positions['count']) / entered
+                    if entered else None)
+        assert segment['mean_return_open_as_total_loss'] == pytest.approx(expected) if entered \
+            else segment['mean_return_open_as_total_loss'] is None
+        seen += open_positions['count']
+    assert seen >= 1          # the immediate snipe leaves open positions on the short fixtures

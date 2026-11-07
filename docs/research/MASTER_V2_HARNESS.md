@@ -42,6 +42,17 @@ Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P
 - **Placebo à population égale (O4).** `placebo-random-entry` exige, comme les challengers, un créateur signé.
 - **Cycle de vie (O5).** Par défaut, le relevé ne décrit que le segment d'exploration. `--segment all` doit être demandé explicitement.
 
+### Limites d'usage relevées au ré-audit de RUGGER 02 (rapport `73b63567…`)
+
+- **U1, aucun agrégat sur tous les pools.** Le bundle ne porte plus d'agrégats sur l'ensemble des pools (`metrics`, `outcomes`), et `run` n'affiche que des identifiants. Les issues et les mesures ne sont produites que par segment, dans `evaluate`, et le holdout reste scellé. Les lignes de chaque pool restent dans le bundle, nécessaires à `evaluate`. Le scellement reste donc procédural : ne pas agréger ces lignes à la main.
+- **U2, ancrage du registre obligatoire.** Une troncature de la **fin** du registre est indétectable localement, et `registered_at` est déclaré par l'appelant. Avant toute évaluation, la tête de chaîne (`registry_head`) est envoyée à RUGGER 02, ou inscrite dans T-REG quand GitHub reviendra. Une évaluation sans tête ancrée n'a pas de valeur de preuve.
+- **U3, positions ouvertes publiées.** Comme dans L1, la durée maximale n'agit qu'au prochain événement : une position dans un pool devenu inactif reste ouverte, hors P&L. `evaluate` publie donc par segment :
+  - les issues ;
+  - le nombre de positions entrées mais non closes ;
+  - la somme de leurs valeurs de marché ;
+  - le nombre de positions non valorisables ;
+  - une moyenne pessimiste, où chaque position non close compte comme une perte totale (`mean_return_open_as_total_loss`).
+
 ## 3. Protocole d'exploration P0 (proposé à RUGGER 03, après audit de RUGGER 02)
 
 Les 514 pools P0 ont déjà servi au diagnostic. Ils ne peuvent donc être qu'un jeu d'**exploration**. La validation finale exige une fenêtre nouvelle, collectée après le gel des règles et seulement avec l'accord du propriétaire.

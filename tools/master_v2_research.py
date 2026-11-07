@@ -63,6 +63,25 @@ def _pairs(items, what):
     return out
 
 
+OPEN_OUTCOMES = ('open_at_end', 'open_at_window_end', 'migrated_unpriced', 'counterfactual_divergence')
+
+
+def _open_positions(bundle, pools):
+    """Entered positions that are not closed cycles: counted and marked, never neutral (R02 U3)."""
+    rows = [p['trade'] for p in bundle['pools'] if p['pool'] in pools and p['trade']['outcome'] in OPEN_OUTCOMES]
+    marks = [r['mark_pnl_lamports'] for r in rows if r.get('mark_pnl_lamports') is not None]
+    return dict(count=len(rows), marked=len(marks), mark_pnl_lamports=sum(marks),
+                unpriced=len(rows) - len(marks))
+
+
+def _outcomes(bundle, pools):
+    counts = {}
+    for p in bundle['pools']:
+        if p['pool'] in pools:
+            counts[p['trade']['outcome']] = counts.get(p['trade']['outcome'], 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def _cycles(bundle, pools):
     rows = []
     for pool in bundle['pools']:
@@ -114,14 +133,21 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
     runs = []
     for bundle in bundles:
         sha = bundle['preregistration_sha256']
-        row = dict(policy=bundle['policy'], preregistration_sha256=sha, outcomes=bundle['outcomes'], segments={})
+        row = dict(policy=bundle['policy'], preregistration_sha256=sha, segments={})
         for segment in segments:
             if segment == 'holdout' and sha not in unseal:
                 row['segments'][segment] = 'sealed'
                 continue
-            cycles = _cycles(bundle, set(split[segment]))
+            pools = set(split[segment])
+            cycles = _cycles(bundle, pools)
             returns = [c['pnl_lamports'] / c['cost_lamports'] for c in cycles]
             metrics = cycle_metrics(cycles)
+            metrics['outcomes'] = _outcomes(bundle, pools)
+            metrics['open_positions'] = _open_positions(bundle, pools)
+            entered = len(returns) + metrics['open_positions']['count']
+            # Pessimistic reading: every entered position that is not a closed cycle is lost.
+            metrics['mean_return_open_as_total_loss'] = (
+                (sum(returns) - metrics['open_positions']['count']) / entered if entered else None)
             if len(returns) >= 2:
                 metrics['mean_return_ci95_creator_cluster'] = bootstrap_mean_ci(
                     returns, [c['creator'] for c in cycles], n_boot=n_boot, seed=7)
@@ -173,7 +199,9 @@ def main(argv=None):
             args.out.parent.mkdir(parents=True, exist_ok=True)
             args.out.write_text(json.dumps(bundle, sort_keys=True, indent=1, allow_nan=False) + '\n',
                                 encoding='utf-8')
-            print(json.dumps(dict(policy=bundle['policy'], outcomes=bundle['outcomes'], metrics=bundle['metrics'],
+            # Identifiers only: no result over all pools is shown at run time (R02 U1).
+            print(json.dumps(dict(policy=bundle['policy'], pools=len(bundle['pools']),
+                                  excluded=len(bundle['excluded_pools']),
                                   preregistration_sha256=bundle['preregistration_sha256'],
                                   bundle_sha256=bundle['bundle_sha256'], registry_index=entry['index'],
                                   newly_registered=new, registry_head=registry.head(args.registry)),

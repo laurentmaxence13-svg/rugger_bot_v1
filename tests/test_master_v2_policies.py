@@ -20,7 +20,7 @@ def _pool(doc, address):
 
 def test_no_trade_placebo_abstains_once_per_pool():
     doc = h.run_policy(PACK, pol.NoTrade(), RULE)
-    assert doc['outcomes'] == {'no_entry': 3}
+    assert [p['trade']['outcome'] for p in doc['pools']] == ['no_entry'] * 3
     assert all([r['intent'] for r in p['journal']] == ['NO_TRADE'] for p in doc['pools'])
 
 
@@ -53,7 +53,7 @@ def test_immediate_snipe_requires_a_signed_creator_and_enters_first():
 def test_challengers_run_and_are_preregistered(policy):
     doc = h.run_policy(PACK, policy, RULE)
     assert doc['policy'] == policy.name and doc['policy_params'] == policy.params()
-    assert sum(doc['outcomes'].values()) == 3 and doc['flags']['sol_usd_used'] is False
+    assert len(doc['pools']) == 3 and doc['flags']['sol_usd_used'] is False
     for pool in doc['pools']:
         intents = [r['intent'] for r in pool['journal']]
         assert intents.count('ENTER') <= 1 and intents.count('NO_TRADE') <= 1

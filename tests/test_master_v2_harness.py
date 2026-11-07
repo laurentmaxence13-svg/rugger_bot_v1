@@ -102,7 +102,8 @@ class _Script(h.Policy):
 
 def test_never_entering_policy_has_no_cycle_and_full_journal():
     doc = h.run_policy(PACK, _Script(), h.ExitRule(max_hold_s=30))
-    assert doc['outcomes'] == {'no_entry': 3} and doc['metrics']['n'] == 0
+    assert {p['trade']['outcome'] for p in doc['pools']} == {'no_entry'} and len(doc['pools']) == 3
+    assert 'metrics' not in doc and 'outcomes' not in doc            # no all-pool aggregate (R02 U1)
     assert doc['flags']['sol_usd_used'] is False and doc['flags']['counted_in_master_gate'] is False
     for pool in doc['pools']:
         _summary, timeline = summarize(_archives()[pool['pool']])

@@ -37,6 +37,8 @@ def test_run_writes_a_preregistered_bundle(tmp_path, capsys):
     assert doc['policy_params']['max_age_s'] == 3 and doc['exit_rule']['max_hold_s'] == 60
     assert printed['preregistration_sha256'] == doc['preregistration_sha256']
     assert printed['bundle_sha256'] == doc['bundle_sha256'] and printed['newly_registered'] is True
+    assert set(printed) == {'policy', 'pools', 'excluded', 'preregistration_sha256', 'bundle_sha256',
+                            'registry_index', 'newly_registered', 'registry_head'}     # no results shown
     assert [e['preregistration_sha256'] for e in _entries(tmp_path)] == [doc['preregistration_sha256']]
 
 
