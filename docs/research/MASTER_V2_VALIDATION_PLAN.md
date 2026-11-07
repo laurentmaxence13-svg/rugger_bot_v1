@@ -21,7 +21,7 @@ Préparé le 2026-11-07 par RUGGER 01. Statut : **proposition**, à auditer par 
 
 | Jeu | Contenu | Rôle autorisé |
 |---|---|---|
-| **P0** | 514 pools rejouables, slots 466 226 737 à 466 442 736 (environ 24 h) : 363 pools à créateur vérifié, 266 créateurs. Code de collecte `6fdd183`, export MANIFEST `e5d3c0f7…`. | **Exploration seulement.** Ce jeu a déjà servi au diagnostic (test s090) et ne peut plus valider quoi que ce soit. |
+| **P0** | 514 pools rejouables, slots 466 226 737 à 466 442 736 (216 000 slots : environ 12,8 h à 213 ms par slot, durée réelle à confirmer par les `block_time` de RUGGER 03) : 363 pools à créateur vérifié, 266 créateurs. Code de collecte `6fdd183`, export MANIFEST `e5d3c0f7…`. | **Exploration seulement.** Ce jeu a déjà servi au diagnostic (test s090) et ne peut plus valider quoi que ce soit. |
 | **W1** (futur) | Fenêtre collectée **après** le gel des règles, contiguë, chronologique. | Entraînement et validation, découpage chronologique avec embargo et créateurs disjoints. |
 | **W2** (futur) | Fenêtre postérieure à W1, jamais lue. | **Holdout final** : un seul descellement par politique pré-enregistrée. |
 

@@ -16,6 +16,9 @@ class NoTrade(Policy):
     """Abstain everywhere: the zero line every candidate must beat after costs."""
     name = 'placebo-no-trade'
 
+    def max_entry_age_s(self):
+        return 0
+
     def decide(self, features, facts):
         return 'NO_TRADE', ['placebo_abstention']
 
@@ -30,6 +33,9 @@ class RandomEntry(Policy):
 
     def params(self):
         return asdict(self)
+
+    def max_entry_age_s(self):
+        return self.max_age_s
 
     def target_age(self, pool):
         digest = hashlib.sha256(f'{self.salt}:{pool}'.encode()).digest()
@@ -56,6 +62,9 @@ class ImmediateSnipe(Policy):
 
     def params(self):
         return asdict(self)
+
+    def max_entry_age_s(self):
+        return self.max_age_s
 
     def decide(self, features, facts):
         if self.require_signed_creator and not facts.get('signed_creator_verified'):
@@ -91,6 +100,9 @@ class DelayedConfirmation(Policy):
 
     def params(self):
         return asdict(self)
+
+    def max_entry_age_s(self):
+        return self.max_age_s
 
     def decide(self, features, facts):
         if self.require_signed_creator and not facts.get('signed_creator_verified'):
@@ -133,6 +145,9 @@ class FillMomentum(Policy):
     def params(self):
         return asdict(self)
 
+    def max_entry_age_s(self):
+        return self.max_age_s
+
     def decide(self, features, facts):
         if self.require_signed_creator and not facts.get('signed_creator_verified'):
             return 'NO_TRADE', ['signed_creator_unverified']
@@ -162,6 +177,9 @@ class FixedDelay(Policy):
 
     def params(self):
         return asdict(self)
+
+    def max_entry_age_s(self):
+        return self.delay_s + self.max_lateness_s
 
     def decide(self, features, facts):
         if self.require_signed_creator and not facts.get('signed_creator_verified'):

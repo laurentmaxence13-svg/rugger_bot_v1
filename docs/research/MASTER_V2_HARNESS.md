@@ -30,15 +30,15 @@ Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P
 ### Garde-fous ajoutés après l'audit de RUGGER 02 (B1 et O1 à O6, rapport `3ae70926…`)
 
 - **Fenêtre de collecte M1 (B1).** Quand le MANIFEST fixe `entry_cutoff_slot` et `window_slot_max`, aucune entrée n'est admise après la coupure. Le refus est journalisé et définitif : `NO_TRADE`, motif `after_entry_cutoff_slot`. Un cycle ne compte comme clos que si sa sortie tombe au plus tard à `window_slot_max`, sinon `open_at_window_end`, hors P&L. C'est `_apply_window` du rejeu L1.
-  - L'écart de la fenêtre doit couvrir la détention bornée de la règle de sortie : `ceil(max_hold_s × 1000 / 350) + 2 × latence` slots.
+  - L'écart de la fenêtre doit couvrir la détention bornée de la règle de sortie, plus 1 s d'arrondi des `block_time` : `ceil((max_hold_s + 1) × 1000 / 200) + 2 × latence` slots. 200 ms est la borne basse d'un slot : les fixtures mesurent 210 à 222 ms, pas 400 ms (correction du 2026-11-07, `tests/test_master_v2_slot_horizon.py`).
   - Sans `max_hold_s`, une fenêtre est refusée.
-  - **Sur P0** (écart de 160 slots), cela impose `max_hold_s ≤ 54`.
+  - **Sur P0** (écart de 160 slots, soit environ 34 s à 213 ms par slot), cela impose `max_hold_s ≤ 30`. L'ancienne limite de 54 s reposait sur la borne erronée de 350 ms.
 - **Pré-enregistrement lié (O2).** L'empreinte couvre la politique, la sortie, les paramètres de rejeu, le **code** (empreinte des modules qui décident et comptent), les **données** (MANIFEST) et les **fenêtres**.
 - **Registre d'essais (O3, O6).** `bot/master_v2/registry.py` tient un fichier JSON Lines chaîné par SHA-256, en ajout seul.
   - Chaque `run` y inscrit son pré-enregistrement **avant** le rejeu.
   - `evaluate` refuse un bundle non inscrit, refuse d'omettre un essai inscrit sur les mêmes données (le DSR compte donc tous les essais) et ne descelle le holdout que pour des empreintes inscrites.
   - La tête de chaîne (`registry_head`) doit être ancrée hors de l'outil : message à RUGGER 02, ou T-REG quand GitHub reviendra.
-- **Embargo (O1).** `evaluate` exige un embargo d'au moins la plus longue détention bornée des exécutions comparées, plus la latence.
+- **Embargo (O1, revue D).** `evaluate` exige un embargo couvrant tout l'horizon de résultat de chaque exécution comparée : l'âge maximal d'entrée déclaré par la politique (`max_entry_age_s`), plus la détention bornée, plus 2 s d'arrondi, plus la latence. Avec `fill-momentum` par défaut et une détention de 45 s, cela fait 1 739 slots, au lieu des 750 par défaut.
 - **Placebo à population égale (O4).** `placebo-random-entry` exige, comme les challengers, un créateur signé.
 - **Cycle de vie (O5).** Par défaut, le relevé ne décrit que le segment d'exploration. `--segment all` doit être demandé explicitement.
 
@@ -59,7 +59,7 @@ Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P
 Les 514 pools P0 ont déjà servi au diagnostic. Ils ne peuvent donc être qu'un jeu d'**exploration**. La validation finale exige une fenêtre nouvelle, collectée après le gel des règles et seulement avec l'accord du propriétaire.
 
 1. `lifecycle` sur les 514 pools : comment et à quelle vitesse les lancements montent puis s'effondrent.
-2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec une seule règle de sortie fixée à l'avance, de détention au plus 54 s sur P0. L'entrée immédiate est-elle récompensée après coûts ?
+2. Courbe du moment d'entrée : `diagnostic-fixed-delay` pour des délais de 0, 5, 15, 30, 60 et 120 s, avec une seule règle de sortie fixée à l'avance, de détention au plus 30 s sur P0. L'entrée immédiate est-elle récompensée après coûts ?
 3. Placebos : `placebo-no-trade` et `placebo-random-entry`.
 4. Familles : `immediate-snipe`, `delayed-confirmation` et `fill-momentum`, chacune avec ses paramètres par défaut.
 5. `evaluate` sur l'ensemble des exécutions. Tous les essais entrent dans le DSR, et le segment `holdout` reste scellé.

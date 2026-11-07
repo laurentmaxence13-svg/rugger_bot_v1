@@ -90,6 +90,10 @@ class Policy:
     def params(self):
         return {}
 
+    def max_entry_age_s(self):
+        """Largest pool age (s) at which ``decide`` may still ENTER; None when unbounded."""
+        return None
+
     def decide(self, features, facts):
         """Return (intent, reasons) with intent in INTENTS."""
         raise NotImplementedError
@@ -150,11 +154,30 @@ class PolicyArm(Strategy):
         return trigger is not None
 
 
+BLOCK_TIME_RESOLUTION_S = 1   # ages and holds are read on whole-second block times
+
+
+def _slots(seconds, params):
+    return -(-(seconds * 1000) // hrr.SLOT_MS_FLOOR) + 2 * params.latency_slots
+
+
 def hold_gap_slots(exit_rule, params):
     """Slots a position may need after the last admitted entry; None when the hold is unbounded."""
     if exit_rule.max_hold_s is None:
         return None
-    return -(-(exit_rule.max_hold_s * 1000) // hrr.SLOT_MS_FLOOR) + 2 * params.latency_slots
+    return _slots(exit_rule.max_hold_s + BLOCK_TIME_RESOLUTION_S, params)
+
+
+def outcome_horizon_slots(policy, exit_rule, params):
+    """Slots from a pool's creation to its last possible exit (entry age + hold); None if unbounded.
+
+    The embargo between chronological segments must cover it, otherwise the outcome of a pool
+    created just before a boundary overlaps the next segment.
+    """
+    age = policy.max_entry_age_s()
+    if age is None or exit_rule.max_hold_s is None:
+        return None
+    return _slots(age + exit_rule.max_hold_s + 2 * BLOCK_TIME_RESOLUTION_S, params)
 
 
 def policy_window(entry, manifest, params, exit_rule):

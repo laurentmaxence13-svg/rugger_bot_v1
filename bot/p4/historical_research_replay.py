@@ -171,9 +171,11 @@ class ReplayParams:
                               fee_rate_estimator='causal_interval')
 
 
-# Lower bound of a Solana slot (the average is about 400 ms): faster slots need more of
-# them to cover the exit horizon, so the minimum window gap is sized on this floor (T-0031 O1).
-SLOT_MS_FLOOR = 350
+# Lower bound of a Solana slot: faster slots need more of them to cover a horizon, so
+# window gaps and embargoes are sized on this floor (T-0031 O1). The committed fixtures
+# (slots 4646xxxxx) measure 210-222 ms per slot, not the nominal 400 ms: the former 350 ms
+# floor let horizons overrun their windows (tests/test_master_v2_slot_horizon.py).
+SLOT_MS_FLOOR = 200
 
 
 def collection_window(entry, manifest, params):

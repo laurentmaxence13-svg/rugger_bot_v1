@@ -295,7 +295,7 @@ def test_collection_window_validation_and_absence():
     params = hrr.ReplayParams()
     assert hrr.collection_window({'pool': 'x'}, {'pools': []}, params) is None
     gap = -(-params.exit_horizon_ms // hrr.SLOT_MS_FLOOR) + 2 * params.latency_slots
-    assert (hrr.SLOT_MS_FLOOR, gap) == (350, 90)   # 30 s horizon on 350 ms slots + 2 x 2 latency slots
+    assert (hrr.SLOT_MS_FLOOR, gap) == (200, 154)   # 30 s horizon on 200 ms slots + 2 x 2 latency slots
     window = hrr.collection_window({'entry_cutoff_slot': 1000, 'window_slot_max': 1000 + gap}, {}, params)
     assert window == dict(entry_cutoff_slot=1000, window_slot_max=1000 + gap, minimum_gap_slots=gap)
     # Top-level values apply when the pool entry has none.

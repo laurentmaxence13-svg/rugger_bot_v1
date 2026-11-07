@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 from datetime import datetime, timezone  # noqa: E402
 
 from bot.master_v2 import policies, registry  # noqa: E402
-from bot.master_v2.harness import ExitRule, hold_gap_slots, preregister, run_policy  # noqa: E402
+from bot.master_v2.harness import ExitRule, outcome_horizon_slots, preregister, run_policy  # noqa: E402
 from bot.master_v2.lifecycle import lifecycle_table  # noqa: E402
 from bot.master_v2.validation import (  # noqa: E402
     SEGMENTS, bootstrap_mean_ci, chronological_split, cycle_metrics, deflated_sharpe_ratio,
@@ -100,11 +100,23 @@ def _cycles(bundle, pools):
     return rows
 
 
+def _policy(bundle):
+    if bundle['policy'] not in POLICIES:
+        raise ValueError('unknown_policy:%s' % bundle['policy'])
+    return POLICIES[bundle['policy']](**bundle['policy_params'])
+
+
 def required_embargo_slots(bundles):
-    """Embargo covering every bundle's bounded hold plus latency (R02 O1)."""
-    needs = [hold_gap_slots(ExitRule(**b['exit_rule']), ReplayParams(**b['params'])) for b in bundles]
-    if any(need is None for need in needs):
-        raise ValueError('evaluation_requires_bounded_max_hold_s')
+    """Embargo covering every bundle's outcome horizon: entry age + bounded hold + latency (R02 O1, D)."""
+    needs = []
+    for bundle in bundles:
+        rule = ExitRule(**bundle['exit_rule'])
+        if rule.max_hold_s is None:
+            raise ValueError('evaluation_requires_bounded_max_hold_s')
+        need = outcome_horizon_slots(_policy(bundle), rule, ReplayParams(**bundle['params']))
+        if need is None:
+            raise ValueError('evaluation_requires_bounded_entry_age')
+        needs.append(need)
     return max(needs)
 
 
@@ -125,7 +137,7 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
     required = required_embargo_slots(bundles)
     embargo_slots = max(750, required) if embargo_slots is None else embargo_slots
     if embargo_slots < required:
-        raise ValueError('embargo_shorter_than_max_hold:%d' % required)
+        raise ValueError('embargo_shorter_than_outcome_horizon:%d' % required)
     table = {}
     for bundle in bundles:
         for pool in bundle['pools']:

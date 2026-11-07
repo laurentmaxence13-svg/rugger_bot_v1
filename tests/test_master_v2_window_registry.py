@@ -55,7 +55,7 @@ def test_v2_and_l1_treat_the_same_forced_entry_identically_under_a_window():
     archive = _archive()
     timeline = summarize(archive)[1]
     decision_slot = timeline.events[_EnterAt.enter_index].slot
-    for end_gap in (90, 10_000):
+    for end_gap in (159, 10_000):   # 159: minimum gap for RULE's 30 s hold on 200 ms slots
         window = h.policy_window({}, dict(entry_cutoff_slot=decision_slot, window_slot_max=decision_slot + end_gap),
                                  params, RULE)
         observer = _EnterAt(archive, timeline, hrr.creation_facts(archive), params)
@@ -80,13 +80,13 @@ def test_window_must_cover_the_bounded_hold(tmp_path):
     with pytest.raises(ValueError, match='collection_window_requires_bounded_max_hold_s'):
         h.policy_window({}, dict(entry_cutoff_slot=100, window_slot_max=10_000), params, h.ExitRule(stop_loss=0.1))
     with pytest.raises(ValueError, match='collection_window_gap_shorter_than_max_hold'):
-        h.policy_window({}, dict(entry_cutoff_slot=100, window_slot_max=200), params, h.ExitRule(max_hold_s=60))
-    window = h.policy_window({}, dict(entry_cutoff_slot=100, window_slot_max=100 + 176), params,
+        h.policy_window({}, dict(entry_cutoff_slot=100, window_slot_max=260), params, h.ExitRule(max_hold_s=60))
+    window = h.policy_window({}, dict(entry_cutoff_slot=100, window_slot_max=100 + 309), params,
                              h.ExitRule(max_hold_s=60))
-    assert window['minimum_gap_slots'] == 176 == h.hold_gap_slots(h.ExitRule(max_hold_s=60), params)
+    assert window['minimum_gap_slots'] == 309 == h.hold_gap_slots(h.ExitRule(max_hold_s=60), params)   # ceil(61 s / 200 ms) + 4
     assert h.policy_window({}, {}, params, h.ExitRule()) is None
     with pytest.raises(ValueError):
-        h.run_policy(_windowed_pack(tmp_path, 100, 200), _Script(), h.ExitRule(max_hold_s=60))
+        h.run_policy(_windowed_pack(tmp_path, 100, 260), _Script(), h.ExitRule(max_hold_s=60))
 
 
 def test_preregistration_binds_code_data_and_window(tmp_path):
@@ -176,11 +176,11 @@ def test_embargo_must_cover_the_longest_hold(tmp_path, capsys):
               '--exit', 'max_hold_s=600', '--out', str(out), '--at', '2026-11-07T00:00:00+00:00'])
     capsys.readouterr()
     doc = json.loads(out.read_text('utf-8'))
-    need = h.hold_gap_slots(h.ExitRule(max_hold_s=600), hrr.ReplayParams())
-    assert need == 1719
-    with pytest.raises(ValueError, match='embargo_shorter_than_max_hold:1719'):
+    need = h.outcome_horizon_slots(pol.ImmediateSnipe(), h.ExitRule(max_hold_s=600), hrr.ReplayParams())
+    assert need == 3039                                      # ceil((5 + 600 + 2) s / 200 ms) + 4
+    with pytest.raises(ValueError, match='embargo_shorter_than_outcome_horizon:3039'):
         cli.evaluate([doc], registry_entries=registry.load(reg), embargo_slots=750, n_boot=200)
-    assert cli.evaluate([doc], registry_entries=registry.load(reg), n_boot=200)['embargo_slots'] == 1719
+    assert cli.evaluate([doc], registry_entries=registry.load(reg), n_boot=200)['embargo_slots'] == 3039
     unbounded = dict(doc, exit_rule=dict(doc['exit_rule'], max_hold_s=None))
     with pytest.raises(ValueError, match='evaluation_requires_bounded_max_hold_s'):
         cli.required_embargo_slots([unbounded])
@@ -264,7 +264,7 @@ def test_evaluate_publishes_open_positions_and_a_pessimistic_mean(tmp_path, caps
               '--exit', 'max_hold_s=600', '--out', str(out), '--at', '2026-11-07T00:00:00+00:00'])
     capsys.readouterr()
     doc = json.loads(out.read_text('utf-8'))
-    result = cli.evaluate([doc], registry_entries=registry.load(reg), embargo_slots=1719, n_boot=200)
+    result = cli.evaluate([doc], registry_entries=registry.load(reg), embargo_slots=3039, n_boot=200)
     seen = 0
     for segment in result['runs'][0]['segments'].values():
         open_positions = segment['open_positions']
@@ -336,9 +336,9 @@ def test_open_positions_count_divergence_and_never_mark_a_migrated_position(tmp_
     cli = _cli()
     doc, entries = _mixed_bundle(cli, tmp_path, capsys)
     result = cli.evaluate([doc], registry_entries=entries, holdout=True,
-                          unseal=[doc['preregistration_sha256']], embargo_slots=133, n_boot=200)
+                          unseal=[doc['preregistration_sha256']], embargo_slots=264, n_boot=200)
     split = chronological_split([dict(pool=p['pool'], creator=p['creator'], created_slot=p['created_slot'])
-                                 for p in doc['pools']], embargo_slots=133)
+                                 for p in doc['pools']], embargo_slots=264)
     divergent = migrated = 0
     for name in SEGMENTS:
         segment = result['runs'][0]['segments'][name]
@@ -356,9 +356,9 @@ def test_segment_counts_never_include_other_segments(tmp_path, capsys):
     cli = _cli()
     doc, entries = _mixed_bundle(cli, tmp_path, capsys)
     result = cli.evaluate([doc], registry_entries=entries, holdout=True,
-                          unseal=[doc['preregistration_sha256']], embargo_slots=133, n_boot=200)
+                          unseal=[doc['preregistration_sha256']], embargo_slots=264, n_boot=200)
     split = chronological_split([dict(pool=p['pool'], creator=p['creator'], created_slot=p['created_slot'])
-                                 for p in doc['pools']], embargo_slots=133)
+                                 for p in doc['pools']], embargo_slots=264)
     per_segment = []
     for name in SEGMENTS:
         segment = result['runs'][0]['segments'][name]
@@ -369,5 +369,5 @@ def test_segment_counts_never_include_other_segments(tmp_path, capsys):
         assert segment['open_positions']['count'] == expected['open_positions']['count']
         per_segment.append(expected['outcomes'])
     assert len({json.dumps(o, sort_keys=True) for o in per_segment}) > 1   # segments really differ
-    sealed = cli.evaluate([doc], registry_entries=entries, embargo_slots=133, n_boot=200)
+    sealed = cli.evaluate([doc], registry_entries=entries, embargo_slots=264, n_boot=200)
     assert 'holdout' not in sealed['runs'][0]['segments']
