@@ -52,6 +52,7 @@ Règles de comptabilité, héritées du rejeu L1 : seul un cycle `closed` a un P
   - la somme de leurs valeurs de marché ;
   - le nombre de positions non valorisables ;
   - une moyenne pessimiste, où chaque position non close compte comme une perte totale (`mean_return_open_as_total_loss`).
+- **Positions migrées et divergentes (ré-audit `32269b03…`, T3, T4).** Seules les positions encore sur la courbe (`open_at_end`, `open_at_window_end`) portent une valeur de marché. Une position `migrated_unpriced` garde dans sa ligne la dernière valeur d'avant la migration : elle est ignorée, la position compte parmi les non valorisables, et `migrated` en donne le nombre. Une `counterfactual_divergence` est ouverte et non valorisable. Des tests vérifient que chaque segment, holdout compris, ne compte que ses propres pools.
 
 ## 3. Protocole d'exploration P0 (proposé à RUGGER 03, après audit de RUGGER 02)
 

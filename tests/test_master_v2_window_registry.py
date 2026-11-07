@@ -11,6 +11,7 @@ from bot.market.launchlab_events import WSOL_MINT
 from bot.master_v2 import harness as h
 from bot.master_v2 import policies as pol
 from bot.master_v2 import registry
+from bot.master_v2.validation import SEGMENTS, chronological_split
 from bot.p4 import historical_research_replay as hrr
 from test_historical_research_replay import _EnterAt
 from test_master_v2_harness import _Script
@@ -267,7 +268,7 @@ def test_evaluate_publishes_open_positions_and_a_pessimistic_mean(tmp_path, caps
     seen = 0
     for segment in result['runs'][0]['segments'].values():
         open_positions = segment['open_positions']
-        assert set(open_positions) == {'count', 'marked', 'mark_pnl_lamports', 'unpriced'}
+        assert set(open_positions) == {'count', 'marked', 'mark_pnl_lamports', 'unpriced', 'migrated'}
         assert open_positions['count'] == open_positions['marked'] + open_positions['unpriced']
         assert sum(segment['outcomes'].values()) >= segment['n'] + open_positions['count']
         entered = segment['n'] + open_positions['count']
@@ -277,3 +278,96 @@ def test_evaluate_publishes_open_positions_and_a_pessimistic_mean(tmp_path, caps
             else segment['mean_return_open_as_total_loss'] is None
         seen += open_positions['count']
     assert seen >= 1          # the immediate snipe leaves open positions on the short fixtures
+
+
+CYCLE = ('closed', 'open_at_end', 'open_at_window_end', 'migrated_unpriced', 'counterfactual_divergence',
+         'no_entry', 'closed')
+
+
+def _mixed_bundle(cli, tmp_path, capsys, n_pools=28):
+    """A registered bundle whose rows are replaced by every outcome kind, spread over all segments."""
+    reg = tmp_path / 'trials.jsonl'
+    out = tmp_path / 'snipe.json'
+    cli.main(['run', '--fixtures', str(PACK), '--registry', str(reg), '--policy', 'immediate-snipe',
+              '--exit', 'max_hold_s=45', '--out', str(out), '--at', '2026-11-07T00:00:00+00:00'])
+    capsys.readouterr()
+    doc = json.loads(out.read_text('utf-8'))
+    template = next(p for p in doc['pools'] if p['trade']['entry_index'] is not None)
+    rows = []
+    for k in range(n_pools):
+        outcome = CYCLE[(k * 3 + k // len(CYCLE)) % len(CYCLE)]   # uneven mix across segments
+        trade = dict(template['trade'], outcome=outcome, pnl_lamports=None, mark_pnl_lamports=None,
+                     spent=100_000_000, tx_costs=210_000, failed_attempt_costs=0,
+                     exit_slot=470_000_000 + k * 10_000 + 50)
+        if outcome == 'closed':
+            trade['pnl_lamports'] = (k - 10) * 1_000_000
+        elif outcome in ('open_at_end', 'open_at_window_end'):
+            trade['mark_pnl_lamports'] = -(k + 1) * 100_000
+        elif outcome == 'migrated_unpriced':
+            trade['mark_pnl_lamports'] = 7_000_000 + k   # stale pre-migration mark: must not be counted
+        elif outcome == 'no_entry':
+            trade.update(entry_index=None, exit_slot=None, spent=0, tx_costs=0)
+        rows.append(dict(template, pool=f'pool{k:03d}', creator=f'creator{k:03d}',
+                         created_slot=470_000_000 + k * 10_000, trade=trade))
+    doc['pools'] = rows
+    return doc, registry.load(reg)
+
+
+def _expected_segment(rows):
+    opened = [r for r in rows if r['outcome'] in ('open_at_end', 'open_at_window_end', 'migrated_unpriced',
+                                                  'counterfactual_divergence')]
+    marked = [r for r in opened if r['outcome'] in ('open_at_end', 'open_at_window_end')]
+    closed = [r for r in rows if r['outcome'] == 'closed']
+    returns = [r['pnl_lamports'] / (r['spent'] + r['tx_costs'] + r['failed_attempt_costs']) for r in closed]
+    outcomes = {}
+    for r in rows:
+        outcomes[r['outcome']] = outcomes.get(r['outcome'], 0) + 1
+    entered = len(returns) + len(opened)
+    return dict(outcomes=dict(sorted(outcomes.items())), n=len(closed),
+                open_positions=dict(count=len(opened), marked=len(marked),
+                                    mark_pnl_lamports=sum(r['mark_pnl_lamports'] for r in marked),
+                                    unpriced=len(opened) - len(marked),
+                                    migrated=sum(r['outcome'] == 'migrated_unpriced' for r in opened)),
+                pessimistic=(sum(returns) - len(opened)) / entered if entered else None)
+
+
+def test_open_positions_count_divergence_and_never_mark_a_migrated_position(tmp_path, capsys):
+    """R02 T3 and observation: divergence is open and unpriced; a migrated position's stale mark is ignored."""
+    cli = _cli()
+    doc, entries = _mixed_bundle(cli, tmp_path, capsys)
+    result = cli.evaluate([doc], registry_entries=entries, holdout=True,
+                          unseal=[doc['preregistration_sha256']], embargo_slots=133, n_boot=200)
+    split = chronological_split([dict(pool=p['pool'], creator=p['creator'], created_slot=p['created_slot'])
+                                 for p in doc['pools']], embargo_slots=133)
+    divergent = migrated = 0
+    for name in SEGMENTS:
+        segment = result['runs'][0]['segments'][name]
+        rows = [p['trade'] for p in doc['pools'] if p['pool'] in set(split[name])]
+        expected = _expected_segment(rows)
+        assert segment['open_positions'] == expected['open_positions']
+        assert segment['mean_return_open_as_total_loss'] == pytest.approx(expected['pessimistic'])
+        divergent += expected['outcomes'].get('counterfactual_divergence', 0)
+        migrated += expected['open_positions']['migrated']
+    assert divergent >= 2 and migrated >= 2
+
+
+def test_segment_counts_never_include_other_segments(tmp_path, capsys):
+    """R02 T4: each segment counts only its own pools, holdout included."""
+    cli = _cli()
+    doc, entries = _mixed_bundle(cli, tmp_path, capsys)
+    result = cli.evaluate([doc], registry_entries=entries, holdout=True,
+                          unseal=[doc['preregistration_sha256']], embargo_slots=133, n_boot=200)
+    split = chronological_split([dict(pool=p['pool'], creator=p['creator'], created_slot=p['created_slot'])
+                                 for p in doc['pools']], embargo_slots=133)
+    per_segment = []
+    for name in SEGMENTS:
+        segment = result['runs'][0]['segments'][name]
+        expected = _expected_segment([p['trade'] for p in doc['pools'] if p['pool'] in set(split[name])])
+        assert segment['outcomes'] == expected['outcomes']
+        assert sum(segment['outcomes'].values()) == result['split'][name] == len(split[name])
+        assert segment['n'] == expected['n']
+        assert segment['open_positions']['count'] == expected['open_positions']['count']
+        per_segment.append(expected['outcomes'])
+    assert len({json.dumps(o, sort_keys=True) for o in per_segment}) > 1   # segments really differ
+    sealed = cli.evaluate([doc], registry_entries=entries, embargo_slots=133, n_boot=200)
+    assert 'holdout' not in sealed['runs'][0]['segments']

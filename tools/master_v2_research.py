@@ -64,14 +64,21 @@ def _pairs(items, what):
 
 
 OPEN_OUTCOMES = ('open_at_end', 'open_at_window_end', 'migrated_unpriced', 'counterfactual_divergence')
+MARKABLE_OUTCOMES = ('open_at_end', 'open_at_window_end')   # still priced on this curve
 
 
 def _open_positions(bundle, pools):
-    """Entered positions that are not closed cycles: counted and marked, never neutral (R02 U3)."""
+    """Entered positions that are not closed cycles: counted and marked, never neutral (R02 U3).
+
+    Only positions still on this curve carry a mark; a migrated position (its last mark
+    predates the migration) and a counterfactual divergence are unpriced.
+    """
     rows = [p['trade'] for p in bundle['pools'] if p['pool'] in pools and p['trade']['outcome'] in OPEN_OUTCOMES]
-    marks = [r['mark_pnl_lamports'] for r in rows if r.get('mark_pnl_lamports') is not None]
+    marks = [r['mark_pnl_lamports'] for r in rows
+             if r['outcome'] in MARKABLE_OUTCOMES and r.get('mark_pnl_lamports') is not None]
     return dict(count=len(rows), marked=len(marks), mark_pnl_lamports=sum(marks),
-                unpriced=len(rows) - len(marks))
+                unpriced=len(rows) - len(marks),
+                migrated=sum(r['outcome'] == 'migrated_unpriced' for r in rows))
 
 
 def _outcomes(bundle, pools):
