@@ -21,6 +21,23 @@ BUY->SELL cycles, or into an exact per-decision WAIT journal. Integrity rules:
   the PAPER ledger, ``research_evidence`` or the Master's 50-cycle /
   20-creator gate, and never an operational Master trade.
 
+* **Migration and exclusions (P0 fix)** -- a history whose only defect is
+  the buy that crosses the migration boundary ends just before that buy; a
+  position still open there is ``migrated_unpriced`` (no P&L). Any other
+  incomplete history excludes the pool, listed in ``excluded_pools`` with its
+  reasons; every MANIFEST pool is either replayed or listed.
+* **Accounting** -- only a ``closed`` cycle has ``pnl_lamports``; an open or
+  migrated position keeps its mark apart (``mark_pnl_lamports``), outside
+  every P&L total.
+* **Fees (P0 fix)** -- our own fills use the causal interval estimate of
+  :func:`bot.market.replay.causal_fee_rate` (events up to the decision only).
+* **Optional exits** -- :class:`ExitOptions` (trailing stop, maximum hold)
+  are off by default and recorded in the bundle when enabled.
+* **Arms** -- with ``prior_launches=0`` the union of the Master scorer's
+  strategy intents equals ``early_sniping`` at every decision, so both arms
+  are identical; no independent operational Master rule is available offline
+  (see docs/research/L1_P0_FIXES.md).
+
 Fills, latency, own impact and fees follow :mod:`bot.market.replay`.
 Failed-attempt fees are unmodelled by default (0 lamports); about a third of
 the fixture signatures failed on chain. No network, wall clock or I/O beyond
@@ -40,6 +57,7 @@ from bot.live.compiled_launchlab import compiled_launchlab_creations
 from bot.live.migration_rpc_json import normalized_compiled_transaction
 from bot.live.solana_signatures import verify_compiled_rpc_signatures
 from bot.market.collector import PoolArchive, summarize
+from bot.market.pool_timeline import PoolTimeline
 from bot.market.replay import ExecutionModel, Strategy, replay
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4.native_asof_signal_bridge import NativeQuote
@@ -62,6 +80,42 @@ CRITICAL_RISKS = frozenset((
     'concentration_extreme', 'momentum_effondrement', 'tendance_5m_effondrement', 'fomo_extreme',
     'slippage_estime_extreme'))
 _DEFAULT_MODEL = ExecutionModel()
+# The LaunchLab timeline ends at the buy that crosses the migration boundary: that
+# buy and everything after it trade on another venue (CPMM), not on this curve.
+MIGRATION_VIOLATION = 'violations:curve_refused:buy_crosses_migration_boundary'
+MIGRATION_RULE = ('LaunchLab timeline ends before the buy that crosses the migration boundary; '
+                  'a position still open there is migrated_unpriced (no P&L, never a closed cycle)')
+EXCLUSION_RULE = ('a pool whose history is not complete for a reason other than its migration is '
+                  'excluded and listed with its reasons; it is never replayed partially')
+
+
+@dataclass(frozen=True)
+class ExitOptions:
+    """Optional exits from the scorer's frozen plan; both disabled by default.
+
+    ``trailing_stop``: exit when the curve spot price falls to ``1 - trailing_stop_pct``
+    of its peak since entry, once that peak is above the entry price (the rule of
+    ``bot.master_positions.choose_frozen_position_action``). ``max_hold``: exit once
+    ``hold_seconds`` of the plan have elapsed since entry. Both read the scorer's
+    plan at the entry decision; neither is tuned on observed results.
+
+    Prices are the spot of the observed real events (own impact excluded); the
+    entry price is the spot after the real event our buy lands behind. Trigger
+    precedence follows ``choose_frozen_position_action``: stop loss, trailing
+    stop, maximum hold, take profit, then the research ``exit_horizon_ms``.
+    The scorer's ``hold_seconds`` (900 to 2700 s) exceeds the default 30 s
+    horizon, so ``max_hold`` only acts with a longer, explicitly hashed horizon.
+    """
+    trailing_stop: bool = False
+    max_hold: bool = False
+
+    def __post_init__(self):
+        if type(self.trailing_stop) is not bool or type(self.max_hold) is not bool:
+            raise ValueError('invalid_exit_options')
+
+    @property
+    def enabled(self):
+        return self.trailing_stop or self.max_hold
 
 
 def _canonical(doc):
@@ -109,9 +163,12 @@ class ReplayParams:
             raise ValueError('invalid_exclude_launchlab_vault')
 
     def execution_model(self):
+        # Causal fee estimate for our own fills (P0 fix): never the smallest rate of a
+        # single tiny decision event.
         return ExecutionModel(latency_slots=self.latency_slots, fee_rate_ppm=None,
                               base_fee_lamports=self.base_fee_lamports,
-                              priority_fee_lamports=self.priority_fee_lamports)
+                              priority_fee_lamports=self.priority_fee_lamports,
+                              fee_rate_estimator='causal_interval')
 
 
 # Lower bound of a Solana slot (the average is about 400 ms): faster slots need more of
@@ -330,19 +387,21 @@ class _PoolObserver:
             enter = intent and facts['signed_creator_verified']
             decisions[arm] = dict(intent='ENTER' if enter else 'WAIT', blocking_reasons=(
                 [] if enter else ([] if intent else reasons + detail) + common))
-        return dict(shared=shared, decisions=decisions, exit_conditions=(
-            None if evidence['reference_exit_conditions'] is None else
-            {k: evidence['reference_exit_conditions'][k] for k in ('tp_pct', 'sl_pct')}))
+        plan = evidence['reference_exit_conditions']
+        return dict(shared=shared, decisions=decisions, scorer_exit_plan=plan, exit_conditions=(
+            None if plan is None else {k: plan[k] for k in ('tp_pct', 'sl_pct')}))
 
 
 class ResearchArm(Strategy):
     """One research arm: journal every decision, enter once, pre-registered exit."""
 
-    def __init__(self, arm, observer, params, window=None):
+    def __init__(self, arm, observer, params, window=None, exit_options=None):
         if arm not in ARMS:
             raise ValueError('unknown_research_arm')
         self.arm, self.observer, self.params, self.window = arm, observer, params, window
+        self.exit_options = exit_options or ExitOptions()
         self.journal, self.exit_plan, self.exit_trigger = [], None, None
+        self.entry_price = self.peak_price = None
 
     def entry(self, history):
         if self.exit_plan is not None:
@@ -355,15 +414,36 @@ class ResearchArm(Strategy):
         self.journal.append(dict(result['shared'], arm=self.arm, **decision))
         if decision['intent'] != 'ENTER' or result['exit_conditions'] is None:
             return None
-        self.exit_plan = result['exit_conditions']
+        plan = dict(result['exit_conditions'])
+        scorer = result.get('scorer_exit_plan') or {}
+        if self.exit_options.trailing_stop:
+            plan['trailing_stop_pct'] = scorer.get('trailing_stop_pct')
+        if self.exit_options.max_hold:
+            plan['hold_seconds'] = scorer.get('hold_seconds')
+        self.exit_plan = plan
         return ENTRY_LAMPORTS
 
     def exit(self, history, position, mark):
         take = Fraction(str(self.exit_plan['tp_pct'])) / 100
         stop = Fraction(str(self.exit_plan['sl_pct'])) / 100
         elapsed_ms = (history[-1].block_time - position.entry_time) * 1000
-        trigger = ('take_profit' if mark >= position.spent * (1 + take) else
-                   'stop_loss' if mark <= position.spent * (1 - stop) else
+        trailing_pct = self.exit_plan.get('trailing_stop_pct')
+        hold_seconds = self.exit_plan.get('hold_seconds')
+        trailing = False
+        if type(trailing_pct) in (int, float) and trailing_pct > 0:   # only when enabled
+            if self.entry_price is None:
+                self.entry_price = self.peak_price = _spot(history[position.entry_index])
+            price = _spot(history[-1])
+            self.peak_price = max(self.peak_price, price)
+            trailing = (self.peak_price > self.entry_price
+                        and price <= self.peak_price * (1 - Fraction(str(trailing_pct)) / 100))
+        held = type(hold_seconds) is int and hold_seconds > 0 and elapsed_ms >= hold_seconds * 1000
+        # Precedence of choose_frozen_position_action; take profit and stop loss
+        # cannot both hold (tp_pct, sl_pct > 0), so the default exits are unchanged.
+        trigger = ('stop_loss' if mark <= position.spent * (1 - stop) else
+                   'trailing_stop' if trailing else
+                   'max_hold' if held else
+                   'take_profit' if mark >= position.spent * (1 + take) else
                    'exit_horizon' if elapsed_ms >= self.params.exit_horizon_ms else None)
         if trigger:
             self.exit_trigger = dict(reason=trigger, index=len(history) - 1, mark=mark)
@@ -376,7 +456,10 @@ def _trade(result, events, arm, params):
 
     own_transactions = 2 if result.priced else 1 if result.entry_index is not None else 0
     failed = params.failed_attempt_fee_lamports * own_transactions
-    pnl = result.received - result.spent - result.tx_costs - failed if result.priced else None
+    value = result.received - result.spent - result.tx_costs - failed if result.priced else None
+    # Only a closed cycle has a P&L; a position valued at its last mark keeps that
+    # value apart (mark_pnl_lamports) and never enters a P&L total.
+    pnl = value if result.outcome == 'closed' else None
     cost = result.spent + result.tx_costs + failed
     row = dict(outcome=result.outcome, spent=result.spent, tokens=result.tokens,
                received=result.received, tx_costs=result.tx_costs, failed_attempt_costs=failed,
@@ -388,7 +471,24 @@ def _trade(result, events, arm, params):
         index = getattr(result, f'{stage}_index')
         row.update({f'{stage}_index': index, f'{stage}_signature': at(index, 'signature'),
                     f'{stage}_slot': at(index, 'slot'), f'{stage}_block_time': at(index, 'block_time')})
+    if result.outcome == 'open_at_end':
+        row['mark_pnl_lamports'] = value
+    if result.fee_rate_evidence is not None:
+        row['fee_rate_evidence'] = result.fee_rate_evidence
     return row
+
+
+def _spot(event):
+    """Curve spot price after a real event (quote per base, exact)."""
+    state = event.state_after()
+    return Fraction(state.quote_reserve, state.base_reserve)
+
+
+def _migrated(row):
+    """A position still open when the pool migrated cannot be priced on this curve."""
+    if row['outcome'] != 'open_at_end':
+        return row
+    return dict(row, outcome='migrated_unpriced', pnl_lamports=None, net_return=None)
 
 
 def _apply_window(row, window):
@@ -397,15 +497,58 @@ def _apply_window(row, window):
         return row
     if row['outcome'] == 'closed' and row['exit_slot'] <= window['window_slot_max']:
         return row
-    return dict(row, outcome='open_at_window_end', mark_pnl_lamports=row['pnl_lamports'],
-                pnl_lamports=None, net_return=None)
+    mark = row['mark_pnl_lamports'] if row['outcome'] == 'open_at_end' else row['pnl_lamports']
+    return dict(row, outcome='open_at_window_end', mark_pnl_lamports=mark, pnl_lamports=None, net_return=None)
 
 
-def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None):
-    """Replay both research arms on one complete pool archive."""
+class PoolExcluded(ValueError):
+    """The pool cannot be replayed; ``reasons`` says why (listed in the bundle)."""
+
+    def __init__(self, reasons):
+        super().__init__('pool_excluded:' + ';'.join(reasons))
+        self.reasons = list(reasons)
+
+
+def usable_timeline(archive, summary, timeline):
+    """Return ``(timeline, migration)`` for replay, or raise PoolExcluded.
+
+    A complete history is used as is. A history whose only defect is the buy that
+    crosses the migration boundary ends just before it, provided no valid event of
+    this pool comes after that buy. Anything else excludes the pool.
+    """
+    if summary['complete']:
+        return timeline, None
+    reasons = []
+    if not summary['signatures_complete']:
+        reasons.append('signatures_incomplete')
+    if summary['transactions_missing']:
+        reasons.append('transactions_missing:%d' % summary['transactions_missing'])
+    if summary['undecodable']:
+        reasons.append('undecodable_transactions:%d' % summary['undecodable'])
+    if timeline.gaps:
+        reasons.append('timeline_gaps:' + ','.join(sorted({gap.reason for gap in timeline.gaps})))
+    others = sorted({reason for _key, reason in timeline.rejected if reason != MIGRATION_VIOLATION})
+    if others:
+        reasons.append('rejected_events:' + ','.join(others))
+    crossing = sorted({key[0] for key, reason in timeline.rejected if reason == MIGRATION_VIOLATION})
+    if reasons or not crossing:
+        raise PoolExcluded(reasons or ['history_incomplete'])
+    positions = [_tx_key(archive.transactions[signature]) for signature in crossing]
+    if timeline.events and max(_tx_key(archive.transactions[e.signature]) for e in timeline.events) >= min(positions):
+        raise PoolExcluded(['events_after_migration_boundary'])
+    first = min(positions)
+    migration = dict(rule=MIGRATION_RULE, boundary_signatures=crossing, boundary_slot=first[0],
+                     boundary_transaction_index=first[1], max_progress_ppm=summary['max_progress_ppm'])
+    return PoolTimeline(timeline.pool, timeline.events, (), ()), migration
+
+
+def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None, exit_options=None):
+    """Replay both research arms on one pool archive (complete, or ending at its migration).
+
+    Raises PoolExcluded when the history cannot be replayed (see usable_timeline).
+    """
     summary, timeline = summarize(archive)
-    if not summary['complete']:
-        raise ValueError(f'pool_history_incomplete:{archive.pool}')
+    timeline, migration = usable_timeline(archive, summary, timeline)
     facts = creation_facts(archive)
     observer = _PoolObserver(archive, timeline, facts, params, sol_usd_series)
     record = dict(pool=archive.pool, **facts, trades=len(timeline.events),
@@ -416,11 +559,16 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
                   journal=[], arms={})
     if window is not None:
         record['window'] = window
+    if migration is not None:
+        record['migration'] = migration
     for name in ARMS:
-        arm = ResearchArm(name, observer, params, window)
+        arm = ResearchArm(name, observer, params, window, exit_options)
         result = replay(timeline, arm, params.execution_model(), quote_mint=quote_mint)
         record['journal'].extend(arm.journal)
-        record['arms'][name] = _apply_window(_trade(result, timeline.events, arm, params), window)
+        row = _trade(result, timeline.events, arm, params)
+        if migration is not None:
+            row = _migrated(row)
+        record['arms'][name] = _apply_window(row, window)
     return record
 
 
@@ -441,19 +589,33 @@ def _totals(pools):
     return totals
 
 
-def run_replay(fixtures_dir, params=None, sol_usd_series=None):
+def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None):
     """Return the deterministic HISTORICAL_REPLAY bundle for the fixture directory.
 
     ``sol_usd_series`` (bot.p4.sol_usd_series.SolUsdSeries) replaces the declared
     constant: each decision uses the as-of point or WAITs with the refusal reason.
+    ``exit_options`` (ExitOptions) enables the scorer plan's trailing stop and
+    maximum hold; both are off by default. Every MANIFEST pool is either replayed
+    or listed in ``excluded_pools`` with its reasons.
     """
     params = ReplayParams() if params is None else params
+    exit_options = ExitOptions() if exit_options is None else exit_options
+    if type(exit_options) is not ExitOptions:
+        raise ValueError('invalid_exit_options')
     if sol_usd_series is not None and params.sol_usd is not None:
         raise ValueError('sol_usd_constant_and_series_are_exclusive')
     manifest_sha256, digests, archives, manifest = load_fixtures(fixtures_dir)
-    pools = [replay_pool(archive, params, quote_mint=entry['quote_mint'], sol_usd_series=sol_usd_series,
-                         window=collection_window(entry, manifest, params))
-             for entry, archive in archives]
+    pools, excluded = [], []
+    for entry, archive in archives:
+        try:
+            pools.append(replay_pool(archive, params, quote_mint=entry['quote_mint'],
+                                     sol_usd_series=sol_usd_series,
+                                     window=collection_window(entry, manifest, params),
+                                     exit_options=exit_options))
+        except PoolExcluded as exc:
+            excluded.append(dict(pool=archive.pool, file=entry['file'], reasons=exc.reasons))
+    if len(pools) + len(excluded) != len(archives):
+        raise ValueError('pool_accounting_mismatch')
     signatures = sum(pool['signatures'] for pool in pools)
     journal = [row for pool in pools for row in pool['journal']]
     bundle = dict(
@@ -480,6 +642,13 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None):
         bundle['flags']['collection_window_rule'] = (
             'no entry after entry_cutoff_slot; a cycle counts only if its exit lands at or before '
             'window_slot_max; otherwise open_at_window_end (never a closed cycle)')
+    if excluded:
+        bundle['excluded_pools'] = excluded
+        bundle['flags']['pool_exclusion_rule'] = EXCLUSION_RULE
+    if any('migration' in pool for pool in pools):
+        bundle['flags']['migration_rule'] = MIGRATION_RULE
+    if exit_options.enabled:
+        bundle['exit_options'] = asdict(exit_options)
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
             label=sol_usd_series.label, ordering=sol_usd_series.ordering, sha256=sol_usd_series.sha256,

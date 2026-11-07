@@ -16,7 +16,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from bot.p4.historical_research_replay import ARMS, ReplayParams, run_replay  # noqa: E402
+from bot.p4.historical_research_replay import ARMS, ExitOptions, ReplayParams, run_replay  # noqa: E402
 from bot.p4.sol_usd_series import load_series  # noqa: E402
 
 DEFAULT_FIXTURES = ROOT / 'tests' / 'fixtures' / 'launchlab_sol_pools'
@@ -29,8 +29,11 @@ def summary_lines(bundle, top=6):
            f"{bundle['params']['exclude_launchlab_vault']}  asof_inputs_causal={flags['asof_inputs_causal']}")
     for pool in bundle['pools']:
         arms = '  '.join(f"{arm}={pool['arms'][arm]['outcome']}" for arm in ARMS)
+        migrated = (f"  migrated_at_slot={pool['migration']['boundary_slot']}" if 'migration' in pool else '')
         yield (f"  {pool['pool'][:8]} trades={pool['trades']} signed_creator="
-               f"{pool['signed_creator_verified']} ({pool['signed_creator_reason']})  {arms}")
+               f"{pool['signed_creator_verified']} ({pool['signed_creator_reason']})  {arms}{migrated}")
+    for row in bundle.get('excluded_pools', ()):
+        yield f"  EXCLUDED {row['pool'][:8]} ({row['file']}): {', '.join(row['reasons'])}"
     for arm in ARMS:
         totals = bundle['totals'][arm]
         reasons = ', '.join(f'{k}={v}' for k, v in list(totals['blocking_reasons'].items())[:top])
@@ -52,6 +55,10 @@ def main(argv=None):
                         help='rugger-sol-usd-series-v1 file (JSON or .gz); exclusive with --sol-usd')
     parser.add_argument('--exclude-launchlab-vault', action='store_true',
                         help='leave the curve vault authority out of holder statistics')
+    parser.add_argument('--trailing-stop', action='store_true',
+                        help="also exit on the scorer plan's trailing stop (off by default)")
+    parser.add_argument('--max-hold', action='store_true',
+                        help="also exit after the scorer plan's hold_seconds (off by default)")
     parser.add_argument('--out', type=Path, default=None, help='write the bundle JSON here')
     args = parser.parse_args(argv)
     try:
@@ -61,7 +68,8 @@ def main(argv=None):
         parser.error(str(exc))
     try:
         series = load_series(args.sol_usd_series) if args.sol_usd_series else None
-        bundle = run_replay(args.fixtures, params, series)
+        bundle = run_replay(args.fixtures, params, series,
+                            ExitOptions(trailing_stop=args.trailing_stop, max_hold=args.max_hold))
     except ValueError as exc:
         parser.error(str(exc))
     if args.out:

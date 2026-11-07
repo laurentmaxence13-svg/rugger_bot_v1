@@ -11,7 +11,11 @@ Execution model (every assumption is explicit and reported):
   12500 and 18000 ppm are all observed): by default it is read from the last
   real event at the decision index, i.e. from pool state at decision time. An
   explicit ``fee_rate_ppm`` overrides it; the rate used and its source are
-  recorded in ``TradeResult``.
+  recorded in ``TradeResult``. With ``fee_rate_estimator='causal_interval'`` the
+  rate is instead the largest rate compatible with the rounded fee of every
+  fee-bearing event of the longest consistent run of pool events ending at the
+  decision (``causal_fee_rate``): one tiny event (a 1-lamport fee) no longer
+  yields an implausibly low rate, and no event after the decision is read.
 * **Own impact** -- after our buy, every later real trade is replayed with the
   same exact-in amount on the shifted curve (other traders' sizes unchanged).
   If a replayed trade becomes impossible the run stops as
@@ -28,10 +32,11 @@ because transaction costs are lamports and quote units are lamports only for SOL
 """
 from dataclasses import dataclass, field
 
-from bot.market.launchlab_curve import CurveError, buy_exact_in, sell_exact_in
+from bot.market.launchlab_curve import FEE_DENOMINATOR, CurveError, buy_exact_in, sell_exact_in
 from bot.market.launchlab_events import WSOL_MINT, implied_fee_rate_ppm
 
 SOLANA_BASE_FEE_LAMPORTS = 5_000
+FEE_RATE_ESTIMATORS = ('event_at_decision', 'causal_interval')
 
 
 @dataclass(frozen=True)
@@ -40,6 +45,11 @@ class ExecutionModel:
     fee_rate_ppm: int = None    # None: read the pool's rate at decision time
     base_fee_lamports: int = SOLANA_BASE_FEE_LAMPORTS
     priority_fee_lamports: int = 100_000
+    fee_rate_estimator: str = 'event_at_decision'   # or 'causal_interval'
+
+    def __post_init__(self):
+        if self.fee_rate_estimator not in FEE_RATE_ESTIMATORS:
+            raise ValueError('unknown_fee_rate_estimator')
 
     @property
     def tx_cost(self):
@@ -69,7 +79,8 @@ class TradeResult:
     hold_slots: int = None
     notes: list = field(default_factory=list)
     fee_rate_ppm: int = None        # rate applied to our own fills
-    fee_rate_source: str = None     # 'model' | 'pool_event_at_decision'
+    fee_rate_source: str = None     # 'model' | 'pool_event_at_decision' | 'pool_events_causal_interval'
+    fee_rate_evidence: dict = None  # interval and events used (causal_interval only)
 
     @property
     def priced(self):
@@ -122,6 +133,45 @@ def _event_rate(event):
         'creator_fee': event.creator_fee, 'share_fee': event.share_fee})
 
 
+def fee_rate_interval(event):
+    """Integer rates r with ceil(basis*r/D) == event fee, as (low, high); None if uninformative."""
+    fees = event.protocol_fee + event.platform_fee + event.creator_fee + event.share_fee
+    basis = event.amount_in if event.side == 'buy' else event.amount_out + fees
+    if basis <= 0 or fees <= 0:
+        return None
+    low = ((fees - 1) * FEE_DENOMINATOR) // basis + 1
+    high = min((fees * FEE_DENOMINATOR) // basis, FEE_DENOMINATOR - 1)
+    return (low, high) if low <= high else None
+
+
+def causal_fee_rate(events):
+    """Fee rate for our own fill at the last of ``events`` (the decision), causally.
+
+    Walk back from the decision and intersect the compatible-rate intervals of
+    the fee-bearing events for as long as the intersection stays non-empty (the
+    longest consistent run ending at the decision, so a past rate change does not
+    poison it). Return its upper bound: the largest rate every one of those
+    events allows, i.e. the conservative choice. Without any fee-bearing event the
+    decision event's own implied rate is kept and labelled as such.
+    """
+    low, high, used, skipped = None, None, 0, 0
+    for event in reversed(events):
+        interval = fee_rate_interval(event)
+        if interval is None:
+            skipped += 1
+            continue
+        new_low = interval[0] if low is None else max(low, interval[0])
+        new_high = interval[1] if high is None else min(high, interval[1])
+        if new_low > new_high:
+            break
+        low, high, used = new_low, new_high, used + 1
+    if high is None:
+        return _event_rate(events[-1]), dict(rule='no_fee_bearing_event_decision_event_rate',
+                                              interval_ppm=None, events_used=0, events_skipped=skipped)
+    return high, dict(rule='largest_rate_compatible_with_the_longest_consistent_run_up_to_the_decision',
+                      interval_ppm=[low, high], events_used=used, events_skipped=skipped)
+
+
 def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
     """Run ``strategy`` once (single entry, full exit) on a complete timeline."""
     if quote_mint != WSOL_MINT:
@@ -144,7 +194,10 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
     else:
         return result
     result.decision_index = k
-    if model.fee_rate_ppm is None:
+    if model.fee_rate_ppm is None and model.fee_rate_estimator == 'causal_interval':
+        rate, result.fee_rate_evidence = causal_fee_rate(events[:k + 1])
+        result.fee_rate_source = 'pool_events_causal_interval'
+    elif model.fee_rate_ppm is None:
         rate, result.fee_rate_source = _event_rate(events[k]), 'pool_event_at_decision'
     else:
         rate, result.fee_rate_source = model.fee_rate_ppm, 'model'

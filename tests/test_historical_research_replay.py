@@ -200,9 +200,16 @@ def test_forced_cycle_accounting_and_preregistered_exit():
     assert trade['decision_index'] == 10 and trade['spent'] == hrr.ENTRY_LAMPORTS
     assert trade['outcome'] in ('closed', 'open_at_end') and trade['tokens'] > 0
     assert trade['tx_costs'] == 2 * 105_000 and trade['failed_attempt_costs'] == 14_000
-    assert trade['pnl_lamports'] == (trade['received'] - trade['spent'] - trade['tx_costs']
-                                     - trade['failed_attempt_costs'])
-    assert trade['fee_rate_ppm'] == 12_500 and trade['fee_rate_source'] == 'pool_event_at_decision'
+    value = trade['received'] - trade['spent'] - trade['tx_costs'] - trade['failed_attempt_costs']
+    # Only a closed cycle has a P&L; an open position keeps its mark apart (P0 fix).
+    if trade['outcome'] == 'closed':
+        assert trade['pnl_lamports'] == value
+    else:
+        assert trade['pnl_lamports'] is None and trade['mark_pnl_lamports'] == value
+    # Causal fee estimate: every past event of this pool allows exactly 12 500 ppm.
+    assert trade['fee_rate_ppm'] == 12_500 and trade['fee_rate_source'] == 'pool_events_causal_interval'
+    assert trade['fee_rate_evidence']['interval_ppm'] == [12_500, 12_500]
+    assert trade['fee_rate_evidence']['events_used'] == trade['decision_index'] + 1
     assert trade['entry_slot'] <= trade['decision_slot'] + params.latency_slots
     if trade['outcome'] == 'closed':
         assert trade['exit_trigger']['reason'] in ('take_profit', 'stop_loss', 'exit_horizon')
@@ -321,7 +328,8 @@ def test_exit_after_window_end_is_never_a_closed_cycle():
     trade, _arm, _timeline = _forced(window)
     assert trade['outcome'] == 'open_at_window_end'
     assert trade['pnl_lamports'] is None and trade['net_return'] is None
-    assert trade['mark_pnl_lamports'] == free['pnl_lamports']
+    free_value = free['pnl_lamports'] if free['outcome'] == 'closed' else free['mark_pnl_lamports']
+    assert trade['mark_pnl_lamports'] == free_value
 
 
 def test_manifest_window_is_read_and_default_bundle_unchanged(tmp_path):
