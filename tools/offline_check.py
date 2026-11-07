@@ -38,7 +38,9 @@ with tempfile.TemporaryDirectory(prefix="rugger-cloud-check-", dir="/tmp") as di
                                            # Offline GitHub Actions trigger guard (P-PRIV correction).
                                            "tools/workflow_trigger_guard.py",
                                            # Offline L1 replay CLI exercised by the P0 fix tests.
-                                           "tools/historical_research_replay.py"):
+                                           "tools/historical_research_replay.py",
+                                           # Offline MASTER V2 research runner (no network, no keys).
+                                           "tools/master_v2_research.py"):
                 continue
         if relative.parts[:2] in (("bot", "bot"), ("tests", "tests")):
             continue
