@@ -37,10 +37,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Python 3.13
+      - name: Python 3.12
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install dependencies (PyPI only, no credentials)
         run: |

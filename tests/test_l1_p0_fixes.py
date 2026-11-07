@@ -518,10 +518,11 @@ def test_trigger_precedence_matches_the_operational_rule(stop, trail, hold, take
     assert ours == OPERATIONAL[reasons[0]]
 
 
-def test_cli_flags_and_exclusion_report(tmp_path, capsys):
+def test_cli_flags_and_exclusion_report(tmp_path, capsys, monkeypatch):
     spec = importlib.util.spec_from_file_location('hrr_cli', ROOT / 'tools' / 'historical_research_replay.py')
     cli = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(cli)
+    monkeypatch.setattr(cli, 'python_version', lambda: (3, 12, 3))   # reference interpreter (owner decision)
     cli.main(['--fixtures', str(PACK)])
     assert f'bundle_sha256 {RECORDED[0][2]}' in capsys.readouterr().out
     out = tmp_path / 'b.json'

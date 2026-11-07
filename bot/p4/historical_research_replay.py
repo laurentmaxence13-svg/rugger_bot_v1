@@ -87,6 +87,13 @@ MIGRATION_RULE = ('LaunchLab timeline ends before the buy that crosses the migra
                   'a position still open there is migrated_unpriced (no P&L, never a closed cycle)')
 EXCLUSION_RULE = ('a pool whose history is not complete for a reason other than its migration is '
                   'excluded and listed with its reasons; it is never replayed partially')
+# Owner decision of 2026-11-07: reproducible bundle fingerprints are defined under one
+# interpreter (Python 3.12; see O3 in docs/research/L1_P0_FIXES.md), and the historical
+# MASTER arm stays in the bundle but its duplicate is left out of the economic comparison.
+REFERENCE_PYTHON = (3, 12)
+DUPLICATE_ARM_RULE = ('an arm whose decision intents and trade rows are all equal to those of the '
+                      'reference arm is a duplicate: it stays in the bundle (historical code and '
+                      'fingerprints unchanged) but is excluded from the economic comparison')
 
 
 @dataclass(frozen=True)
@@ -587,6 +594,33 @@ def _totals(pools):
             pnl_lamports=sum(priced) if priced else None,
             blocking_reasons=dict(sorted(reasons.items(), key=lambda item: (-item[1], item[0]))))
     return totals
+
+
+def economic_comparison(bundle):
+    """Arms that enter the economic comparison of ``bundle``, without duplicates.
+
+    The bundle itself is not changed. An arm identical to the reference arm (same
+    intent at every journalled decision and same trade row in every pool) is listed
+    in ``excluded`` with DUPLICATE_ARM_RULE; until an independent MASTER policy exists
+    this is always the case for the historical 'master' arm.
+    """
+    def intents(arm):
+        return [(pool['pool'], row['index'], row['intent'])
+                for pool in bundle['pools'] for row in pool['journal'] if row['arm'] == arm]
+
+    def trades(arm):
+        return [(pool['pool'], pool['arms'][arm]) for pool in bundle['pools']]
+
+    arms, excluded = ['reference'], []
+    for arm in ARMS:
+        if arm == 'reference':
+            continue
+        if intents(arm) == intents('reference') and trades(arm) == trades('reference'):
+            excluded.append(dict(arm=arm, duplicate_of='reference', rule=DUPLICATE_ARM_RULE))
+        else:
+            arms.append(arm)
+    return dict(bundle_sha256=bundle['bundle_sha256'], arms=arms, excluded=excluded,
+                totals={arm: bundle['totals'][arm] for arm in arms})
 
 
 def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None):
