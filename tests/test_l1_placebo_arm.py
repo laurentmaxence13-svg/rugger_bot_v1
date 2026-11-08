@@ -94,3 +94,28 @@ def test_cli_flag(tmp_path, capsys):
               '--out', str(out)])
     assert f'[{hrr.PLACEBO_ARM}]' in capsys.readouterr().out
     assert hrr.PLACEBO_ARM in json.loads(out.read_text('utf-8'))['totals']
+
+
+def test_entry_cutoff_applies_to_the_placebo_r02_o_r9_1():
+    from bot.market.launchlab_events import WSOL_MINT
+    archive = next(a for _e, a in hrr.load_fixtures(PACK)[2] if a.pool == DVP)
+    free = hrr.replay_pool(archive, DECLARED, quote_mint=WSOL_MINT, arms=hrr.ARMS + (hrr.PLACEBO_ARM,))
+    entry = free['arms'][hrr.PLACEBO_ARM]
+    decision_slot = entry['decision_slot']
+
+    def run(cutoff):
+        window = dict(entry_cutoff_slot=cutoff, window_slot_max=decision_slot + 10 ** 6)
+        return hrr.replay_pool(archive, DECLARED, quote_mint=WSOL_MINT, window=window,
+                               arms=hrr.ARMS + (hrr.PLACEBO_ARM,))
+    blocked = run(decision_slot - 1)
+    assert blocked['arms'][hrr.PLACEBO_ARM]['entry_index'] is None
+    assert any('after_entry_cutoff_slot' in r['blocking_reasons'] for r in blocked['journal']
+               if r['arm'] == hrr.PLACEBO_ARM)
+    assert run(decision_slot)['arms'][hrr.PLACEBO_ARM]['entry_index'] == entry['entry_index']
+
+
+def test_placebo_flag_type_is_validated_r02_o_r9_1():
+    import pytest
+    for bad in (1, 'yes', None):
+        with pytest.raises(ValueError, match='invalid_placebo_arm'):
+            hrr.run_replay(PACK, DECLARED, placebo_arm=bad)
