@@ -36,4 +36,5 @@ def test_seconds_before_the_first_point_count_as_missing():
     points = [_point(i, 1_000 + 30 * i) for i in range(10)]
     result = st.study(points, [(900, 1_270)])
     assert result['missing_seconds'] == 102 and result['seconds'] == 370
+    assert result['shares']['120'] == 268 / 370                  # missing seconds stay in the denominator
     assert result['verdict'] == 'REJECTED'                       # 102/370 seconds without a point

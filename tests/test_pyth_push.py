@@ -121,3 +121,13 @@ def test_confidence_unknown_is_refused_under_a_confidence_rule():
                acceptance=dict(max_age_ms=75_000, max_confidence_ppm=1_000))
     series = sus.series_from_document(doc)
     assert series.as_of(slot=466227000, transaction_index=0, decision_ms=1793993300_000)[2] == 'sol_usd_confidence_unknown'
+
+
+def test_confidence_at_exactly_the_limit_is_accepted():
+    point = dict(pp.sol_usd_points([_entry(A)])[0], price=1_000_000, confidence=586, exponent=-4)
+    doc = dict(schema=sus.SERIES_SCHEMA, label='SYNTHETIC_TEST_FIXTURE', points=[point],
+               acceptance=dict(max_age_ms=75_000, max_confidence_ppm=586))
+    at = dict(slot=466227000, transaction_index=0, decision_ms=1793993300_000)
+    assert sus.series_from_document(doc).as_of(**at)[2] is None                      # 586 ppm == limit
+    doc['acceptance']['max_confidence_ppm'] = 585
+    assert sus.series_from_document(doc).as_of(**at)[2] == 'sol_usd_confidence_too_wide'
