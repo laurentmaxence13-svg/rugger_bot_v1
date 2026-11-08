@@ -45,7 +45,8 @@ def test_rows_are_validated_and_the_digest_does_not_depend_on_order():
     assert _history(*rows).sha256 == _history(*reversed(rows)).sha256
     assert _history(*rows).record() == dict(label='test', creations=2, sha256=_history(*rows).sha256,
                                             rule=hrr.CreatorHistory.RULE)
-    for bad in ((('', 1, 0, 'p'),), (('A', '1', 0, 'p'),), (('A', 1, None, 'p'),), (('A', 1, 0, 'p'), ('B', 2, 0, 'p'))):
+    for bad in ((('', 1, 0, 'p'),), (('A', '1', 0, 'p'),), (('A', 1, None, 'p'),), (('A', 1, 0, 'p'), ('B', 2, 0, 'p')),
+                (('A', None, 0, 'p'), ('A', 1, 0, 'q')), (('A', 1, 0),)):           # mixed types (R02 O-R2-2)
         with pytest.raises(ValueError):
             hrr.CreatorHistory(bad, 'x')
     with pytest.raises(ValueError, match='creator_history_label_required'):

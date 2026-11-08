@@ -351,10 +351,12 @@ class CreatorHistory:
     def __init__(self, creations, label):
         if type(label) is not str or not label.strip():
             raise ValueError('creator_history_label_required')
-        rows = sorted({(creator, slot, index, pool) for creator, slot, index, pool in creations})
-        if any(type(c) is not str or not c or type(s) is not int or type(i) is not int or type(p) is not str
-               for c, s, i, p in rows):
+        rows = [tuple(row) for row in creations]
+        # Types first (R02 O-R2-2): a mixed-type row must fail as ValueError, not at the sort.
+        if any(len(row) != 4 or type(row[0]) is not str or not row[0] or type(row[1]) is not int
+               or type(row[2]) is not int or type(row[3]) is not str for row in rows):
             raise ValueError('invalid_creator_history_row')
+        rows = sorted(set(rows))
         if len({p for _c, _s, _i, p in rows}) != len(rows):
             raise ValueError('duplicate_pool_in_creator_history')
         self.label = label
