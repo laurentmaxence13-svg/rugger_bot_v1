@@ -210,6 +210,9 @@ def partition(base, filtered, *, registry_entries, segment, embargo_slots=None, 
     if any(b['preregistration_sha256'] not in registered for b in bundles):
         raise ValueError('unregistered_runs')
     run_codes = check_code(bundles, registry_entries)
+    if len(run_codes) != 1:
+        # An exact ablation compares trade rows one by one: both runs must come from the same code.
+        raise ValueError('partition_runs_on_different_code')
     arm = _policy(filtered)
     if not hasattr(arm, 'base_arm'):
         raise ValueError('not_a_veto_challenger:%s' % filtered['policy'])

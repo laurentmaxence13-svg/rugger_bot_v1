@@ -187,6 +187,11 @@ def test_partition_guards_manifest_rule_params_and_embargo_r02(tmp_path, capsys)
         cli.partition(base, filtered, registry_entries=entries, segment='exploration', embargo_slots=10)
     with pytest.raises(ValueError, match='code_sha256_mismatch'):
         cli.partition(base, dict(filtered, code_sha256='f' * 64), registry_entries=entries, segment='exploration')
+    other_code = 'e' * 64                       # registered and run consistently, but on another code
+    relabelled = [dict(entry, code_sha256=other_code) if entry['preregistration_sha256'] == filtered['preregistration_sha256']
+                  else entry for entry in entries]
+    with pytest.raises(ValueError, match='partition_runs_on_different_code'):
+        cli.partition(base, dict(filtered, code_sha256=other_code), registry_entries=relabelled, segment='exploration')
     report = cli.partition(base, filtered, registry_entries=entries, segment='exploration', n_perm=50)
     assert report['evaluator_code_sha256'] == h.code_fingerprint() and report['run_code_sha256']
 

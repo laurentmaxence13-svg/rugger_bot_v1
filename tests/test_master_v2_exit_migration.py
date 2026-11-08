@@ -152,3 +152,21 @@ def test_exit_after_migration_helper():
         assert (row['outcome'], row['pnl_lamports'], row['net_return']) == ('migrated_unpriced', None, None)
     other = dict(closed, outcome='open_at_end', exit_slot=500)
     assert hrr._exit_after_migration(other, migration) is other       # open positions: _migrated's job
+
+
+def test_migration_rule_comes_before_the_window_r02(monkeypatch):
+    """A sale beyond both the boundary and the window is unpriced, never a valued open_at_window_end."""
+    archive = _archive()
+    events = _events(archive)
+    window = dict(entry_cutoff_slot=events[-1].slot, window_slot_max=events[-1].slot)
+    _migrating(monkeypatch, events[-1].slot + 1)
+    trade = h.run_policy_pool(archive, SNIPE, _late_rule(events), LONG, quote_mint=WSOL_MINT, window=window)['trade']
+    assert trade['outcome'] == 'migrated_unpriced' and trade.get('mark_pnl_lamports') is None
+    original = hrr.replay
+
+    def at_last(timeline, arm, model, *, quote_mint):
+        return original(timeline, _ExitAtLast(len(timeline.events)), model, quote_mint=quote_mint)
+    monkeypatch.setattr(hrr, 'replay', at_last)
+    record = hrr.replay_pool(archive, hrr.ReplayParams(latency_slots=LATENCY, exit_horizon_ms=25_000),
+                             quote_mint=WSOL_MINT, window=window)
+    assert {row['outcome'] for row in record['arms'].values()} == {'migrated_unpriced'}
