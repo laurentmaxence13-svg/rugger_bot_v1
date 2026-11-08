@@ -196,6 +196,9 @@ def export_pools(window_dir, out_dir, *, entry_cutoff_gap_slots=DEFAULT_CUTOFF_G
               'source': {'window': manifest['window'],
                          'window_manifest_sha256': checked['manifest_sha256'],
                          'endpoint': manifest['endpoint']},
+              # W1 protocol R6: the spend of the collection (requests, credits charged before
+              # each send, caps and cost table) travels with the MANIFEST it produced.
+              'collection_budget': manifest['budget'],
               'skipped': dict(sorted(skipped.items())),
               'contents': 'Per-pool archives rebuilt from a verified LaunchLab program-window '
                           'backfill; account is null by design (never an L1 input).'}

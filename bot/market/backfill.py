@@ -48,6 +48,15 @@ COST_PRESETS = {
                             'getTransactionsForAddress': 100},
     'public': {'getSignaturesForAddress': 0, 'getTransaction': 0,
                'getTransactionsForAddress': 0},
+    # W1 protocol R6: the current official Helius pages, archived by RUGGER 03 on 2026-11-08
+    # (pricing sha256 b6794b1636f1bb74f9dea17c1ae86274fd79635378ea1bfda8acb9d06d268c81,
+    # billing/credits sha256 fa152d54f117265801aeae38bd6052be863eaf4e10303817180dc0dea6e4ab49):
+    # standard RPC 1 credit; getTransactionsForAddress 10 credits per 100 full transactions
+    # returned, rounded up, minimum 10 (signatures-only: 10 flat). With pages of at most 100
+    # full transactions (GTFA_FULL_PAGE), 10 charged BEFORE each call is the documented
+    # maximum of that call. The provider's dashboard has not confirmed the billing.
+    'helius-documented-20261108': {'getSignaturesForAddress': 1, 'getTransaction': 1,
+                                   'getTransactionsForAddress': 10},
 }
 
 
