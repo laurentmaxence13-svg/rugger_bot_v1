@@ -35,6 +35,7 @@ from bot.p4 import sol_usd_series as sus
 EXECUTION = dict(latency_slots=4, base_fee_lamports=5_000, priority_fee_lamports=100_000,
                  failed_attempt_fee_lamports=0)
 L1_HORIZON_MS = 30_000
+EMBARGO_SLOTS = w1_collection.GAP_SLOTS          # v2.5: fixed, any other value refused (R02 D-8)
 V2_HOLD_S = 25
 L1_EXIT = hrr.ExitOptions(clock_horizon=True)
 V2_ARMS = {
@@ -85,7 +86,7 @@ def plan(s0, *, evaluation_slots=w1_collection.EVALUATION_SLOTS):
 
 
 def collect_command(s0, *, pilot_dir, max_credits, out, evaluation_slots=w1_collection.EVALUATION_SLOTS,
-                    max_requests=200_000, endpoint_env='RUGGER_BACKFILL_RPC_URL', address=None, other_runs=()):
+                    other_runs, max_requests=200_000, endpoint_env='RUGGER_BACKFILL_RPC_URL', address=None):
     """Arguments for backfill_cli (NOT executed here); the run cap must fit what the pilot and the
     other runs of the month left. ``address``: None for the LaunchLab program, or the SOL/USD
     price account (v2.4) for the SOL/USD collection over the same W1 slots."""
@@ -115,13 +116,26 @@ def pyth_entries(run_dir, s0, *, evaluation_slots=w1_collection.EVALUATION_SLOTS
     return [row for seg in manifest['segments'] if seg['kind'] == 'tx' for row in bf.read_segment(Path(run_dir) / seg['path'])]
 
 
-def sol_usd_series(entries, acceptance, out):
-    """COLLECTED series of Pyth push points from collected entries, with the measured acceptance rule."""
+def sol_usd_series(entries, study_report, study_report_sha256, out):
+    """COLLECTED series of effective Pyth push points with the acceptance of the ANCHORED study.
+
+    ``study_report``: the age study report (pyth_age_study.study output, JSON); its sha256 must be
+    the one RUGGER 02 anchored before the W1 collection and its verdict ACCEPTED (R02 D-7).
+    """
     require_no_dotenv()
-    document = dict(schema=sus.SERIES_SCHEMA, label='COLLECTED', points=pyth_push.sol_usd_points(entries),
-                    acceptance=dict(acceptance))
+    if _sha_file(study_report) != study_report_sha256:
+        raise W1RunError('age_study_report_is_not_the_anchored_one')
+    report = _read_json(study_report)
+    if report.get('verdict') != 'ACCEPTED' or report.get('acceptance') is None:
+        raise W1RunError('age_study_not_accepted')
+    decoded = pyth_push.decode_entries(entries)
+    document = dict(schema=sus.SERIES_SCHEMA, label='COLLECTED', points=decoded['points'],
+                    acceptance=dict(report['acceptance']))
     series = sus.series_from_document(document)                    # validates before anything is written
     _write_json(out, document)
+    _write_json(str(out) + '.decoding.json', dict(updates=decoded['updates'], not_newer=decoded['not_newer'],
+                                                  points=len(decoded['points']), study_report_sha256=study_report_sha256,
+                                                  series_sha256=series.sha256))
     return series
 
 
@@ -163,6 +177,18 @@ def run_trials(pools_dir, series_path, *, registry_path, sensitivity_registry_pa
     if l10['bundle_sha256'] != sensitivity['bundle_sha256']:
         raise W1RunError('sensitivity_replay_not_deterministic')
     written[w1_eval.SENSITIVITY_ID] = _write_json(_bundle_path(out, w1_eval.SENSITIVITY_ID), l10)
+    # Descriptive sensitivities (outside N, R02 D-5), registered before their replay; bundles saved.
+    descriptive = w1_eval.run_l1_descriptive(pools_dir, l1_params(), L1_EXIT, registry_path=sensitivity_registry_path,
+                                             registered_at=registered_at, sol_usd_series=series)
+    history = hrr.CreatorHistory.from_archives([a for _e, a in hrr.load_fixtures(pools_dir)[2]], 'manifest')
+    for name, params, options in (('L1_failed_fee_105000', hrr.ReplayParams(**dict(vars(l1_params()), failed_attempt_fee_lamports=105_000)), L1_EXIT),
+                                  ('L1_event_horizon', l1_params(), hrr.ExitOptions())):
+        bundle = hrr.run_replay(pools_dir, params, series, options, history, placebo_arm=True)
+        ids = [k for k, (arm, change, horizon) in w1_eval.DESCRIPTIVE.items()
+               if (horizon == 'event') == (name == 'L1_event_horizon')]
+        if any(descriptive[k]['bundle_sha256'] != bundle['bundle_sha256'] for k in ids):
+            raise W1RunError('descriptive_replay_not_deterministic:' + name)
+        written[name] = _write_json(_bundle_path(out, name), bundle)
     _write_json(Path(out) / 'bundles' / 'SHA256SUMS.json', written)
     return written
 
@@ -174,7 +200,7 @@ def _entry_for(entries, bundle_or_trial_prereg):
     raise W1RunError('no_registry_entry_for_bundle')
 
 
-def evaluate(pools_dir, out, s0, *, registry_paths, registry_path, sensitivity_registry_path, embargo_slots,
+def evaluate(pools_dir, out, s0, *, registry_paths, registry_path, sensitivity_registry_path,
              evaluation_slots=w1_collection.EVALUATION_SLOTS, n_boot=w1_eval.B_DEFAULT):
     """Rebuild every trial document from its saved bundle, then evaluate W1 (R02 O-F1)."""
     require_no_dotenv()
@@ -209,10 +235,22 @@ def evaluate(pools_dir, out, s0, *, registry_paths, registry_path, sensitivity_r
     sensitivity = w1_eval.trial_from_l1_bundle(l10, w1_eval.SENSITIVITY_ID,
                                                _entry_for(sensitivity_entries, record['preregistration_sha256']),
                                                pools_dir, arm='master')
+    descriptive = {}
+    for name, params, options in (('L1_failed_fee_105000', hrr.ReplayParams(**dict(vars(l1_params()), failed_attempt_fee_lamports=105_000)), L1_EXIT),
+                                  ('L1_event_horizon', l1_params(), hrr.ExitOptions())):
+        bundle = _read_json(_bundle_path(out, name))
+        for trial_id, (arm, _change, horizon) in w1_eval.DESCRIPTIVE.items():
+            if (horizon == 'event') != (name == 'L1_event_horizon'):
+                continue
+            record = w1_eval.l1_preregister(*w1_eval.l1_design(pools_dir, params), params, options, arm=arm,
+                                            sol_usd_source='series:' + bundle['sol_usd_series']['sha256'],
+                                            creator_history_sha256=bundle['creator_history']['sha256'])
+            descriptive[trial_id] = w1_eval.trial_from_l1_bundle(
+                bundle, trial_id, _entry_for(sensitivity_entries, record['preregistration_sha256']), pools_dir, arm=arm)
     b = plan(s0, evaluation_slots=evaluation_slots)
     report = w1_eval.evaluate_w1(trials, all_entries, start=b['evaluation'][0], end=b['evaluation'][1],
-                                 embargo_slots=embargo_slots, sensitivity_latency10=sensitivity,
-                                 sensitivity_entries=sensitivity_entries, n_boot=n_boot)
+                                 embargo_slots=EMBARGO_SLOTS, sensitivity_latency10=sensitivity,
+                                 sensitivity_entries=sensitivity_entries, descriptive=descriptive, n_boot=n_boot)
     report['bundles_sha256'] = sums
     report['w1_bounds'] = b
     _write_json(Path(out) / 'w1_report.json', report)

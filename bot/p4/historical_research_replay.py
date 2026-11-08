@@ -466,6 +466,10 @@ class _PoolObserver:
         sol = price_usd(point) if self.series is not None else Fraction(str(params.sol_usd))
         detected = facts['creation_block_time'] * 1000 + params.receipt_latency_ms
         price, funding = self._quote(event, sol)
+        if self.series is not None:
+            # W1 v2.5 (R02 D-3): with a SOL/USD series, the liquidity is published so that the share of
+            # decisions near the scorer's USD threshold can be reported; constant-rate bundles unchanged.
+            shared['liquidity_usd'] = funding
         features = build_features(
             inputs, facts['mint'], facts['creator'], detected // 1000, at // 1000,
             self._past_prices(history[:-1], sol),

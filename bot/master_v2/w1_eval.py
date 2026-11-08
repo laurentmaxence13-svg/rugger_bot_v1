@@ -43,6 +43,15 @@ TRIAL_SCHEMA = 'rugger-w1-trial-v1'
 L1_ARMS = {'M1': 'master', 'P1b': hrr.PLACEBO_ARM}
 SENSITIVITY_ID = 'M1_latency10'
 SENSITIVITY_LATENCY_SLOTS = 10
+# Descriptive sensitivities outside N (W1 v2.5, R02 D-5): registered before their replay in the
+# sensitivity registry, published, never part of the gate.
+DESCRIPTIVE = {
+    'M1_failed_fee_105000': ('master', dict(failed_attempt_fee_lamports=105_000), None),
+    'M1_event_horizon': ('master', {}, 'event'),
+    'P1b_event_horizon': (hrr.PLACEBO_ARM, {}, 'event'),
+}
+LIQUIDITY_THRESHOLD_USD = 1000        # decide(min_liquidity=1000) of the Master scorer (P4 POLICY)
+SOL_USD_ERROR_LIMIT = 0.005           # v2.5 age-study error bound (p99 of |used - next published|)
 B_DEFAULT = 10_000
 SEED = 20261108
 ALPHA = 0.025
@@ -124,6 +133,29 @@ def run_l1_sensitivity(fixtures_dir, params, exit_options, *, registry_path, reg
     sensitivity = replace(params, latency_slots=SENSITIVITY_LATENCY_SLOTS)
     return _run_l1(fixtures_dir, sensitivity, exit_options, {SENSITIVITY_ID: 'master'}, registry_path=registry_path,
                    registered_at=registered_at, sol_usd_series=sol_usd_series)[SENSITIVITY_ID]
+
+
+def run_l1_descriptive(fixtures_dir, params, exit_options, *, registry_path, registered_at, sol_usd_series=None):
+    """The descriptive sensitivities of DESCRIPTIVE, each registered before its replay (outside N)."""
+    out = {}
+    fee = replace(params, failed_attempt_fee_lamports=105_000)
+    out.update(_run_l1(fixtures_dir, fee, exit_options, {'M1_failed_fee_105000': 'master'},
+                       registry_path=registry_path, registered_at=registered_at, sol_usd_series=sol_usd_series))
+    out.update(_run_l1(fixtures_dir, params, hrr.ExitOptions(),
+                       {'M1_event_horizon': 'master', 'P1b_event_horizon': hrr.PLACEBO_ARM},
+                       registry_path=registry_path, registered_at=registered_at, sol_usd_series=sol_usd_series))
+    return out
+
+
+def near_threshold_share(trial, pools, *, threshold=LIQUIDITY_THRESHOLD_USD, error=SOL_USD_ERROR_LIMIT):
+    """Share of the trial's priced decisions whose liquidity_usd lies within the SOL/USD error of the
+    scorer's USD threshold (|liquidity - threshold| <= error * liquidity): decisions a price error
+    at the bound could flip. Published only (R02 D-3)."""
+    wanted = set(pools)
+    rows = [r for p in trial['pools'] if p['pool'] in wanted for r in p['journal'] if 'liquidity_usd' in r]
+    near = sum(1 for r in rows if abs(r['liquidity_usd'] - threshold) <= error * r['liquidity_usd'])
+    return dict(decisions=len(rows), near=near, share=(near / len(rows)) if rows else None,
+                threshold_usd=threshold, error=error)
 
 
 def trial_from_l1_bundle(bundle, trial_id, entry, fixtures_dir, *, arm=None):
@@ -280,7 +312,7 @@ REQUIRED = ('M1', 'P1b', 'P1', 'P2', 'S1', 'S2', 'S3')
 
 
 def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=(140, 50),
-                sensitivity_latency10=None, sensitivity_entries=(), n_boot=B_DEFAULT):
+                sensitivity_latency10=None, sensitivity_entries=(), descriptive=None, n_boot=B_DEFAULT):
     """W1 report and decision; ``trials`` maps the protocol ids to trial documents.
 
     ``sensitivity_latency10`` is the M1_latency10 trial document and ``sensitivity_entries`` its
@@ -303,7 +335,8 @@ def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=
         raise ValueError('registered_w1_trials_not_all_evaluated')
     n_trials = len(recorded)
     split = w1_split(trials['M1']['pools'], start=start, end=end, embargo_slots=embargo_slots)
-    report = dict(n_trials=n_trials, split={k: (len(v) if type(v) is list else v) for k, v in split.items()},
+    report = dict(n_trials=n_trials, embargo_slots=embargo_slots,
+                  split={k: (len(v) if type(v) is list else v) for k, v in split.items()},
                   evaluator_code_sha256=code_fingerprint(), code_fingerprint_rule=FINGERPRINT_RULE,
                   code_modules=list(code_modules()), runtime=runtime_record(), trials={},
                   pool_coverage=_pool_coverage(trials, split['all'], start, end))
@@ -330,6 +363,9 @@ def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=
                            trials['M1'], recorded)
         sens = trial_metrics(sensitivity_latency10, split['all'], n_boot)['mean_return']
     report['sensitivity_latency10_mean'] = sens
+    report['descriptive_sensitivities'] = _descriptive(descriptive or {}, sensitivity_entries, trials['M1'], recorded,
+                                                       split, n_boot)
+    report['m1_near_usd_threshold'] = near_threshold_share(trials['M1'], split['all'])
     report['decision'], report['decision_reasons'] = _decide(report, m1, p1b, s1, targets)
     report['flags'] = dict(category=hrr.CATEGORY, master_operational_trade=False, counted_in_master_gate=False,
                            reference_arm_reported=False)
@@ -345,6 +381,26 @@ def _pool_coverage(trials, evaluation, start, end):
         per_trial[key] = dict(pools=len(own), missing_vs_M1=len(reference - own), extra_vs_M1=len(own - reference))
     return dict(identical=all(v['missing_vs_M1'] == v['extra_vs_M1'] == 0 for v in per_trial.values()),
                 per_trial=per_trial)
+
+
+def _descriptive(trials, entries, m1_trial, w1_recorded, split, n_boot):
+    """Metrics of the registered descriptive sensitivities (outside N, never in the gate)."""
+    registered = {e['preregistration_sha256']: e for e in entries}
+    out = {}
+    for trial_id, trial in trials.items():
+        if trial_id not in DESCRIPTIVE or trial.get('trial_id') != trial_id:
+            raise ValueError('unknown_descriptive_sensitivity:' + str(trial_id))
+        if trial['preregistration_sha256'] in w1_recorded:
+            raise ValueError('descriptive_sensitivity_registered_inside_N')
+        entry = registered.get(trial['preregistration_sha256'])
+        if entry is None:
+            raise ValueError('unregistered_descriptive_sensitivity:' + trial_id)
+        if not (trial['code_sha256'] == entry['code_sha256'] == m1_trial['code_sha256']
+                and trial['manifest_sha256'] == entry['manifest_sha256'] == m1_trial['manifest_sha256']):
+            raise ValueError('descriptive_sensitivity_code_or_manifest_mismatch:' + trial_id)
+        out[trial_id] = {period: {k: v for k, v in trial_metrics(trial, split[period], n_boot).items()
+                                  if k not in ('returns', 'return_creators')} for period in ('all', 'A', 'B')}
+    return out
 
 
 def _check_sensitivity(trial, entries, m1_entry, m1_trial, w1_recorded):

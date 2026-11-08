@@ -18,6 +18,13 @@ PRICE FEED ACCOUNT, system]. Only a SUCCESSFUL transaction counts: the chain ver
 and the Merkle proof inside it, but nothing here re-verifies them, so every point stays
 ``NOT_VERIFIED_IN_REPLAY`` (bot.p4.sol_usd_series). Evidence: sha256 of the canonical JSON of
 the RPC entry (getTransactionsForAddress full), the raw wire bytes not being returned.
+
+Effective updates only (R02 D-4). The push program is permissionless: anyone may post, and a
+late post can succeed without changing the account. The official docs (use-prices-on-blockchain/
+solana.mdx, archived 2026-11-08) state that price feed accounts "hold a sequence of prices for a
+specific price feed ID that always moves forward in time". So, in chain order, an update whose
+publish_time is not strictly later than the last effective one is NOT effective: it is ignored
+and counted (``not_newer``), never treated as a price and never a reason to stop the series.
 No network access.
 """
 import hashlib
@@ -116,25 +123,35 @@ def evidence_sha256(entry):
     return hashlib.sha256(json.dumps(entry, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
 
-def sol_usd_points(entries, *, feed_id=SOL_USD_FEED_ID, price_account=SOL_USD_ACCOUNT):
-    """``rugger-sol-usd-point-v1`` points (kind ``pyth_onchain_account``) sorted by chain position."""
-    points = []
+def decode_entries(entries, *, feed_id=SOL_USD_FEED_ID, price_account=SOL_USD_ACCOUNT):
+    """Effective SOL/USD points in chain order, with the count of ignored non-effective updates."""
+    rows = []
     for entry in entries:
         if type(entry.get('transactionIndex')) is not int or type(entry.get('slot')) is not int:
             raise PythPushError('chain_position_required')
         for update in updates(entry, feed_id=feed_id, price_account=price_account):
             if update['price'] <= 0:
                 raise PythPushError('non_positive_price')
-            points.append(dict(schema=POINT_SCHEMA, slot=entry['slot'], transaction_index=entry['transactionIndex'],
-                               block_time=entry.get('blockTime'), received_at_ms=None,
-                               publish_time=update['publish_time'], price=update['price'],
-                               exponent=update['exponent'], confidence=update['conf'],
-                               source_kind='pyth_onchain_account', source_ref=price_account,
-                               evidence_sha256=evidence_sha256(entry), signature=None))
-    points.sort(key=lambda p: (p['slot'], p['transaction_index']))
-    for earlier, later in zip(points, points[1:]):
-        if (later['slot'], later['transaction_index']) == (earlier['slot'], earlier['transaction_index']):
+            rows.append((entry['slot'], entry['transactionIndex'], entry, update))
+    rows.sort(key=lambda row: (row[0], row[1]))
+    for earlier, later in zip(rows, rows[1:]):
+        if (later[0], later[1]) == (earlier[0], earlier[1]):
             raise PythPushError('duplicate_chain_position')
-        if later['publish_time'] < earlier['publish_time']:
-            raise PythPushError('publish_time_moved_backwards')     # the account only moves forward
-    return points
+    points, not_newer, last = [], 0, None
+    for slot, index, entry, update in rows:
+        if last is not None and update['publish_time'] <= last:
+            not_newer += 1                       # accepted by the chain but not newer: not effective
+            continue
+        last = update['publish_time']
+        points.append(dict(schema=POINT_SCHEMA, slot=slot, transaction_index=index,
+                           block_time=entry.get('blockTime'), received_at_ms=None,
+                           publish_time=update['publish_time'], price=update['price'],
+                           exponent=update['exponent'], confidence=update['conf'],
+                           source_kind='pyth_onchain_account', source_ref=price_account,
+                           evidence_sha256=evidence_sha256(entry), signature=None))
+    return dict(points=points, updates=len(rows), not_newer=not_newer)
+
+
+def sol_usd_points(entries, *, feed_id=SOL_USD_FEED_ID, price_account=SOL_USD_ACCOUNT):
+    """``rugger-sol-usd-point-v1`` points (kind ``pyth_onchain_account``) of the effective updates."""
+    return decode_entries(entries, feed_id=feed_id, price_account=price_account)['points']

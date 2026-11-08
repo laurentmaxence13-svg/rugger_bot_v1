@@ -375,3 +375,33 @@ def test_pool_coverage_is_published():
     trials['P1'] = dict(trials['P1'], pools=trials['P1']['pools'][1:])
     coverage = _evaluate(trials)['pool_coverage']
     assert coverage['identical'] is False and coverage['per_trial']['P1']['missing_vs_M1'] == 1
+
+
+def test_descriptive_sensitivities_are_registered_outside_n_r02_d5():
+    trials = _w1(0.08)
+    record = w.l1_preregister('m' * 64, 'w' * 64, replace(W1_L1, failed_attempt_fee_lamports=105_000), CLOCK,
+                              arm='master', sol_usd_source='declared:150', creator_history_sha256='h')
+    fee = dict(_trial('M1_failed_fee_105000', [0.07] * 300), preregistration_sha256=record['preregistration_sha256'])
+    report = _evaluate(trials, sensitivity_latency10=_sensitivity(),
+                       sensitivity_entries=[_L1_RECORDS[w.SENSITIVITY_ID], record],
+                       descriptive={'M1_failed_fee_105000': fee})
+    assert report['decision'] == 'CHALLENGER_FOR_W2'                   # descriptive results never gate
+    assert report['descriptive_sensitivities']['M1_failed_fee_105000']['all']['closed'] == 300
+    for bad, error in (({'other': fee}, 'unknown_descriptive_sensitivity'),
+                       ({'M1_failed_fee_105000': dict(fee, preregistration_sha256='0' * 64)}, 'unregistered_descriptive'),
+                       ({'M1_failed_fee_105000': dict(fee, code_sha256='e' * 64)}, 'code_or_manifest_mismatch'),
+                       ({'M1_failed_fee_105000': dict(fee, preregistration_sha256=trials['P1']['preregistration_sha256'])},
+                        'registered_inside_N')):
+        with pytest.raises(ValueError, match=error):
+            _evaluate(trials, sensitivity_latency10=_sensitivity(),
+                      sensitivity_entries=[_L1_RECORDS[w.SENSITIVITY_ID], record], descriptive=bad)
+
+
+def test_near_threshold_share_r02_d3():
+    trial = dict(pools=[dict(pool='a', journal=[dict(liquidity_usd=1000.0), dict(liquidity_usd=1004.9),
+                                                 dict(liquidity_usd=1006.0), dict(liquidity_usd=995.1), dict(),
+                                                 dict(liquidity_usd=1005.02)]),     # 5.02 <= 0.5 % of 1005.02
+                        dict(pool='b', journal=[dict(liquidity_usd=1000.0)])])
+    share = w.near_threshold_share(trial, ['a'])
+    assert (share['decisions'], share['near']) == (5, 4) and share['share'] == 0.8
+    assert w.near_threshold_share(trial, [])['share'] is None

@@ -79,9 +79,12 @@ def test_malformed_updates_are_refused():
     with pytest.raises(pp.PythPushError, match='feed_written_to_another_account'):
         pp.updates(entry, price_account='So11111111111111111111111111111111111111112')
     moved = _entry(B)
-    moved['slot'] = 466226000                                   # B placed before A: publish_time would go back
-    with pytest.raises(pp.PythPushError, match='publish_time_moved_backwards'):
-        pp.sol_usd_points([_entry(A), moved])
+    moved['slot'] = 466226000                                   # B placed before A: A is then older than B
+    decoded = pp.decode_entries([_entry(A), moved])
+    assert decoded['not_newer'] == 1 and decoded['updates'] == 2       # A ignored and counted (R02 D-4)
+    assert [p['publish_time'] for p in decoded['points']] == [1793993318]
+    same = pp.decode_entries([_entry(A), dict(_entry(A), slot=466226900, transactionIndex=1)])
+    assert same['not_newer'] == 1 and len(same['points']) == 1          # equal publish_time: not newer
     with pytest.raises(pp.PythPushError, match='chain_position_required'):
         pp.sol_usd_points([dict(_entry(A), transactionIndex=None)])
 
@@ -131,3 +134,48 @@ def test_confidence_at_exactly_the_limit_is_accepted():
     assert sus.series_from_document(doc).as_of(**at)[2] is None                      # 586 ppm == limit
     doc['acceptance']['max_confidence_ppm'] = 585
     assert sus.series_from_document(doc).as_of(**at)[2] == 'sol_usd_confidence_too_wide'
+
+
+def _push_ix(entry):
+    keys = pp.account_keys(entry)
+    return next(ix for ix in pp._instructions(entry) if keys[ix['programIdIndex']] == pp.PUSH_ORACLE_PROGRAM
+                and pp.decode_update(pp.b58decode(ix['data']))['feed_id'] == pp.SOL_USD_FEED_ID)
+
+
+def _with_data(entry, transform):
+    """Copy of ``entry`` whose SOL/USD UpdatePriceFeed data goes through ``transform``."""
+    import copy
+    entry = copy.deepcopy(entry)
+    ix = _push_ix(entry)
+    from bot.market.launchlab_events import b58encode
+    ix['data'] = b58encode(transform(pp.b58decode(ix['data'])))
+    return entry
+
+
+def test_r02_survivors_shard_price_several_updates_inner_and_duplicates():
+    import struct
+    # shard id (u16 LE just before the 32-byte feed id at the end of the data) must be 0.
+    shard = _with_data(_entry(A), lambda d: d[:-34] + struct.pack('<H', 1) + d[-32:])
+    with pytest.raises(pp.PythPushError, match='unexpected_shard'):
+        pp.updates(shard)
+    # price <= 0: message starts after 8 + 4 bytes; price is i64 BE at message offset 33.
+    def zero_price(d):
+        at = 12 + 33
+        return d[:at] + struct.pack('>q', 0) + d[at + 8:]
+    with pytest.raises(pp.PythPushError, match='non_positive_price'):
+        pp.sol_usd_points([_with_data(_entry(A), zero_price)])
+    # two SOL/USD updates in one transaction are refused.
+    import copy
+    double = copy.deepcopy(_entry(A))
+    double['transaction']['message']['instructions'].append(copy.deepcopy(_push_ix(double)))
+    with pytest.raises(pp.PythPushError, match='several_updates_of_one_feed_in_one_transaction'):
+        pp.updates(double)
+    # an update made through a CPI (inner instruction) counts like a top-level one.
+    inner = copy.deepcopy(_entry(A))
+    ix = _push_ix(inner)
+    inner['transaction']['message']['instructions'].remove(ix)
+    inner['meta']['innerInstructions'] = [{'index': 0, 'instructions': [ix]}]
+    assert [u['price'] for u in pp.updates(inner)] == [9004008179]
+    # the same chain position twice is refused.
+    with pytest.raises(pp.PythPushError, match='duplicate_chain_position'):
+        pp.sol_usd_points([_entry(A), _entry(A)])
