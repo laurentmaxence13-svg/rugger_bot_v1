@@ -252,10 +252,16 @@ def run_policy_pool(archive, policy, exit_rule, params, *, quote_mint, window=No
     if result.clock_exit is not None:
         # No real event carries our timed sale: its slot is estimated on the slot floor (most
         # slots, so a window check stays conservative), plus the landing latency.
+        # block_time is truncated to the second: up to 1 s more of real time may separate them (R02 O-A).
         last = timeline.events[result.clock_exit['last_index']]
         landing = result.clock_exit['landing_time']
         row.update(exit_signature=None, exit_block_time=landing,
-                   exit_slot=last.slot + hrr.slots_for_ms((landing - last.block_time) * 1000) + params.latency_slots)
+                   exit_slot=last.slot + hrr.slots_for_ms((landing + BLOCK_TIME_RESOLUTION_S - last.block_time) * 1000)
+                   + params.latency_slots)
+        if migration is not None and row['exit_slot'] >= migration['boundary_slot']:
+            # The curve had migrated before our timed sale could land: no sale on it (R02 B1).
+            row = dict(row, outcome='migrated_unpriced', pnl_lamports=None, net_return=None,
+                       notes=row['notes'] + ['clock_exit_after_migration'])
     if migration is not None:
         row = hrr._migrated(row)
     row = hrr._apply_window(row, window)

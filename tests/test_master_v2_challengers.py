@@ -161,3 +161,44 @@ def test_partition_refuses_a_kept_entry_that_differs_from_the_base_arm():
     extra = dict(pools=[_row('a', 'closed', 5_000_000), _row('c', 'closed', 1)])
     with pytest.raises(ValueError, match='partition_not_exact:c'):
         ch.veto_partition(base, extra, {'a', 'b', 'c'}, n_perm=10)
+
+
+def test_partition_guards_manifest_rule_params_and_embargo_r02(tmp_path, capsys):
+    cli = _cli()
+    reg = tmp_path / 'trials.jsonl'
+    common = ['--fixtures', str(PACK), '--registry', str(reg), '--exit', 'max_hold_s=25',
+              '--replay', 'latency_slots=4', '--replay', 'exit_horizon_ms=25000', '--at', '2026-11-08T00:00:00+00:00']
+    paths = {}
+    for name, argv in (('base', ['--policy', 'diagnostic-fixed-delay', '--param', 'delay_s=5']),
+                       ('ch1', ['--policy', 'challenger-insider-veto-5s'])):
+        paths[name] = tmp_path / f'{name}.json'
+        cli.main(['run', *common, *argv, '--out', str(paths[name])])
+    capsys.readouterr()
+    base, filtered = (json.loads(paths[n].read_text('utf-8')) for n in ('base', 'ch1'))
+    entries = registry.load(reg)
+    other_manifest = dict(filtered, fixtures=dict(filtered['fixtures'], manifest_sha256='0' * 64))
+    with pytest.raises(ValueError, match='runs_on_different_fixtures'):
+        cli.partition(base, other_manifest, registry_entries=entries, segment='exploration')
+    for tampered in (dict(filtered, exit_rule=dict(filtered['exit_rule'], max_hold_s=24)),
+                     dict(filtered, params=dict(filtered['params'], priority_fee_lamports=1))):
+        with pytest.raises(ValueError, match='base_arm_mismatch'):
+            cli.partition(base, tampered, registry_entries=entries, segment='exploration')
+    with pytest.raises(ValueError, match='embargo_shorter_than_outcome_horizon'):
+        cli.partition(base, filtered, registry_entries=entries, segment='exploration', embargo_slots=10)
+    with pytest.raises(ValueError, match='code_sha256_mismatch'):
+        cli.partition(base, dict(filtered, code_sha256='f' * 64), registry_entries=entries, segment='exploration')
+    report = cli.partition(base, filtered, registry_entries=entries, segment='exploration', n_perm=50)
+    assert report['evaluator_code_sha256'] == h.code_fingerprint() and report['run_code_sha256']
+
+
+def test_random_abstention_counts_ties_and_is_seeded():
+    same = [_row(f'p{i}', 'closed', 1_000_000) for i in range(6)]
+    filtered = dict(pools=same[:3] + [_row(r['pool'], 'no_entry', None, ['veto_x'], entered=False) for r in same[3:]])
+    tie = ch.veto_partition(dict(pools=same), filtered, {r['pool'] for r in same}, n_perm=200)
+    assert tie['random_abstention_p'] == 1.0          # every draw ties the kept mean: counted as >=
+    mixed = [_row(f'm{i}', 'closed', (i - 5) * 1_000_000) for i in range(12)]
+    kept = dict(pools=mixed[::2] + [_row(r['pool'], 'no_entry', None, ['veto_x'], entered=False) for r in mixed[1::2]])
+    pools = {r['pool'] for r in mixed}
+    first = ch.veto_partition(dict(pools=mixed), kept, pools, n_perm=300)
+    again = ch.veto_partition(dict(pools=mixed), kept, pools, n_perm=300)
+    assert first['random_abstention_p'] == again['random_abstention_p'] and first['seed'] == 7

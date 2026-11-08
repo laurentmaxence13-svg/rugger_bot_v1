@@ -94,3 +94,21 @@ def test_cli_refuses_before_registration_through_the_library(tmp_path, capsys):
                       '--exit', 'stop_loss=0.1', *replay, '--out', str(tmp_path / 'x.json')])
         assert 'replay_' in capsys.readouterr().err
     assert not reg.exists()
+
+
+def test_evaluate_checks_and_reports_code_fingerprints_r02_o8(tmp_path, capsys):
+    cli = _cli()
+    reg = tmp_path / 'trials.jsonl'
+    out = tmp_path / 'snipe.json'
+    cli.main(['run', '--fixtures', str(PACK), '--registry', str(reg), '--policy', 'immediate-snipe',
+              '--exit', 'max_hold_s=25', '--replay', 'latency_slots=4', '--replay', 'exit_horizon_ms=25000',
+              '--out', str(out), '--at', '2026-11-08T00:00:00+00:00'])
+    capsys.readouterr()
+    doc = json.loads(out.read_text('utf-8'))
+    entries = registry.load(reg)
+    result = cli.evaluate([doc], registry_entries=entries, n_boot=200)
+    assert result['run_code_sha256'] == [doc['code_sha256']] == [entries[0]['code_sha256']]
+    assert result['evaluator_code_sha256'] == h.code_fingerprint()
+    assert result['runs'][0]['code_sha256'] == doc['code_sha256']
+    with pytest.raises(ValueError, match='code_sha256_mismatch'):
+        cli.evaluate([dict(doc, code_sha256='0' * 64)], registry_entries=entries, n_boot=200)

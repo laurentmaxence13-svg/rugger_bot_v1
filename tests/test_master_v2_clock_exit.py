@@ -92,7 +92,7 @@ def test_harness_rule_flag_trigger_and_conservative_exit_slot():
     assert trade['exit_block_time'] == landing and trade['exit_signature'] is None
     last_slot = timeline.events[trade['exit_index']].slot
     last_time = timeline.events[trade['exit_index']].block_time
-    assert trade['exit_slot'] == last_slot + hrr.slots_for_ms((landing - last_time) * 1000) + PROTOCOL.latency_slots
+    assert trade['exit_slot'] == last_slot + hrr.slots_for_ms((landing + 1 - last_time) * 1000) + PROTOCOL.latency_slots
     off = h.run_policy_pool(archive, pol.ImmediateSnipe(max_age_s=10_000), replace(rule, clock_exit=False),
                             PROTOCOL, quote_mint=WSOL_MINT)['trade']
     assert off['exit_trigger'] is None or off['exit_trigger']['reason'] != 'max_hold_clock'
@@ -125,3 +125,63 @@ def test_policy_arm_exposes_a_deadline_only_with_the_flag():
     on = h.PolicyArm(pol.NoTrade(), h.ExitRule(max_hold_s=25, clock_exit=True), {}, {}, 1)
     off = h.PolicyArm(pol.NoTrade(), h.ExitRule(max_hold_s=25), {}, {}, 1)
     assert on.exit_deadline(position) == 1_025 and off.exit_deadline(position) is None
+
+
+def _migrating(monkeypatch, boundary_offset):
+    """The fixture pool, declared migrated ``boundary_offset`` slots after its last observed event."""
+    original = hrr.usable_timeline
+
+    def fake(archive, summary, timeline):
+        timeline, _ = original(archive, summary, timeline)
+        boundary = timeline.events[-1].slot + boundary_offset
+        return timeline, dict(rule='test', boundary_signatures=['x'], boundary_slot=boundary,
+                              boundary_transaction_index=0, max_progress_ppm=999_999)
+    monkeypatch.setattr(hrr, 'usable_timeline', fake)
+
+
+def test_clock_sale_after_the_migration_is_unpriced_r02_b1(monkeypatch):
+    archive, timeline = _timeline()
+    _migrating(monkeypatch, 1)                       # migrated right after the last observed event
+    rule = h.ExitRule(max_hold_s=600, clock_exit=True)
+    trade = h.run_policy_pool(archive, pol.ImmediateSnipe(max_age_s=10_000), rule, PROTOCOL, quote_mint=WSOL_MINT)['trade']
+    assert trade['outcome'] == 'migrated_unpriced' and trade['pnl_lamports'] is None
+    assert 'clock_exit_after_migration' in trade['notes']
+
+
+def test_clock_sale_before_the_migration_stays_closed(monkeypatch):
+    archive, timeline = _timeline()
+    _migrating(monkeypatch, 100_000)                 # boundary far beyond the timed sale
+    rule = h.ExitRule(max_hold_s=5, clock_exit=True)
+    trade = h.run_policy_pool(archive, pol.ImmediateSnipe(max_age_s=10_000), rule, PROTOCOL, quote_mint=WSOL_MINT)['trade']
+    assert trade['outcome'] == 'closed' and trade['exit_slot'] < timeline.events[-1].slot + 100_000
+
+
+class _ExitThenDeadline(Strategy):
+    """Event-driven exit at the first holding event; a clock deadline that passes while it is pending."""
+
+    def __init__(self, deadline):
+        self.deadline, self.calls = deadline, 0
+
+    def entry(self, history):
+        return 100_000_000
+
+    def exit(self, history, position, mark):
+        self.calls += 1
+        return True
+
+    def exit_deadline(self, position):
+        return self.deadline
+
+
+def test_a_pending_event_exit_has_priority_over_the_clock_r02_o_b():
+    _, timeline = _timeline()
+    events = timeline.events
+    latency = 12
+    probe = replay(timeline, _Timed(10 ** 6), ExecutionModel(latency_slots=latency), quote_mint=WSOL_MINT)
+    first = probe.entry_index + 1
+    deadline = events[first].block_time - 1          # landing = events[first].block_time: no clock before it
+    model = ExecutionModel(latency_slots=latency, clock_exit_latency_s=1)
+    later = [e for e in events[first + 1:] if e.slot <= events[first].slot + latency and e.block_time > deadline + 1]
+    assert later, 'fixture must hold an event inside the pending latency and after the clock landing'
+    result = replay(timeline, _ExitThenDeadline(deadline), model, quote_mint=WSOL_MINT)
+    assert result.outcome == 'closed' and 'clock_exit' not in result.notes and result.clock_exit is None

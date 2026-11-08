@@ -29,7 +29,7 @@ from datetime import datetime, timezone  # noqa: E402
 
 from bot.master_v2 import challengers, policies, registry  # noqa: E402
 from bot.master_v2.harness import (  # noqa: E402
-    ExitRule, outcome_horizon_slots, preregister, run_policy, validate_run_params)
+    ExitRule, code_fingerprint, outcome_horizon_slots, preregister, run_policy, validate_run_params)
 from bot.master_v2.lifecycle import lifecycle_table  # noqa: E402
 from bot.master_v2.validation import (  # noqa: E402
     SEGMENTS, bootstrap_mean_ci, chronological_split, cycle_metrics, deflated_sharpe_ratio,
@@ -108,6 +108,15 @@ def _policy(bundle):
     return POLICIES[bundle['policy']](**bundle['policy_params'])
 
 
+def check_code(bundles, registry_entries):
+    """Each bundle must carry the code fingerprint its registry entry recorded (R02 O8)."""
+    recorded = {entry['preregistration_sha256']: entry.get('code_sha256') for entry in registry_entries}
+    for bundle in bundles:
+        if recorded.get(bundle['preregistration_sha256']) != bundle.get('code_sha256'):
+            raise ValueError('code_sha256_mismatch:%s' % bundle['preregistration_sha256'][:12])
+    return sorted({bundle['code_sha256'] for bundle in bundles})
+
+
 def required_embargo_slots(bundles):
     """Embargo covering every bundle's outcome horizon: entry age + bounded hold + latency (R02 O1, D)."""
     needs = []
@@ -137,6 +146,7 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
         raise ValueError('registered_trials_missing:%d' % len(registered - given))   # DSR counts all trials
     if set(unseal) - registered:
         raise ValueError('unseal_of_unregistered_preregistration')
+    run_codes = check_code(bundles, registry_entries)
     required = required_embargo_slots(bundles)
     embargo_slots = max(750, required) if embargo_slots is None else embargo_slots
     if embargo_slots < required:
@@ -155,7 +165,8 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
     runs = []
     for bundle in bundles:
         sha = bundle['preregistration_sha256']
-        row = dict(policy=bundle['policy'], preregistration_sha256=sha, segments={})
+        row = dict(policy=bundle['policy'], preregistration_sha256=sha, code_sha256=bundle['code_sha256'],
+                   segments={})
         for segment in segments:
             if segment == 'holdout' and sha not in unseal:
                 row['segments'][segment] = 'sealed'
@@ -181,7 +192,8 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
         runs.append(row)
     return dict(split={k: len(v) for k, v in split.items()}, trials=len(registered), runs=runs,
                 embargo_slots=embargo_slots, registry_head=registry_entries[-1]['entry_sha256'],
-                holdout_unsealed=sorted(set(unseal)) if holdout else [])
+                holdout_unsealed=sorted(set(unseal)) if holdout else [],
+                run_code_sha256=run_codes, evaluator_code_sha256=code_fingerprint())
 
 
 def partition(base, filtered, *, registry_entries, segment, embargo_slots=None, n_perm=10_000):
@@ -197,6 +209,7 @@ def partition(base, filtered, *, registry_entries, segment, embargo_slots=None, 
     registered = registry.trials_for(registry_entries, base['fixtures']['manifest_sha256'])
     if any(b['preregistration_sha256'] not in registered for b in bundles):
         raise ValueError('unregistered_runs')
+    run_codes = check_code(bundles, registry_entries)
     arm = _policy(filtered)
     if not hasattr(arm, 'base_arm'):
         raise ValueError('not_a_veto_challenger:%s' % filtered['policy'])
@@ -217,7 +230,8 @@ def partition(base, filtered, *, registry_entries, segment, embargo_slots=None, 
     split = chronological_split(list(table.values()), embargo_slots=embargo_slots)
     report = challengers.veto_partition(base, filtered, set(split[segment]), n_perm=n_perm)
     return dict(report, segment=segment, embargo_slots=embargo_slots, challenger=filtered['policy'],
-                base=base['policy'], registry_head=registry_entries[-1]['entry_sha256'])
+                base=base['policy'], registry_head=registry_entries[-1]['entry_sha256'],
+                run_code_sha256=run_codes, evaluator_code_sha256=code_fingerprint())
 
 
 def main(argv=None):
