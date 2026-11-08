@@ -28,7 +28,8 @@ sys.path.insert(0, str(ROOT))
 from datetime import datetime, timezone  # noqa: E402
 
 from bot.master_v2 import policies, registry  # noqa: E402
-from bot.master_v2.harness import ExitRule, outcome_horizon_slots, preregister, run_policy  # noqa: E402
+from bot.master_v2.harness import (  # noqa: E402
+    ExitRule, outcome_horizon_slots, preregister, run_policy, validate_run_params)
 from bot.master_v2.lifecycle import lifecycle_table  # noqa: E402
 from bot.master_v2.validation import (  # noqa: E402
     SEGMENTS, bootstrap_mean_ci, chronological_split, cycle_metrics, deflated_sharpe_ratio,
@@ -113,7 +114,8 @@ def required_embargo_slots(bundles):
         rule = ExitRule(**bundle['exit_rule'])
         if rule.max_hold_s is None:
             raise ValueError('evaluation_requires_bounded_max_hold_s')
-        need = outcome_horizon_slots(_policy(bundle), rule, ReplayParams(**bundle['params']))
+        params = validate_run_params(ReplayParams(**bundle['params']))   # a tampered bundle is refused
+        need = outcome_horizon_slots(_policy(bundle), rule, params)
         if need is None:
             raise ValueError('evaluation_requires_bounded_entry_age')
         needs.append(need)

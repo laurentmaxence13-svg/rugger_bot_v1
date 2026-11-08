@@ -161,6 +161,19 @@ def _slots(seconds, params):
     return hrr.slots_for_ms(seconds * 1000) + 2 * params.latency_slots
 
 
+MIN_LATENCY_SLOTS = 1          # no run may assume an instantaneous fill (R02 O3)
+MIN_EXIT_HORIZON_MS = 1_000    # no run may neutralise the L1 window guard with a ~0 horizon (R02 O5)
+
+
+def validate_run_params(params):
+    """Safety floors of every V2 run, whatever the entry point (CLI or direct call; R02 O7)."""
+    if params.latency_slots < MIN_LATENCY_SLOTS:
+        raise ValueError('replay_latency_slots_below_1')
+    if params.exit_horizon_ms < MIN_EXIT_HORIZON_MS:
+        raise ValueError('replay_exit_horizon_below_minimum')
+    return params
+
+
 def hold_gap_slots(exit_rule, params):
     """Slots a position may need after the last admitted entry; None when the hold is unbounded."""
     if exit_rule.max_hold_s is None:
@@ -196,6 +209,7 @@ def policy_window(entry, manifest, params, exit_rule):
 def run_policy_pool(archive, policy, exit_rule, params, *, quote_mint, window=None,
                     entry_lamports=hrr.ENTRY_LAMPORTS):
     """One pool: journal, trade row (closed P&L or explicit open/migrated/window/unpriced outcome)."""
+    validate_run_params(params)
     summary, timeline = summarize(archive)
     timeline, migration = hrr.usable_timeline(archive, summary, timeline)
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
@@ -226,7 +240,7 @@ def _manifest_design(fixtures_dir, params, exit_rule):
 
 def preregister(fixtures_dir, policy, exit_rule, params=None):
     """Pre-registration record of a run, computable before any replay (R02 O2)."""
-    params = hrr.ReplayParams() if params is None else params
+    params = validate_run_params(hrr.ReplayParams() if params is None else params)
     manifest_sha256, windows = _manifest_design(fixtures_dir, params, exit_rule)
     design = dict(code_sha256=code_fingerprint(), manifest_sha256=manifest_sha256,
                   windows_sha256=hrr._sha(windows))
@@ -239,7 +253,7 @@ def preregister(fixtures_dir, policy, exit_rule, params=None):
 def run_policy(fixtures_dir, policy, exit_rule, params=None):
     """Bundle of one policy over a fixture directory, with closed-cycle metrics."""
     params = hrr.ReplayParams() if params is None else params
-    registration = preregister(fixtures_dir, policy, exit_rule, params)
+    registration = preregister(fixtures_dir, policy, exit_rule, params)   # validates params first
     manifest_sha256, digests, archives, manifest = hrr.load_fixtures(fixtures_dir)
     if manifest_sha256 != registration['manifest_sha256']:
         raise ValueError('manifest_changed_during_run')
