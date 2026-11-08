@@ -145,7 +145,7 @@ def test_clock_sale_after_the_migration_is_unpriced_r02_b1(monkeypatch):
     rule = h.ExitRule(max_hold_s=600, clock_exit=True)
     trade = h.run_policy_pool(archive, pol.ImmediateSnipe(max_age_s=10_000), rule, PROTOCOL, quote_mint=WSOL_MINT)['trade']
     assert trade['outcome'] == 'migrated_unpriced' and trade['pnl_lamports'] is None
-    assert 'clock_exit_after_migration' in trade['notes']
+    assert 'exit_after_migration' in trade['notes'] and 'clock_exit' in trade['notes']
 
 
 def test_clock_sale_before_the_migration_stays_closed(monkeypatch):

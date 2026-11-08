@@ -483,6 +483,10 @@ def _trade(result, events, arm, params):
         index = getattr(result, f'{stage}_index')
         row.update({f'{stage}_index': index, f'{stage}_signature': at(index, 'signature'),
                     f'{stage}_slot': at(index, 'slot'), f'{stage}_block_time': at(index, 'block_time')})
+    if result.exit_landing_slot is not None:
+        # An event-driven sale lands at the latest at trigger slot + latency, not at the last
+        # real event applied before it: the conservative slot for the migration and window checks (R02 B2).
+        row['exit_slot'] = result.exit_landing_slot
     if result.outcome == 'open_at_end':
         row['mark_pnl_lamports'] = value
     if result.fee_rate_evidence is not None:
@@ -494,6 +498,18 @@ def _spot(event):
     """Curve spot price after a real event (quote per base, exact)."""
     state = event.state_after()
     return Fraction(state.quote_reserve, state.base_reserve)
+
+
+def _exit_after_migration(row, migration):
+    """A sale whose conservative landing slot is at or after the migration boundary is unpriced (R02 B1, B2).
+
+    The timeline ends just before the buy that crosses the boundary, so a sale still pending
+    there would otherwise be filled on a curve that had already migrated.
+    """
+    if migration is None or row['outcome'] != 'closed' or row['exit_slot'] < migration['boundary_slot']:
+        return row
+    return dict(row, outcome='migrated_unpriced', pnl_lamports=None, net_return=None,
+                notes=row['notes'] + ['exit_after_migration'])
 
 
 def _migrated(row):
@@ -579,7 +595,7 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
         record['journal'].extend(arm.journal)
         row = _trade(result, timeline.events, arm, params)
         if migration is not None:
-            row = _migrated(row)
+            row = _migrated(_exit_after_migration(row, migration))
         record['arms'][name] = _apply_window(row, window)
     return record
 

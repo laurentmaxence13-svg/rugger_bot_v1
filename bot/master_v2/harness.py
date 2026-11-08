@@ -258,12 +258,9 @@ def run_policy_pool(archive, policy, exit_rule, params, *, quote_mint, window=No
         row.update(exit_signature=None, exit_block_time=landing,
                    exit_slot=last.slot + hrr.slots_for_ms((landing + BLOCK_TIME_RESOLUTION_S - last.block_time) * 1000)
                    + params.latency_slots)
-        if migration is not None and row['exit_slot'] >= migration['boundary_slot']:
-            # The curve had migrated before our timed sale could land: no sale on it (R02 B1).
-            row = dict(row, outcome='migrated_unpriced', pnl_lamports=None, net_return=None,
-                       notes=row['notes'] + ['clock_exit_after_migration'])
     if migration is not None:
-        row = hrr._migrated(row)
+        # Timed or event-driven, a sale landing at or after the boundary is unpriced (R02 B1, B2).
+        row = hrr._migrated(hrr._exit_after_migration(row, migration))
     row = hrr._apply_window(row, window)
     record = dict(pool=archive.pool, creator=facts['creator'], created_slot=facts['creation_slot'],
                   signed_creator_verified=facts['signed_creator_verified'], trades=len(timeline.events),

@@ -89,6 +89,7 @@ class TradeResult:
     fee_rate_source: str = None     # 'model' | 'pool_event_at_decision' | 'pool_events_causal_interval'
     fee_rate_evidence: dict = None  # interval and events used (causal_interval only)
     clock_exit: dict = None         # deadline, landing_time, last_index (clock exit only)
+    exit_landing_slot: int = None   # event-driven sale: trigger slot + latency, the latest slot it can land in
 
     @property
     def priced(self):
@@ -237,6 +238,7 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
             result.received = sale.amount_out
             result.tx_costs += model.tx_cost
             result.hold_slots = events[j - 1].slot - position.entry_slot
+            result.exit_landing_slot = pending_exit_slot
             return result
         if pending_exit_slot is None and model.clock_exit_latency_s is not None:
             deadline_of = getattr(strategy, 'exit_deadline', None)
