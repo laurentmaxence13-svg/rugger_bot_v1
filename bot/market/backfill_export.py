@@ -104,7 +104,7 @@ def _signature_row(entry):
 
 
 def export_pools(window_dir, out_dir, *, entry_cutoff_gap_slots=DEFAULT_CUTOFF_GAP_SLOTS,
-                 sol_usd_series=None):
+                 sol_usd_series=None, collector_code=None):
     window_dir, out_dir = Path(window_dir), Path(out_dir)
     checked = verify(window_dir)
     manifest = json.loads((window_dir / 'manifest.json').read_text())
@@ -199,6 +199,8 @@ def export_pools(window_dir, out_dir, *, entry_cutoff_gap_slots=DEFAULT_CUTOFF_G
               # W1 protocol R6: the spend of the collection (requests, credits charged before
               # each send, caps and cost table) travels with the MANIFEST it produced.
               'collection_budget': manifest['budget'],
+              # W1 protocol R6 (R02): fingerprint of the collection and decoding code, if given.
+              'collector_code': collector_code,
               'skipped': dict(sorted(skipped.items())),
               'contents': 'Per-pool archives rebuilt from a verified LaunchLab program-window '
                           'backfill; account is null by design (never an L1 input).'}

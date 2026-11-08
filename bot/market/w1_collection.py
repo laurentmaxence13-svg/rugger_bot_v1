@@ -60,32 +60,86 @@ def fit_to_cap(s0, *, pilot_credits, pilot_slots, credits_left):
     return 'SHORTENED', bounds(s0, evaluation_slots)
 
 
-def main_run_cap(pilot_ledger):
-    """Credits left for the W1 run after the pilot, read from the pilot's spend ledger."""
+# The 14-line wrapper tools/backfill_launchlab_window.py (it only calls backfill_cli.main) is not
+# a root: it stays outside the offline harness copy; its sha256 is listed in the frozen protocol.
+COLLECTOR_ROOTS = ('bot/market/backfill.py', 'bot/market/backfill_cli.py', 'bot/market/backfill_export.py',
+                   'bot/market/w1_collection.py')
+
+
+def _read_json(path):
     import json
     from pathlib import Path
-    spend = json.loads(Path(pilot_ledger).read_text(encoding='utf-8'))
+    return json.loads(Path(path).read_text(encoding='utf-8'))
+
+
+def _spend(run_dir):
+    """The spend ledger of a run directory (written before every send: the authoritative spend)."""
+    from pathlib import Path
+    spend = _read_json(Path(run_dir) / 'spend.json')
     if spend.get('schema') != bf.CreditBudget.SCHEMA or spend.get('costs') != bf.COST_PRESETS[COSTS]:
-        raise bf.BackfillError('pilot_ledger_not_on_the_w1_cost_table')
-    if type(spend.get('credits')) is not int or spend['credits'] > PILOT_MAX_CREDITS:
+        raise bf.BackfillError('ledger_not_on_the_w1_cost_table')
+    if type(spend.get('credits')) is not int or spend['credits'] < 0:
+        raise bf.BackfillError('invalid_spend_ledger')
+    return spend
+
+
+def main_run_cap(pilot_dir):
+    """Credits left for the W1 run: 1 000 000 minus the pilot's spend (R02 R6-1, R6-3).
+
+    The pilot directory must be the pilot window (LaunchLab program, P0 slots PILOT_SLOTS),
+    every cap it ever ran under at most PILOT_MAX_CREDITS, its ledger on the W1 cost table.
+    """
+    from pathlib import Path
+    window = _read_json(Path(pilot_dir) / 'manifest.json')['window']
+    if (window['address'], window['slot_min'], window['slot_max']) != (bf.LAUNCHLAB_PROGRAM,) + PILOT_SLOTS:
+        raise bf.BackfillError('not_the_pilot_window')
+    spend = _spend(pilot_dir)
+    caps = [cap['max_credits'] for cap in spend.get('cap_history') or []]
+    if not caps or max(caps) > PILOT_MAX_CREDITS or spend['credits'] > PILOT_MAX_CREDITS:
         raise bf.BackfillError('pilot_spend_above_its_cap')
     return CREDIT_CAP - spend['credits']
 
 
-def export(window_dir, pools_dir, s0, *, evaluation_slots=EVALUATION_SLOTS):
-    """Export a verified W1 window; its bounds and spend must be those of the protocol."""
+def check_run_cap(max_credits, pilot_dir):
+    """Called BEFORE the W1 run starts: its credit cap must fit what the pilot left."""
+    if type(max_credits) is not int or max_credits < 0 or max_credits > main_run_cap(pilot_dir):
+        raise bf.BackfillError('run_cap_above_credits_left_after_the_pilot')
+    return max_credits
+
+
+def collector_code():
+    """Fingerprint of the collection and decoding code (closure of COLLECTOR_ROOTS)."""
+    import hashlib
     import json
+    from bot.master_v2 import harness
+    modules = harness.code_modules(roots=COLLECTOR_ROOTS)
+    rows = [(path, hashlib.sha256((harness._ROOT / path).read_bytes()).hexdigest()) for path in modules]
+    return dict(rule=harness.FINGERPRINT_RULE.replace('CODE_ROOTS', 'COLLECTOR_ROOTS'), roots=list(COLLECTOR_ROOTS),
+                modules=list(modules), sha256=hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest())
+
+
+def export(window_dir, pools_dir, s0, *, pilot_dir, evaluation_slots=EVALUATION_SLOTS):
+    """Export a verified W1 window; its bounds and spend must be those of the protocol.
+
+    Pilot plus collection stay within CREDIT_CAP: every cap the run ever had fits what the pilot
+    left, and the two ledgers together never exceed 1 000 000 credits (R02 R6-1).
+    """
     from pathlib import Path
     planned = bounds(s0, evaluation_slots)
-    manifest = json.loads((Path(window_dir) / 'manifest.json').read_text(encoding='utf-8'))
+    manifest = _read_json(Path(window_dir) / 'manifest.json')
     window = manifest['window']
     if (window['address'], window['slot_min'], window['slot_max']) != (
             bf.LAUNCHLAB_PROGRAM, planned['slot_min'], planned['slot_max']):
         raise bf.BackfillError('window_is_not_the_w1_window')
-    budget = manifest['budget']
-    if budget['costs'] != bf.COST_PRESETS[COSTS] or budget['max_credits'] > CREDIT_CAP:
+    left = main_run_cap(pilot_dir)
+    spend = _spend(window_dir)
+    caps = [cap['max_credits'] for cap in spend.get('cap_history') or []]
+    if (manifest['budget']['costs'] != bf.COST_PRESETS[COSTS] or not caps or max(caps) > left
+            or manifest['budget']['max_credits'] > left or spend['credits'] > left
+            or manifest['budget']['credits'] > spend['credits']):
         raise bf.BackfillError('window_not_collected_under_the_w1_cap')
-    result = bx.export_pools(window_dir, pools_dir, entry_cutoff_gap_slots=GAP_SLOTS)
+    result = bx.export_pools(window_dir, pools_dir, entry_cutoff_gap_slots=GAP_SLOTS,
+                             collector_code=collector_code())
     if (result['entry_cutoff_slot'], result['window_slot_max']) != (
             planned['entry_cutoff_slot'], planned['window_slot_max']):
         raise bf.BackfillError('exported_window_differs_from_the_plan')

@@ -88,10 +88,10 @@ def _imported_names(root, path):
     return {path for path in (_module_file(root, name) for name in names) if path is not None}
 
 
-def code_modules(root=None):
-    """Sorted repository paths of the transitive import closure of CODE_ROOTS."""
+def code_modules(root=None, roots=None):
+    """Sorted repository paths of the transitive import closure of ``roots`` (CODE_ROOTS)."""
     root = _ROOT if root is None else root
-    seen, todo = set(), list(CODE_ROOTS)
+    seen, todo = set(), list(CODE_ROOTS if roots is None else roots)
     while todo:
         path = todo.pop()
         if path in seen:
