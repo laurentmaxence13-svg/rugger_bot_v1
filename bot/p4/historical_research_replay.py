@@ -64,7 +64,7 @@ from bot.market.replay import ExecutionModel, Strategy, replay
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.p4.native_asof_signal_bridge import NativeQuote
 from bot.p4_experiment import POLICY as P4_POLICY, decide_prefix
-from bot.p4.sol_usd_series import (MAX_AGE_MS as SOL_USD_MAX_AGE_MS, VERIFICATION as SOL_USD_VERIFICATION,
+from bot.p4.sol_usd_series import (VERIFICATION as SOL_USD_VERIFICATION,
                                     available_ms as sol_usd_available_ms, price_usd)
 
 CATEGORY = 'HISTORICAL_REPLAY'
@@ -841,8 +841,10 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
             label=sol_usd_series.label, ordering=sol_usd_series.ordering, sha256=sol_usd_series.sha256,
-            points=len(sol_usd_series.points), max_age_ms=SOL_USD_MAX_AGE_MS,
+            points=len(sol_usd_series.points), max_age_ms=sol_usd_series.max_age_ms,
             verification=SOL_USD_VERIFICATION)
+        if sol_usd_series.max_confidence_ppm is not None:          # W1 R7: recorded only when set
+            bundle['sol_usd_series']['max_confidence_ppm'] = sol_usd_series.max_confidence_ppm
         bundle['flags']['sol_usd_source'] = 'series:' + sol_usd_series.label
     bundle['bundle_sha256'] = _sha(bundle)
     return bundle

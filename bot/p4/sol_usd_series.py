@@ -38,6 +38,14 @@ As-of rule at a decision (slot S, transaction index T, decision time D in ms):
 Refusals: no positioned point -> ``sol_usd_rate_unavailable``; positioned points but
 none available at D -> ``sol_usd_point_from_future``; age above ``MAX_AGE_MS`` (5000)
 -> ``sol_usd_stale``. No interpolation, no average, no later point.
+
+Optional ``acceptance`` (W1 protocol R7, option B'): a series document may carry
+``{"max_age_ms": int, "max_confidence_ppm": int or null}``, part of the canonical document
+and so of its sha256 (which the pre-registration records). ``max_age_ms`` (1000 to 120000)
+replaces MAX_AGE_MS; with ``max_confidence_ppm`` (1 to 10000), the chosen point is refused
+when ``confidence / price`` exceeds it (``sol_usd_confidence_too_wide``) or its confidence is
+unknown (``sol_usd_confidence_unknown``): never a fallback to an older point. A document
+without ``acceptance`` behaves, and hashes, exactly as before.
 """
 from dataclasses import dataclass
 from fractions import Fraction
@@ -135,6 +143,8 @@ class SolUsdSeries:
     ordering: str
     points: tuple
     sha256: str
+    max_age_ms: int = MAX_AGE_MS
+    max_confidence_ppm: int = None
 
     def _positioned(self, point, slot, transaction_index, decision_ms):
         """``None`` once past the decision position (the series is sorted), else a bool."""
@@ -163,17 +173,28 @@ class SolUsdSeries:
         if chosen is None:
             return None, None, 'sol_usd_point_from_future'
         age = decision_ms - observed_ms(chosen)
-        if age > MAX_AGE_MS:
+        if age > self.max_age_ms:
             return None, None, 'sol_usd_stale'
+        if self.max_confidence_ppm is not None:
+            if chosen['confidence'] is None:
+                return None, None, 'sol_usd_confidence_unknown'
+            if chosen['confidence'] * 1_000_000 > self.max_confidence_ppm * chosen['price']:
+                return None, None, 'sol_usd_confidence_too_wide'
         return chosen, age, None
 
 
 def series_from_document(document):
     """Validate a parsed series document; its sha256 is that of the canonical JSON."""
-    if (type(document) is not dict or set(document) != {'schema', 'label', 'points'}
+    if (type(document) is not dict or set(document) - {'acceptance'} != {'schema', 'label', 'points'}
             or document['schema'] != SERIES_SCHEMA or document['label'] not in LABELS
             or type(document['points']) is not list or not document['points']):
         raise ValueError('sol_usd_series_schema')
+    acceptance = document.get('acceptance', dict(max_age_ms=MAX_AGE_MS, max_confidence_ppm=None))
+    if (type(acceptance) is not dict or set(acceptance) != {'max_age_ms', 'max_confidence_ppm'}
+            or type(acceptance['max_age_ms']) is not int or not 1000 <= acceptance['max_age_ms'] <= 120_000
+            or not (acceptance['max_confidence_ppm'] is None
+                    or (type(acceptance['max_confidence_ppm']) is int and 1 <= acceptance['max_confidence_ppm'] <= 10_000))):
+        raise ValueError('sol_usd_series_acceptance')
     for point in document['points']:
         _check_point(point)
     kinds = {point['source_kind'] == HERMES for point in document['points']}
@@ -185,11 +206,13 @@ def series_from_document(document):
         raise ValueError('sol_usd_series_not_strictly_sorted')
     canonical = json.dumps(document, sort_keys=True, separators=(',', ':'), allow_nan=False)
     return SolUsdSeries(document['label'], ordering, tuple(document['points']),
-                        hashlib.sha256(canonical.encode()).hexdigest())
+                        hashlib.sha256(canonical.encode()).hexdigest(), acceptance['max_age_ms'],
+                        acceptance['max_confidence_ppm'])
 
 
 def load_series(path):
-    data = open(path, 'rb').read()
+    with open(path, 'rb') as handle:         # closed explicitly (ResourceWarning under -W error)
+        data = handle.read()
     if str(path).endswith('.gz'):
         data = gzip.decompress(data)
     return series_from_document(json.loads(data))
