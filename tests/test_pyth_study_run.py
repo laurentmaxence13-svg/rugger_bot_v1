@@ -54,10 +54,10 @@ class Chain:
         return io.BytesIO(json.dumps({'jsonrpc': '2.0', 'id': 1, 'result': result}).encode())
 
 
-def _collect(tmp_path, name, slots, entries, costs=w1_collection.COSTS, address=pyth_push.SOL_USD_ACCOUNT):
+def _collect(tmp_path, name, slots, entries, costs=w1_collection.COSTS, address=pyth_push.SOL_USD_ACCOUNT, cap=200):
     chain = Chain(entries, address)
     chain.window = slots
-    budget = bf.CreditBudget(10_000, 2_000, bf.COST_PRESETS[costs], ledger=tmp_path / name / 'spend.json')
+    budget = bf.CreditBudget(10_000, cap, bf.COST_PRESETS[costs], ledger=tmp_path / name / 'spend.json')
     rpc = bf.open_rpc('https://rpc.example.test/?api-key=SECRET', budget, opener=chain)
     return bf.Backfill(rpc, bf.Window(address, *slots), tmp_path / name).run()
 
@@ -65,6 +65,39 @@ def _collect(tmp_path, name, slots, entries, costs=w1_collection.COSTS, address=
 def _window_entries(start_slot, start_time, count, gap_s=30):
     return [_push(start_slot + 10 + 140 * i, start_time + gap_s * i + 1, start_time + gap_s * i, f'sig{start_slot}x{i}')
             for i in range(count)]
+
+
+def _failed(slot, block_time, signature):
+    """A failed transaction on the account (no point, but a block_time of the window)."""
+    entry = _push(slot, block_time, block_time - 1, signature)
+    entry['meta']['err'] = {'InstructionError': [0, 'Custom']}
+    return entry
+
+
+def _study_dirs(tmp_path, window_cap=666, last_failed_gap=0):
+    _collect(tmp_path, 'probe', run.PROBE, _window_entries(run.PROBE[0], 1_793_993_000, 10))
+    dirs = []
+    for k, slots in enumerate(run.STUDY_WINDOWS):
+        entries = _window_entries(slots[0], 1_793_993_000 + 20_000 * k, 100)
+        if last_failed_gap:
+            last = entries[-1]
+            entries.append(_failed(last['slot'] + 5, last['blockTime'] + last_failed_gap, f'fail{k}'))
+        _collect(tmp_path, f'w{k}', slots, entries, cap=window_cap)
+        dirs.append(tmp_path / f'w{k}')
+    return dirs
+
+
+def _dashboard(tmp_path, probe='probe', **change):
+    spent = json.loads((tmp_path / probe / 'spend.json').read_text())['credits']
+    readings = dict(read_by='owner', before_probe=dict(plan='Developer', credits_remaining=9_000_000, autoscaling='disabled'),
+                    after_probe=dict(credits_remaining=9_000_000 - spent, autoscaling='disabled'))
+    for key, value in change.items():
+        part, field = key.split('__')
+        if part == 'top':
+            readings[field] = value
+        else:
+            readings[part][field] = value
+    return readings
 
 
 @pytest.fixture
@@ -79,15 +112,31 @@ def test_probe_decision_projects_the_windows(tmp_path, no_dotenv):
     assert decision['decision'] == 'GO' and decision['probe_transactions'] == 10 and decision['probe_slots'] == 2_797
     assert decision['projected_credits'] == 10 * -(-(-(-10 * 50_349 // 2_797)) // 100)
     assert decision['windows_slots'] == 50_349 and decision['probe_spend']['costs'] == bf.COST_PRESETS[w1_collection.COSTS]
+    assert decision['probe_credits']['cap'] == 200 and decision['probe_credits']['spent'] == decision['probe_spend']['credits']
+
+
+def test_probe_above_its_cap_is_refused(tmp_path, no_dotenv):
+    _collect(tmp_path, 'probe', run.PROBE, _window_entries(run.PROBE[0], 1_793_993_000, 3), cap=201)
+    with pytest.raises(run.StudyRunError, match='probe_spend_above_its_cap'):
+        run.probe_decision(tmp_path / 'probe')
+    _collect(tmp_path, 'resumed', run.PROBE, _window_entries(run.PROBE[0], 1_793_993_000, 3))
+    ledger = tmp_path / 'resumed' / 'spend.json'
+    spend = json.loads(ledger.read_text())
+    assert [c['max_credits'] for c in spend['cap_history']] == [200]
+    spend['cap_history'] = [dict(spend['cap_history'][0], max_credits=250)] + spend['cap_history']
+    ledger.write_text(json.dumps(spend))
+    with pytest.raises(run.StudyRunError, match='probe_spend_above_its_cap'):      # largest cap ever, not the last
+        run.probe_decision(tmp_path / 'resumed')
+    spend['cap_history'] = []
+    ledger.write_text(json.dumps(spend))
+    with pytest.raises(run.StudyRunError, match='run_without_cap_history'):
+        run.probe_decision(tmp_path / 'resumed')
 
 
 def test_study_report_from_three_verified_windows(tmp_path, no_dotenv):
-    dirs = []
-    for k, slots in enumerate(run.STUDY_WINDOWS):
-        name = f'w{k}'
-        _collect(tmp_path, name, slots, _window_entries(slots[0], 1_793_993_000 + 20_000 * k, 100))
-        dirs.append(tmp_path / name)
-    report, sha = run.run_study(dirs, tmp_path / 'report.json')
+    dirs = _study_dirs(tmp_path)
+    report, sha = run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'probe',
+                                dashboard=_dashboard(tmp_path))
     assert report['verdict'] == 'ACCEPTED' and report['acceptance']['max_age_ms'] == 35_000
     assert [w['points'] for w in report['windows']] == [100, 100, 100] and report['windows'][0]['not_newer'] == 0
     import hashlib
@@ -96,14 +145,69 @@ def test_study_report_from_three_verified_windows(tmp_path, no_dotenv):
     assert data == json.dumps(report, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
     first = min(_window_entries(run.STUDY_WINDOWS[0][0], 1_793_993_000, 100), key=lambda e: e['slot'])
     assert report['windows'][0]['seconds'] == [first['blockTime'] + 1, 1_793_993_000 + 30 * 99 + 1]
+    assert report['probe']['decision'] == 'GO' and report['probe']['transactions'] == 10
+    credits = report['credits']
+    assert [c['cap'] for c in credits['windows']] == [666] * 3 and credits['probe']['cap'] == 200
+    assert credits['reserved_total'] == 200 + 3 * 666 and credits['total_max'] == 2_200
+    spent = credits['probe']['spent']
+    assert spent > 0 and report['dashboard'] == dict(plan='Developer', before=9_000_000, after=9_000_000 - spent,
+                                                     real_probe_credits=spent, counted_probe_credits=spent,
+                                                     autoscaling='disabled')
+
+
+@pytest.mark.parametrize('change, error', [
+    (dict(before_probe__autoscaling='enabled'), 'autoscaling_not_disabled'),
+    (dict(after_probe__autoscaling='enabled'), 'autoscaling_not_disabled'),
+    (dict(after_probe__credits_remaining=8_000_000), 'dashboard_cost_differs_from_the_w1_cost_table'),
+    (dict(after_probe__credits_remaining=9_000_000), 'dashboard_cost_differs_from_the_w1_cost_table'),
+    (dict(top__read_by='rugger03'), 'dashboard_readings_incomplete'),
+    (dict(before_probe__plan=''), 'dashboard_readings_incomplete'),
+    (dict(before_probe__credits_remaining='9M'), 'dashboard_readings_incomplete'),
+    (dict(after_probe__credits_remaining=-1), 'dashboard_readings_incomplete'),
+])
+def test_dashboard_readings_stop_the_study(tmp_path, no_dotenv, change, error):
+    dirs = _study_dirs(tmp_path)
+    with pytest.raises(run.StudyRunError, match=error):
+        run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'probe', dashboard=_dashboard(tmp_path, **change))
+    assert not (tmp_path / 'report.json').exists()
+    with pytest.raises(run.StudyRunError, match='dashboard_readings_incomplete'):
+        run.dashboard_check(tmp_path / 'probe', dict(read_by='owner', before_probe={}))
+    assert run.dashboard_check(tmp_path / 'probe', _dashboard(tmp_path))['real_probe_credits'] > 0
+
+
+def test_final_gap_is_measured_up_to_the_last_transaction(tmp_path, no_dotenv):
+    dirs = _study_dirs(tmp_path, last_failed_gap=50)
+    report, _ = run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'probe', dashboard=_dashboard(tmp_path))
+    last_push = 1_793_993_000 + 30 * 99 + 1
+    assert report['windows'][0]['seconds'][1] == last_push + 50 and report['windows'][0]['points'] == 100
+    assert report['windows'][0]['transactions'] == 101
+
+
+def test_study_refuses_a_stop_probe_or_reserved_credits_above_2200(tmp_path, no_dotenv):
+    dirs = _study_dirs(tmp_path, window_cap=667)
+    with pytest.raises(run.StudyRunError, match='study_reserved_credits_above_2200'):
+        run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'probe', dashboard=_dashboard(tmp_path))
+    dense = [_push(run.PROBE[0] + 2 * i, 1_793_993_000 + i, 1_793_993_000 + i - 1, f'd{i}') for i in range(1_112)]
+    _collect(tmp_path, 'dense', run.PROBE, dense)
+    assert run.probe_decision(tmp_path / 'dense')['decision'] == 'STOP'
+    with pytest.raises(run.StudyRunError, match='probe_decision_is_not_go'):
+        run.run_study(dirs, tmp_path / 'r2.json', probe_dir=tmp_path / 'dense', dashboard=_dashboard(tmp_path, 'dense'))
+    assert not (tmp_path / 'report.json').exists() and not (tmp_path / 'r2.json').exists()
 
 
 def test_measured_seconds_start_after_the_first_point_and_end_at_the_last_block_time():
     points = [dict(slot=12, transaction_index=0, block_time=150), dict(slot=10, transaction_index=1, block_time=100),
               dict(slot=10, transaction_index=0, block_time=101), dict(slot=11, transaction_index=0, block_time=160)]
-    assert run.measured_seconds(points) == (102, 160)
+    rows = [{'blockTime': 101}, {'blockTime': 175}, {'blockTime': 160}]
+    assert run.measured_seconds(points, rows) == (102, 175)
     with pytest.raises(run.StudyRunError, match='without_point'):
-        run.measured_seconds([])
+        run.measured_seconds([], rows)
+    with pytest.raises(run.StudyRunError, match='without_block_times'):
+        run.measured_seconds(points, rows + [{'blockTime': None}])
+    with pytest.raises(run.StudyRunError, match='without_block_times'):
+        run.measured_seconds(points, [])
+    with pytest.raises(run.StudyRunError, match='without_measured_second'):
+        run.measured_seconds(points, [{'blockTime': 102}])
 
 
 def test_tampered_segment_or_other_account_is_refused(tmp_path, no_dotenv):
@@ -128,7 +232,7 @@ def test_wrong_window_cost_table_or_dotenv_are_refused(tmp_path, monkeypatch, no
     with pytest.raises(run.StudyRunError, match='w1_cost_table'):
         run.probe_decision(tmp_path / 'public')
     with pytest.raises(run.StudyRunError, match='three_study_windows_required'):
-        run.run_study([tmp_path / 'public'], tmp_path / 'r.json')
+        run.run_study([tmp_path / 'public'], tmp_path / 'r.json', probe_dir=tmp_path / 'public', dashboard={})
     monkeypatch.delenv('RUGGER_NO_DOTENV')
     with pytest.raises(run.StudyRunError, match='RUGGER_NO_DOTENV'):
         run.probe_decision(tmp_path / 'public')
