@@ -238,6 +238,7 @@ def test_strong_edge_passes_the_gate_only_with_every_criterion():
     assert report['decision'] == 'CHALLENGER_FOR_W2' and report['n_trials'] == 32
     assert report['pool_coverage']['identical'] is True
     assert report['code_modules'] == list(h_code_modules()) and 'transitive-closure-v1' in report['code_fingerprint_rule']
+    assert report['runtime']['python'] and 'distributions' in report['runtime']
     assert report['flags']['reference_arm_reported'] is False and 'reference' not in report['trials']
     without = _evaluate(trials)
     assert without['decision'] == 'NO_GO' and without['decision_reasons'] == ['latency10_positive']

@@ -111,6 +111,34 @@ def code_modules(root=None):
 CODE_MODULES = code_modules()
 
 
+def runtime_record():
+    """Interpreter, platform and third-party distributions imported by the closure (published only,
+    never hashed: R02 O-R4-1)."""
+    import ast
+    import importlib.metadata
+    import platform
+    import sys
+    local = {path.split('/')[0] for path in code_modules()} | {'bot', 'tools'}
+    names = set()
+    for path in code_modules():
+        for node in ast.walk(ast.parse((_ROOT / path).read_bytes(), filename=path)):
+            if isinstance(node, ast.Import):
+                names |= {alias.name.split('.')[0] for alias in node.names}
+            elif isinstance(node, ast.ImportFrom) and not node.level and node.module:
+                names.add(node.module.split('.')[0])
+    third_party = sorted(name for name in names if name not in sys.stdlib_module_names and name not in local)
+    distributions = importlib.metadata.packages_distributions()
+    packages = {}
+    for name in third_party:
+        for dist in distributions.get(name, [name]):
+            try:
+                packages[dist] = importlib.metadata.version(dist)
+            except importlib.metadata.PackageNotFoundError:
+                packages[dist] = None
+    return dict(python=sys.version, implementation=platform.python_implementation(), platform=platform.platform(),
+                third_party_imports=third_party, distributions=dict(sorted(packages.items())))
+
+
 def code_fingerprint():
     """SHA-256 over the exact source of every repository module the W1 code can execute (R4)."""
     rows = [(path, hashlib.sha256((_ROOT / path).read_bytes()).hexdigest()) for path in code_modules()]

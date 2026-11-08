@@ -117,3 +117,14 @@ def test_w1_report_publishes_the_rule_and_the_modules():
     from bot.master_v2 import w1_eval
     assert 'transitive-closure-v1' in h.FINGERPRINT_RULE
     assert w1_eval.code_modules is h.code_modules
+
+
+def test_runtime_is_published_but_not_hashed(monkeypatch):
+    record = h.runtime_record()
+    assert record['python'] and record['platform'] and record['implementation']
+    assert 'dotenv' in record['third_party_imports'] and 'json' not in record['third_party_imports']
+    assert 'bot' not in record['third_party_imports'] and record['distributions']
+    base = h.code_fingerprint()
+    import platform
+    monkeypatch.setattr(platform, 'platform', lambda: 'other')
+    assert h.runtime_record()['platform'] == 'other' and h.code_fingerprint() == base
