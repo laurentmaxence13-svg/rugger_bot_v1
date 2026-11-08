@@ -4,22 +4,27 @@
   ``placebo_random``) are pre-registered BEFORE the replay with every L1 parameter (latency,
   receipt latency, vault exclusion, horizon, fees, SOL/USD source, exit options, creator
   history), then replayed once; each arm becomes a trial document carrying its code fingerprint.
+  A trial document is accepted only if the pre-registration recomputed from the bundle itself
+  (parameters, exit options, SOL/USD source, creator history, placebo arm, windows, code,
+  manifest) is the registered one (R02 F1). The latency-10 sensitivity of M1 is registered
+  before its replay in a SEPARATE registry, outside N (R02 F2).
   The L1 ``reference`` arm is never a W1 trial and is never reported.
 * **R3 -- W1 mode.** One MANIFEST evaluated whole: only pools created in the pre-registered
   evaluation range [start, end) count (the warm-up range only feeds the creator history); two
-  halves by creation slot, the second starting ``embargo_slots`` after the boundary (pools in
-  between are embargoed and published as such). N of the deflated Sharpe ratio is the number
+  halves of the evaluation RANGE by creation slot, cut at the middle slot (start + end) // 2,
+  independent of the data; the second half starts ``embargo_slots`` after the middle (pools in
+  between are embargoed and published as such) (R02 F4). N of the deflated Sharpe ratio is the number
   of distinct pre-registrations over every registry given (P0 and W1); the spread of trial
   Sharpe ratios is the one of the W1 trials.
 * **R8 -- tests.** Creator-cluster bootstrap of the mean (B=10000, seed 20261108), one-sided
   p = (1 + #{b: m*_b - m >= m}) / (B + 1); H2 is the unpaired difference M1 - P1b, each arm
   resampled by creator; H3 is the exact partition of S3 against S2 (random-abstention p); Holm
-  within each family of two. The decision follows the gate of the protocol.
+  within each family of two (m fixed to the family size, a missing p counts as 1). The decision follows the gate of the protocol.
 
 Every cycle here is HISTORICAL_REPLAY research: never an operational Master trade, never
 counted toward the protected 50-cycle / 20-creator thresholds.
 """
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import hashlib
 import json
 import math
@@ -36,6 +41,8 @@ from bot.p4_experiment import POLICY as P4_POLICY
 
 TRIAL_SCHEMA = 'rugger-w1-trial-v1'
 L1_ARMS = {'M1': 'master', 'P1b': hrr.PLACEBO_ARM}
+SENSITIVITY_ID = 'M1_latency10'
+SENSITIVITY_LATENCY_SLOTS = 10
 B_DEFAULT = 10_000
 SEED = 20261108
 ALPHA = 0.025
@@ -65,6 +72,8 @@ def l1_preregister(manifest_sha256, windows_sha256, params, exit_options, *, arm
         raise ValueError('invalid_l1_configuration')
     if type(sol_usd_source) is not str or not sol_usd_source:
         raise ValueError('sol_usd_source_required')
+    if type(creator_history_sha256) is not str or not creator_history_sha256:
+        raise ValueError('creator_history_required')
     config = dict(engine='l1-historical-research-replay', arm=arm, replay=asdict(params),
                   exit_options=exit_options.record(), placebo_arm=True, sol_usd_source=sol_usd_source,
                   creator_history_sha256=creator_history_sha256,
@@ -75,26 +84,53 @@ def l1_preregister(manifest_sha256, windows_sha256, params, exit_options, *, arm
                 policy_params=config, exit_rule=exit_options.record(), replay_params=asdict(params), **design)
 
 
-def run_l1_trials(fixtures_dir, params, exit_options, *, registry_path, registered_at, sol_usd_series=None):
-    """Register M1 and P1b, then replay once; return {trial id: trial document}."""
+def _sol_usd_source(series_sha256, sol_usd):
+    if series_sha256 is not None:
+        return 'series:' + series_sha256
+    return f'declared:{sol_usd}' if sol_usd is not None else 'none'
+
+
+def _run_l1(fixtures_dir, params, exit_options, arms, *, registry_path, registered_at, sol_usd_series):
     manifest_sha256, windows_sha256 = l1_design(fixtures_dir, params)
     archives = [archive for _entry, archive in hrr.load_fixtures(fixtures_dir)[2]]
     history = hrr.CreatorHistory.from_archives(archives, label='manifest')
-    source = ('series:' + sol_usd_series.sha256) if sol_usd_series is not None else (
-        f'declared:{params.sol_usd}' if params.sol_usd is not None else 'none')
+    source = _sol_usd_source(None if sol_usd_series is None else sol_usd_series.sha256, params.sol_usd)
     entries = {}
-    for trial_id, arm in L1_ARMS.items():      # registered BEFORE the replay
+    for trial_id, arm in arms.items():           # registered BEFORE the replay
         record = l1_preregister(manifest_sha256, windows_sha256, params, exit_options, arm=arm,
                                 sol_usd_source=source, creator_history_sha256=history.sha256)
         entries[trial_id], _new = registry.register(registry_path, record, registered_at=registered_at)
     bundle = hrr.run_replay(fixtures_dir, params, sol_usd_series, exit_options, history, placebo_arm=True)
     if bundle['fixtures']['manifest_sha256'] != manifest_sha256:
         raise ValueError('manifest_changed_during_run')
-    return {trial_id: trial_from_l1_bundle(bundle, trial_id, entries[trial_id]) for trial_id in L1_ARMS}
+    return {trial_id: trial_from_l1_bundle(bundle, trial_id, entries[trial_id], fixtures_dir,
+                                           arm=arms[trial_id]) for trial_id in arms}
 
 
-def trial_from_l1_bundle(bundle, trial_id, entry):
-    arm = L1_ARMS[trial_id]
+def run_l1_trials(fixtures_dir, params, exit_options, *, registry_path, registered_at, sol_usd_series=None):
+    """Register M1 and P1b, then replay once; return {trial id: trial document}."""
+    return _run_l1(fixtures_dir, params, exit_options, L1_ARMS, registry_path=registry_path,
+                   registered_at=registered_at, sol_usd_series=sol_usd_series)
+
+
+def run_l1_sensitivity(fixtures_dir, params, exit_options, *, registry_path, registered_at, sol_usd_series=None):
+    """Latency-10 sensitivity of M1 (outside N): registered BEFORE its replay in its own registry.
+
+    ``params`` are the M1 parameters; only ``latency_slots`` becomes 10. ``registry_path`` is the
+    separate sensitivity registry declared in the protocol, never the W1 trial registry.
+    """
+    if params.latency_slots == SENSITIVITY_LATENCY_SLOTS:
+        raise ValueError('sensitivity_needs_the_m1_parameters')
+    sensitivity = replace(params, latency_slots=SENSITIVITY_LATENCY_SLOTS)
+    return _run_l1(fixtures_dir, sensitivity, exit_options, {SENSITIVITY_ID: 'master'}, registry_path=registry_path,
+                   registered_at=registered_at, sol_usd_series=sol_usd_series)[SENSITIVITY_ID]
+
+
+def trial_from_l1_bundle(bundle, trial_id, entry, fixtures_dir, *, arm=None):
+    """Trial document of one L1 arm, accepted only if the bundle reproduces ``entry`` (R02 F1)."""
+    arm = L1_ARMS[trial_id] if arm is None else arm
+    if arm not in L1_ARMS.values():
+        raise ValueError('not_a_w1_l1_arm')
     if entry['manifest_sha256'] != bundle['fixtures']['manifest_sha256']:
         raise ValueError('l1_trial_manifest_mismatch')
     if entry['replay_params'] != bundle['params'] or entry['exit_rule'] != bundle.get(
@@ -102,6 +138,23 @@ def trial_from_l1_bundle(bundle, trial_id, entry):
         raise ValueError('l1_trial_configuration_mismatch')
     if entry['code_sha256'] != code_fingerprint():
         raise ValueError('code_sha256_mismatch')
+    if 'placebo_arm' not in bundle:
+        raise ValueError('l1_trial_without_placebo_arm')
+    params = hrr.ReplayParams(**bundle['params'])
+    exit_options = hrr.ExitOptions(**bundle.get('exit_options', {}))
+    manifest_sha256, windows_sha256 = l1_design(fixtures_dir, params)
+    if manifest_sha256 != bundle['fixtures']['manifest_sha256']:
+        raise ValueError('l1_trial_manifest_mismatch')
+    history = bundle.get('creator_history')
+    if history is None:
+        raise ValueError('creator_history_required')
+    series = bundle.get('sol_usd_series')
+    recomputed = l1_preregister(manifest_sha256, windows_sha256, params, exit_options, arm=arm,
+                                sol_usd_source=_sol_usd_source(None if series is None else series['sha256'],
+                                                               params.sol_usd),
+                                creator_history_sha256=history['sha256'])
+    if recomputed['preregistration_sha256'] != entry['preregistration_sha256']:
+        raise ValueError('l1_trial_preregistration_mismatch')
     pools = [dict(pool=p['pool'], creator=p['creator'], created_slot=p['creation_slot'],
                   signed_creator_verified=p['signed_creator_verified'], trade=p['arms'][arm],
                   journal=[r for r in p['journal'] if r['arm'] == arm]) for p in bundle['pools']]
@@ -122,20 +175,25 @@ def trial_from_v2_bundle(bundle, trial_id):
 # --- R3: W1 mode --------------------------------------------------------------------------
 
 def w1_split(pools, *, start, end, embargo_slots):
-    """Evaluation pools by half: {'all', 'A', 'B', 'embargoed', 'outside'} (lists of pool ids)."""
+    """Evaluation pools by half: {'all', 'A', 'B', 'embargoed', 'outside'} (lists of pool ids).
+
+    The halves cut the evaluation RANGE [start, end) at the middle slot (start + end) // 2
+    (independent of the data); B starts ``embargo_slots`` after the middle (R02 F4).
+    """
     if type(start) is not int or type(end) is not int or not start < end:
         raise ValueError('invalid_evaluation_range')
     if type(embargo_slots) is not int or embargo_slots < 0:
         raise ValueError('invalid_embargo_slots')
+    boundary = (start + end) // 2
+    if boundary + embargo_slots >= end:
+        raise ValueError('embargo_covers_the_second_half')
     rows = sorted({(p['created_slot'], p['pool']) for p in pools})
     inside = [row for row in rows if start <= row[0] < end]
-    outside = [pool for slot, pool in rows if not start <= slot < end]
-    half = len(inside) // 2
-    first = [pool for _s, pool in inside[:half]]
-    boundary = inside[half][0] if half < len(inside) else end
-    second = [pool for slot, pool in inside[half:] if slot >= boundary + embargo_slots]
-    embargoed = [pool for slot, pool in inside[half:] if slot < boundary + embargo_slots]
-    return dict(all=[pool for _s, pool in inside], A=first, B=second, embargoed=embargoed, outside=outside,
+    return dict(all=[pool for _s, pool in inside],
+                A=[pool for slot, pool in inside if slot < boundary],
+                B=[pool for slot, pool in inside if slot >= boundary + embargo_slots],
+                embargoed=[pool for slot, pool in inside if boundary <= slot < boundary + embargo_slots],
+                outside=[pool for slot, pool in rows if not start <= slot < end],
                 boundary_slot=boundary)
 
 
@@ -196,12 +254,12 @@ def difference_test(a, a_groups, b, b_groups, *, n_boot=B_DEFAULT, seed=SEED):
 
 
 def holm(pvalues):
-    """Holm-adjusted p values (None stays None and is not counted)."""
-    named = sorted((p, key) for key, p in pvalues.items() if p is not None)
-    m, adjusted, running = len(named), {key: None for key in pvalues}, 0.0
+    """Holm-adjusted p values; m is the family size and a missing p counts as 1 (stays None)."""
+    named = sorted((1.0 if p is None else p, key) for key, p in pvalues.items())
+    m, adjusted, running = len(named), {}, 0.0
     for rank, (p, key) in enumerate(named):
         running = max(running, min(1.0, (m - rank) * p))
-        adjusted[key] = running
+        adjusted[key] = None if pvalues[key] is None else running
     return adjusted
 
 
@@ -222,8 +280,12 @@ REQUIRED = ('M1', 'P1b', 'P1', 'P2', 'S1', 'S2', 'S3')
 
 
 def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=(140, 50),
-                sensitivity_latency10=None, n_boot=B_DEFAULT):
-    """W1 report and decision; ``trials`` maps the protocol ids to trial documents."""
+                sensitivity_latency10=None, sensitivity_entries=(), n_boot=B_DEFAULT):
+    """W1 report and decision; ``trials`` maps the protocol ids to trial documents.
+
+    ``sensitivity_latency10`` is the M1_latency10 trial document and ``sensitivity_entries`` its
+    separate registry (outside N): it must be M1's registration with latency_slots = 10 only.
+    """
     if set(trials) != set(REQUIRED):
         raise ValueError('w1_trials_must_be_exactly:' + ','.join(REQUIRED))
     recorded = {e['preregistration_sha256']: e for e in registry_entries}
@@ -242,7 +304,8 @@ def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=
     n_trials = len(recorded)
     split = w1_split(trials['M1']['pools'], start=start, end=end, embargo_slots=embargo_slots)
     report = dict(n_trials=n_trials, split={k: (len(v) if type(v) is list else v) for k, v in split.items()},
-                  evaluator_code_sha256=code_fingerprint(), trials={})
+                  evaluator_code_sha256=code_fingerprint(), trials={},
+                  pool_coverage=_pool_coverage(trials, split['all'], start, end))
     for key, trial in trials.items():
         report['trials'][key] = {period: {k: v for k, v in trial_metrics(trial, split[period], n_boot).items()
                                           if k not in ('returns', 'return_creators')}
@@ -262,14 +325,49 @@ def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=
     report['dsr_M1'] = deflated_sharpe(m1['returns'], sharpes, n_trials)
     sens = None
     if sensitivity_latency10 is not None:
-        if sensitivity_latency10['code_sha256'] != trials['M1']['code_sha256']:
-            raise ValueError('sensitivity_code_mismatch')
+        _check_sensitivity(sensitivity_latency10, sensitivity_entries, recorded[trials['M1']['preregistration_sha256']],
+                           trials['M1'], recorded)
         sens = trial_metrics(sensitivity_latency10, split['all'], n_boot)['mean_return']
     report['sensitivity_latency10_mean'] = sens
     report['decision'], report['decision_reasons'] = _decide(report, m1, p1b, s1, targets)
     report['flags'] = dict(category=hrr.CATEGORY, master_operational_trade=False, counted_in_master_gate=False,
                            reference_arm_reported=False)
     return report
+
+
+def _pool_coverage(trials, evaluation, start, end):
+    """Published check that every trial covers the evaluation pools of M1 (R02, non-blocking)."""
+    reference = set(evaluation)
+    per_trial = {}
+    for key, trial in trials.items():
+        own = {p['pool'] for p in trial['pools'] if start <= p['created_slot'] < end}
+        per_trial[key] = dict(pools=len(own), missing_vs_M1=len(reference - own), extra_vs_M1=len(own - reference))
+    return dict(identical=all(v['missing_vs_M1'] == v['extra_vs_M1'] == 0 for v in per_trial.values()),
+                per_trial=per_trial)
+
+
+def _check_sensitivity(trial, entries, m1_entry, m1_trial, w1_recorded):
+    """M1_latency10 must be M1's registration with latency_slots = 10 only, outside N (R02 F2)."""
+    if trial.get('trial_id') != SENSITIVITY_ID:
+        raise ValueError('sensitivity_trial_id')
+    if trial['preregistration_sha256'] in w1_recorded:
+        raise ValueError('sensitivity_registered_inside_N')
+    entry = next((e for e in entries if e['preregistration_sha256'] == trial['preregistration_sha256']), None)
+    if entry is None:
+        raise ValueError('unregistered_sensitivity')
+    if not (trial['code_sha256'] == entry['code_sha256'] == m1_trial['code_sha256'] == m1_entry['code_sha256']):
+        raise ValueError('sensitivity_code_mismatch')
+    if not (trial['manifest_sha256'] == entry['manifest_sha256'] == m1_trial['manifest_sha256']):
+        raise ValueError('sensitivity_manifest_mismatch')
+    config, m1_config = entry.get('policy_params'), m1_entry.get('policy_params')
+    if entry.get('policy') != m1_entry.get('policy') or config is None or m1_config is None:
+        raise ValueError('sensitivity_not_m1')
+    if config['replay'].get('latency_slots') != SENSITIVITY_LATENCY_SLOTS or \
+            m1_config['replay'].get('latency_slots') == SENSITIVITY_LATENCY_SLOTS:
+        raise ValueError('sensitivity_latency_not_10')
+    strip = lambda c: dict(c, replay=dict(c['replay'], latency_slots=None))
+    if strip(config) != strip(m1_config):
+        raise ValueError('sensitivity_differs_from_m1_beyond_latency')
 
 
 def _decide(report, m1, p1b, s1, targets):
