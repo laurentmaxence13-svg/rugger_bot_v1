@@ -71,6 +71,19 @@ CATEGORY = 'HISTORICAL_REPLAY'
 SCHEMA = 'rugger-historical-research-replay-v1'
 ENTRY_LAMPORTS = 100_000_000
 ARMS = ('master', 'reference')
+# W1 protocol R9: placebo P1b, opt-in. Entry rule of the V2 placebo-random-entry (max_age_s 120,
+# salt 'v1', signed creator required); exit exactly the Master arm's (scorer TP/SL at the entry
+# decision, research horizon, same ExitOptions). It never enters where the scorer would wait on
+# its inputs (SOL/USD, identity, intra-transaction order).
+PLACEBO_ARM = 'placebo_random'
+PLACEBO_MAX_AGE_S = 120
+PLACEBO_SALT = 'v1'
+
+
+def placebo_target_age(pool):
+    """Pool age (s) at which P1b enters: the V2 placebo-random-entry rule."""
+    digest = hashlib.sha256(f'{PLACEBO_SALT}:{pool}'.encode()).digest()
+    return int.from_bytes(digest[:4], 'big') % (PLACEBO_MAX_AGE_S + 1)
 REFERENCE_STRATEGY = 'early_sniping'
 RESEARCH_EVIDENCE_STATUS = 'PENDING_R02_QUALIFICATION'
 CLOCK_MODEL = ('modelled_receipt_ms = block_time * 1000 + receipt_latency_ms; '
@@ -503,7 +516,7 @@ class ResearchArm(Strategy):
     """One research arm: journal every decision, enter once, pre-registered exit."""
 
     def __init__(self, arm, observer, params, window=None, exit_options=None):
-        if arm not in ARMS:
+        if arm not in ARMS + (PLACEBO_ARM,):
             raise ValueError('unknown_research_arm')
         self.arm, self.observer, self.params, self.window = arm, observer, params, window
         self.exit_options = exit_options or ExitOptions()
@@ -514,7 +527,8 @@ class ResearchArm(Strategy):
         if self.exit_plan is not None:
             return None
         result = self.observer.observe(history)
-        decision = result['decisions'][self.arm]
+        decision = (self._placebo_decision(history, result) if self.arm == PLACEBO_ARM
+                    else result['decisions'][self.arm])
         if self.window is not None and history[-1].slot > self.window['entry_cutoff_slot']:
             decision = dict(intent='WAIT', blocking_reasons=(
                 [r for r in decision['blocking_reasons']] + ['after_entry_cutoff_slot']))
@@ -529,6 +543,20 @@ class ResearchArm(Strategy):
             plan['hold_seconds'] = scorer.get('hold_seconds')
         self.exit_plan = plan
         return ENTRY_LAMPORTS
+
+    def _placebo_decision(self, history, result):
+        """P1b: enter at the hashed pool age once the scorer's inputs are available."""
+        if result['exit_conditions'] is None:          # the scorer itself waits on its inputs
+            return dict(intent='WAIT', blocking_reasons=list(result['decisions']['master']['blocking_reasons']))
+        facts = self.observer.facts
+        if not facts['signed_creator_verified']:
+            return dict(intent='WAIT', blocking_reasons=['signed_creator_unverified'])
+        age = history[-1].block_time - facts['creation_block_time']
+        if age > PLACEBO_MAX_AGE_S:
+            return dict(intent='WAIT', blocking_reasons=['placebo_window_closed'])
+        if age >= placebo_target_age(self.observer.pool):
+            return dict(intent='ENTER', blocking_reasons=[])
+        return dict(intent='WAIT', blocking_reasons=['placebo_waiting'])
 
     def exit_deadline(self, position):
         """Block time at which the clock sends the horizon sale (only with ``clock_horizon``)."""
@@ -673,7 +701,7 @@ def usable_timeline(archive, summary, timeline):
 
 
 def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None, exit_options=None,
-                creator_history=None):
+                creator_history=None, arms=ARMS):
     """Replay both research arms on one pool archive (complete, or ending at its migration).
 
     Raises PoolExcluded when the history cannot be replayed (see usable_timeline).
@@ -703,7 +731,7 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
     model = params.execution_model()
     if exit_options is not None and exit_options.clock_horizon:
         model = replace(model, clock_exit_latency_s=clock_exit_latency_s(params.latency_slots))
-    for name in ARMS:
+    for name in arms:
         arm = ResearchArm(name, observer, params, window, exit_options)
         result = replay(timeline, arm, model, quote_mint=quote_mint)
         record['journal'].extend(arm.journal)
@@ -719,9 +747,9 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
     return record
 
 
-def _totals(pools):
+def _totals(pools, arms=ARMS):
     totals = {}
-    for arm in ARMS:
+    for arm in arms:
         trades = [pool['arms'][arm] for pool in pools]
         entries = [row for pool in pools for row in pool['journal'] if row['arm'] == arm]
         reasons = Counter(reason for row in entries for reason in row['blocking_reasons'])
@@ -736,7 +764,8 @@ def _totals(pools):
     return totals
 
 
-def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None, creator_history=None):
+def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None, creator_history=None,
+               placebo_arm=False):
     """Return the deterministic HISTORICAL_REPLAY bundle for the fixture directory.
 
     ``sol_usd_series`` (bot.p4.sol_usd_series.SolUsdSeries) replaces the declared
@@ -751,6 +780,9 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
         raise ValueError('invalid_exit_options')
     if sol_usd_series is not None and params.sol_usd is not None:
         raise ValueError('sol_usd_constant_and_series_are_exclusive')
+    if type(placebo_arm) is not bool:
+        raise ValueError('invalid_placebo_arm')
+    arms = ARMS + (PLACEBO_ARM,) if placebo_arm else ARMS
     manifest_sha256, digests, archives, manifest = load_fixtures(fixtures_dir)
     pools, excluded = [], []
     for entry, archive in archives:
@@ -758,7 +790,8 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
             pools.append(replay_pool(archive, params, quote_mint=entry['quote_mint'],
                                      sol_usd_series=sol_usd_series,
                                      window=collection_window(entry, manifest, params),
-                                     exit_options=exit_options, creator_history=creator_history))
+                                     exit_options=exit_options, creator_history=creator_history,
+                                     arms=arms))
         except PoolExcluded as exc:
             excluded.append(dict(pool=archive.pool, file=entry['file'], reasons=exc.reasons))
     if len(pools) + len(excluded) != len(archives):
@@ -772,7 +805,7 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
         reference_policy_sha256=_sha(P4_POLICY),
         fixtures=dict(manifest_sha256=manifest_sha256, files=digests),
         index_semantics='entry/exit index = last real event executing before the modelled own order',
-        pools=pools, totals=_totals(pools),
+        pools=pools, totals=_totals(pools, arms),
         flags=dict(
             category=CATEGORY, source_clock_verified=False, source_clock_model=CLOCK_MODEL,
             asof_inputs_causal=bool(journal) and all(row['inputs_causal'] for row in journal),
@@ -796,6 +829,9 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
         bundle['flags']['migration_rule'] = MIGRATION_RULE
     if exit_options.enabled:
         bundle['exit_options'] = exit_options.record()
+    if placebo_arm:
+        bundle['placebo_arm'] = dict(arm=PLACEBO_ARM, entry_rule='placebo-random-entry', max_age_s=PLACEBO_MAX_AGE_S,
+                                     salt=PLACEBO_SALT, exit_rule='identical to the master arm')
     if creator_history is not None:
         bundle['creator_history'] = creator_history.record()
         bundle['flags']['creator_prior_launches_assumed'] = None

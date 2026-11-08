@@ -16,7 +16,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from bot.p4.historical_research_replay import (ARMS, CreatorHistory, ExitOptions, ReplayParams,  # noqa: E402
+from bot.p4.historical_research_replay import (CreatorHistory, ExitOptions, ReplayParams,  # noqa: E402
                                                load_fixtures, run_replay)
 from bot.p4.sol_usd_series import load_series  # noqa: E402
 
@@ -29,13 +29,13 @@ def summary_lines(bundle, top=6):
            f"({flags['sol_usd_provenance']})  exclude_launchlab_vault="
            f"{bundle['params']['exclude_launchlab_vault']}  asof_inputs_causal={flags['asof_inputs_causal']}")
     for pool in bundle['pools']:
-        arms = '  '.join(f"{arm}={pool['arms'][arm]['outcome']}" for arm in ARMS)
+        arms = '  '.join(f"{arm}={pool['arms'][arm]['outcome']}" for arm in bundle['totals'])
         migrated = (f"  migrated_at_slot={pool['migration']['boundary_slot']}" if 'migration' in pool else '')
         yield (f"  {pool['pool'][:8]} trades={pool['trades']} signed_creator="
                f"{pool['signed_creator_verified']} ({pool['signed_creator_reason']})  {arms}{migrated}")
     for row in bundle.get('excluded_pools', ()):
         yield f"  EXCLUDED {row['pool'][:8]} ({row['file']}): {', '.join(row['reasons'])}"
-    for arm in ARMS:
+    for arm in bundle['totals']:
         totals = bundle['totals'][arm]
         reasons = ', '.join(f'{k}={v}' for k, v in list(totals['blocking_reasons'].items())[:top])
         yield (f"  [{arm}] decisions={totals['decisions']} entries={totals['entries']} "
@@ -64,6 +64,8 @@ def main(argv=None):
                         help='enforce exit_horizon_ms by the clock, even on a silent curve (off by default)')
     parser.add_argument('--creator-history-from-manifest', action='store_true',
                         help='causal prior_launches from the verified creations of the same MANIFEST (off by default)')
+    parser.add_argument('--placebo-arm', action='store_true',
+                        help='also replay the P1b placebo (random entry, master exit; off by default)')
     parser.add_argument('--out', type=Path, default=None, help='write the bundle JSON here')
     args = parser.parse_args(argv)
     try:
@@ -79,7 +81,7 @@ def main(argv=None):
                 [archive for _entry, archive in load_fixtures(args.fixtures)[2]], label='manifest')
         bundle = run_replay(args.fixtures, params, series,
                             ExitOptions(trailing_stop=args.trailing_stop, max_hold=args.max_hold,
-                                        clock_horizon=args.clock_horizon), history)
+                                        clock_horizon=args.clock_horizon), history, args.placebo_arm)
     except ValueError as exc:
         parser.error(str(exc))
     if args.out:
