@@ -135,7 +135,11 @@ class ExitOptions:
     lands ``clock_exit_latency_s`` later, on the shifted curve left by every real event whose
     block_time is at or before the landing second. Limit: block_time has a 1 s resolution, so
     real events up to 1 s after the exact landing instant may be applied before our sale (it
-    only moves the price of the timed sale; no decision reads the future). The event-driven
+    only moves the price of the timed sale; no decision reads the future). Second limit
+    (R02 O-R1-1, inherited from the replay engine and identical in V2): a stop loss or take
+    profit triggered by a real event between the deadline and the landing replaces the timed
+    sale by an event-driven sale (trigger slot + latency); symmetric across arms, no look-ahead.
+    The event-driven
     ``exit_horizon`` trigger is then off; stop loss, take profit and the other options are
     unchanged. A timed sale landing at or after a migration boundary is migrated_unpriced.
     """

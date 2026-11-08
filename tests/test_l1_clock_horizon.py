@@ -101,7 +101,8 @@ def test_clock_sells_a_silent_position_at_the_horizon(monkeypatch):
 
 def test_latency_rounds_up_and_matches_the_v2_harness():
     from bot.master_v2 import harness as h
-    for slots, seconds in ((1, 1), (2, 1), (4, 1), (5, 2), (10, 3)):
+    assert hrr.CLOCK_SLOT_MS == 215                                  # R02 O-R1-2
+    for slots, seconds in ((1, 1), (2, 1), (4, 1), (5, 2), (9, 2), (10, 3)):
         assert hrr.clock_exit_latency_s(slots) == seconds == h.clock_latency_s(hrr.ReplayParams(latency_slots=slots))
 
 
