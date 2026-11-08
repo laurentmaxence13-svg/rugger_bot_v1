@@ -177,3 +177,37 @@ def test_export_reads_every_cap_ever_used_and_the_manifest_cost_table(tmp_path):
     path.write_text(json.dumps(dict(manifest, budget=dict(manifest['budget'], costs=bf.COST_PRESETS['public']))))
     with pytest.raises(bf.BackfillError, match='window_not_collected_under_the_w1_cap'):
         w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot)
+
+
+def test_corrupted_ledgers_are_refused_r02(tmp_path):
+    """R02 survivors: ledger spend above what is left, manifest above the ledger, empty pilot
+    cap history, negative pilot spend (it would raise the credits left above 1 M)."""
+    s0 = T.SLOT_MIN - w1.WARMUP_SLOTS
+    pilot = _pilot(tmp_path, 11)
+    _w1_window(tmp_path, s0)
+    run_ledger = tmp_path / 'w' / 'spend.json'
+    run_spend = json.loads(run_ledger.read_text())
+    run_ledger.write_text(json.dumps(dict(run_spend, credits=w1.CREDIT_CAP - 10)))            # (b)
+    with pytest.raises(bf.BackfillError, match='window_not_collected_under_the_w1_cap'):
+        w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot)
+    path = tmp_path / 'w' / 'manifest.json'
+    manifest = json.loads(path.read_text())
+    run_ledger.write_text(json.dumps(run_spend))
+    path.write_text(json.dumps(dict(manifest, budget=dict(manifest['budget'], credits=run_spend['credits'] + 1))))  # (c)
+    with pytest.raises(bf.BackfillError, match='window_not_collected_under_the_w1_cap'):
+        w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot)
+    path.write_text(json.dumps(manifest))
+    assert w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot)['pools']             # the untampered pair passes
+    pilot_ledger = pilot / 'spend.json'
+    pilot_spend = json.loads(pilot_ledger.read_text())
+    pilot_ledger.write_text(json.dumps(dict(pilot_spend, cap_history=[])))                       # (h)
+    with pytest.raises(bf.BackfillError, match='pilot_spend_above_its_cap'):
+        w1.main_run_cap(pilot)
+    pilot_ledger.write_text(json.dumps(dict(pilot_spend, credits=-5)))                           # (i)
+    with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
+        w1.main_run_cap(pilot)
+    with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
+        w1.check_run_cap(w1.CREDIT_CAP, pilot)
+    pilot_ledger.write_text(json.dumps(dict(pilot_spend, credits=True)))
+    with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
+        w1.main_run_cap(pilot)
