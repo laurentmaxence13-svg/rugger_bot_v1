@@ -16,7 +16,8 @@ BUY->SELL cycles, or into an exact per-decision WAIT journal. Integrity rules:
   absent from the fixtures: without a declared rate every decision WAITs with
   ``sol_usd_rate_unavailable``; a declared rate is labelled with its
   provenance and never marked verified. Creator history is unknown and enters
-  the scorer as ``prior_launches=0``.
+  the scorer as ``prior_launches=0``, unless a :class:`CreatorHistory` built from
+  the collected creations is given (W1 protocol R2; causal lower bound).
 * **Separation** -- cycles are HISTORICAL_REPLAY research only: never fed to
   the PAPER ledger, ``research_evidence`` or the Master's 50-cycle /
   20-creator gate, and never an operational Master trade.
@@ -43,6 +44,7 @@ Failed-attempt fees are unmodelled by default (0 lamports); about a third of
 the fixture signatures failed on chain. No network, wall clock or I/O beyond
 reading the fixture directory.
 """
+from bisect import bisect_left
 from collections import Counter
 from dataclasses import asdict, dataclass, replace
 from fractions import Fraction
@@ -314,6 +316,54 @@ def creation_facts(archive):
     return facts
 
 
+class CreatorHistory:
+    """Causal creator history for the Master scorer (W1 protocol R2); unused by default.
+
+    Built from the verified creations of a collected set of pools (a MANIFEST, its warm-up
+    range included). ``prior_launches`` of a pool is the number of OTHER verified creations
+    signed by the same creator strictly before this pool's creation transaction, ordered by
+    (slot, transaction index). Every counted creation precedes the pool's own creation, hence
+    every decision on that pool: no future data. It is a lower bound: creations before the
+    collected range, or missing from it, are unseen. A pool whose creator is not verified
+    keeps prior_launches = 0.
+    """
+
+    RULE = ('prior_launches = verified creations by the same signer strictly before the pool creation '
+            '(slot, transaction index), within the collected set; lower bound')
+
+    def __init__(self, creations, label):
+        if type(label) is not str or not label.strip():
+            raise ValueError('creator_history_label_required')
+        rows = sorted({(creator, slot, index, pool) for creator, slot, index, pool in creations})
+        if any(type(c) is not str or not c or type(s) is not int or type(i) is not int or type(p) is not str
+               for c, s, i, p in rows):
+            raise ValueError('invalid_creator_history_row')
+        if len({p for _c, _s, _i, p in rows}) != len(rows):
+            raise ValueError('duplicate_pool_in_creator_history')
+        self.label = label
+        self.by_creator = {}
+        for creator, slot, index, _pool in rows:
+            self.by_creator.setdefault(creator, []).append((slot, index))
+        self.sha256 = _sha([list(row) for row in rows])
+        self.creations = len(rows)
+
+    @classmethod
+    def from_archives(cls, archives, label):
+        creations = []
+        for archive in archives:
+            facts = creation_facts(archive)
+            if facts['signed_creator_verified']:
+                slot, index = _tx_key(archive.transactions[facts['creation_signature']])
+                creations.append((facts['creator'], slot, index, archive.pool))
+        return cls(creations, label)
+
+    def prior_launches(self, creator, creation_key):
+        return bisect_left(self.by_creator.get(creator, ()), tuple(creation_key))
+
+    def record(self):
+        return dict(label=self.label, creations=self.creations, sha256=self.sha256, rule=self.RULE)
+
+
 def _vetoes(flags):
     return [flag for flag in flags or () if flag in CRITICAL_RISKS]
 
@@ -321,8 +371,9 @@ def _vetoes(flags):
 class _PoolObserver:
     """Causal frames and scorer outputs per decision index, shared by both arms."""
 
-    def __init__(self, archive, timeline, facts, params, sol_usd_series=None):
+    def __init__(self, archive, timeline, facts, params, sol_usd_series=None, prior_launches=0):
         self.pool, self.facts, self.params = archive.pool, facts, params
+        self.prior_launches = prior_launches
         self.series = sol_usd_series
         self.transactions = sorted((_tx_key(tx), signature, tx)
                                    for signature, tx in archive.transactions.items())
@@ -399,7 +450,7 @@ class _PoolObserver:
         features = build_features(
             inputs, facts['mint'], facts['creator'], detected // 1000, at // 1000,
             self._past_prices(history[:-1], sol),
-            NativeQuote(price_usd=price, liquidity_usd=funding), prior_launches=0,
+            NativeQuote(price_usd=price, liquidity_usd=funding), prior_launches=self.prior_launches,
             excluded_holder_owners=([facts['vault_authority']] if params.exclude_launchlab_vault
                                     and facts['vault_authority'] else ()))
         buyers = {e.fee_payer for e in history if e.side == 'buy' and e.fee_payer != facts['creator']}
@@ -617,15 +668,22 @@ def usable_timeline(archive, summary, timeline):
     return PoolTimeline(timeline.pool, timeline.events, (), ()), migration
 
 
-def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None, exit_options=None):
+def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None, exit_options=None,
+                creator_history=None):
     """Replay both research arms on one pool archive (complete, or ending at its migration).
 
     Raises PoolExcluded when the history cannot be replayed (see usable_timeline).
+    ``creator_history`` (CreatorHistory) gives the scorer a causal ``prior_launches``; without
+    it the scorer sees 0, as before.
     """
     summary, timeline = summarize(archive)
     timeline, migration = usable_timeline(archive, summary, timeline)
     facts = creation_facts(archive)
-    observer = _PoolObserver(archive, timeline, facts, params, sol_usd_series)
+    prior = 0
+    if creator_history is not None and facts['signed_creator_verified']:
+        prior = creator_history.prior_launches(
+            facts['creator'], _tx_key(archive.transactions[facts['creation_signature']]))
+    observer = _PoolObserver(archive, timeline, facts, params, sol_usd_series, prior)
     record = dict(pool=archive.pool, **facts, trades=len(timeline.events),
                   transactions=len(archive.transactions), signatures=len(archive.signatures),
                   failed_signatures=sum(row.get('err') is not None for row in archive.signatures),
@@ -636,6 +694,8 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
         record['window'] = window
     if migration is not None:
         record['migration'] = migration
+    if creator_history is not None:
+        record['prior_launches'] = prior
     model = params.execution_model()
     if exit_options is not None and exit_options.clock_horizon:
         model = replace(model, clock_exit_latency_s=clock_exit_latency_s(params.latency_slots))
@@ -672,7 +732,7 @@ def _totals(pools):
     return totals
 
 
-def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None):
+def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None, creator_history=None):
     """Return the deterministic HISTORICAL_REPLAY bundle for the fixture directory.
 
     ``sol_usd_series`` (bot.p4.sol_usd_series.SolUsdSeries) replaces the declared
@@ -694,7 +754,7 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
             pools.append(replay_pool(archive, params, quote_mint=entry['quote_mint'],
                                      sol_usd_series=sol_usd_series,
                                      window=collection_window(entry, manifest, params),
-                                     exit_options=exit_options))
+                                     exit_options=exit_options, creator_history=creator_history))
         except PoolExcluded as exc:
             excluded.append(dict(pool=archive.pool, file=entry['file'], reasons=exc.reasons))
     if len(pools) + len(excluded) != len(archives):
@@ -732,6 +792,10 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
         bundle['flags']['migration_rule'] = MIGRATION_RULE
     if exit_options.enabled:
         bundle['exit_options'] = exit_options.record()
+    if creator_history is not None:
+        bundle['creator_history'] = creator_history.record()
+        bundle['flags']['creator_prior_launches_assumed'] = None
+        bundle['flags']['creator_prior_launches_source'] = 'creator_history:' + creator_history.label
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
             label=sol_usd_series.label, ordering=sol_usd_series.ordering, sha256=sol_usd_series.sha256,

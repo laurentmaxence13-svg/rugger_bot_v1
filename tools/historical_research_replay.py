@@ -16,7 +16,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from bot.p4.historical_research_replay import ARMS, ExitOptions, ReplayParams, run_replay  # noqa: E402
+from bot.p4.historical_research_replay import (ARMS, CreatorHistory, ExitOptions, ReplayParams,  # noqa: E402
+                                               load_fixtures, run_replay)
 from bot.p4.sol_usd_series import load_series  # noqa: E402
 
 DEFAULT_FIXTURES = ROOT / 'tests' / 'fixtures' / 'launchlab_sol_pools'
@@ -61,6 +62,8 @@ def main(argv=None):
                         help="also exit after the scorer plan's hold_seconds (off by default)")
     parser.add_argument('--clock-horizon', action='store_true',
                         help='enforce exit_horizon_ms by the clock, even on a silent curve (off by default)')
+    parser.add_argument('--creator-history-from-manifest', action='store_true',
+                        help='causal prior_launches from the verified creations of the same MANIFEST (off by default)')
     parser.add_argument('--out', type=Path, default=None, help='write the bundle JSON here')
     args = parser.parse_args(argv)
     try:
@@ -70,9 +73,13 @@ def main(argv=None):
         parser.error(str(exc))
     try:
         series = load_series(args.sol_usd_series) if args.sol_usd_series else None
+        history = None
+        if args.creator_history_from_manifest:
+            history = CreatorHistory.from_archives(
+                [archive for _entry, archive in load_fixtures(args.fixtures)[2]], label='manifest')
         bundle = run_replay(args.fixtures, params, series,
                             ExitOptions(trailing_stop=args.trailing_stop, max_hold=args.max_hold,
-                                        clock_horizon=args.clock_horizon))
+                                        clock_horizon=args.clock_horizon), history)
     except ValueError as exc:
         parser.error(str(exc))
     if args.out:
