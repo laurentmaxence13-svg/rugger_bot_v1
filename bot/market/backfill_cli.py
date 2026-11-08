@@ -109,6 +109,8 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     _window_args(p)
     p.add_argument('--expected-tx-per-slot', type=float, required=True,
                    help='your volume assumption; measure it before trusting the estimate')
+    p.add_argument('--anchor-after-window', action='store_true',
+                   help='count the one getTransactionsForAddress call of run --anchor-after-window')
     r = sub.add_parser('run', help='run or resume; dry run unless --network')
     _window_args(r)
     r.add_argument('--network', action='store_true', help='actually send read-only requests')
@@ -119,6 +121,9 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
     r.add_argument('--out', type=Path, required=True)
     r.add_argument('--before-signature', default=None,
                    help='anchor near slot_max for the getSignaturesForAddress listing')
+    r.add_argument('--anchor-after-window', action='store_true',
+                   help='one getTransactionsForAddress call finds the first signature after slot_max and '
+                        'anchors the getSignaturesForAddress listing there (old windows of busy accounts)')
     r.add_argument('--segment-pages', type=int, default=50)
     v = sub.add_parser('verify', help='check an archive against its manifest; no network')
     v.add_argument('--out', type=Path, required=True)
@@ -148,6 +153,8 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                     help='volume assumption used only by the dry-run estimate')
     sm.add_argument('--out', type=Path, required=True)
     sm.add_argument('--before-signature', default=None)
+    sm.add_argument('--anchor-after-window', action='store_true',
+                    help='anchor the getSignaturesForAddress listing after slot_max (one GTFA call)')
     _filter_args(sm)
     cs = sub.add_parser('compare-series',
                         help='consistency check of two SOL/USD series; exit 4 = stop; no network')
@@ -218,10 +225,11 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
                                   usdc_vault=args.usdc_vault, swap_filter=_filter(args),
                                   grid_seconds=args.grid_seconds,
                                   endpoint=endpoint_label(url),
-                                  before_signature=args.before_signature)
+                                  before_signature=args.before_signature,
+                                  anchor_after_window=args.anchor_after_window)
             manifest = job.run()
             emit({k: manifest[k] for k in ('complete', 'stopped_by', 'totals', 'budget',
-                                            'endpoint', 'sampling')})
+                                            'endpoint', 'sampling', 'gsfa_anchor')})
             return 0 if manifest['complete'] else 3
         if args.command == 'compare-series':
             return _compare_series(args, emit)
@@ -242,12 +250,13 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
         costs = load_costs(args.costs)
         if args.command == 'plan':
             emit(plan(window, costs, expected_tx_per_slot=args.expected_tx_per_slot,
-                      bodies=args.bodies, check=not args.no_check))
+                      bodies=args.bodies, check=not args.no_check, anchor=args.anchor_after_window))
             return 0
         if not args.network:
             emit({'dry_run': True, 'requests_sent': 0,
                   'message': 'no request sent; add --network to run (owner decision)',
                   'window': window.to_json(), 'bodies': args.bodies,
+                  'anchor_after_window': args.anchor_after_window,
                   'caps': {'max_requests': args.max_requests, 'max_credits': args.max_credits}})
             return 0
         url = endpoint_from_env(args.endpoint_env, environ)
@@ -258,10 +267,11 @@ def main(argv=None, *, environ=None, opener=None, out=sys.stdout):
         rpc = open_rpc(url, budget, opener=opener)
         job = Backfill(rpc, window, args.out, bodies=args.bodies, check=not args.no_check,
                        segment_pages=args.segment_pages, endpoint=endpoint_label(url),
-                       before_signature=args.before_signature)
+                       before_signature=args.before_signature,
+                       anchor_after_window=args.anchor_after_window)
         manifest = job.run()
         emit({k: manifest[k] for k in ('complete', 'stopped_by', 'totals', 'reconciliation',
-                                        'budget', 'endpoint')})
+                                        'budget', 'endpoint', 'gsfa_anchor')})
         return 0 if manifest['complete'] else 3
     except (BackfillError, RpcError) as exc:
         # Committed segments stay on disk: the same command resumes after the failure.

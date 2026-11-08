@@ -53,14 +53,15 @@ class SampledBackfill(Backfill):
     """Listing phase, then a grid-sampled getTransaction phase (no full body download)."""
 
     def __init__(self, rpc, window, out, *, pool, sol_vault, usdc_vault, swap_filter,
-                 grid_seconds=4, segment_pages=50, endpoint='unset', before_signature=None):
+                 grid_seconds=4, segment_pages=50, endpoint='unset', before_signature=None,
+                 anchor_after_window=False):
         if window.address != pool:
             raise BackfillError('window_address_is_not_the_pool')
         if grid_seconds not in GRIDS:
             raise BackfillError('grid_seconds_must_be_2_or_4')
         super().__init__(rpc, window, out, bodies='rpc', check=False,
                          segment_pages=segment_pages, endpoint=endpoint,
-                         before_signature=before_signature)
+                         before_signature=before_signature, anchor_after_window=anchor_after_window)
         sampling = {'grid_seconds': grid_seconds, 'pool': pool, 'sol_vault': sol_vault,
                     'usdc_vault': usdc_vault, 'swap_filter': describe_filter(swap_filter)}
         if self.state.setdefault('sampling', sampling) != sampling:
@@ -163,7 +164,7 @@ class SampledBackfill(Backfill):
     def run(self):
         stop = None
         try:
-            self._gsfa_phase()
+            self._gsfa_phase()                       # anchors first with anchor_after_window
             self._sample_phase()
         except BudgetExhausted as exc:
             stop = str(exc)

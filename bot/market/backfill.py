@@ -213,7 +213,7 @@ class Window:
 
 
 def plan(window, costs, *, expected_tx_per_slot, bodies='gtfa', check=True,
-         failed_share=0.34):
+         failed_share=0.34, anchor=False):
     """Pre-run estimate (no network). The expected volume is the caller's assumption."""
     if expected_tx_per_slot <= 0 or not 0 <= failed_share < 1:
         raise BackfillError('invalid_volume_assumption')
@@ -232,6 +232,8 @@ def plan(window, costs, *, expected_tx_per_slot, bodies='gtfa', check=True,
             requests['getTransactionsForAddress'] = pages(tx, GTFA_SIG_PAGE)
     else:
         raise BackfillError('bodies_must_be_gtfa_or_rpc')
+    if anchor and requests.get('getSignaturesForAddress'):
+        requests['getTransactionsForAddress'] = requests.get('getTransactionsForAddress', 0) + 1
     credits = sum(n * costs[m] for m, n in requests.items())
     return {'window': window.to_json(), 'slots': slots, 'expected_transactions': tx,
             'assumed_tx_per_slot': expected_tx_per_slot, 'bodies': bodies, 'check': check,
@@ -245,12 +247,17 @@ class Backfill:
     """One resumable run over a window, writing segments, state and manifest to ``out``."""
 
     def __init__(self, rpc, window, out, *, bodies='gtfa', check=True, segment_pages=50,
-                 endpoint='unset', before_signature=None):
+                 endpoint='unset', before_signature=None, anchor_after_window=False):
         if bodies not in ('gtfa', 'rpc'):
             raise BackfillError('bodies_must_be_gtfa_or_rpc')
+        if anchor_after_window and before_signature:
+            raise BackfillError('anchor_after_window_and_before_signature_are_exclusive')
+        if anchor_after_window and bodies == 'gtfa' and not check:
+            raise BackfillError('anchor_after_window_needs_the_gsfa_listing')
         self.rpc, self.window, self.out = rpc, window, Path(out)
         self.bodies, self.check, self.segment_pages = bodies, check, segment_pages
         self.endpoint, self.before_signature = endpoint, before_signature
+        self.anchor_after_window = anchor_after_window
         self.out.mkdir(parents=True, exist_ok=True)
         self.state = self._load_state()
 
@@ -330,12 +337,49 @@ class Backfill:
             if done:
                 return
 
+    def _anchor_phase(self):
+        """First transaction strictly after the window (GTFA signatures, one call), or None.
+
+        Without an anchor, getSignaturesForAddress lists from the chain head down to slot_max:
+        on an old window of a busy account that costs one page per 1000 signatures newer than
+        the window. One getTransactionsForAddress call (slot >= slot_max + 1, successful only,
+        oldest first, limit 1) gives the first signature after the window; listing ``before``
+        it starts at the window's newest signature. It is the FIRST request of the run (R02),
+        charged before it is sent like any other, and committed in state like any cursor; the
+        manifest copies it and verify() checks it. Rows above slot_max are still dropped.
+        """
+        current = self._phase('anchor')
+        if current['done']:
+            return current['cursor']['signature']
+        if not self.anchor_after_window:
+            return None
+        options = {'transactionDetails': 'signatures', 'encoding': 'json',
+                   'maxSupportedTransactionVersion': MAX_TX_VERSION,
+                   'commitment': 'finalized', 'limit': 1, 'sortOrder': 'asc',
+                   'filters': {'status': 'succeeded', 'slot': {'gte': self.window.slot_max + 1}}}
+        result = self.rpc.call('getTransactionsForAddress', [self.window.address, options])
+        if not isinstance(result, dict) or not isinstance(result.get('data'), list):
+            raise BackfillError('getTransactionsForAddress:malformed_result')
+        if not result['data']:
+            raise BackfillError('no_transaction_after_the_window_to_anchor')
+        entry = result['data'][0]
+        if not isinstance(entry, dict):
+            raise BackfillError('getTransactionsForAddress:anchor_not_a_successful_transaction_after_the_window')
+        slot, signature, index = entry.get('slot'), entry.get('signature'), entry.get('transactionIndex')
+        if (type(slot) is not int or slot <= self.window.slot_max
+                or type(signature) is not str or not signature or entry.get('err') is not None
+                or not (index is None or type(index) is int)):
+            raise BackfillError('getTransactionsForAddress:anchor_not_a_successful_transaction_after_the_window')
+        self._commit('anc', [], 'anchor', {'signature': signature, 'slot': slot, 'transaction_index': index}, True)
+        return signature
+
     def _gsfa_phase(self, phase='gsfa', kind='sig'):
         """getSignaturesForAddress, newest first, kept only inside the window."""
         current = self._phase(phase)
         if current['done']:
             return
-        before, rows, pages = current['cursor'] or self.before_signature, [], 0
+        anchor = None if (current['cursor'] or self.before_signature) else self._anchor_phase()
+        before, rows, pages = current['cursor'] or self.before_signature or anchor, [], 0
         while True:
             options = {'limit': GSFA_PAGE, 'commitment': 'finalized'}
             if before:
@@ -386,6 +430,8 @@ class Backfill:
         """Run or resume. Returns the manifest; a cap stop gives complete=False."""
         stop = None
         try:
+            if self.anchor_after_window:
+                self._anchor_phase()                 # the first request of the run (R02)
             if self.bodies == 'gtfa':
                 self._gtfa_phase('gtfa', 'tx', 'full', GTFA_FULL_PAGE)
                 if self.check:
@@ -438,7 +484,8 @@ class Backfill:
                     'reconciliation': reconciliation,
                     'budget': dict(self.rpc.budget.snapshot()), 'stopped_by': stop,
                     'complete': complete,
-                    'single_method': not self.check}
+                    'single_method': not self.check,
+                    'gsfa_anchor': self._phase('anchor')['cursor']}
         _write_atomic(self.out / 'manifest.json',
                       json.dumps(manifest, indent=1, sort_keys=True).encode())
         return manifest
@@ -468,6 +515,15 @@ def verify(out):
             failed += sum(1 for r in rows if (r.get('meta') or {}).get('err') is not None)
         elif seg['kind'] == check_kind:
             check_sigs += [r['signature'] for r in rows]
+    anchor = manifest.get('gsfa_anchor')
+    if anchor is not None:
+        state_path = out / 'state.json'
+        state_anchor = (json.loads(state_path.read_text()).get('phases', {}).get('anchor') or {}).get('cursor') \
+            if state_path.exists() else None
+        if (not isinstance(anchor, dict) or type(anchor.get('slot')) is not int
+                or anchor['slot'] <= manifest['window']['slot_max'] or type(anchor.get('signature')) is not str
+                or not anchor['signature'] or anchor != state_anchor):
+            problems.append('gsfa_anchor_invalid')
     # Recompute what the manifest claims instead of trusting it.
     if not problems:
         totals = manifest['totals']
