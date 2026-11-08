@@ -83,11 +83,28 @@ def _spend(run_dir):
     return spend
 
 
-def main_run_cap(pilot_dir):
-    """Credits left for the W1 run: 1 000 000 minus the pilot's spend (R02 R6-1, R6-3).
+def reserved_credits(run_dirs):
+    """Credits reserved by other runs of the collection month (v2.4: the SOL/USD runs).
+
+    Each run reserves the LARGEST cap it ever ran under (not only what it spent): whatever it
+    may still spend is counted, so the month can never exceed CREDIT_CAP.
+    """
+    total = 0
+    for run_dir in run_dirs:
+        spend = _spend(run_dir)
+        caps = [cap['max_credits'] for cap in spend.get('cap_history') or []]
+        if not caps:
+            raise bf.BackfillError('run_without_cap_history')
+        total += max(max(caps), spend['credits'])
+    return total
+
+
+def main_run_cap(pilot_dir, other_runs=()):
+    """Credits left for a W1 run: 1 000 000 minus the pilot's spend and the other runs' caps.
 
     The pilot directory must be the pilot window (LaunchLab program, P0 slots PILOT_SLOTS),
     every cap it ever ran under at most PILOT_MAX_CREDITS, its ledger on the W1 cost table.
+    ``other_runs``: every other run directory of the month (v2.4: SOL/USD study and collection).
     """
     from pathlib import Path
     window = _read_json(Path(pilot_dir) / 'manifest.json')['window']
@@ -97,12 +114,12 @@ def main_run_cap(pilot_dir):
     caps = [cap['max_credits'] for cap in spend.get('cap_history') or []]
     if not caps or max(caps) > PILOT_MAX_CREDITS or spend['credits'] > PILOT_MAX_CREDITS:
         raise bf.BackfillError('pilot_spend_above_its_cap')
-    return CREDIT_CAP - spend['credits']
+    return CREDIT_CAP - spend['credits'] - reserved_credits(other_runs)
 
 
-def check_run_cap(max_credits, pilot_dir):
-    """Called BEFORE the W1 run starts: its credit cap must fit what the pilot left."""
-    if type(max_credits) is not int or max_credits < 0 or max_credits > main_run_cap(pilot_dir):
+def check_run_cap(max_credits, pilot_dir, other_runs=()):
+    """Called BEFORE a W1 run starts: its credit cap must fit what the pilot and other runs left."""
+    if type(max_credits) is not int or max_credits < 0 or max_credits > main_run_cap(pilot_dir, other_runs):
         raise bf.BackfillError('run_cap_above_credits_left_after_the_pilot')
     return max_credits
 
@@ -118,7 +135,7 @@ def collector_code():
                 modules=list(modules), sha256=hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest())
 
 
-def export(window_dir, pools_dir, s0, *, pilot_dir, evaluation_slots=EVALUATION_SLOTS):
+def export(window_dir, pools_dir, s0, *, pilot_dir, evaluation_slots=EVALUATION_SLOTS, other_runs=()):
     """Export a verified W1 window; its bounds and spend must be those of the protocol.
 
     Pilot plus collection stay within CREDIT_CAP: every cap the run ever had fits what the pilot
@@ -131,7 +148,7 @@ def export(window_dir, pools_dir, s0, *, pilot_dir, evaluation_slots=EVALUATION_
     if (window['address'], window['slot_min'], window['slot_max']) != (
             bf.LAUNCHLAB_PROGRAM, planned['slot_min'], planned['slot_max']):
         raise bf.BackfillError('window_is_not_the_w1_window')
-    left = main_run_cap(pilot_dir)
+    left = main_run_cap(pilot_dir, other_runs)
     spend = _spend(window_dir)
     caps = [cap['max_credits'] for cap in spend.get('cap_history') or []]
     if (manifest['budget']['costs'] != bf.COST_PRESETS[COSTS] or not caps or max(caps) > left

@@ -211,3 +211,26 @@ def test_corrupted_ledgers_are_refused_r02(tmp_path):
     pilot_ledger.write_text(json.dumps(dict(pilot_spend, credits=True)))
     with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
         w1.main_run_cap(pilot)
+
+
+def test_other_runs_of_the_month_reserve_their_largest_cap_v2_4(tmp_path):
+    """v2.4: the SOL/USD runs share the 1 M with the pilot and the LaunchLab run."""
+    pilot = _pilot(tmp_path, 11)
+    study = _pilot(tmp_path, 3, cap=2_000, name='pyth_study')               # spent 3, may spend 2 000
+    pyth_run = _pilot(tmp_path, 0, cap=60_000, name='pyth_run')
+    assert w1.reserved_credits([study, pyth_run]) == 62_000
+    assert w1.main_run_cap(pilot, [study, pyth_run]) == w1.CREDIT_CAP - 11 - 62_000
+    w1.check_run_cap(w1.CREDIT_CAP - 11 - 62_000, pilot, [study, pyth_run])
+    with pytest.raises(bf.BackfillError, match='run_cap_above_credits_left_after_the_pilot'):
+        w1.check_run_cap(w1.CREDIT_CAP - 11 - 61_999, pilot, [study, pyth_run])
+    ledger = study / 'spend.json'
+    data = json.loads(ledger.read_text())
+    ledger.write_text(json.dumps(dict(data, credits=2_500)))               # spent above its cap: counted in full
+    assert w1.reserved_credits([study]) == 2_500
+    ledger.write_text(json.dumps(dict(data, cap_history=[])))
+    with pytest.raises(bf.BackfillError, match='run_without_cap_history'):
+        w1.reserved_credits([study])
+    s0 = T.SLOT_MIN - w1.WARMUP_SLOTS
+    _w1_window(tmp_path, s0)                                               # run cap 1 M - 11
+    with pytest.raises(bf.BackfillError, match='window_not_collected_under_the_w1_cap'):
+        w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot, other_runs=[pyth_run])
