@@ -5,7 +5,6 @@ bundle fingerprints (validation/historical_replay_l1/RESULTS.json) must be
 reproduced exactly: the fixes change no pre-registered parameter or past result.
 """
 from copy import deepcopy
-from dataclasses import asdict
 from fractions import Fraction
 from functools import lru_cache
 import gzip
@@ -579,4 +578,7 @@ def test_master_union_of_intents_equals_early_sniping_at_every_decision(kwargs):
     assert scored > 0
     assert doc['flags']['master_operational_trade'] is False
     assert doc['flags']['counted_in_master_gate'] is False
-    assert asdict(hrr.ExitOptions()) == dict(trailing_stop=False, max_hold=False)
+    # Default: no optional exit at all; the bundle record keeps the two historical keys (R1 adds
+    # clock_horizon, recorded only when on).
+    assert hrr.ExitOptions().record() == dict(trailing_stop=False, max_hold=False)
+    assert not hrr.ExitOptions().enabled and not hrr.ExitOptions().clock_horizon

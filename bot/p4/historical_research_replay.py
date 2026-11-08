@@ -31,7 +31,7 @@ BUY->SELL cycles, or into an exact per-decision WAIT journal. Integrity rules:
   every P&L total.
 * **Fees (P0 fix)** -- our own fills use the causal interval estimate of
   :func:`bot.market.replay.causal_fee_rate` (events up to the decision only).
-* **Optional exits** -- :class:`ExitOptions` (trailing stop, maximum hold)
+* **Optional exits** -- :class:`ExitOptions` (trailing stop, maximum hold, clock horizon)
   are off by default and recorded in the bundle when enabled.
 * **Arms** -- with ``prior_launches=0`` the union of the Master scorer's
   strategy intents equals ``early_sniping`` at every decision, so both arms
@@ -44,7 +44,7 @@ the fixture signatures failed on chain. No network, wall clock or I/O beyond
 reading the fixture directory.
 """
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from fractions import Fraction
 import gzip
 import hashlib
@@ -89,9 +89,30 @@ EXCLUSION_RULE = ('a pool whose history is not complete for a reason other than 
                   'excluded and listed with its reasons; it is never replayed partially')
 
 
+CLOCK_SLOT_MS = 215   # mean slot time (P0 measured 214.5 ms) that turns latency slots into whole seconds
+
+
+def clock_exit_latency_s(latency_slots):
+    """Whole seconds after a clock deadline during which real events still land before our sale."""
+    return max(1, -(-(latency_slots * CLOCK_SLOT_MS) // 1000))
+
+
+def clock_exit_row(row, result, events, params):
+    """Trade row of a timed sale (replay ``clock_exit``): no real event carries it.
+
+    Its block time is the landing time; its slot is estimated on the slot floor (most slots, so
+    window and migration checks stay conservative), from the last real event applied, with one
+    more second for the truncation of block_time (R02 O-A), plus the landing latency.
+    """
+    last = events[result.clock_exit['last_index']]
+    landing = result.clock_exit['landing_time']
+    return dict(row, exit_signature=None, exit_block_time=landing,
+                exit_slot=last.slot + slots_for_ms((landing + 1 - last.block_time) * 1000) + params.latency_slots)
+
+
 @dataclass(frozen=True)
 class ExitOptions:
-    """Optional exits from the scorer's frozen plan; both disabled by default.
+    """Optional exits from the scorer's frozen plan; all disabled by default.
 
     ``trailing_stop``: exit when the curve spot price falls to ``1 - trailing_stop_pct``
     of its peak since entry, once that peak is above the entry price (the rule of
@@ -105,17 +126,36 @@ class ExitOptions:
     stop, maximum hold, take profit, then the research ``exit_horizon_ms``.
     The scorer's ``hold_seconds`` (900 to 2700 s) exceeds the default 30 s
     horizon, so ``max_hold`` only acts with a longer, explicitly hashed horizon.
+
+    ``clock_horizon`` (W1 protocol, R1; R02 Q1: faithful application of a rule defined in
+    time): the research ``exit_horizon_ms`` is enforced by the clock instead of at the next
+    real trade. The sale is sent at entry block_time + ceil(exit_horizon_ms / 1000) s and
+    lands ``clock_exit_latency_s`` later, on the shifted curve left by every real event whose
+    block_time is at or before the landing second. Limit: block_time has a 1 s resolution, so
+    real events up to 1 s after the exact landing instant may be applied before our sale (it
+    only moves the price of the timed sale; no decision reads the future). The event-driven
+    ``exit_horizon`` trigger is then off; stop loss, take profit and the other options are
+    unchanged. A timed sale landing at or after a migration boundary is migrated_unpriced.
     """
     trailing_stop: bool = False
     max_hold: bool = False
+    clock_horizon: bool = False
 
     def __post_init__(self):
-        if type(self.trailing_stop) is not bool or type(self.max_hold) is not bool:
+        if (type(self.trailing_stop) is not bool or type(self.max_hold) is not bool
+                or type(self.clock_horizon) is not bool):
             raise ValueError('invalid_exit_options')
 
     @property
     def enabled(self):
-        return self.trailing_stop or self.max_hold
+        return self.trailing_stop or self.max_hold or self.clock_horizon
+
+    def record(self):
+        """Bundle record; ``clock_horizon`` appears only when on, so older bundles hash as before."""
+        data = asdict(self)
+        if not self.clock_horizon:
+            del data['clock_horizon']
+        return data
 
 
 def _canonical(doc):
@@ -435,6 +475,12 @@ class ResearchArm(Strategy):
         self.exit_plan = plan
         return ENTRY_LAMPORTS
 
+    def exit_deadline(self, position):
+        """Block time at which the clock sends the horizon sale (only with ``clock_horizon``)."""
+        if not self.exit_options.clock_horizon:
+            return None
+        return position.entry_time + -(-self.params.exit_horizon_ms // 1000)
+
     def exit(self, history, position, mark):
         take = Fraction(str(self.exit_plan['tp_pct'])) / 100
         stop = Fraction(str(self.exit_plan['sl_pct'])) / 100
@@ -456,7 +502,8 @@ class ResearchArm(Strategy):
                    'trailing_stop' if trailing else
                    'max_hold' if held else
                    'take_profit' if mark >= position.spent * (1 + take) else
-                   'exit_horizon' if elapsed_ms >= self.params.exit_horizon_ms else None)
+                   'exit_horizon' if (not self.exit_options.clock_horizon
+                                      and elapsed_ms >= self.params.exit_horizon_ms) else None)
         if trigger:
             self.exit_trigger = dict(reason=trigger, index=len(history) - 1, mark=mark)
         return trigger is not None
@@ -589,11 +636,19 @@ def replay_pool(archive, params, *, quote_mint, sol_usd_series=None, window=None
         record['window'] = window
     if migration is not None:
         record['migration'] = migration
+    model = params.execution_model()
+    if exit_options is not None and exit_options.clock_horizon:
+        model = replace(model, clock_exit_latency_s=clock_exit_latency_s(params.latency_slots))
     for name in ARMS:
         arm = ResearchArm(name, observer, params, window, exit_options)
-        result = replay(timeline, arm, params.execution_model(), quote_mint=quote_mint)
+        result = replay(timeline, arm, model, quote_mint=quote_mint)
         record['journal'].extend(arm.journal)
+        if result.clock_exit is not None:
+            arm.exit_trigger = dict(reason='exit_horizon_clock', index=result.clock_exit['last_index'],
+                                    mark=result.received)
         row = _trade(result, timeline.events, arm, params)
+        if result.clock_exit is not None:
+            row = clock_exit_row(row, result, timeline.events, params)
         if migration is not None:
             row = _migrated(_exit_after_migration(row, migration))
         record['arms'][name] = _apply_window(row, window)
@@ -676,7 +731,7 @@ def run_replay(fixtures_dir, params=None, sol_usd_series=None, exit_options=None
     if any('migration' in pool for pool in pools):
         bundle['flags']['migration_rule'] = MIGRATION_RULE
     if exit_options.enabled:
-        bundle['exit_options'] = asdict(exit_options)
+        bundle['exit_options'] = exit_options.record()
     if sol_usd_series is not None:
         bundle['sol_usd_series'] = dict(
             label=sol_usd_series.label, ordering=sol_usd_series.ordering, sha256=sol_usd_series.sha256,

@@ -175,12 +175,12 @@ class PolicyArm(Strategy):
 
 
 BLOCK_TIME_RESOLUTION_S = 1   # ages and holds are read on whole-second block times
-SLOT_MS_MEAN = 215            # P0 measured 214.5 ms per slot (RUGGER 03, 2026-11-07)
+SLOT_MS_MEAN = hrr.CLOCK_SLOT_MS   # P0 measured 214.5 ms per slot (RUGGER 03, 2026-11-07)
 
 
 def clock_latency_s(params):
     """Whole seconds after a clock deadline during which real events still land before our sale."""
-    return max(1, -(-(params.latency_slots * SLOT_MS_MEAN) // 1000))
+    return hrr.clock_exit_latency_s(params.latency_slots)
 
 
 def _slots(seconds, params):
@@ -250,14 +250,7 @@ def run_policy_pool(archive, policy, exit_rule, params, *, quote_mint, window=No
                                 mark=result.received)
     row = hrr._trade(result, timeline.events, arm, params)
     if result.clock_exit is not None:
-        # No real event carries our timed sale: its slot is estimated on the slot floor (most
-        # slots, so a window check stays conservative), plus the landing latency.
-        # block_time is truncated to the second: up to 1 s more of real time may separate them (R02 O-A).
-        last = timeline.events[result.clock_exit['last_index']]
-        landing = result.clock_exit['landing_time']
-        row.update(exit_signature=None, exit_block_time=landing,
-                   exit_slot=last.slot + hrr.slots_for_ms((landing + BLOCK_TIME_RESOLUTION_S - last.block_time) * 1000)
-                   + params.latency_slots)
+        row = hrr.clock_exit_row(row, result, timeline.events, params)   # same rule as the L1 timed sale
     if migration is not None:
         # Timed or event-driven, a sale landing at or after the boundary is unpriced (R02 B1, B2).
         row = hrr._migrated(hrr._exit_after_migration(row, migration))

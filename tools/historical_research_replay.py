@@ -59,6 +59,8 @@ def main(argv=None):
                         help="also exit on the scorer plan's trailing stop (off by default)")
     parser.add_argument('--max-hold', action='store_true',
                         help="also exit after the scorer plan's hold_seconds (off by default)")
+    parser.add_argument('--clock-horizon', action='store_true',
+                        help='enforce exit_horizon_ms by the clock, even on a silent curve (off by default)')
     parser.add_argument('--out', type=Path, default=None, help='write the bundle JSON here')
     args = parser.parse_args(argv)
     try:
@@ -69,7 +71,8 @@ def main(argv=None):
     try:
         series = load_series(args.sol_usd_series) if args.sol_usd_series else None
         bundle = run_replay(args.fixtures, params, series,
-                            ExitOptions(trailing_stop=args.trailing_stop, max_hold=args.max_hold))
+                            ExitOptions(trailing_stop=args.trailing_stop, max_hold=args.max_hold,
+                                        clock_horizon=args.clock_horizon))
     except ValueError as exc:
         parser.error(str(exc))
     if args.out:
