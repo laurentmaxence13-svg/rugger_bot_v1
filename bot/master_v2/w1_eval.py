@@ -50,7 +50,13 @@ DESCRIPTIVE = {
     'M1_event_horizon': ('master', {}, 'event'),
     'P1b_event_horizon': (hrr.PLACEBO_ARM, {}, 'event'),
 }
-LIQUIDITY_THRESHOLD_USD = 1000        # decide(min_liquidity=1000) of the Master scorer (P4 POLICY)
+# USD thresholds that act on M1 (bot/analyser/final_decision_engine.decide with quote_source
+# 'launchlab_curve', R02 N-1): curve funding 5, 25 and 250 USD (score), liquidity 3000 and 25000 USD
+# (TP/SL choice), recent volume against max(5000, 0.25 x liquidity) when the volume is present.
+FUNDING_THRESHOLDS_USD = (5, 25, 250)
+TPSL_THRESHOLDS_USD = (3000, 25000)
+VOLUME_FLOOR_USD = 5000
+VOLUME_LIQUIDITY_SHARE = 0.25
 SOL_USD_ERROR_LIMIT = 0.005           # v2.5 age-study error bound (p99 of |used - next published|)
 B_DEFAULT = 10_000
 SEED = 20261108
@@ -147,15 +153,35 @@ def run_l1_descriptive(fixtures_dir, params, exit_options, *, registry_path, reg
     return out
 
 
-def near_threshold_share(trial, pools, *, threshold=LIQUIDITY_THRESHOLD_USD, error=SOL_USD_ERROR_LIMIT):
-    """Share of the trial's priced decisions whose liquidity_usd lies within the SOL/USD error of the
-    scorer's USD threshold (|liquidity - threshold| <= error * liquidity): decisions a price error
-    at the bound could flip. Published only (R02 D-3)."""
+def near_threshold_share(trial, pools, *, error=SOL_USD_ERROR_LIMIT):
+    """Share of the trial's priced decisions within the SOL/USD error of a USD threshold that acts
+    on M1, by threshold and in total (a decision near any of them): decisions a price error at
+    the bound could flip. Near means |value - threshold| <= error * value. Published only (R02 D-3, N-1).
+
+    A SOL/USD error scales funding, liquidity and volume alike, so only the volume's fixed floor
+    (5000 USD) can be crossed by it; 0.25 x liquidity scales with the volume and is not counted.
+    The L1 replay's NativeQuote carries no volume (volume_5m_usd is None), so for M1 the volume
+    threshold never acts; it is kept for any journal row that carries ``volume_5m_usd``.
+    """
     wanted = set(pools)
     rows = [r for p in trial['pools'] if p['pool'] in wanted for r in p['journal'] if 'liquidity_usd' in r]
-    near = sum(1 for r in rows if abs(r['liquidity_usd'] - threshold) <= error * r['liquidity_usd'])
-    return dict(decisions=len(rows), near=near, share=(near / len(rows)) if rows else None,
-                threshold_usd=threshold, error=error)
+    near = lambda value, threshold: abs(value - threshold) <= error * value       # noqa: E731
+    by_threshold = {}
+    for name, thresholds in (('funding', FUNDING_THRESHOLDS_USD), ('liquidity_tpsl', TPSL_THRESHOLDS_USD)):
+        for threshold in thresholds:
+            by_threshold[f'{name}_{threshold}'] = sum(1 for r in rows if near(r['liquidity_usd'], threshold))
+    volume_rows = [r for r in rows if r.get('volume_5m_usd') is not None]
+    by_threshold[f'volume_{VOLUME_FLOOR_USD}'] = sum(
+        1 for r in volume_rows if r['liquidity_usd'] * VOLUME_LIQUIDITY_SHARE <= VOLUME_FLOOR_USD
+        and near(r['volume_5m_usd'], VOLUME_FLOOR_USD))
+    def any_near(r):
+        return (any(near(r['liquidity_usd'], t) for t in FUNDING_THRESHOLDS_USD + TPSL_THRESHOLDS_USD)
+                or (r.get('volume_5m_usd') is not None and r['liquidity_usd'] * VOLUME_LIQUIDITY_SHARE <= VOLUME_FLOOR_USD
+                    and near(r['volume_5m_usd'], VOLUME_FLOOR_USD)))
+    total = sum(1 for r in rows if any_near(r))
+    return dict(decisions=len(rows), decisions_with_volume=len(volume_rows), error=error,
+                by_threshold={k: dict(near=v, share=(v / len(rows)) if rows else None) for k, v in by_threshold.items()},
+                near_any=total, share_any=(total / len(rows)) if rows else None)
 
 
 def trial_from_l1_bundle(bundle, trial_id, entry, fixtures_dir, *, arm=None):

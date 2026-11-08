@@ -90,7 +90,10 @@ def test_trials_registered_then_evaluated_from_the_saved_bundles(tmp_path, no_do
     assert report['split']['all'] == 3 and report['bundles_sha256'] == sums
     assert set(report['descriptive_sensitivities']) == set(w1_eval.DESCRIPTIVE)
     near = report['m1_near_usd_threshold']
-    assert near['threshold_usd'] == 1000 and near['error'] == 0.005 and near['decisions'] > 0
+    # The L1 NativeQuote carries no volume: the scorer's volume threshold never acts on M1 (R02 N-1).
+    assert near['decisions_with_volume'] == 0
+    assert near['error'] == 0.005 and near['decisions'] > 0 and set(near['by_threshold']) == {
+        'funding_5', 'funding_25', 'funding_250', 'liquidity_tpsl_3000', 'liquidity_tpsl_25000', 'volume_5000'}
     assert report['flags']['master_operational_trade'] is False and report['flags']['counted_in_master_gate'] is False
     assert json.loads((tmp_path / 'out' / 'w1_report.json').read_text())['decision'] == 'WAIT_INSUFFICIENT_DATA'
     # A bundle edited after the run is refused (documents are rebuilt from the files).

@@ -397,11 +397,22 @@ def test_descriptive_sensitivities_are_registered_outside_n_r02_d5():
                       sensitivity_entries=[_L1_RECORDS[w.SENSITIVITY_ID], record], descriptive=bad)
 
 
-def test_near_threshold_share_r02_d3():
-    trial = dict(pools=[dict(pool='a', journal=[dict(liquidity_usd=1000.0), dict(liquidity_usd=1004.9),
-                                                 dict(liquidity_usd=1006.0), dict(liquidity_usd=995.1), dict(),
-                                                 dict(liquidity_usd=1005.02)]),     # 5.02 <= 0.5 % of 1005.02
-                        dict(pool='b', journal=[dict(liquidity_usd=1000.0)])])
+def test_near_threshold_share_uses_the_thresholds_acting_on_m1_r02_n1():
+    rows = [dict(liquidity_usd=25.1),                       # funding 25: |25.1 - 25| = 0.1 <= 0.1255
+            dict(liquidity_usd=249.0),                      # funding 250: 1.0 <= 1.245
+            dict(liquidity_usd=3014.0),                     # TP/SL 3000: 14 <= 15.07
+            dict(liquidity_usd=3015.05),                    # 15.05 <= 0.5 % of the VALUE (15.075), > 0.5 % of 3000
+            dict(liquidity_usd=25200.0),                    # TP/SL 25000: 200 > 126: not near
+            dict(liquidity_usd=1000.0),                     # 1000 USD is not a threshold for the curve
+            dict(liquidity_usd=4000.0, volume_5m_usd=5020.0),       # volume floor 5000 (0.25 x 4000 = 1000)
+            dict(liquidity_usd=40000.0, volume_5m_usd=5020.0),      # 0.25 x 40000 = 10000 > 5000: not counted
+            dict()]
+    trial = dict(pools=[dict(pool='a', journal=rows), dict(pool='b', journal=[dict(liquidity_usd=25.0)])])
     share = w.near_threshold_share(trial, ['a'])
-    assert (share['decisions'], share['near']) == (5, 4) and share['share'] == 0.8
-    assert w.near_threshold_share(trial, [])['share'] is None
+    assert share['decisions'] == 8 and share['decisions_with_volume'] == 2
+    near = {k: v['near'] for k, v in share['by_threshold'].items()}
+    assert near == {'funding_5': 0, 'funding_25': 1, 'funding_250': 1, 'liquidity_tpsl_3000': 2,
+                    'liquidity_tpsl_25000': 0, 'volume_5000': 1}
+    assert share['near_any'] == 5 and share['share_any'] == 5 / 8
+    assert 'liquidity_1000' not in share['by_threshold']
+    assert w.near_threshold_share(trial, [])['share_any'] is None
