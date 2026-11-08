@@ -40,16 +40,80 @@ from bot.p4 import historical_research_replay as hrr
 SCHEMA = 'rugger-master-v2-research-v1'
 INTENTS = ('ENTER', 'WAIT', 'NO_TRADE')
 _ROOT = Path(__file__).resolve().parents[2]
-CODE_MODULES = (
-    'bot/master_v2/features.py', 'bot/master_v2/harness.py', 'bot/master_v2/policies.py',
-    'bot/master_v2/validation.py', 'bot/market/replay.py', 'bot/market/launchlab_curve.py',
-    'bot/market/launchlab_events.py', 'bot/market/pool_timeline.py', 'bot/market/collector.py',
-    'bot/p4/historical_research_replay.py', 'bot/master_v2/challengers.py')
+# W1 protocol R4: the code fingerprint covers the transitive closure of the repository modules
+# imported (statically, anywhere in a module, relative imports and package __init__ files
+# included) from the entry points that run, score, account and evaluate: the V2 harness and
+# policies, the L1 replay and its Master scorer, the W1 evaluator, the registry and the CLI.
+CODE_ROOTS = (
+    'bot/master_v2/harness.py', 'bot/master_v2/policies.py', 'bot/master_v2/challengers.py',
+    'bot/master_v2/validation.py', 'bot/master_v2/registry.py', 'bot/master_v2/w1_eval.py',
+    'bot/p4/historical_research_replay.py', 'tools/master_v2_research.py')
+FINGERPRINT_RULE = ('transitive-closure-v1: sha256 of the JSON list [path, sha256(bytes)] sorted by path, over '
+                    'the repository modules statically imported from CODE_ROOTS; interpreter and third-party '
+                    'packages are not covered')
+
+
+def _module_file(root, name):
+    """Repository path of module ``name`` (``a/b.py`` or ``a/b/__init__.py``), else None."""
+    parts = name.split('.')
+    for candidate in ('/'.join(parts) + '.py', '/'.join(parts + ['__init__.py'])):
+        if (root / candidate).is_file():
+            return candidate
+    return None
+
+
+def _package_of(path):
+    """Package of a module file: the directory parts (``a/b/c.py`` and ``a/b/__init__.py`` -> a.b)."""
+    return path.split('/')[:-1]
+
+
+def _imported_names(root, path):
+    import ast
+    tree = ast.parse((root / path).read_bytes(), filename=path)
+    names = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names += [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            if node.level:
+                package = _package_of(path)
+                base = package[:len(package) - (node.level - 1)] if node.level > 1 else package
+                module = '.'.join(base + ([node.module] if node.module else []))
+            else:
+                module = node.module
+            names.append(module)
+            names += [f'{module}.{alias.name}' for alias in node.names if alias.name != '*']
+    # Names that are attributes (``from m import f``) resolve to no file and are dropped; the
+    # packages on the way are added by code_modules (enclosing __init__ files).
+    return {path for path in (_module_file(root, name) for name in names) if path is not None}
+
+
+def code_modules(root=None):
+    """Sorted repository paths of the transitive import closure of CODE_ROOTS."""
+    root = _ROOT if root is None else root
+    seen, todo = set(), list(CODE_ROOTS)
+    while todo:
+        path = todo.pop()
+        if path in seen:
+            continue
+        if not (root / path).is_file():
+            raise ValueError('code_module_missing:' + path)
+        seen.add(path)
+        parts = path.split('/')
+        for end in range(1, len(parts)):              # enclosing package __init__ files
+            init = '/'.join(parts[:end] + ['__init__.py'])
+            if (root / init).is_file() and init not in seen:
+                todo.append(init)
+        todo += sorted(_imported_names(root, path) - seen)
+    return tuple(sorted(seen))
+
+
+CODE_MODULES = code_modules()
 
 
 def code_fingerprint():
-    """SHA-256 over the exact source of the modules that decide and account."""
-    rows = [(path, hashlib.sha256((_ROOT / path).read_bytes()).hexdigest()) for path in CODE_MODULES]
+    """SHA-256 over the exact source of every repository module the W1 code can execute (R4)."""
+    rows = [(path, hashlib.sha256((_ROOT / path).read_bytes()).hexdigest()) for path in code_modules()]
     return hashlib.sha256(json.dumps(rows, separators=(',', ':')).encode()).hexdigest()
 
 

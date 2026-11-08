@@ -33,7 +33,7 @@ import statistics
 
 from bot.master_decision import MasterDecisionOrchestrator
 from bot.master_v2 import challengers, registry
-from bot.master_v2.harness import code_fingerprint
+from bot.master_v2.harness import FINGERPRINT_RULE, code_fingerprint, code_modules
 from bot.master_v2.validation import (EULER_GAMMA, _NORMAL, bootstrap_mean_ci, preregistration,
                                       probabilistic_sharpe_ratio, sharpe_ratio)
 from bot.p4 import historical_research_replay as hrr
@@ -304,7 +304,8 @@ def evaluate_w1(trials, registry_entries, *, start, end, embargo_slots, targets=
     n_trials = len(recorded)
     split = w1_split(trials['M1']['pools'], start=start, end=end, embargo_slots=embargo_slots)
     report = dict(n_trials=n_trials, split={k: (len(v) if type(v) is list else v) for k, v in split.items()},
-                  evaluator_code_sha256=code_fingerprint(), trials={},
+                  evaluator_code_sha256=code_fingerprint(), code_fingerprint_rule=FINGERPRINT_RULE,
+                  code_modules=list(code_modules()), trials={},
                   pool_coverage=_pool_coverage(trials, split['all'], start, end))
     for key, trial in trials.items():
         report['trials'][key] = {period: {k: v for k, v in trial_metrics(trial, split[period], n_boot).items()

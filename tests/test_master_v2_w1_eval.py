@@ -8,7 +8,7 @@ import pytest
 
 from bot.master_v2 import registry
 from bot.master_v2 import w1_eval as w
-from bot.master_v2.harness import code_fingerprint
+from bot.master_v2.harness import code_fingerprint, code_modules as h_code_modules
 from bot.p4 import historical_research_replay as hrr
 
 PACK = Path(__file__).parent / 'fixtures' / 'launchlab_sol_pools'
@@ -237,6 +237,7 @@ def test_strong_edge_passes_the_gate_only_with_every_criterion():
     report = _evaluate(trials, sensitivity_latency10=_sensitivity())
     assert report['decision'] == 'CHALLENGER_FOR_W2' and report['n_trials'] == 32
     assert report['pool_coverage']['identical'] is True
+    assert report['code_modules'] == list(h_code_modules()) and 'transitive-closure-v1' in report['code_fingerprint_rule']
     assert report['flags']['reference_arm_reported'] is False and 'reference' not in report['trials']
     without = _evaluate(trials)
     assert without['decision'] == 'NO_GO' and without['decision_reasons'] == ['latency10_positive']
