@@ -27,7 +27,7 @@ sys.path.insert(0, str(ROOT))
 
 from datetime import datetime, timezone  # noqa: E402
 
-from bot.master_v2 import policies, registry  # noqa: E402
+from bot.master_v2 import challengers, policies, registry  # noqa: E402
 from bot.master_v2.harness import (  # noqa: E402
     ExitRule, outcome_horizon_slots, preregister, run_policy, validate_run_params)
 from bot.master_v2.lifecycle import lifecycle_table  # noqa: E402
@@ -38,7 +38,8 @@ from bot.p4.historical_research_replay import ReplayParams  # noqa: E402
 
 POLICIES = {cls.name: cls for cls in (policies.NoTrade, policies.RandomEntry, policies.ImmediateSnipe,
                                       policies.DelayedConfirmation, policies.FillMomentum,
-                                      policies.FixedDelay)}
+                                      policies.FixedDelay, *challengers.CHALLENGERS)}
+PARTITION_SEGMENTS = ('exploration', 'train', 'validation')   # never the holdout
 
 
 def _value(text):
@@ -183,6 +184,42 @@ def evaluate(bundles, *, registry_entries, holdout=False, unseal=(), embargo_slo
                 holdout_unsealed=sorted(set(unseal)) if holdout else [])
 
 
+def partition(base, filtered, *, registry_entries, segment, embargo_slots=None, n_perm=10_000):
+    """Exact-ablation report of a veto challenger against its registered base arm, on one segment.
+
+    The holdout is refused outright: this reads per-pool rows, so it never runs on sealed data.
+    """
+    if segment not in PARTITION_SEGMENTS:
+        raise ValueError('partition_segment_not_allowed:%s' % segment)
+    bundles = [base, filtered]
+    if len({b['fixtures']['manifest_sha256'] for b in bundles}) != 1:
+        raise ValueError('runs_on_different_fixtures')
+    registered = registry.trials_for(registry_entries, base['fixtures']['manifest_sha256'])
+    if any(b['preregistration_sha256'] not in registered for b in bundles):
+        raise ValueError('unregistered_runs')
+    arm = _policy(filtered)
+    if not hasattr(arm, 'base_arm'):
+        raise ValueError('not_a_veto_challenger:%s' % filtered['policy'])
+    expected = arm.base_arm()
+    if (base['policy'] != expected['policy']
+            or any(base['policy_params'].get(k) != v for k, v in expected['params'].items())
+            or base['exit_rule'] != filtered['exit_rule'] or base['params'] != filtered['params']):
+        raise ValueError('base_arm_mismatch')
+    required = required_embargo_slots(bundles)
+    embargo_slots = max(750, required) if embargo_slots is None else embargo_slots
+    if embargo_slots < required:
+        raise ValueError('embargo_shorter_than_outcome_horizon:%d' % required)
+    table = {}
+    for bundle in bundles:
+        for pool in bundle['pools']:
+            table.setdefault(pool['pool'], dict(pool=pool['pool'], creator=pool['creator'],
+                                                created_slot=pool['created_slot']))
+    split = chronological_split(list(table.values()), embargo_slots=embargo_slots)
+    report = challengers.veto_partition(base, filtered, set(split[segment]), n_perm=n_perm)
+    return dict(report, segment=segment, embargo_slots=embargo_slots, challenger=filtered['policy'],
+                base=base['policy'], registry_head=registry_entries[-1]['entry_sha256'])
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest='command', required=True)
@@ -208,6 +245,12 @@ def main(argv=None):
     ev.add_argument('--holdout', action='store_true')
     ev.add_argument('--unseal', action='append', default=[])
     ev.add_argument('--embargo-slots', type=int, default=None)
+    part = sub.add_parser('partition')
+    part.add_argument('base', type=Path)
+    part.add_argument('challenger', type=Path)
+    part.add_argument('--registry', type=Path, required=True)
+    part.add_argument('--segment', choices=PARTITION_SEGMENTS, required=True)
+    part.add_argument('--embargo-slots', type=int, default=None)
     args = parser.parse_args(argv)
     try:
         if args.command == 'run':
@@ -245,6 +288,11 @@ def main(argv=None):
             args.out.write_text(json.dumps(doc, sort_keys=True, indent=1, allow_nan=False) + '\n',
                                 encoding='utf-8')
             print(json.dumps(dict(pools=len(rows), excluded=len(excluded)), sort_keys=True))
+        elif args.command == 'partition':
+            base, filtered = (json.loads(path.read_text(encoding='utf-8')) for path in (args.base, args.challenger))
+            print(json.dumps(partition(base, filtered, registry_entries=registry.load(args.registry),
+                                       segment=args.segment, embargo_slots=args.embargo_slots),
+                             sort_keys=True, indent=1))
         else:
             if args.unseal and not args.holdout:
                 parser.error('unseal_requires_holdout')

@@ -44,7 +44,7 @@ CODE_MODULES = (
     'bot/master_v2/features.py', 'bot/master_v2/harness.py', 'bot/master_v2/policies.py',
     'bot/master_v2/validation.py', 'bot/market/replay.py', 'bot/market/launchlab_curve.py',
     'bot/market/launchlab_events.py', 'bot/market/pool_timeline.py', 'bot/market/collector.py',
-    'bot/p4/historical_research_replay.py')
+    'bot/p4/historical_research_replay.py', 'bot/master_v2/challengers.py')
 
 
 def code_fingerprint():
