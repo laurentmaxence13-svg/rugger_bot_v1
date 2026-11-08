@@ -26,7 +26,7 @@ Results are HISTORICAL_REPLAY research: never PAPER-ledger entries, never eviden
 for the 50-cycle / 20-creator gate, never operational Master trades.
 """
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 import hashlib
 import json
 from pathlib import Path
@@ -66,6 +66,7 @@ class ExitRule:
     trailing: float = None
     max_hold_s: int = None
     exit_progress_ppm: int = None
+    clock_exit: bool = False      # research option: sell at the max_hold deadline even on a silent curve
 
     def __post_init__(self):
         for name in ('take_profit', 'stop_loss', 'trailing'):
@@ -81,6 +82,18 @@ class ExitRule:
         if self.exit_progress_ppm is not None and (type(self.exit_progress_ppm) is not int
                                                    or not 0 < self.exit_progress_ppm < 1_000_000):
             raise ValueError('invalid_exit_progress_ppm')
+        if type(self.clock_exit) is not bool:
+            raise ValueError('invalid_clock_exit')
+        if self.clock_exit and self.max_hold_s is None:
+            raise ValueError('clock_exit_requires_max_hold_s')
+
+
+def rule_dict(rule):
+    """Serialised exit rule; ``clock_exit`` appears only when on, so older configurations hash as before."""
+    data = asdict(rule)
+    if not data['clock_exit']:
+        del data['clock_exit']
+    return data
 
 
 class Policy:
@@ -132,8 +145,14 @@ class PolicyArm(Strategy):
             return None
         if intent != 'ENTER':
             return None
-        self.exit_plan = asdict(self.rule)
+        self.exit_plan = rule_dict(self.rule)
         return self.entry_lamports
+
+    def exit_deadline(self, position):
+        """Block time at which a clock exit sells (only with ``ExitRule.clock_exit``)."""
+        if not self.rule.clock_exit:
+            return None
+        return position.entry_time + self.rule.max_hold_s
 
     def exit(self, history, position, mark):
         rule = self.rule
@@ -147,7 +166,8 @@ class PolicyArm(Strategy):
         trigger = ('stop_loss' if rule.stop_loss is not None and ratio <= 1 - rule.stop_loss else
                    'trailing_stop' if trailing else
                    'pre_migration' if near_migration else
-                   'max_hold' if rule.max_hold_s is not None and held_s >= rule.max_hold_s else
+                   'max_hold' if (rule.max_hold_s is not None and not rule.clock_exit
+                                  and held_s >= rule.max_hold_s) else   # the clock handles it
                    'take_profit' if rule.take_profit is not None and ratio >= 1 + rule.take_profit else None)
         if trigger:
             self.exit_trigger = dict(reason=trigger, index=len(history) - 1, mark=mark)
@@ -155,6 +175,12 @@ class PolicyArm(Strategy):
 
 
 BLOCK_TIME_RESOLUTION_S = 1   # ages and holds are read on whole-second block times
+SLOT_MS_MEAN = 215            # P0 measured 214.5 ms per slot (RUGGER 03, 2026-11-07)
+
+
+def clock_latency_s(params):
+    """Whole seconds after a clock deadline during which real events still land before our sale."""
+    return max(1, -(-(params.latency_slots * SLOT_MS_MEAN) // 1000))
 
 
 def _slots(seconds, params):
@@ -215,8 +241,21 @@ def run_policy_pool(archive, policy, exit_rule, params, *, quote_mint, window=No
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
     arm = PolicyArm(policy, exit_rule, facts, Counter(e.signature for e in timeline.events),
                     entry_lamports, window)
-    result = replay(timeline, arm, params.execution_model(), quote_mint=quote_mint)
+    model = params.execution_model()
+    if exit_rule.clock_exit:
+        model = replace(model, clock_exit_latency_s=clock_latency_s(params))
+    result = replay(timeline, arm, model, quote_mint=quote_mint)
+    if result.clock_exit is not None:
+        arm.exit_trigger = dict(reason='max_hold_clock', index=result.clock_exit['last_index'],
+                                mark=result.received)
     row = hrr._trade(result, timeline.events, arm, params)
+    if result.clock_exit is not None:
+        # No real event carries our timed sale: its slot is estimated on the slot floor (most
+        # slots, so a window check stays conservative), plus the landing latency.
+        last = timeline.events[result.clock_exit['last_index']]
+        landing = result.clock_exit['landing_time']
+        row.update(exit_signature=None, exit_block_time=landing,
+                   exit_slot=last.slot + hrr.slots_for_ms((landing - last.block_time) * 1000) + params.latency_slots)
     if migration is not None:
         row = hrr._migrated(row)
     row = hrr._apply_window(row, window)
@@ -244,10 +283,10 @@ def preregister(fixtures_dir, policy, exit_rule, params=None):
     manifest_sha256, windows = _manifest_design(fixtures_dir, params, exit_rule)
     design = dict(code_sha256=code_fingerprint(), manifest_sha256=manifest_sha256,
                   windows_sha256=hrr._sha(windows))
-    sha = preregistration(policy.name, dict(policy=policy.params(), exit=asdict(exit_rule),
+    sha = preregistration(policy.name, dict(policy=policy.params(), exit=rule_dict(exit_rule),
                                             replay=asdict(params)), design)
     return dict(preregistration_sha256=sha, policy=policy.name, policy_params=policy.params(),
-                exit_rule=asdict(exit_rule), replay_params=asdict(params), **design)
+                exit_rule=rule_dict(exit_rule), replay_params=asdict(params), **design)
 
 
 def run_policy(fixtures_dir, policy, exit_rule, params=None):
@@ -271,7 +310,7 @@ def run_policy(fixtures_dir, policy, exit_rule, params=None):
     # outcomes and metrics come from tools/master_v2_research.py evaluate only.
     bundle = dict(
         schema=SCHEMA, category=hrr.CATEGORY, policy_status='MASTER_RESEARCH',
-        policy=policy.name, policy_params=policy.params(), exit_rule=asdict(exit_rule),
+        policy=policy.name, policy_params=policy.params(), exit_rule=rule_dict(exit_rule),
         params=asdict(params), preregistration_sha256=registration['preregistration_sha256'],
         code_sha256=registration['code_sha256'], windows_sha256=registration['windows_sha256'],
         fixtures=dict(manifest_sha256=manifest_sha256, files=digests),

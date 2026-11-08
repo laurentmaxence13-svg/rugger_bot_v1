@@ -46,10 +46,17 @@ class ExecutionModel:
     base_fee_lamports: int = SOLANA_BASE_FEE_LAMPORTS
     priority_fee_lamports: int = 100_000
     fee_rate_estimator: str = 'event_at_decision'   # or 'causal_interval'
+    # Research option, off by default: when set, a strategy exposing ``exit_deadline(position)``
+    # sells at that deadline without waiting for a real trade; the sale lands after every real
+    # event up to deadline + this many seconds (a bonding-curve sale needs no counterparty).
+    clock_exit_latency_s: int = None
 
     def __post_init__(self):
         if self.fee_rate_estimator not in FEE_RATE_ESTIMATORS:
             raise ValueError('unknown_fee_rate_estimator')
+        if self.clock_exit_latency_s is not None and (type(self.clock_exit_latency_s) is not int
+                                                      or self.clock_exit_latency_s < 0):
+            raise ValueError('invalid_clock_exit_latency_s')
 
     @property
     def tx_cost(self):
@@ -81,6 +88,7 @@ class TradeResult:
     fee_rate_ppm: int = None        # rate applied to our own fills
     fee_rate_source: str = None     # 'model' | 'pool_event_at_decision' | 'pool_events_causal_interval'
     fee_rate_evidence: dict = None  # interval and events used (causal_interval only)
+    clock_exit: dict = None         # deadline, landing_time, last_index (clock exit only)
 
     @property
     def priced(self):
@@ -230,6 +238,24 @@ def replay(timeline, strategy, model=ExecutionModel(), *, quote_mint):
             result.tx_costs += model.tx_cost
             result.hold_slots = events[j - 1].slot - position.entry_slot
             return result
+        if pending_exit_slot is None and model.clock_exit_latency_s is not None:
+            deadline_of = getattr(strategy, 'exit_deadline', None)
+            deadline = deadline_of(position) if deadline_of is not None else None
+            landing = None if deadline is None else deadline + model.clock_exit_latency_s
+            if landing is not None and (j >= len(events) or events[j].block_time > landing):
+                try:
+                    sale = sell_exact_in(state, position.tokens, rate)
+                except CurveError as exc:
+                    result.outcome = 'counterfactual_divergence'
+                    result.notes.append(f'exit_refused:{exc}')
+                    return result
+                result.outcome, result.exit_index = 'closed', j - 1
+                result.received = sale.amount_out
+                result.tx_costs += model.tx_cost
+                result.hold_slots = events[j - 1].slot - position.entry_slot
+                result.notes.append('clock_exit')
+                result.clock_exit = dict(deadline=deadline, landing_time=landing, last_index=j - 1)
+                return result
         if j >= len(events):
             break
         try:
