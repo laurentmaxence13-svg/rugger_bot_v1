@@ -351,3 +351,60 @@ def test_option_b_caps_fit_the_strict_2600_ceiling():
     assert run.STUDY_TOTAL_MAX_CREDITS == 2_600 and run.WINDOW_MAX_CREDITS == 800
     assert run.PROBE_MAX_CREDITS + 3 * run.WINDOW_MAX_CREDITS <= run.STUDY_TOTAL_MAX_CREDITS
     assert run.WINDOW_PROJECTION_LIMIT * 1.1 <= run.WINDOW_MAX_CREDITS
+
+
+def test_t1_run_study_refuses_a_stop_window_projection(tmp_path, no_dotenv):
+    dirs = _study_dirs(tmp_path)
+    _paged_probe(tmp_path, 19, 2, name='paged')           # probe_decision GO, window_projection STOP
+    assert run.probe_decision(tmp_path / 'paged')['decision'] == 'GO'
+    assert run.window_projection(tmp_path / 'paged')['decision'] == 'STOP'
+    with pytest.raises(run.StudyRunError, match='window_projection_is_not_go'):
+        run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'paged',
+                      dashboard=_dashboard(tmp_path, 'paged'))
+    assert not (tmp_path / 'report.json').exists()
+
+
+def _real_probe_numbers(monkeypatch):
+    real = dict(decision='GO', projected_credits=1_800, probe_transactions=995, probe_slots=2_797,
+                probe_credits=dict(cap=200, reserved=200, spent=121))
+    monkeypatch.setattr(run, 'probe_decision', lambda _d: real)
+
+
+def test_t2_exact_projection_of_the_real_probe_from_its_ledger(tmp_path, no_dotenv, monkeypatch):
+    _real_probe_numbers(monkeypatch)
+    (tmp_path / 'manifest.json').write_text(json.dumps({
+        'bodies': 'gtfa', 'gsfa_anchor': {'slot': 466_229_534},
+        'budget': {'requests': 13, 'credits': 121, 'costs': bf.COST_PRESETS[w1_collection.COSTS]}}))
+    projection = run.window_projection(tmp_path)
+    assert (projection['probe_gtfa_pages'], projection['transactions_per_page'], projection['density_tx_per_slot']) == (11, 90, 0.356)
+    assert [(w['transactions'], w['gtfa_pages'], w['gsfa_pages'], w['credits']) for w in projection['windows']] == [(5_975, 68, 7, 697)] * 3
+    assert projection['decision'] == 'GO' and projection['reserved_with_window_caps'] == 2_600
+
+
+def test_t2_calls_log_with_the_anchor_counts_11_gtfa_pages(tmp_path, no_dotenv, monkeypatch):
+    _real_probe_numbers(monkeypatch)
+    line = lambda phase, method, credits: json.dumps({'phase': phase, 'method': method, 'credits': credits, 'requests': 1})
+    lines = [line('anchor', 'getTransactionsForAddress', 10)] + [line('gtfa', 'getTransactionsForAddress', 10)] * 11 \
+        + [line('gsfa', 'getSignaturesForAddress', 1)]
+    (tmp_path / bf.CALLS_LOG).write_text('\n'.join(lines) + '\n')
+    (tmp_path / 'manifest.json').write_text(json.dumps({'bodies': 'gtfa', 'gsfa_anchor': {'slot': 466_229_534}, 'calls': {},
+                                                        'budget': {'requests': 13, 'credits': 121}}))
+    projection = run.window_projection(tmp_path)
+    assert projection['probe_gtfa_pages'] == 11 and projection['windows'][0]['credits'] == 697
+
+
+def test_t3_a_charged_retry_is_logged_as_two_requests(tmp_path):
+    attempts = []
+
+    def flaky(request, timeout):
+        attempts.append(1)
+        if len(attempts) == 1:
+            raise OSError('connection reset')
+        return io.BytesIO(json.dumps({'jsonrpc': '2.0', 'id': 1, 'result': {'data': [], 'paginationToken': None}}).encode())
+    budget = bf.CreditBudget(10, 200, bf.COST_PRESETS[w1_collection.COSTS], ledger=tmp_path / 'r' / 'spend.json')
+    rpc = bf.ReadOnlyRpc('https://rpc.example.test/', budget, opener=flaky, sleep=lambda _s: None, max_retries=2)
+    backfill = bf.Backfill(rpc, bf.Window(pyth_push.SOL_USD_ACCOUNT, *run.PROBE), tmp_path / 'r')
+    backfill._call('gtfa', 'getTransactionsForAddress', [pyth_push.SOL_USD_ACCOUNT, {}])
+    lines = [json.loads(raw) for raw in (tmp_path / 'r' / bf.CALLS_LOG).read_text().splitlines()]
+    assert [(l['requests'], l['credits'], l['received'], l['pagination_token']) for l in lines] == [(2, 20, 0, False)]
+    assert (budget.used, budget.credits) == (2, 20)
