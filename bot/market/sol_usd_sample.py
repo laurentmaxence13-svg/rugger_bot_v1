@@ -129,7 +129,7 @@ class SampledBackfill(Backfill):
         while index > previous and attempts <= MAX_FALLBACK:
             row = rows[index]
             if row.get('err') is None and row['signature'] not in done_signatures:
-                body = self.rpc.call('getTransaction', [row['signature'], {
+                body = self._call('sample', 'getTransaction', [row['signature'], {
                     'encoding': 'json', 'maxSupportedTransactionVersion': MAX_TX_VERSION,
                     'commitment': 'finalized'}])
                 stats['fetched'] += 1

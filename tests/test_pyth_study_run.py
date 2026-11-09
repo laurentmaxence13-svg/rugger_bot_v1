@@ -74,7 +74,7 @@ def _failed(slot, block_time, signature):
     return entry
 
 
-def _study_dirs(tmp_path, window_cap=666, last_failed_gap=0):
+def _study_dirs(tmp_path, window_cap=800, last_failed_gap=0):
     _collect(tmp_path, 'probe', run.PROBE, _window_entries(run.PROBE[0], 1_793_993_000, 10))
     dirs = []
     for k, slots in enumerate(run.STUDY_WINDOWS):
@@ -147,8 +147,9 @@ def test_study_report_from_three_verified_windows(tmp_path, no_dotenv):
     assert report['windows'][0]['seconds'] == [first['blockTime'] + 1, 1_793_993_000 + 30 * 99 + 1]
     assert report['probe']['decision'] == 'GO' and report['probe']['transactions'] == 10
     credits = report['credits']
-    assert [c['cap'] for c in credits['windows']] == [666] * 3 and credits['probe']['cap'] == 200
-    assert credits['reserved_total'] == 200 + 3 * 666 and credits['total_max'] == 2_200
+    assert [c['cap'] for c in credits['windows']] == [800] * 3 and credits['probe']['cap'] == 200
+    assert credits['reserved_total'] == 200 + 3 * 800 and credits['total_max'] == 2_600
+    assert credits['window_max'] == 800 and credits['window_projection']['decision'] == 'GO'
     spent = credits['probe']['spent']
     assert spent > 0 and report['dashboard'] == dict(plan='Developer', before=9_000_000, after=9_000_000 - spent,
                                                      real_probe_credits=spent, counted_probe_credits=spent,
@@ -183,9 +184,9 @@ def test_final_gap_is_measured_up_to_the_last_transaction(tmp_path, no_dotenv):
     assert report['windows'][0]['transactions'] == 101
 
 
-def test_study_refuses_a_stop_probe_or_reserved_credits_above_2200(tmp_path, no_dotenv):
-    dirs = _study_dirs(tmp_path, window_cap=667)
-    with pytest.raises(run.StudyRunError, match='study_reserved_credits_above_2200'):
+def test_study_refuses_a_stop_probe_or_a_window_cap_above_800(tmp_path, no_dotenv):
+    dirs = _study_dirs(tmp_path, window_cap=801)
+    with pytest.raises(run.StudyRunError, match='study_window_cap_above_800'):
         run.run_study(dirs, tmp_path / 'report.json', probe_dir=tmp_path / 'probe', dashboard=_dashboard(tmp_path))
     dense = [_push(run.PROBE[0] + 2 * i, 1_793_993_000 + i, 1_793_993_000 + i - 1, f'd{i}') for i in range(1_112)]
     _collect(tmp_path, 'dense', run.PROBE, dense)
@@ -253,3 +254,100 @@ def test_incomplete_window_is_refused(tmp_path, no_dotenv):
                 bf.Window(pyth_push.SOL_USD_ACCOUNT, *run.PROBE), tmp_path / 'p').run()
     with pytest.raises(run.StudyRunError, match='not_verified_or_incomplete'):
         run.probe_decision(tmp_path / 'p')
+
+
+# ---------------------------------------------------------------- owner option B (2026-11-09)
+class PagedChain(Chain):
+    """GTFA pages of ``page`` entries with a paginationToken, as Helius pages a busy account."""
+
+    def __init__(self, entries, page):
+        super().__init__(entries)
+        self.page = page
+
+    def __call__(self, request, timeout):
+        body = json.loads(request.data)
+        options = body['params'][1]
+        if body['method'] != 'getTransactionsForAddress' or options.get('limit') == 1:
+            return super().__call__(request, timeout)
+        slot = options['filters']['slot']
+        rows = [e for e in self.entries if slot['gte'] <= e['slot'] <= slot['lte']]
+        start = int(options.get('paginationToken') or 0)
+        more = start + self.page < len(rows)
+        result = {'data': rows[start:start + self.page], 'paginationToken': str(start + self.page) if more else None}
+        return io.BytesIO(json.dumps({'jsonrpc': '2.0', 'id': 1, 'result': result}).encode())
+
+
+def _paged_probe(tmp_path, count, page, name='probe'):
+    chain = PagedChain(_window_entries(run.PROBE[0], 1_793_993_000, count), page)
+    chain.window = run.PROBE
+    budget = bf.CreditBudget(10_000, 200, bf.COST_PRESETS[w1_collection.COSTS], ledger=tmp_path / name / 'spend.json')
+    rpc = bf.open_rpc('https://rpc.example.test/?api-key=SECRET', budget, opener=chain)
+    return bf.Backfill(rpc, bf.Window(pyth_push.SOL_USD_ACCOUNT, *run.PROBE), tmp_path / name).run()
+
+
+def test_every_call_is_logged_with_what_came_back(tmp_path):
+    manifest = _paged_probe(tmp_path, 15, 6)
+    lines = [json.loads(raw) for raw in (tmp_path / 'probe' / bf.CALLS_LOG).read_text().splitlines()]
+    gtfa = [line for line in lines if line['method'] == 'getTransactionsForAddress']
+    assert [(line['received'], line['pagination_token']) for line in gtfa] == [(6, True), (6, True), (3, False)]
+    assert all(line['credits'] == 10 and line['requests'] == 1 and line['phase'] == 'gtfa' for line in gtfa)
+    gsfa = [line for line in lines if line['method'] == 'getSignaturesForAddress']
+    assert [(line['received'], line['credits'], line['pagination_token']) for line in gsfa] == [(15, 1, None)]
+    calls = manifest['calls']
+    assert (calls['requests'], calls['credits']) == (manifest['budget']['requests'], manifest['budget']['credits'])
+    assert calls['by_method']['getTransactionsForAddress'] == dict(calls=3, received=15, credits=30,
+                                                                     with_pagination_token=2, errors=0)
+    assert bf.verify(tmp_path / 'probe')['ok']
+
+
+def test_calls_log_tampered_or_short_of_the_ledger_fails_verify(tmp_path):
+    _paged_probe(tmp_path, 15, 6)
+    log = tmp_path / 'probe' / bf.CALLS_LOG
+    lines = log.read_text().splitlines()
+    log.write_text('\n'.join(lines[:-1]) + '\n')
+    assert bf.verify(tmp_path / 'probe')['problems'] == ['calls_log_differs_from_manifest']
+    manifest_path = tmp_path / 'probe' / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    manifest['calls'] = bf._calls_summary(tmp_path / 'probe')
+    manifest_path.write_text(json.dumps(manifest))
+    assert bf.verify(tmp_path / 'probe')['problems'] == ['calls_log_differs_from_ledger']
+
+
+def test_a_call_charged_then_failing_is_logged_with_its_error(tmp_path):
+    def broken(request, timeout):
+        raise OSError('connection reset')
+    budget = bf.CreditBudget(3, 200, bf.COST_PRESETS[w1_collection.COSTS], ledger=tmp_path / 'b' / 'spend.json')
+    rpc = bf.ReadOnlyRpc('https://rpc.example.test/', budget, opener=broken, sleep=lambda _s: None, max_retries=1)
+    backfill = bf.Backfill(rpc, bf.Window(pyth_push.SOL_USD_ACCOUNT, *run.PROBE), tmp_path / 'b')
+    with pytest.raises(Exception):
+        backfill._call('gtfa', 'getTransactionsForAddress', [pyth_push.SOL_USD_ACCOUNT, {}])
+    lines = [json.loads(raw) for raw in (tmp_path / 'b' / bf.CALLS_LOG).read_text().splitlines()]
+    assert len(lines) == 1 and lines[0]['error'] and lines[0]['credits'] == budget.credits > 0
+
+
+def test_window_projection_uses_the_real_pages_of_the_probe(tmp_path, no_dotenv):
+    _paged_probe(tmp_path, 19, 2)                       # 10 GTFA pages (9 x 2 + 1): 100 + 1 GSFA = 101 credits
+    projection = run.window_projection(tmp_path / 'probe')
+    assert projection['probe_gtfa_pages'] == 10 and projection['transactions_per_page'] == 1
+    window = projection['windows'][0]
+    assert window['transactions'] == -(-(-(-19 * 1000 // 2_797)) * 16_783 // 1000)
+    assert window['gtfa_pages'] == window['transactions'] + 1
+    assert window['credits'] == (window['gtfa_pages'] + 1) * 10 + window['gsfa_pages'] > run.WINDOW_PROJECTION_LIMIT
+    assert projection['decision'] == 'STOP'
+    _paged_probe(tmp_path, 10, 100, name='light')
+    assert run.window_projection(tmp_path / 'light')['decision'] == 'GO'
+
+
+def test_probe_page_split_from_the_ledger_alone():
+    manifest = {'bodies': 'gtfa', 'gsfa_anchor': {'slot': 466_229_534},
+                'budget': {'requests': 13, 'credits': 121, 'costs': bf.COST_PRESETS[w1_collection.COSTS]}}
+    assert run._probe_gtfa_pages('unused', manifest) == 11          # 1 anchor + 11 GTFA + 1 GSFA
+    manifest['budget'] = dict(manifest['budget'], credits=120)
+    with pytest.raises(run.StudyRunError, match='probe_ledger_has_no_gtfa_gsfa_split'):
+        run._probe_gtfa_pages('unused', manifest)
+
+
+def test_option_b_caps_fit_the_strict_2600_ceiling():
+    assert run.STUDY_TOTAL_MAX_CREDITS == 2_600 and run.WINDOW_MAX_CREDITS == 800
+    assert run.PROBE_MAX_CREDITS + 3 * run.WINDOW_MAX_CREDITS <= run.STUDY_TOTAL_MAX_CREDITS
+    assert run.WINDOW_PROJECTION_LIMIT * 1.1 <= run.WINDOW_MAX_CREDITS

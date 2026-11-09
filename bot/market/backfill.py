@@ -34,6 +34,7 @@ LAUNCHLAB_PROGRAM = 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'
 READ_METHODS = frozenset({'getSignaturesForAddress', 'getTransaction', 'getTransactionsForAddress'})
 SCHEMA_STATE = 'rugger-backfill-state-v1'
 SCHEMA_MANIFEST = 'rugger-backfill-manifest-v1'
+CALLS_LOG = 'calls.jsonl'      # one line per RPC call: what came back (owner, option B, item 2)
 GSFA_PAGE = 1000          # getSignaturesForAddress maximum
 GTFA_FULL_PAGE = 100      # getTransactionsForAddress, transactionDetails=full (Helius docs)
 GTFA_SIG_PAGE = 1000      # getTransactionsForAddress, transactionDetails=signatures
@@ -303,6 +304,50 @@ class Backfill:
     def _phase(self, name):
         return self.state['phases'].get(name, {'cursor': None, 'done': False})
 
+    # ----------------------------------------------------------------- calls log
+    def _call(self, phase, method, params):
+        """``rpc.call`` plus one line in calls.jsonl: what the call returned and what it was charged.
+
+        Owner decision (option B, item 2): for each call, the number of entries received and
+        whether a pagination cursor came back, so the real cost per page is measured instead of
+        inferred from totals. ``requests``/``credits`` are the ledger's increase over the call
+        (retries included). A call that raises after being charged is logged with its error; a
+        cap stop BEFORE any send charges nothing and logs nothing. The line is fsynced before the
+        result is used, so the log and the ledger only differ if the process dies in between,
+        which verify() then reports (calls_log_differs_from_ledger).
+        """
+        budget = getattr(self.rpc, 'budget', None)
+        before = (budget.used, budget.credits) if budget is not None else (0, 0)
+        line, result = {'phase': phase, 'method': method}, None
+        try:
+            result = self.rpc.call(method, params)
+        except Exception as exc:
+            line['error'] = type(exc).__name__
+            if budget is None or (budget.used, budget.credits) == before:
+                raise
+            self._log_call(line, budget, before)
+            raise
+        if method == 'getTransactionsForAddress':
+            data = result.get('data') if isinstance(result, dict) else None
+            line['received'] = len(data) if isinstance(data, list) else None
+            line['pagination_token'] = bool(result.get('paginationToken')) if isinstance(result, dict) else None
+        elif method == 'getSignaturesForAddress':
+            line['received'] = len(result) if isinstance(result, list) else (0 if result is None else None)
+            line['pagination_token'] = None          # no cursor in this method: a full page continues
+        else:
+            line['received'] = 0 if result is None else 1
+            line['pagination_token'] = None
+        self._log_call(line, budget, before)
+        return result
+
+    def _log_call(self, line, budget, before):
+        after = (budget.used, budget.credits) if budget is not None else (0, 0)
+        line.update(requests=after[0] - before[0], credits=after[1] - before[1], ledger_credits=after[1])
+        with open(self.out / CALLS_LOG, 'a', encoding='utf-8') as handle:
+            handle.write(json.dumps(line, sort_keys=True, separators=(',', ':')) + '\n')
+            handle.flush()
+            os.fsync(handle.fileno())
+
     # ----------------------------------------------------------------- listings
     def _gtfa_phase(self, phase, kind, details, page_size):
         """getTransactionsForAddress, oldest first, slot-filtered, failed included."""
@@ -318,7 +363,7 @@ class Backfill:
                                                              'lte': self.window.slot_max}}}
             if token:
                 options['paginationToken'] = token
-            result = self.rpc.call('getTransactionsForAddress', [self.window.address, options])
+            result = self._call(phase, 'getTransactionsForAddress', [self.window.address, options])
             if not isinstance(result, dict) or not isinstance(result.get('data'), list):
                 raise BackfillError('getTransactionsForAddress:malformed_result')
             for entry in result['data']:
@@ -357,7 +402,7 @@ class Backfill:
                    'maxSupportedTransactionVersion': MAX_TX_VERSION,
                    'commitment': 'finalized', 'limit': 1, 'sortOrder': 'asc',
                    'filters': {'status': 'succeeded', 'slot': {'gte': self.window.slot_max + 1}}}
-        result = self.rpc.call('getTransactionsForAddress', [self.window.address, options])
+        result = self._call('anchor', 'getTransactionsForAddress', [self.window.address, options])
         if not isinstance(result, dict) or not isinstance(result.get('data'), list):
             raise BackfillError('getTransactionsForAddress:malformed_result')
         if not result['data']:
@@ -384,7 +429,7 @@ class Backfill:
             options = {'limit': GSFA_PAGE, 'commitment': 'finalized'}
             if before:
                 options['before'] = before
-            page = self.rpc.call('getSignaturesForAddress', [self.window.address, options]) or []
+            page = self._call(phase, 'getSignaturesForAddress', [self.window.address, options]) or []
             if not isinstance(page, list):
                 raise BackfillError('getSignaturesForAddress:malformed_result')
             reached_start = False
@@ -413,7 +458,7 @@ class Backfill:
         start, rows, missing = current['cursor'] or 0, [], self.state.setdefault('missing', [])
         for index in range(start, len(listed)):
             signature = listed[index]['signature']
-            result = self.rpc.call('getTransaction', [signature, {
+            result = self._call('bodies', 'getTransaction', [signature, {
                 'encoding': 'json', 'maxSupportedTransactionVersion': MAX_TX_VERSION,
                 'commitment': 'finalized'}])
             if result is None:
@@ -486,9 +531,33 @@ class Backfill:
                     'complete': complete,
                     'single_method': not self.check,
                     'gsfa_anchor': self._phase('anchor')['cursor']}
+        calls = _calls_summary(self.out)
+        if calls is not None:
+            manifest['calls'] = calls
         _write_atomic(self.out / 'manifest.json',
                       json.dumps(manifest, indent=1, sort_keys=True).encode())
         return manifest
+
+
+def _calls_summary(out):
+    """calls.jsonl of a run directory: sha256, lines, summed charge, pages by method; None if absent."""
+    path = Path(out) / CALLS_LOG
+    if not path.exists():
+        return None
+    lines = [json.loads(raw) for raw in path.read_text(encoding='utf-8').splitlines() if raw]
+    by_method = {}
+    for line in lines:
+        stats = by_method.setdefault(line['method'], {'calls': 0, 'received': 0, 'credits': 0,
+                                                      'with_pagination_token': 0, 'errors': 0})
+        stats['calls'] += 1
+        stats['received'] += line.get('received') or 0
+        stats['credits'] += line['credits']
+        stats['with_pagination_token'] += 1 if line.get('pagination_token') else 0
+        stats['errors'] += 1 if 'error' in line else 0
+    return {'path': CALLS_LOG, 'rows': len(lines), 'sha256': _sha256(path),
+            'requests': sum(line['requests'] for line in lines),
+            'credits': sum(line['credits'] for line in lines),
+            'by_method': dict(sorted(by_method.items()))}
 
 
 def verify(out):
@@ -524,6 +593,14 @@ def verify(out):
                 or anchor['slot'] <= manifest['window']['slot_max'] or type(anchor.get('signature')) is not str
                 or not anchor['signature'] or anchor != state_anchor):
             problems.append('gsfa_anchor_invalid')
+    calls = manifest.get('calls')
+    if calls is not None:
+        found = _calls_summary(out)
+        if found is None or found['sha256'] != calls['sha256'] or found != calls:
+            problems.append('calls_log_differs_from_manifest')
+        elif (found['requests'], found['credits']) != (manifest['budget']['requests'],
+                                                        manifest['budget']['credits']):
+            problems.append('calls_log_differs_from_ledger')
     # Recompute what the manifest claims instead of trusting it.
     if not problems:
         totals = manifest['totals']

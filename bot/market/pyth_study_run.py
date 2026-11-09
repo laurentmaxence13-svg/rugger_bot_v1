@@ -10,6 +10,8 @@ Steps:
 * ``probe_decision(probe_dir)``: the probe's ledger must show every cap and the spend at most
   PROBE_MAX_CREDITS; transactions per slot of the probe -> pyth_age_study.study_go_no_go for the
   3 windows (50 349 slots): 'GO' or 'STOP' with the projected credits.
+* ``window_projection(probe_dir)`` (step 1 bis, owner option B): each window priced on the probe's
+  real cost per page with a prudent hypothesis; 'GO' only if each is <= 720 (cap 800 per window).
 * ``run_study(window_dirs, out, probe_dir=...)``: recomputes probe_decision and refuses unless GO;
   the credits reserved by the probe and the 3 windows (largest cap each ever ran under, ledgers on
   the W1 cost table) must be at most STUDY_TOTAL_MAX_CREDITS; effective points of each window
@@ -41,7 +43,16 @@ from bot.market import w1_collection
 STUDY_WINDOWS = ((466_226_737, 466_243_519), (466_298_737, 466_315_519), (466_370_737, 466_387_519))
 PROBE = (466_226_737, 466_229_533)
 PROBE_MAX_CREDITS = 200
-STUDY_TOTAL_MAX_CREDITS = PROBE_MAX_CREDITS + st.STUDY_MAX_CREDITS      # 2 200
+# Owner decision "option B" (2026-11-09): strict overall ceiling of 2 600 free Helius credits, probe
+# included, about 800 at most per window. 200 + 3 x 800 = 2 600: the reserved caps alone fit it.
+WINDOW_MAX_CREDITS = 800
+STUDY_TOTAL_MAX_CREDITS = 2_600
+assert PROBE_MAX_CREDITS + len(STUDY_WINDOWS) * WINDOW_MAX_CREDITS <= STUDY_TOTAL_MAX_CREDITS
+# Step 1 bis: a window is launched only if its prudent projection leaves >= 10 % of its cap for
+# the density variance between windows (same margin as the former 600 / 666).
+WINDOW_PROJECTION_LIMIT = 720
+GTFA_PAGE_CREDITS = 10
+GSFA_PAGE_ROWS = 1_000
 SCHEMA = 'rugger-sol-usd-age-study-report-v1'
 
 
@@ -94,6 +105,66 @@ def probe_decision(probe_dir):
                 probe_spend=manifest['budget'], probe_credits=credits, windows_slots=target)
 
 
+def _probe_gtfa_pages(probe_dir, manifest):
+    """GTFA body pages the probe really paid for (anchor excluded).
+
+    From calls.jsonl when the run has one (option B, item 2); otherwise from the ledger, whose two
+    totals (requests, credits) on the W1 table (GTFA 10, GSFA 1) give a unique split for a GTFA-bodies
+    run: 10 a + b = credits, a + b = requests. The probe 7UVimf: 121, 13 -> a = 12 (1 anchor + 11).
+    """
+    calls = manifest.get('calls')
+    if calls is not None:
+        lines = [json.loads(raw) for raw in (Path(probe_dir) / bf.CALLS_LOG).read_text().splitlines() if raw]
+        return sum(1 for line in lines if line['method'] == 'getTransactionsForAddress'
+                   and line['phase'] == 'gtfa' and 'error' not in line)
+    budget = manifest['budget']
+    if manifest['bodies'] != 'gtfa' or budget['costs'] != bf.COST_PRESETS[w1_collection.COSTS]:
+        raise StudyRunError('probe_page_split_needs_a_gtfa_run_on_the_w1_table')
+    gtfa, rest = divmod(budget['credits'] - budget['requests'], GTFA_PAGE_CREDITS - 1)
+    if rest or not 0 <= gtfa <= budget['requests']:
+        raise StudyRunError('probe_ledger_has_no_gtfa_gsfa_split')
+    return gtfa - (1 if manifest.get('gsfa_anchor') else 0)
+
+
+def window_projection(probe_dir):
+    """Step 1 bis (owner option B, item 3): each window priced on the cost the probe REALLY paid.
+
+    Prudent hypothesis (R02, 2026-11-08, (ii)): the probe's pages were partly filled all along, not
+    full pages plus one empty last page. So:
+    * density = probe transactions / probe slots, rounded UP to the thousandth;
+    * window transactions = ceil(density x window slots);
+    * transactions per GTFA page = floor(probe transactions / GTFA pages the probe paid) (995/11 -> 90);
+    * GTFA pages = ceil(window transactions / that) + 1 last page;
+    * GSFA pages = ceil(window transactions / 1000) + 1 last page; + 1 anchor (10).
+    'GO' only if every window is at most WINDOW_PROJECTION_LIMIT and the reserved caps fit 2 600.
+    """
+    _require_no_dotenv()
+    probe = probe_decision(probe_dir)
+    manifest = json.loads((Path(probe_dir) / 'manifest.json').read_text(encoding='utf-8'))
+    pages = _probe_gtfa_pages(probe_dir, manifest)
+    tx, slots = probe['probe_transactions'], probe['probe_slots']
+    if pages <= 0 or tx <= 0:
+        raise StudyRunError('probe_without_gtfa_page_or_transaction')
+    per_page = tx // pages
+    density_milli = -(-tx * 1000 // slots)
+    costs = bf.COST_PRESETS[w1_collection.COSTS]
+    windows = []
+    for start, end in STUDY_WINDOWS:
+        window_tx = -(-density_milli * (end - start + 1) // 1000)
+        gtfa = -(-window_tx // per_page) + 1
+        gsfa = -(-window_tx // GSFA_PAGE_ROWS) + 1
+        credits = (gtfa + 1) * costs['getTransactionsForAddress'] + gsfa * costs['getSignaturesForAddress']
+        windows.append(dict(slots=[start, end], transactions=window_tx, gtfa_pages=gtfa, gsfa_pages=gsfa,
+                            anchor=1, credits=credits))
+    reserved = probe['probe_credits']['reserved'] + len(STUDY_WINDOWS) * WINDOW_MAX_CREDITS
+    ok = (probe['decision'] == 'GO' and reserved <= STUDY_TOTAL_MAX_CREDITS
+          and all(w['credits'] <= WINDOW_PROJECTION_LIMIT for w in windows))
+    return dict(decision='GO' if ok else 'STOP', density_tx_per_slot=density_milli / 1000,
+                probe_gtfa_pages=pages, transactions_per_page=per_page, windows=windows,
+                limit=WINDOW_PROJECTION_LIMIT, window_cap=WINDOW_MAX_CREDITS,
+                reserved_with_window_caps=reserved, total_max=STUDY_TOTAL_MAX_CREDITS)
+
+
 def dashboard_check(probe_dir, dashboard):
     """STOP unless the owner's readings show autoscaling disabled and real probe cost == ledger."""
     _require_no_dotenv()
@@ -141,7 +212,12 @@ def run_study(window_dirs, out, *, probe_dir, dashboard):
     probe = probe_decision(probe_dir)
     if probe['decision'] != 'GO':
         raise StudyRunError('probe_decision_is_not_go')
+    projection = window_projection(probe_dir)
+    if projection['decision'] != 'GO':
+        raise StudyRunError('window_projection_is_not_go')
     window_credits = [_run_credits(run_dir) for run_dir in window_dirs]
+    if any(c['cap'] > WINDOW_MAX_CREDITS for c in window_credits):
+        raise StudyRunError('study_window_cap_above_' + str(WINDOW_MAX_CREDITS))
     reserved = probe['probe_credits']['reserved'] + sum(c['reserved'] for c in window_credits)
     if reserved > STUDY_TOTAL_MAX_CREDITS:
         raise StudyRunError('study_reserved_credits_above_' + str(STUDY_TOTAL_MAX_CREDITS))
@@ -157,7 +233,8 @@ def run_study(window_dirs, out, *, probe_dir, dashboard):
         spend.append(manifest['budget'])
     result = st.study(points, windows)
     credits = dict(probe=probe['probe_credits'], windows=window_credits, reserved_total=reserved,
-                   probe_max=PROBE_MAX_CREDITS, total_max=STUDY_TOTAL_MAX_CREDITS, costs=w1_collection.COSTS)
+                   probe_max=PROBE_MAX_CREDITS, window_max=WINDOW_MAX_CREDITS,
+                   total_max=STUDY_TOTAL_MAX_CREDITS, costs=w1_collection.COSTS, window_projection=projection)
     report = dict(schema=SCHEMA, account=pyth_push.SOL_USD_ACCOUNT, feed_id=pyth_push.SOL_USD_FEED_ID,
                   windows=decoding, spend=spend, credits=credits, dashboard=dashboard_result,
                   probe=dict(decision=probe['decision'], projected_credits=probe['projected_credits'],
