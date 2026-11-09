@@ -67,6 +67,7 @@ def test_collect_command_checks_the_cap_and_sends_nothing(tmp_path):
     b = w1_collection.bounds(1_000_000)
     assert argv[:2] == ['run', '--network'] and argv[argv.index('--slot-max') + 1] == str(b['slot_max'])
     assert argv[argv.index('--costs') + 1] == w1_collection.COSTS and '--max-credits' in argv
+    assert '--anchor-after-window' in argv and '--before-signature' not in argv                 # v2.6 (C5)
     from bot.market import backfill as bf
     with pytest.raises(bf.BackfillError, match='run_cap_above_credits_left_after_the_pilot'):
         run.collect_command(1_000_000, pilot_dir=pilot, max_credits=w1_collection.CREDIT_CAP, out=tmp_path / 'w',
@@ -164,7 +165,10 @@ def test_sol_usd_window_to_series_v2_4(tmp_path, no_dotenv):
     assert series.label == 'COLLECTED' and len(series.points) == 2 and series.max_age_ms == 65_000
     assert sus.load_series(tmp_path / 'sol.json.gz').sha256 == series.sha256
     decoding = json.loads((tmp_path / 'sol.json.gz.decoding.json').read_text())
+    hourly = decoding.pop('refusals_by_utc_hour')
     assert decoding == dict(updates=2, not_newer=0, points=2, study_report_sha256=anchored, series_sha256=series.sha256)
+    assert hourly == run.refusals_by_utc_hour(series.points, entries, dict(max_age_ms=65_000, max_confidence_ppm=1_000))
+    assert sum(s for s, _ in hourly.values()) > 0 and all(0 <= r <= s for s, r in hourly.values())
     with pytest.raises(run.W1RunError, match='age_study_report_is_not_the_anchored_one'):       # R02 D-7
         run.sol_usd_series(entries, study, '0' * 64, tmp_path / 'other.json')
     rejected = tmp_path / 'rejected.json'
@@ -238,3 +242,20 @@ def test_incomplete_sol_usd_window_is_refused(tmp_path, no_dotenv):
     assert not manifest['complete']
     with pytest.raises(run.W1RunError, match='sol_usd_window_not_verified_or_incomplete'):
         run.pyth_entries(tmp_path / 'pyth', s0)
+
+
+def test_refusals_by_utc_hour_follow_the_study_definitions():
+    def point(slot, block_time, publish_time, confidence=10, price=100_000):
+        return dict(slot=slot, transaction_index=0, block_time=block_time, publish_time=publish_time,
+                    confidence=confidence, price=price)
+    acceptance = dict(max_age_ms=5_000, max_confidence_ppm=200)
+    points = [point(1, 3_599, 3_599), point(2, 3_603, 3_603, confidence=30), point(3, 3_605, 3_605)]
+    entries = [{'blockTime': 3_599}, {'blockTime': 3_603}, {'blockTime': 3_612}]
+    hourly = run.refusals_by_utc_hour(points, entries, acceptance)
+    # seconds 3600..3611: 3600-3603 use point 1 (ages 1-4 s; point 2 is usable only after 3603.999);
+    # 3604 uses point 2 (confidence 300 ppm > 200: refused); 3605 uses point 2 too; 3606-3611
+    # use point 3 (ages 1-6 s: 3611 is 6 s old > 5 s: refused)
+    assert hourly == {'01': [12, 3]}
+    assert run.refusals_by_utc_hour([], entries, acceptance) == {}
+    assert run.refusals_by_utc_hour(points, [{'blockTime': None}], acceptance) == {}
+    assert run.refusals_by_utc_hour(points, [{'blockTime': 3_600}], acceptance) == {}

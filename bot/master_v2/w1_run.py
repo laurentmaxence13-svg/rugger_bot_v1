@@ -97,6 +97,7 @@ def collect_command(s0, *, pilot_dir, max_credits, out, evaluation_slots=w1_coll
     extra = [] if address is None else ['--address', address]
     return ['run', '--network', '--endpoint-env', endpoint_env, *extra, '--slot-min', str(b['slot_min']),
             '--slot-max', str(b['slot_max']), '--bodies', 'gtfa', '--costs', w1_collection.COSTS,
+            '--anchor-after-window',                     # v2.6: listing anchored after the window (C5)
             '--max-requests', str(max_requests), '--max-credits', str(max_credits), '--out', str(out)]
 
 
@@ -135,8 +136,38 @@ def sol_usd_series(entries, study_report, study_report_sha256, out):
     _write_json(out, document)
     _write_json(str(out) + '.decoding.json', dict(updates=decoded['updates'], not_newer=decoded['not_newer'],
                                                   points=len(decoded['points']), study_report_sha256=study_report_sha256,
-                                                  series_sha256=series.sha256))
+                                                  series_sha256=series.sha256,
+                                                  refusals_by_utc_hour=refusals_by_utc_hour(
+                                                      decoded['points'], entries, report['acceptance'])))
     return series
+
+
+def refusals_by_utc_hour(points, entries, acceptance):
+    """DESCRIPTIVE (v2.6, no rule depends on it): seconds without an accepted price, by UTC hour of day.
+
+    Same definitions as the anchored age study: measured seconds [first point block_time + 1, last
+    block_time of every collected transaction) (C-1); at each second the point of
+    pyth_age_study.chosen; refused when there is none, when its age exceeds max_age_ms or when its
+    confidence exceeds max_confidence_ppm. Returns {hour: [seconds, refused]} for the hours present.
+    """
+    from bot.market import pyth_age_study
+    times = [entry.get('blockTime') for entry in entries]
+    if not points or not times or any(type(t) is not int for t in times):
+        return {}
+    start = min(points, key=lambda p: (p['slot'], p['transaction_index']))['block_time'] + 1
+    end = max(times)
+    if end <= start:
+        return {}
+    usable, picks = pyth_age_study.chosen(points, start, end)
+    max_age_ms, max_ppm = acceptance['max_age_ms'], acceptance['max_confidence_ppm']
+    hours = {}
+    for t, i in zip(range(start, end), picks):
+        refused = (i is None or (t - usable[i]['publish_time']) * 1000 > max_age_ms
+                   or usable[i]['confidence'] * 1_000_000 > max_ppm * usable[i]['price'])
+        cell = hours.setdefault(f'{t // 3600 % 24:02d}', [0, 0])
+        cell[0] += 1
+        cell[1] += int(refused)
+    return dict(sorted(hours.items()))
 
 
 def _bundle_path(out, trial_id):
