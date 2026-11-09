@@ -261,6 +261,12 @@ class Backfill:
         self.anchor_after_window = anchor_after_window
         self.out.mkdir(parents=True, exist_ok=True)
         self.state = self._load_state()
+        # R02 O-1: the anchor option is part of the run's identity (recorded only when on, so the
+        # state of existing runs is unchanged); a resume with the other value is refused.
+        if self.state.get('anchor_after_window', False) != anchor_after_window:
+            if (self.out / 'state.json').exists():
+                raise BackfillError('resume_parameters_differ_from_state')
+            self.state['anchor_after_window'] = True
 
     # ----------------------------------------------------------------- state
     def _load_state(self):
@@ -413,7 +419,7 @@ class Backfill:
         slot, signature, index = entry.get('slot'), entry.get('signature'), entry.get('transactionIndex')
         if (type(slot) is not int or slot <= self.window.slot_max
                 or type(signature) is not str or not signature or entry.get('err') is not None
-                or not (index is None or type(index) is int)):
+                or type(index) is not int or index < 0):            # R02 O-3: index required
             raise BackfillError('getTransactionsForAddress:anchor_not_a_successful_transaction_after_the_window')
         self._commit('anc', [], 'anchor', {'signature': signature, 'slot': slot, 'transaction_index': index}, True)
         return signature
@@ -585,10 +591,12 @@ def verify(out):
         elif seg['kind'] == check_kind:
             check_sigs += [r['signature'] for r in rows]
     anchor = manifest.get('gsfa_anchor')
+    state_path = out / 'state.json'
+    state_anchor = (json.loads(state_path.read_text()).get('phases', {}).get('anchor') or {}).get('cursor') \
+        if state_path.exists() else None
+    if anchor is None and state_anchor is not None:
+        problems.append('gsfa_anchor_missing_from_manifest')          # R02 O-2
     if anchor is not None:
-        state_path = out / 'state.json'
-        state_anchor = (json.loads(state_path.read_text()).get('phases', {}).get('anchor') or {}).get('cursor') \
-            if state_path.exists() else None
         if (not isinstance(anchor, dict) or type(anchor.get('slot')) is not int
                 or anchor['slot'] <= manifest['window']['slot_max'] or type(anchor.get('signature')) is not str
                 or not anchor['signature'] or anchor != state_anchor):

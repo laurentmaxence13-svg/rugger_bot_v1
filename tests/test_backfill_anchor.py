@@ -166,6 +166,8 @@ class Answer(Chain):
     [{'signature': 'failed', 'slot': 2_000, 'err': {'x': 1}}],
     [{'signature': '', 'slot': 2_000, 'err': None}],
     [{'signature': 'idx', 'slot': 2_000, 'err': None, 'transactionIndex': '0'}],
+    [{'signature': 'noidx', 'slot': 2_000, 'err': None}],
+    [{'signature': 'negidx', 'slot': 2_000, 'err': None, 'transactionIndex': -1}],
     [{'signature': 'noslot', 'err': None}],
     ['not-a-dict'],
 ])
@@ -290,3 +292,36 @@ def test_sampled_mode_anchors_first_and_matches_the_unanchored_listing(tmp_path)
     assert reference['totals'] == report['totals'] and reference['sampling'] == report['sampling']
     with pytest.raises(AssertionError, match='GSFA without before'):
         _sample(tmp_path, AnchoredDensePool(), out='strict')
+
+
+# ----------------------------------------------------------------- R02 observations O-1, O-2, M20
+def test_resume_with_the_other_anchor_option_is_refused(tmp_path):
+    stopped = _run(tmp_path / 'a', Chain(_entries(), strict=True), cap=40, anchor_after_window=True)
+    assert not stopped['complete'] and json.loads((tmp_path / 'a' / 'state.json').read_text())['anchor_after_window'] is True
+    with pytest.raises(bf.BackfillError, match='resume_parameters_differ_from_state'):
+        _run(tmp_path / 'a', Chain(_entries()), cap=60)
+    plain = _run(tmp_path / 'b', Chain(_entries()), cap=20)
+    assert not plain['complete'] and 'anchor_after_window' not in json.loads((tmp_path / 'b' / 'state.json').read_text())
+    with pytest.raises(bf.BackfillError, match='resume_parameters_differ_from_state'):
+        _run(tmp_path / 'b', Chain(_entries()), cap=60, anchor_after_window=True)
+    assert _run(tmp_path / 'b', Chain(_entries()), cap=60)['complete']
+
+
+def test_verify_flags_an_anchor_dropped_from_the_manifest(tmp_path):
+    _run(tmp_path, Chain(_entries(), strict=True), anchor_after_window=True)
+    manifest_path = tmp_path / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    manifest_path.write_text(json.dumps(dict(manifest, gsfa_anchor=None)))
+    assert 'gsfa_anchor_missing_from_manifest' in bf.verify(tmp_path)['problems']
+
+
+def test_cli_plan_counts_the_anchor(tmp_path):
+    def plan(*extra):
+        out = io.StringIO()
+        assert backfill_cli.main(['plan', '--address', ADDRESS, '--slot-min', '466226737', '--slot-max', '466243519',
+                                  '--costs', w1_collection.COSTS, '--expected-tx-per-slot', '0.27', *extra],
+                                 environ={}, out=out) == 0
+        return json.loads(out.getvalue())
+    base, anchored = plan(), plan('--anchor-after-window')
+    assert (base['credits'], anchored['credits']) == (465, 475)
+    assert anchored['requests']['getTransactionsForAddress'] == base['requests']['getTransactionsForAddress'] + 1
