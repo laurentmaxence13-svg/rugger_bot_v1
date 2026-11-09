@@ -602,6 +602,8 @@ def verify(out):
                 or not anchor['signature'] or anchor != state_anchor):
             problems.append('gsfa_anchor_invalid')
     calls = manifest.get('calls')
+    if calls is None and (out / CALLS_LOG).exists():
+        problems.append('calls_log_missing_from_manifest')            # R02 O-B2
     if calls is not None:
         found = _calls_summary(out)
         if found is None or found['sha256'] != calls['sha256'] or found != calls:

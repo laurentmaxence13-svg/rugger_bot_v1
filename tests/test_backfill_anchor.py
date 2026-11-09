@@ -168,6 +168,7 @@ class Answer(Chain):
     [{'signature': 'idx', 'slot': 2_000, 'err': None, 'transactionIndex': '0'}],
     [{'signature': 'noidx', 'slot': 2_000, 'err': None}],
     [{'signature': 'negidx', 'slot': 2_000, 'err': None, 'transactionIndex': -1}],
+    [{'signature': 'boolidx', 'slot': 2_000, 'err': None, 'transactionIndex': True}],   # R02 T-4
     [{'signature': 'noslot', 'err': None}],
     ['not-a-dict'],
 ])
@@ -325,3 +326,14 @@ def test_cli_plan_counts_the_anchor(tmp_path):
     base, anchored = plan(), plan('--anchor-after-window')
     assert (base['credits'], anchored['credits']) == (465, 475)
     assert anchored['requests']['getTransactionsForAddress'] == base['requests']['getTransactionsForAddress'] + 1
+
+
+def test_verify_flags_a_calls_log_dropped_from_the_manifest(tmp_path):
+    """R02 O-B2: calls.jsonl on disk but the manifest's calls key removed."""
+    _run(tmp_path, Chain(_entries(), strict=True), anchor_after_window=True)
+    assert (tmp_path / bf.CALLS_LOG).exists() and bf.verify(tmp_path)['ok']
+    manifest_path = tmp_path / 'manifest.json'
+    manifest = json.loads(manifest_path.read_text())
+    manifest.pop('calls')
+    manifest_path.write_text(json.dumps(manifest))
+    assert 'calls_log_missing_from_manifest' in bf.verify(tmp_path)['problems']
