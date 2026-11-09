@@ -117,10 +117,37 @@ def main_run_cap(pilot_dir, other_runs=()):
     return CREDIT_CAP - spend['credits'] - reserved_credits(other_runs)
 
 
-def check_run_cap(max_credits, pilot_dir, other_runs=()):
-    """Called BEFORE a W1 run starts: its credit cap must fit what the pilot and other runs left."""
+QUOTA_MARGIN_PERCENT = 2       # v2.6.1 (R02 B-2): margin kept below the provider quota left
+
+
+def quota_cap(quota_reading):
+    """Largest run cap the provider quota allows (v2.6.1, R02 B-2).
+
+    ``quota_reading``: the OWNER's last Helius dashboard reading, taken before this run:
+    {'remaining': credits left until the reset (int >= 0), 'reset_date': 'YYYY-MM-DD',
+    'owner_message': reference of the owner's message (session and UTC time)}. On the Free plan
+    an exhausted quota stops the run (no spend, incomplete window, STOP), so the run cap must fit
+    the quota left minus QUOTA_MARGIN_PERCENT.
+    """
+    import datetime
+    try:
+        remaining, reset, message = (quota_reading['remaining'], quota_reading['reset_date'],
+                                     quota_reading['owner_message'])
+        datetime.date.fromisoformat(reset)
+    except (KeyError, TypeError, ValueError):
+        raise bf.BackfillError('quota_reading_incomplete') from None
+    if type(remaining) is not int or remaining < 0 or type(message) is not str or not message:
+        raise bf.BackfillError('quota_reading_incomplete')
+    return remaining * (100 - QUOTA_MARGIN_PERCENT) // 100
+
+
+def check_run_cap(max_credits, pilot_dir, other_runs=(), *, quota_reading):
+    """Called BEFORE a W1 run starts: its credit cap must fit what the pilot and other runs left
+    on our table (1 000 000) AND the provider quota left at the owner's last reading (v2.6.1)."""
     if type(max_credits) is not int or max_credits < 0 or max_credits > main_run_cap(pilot_dir, other_runs):
         raise bf.BackfillError('run_cap_above_credits_left_after_the_pilot')
+    if max_credits > quota_cap(quota_reading):
+        raise bf.BackfillError('run_cap_above_the_provider_quota_left')
     return max_credits
 
 

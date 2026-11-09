@@ -86,11 +86,12 @@ def plan(s0, *, evaluation_slots=w1_collection.EVALUATION_SLOTS):
 
 
 def collect_command(s0, *, pilot_dir, max_credits, out, evaluation_slots=w1_collection.EVALUATION_SLOTS,
-                    other_runs, max_requests=200_000, endpoint_env='RUGGER_BACKFILL_RPC_URL', address=None):
+                    other_runs, quota_reading, max_requests=200_000, endpoint_env='RUGGER_BACKFILL_RPC_URL',
+                    address=None):
     """Arguments for backfill_cli (NOT executed here); the run cap must fit what the pilot and the
     other runs of the month left. ``address``: None for the LaunchLab program, or the SOL/USD
     price account (v2.4) for the SOL/USD collection over the same W1 slots."""
-    w1_collection.check_run_cap(max_credits, pilot_dir, other_runs)
+    w1_collection.check_run_cap(max_credits, pilot_dir, other_runs, quota_reading=quota_reading)
     if address not in (None, pyth_push.SOL_USD_ACCOUNT):
         raise W1RunError('w1_collects_the_launchlab_program_or_the_sol_usd_account_only')
     b = plan(s0, evaluation_slots=evaluation_slots)
@@ -117,6 +118,9 @@ def pyth_entries(run_dir, s0, *, evaluation_slots=w1_collection.EVALUATION_SLOTS
     return [row for seg in manifest['segments'] if seg['kind'] == 'tx' for row in bf.read_segment(Path(run_dir) / seg['path'])]
 
 
+ANCHORED_STUDY_REPORT_SHA256 = 'e3d92847b2f2708c14e4445ee8d8cd38a7cb5cf028cfdc4e661167cf611c8b0f'  # R02 67b40085
+
+
 def sol_usd_series(entries, study_report, study_report_sha256, out):
     """COLLECTED series of effective Pyth push points with the acceptance of the ANCHORED study.
 
@@ -124,6 +128,8 @@ def sol_usd_series(entries, study_report, study_report_sha256, out):
     the one RUGGER 02 anchored before the W1 collection and its verdict ACCEPTED (R02 D-7).
     """
     require_no_dotenv()
+    if study_report_sha256 != ANCHORED_STUDY_REPORT_SHA256:             # v2.6.1 (R02 B-1): pinned
+        raise W1RunError('age_study_report_is_not_the_anchored_one')
     if _sha_file(study_report) != study_report_sha256:
         raise W1RunError('age_study_report_is_not_the_anchored_one')
     report = _read_json(study_report)

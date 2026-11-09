@@ -13,6 +13,9 @@ T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 
 
+QUOTA = dict(remaining=10 ** 9, reset_date='2026-12-01', owner_message='test reading')
+
+
 @pytest.fixture(autouse=True)
 def small_pages(monkeypatch):
     monkeypatch.setattr(bf, 'GSFA_PAGE', 25)
@@ -75,9 +78,9 @@ def test_documented_cost_table_and_pilot_cap(tmp_path):
     assert (w1.CREDIT_CAP, w1.PILOT_MAX_CREDITS) == (1_000_000, 50_000)     # the whole free month, pilot included
     pilot = _pilot(tmp_path, 11)
     assert w1.main_run_cap(pilot) == w1.CREDIT_CAP - 11
-    assert w1.check_run_cap(w1.CREDIT_CAP - 11, pilot) == w1.CREDIT_CAP - 11
+    assert w1.check_run_cap(w1.CREDIT_CAP - 11, pilot, quota_reading=QUOTA) == w1.CREDIT_CAP - 11
     with pytest.raises(bf.BackfillError, match='run_cap_above_credits_left_after_the_pilot'):
-        w1.check_run_cap(w1.CREDIT_CAP - 10, pilot)                          # R02 R6-1: 1 M + pilot refused
+        w1.check_run_cap(w1.CREDIT_CAP - 10, pilot, quota_reading=QUOTA)                          # R02 R6-1: 1 M + pilot refused
     with pytest.raises(bf.BackfillError, match='cost_table'):
         w1.main_run_cap(_pilot(tmp_path, 1, costs='public', name='public'))
     with pytest.raises(bf.BackfillError, match='not_the_pilot_window'):     # R02 R6-3
@@ -207,7 +210,7 @@ def test_corrupted_ledgers_are_refused_r02(tmp_path):
     with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
         w1.main_run_cap(pilot)
     with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
-        w1.check_run_cap(w1.CREDIT_CAP, pilot)
+        w1.check_run_cap(w1.CREDIT_CAP, pilot, quota_reading=QUOTA)
     pilot_ledger.write_text(json.dumps(dict(pilot_spend, credits=True)))
     with pytest.raises(bf.BackfillError, match='invalid_spend_ledger'):
         w1.main_run_cap(pilot)
@@ -220,9 +223,9 @@ def test_other_runs_of_the_month_reserve_their_largest_cap_v2_4(tmp_path):
     pyth_run = _pilot(tmp_path, 0, cap=60_000, name='pyth_run')
     assert w1.reserved_credits([study, pyth_run]) == 62_000
     assert w1.main_run_cap(pilot, [study, pyth_run]) == w1.CREDIT_CAP - 11 - 62_000
-    w1.check_run_cap(w1.CREDIT_CAP - 11 - 62_000, pilot, [study, pyth_run])
+    w1.check_run_cap(w1.CREDIT_CAP - 11 - 62_000, pilot, [study, pyth_run], quota_reading=QUOTA)
     with pytest.raises(bf.BackfillError, match='run_cap_above_credits_left_after_the_pilot'):
-        w1.check_run_cap(w1.CREDIT_CAP - 11 - 61_999, pilot, [study, pyth_run])
+        w1.check_run_cap(w1.CREDIT_CAP - 11 - 61_999, pilot, [study, pyth_run], quota_reading=QUOTA)
     ledger = study / 'spend.json'
     data = json.loads(ledger.read_text())
     ledger.write_text(json.dumps(dict(data, credits=2_500)))               # spent above its cap: counted in full
@@ -234,3 +237,21 @@ def test_other_runs_of_the_month_reserve_their_largest_cap_v2_4(tmp_path):
     _w1_window(tmp_path, s0)                                               # run cap 1 M - 11
     with pytest.raises(bf.BackfillError, match='window_not_collected_under_the_w1_cap'):
         w1.export(tmp_path / 'w', tmp_path / 'p', s0, pilot_dir=pilot, other_runs=[pyth_run])
+
+
+def test_run_cap_must_fit_the_provider_quota_left_v2_6_1(tmp_path):
+    """R02 B-2: on the Free plan an exhausted quota stops the run; cap <= quota left - 2 %."""
+    pilot = _pilot(tmp_path, 11)
+    reading = dict(remaining=942_812, reset_date='2026-12-01', owner_message='session x 2026-11-09T08:11Z')
+    assert w1.quota_cap(reading) == 923_955
+    assert w1.check_run_cap(923_955, pilot, quota_reading=reading) == 923_955
+    with pytest.raises(bf.BackfillError, match='run_cap_above_the_provider_quota_left'):
+        w1.check_run_cap(923_956, pilot, quota_reading=reading)
+    assert w1.check_run_cap(w1.CREDIT_CAP - 11, pilot, quota_reading=QUOTA) == w1.CREDIT_CAP - 11
+    for bad in (dict(reading, remaining=-1), dict(reading, remaining='942812'), dict(reading, remaining=True),
+                dict(reading, reset_date='01/12/2026'), dict(reading, reset_date=None), dict(reading, owner_message=''),
+                {k: v for k, v in reading.items() if k != 'reset_date'}, None):
+        with pytest.raises(bf.BackfillError, match='quota_reading_incomplete'):
+            w1.check_run_cap(1, pilot, quota_reading=bad)
+    with pytest.raises(TypeError):
+        w1.check_run_cap(1, pilot)                                                     # the reading is required

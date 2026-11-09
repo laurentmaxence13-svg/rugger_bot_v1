@@ -16,6 +16,9 @@ AT = '2026-11-08T00:00:00+00:00'
 FIRST_SLOT, FIRST_TIME = 464661843, 1793658217          # creation of the earliest fixture pool
 
 
+
+QUOTA = dict(remaining=10 ** 9, reset_date='2026-12-01', owner_message='test reading')
+
 def _series(tmp_path, acceptance=dict(max_age_ms=120_000, max_confidence_ppm=1_000), label='COLLECTED'):
     point = dict(schema=sus.POINT_SCHEMA, slot=FIRST_SLOT - 50, transaction_index=0, block_time=FIRST_TIME - 12,
                  received_at_ms=None, publish_time=FIRST_TIME - 13, price=15_000_000_000, exponent=-8,
@@ -63,7 +66,7 @@ def test_collect_command_checks_the_cap_and_sends_nothing(tmp_path):
     from tests_helpers_w1 import pilot_dir
     pilot = pilot_dir(tmp_path, 11)
     argv = run.collect_command(1_000_000, pilot_dir=pilot, max_credits=w1_collection.CREDIT_CAP - 11, out=tmp_path / 'w',
-                               other_runs=[])
+                               other_runs=[], quota_reading=QUOTA)
     b = w1_collection.bounds(1_000_000)
     assert argv[:2] == ['run', '--network'] and argv[argv.index('--slot-max') + 1] == str(b['slot_max'])
     assert argv[argv.index('--costs') + 1] == w1_collection.COSTS and '--max-credits' in argv
@@ -71,7 +74,10 @@ def test_collect_command_checks_the_cap_and_sends_nothing(tmp_path):
     from bot.market import backfill as bf
     with pytest.raises(bf.BackfillError, match='run_cap_above_credits_left_after_the_pilot'):
         run.collect_command(1_000_000, pilot_dir=pilot, max_credits=w1_collection.CREDIT_CAP, out=tmp_path / 'w',
-                            other_runs=[])
+                            other_runs=[], quota_reading=QUOTA)
+    with pytest.raises(bf.BackfillError, match='run_cap_above_the_provider_quota_left'):     # v2.6.1 (R02 B-2)
+        run.collect_command(1_000_000, pilot_dir=pilot, max_credits=83_000, out=tmp_path / 'w', other_runs=[],
+                            quota_reading=dict(QUOTA, remaining=84_000))
     with pytest.raises(TypeError):
         run.collect_command(1_000_000, pilot_dir=pilot, max_credits=1, out=tmp_path / 'w')    # other_runs required
 
@@ -161,7 +167,13 @@ def test_sol_usd_window_to_series_v2_4(tmp_path, no_dotenv):
     study = tmp_path / 'study.json'
     study.write_text(json.dumps(dict(verdict='ACCEPTED', acceptance=dict(max_age_ms=65_000, max_confidence_ppm=1_000))))
     anchored = hashlib.sha256(study.read_bytes()).hexdigest()
-    series = run.sol_usd_series(entries, study, anchored, tmp_path / 'sol.json.gz')
+    with pytest.raises(run.W1RunError, match='age_study_report_is_not_the_anchored_one'):   # v2.6.1 (R02 B-1): pinned
+        run.sol_usd_series(entries, study, anchored, tmp_path / 'pinned.json')
+    run.ANCHORED_STUDY_REPORT_SHA256, pinned = anchored, run.ANCHORED_STUDY_REPORT_SHA256   # this synthetic study only
+    try:
+        series = run.sol_usd_series(entries, study, anchored, tmp_path / 'sol.json.gz')
+    finally:
+        run.ANCHORED_STUDY_REPORT_SHA256 = pinned
     assert series.label == 'COLLECTED' and len(series.points) == 2 and series.max_age_ms == 65_000
     assert sus.load_series(tmp_path / 'sol.json.gz').sha256 == series.sha256
     decoding = json.loads((tmp_path / 'sol.json.gz.decoding.json').read_text())
@@ -173,17 +185,22 @@ def test_sol_usd_window_to_series_v2_4(tmp_path, no_dotenv):
         run.sol_usd_series(entries, study, '0' * 64, tmp_path / 'other.json')
     rejected = tmp_path / 'rejected.json'
     rejected.write_text(json.dumps(dict(verdict='REJECTED', acceptance=None)))
-    with pytest.raises(run.W1RunError, match='age_study_not_accepted'):
-        run.sol_usd_series(entries, rejected, hashlib.sha256(rejected.read_bytes()).hexdigest(), tmp_path / 'other.json')
+    rejected_sha = hashlib.sha256(rejected.read_bytes()).hexdigest()
+    run.ANCHORED_STUDY_REPORT_SHA256, pinned = rejected_sha, run.ANCHORED_STUDY_REPORT_SHA256     # verdict check only
+    try:
+        with pytest.raises(run.W1RunError, match='age_study_not_accepted'):
+            run.sol_usd_series(entries, rejected, rejected_sha, tmp_path / 'other.json')
+    finally:
+        run.ANCHORED_STUDY_REPORT_SHA256 = pinned
     with pytest.raises(run.W1RunError, match='not_the_w1_sol_usd_window'):
         run.pyth_entries(tmp_path / 'pyth', s0 + 1)
     argv = run.collect_command(s0, pilot_dir=__import__('tests_helpers_w1').pilot_dir(tmp_path, 11),
                                max_credits=50_000, out=tmp_path / 'p', address=pyth_push.SOL_USD_ACCOUNT,
-                               other_runs=[tmp_path / 'pyth'])
+                               other_runs=[tmp_path / 'pyth'], quota_reading=QUOTA)
     assert argv[argv.index('--address') + 1] == pyth_push.SOL_USD_ACCOUNT
     with pytest.raises(run.W1RunError, match='launchlab_program_or_the_sol_usd_account'):
         run.collect_command(s0, pilot_dir=tmp_path / 'pilot', max_credits=1, out=tmp_path / 'p', address='other',
-                            other_runs=[])
+                            other_runs=[], quota_reading=QUOTA)
 
 
 
@@ -259,3 +276,30 @@ def test_refusals_by_utc_hour_follow_the_study_definitions():
     assert run.refusals_by_utc_hour([], entries, acceptance) == {}
     assert run.refusals_by_utc_hour(points, [{'blockTime': None}], acceptance) == {}
     assert run.refusals_by_utc_hour(points, [{'blockTime': 3_600}], acceptance) == {}
+
+
+def test_the_anchored_study_report_is_pinned_v2_6_1(tmp_path, no_dotenv):
+    """R02 B-1: only the anchored report e3d92847 (ACCEPTED, 55 s / 950 ppm) feeds the W1 series."""
+    report = Path(__file__).parent / 'fixtures' / 'pyth_study' / 'age_study_report_e3d92847.json'
+    assert hashlib.sha256(report.read_bytes()).hexdigest() == run.ANCHORED_STUDY_REPORT_SHA256 == \
+        'e3d92847b2f2708c14e4445ee8d8cd38a7cb5cf028cfdc4e661167cf611c8b0f'
+    from bot.market import pyth_push
+    entries = [json.loads((Path(__file__).parent / 'fixtures' / 'pyth_push' / name).read_text())
+               for name in sorted(p.name for p in (Path(__file__).parent / 'fixtures' / 'pyth_push').glob('pyth_push_*.json'))]
+    series = run.sol_usd_series(entries, report, run.ANCHORED_STUDY_REPORT_SHA256, tmp_path / 'sol.json')
+    assert (series.max_age_ms, series.max_confidence_ppm) == (55_000, 950)
+    other = tmp_path / 'other_accepted.json'                    # another ACCEPTED report with looser thresholds
+    other.write_text(json.dumps(dict(verdict='ACCEPTED', acceptance=dict(max_age_ms=120_000, max_confidence_ppm=5_000))))
+    with pytest.raises(run.W1RunError, match='age_study_report_is_not_the_anchored_one'):
+        run.sol_usd_series(entries, other, hashlib.sha256(other.read_bytes()).hexdigest(), tmp_path / 'x.json')
+    with pytest.raises(run.W1RunError, match='age_study_report_is_not_the_anchored_one'):
+        run.sol_usd_series(entries, other, run.ANCHORED_STUDY_REPORT_SHA256, tmp_path / 'y.json')
+
+
+def test_refusals_by_utc_hour_on_a_real_timestamp():
+    """R02 T-5: 1793993269 is 19:27:49 UTC, so the hour of day is '19' (not the hour count since 1970)."""
+    point = dict(slot=1, transaction_index=0, block_time=1_793_993_269, publish_time=1_793_993_268,
+                 confidence=10, price=100_000)
+    hourly = run.refusals_by_utc_hour([point], [{'blockTime': 1_793_993_275}],
+                                      dict(max_age_ms=55_000, max_confidence_ppm=950))
+    assert hourly == {'19': [5, 0]}
