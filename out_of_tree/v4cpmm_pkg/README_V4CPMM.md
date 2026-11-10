@@ -36,4 +36,5 @@ causalement dans les swaps journalisés avant l'atterrissage). Une limite de gli
 ## Tests
     cd <arbre gelé aff97638>
     PYTHONPATH=<v4cpmm_pkg>:<cpmmx_pkg>:<v4sim_pkg> python -B -m pytest -q <v4cpmm_pkg>/v4cpmm/tests -p no:cacheprovider -W error
-11 tests, Python 3.12 et 3.11, hors réseau, sur une courbe synthétique qui migre pendant la détention.
+17 tests (dont 6 de mutation), Python 3.12 et 3.11, hors réseau, sur une courbe synthétique qui migre
+pendant la détention.

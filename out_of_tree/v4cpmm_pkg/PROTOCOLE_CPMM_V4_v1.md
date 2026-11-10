@@ -58,4 +58,5 @@ ni crédit ; la liste des signatures et le sha256 de chaque corps sont remis à 
 premier passage de `a12.py`.
 
 ## 8. État
-C-5 passe (46 tests, données synthétiques). C-1 à C-4 et C-6 : **non passés** — aucune donnée réelle.
+C-5 et C-6 passent (52 tests, données synthétiques ; 6 tests de mutation dans `test_mutations.py`).
+C-1 à C-4 : **non passés** — aucune donnée réelle.
