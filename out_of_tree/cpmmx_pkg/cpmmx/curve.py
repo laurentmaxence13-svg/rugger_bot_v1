@@ -9,6 +9,7 @@ and creator fees accrued and not yet collected (states/pool.rs). A swap changes 
 from dataclasses import dataclass
 
 FEE_DENOMINATOR = 1_000_000
+U64_MAX = 2 ** 64 - 1
 
 
 class CurveError(ValueError):
@@ -50,7 +51,22 @@ def _ceil_div(amount, numerator, denominator):
 def _uint(value, name):
     if type(value) is not int or value < 0:
         raise CurveError(f'invalid_{name}')
+    if value > U64_MAX:
+        raise CurveError(f'{name}_exceeds_u64')              # the program holds every amount in a u64
     return value
+
+
+def _result(*fields):
+    """A ``SwapResult`` whose every amount fits a u64, as ``u64::try_from(..).unwrap()`` demands on chain."""
+    if any(value > U64_MAX for value in fields[:6]):
+        raise CurveError('result_exceeds_u64')
+    return SwapResult(*fields)
+
+
+def _no_split_by_zero(fees, creator_fee_on_input):
+    """``split_creator_fee`` divides by trade + creator rate: with both at 0 the program fails."""
+    if creator_fee_on_input and fees.trade_fee_rate + fees.creator_fee_rate == 0:
+        raise CurveError('creator_fee_split_division_by_zero')
 
 
 def _pre_fee(post_fee_amount, rate):
@@ -67,6 +83,7 @@ def swap_base_input(input_amount, input_vault, output_vault, fees, creator_fee_o
         _uint(value, name)
     if input_amount == 0 or input_vault == 0 or output_vault == 0:
         raise CurveError('zero_trading_tokens')
+    _no_split_by_zero(fees, creator_fee_on_input)
     creator_fee = 0
     if creator_fee_on_input:
         total = _ceil_div(input_amount, fees.trade_fee_rate + fees.creator_fee_rate, FEE_DENOMINATOR)
@@ -87,7 +104,7 @@ def swap_base_input(input_amount, input_vault, output_vault, fees, creator_fee_o
         output_amount = swapped - creator_fee
     if output_amount <= 0:
         raise CurveError('zero_output')
-    return SwapResult(input_amount, output_amount, trade_fee, trade_fee * fees.protocol_fee_rate // FEE_DENOMINATOR,
+    return _result(input_amount, output_amount, trade_fee, trade_fee * fees.protocol_fee_rate // FEE_DENOMINATOR,
                       trade_fee * fees.fund_fee_rate // FEE_DENOMINATOR, creator_fee, bool(creator_fee_on_input))
 
 
@@ -97,6 +114,7 @@ def swap_base_output(output_amount, input_vault, output_vault, fees, creator_fee
         _uint(value, name)
     if output_amount == 0 or input_vault == 0 or output_vault == 0:
         raise CurveError('zero_trading_tokens')
+    _no_split_by_zero(fees, creator_fee_on_input)
     creator_fee = 0
     actual_output = output_amount
     if not creator_fee_on_input:
@@ -114,7 +132,7 @@ def swap_base_output(output_amount, input_vault, output_vault, fees, creator_fee
     else:
         with_fee = _pre_fee(swapped, fees.trade_fee_rate)
         trade_fee = with_fee - swapped
-    return SwapResult(with_fee, output_amount, trade_fee, trade_fee * fees.protocol_fee_rate // FEE_DENOMINATOR,
+    return _result(with_fee, output_amount, trade_fee, trade_fee * fees.protocol_fee_rate // FEE_DENOMINATOR,
                       trade_fee * fees.fund_fee_rate // FEE_DENOMINATOR, creator_fee, bool(creator_fee_on_input))
 
 

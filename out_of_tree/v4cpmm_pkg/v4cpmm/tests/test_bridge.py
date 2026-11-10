@@ -91,14 +91,14 @@ def test_v4sim_result_is_returned_unchanged():
     assert dataclasses.asdict(got) == before and got.v4 == plain.v4
     assert got.outcome == 'migrated_unpriced' and got.pnl is None            # the frozen accounting still says unpriced
     assert got.cpmm['status'] == 'sold' and got.cpmm['validated_on_real_swaps'] is False
-    assert len(got.cpmm['approximations']) == 5
+    assert len(got.cpmm['approximations']) == 6
 
 
 def test_sale_when_the_pool_opens_is_the_program_output_on_the_landing_state():
-    line, states = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (4, 'buy', 2 * 10**9), (9, 'buy', 10**9)])
+    line, states = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (5, 'buy', 2 * 10**9), (9, 'buy', 10**9)])
     got = run(cpmm=line, protocol_fee_rate=120_000, fund_fee_rate=40_000)
     block = got.cpmm
-    base, quote = states[4]                                      # every swap up to opening + 4 slots has executed
+    base, quote = states[3]                                      # every swap up to opening + 4 slots has executed
     expected = curve.swap_base_input(got.tokens, base, quote, FEES, True).output_amount
     assert block['landing'] == dict(slot_limit=OPEN_SLOT + 4) and block['received'] == expected
     assert block['evidence']['source'] == 'next_swap_logged_reserves'
@@ -108,6 +108,59 @@ def test_sale_when_the_pool_opens_is_the_program_output_on_the_landing_state():
     assert block['pnl_lamports'] == expected - got.spent - costs
     assert block['net_return'] == (expected - got.spent - costs) / (got.spent + costs)
     assert block['value_without_impact_or_fee'] > expected
+
+
+def test_h1_the_lower_of_the_two_orders_inside_the_landing_slot_is_kept():
+    for side, amount, kept, other_state in (('buy', 5 * 10**9, 'before', 3), ('sell', 20 * 10**12, 'after', 4)):
+        line, states = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (4, side, amount), (9, 'buy', 10**9)])
+        got = run(cpmm=line, fees=(FEES, True), protocol_fee_rate=120_000, fund_fee_rate=40_000)
+        evidence = got.cpmm['evidence']
+        values = {name: curve.swap_base_input(got.tokens, *states[offset], FEES, True).output_amount
+                  for name, offset in (('before', 3), ('after', 4))}
+        assert evidence['value_by_order_in_landing_slot'] == values and values['before'] != values['after']
+        assert evidence['kept_order'] == kept and got.cpmm['received'] == min(values.values())
+        assert got.cpmm['received'] == values['before' if other_state == 3 else 'after']
+
+
+def test_h5_displaced_demand_is_published_and_the_lower_value_is_kept():
+    from bot.market.launchlab_curve import fee_for
+    line, states = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (9, 'buy', 10**9)])
+    got = run(cpmm=line, fees=(FEES, True), protocol_fee_rate=120_000, fund_fee_rate=40_000)
+    evidence = got.cpmm['evidence']
+    base, quote = states[3]
+    net = got.spent - fee_for(got.spent, got.fee_rate_ppm)
+    displaced = curve.swap_base_input(net, quote, base, FEES, True)
+    quote_after, base_after = curve.reserves_after(quote, base, displaced)
+    other = curve.swap_base_input(got.tokens, base_after, quote_after, FEES, True).output_amount
+    assert evidence['value_with_displaced_demand'] == other > evidence['value_on_real_reserves']
+    assert got.cpmm['received'] == evidence['value_on_real_reserves']
+
+
+def test_x1_the_curve_invariant_fixes_the_quote_at_the_boundary_whatever_our_purchase():
+    """The pool opens with what the curve holds at its end: that amount does not depend on the path."""
+    from bot.market.launchlab_curve import CurveError, buy_exact_in
+
+    def quote_at_the_boundary(state):
+        k = state.base_reserve * state.quote_reserve
+        return k // (state.virtual_base - state.total_base_sell) - state.virtual_quote
+
+    real = CURVE.events[-1].state_after()
+    state = buy_exact_in(CURVE.events[0].state_after(), 100_000_000, RATE).after      # our purchase, then the same flow
+    for event in CURVE.events[1:]:
+        try:
+            state = buy_exact_in(state, event.amount_in, RATE).after
+        except CurveError:
+            break
+    assert abs(quote_at_the_boundary(state) - quote_at_the_boundary(real)) <= 1
+
+
+def test_nothing_is_creditable_before_a12_and_the_reasons_are_listed():
+    line, _ = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (9, 'buy', 10**9)])
+    read = run(cpmm=line, fees=(FEES, True), protocol_fee_rate=120_000, fund_fee_rate=40_000).cpmm
+    assert read['creditable'] is False and read['credit_blockers'] == ['a12_not_passed_on_real_swaps']
+    deduced = run(cpmm=line).cpmm
+    assert deduced['creditable'] is False
+    assert deduced['credit_blockers'] == ['a12_not_passed_on_real_swaps', 'fee_rates_not_read_from_the_amm_config']
 
 
 def test_no_number_without_a_fee_rate_or_a_pool_state():

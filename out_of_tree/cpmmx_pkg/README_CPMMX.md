@@ -20,8 +20,16 @@ Bibliothèque standard seule ; n'importe ni l'arbre gelé, ni `v4sim`, ni `w1aux
   réserves avant chaque swap telles que le programme les a journalisées, lecture causale des taux
   de frais, contrôle de continuité (un swap manquant se voit), état à un point d'atterrissage,
   valeur exacte d'une vente.
-- `a12.py` — contrôle A-12 d'un pool : chaque swap observé est recalculé à l'unité atomique près,
-  chaque écart est listé champ par champ.
+- `a12.py` — contrôle A-12 / C-1 : chaque swap observé est recalculé à l'unité atomique près avec les
+  taux **lus dans l'AmmConfig** (les taux déduits des swaps ne servent que de contre-vérification),
+  chaque écart est listé champ par champ ; `--combine` rend le verdict sur plusieurs pools (≥ 99,9 % au
+  total, ≥ 99 % par pool, ≥ 1 000 swaps, ≥ 5 pools, ≥ 50 swaps à sortie exacte, ≥ 1 modification de
+  liquidité, ≥ 1 appel par un autre programme).
+
+Corrections de l'audit RUGGER 02 (a1f5efe0) : O-1 (valeurs au-delà de u64 et division par zéro de
+`split_creator_fee` refusées comme sur la chaîne), T-1 à T-3 (ordre dans un slot, cadre enfant de CPMM,
+taux prudent) couverts par des tests. Le premier format historique de 80 octets (début 2024, sans
+`base_input`) est refusé, jamais lu.
 
 ## Ce que le module ne prouve pas
 - Les formats et l'arithmétique ne sont vérifiés que sur des données **synthétiques** produites par
@@ -36,7 +44,7 @@ Bibliothèque standard seule ; n'importe ni l'arbre gelé, ni `v4sim`, ni `w1aux
 
 ## Tests
     PYTHONPATH=<cpmmx_pkg> python -B -m pytest -q <cpmmx_pkg>/cpmmx/tests -p no:cacheprovider -W error
-35 tests, Python 3.12 et 3.11, hors réseau.
+42 tests, Python 3.12 et 3.11, hors réseau.
 
 ## Données nécessaires pour A-12 (non collectées)
 Par pool migré : les transactions brutes de l'adresse du pool CPMM (au moins de sa création à la fin
@@ -44,4 +52,7 @@ de la fenêtre), le slot et l'heure de sa création, son mint de base, et les ta
 Chaque transaction doit porter `slot`, `blockTime` et un `transactionIndex` entier (la clé d'ordre des
 exports Helius déjà utilisés) : sans lui, l'ordre dans un slot n'est pas reconstruit et le pool est refusé.
 Format d'entrée de `a12.py` : `{"pool", "base_mint", "opened": [slot, block_time] | null,
-"transactions": {signature: résultat brut de getTransaction}}`.
+"transactions": {signature: transaction brute}, "amm_config": {"trade_fee_rate", "creator_fee_rate",
+"protocol_fee_rate", "fund_fee_rate"}}` (taux de créateur effectif : 0 si le pool l'a désactivé).
+Un dépôt direct dans un vault ne laisse aucun événement : il apparaît comme une rupture de la chaîne
+des réserves d'un seul côté et exclut le pool (C-2).

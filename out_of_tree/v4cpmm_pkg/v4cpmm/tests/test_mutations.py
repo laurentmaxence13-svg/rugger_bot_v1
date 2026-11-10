@@ -11,7 +11,7 @@ from v4cpmm import bridge
 from v4cpmm.tests.test_bridge import FEES, MODEL, OPEN_SLOT, cpmm_pool, run
 
 TWO_TRANSACTIONS = 2 * (5_000 + 100_000)        # base fee + priority fee of the model, twice
-STEPS = [(1, 'buy', 10**9), (3, 'sell', 10**11), (4, 'buy', 2 * 10**9), (9, 'sell', 40 * 10**12)]
+STEPS = [(1, 'buy', 10**9), (3, 'sell', 10**11), (4, 'sell', 2 * 10**11), (9, 'sell', 40 * 10**12)]
 
 
 def core_checks():
@@ -66,11 +66,38 @@ def test_mutation_reading_a_future_swap(monkeypatch):
 
 def test_mutation_program_frame_ignored(monkeypatch):
     def every_line(log_messages, program=events.CPMM_PROGRAM):
-        return [base64.b64decode(line[len('Program data: '):]) for line in log_messages
+        return [(base64.b64decode(line[len('Program data: '):]), 1) for line in log_messages
                 if line.startswith('Program data: ')]
-    monkeypatch.setattr(events, 'program_data', every_line)
+    monkeypatch.setattr(events, 'program_frames', every_line)
     with pytest.raises(AssertionError):
         core_checks()
+
+
+def test_mutation_program_anywhere_in_the_stack(monkeypatch):
+    """R02 T-2: believing a program that CPMM itself called must fail a check."""
+    real = events.program_frames
+
+    def in_stack(log_messages, program=events.CPMM_PROGRAM):
+        flat = [line for line in log_messages if 'Chi1d' not in line]          # the child frame is no longer seen
+        return real(flat, program)
+    monkeypatch.setattr(events, 'program_frames', in_stack)
+    payload = swap_payload(1, 2, 3, 4, True, QUOTE, BASE, 5, 6, True)
+    child = [f'Program {events.CPMM_PROGRAM} invoke [1]', 'Program Chi1d1111 invoke [2]',
+             'Program data: ' + base64.b64encode(payload).decode(), 'Program Chi1d1111 success',
+             f'Program {events.CPMM_PROGRAM} success']
+    assert events.transaction_events(tx(1, 0, child), POOL_B58) != []          # the mutant believes it ...
+    monkeypatch.undo()
+    assert events.transaction_events(tx(1, 0, child), POOL_B58) == []          # ... the real code does not
+
+
+def test_mutation_only_one_order_inside_the_landing_slot(monkeypatch):
+    """R02 H-1: keeping only the order after the slot's swaps must be seen when a purchase lands in that slot."""
+    line, states = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (4, 'buy', 5 * 10**9), (9, 'buy', 10**9)])
+    kept = run(cpmm=line, fees=(FEES, True)).cpmm['received']
+    real = cpmm_timeline.executed
+    monkeypatch.setattr(cpmm_timeline, 'executed', lambda timeline_, **limit: real(
+        timeline_, **{name: value + 1 if value == OPEN_SLOT + 3 else value for name, value in limit.items()}))
+    assert run(cpmm=line, fees=(FEES, True)).cpmm['received'] != kept
 
 
 def test_mutation_transaction_costs_forgotten(monkeypatch):

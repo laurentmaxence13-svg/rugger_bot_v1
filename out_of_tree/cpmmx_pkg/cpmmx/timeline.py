@@ -18,7 +18,7 @@ account; without them the last swap's input-side reserve is known within its tra
 from dataclasses import dataclass
 
 from cpmmx import curve
-from cpmmx.events import LpChangeEvent, SwapEvent, transaction_events
+from cpmmx.events import LpChangeEvent, SwapEvent, transaction_events_with_depth
 
 WSOL = 'So11111111111111111111111111111111111111112'
 
@@ -38,6 +38,7 @@ class Swap:
     base_before: int
     quote_before: int
     event: SwapEvent
+    depth: int = 1             # 1: CPMM called by the transaction itself; more: called by another program
 
     @property
     def key(self):
@@ -74,11 +75,11 @@ def build(pool, transactions, *, base_mint, quote_mint=WSOL, opened=None):
     for signature, tx in transactions.items():
         slot, index, when = _position(tx)
         try:
-            events = transaction_events(tx, pool)
+            events = transaction_events_with_depth(tx, pool)
         except ValueError as exc:
             skipped.append((signature, str(exc)))
             continue
-        for order, event in enumerate(events):
+        for order, (event, depth) in enumerate(events):
             if isinstance(event, LpChangeEvent):
                 lps.append((slot, index, order, event))
                 continue
@@ -91,7 +92,7 @@ def build(pool, transactions, *, base_mint, quote_mint=WSOL, opened=None):
                 side, base, quote = 'sell', event.input_vault_before, event.output_vault_before
             else:
                 raise TimelineError('pool_mints_differ:%s' % signature)
-            swaps.append(Swap(signature, slot, when, index, order, side, base, quote, event))
+            swaps.append(Swap(signature, slot, when, index, order, side, base, quote, event, depth))
     swaps.sort(key=lambda swap: swap.key)
     if opened is not None and swaps and swaps[0].slot < opened[0]:
         raise TimelineError('swap_before_the_pool_creation')
@@ -171,8 +172,13 @@ def infer_fees(swaps, side, *, protocol_fee_rate=0, fund_fee_rate=0):
 
 
 def recompute(swap, fees, on_input):
-    """The program's arithmetic applied to the logged reserves and the trader's exact amount."""
+    """The program's arithmetic applied to the logged reserves and the trader's exact amount.
+
+    ``on_input`` None: the side of the creator fee is the one this event logged.
+    """
     e = swap.event
+    if on_input is None:
+        on_input = e.creator_fee_on_input
     if e.base_input:
         return curve.swap_base_input(e.input_amount, e.input_vault_before, e.output_vault_before, fees, on_input)
     return curve.swap_base_output(e.output_amount, e.input_vault_before, e.output_vault_before, fees, on_input)

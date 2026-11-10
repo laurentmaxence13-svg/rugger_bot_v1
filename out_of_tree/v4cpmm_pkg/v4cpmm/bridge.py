@@ -6,6 +6,7 @@ every input was read: the pool's creation point, a pool state at the landing poi
 rates (given from the pool's AmmConfig, or read causally from swaps logged before the landing).
 Otherwise the block carries an ``unpriced_*`` status and no number.
 """
+from bot.market.launchlab_curve import fee_for
 from bot.market.replay import ExecutionModel, Position
 
 from cpmmx import curve, timeline as cpmm_timeline
@@ -17,14 +18,16 @@ from v4cpmm import VERSION
 SCHEMA = 'v4cpmm-exit-v0.1-experimental'
 RULES = ('at_open', 'strategy_clock')
 APPROXIMATIONS = (
-    'X-1 the real CPMM reserves are used as observed: what our own curve trades would have changed in the '
-    'opening state of the pool is ignored',
+    'X-1 the real CPMM reserves are used as observed; the value with the demand our curve purchase displaced onto '
+    'the pool is published next to it and the lower of the two is kept',
     'X-2 after the migration two exits exist: sell when the pool opens, or at the clock deadline of the strategy; '
     'stop and trailing exits are not evaluated on CPMM prices',
     'X-3 our sale is our only trade on the pool: no real swap is replayed after it',
     'X-4 fee rates are given from the AmmConfig or read causally from logged swaps; with an unknown creator-fee '
     'side or unknown protocol and fund shares, the value that is worse for the seller is kept',
     'X-5 event layouts and arithmetic are checked on synthetic data only: A-12 is not passed on real swaps',
+    'X-6 the order inside the landing slot is unknown: the value before and after that slot\'s real swaps are both '
+    'published and the lower is kept',
 )
 
 
@@ -52,6 +55,7 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
            protocol_fee_rate=None, fund_fee_rate=None):
     """The ``cpmm`` block of a v4sim result. ``cpmm``: a ``cpmmx.timeline.Timeline`` built with ``opened``.
 
+    The execution options are those of the v4sim run (``execution``, ``model``): nothing is tuned for CPMM.
     rule 'at_open'        the order is sent when the pool is created and lands ``latency_slots`` later;
     rule 'strategy_clock' it lands at ``strategy.exit_deadline(position) + clock_exit_latency_s``; when the
                           deadline is already past at the creation of the pool, as 'at_open'.
@@ -93,7 +97,10 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
         name, trigger, landing, step = 'slot_limit', opened_slot, opened_slot + model.latency_slots, \
             model.latency_slots
 
-    def value_at(limit):
+    net_curve_quote = result.spent - fee_for(result.spent, result.fee_rate_ppm)
+
+    def one(limit):
+        """Value at one landing limit: the lowest over the fee candidates, and over X-1's two variants."""
         done = cpmm_timeline.executed(cpmm, **{name: limit})
         candidates, source = _fee_candidates(done, fees)
         best = None
@@ -101,14 +108,28 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
             value, evidence = cpmm_timeline.sell_value(cpmm, result.tokens, candidate, on_input, **{name: limit},
                                                        protocol_fee_rate=protocol_fee_rate,
                                                        fund_fee_rate=fund_fee_rate)
-            if best is None or value < best[0]:
-                best = value, dict(evidence, fee_source=source)
+            # X-1 (H-5): the quote we put on the curve reaches the pool as a purchase by the buyers we displaced.
+            base, quote = evidence['base_reserve'], evidence['quote_reserve']
+            displaced = curve.swap_base_input(net_curve_quote, quote, base, candidate, on_input)
+            quote_after, base_after = curve.reserves_after(quote, base, displaced)
+            other = curve.swap_base_input(result.tokens, base_after, quote_after, candidate, on_input).output_amount
+            kept = min(value, other)
+            if best is None or kept < best[0]:
+                best = kept, dict(evidence, fee_source=source, value_on_real_reserves=value,
+                                  value_with_displaced_demand=other)
         return best
+
+    def value_at(limit):
+        """H-1: our order may execute before or after the real swaps of its landing slot; the lower value is kept."""
+        after, before = one(limit), one(limit - 1)
+        kept = before if before[0] < after[0] else after
+        return kept[0], dict(kept[1], value_by_order_in_landing_slot=dict(after=after[0], before=before[0]),
+                             kept_order='before' if kept is before else 'after')
 
     reference = None
     if execution.slippage_bps is not None:
         try:
-            reference = value_at(trigger)[0]
+            reference = one(trigger)[0]                       # what the order expected when it was sent
         except (cpmm_timeline.TimelineError, curve.CurveError) as exc:
             # No value could be expected when the order was sent: the limit cannot be applied, and it is said.
             block['slippage_limit_not_applied'] = str(exc)
@@ -134,6 +155,10 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
             costs = result.tx_costs + added
             pnl = value - result.spent - costs
             spot = result.tokens * evidence['quote_reserve'] // evidence['base_reserve']
+            blockers = ['a12_not_passed_on_real_swaps']
+            if evidence['fee_source'] != 'given' or protocol_fee_rate is None:
+                blockers.append('fee_rates_not_read_from_the_amm_config')
+            block.update(creditable=False, credit_blockers=blockers)
             return stop('sold', received=value, added_tx_costs=added, total_tx_costs=costs, pnl_lamports=pnl,
                         net_return=pnl / (result.spent + costs), landing={name: landing}, attempt=number,
                         evidence=evidence, value_without_impact_or_fee=spot,

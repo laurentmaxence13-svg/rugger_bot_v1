@@ -33,6 +33,13 @@ def test_sums_of_one_segment():
     assert abs(r['pnl_if_non_closed_lost_sol'] - (-0.03 - 0.10021)) < 1e-12
 
 
+def test_a_row_outside_the_visible_segments_is_refused():
+    import pytest
+    for segment in ('holdout', None, 'embargoed'):
+        with pytest.raises(ValueError):
+            tables.row(bundle(ROWS + [pool('p9', segment, 'closed', 1, 1)]), 'validation')
+
+
 def test_drawdown_after_a_peak_and_empty_segment():
     rows = [pool('a1', 'train', 'closed', 40_000_000, 1), pool('a2', 'train', 'closed', -10_000_000, 2),
             pool('a3', 'train', 'closed', -25_000_000, 3), pool('a4', 'train', 'closed', 50_000_000, 4)]

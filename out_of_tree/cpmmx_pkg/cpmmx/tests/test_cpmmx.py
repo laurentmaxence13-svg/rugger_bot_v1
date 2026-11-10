@@ -133,6 +133,8 @@ def test_exact_output_costs_at_least_what_exact_input_would_return(on_input):
         x, y = rng.randrange(10**7, 10**13), rng.randrange(10**7, 10**13)
         fees = curve.Fees(rng.choice([0, 2500, 10_000]), rng.choice([0, 1000]))
         wanted = rng.randrange(1, y // 3)
+        if on_input and fees.trade_fee_rate + fees.creator_fee_rate == 0:
+            continue                                       # the program itself fails there (O-1)
         out = curve.swap_base_output(wanted, x, y, fees, on_input)
         assert out.output_amount == wanted
         back = curve.swap_base_input(out.input_amount, x, y, fees, on_input)
@@ -459,26 +461,137 @@ def test_foreign_mints_and_missing_positions_are_errors():
         timeline.build(POOL_B58, dict(x=bad), base_mint=BASE_B58)
 
 
-# ---------------------------------------------------------------- A-12 report
+# ---------------------------------------------------------------- R02 audit a1f5efe0: O-1, T-1, T-2, T-3
 
-def test_a12_report_passes_on_a_complete_pool_and_names_every_defect(tmp_path, capsys):
+def test_o1_values_beyond_u64_are_refused_as_on_chain():
+    big = curve.U64_MAX
+    fees = curve.Fees(2500)
+    with pytest.raises(curve.CurveError):
+        curve.swap_base_input(big + 1, 10**9, 10**9, fees, True)
+    with pytest.raises(curve.CurveError):
+        curve.swap_base_input(10**6, 10**9, big + 1, fees, True)
+    with pytest.raises(curve.CurveError):                          # the input computed for an exact output
+        curve.swap_base_output(big - 1, big, big, fees, True)
+    assert curve.swap_base_input(big, big, big, fees, True).output_amount <= big
+
+
+def test_o1_zero_rates_with_the_creator_fee_on_input_fail_as_the_program_does():
+    zero = curve.Fees(0, 0)
+    for call in (curve.swap_base_input, curve.swap_base_output):
+        with pytest.raises(curve.CurveError):
+            call(10**6, 10**9, 10**9, zero, True)
+        assert call(10**6, 10**9, 10**9, zero, False).trade_fee == 0     # no split, no division
+    assert curve.swap_base_input(10**6, 10**9, 10**9, curve.Fees(2500, 0), True).creator_fee == 0
+
+
+def test_t1_order_inside_a_slot_is_the_transaction_index():
+    fees = curve.Fees(2500)
+    sim = Sim(10**15, 10**11, fees, True)
+    first, _ = sim.swap('buy', 10**9)
+    second, _ = sim.swap('sell', 10**12)
+    third, _ = sim.swap('buy', 2 * 10**9)
+    # signatures and insertion order both disagree with the block order: only the index can be right
+    txs = dict(a=tx(10, 7, logs(third)), b=tx(10, 5, logs(second)), z=tx(10, 2, logs(first)))
+    line = cpmm_timeline_build(txs)
+    assert [s.signature for s in line.swaps] == ['z', 'b', 'a']
+    assert timeline.continuity(line) == []
+    wrong = dict(a=tx(10, 2, logs(third)), b=tx(10, 5, logs(second)), z=tx(10, 7, logs(first)))
+    assert timeline.continuity(cpmm_timeline_build(wrong)) != []
+
+
+def cpmm_timeline_build(txs):
+    return timeline.build(POOL_B58, txs, base_mint=BASE_B58)
+
+
+def test_t2_a_program_called_by_cpmm_is_not_believed():
+    payload = swap_payload(1, 2, 3, 4, True, QUOTE, BASE, 5, 6, True)
+    child = [f'Program {events.CPMM_PROGRAM} invoke [1]', 'Program Chi1d1111 invoke [2]',
+             'Program data: ' + base64.b64encode(payload).decode(), 'Program Chi1d1111 success',
+             f'Program {events.CPMM_PROGRAM} success']
+    assert events.transaction_events(tx(1, 0, child), POOL_B58) == []
+    after = child[:4] + ['Program data: ' + base64.b64encode(payload).decode()] + child[4:]
+    assert len(events.transaction_events(tx(1, 0, after), POOL_B58)) == 1      # back in the CPMM frame
+    assert events.program_frames(logs(payload, outer='Router111'))[0][1] == 2  # depth: called by another program
+    line = cpmm_timeline_build(dict(a=tx(1, 0, logs(payload, outer='Router111')), b=tx(2, 0, logs(payload))))
+    assert [s.depth for s in line.swaps] == [2, 1]
+
+
+def test_t3_the_highest_rate_every_swap_allows_is_kept():
+    sim = Sim(10**15, 10**11, curve.Fees(2500), True)
+    payload, got = sim.swap('buy', 1001)                                       # fee 3: any rate in 1999..2997
+    line = cpmm_timeline_build(dict(a=tx(1, 0, logs(payload))))
+    fees, _, evidence = timeline.infer_fees(line.swaps, 'buy')
+    low, high = evidence['combined_rate_interval']
+    assert got.trade_fee == 3 and low < 2500 < high and fees.trade_fee_rate == high
+    assert all(-(-1001 * rate // D) == 3 for rate in (low, high)) and -(-1001 * (high + 1) // D) == 4
+    sim = Sim(10**15, 10**11, curve.Fees(2500, 1000), False)
+    payload, got = sim.swap('sell', 10**7 + 1)
+    line = cpmm_timeline_build(dict(a=tx(1, 0, logs(payload))))
+    fees, flag, evidence = timeline.infer_fees(line.swaps, 'sell')
+    assert flag is False and fees.trade_fee_rate == evidence['trade_rate_interval'][1] >= 2500
+    assert fees.creator_fee_rate == evidence['creator_rate_interval'][1] >= 1000
+
+
+# ---------------------------------------------------------------- A-12 / C-1 report
+
+CONFIG = dict(trade_fee_rate=2500, creator_fee_rate=1000, protocol_fee_rate=120_000, fund_fee_rate=40_000)
+
+
+def a12_document(n=80, **kwargs):
+    txs, _ = market(curve.Fees(**CONFIG), True, n=n, **kwargs)
+    return dict(pool=POOL_B58, base_mint=BASE_B58, opened=None, transactions=txs, amm_config=dict(CONFIG))
+
+
+def test_a12_pool_report_uses_the_config_and_names_every_defect(tmp_path, capsys):
     import gzip
     import json
     from cpmmx import a12
-    true = curve.Fees(2500, 1000, 120_000, 40_000)
-    txs, _ = market(true, True, n=80)
-    document = dict(pool=POOL_B58, base_mint=BASE_B58, opened=None, transactions=txs)
-    good = a12.report(document, 120_000, 40_000)
+    document = a12_document()
+    good = a12.report(document)
     assert good['passed'] and good['reproduction']['share_exact'] == 1.0 and good['continuity']['breaks'] == 0
-    assert good['fees']['sell']['trade_fee_rate'] == 2500 and good['fees']['buy']['creator_fee_rate'] == 1000
-    blind = a12.report(document)                               # shares unknown: the skim is measured, not a hole
-    assert blind['passed'] and blind['continuity']['both_sides'] == 0 and blind['continuity']['input_side_only'] > 0
-    assert all(150_000 <= v <= 160_000 for v in blind['continuity']['skim_share_of_trade_fee_ppm'])
-    lost = dict(document, transactions={k: v for k, v in txs.items() if k != 'sig040'})
-    hole = a12.report(lost, 120_000, 40_000)
-    assert not hole['passed'] and hole['reasons'] == ['reserve_chain_has_holes']
-    assert hole['continuity']['both_sides_indices'] == [39]
+    assert good['exact_output_swaps'] > 0 and good['called_by_another_program'] > 0
+    assert good['creator_fee_sides'] == [True]
+    assert a12.report(dict(document, amm_config=None))['reasons'] == ['amm_config_missing']
+    # rates deduced from the same swaps are never the source: a wrong config fails, whatever the swaps suggest
+    wrong = a12.report(dict(document, amm_config=dict(CONFIG, trade_fee_rate=3000)))
+    assert not wrong['passed'] and 'reproduction_below_pool_threshold' in wrong['reasons']
+    assert any(r.startswith('config_outside_deduced_interval') for r in wrong['reasons'])
+    shares = a12.report(dict(document, amm_config=dict(CONFIG, protocol_fee_rate=0)))
+    assert shares['reasons'] == ['reserve_chain_broken'] and shares['continuity']['one_side_only'] > 0
+    lost = dict(document, transactions={k: v for k, v in document['transactions'].items() if k != 'sig040'})
+    hole = a12.report(lost)
+    assert hole['reasons'] == ['reserve_chain_broken'] and hole['continuity']['indices'] == [39]
     path = tmp_path / 'pool.json.gz'
     path.write_bytes(gzip.compress(json.dumps(document).encode()))
-    assert a12.main([str(path), '--protocol-fee-rate', '120000', '--fund-fee-rate', '40000']) == 0
-    assert json.loads(capsys.readouterr().out)['passed'] is True
+    assert a12.main([str(path)]) == 0 and json.loads(capsys.readouterr().out)['passed'] is True
+
+
+def test_a12_a_direct_deposit_into_a_vault_breaks_the_chain_on_one_side():
+    from cpmmx import a12
+    fees = curve.Fees(**CONFIG)
+    sim = Sim(10**15, 10**11, fees, True)
+    first, _ = sim.swap('buy', 10**9)
+    sim.base += 10**9                                             # tokens sent straight to the vault: no event
+    second, _ = sim.swap('buy', 10**9)
+    document = dict(pool=POOL_B58, base_mint=BASE_B58, opened=None, amm_config=dict(CONFIG),
+                    transactions=dict(a=tx(1, 0, logs(first)), b=tx(2, 0, logs(second))))
+    out = a12.report(document)
+    assert out['reasons'] == ['reserve_chain_broken'] and out['reproduction']['share_exact'] == 1.0
+
+
+def test_a12_combined_verdict_applies_every_hardened_threshold():
+    from cpmmx import a12
+    one = a12.report(a12_document(n=250))
+    reports = [dict(one, pool=f'pool{i}') for i in range(5)]
+    assert a12.combine(reports)['reasons'] == ['no_liquidity_change']
+    with_lp = [dict(r, lp_changes=1) for r in reports]
+    verdict = a12.combine(with_lp)
+    assert verdict['passed'] and verdict['swaps'] == 1250 and verdict['exact_output_swaps'] >= 50
+    assert 'fewer_pools_than_required' in a12.combine(with_lp[:4])['reasons']
+    excluded = with_lp[:4] + [dict(with_lp[4], passed=False, reasons=['reserve_chain_broken'])]
+    out = a12.combine(excluded)
+    assert out['pools_excluded'] == {'pool4': ['reserve_chain_broken']} and not out['passed']
+    few_out = [dict(r, exact_output_swaps=5) for r in with_lp]
+    assert a12.combine(few_out)['reasons'] == ['too_few_exact_output_swaps']
+    no_cpi = [dict(r, called_by_another_program=0) for r in with_lp]
+    assert a12.combine(no_cpi)['reasons'] == ['no_call_by_another_program']

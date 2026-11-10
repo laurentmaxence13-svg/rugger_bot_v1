@@ -6,8 +6,9 @@ order of states/events.rs. Only a line logged WHILE THE CPMM PROGRAM IS THE RUNN
 accepted (the invoke / success lines are tracked as a stack), so another program printing the
 same bytes cannot forge a swap. A truncated log (``Log truncated``) is refused, never guessed.
 
-Two SwapEvent sizes are accepted: the current one (162 bytes, with mints and fees) and the first
-deployed one (81 bytes, up to ``base_input``). Any other size is an explicit error.
+Two SwapEvent sizes are accepted: the current one (162 bytes, with mints and fees) and an earlier
+one (81 bytes, up to ``base_input``). Any other size is an explicit error: this includes the first
+historical layout of 80 bytes (early 2024, without ``base_input``), which is refused, never read.
 """
 import base64
 from dataclasses import dataclass
@@ -103,6 +104,15 @@ def decode(payload):
 
 def program_data(log_messages, program=CPMM_PROGRAM):
     """Payloads of the ``Program data:`` lines logged while ``program`` is the running frame."""
+    return [payload for payload, _depth in program_frames(log_messages, program)]
+
+
+def program_frames(log_messages, program=CPMM_PROGRAM):
+    """(payload, depth) of those lines; depth 1 = called by the transaction, more = called by another program.
+
+    Only the frame at the TOP of the stack counts: a program that ``program`` itself invoked logs
+    under its own frame and is not believed.
+    """
     if log_messages is None:
         raise EventDecodeError('log_messages_missing')
     stack, payloads = [], []
@@ -123,7 +133,7 @@ def program_data(log_messages, program=CPMM_PROGRAM):
                 raise EventDecodeError('program_data_outside_any_frame')
             if stack[-1] == program:
                 try:
-                    payloads.append(base64.b64decode(line[len('Program data: '):], validate=True))
+                    payloads.append((base64.b64decode(line[len('Program data: '):], validate=True), len(stack)))
                 except ValueError as exc:
                     raise EventDecodeError('invalid_base64') from exc
     if stack:
@@ -136,5 +146,13 @@ def transaction_events(tx, pool):
     meta = tx.get('meta') or {}
     if meta.get('err') is not None:
         return []                               # a failed transaction changes no reserve
-    events = [decode(payload) for payload in program_data(meta.get('logMessages'))]
-    return [event for event in events if event is not None and event.pool == pool]
+    return [event for event, _depth in transaction_events_with_depth(tx, pool)]
+
+
+def transaction_events_with_depth(tx, pool):
+    """As ``transaction_events``, each event with the depth of the CPMM frame that logged it."""
+    meta = tx.get('meta') or {}
+    if meta.get('err') is not None:
+        return []
+    rows = [(decode(payload), depth) for payload, depth in program_frames(meta.get('logMessages'))]
+    return [(event, depth) for event, depth in rows if event is not None and event.pool == pool]

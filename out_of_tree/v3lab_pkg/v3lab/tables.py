@@ -18,12 +18,14 @@ from pathlib import Path
 from v3lab import plan
 from v3lab.evaluate import _cost, load_bundles
 
-SEGMENTS = ('exploration', 'train', 'validation')
+SEGMENTS = plan.SEGMENTS
 STAKE_LAMPORTS = 100_000_000
 
 
 def row(bundle, segment=None):
     """One table row; ``segment`` None pools the three visible segments (never an independent sample)."""
+    if any(r.get('segment') not in plan.SEGMENTS for r in bundle['pools']):
+        raise ValueError('row_outside_the_visible_segments')          # R02: never a sealed or unknown segment
     entered = [r for r in bundle['pools'] if r['trade']['entry_index'] is not None
                and (segment is None or r['segment'] == segment)]
     closed = sorted((r for r in entered if r['trade']['outcome'] == 'closed'),
@@ -57,7 +59,8 @@ def row(bundle, segment=None):
 def tables(bundles):
     out = dict(schema='v3lab-profit-table-v1', status='EXPLORATORY', plan_sha256=plan.plan_sha256(),
                reference=plan.PLAN.get('reference', 'V3-01'), trials={},
-               notes=['closed cycles only in pnl_sol / pnl_pct (frozen rule); see pnl_if_non_closed_lost',
+               notes=['no ranking of this table may be used to choose or promote a strategy',
+                      'closed cycles only in pnl_sol / pnl_pct (frozen rule); see pnl_if_non_closed_lost',
                       'P0 visible segments: already used by 25 + V3 trials; nothing here is a proof of profitability',
                       'the reference V3-01 is the policy of the previous research reference (fixed delay 5 s, clock 25 s)'])
     reference = bundles.get(out['reference'])
