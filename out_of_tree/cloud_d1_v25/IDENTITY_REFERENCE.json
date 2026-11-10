@@ -1,0 +1,9 @@
+{
+ "bundles_sums_sha256": "ba14a5db7a66b277f59b9ddf2222bb9364b33e75496483300707aadef5044b72",
+ "ledger_sha256": "fd68eea7e1f8123994fda9644acde9a5fbf12dd410523ace17ab758fe8da6890",
+ "measured_by": "R01 session, 2 runs identical, CPython 3.12.3 x86_64, w1aux v7.3 (63eb3412)",
+ "sample": "synthetic_x40",
+ "signatures": 6920,
+ "to_confirm_by": "R03 session (must be equal) before any cloud run",
+ "w1_report_sha256": "44aaa9e3a6895c91a7e6630479120aa87f673c06fdfbabe05a17eeef0d8340dd"
+}
