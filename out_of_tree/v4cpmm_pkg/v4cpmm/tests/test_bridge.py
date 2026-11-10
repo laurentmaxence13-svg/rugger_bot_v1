@@ -257,3 +257,31 @@ def test_a_pool_that_opens_before_the_curve_ends_is_a_binding_error():
     line = cpmm_timeline.build(POOL_B58, txs, base_mint=BASE_B58, opened=(OPEN_SLOT - 40, OPEN_TIME - 16))
     with pytest.raises(ValueError):
         run(cpmm=line)
+
+
+def test_rc_a_guard_of_the_v4sim_replay_leaves_the_position_unpriced():
+    line, _ = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (9, 'buy', 10**9)])
+    clean = engine.replay(CURVE, FixedOrder(0, 100_000_000, 10**9), MODEL, quote_mint=WSOL_MINT)
+    assert bridge.curve_guards(clean) == []
+    for mutate, expected in ((lambda r: r.v4['counters'].__setitem__('tracked_sale_clipped_external', 1),
+                              ['tracked_sale_clipped_external']),
+                             (lambda r: r.v4['counters'].__setitem__('skipped_dust_events', 2), ['skipped_dust_events']),
+                             (lambda r: r.v4.__setitem__('flags', ['external_inventory_limited']),
+                              ['external_inventory_limited'])):
+        result = engine.replay(CURVE, FixedOrder(0, 100_000_000, 10**9), MODEL, quote_mint=WSOL_MINT)
+        mutate(result)
+        block = bridge.settle(result, CURVE.events, line, MODEL, fees=(FEES, True))
+        assert block['status'] == 'unpriced_counterfactual_curve_differs' and block['curve_guards'] == expected
+        assert 'received' not in block
+
+
+def test_rd_the_requested_slot_order_is_traced_and_not_applied():
+    line, _ = cpmm_pool([(1, 'buy', 10**9), (3, 'sell', 10**11), (4, 'buy', 5 * 10**9), (9, 'buy', 10**9)])
+    blocks = [run(cpmm=line, fees=(FEES, True), execution=Execution(slot_order=order)).cpmm
+              for order in ('after', 'before')]
+    assert [b['slot_order_requested'] for b in blocks] == ['after', 'before']
+    assert all('not applied' in b['slot_order_note'] for b in blocks)
+    # the requested order changes the purchase on the curve (v4sim), never the rule of the CPMM leg
+    for block in blocks:
+        values = block['evidence']['value_by_order_in_landing_slot']
+        assert block['evidence']['kept_order'] == 'before' and block['received'] == values['before'] < values['after']

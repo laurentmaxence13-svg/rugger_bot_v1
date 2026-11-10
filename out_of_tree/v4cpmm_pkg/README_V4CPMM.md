@@ -40,5 +40,5 @@ Chaque bloc porte `creditable: false` et la liste `credit_blockers` : rien n'est
 ## Tests
     cd <arbre gelé aff97638>
     PYTHONPATH=<v4cpmm_pkg>:<cpmmx_pkg>:<v4sim_pkg> python -B -m pytest -q <v4cpmm_pkg>/v4cpmm/tests -p no:cacheprovider -W error
-23 tests (dont 8 de mutation), Python 3.12 et 3.11, hors réseau, sur une courbe synthétique qui migre
+25 tests (dont 8 de mutation), Python 3.12 et 3.11, hors réseau, sur une courbe synthétique qui migre
 pendant la détention.

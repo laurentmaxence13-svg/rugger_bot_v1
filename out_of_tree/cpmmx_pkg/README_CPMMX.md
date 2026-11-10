@@ -44,7 +44,7 @@ taux prudent) couverts par des tests. Le premier format historique de 80 octets 
 
 ## Tests
     PYTHONPATH=<cpmmx_pkg> python -B -m pytest -q <cpmmx_pkg>/cpmmx/tests -p no:cacheprovider -W error
-42 tests, Python 3.12 et 3.11, hors réseau.
+43 tests, Python 3.12 et 3.11, hors réseau.
 
 ## Données nécessaires pour A-12 (non collectées)
 Par pool migré : les transactions brutes de l'adresse du pool CPMM (au moins de sa création à la fin

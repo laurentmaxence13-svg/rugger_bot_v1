@@ -532,6 +532,30 @@ def test_t3_the_highest_rate_every_swap_allows_is_kept():
     assert fees.creator_fee_rate == evidence['creator_rate_interval'][1] >= 1000
 
 
+def test_t3_prime_prudent_rates_with_the_creator_fee_on_the_output_and_the_creator_split():
+    """R02 Ra: small amounts leave wide intervals; the code must keep the top of each, not the bottom."""
+    sim = Sim(10**12, 10**12, curve.Fees(2500, 1000), False)
+    payload, got = sim.swap('sell', 1001)                                      # creator fee taken on the output
+    line = cpmm_timeline_build(dict(a=tx(1, 0, logs(payload))))
+    fees, flag, evidence = timeline.infer_fees(line.swaps, 'sell')
+    (trade_low, trade_high), (creator_low, creator_high) = evidence['trade_rate_interval'], evidence[
+        'creator_rate_interval']
+    assert flag is False and got.trade_fee == 3 and got.creator_fee == 1
+    assert trade_low < 2500 < trade_high and creator_low < 1000 < creator_high
+    assert (fees.trade_fee_rate, fees.creator_fee_rate) == (trade_high, creator_high)
+    sim = Sim(10**12, 10**12, curve.Fees(2500, 1000), True)
+    payload, got = sim.swap('sell', 1001)                                      # one combined fee, split by the rates
+    line = cpmm_timeline_build(dict(a=tx(1, 0, logs(payload))))
+    fees, flag, evidence = timeline.infer_fees(line.swaps, 'sell')
+    split_low, split_high = evidence['creator_rate_interval']
+    assert flag is True and (got.trade_fee, got.creator_fee) == (3, 1) and split_low < 1000 < split_high
+    assert fees.creator_fee_rate == split_high
+    assert fees.trade_fee_rate + fees.creator_fee_rate == evidence['combined_rate_interval'][1]
+    # every rate of the kept split still explains the logged split, the next one above does not
+    total = evidence['combined_rate_interval'][1]
+    assert 4 * split_high // total == 1 and 4 * (split_high + 1) // total == 2
+
+
 # ---------------------------------------------------------------- A-12 / C-1 report
 
 CONFIG = dict(trade_fee_rate=2500, creator_fee_rate=1000, protocol_fee_rate=120_000, fund_fee_rate=40_000)

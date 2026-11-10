@@ -31,6 +31,18 @@ APPROXIMATIONS = (
 )
 
 
+# Counters of the v4sim ledgers that mean the counterfactual curve did not follow a clean replay (R02 Rc).
+CURVE_GUARDS = ('external_sale_clipped', 'tracked_sale_clipped_external', 'tracked_sale_clipped_quote_reserve',
+                'skipped_dust_events', 'skipped_zero_sales')
+
+
+def curve_guards(result):
+    """Flags and non-zero guard counters of the v4sim replay: with any of them X-1's equality is not shown."""
+    info = getattr(result, 'v4', None) or {}
+    counters = info.get('counters') or {}
+    return sorted(set(info.get('flags') or ()) | {name for name in CURVE_GUARDS if counters.get(name)})
+
+
 def _minimum(reference, slippage_bps):                       # same rounding as v4sim.engine
     return -(-reference * (10_000 - slippage_bps) // 10_000)
 
@@ -64,7 +76,9 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
     if rule not in RULES:
         raise ValueError('unknown_rule')
     block = dict(schema=SCHEMA, version=VERSION, rule=rule, status=None, validated_on_real_swaps=False,
-                 approximations=list(APPROXIMATIONS), failed_attempts=[], added_tx_costs=0)
+                 approximations=list(APPROXIMATIONS), failed_attempts=[], added_tx_costs=0,
+                 slot_order_requested=execution.slot_order,
+                 slot_order_note='not applied: the lower of the two orders inside the landing slot is kept (H-1)')
 
     def stop(status, **more):
         block.update(status=status, **more)
@@ -72,6 +86,9 @@ def settle(result, events, cpmm, model, *, execution=Execution(), rule='at_open'
 
     if result.outcome != 'migrated_unpriced' or not result.tokens:
         return stop('not_applicable')
+    guards = curve_guards(result)
+    if guards:                       # the curve our purchase leaves is not the one X-1's equality was shown on
+        return stop('unpriced_counterfactual_curve_differs', curve_guards=guards)
     if cpmm is None:
         return stop('unpriced_no_cpmm_timeline')
     if cpmm.opened is None:

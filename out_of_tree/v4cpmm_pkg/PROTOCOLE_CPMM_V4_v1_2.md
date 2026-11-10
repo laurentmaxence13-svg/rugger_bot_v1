@@ -1,7 +1,8 @@
-# Protocole de l'intégration CPMM expérimentale au simulateur V4 — v1.1 (projet)
+# Protocole de l'intégration CPMM expérimentale au simulateur V4 — v1.2
 
-RUGGER 01, 2026-11-10. Remplace le projet v1 ; intègre l'audit de RUGGER 02 (a1f5efe0 : O-1, T-1 à T-3,
-H-1 à H-7, V-1 à V-9). À ancrer par RUGGER 02 **avant tout usage sur données réelles**.
+RUGGER 01, 2026-11-10. Delta de la v1.1 (0816bc9d, ancrée avec réserves par RUGGER 02, ré-audit
+677d0450) : réserves Ra à Rd levées. Intègre l'audit a1f5efe0 (O-1, T-1 à T-3, H-1 à H-7, V-1′, V-2 à
+V-9). À ancrer par RUGGER 02 **avant tout passage de `a12.py` sur données réelles**.
 Complète la section 4 du protocole V4 v2 (00d9ccf9…) ; ne le modifie pas. `v4sim` 0.2 reste intact
 (empreinte 2fe085a33c5604f30468e08e4c0ee096f9881d8efbf24fad0c5faf51af03db67).
 
@@ -31,7 +32,8 @@ Code : `cpmmx` 0.1 (décodeur) et `v4cpmm` 0.1 (pont), MANIFEST_cpmm_v01.
 - `strategy_clock` : atterrissage à l'échéance d'horloge de la stratégie + `clock_exit_latency_s` ;
   si l'échéance est déjà passée à la création du pool, règle `at_open`.
 - **Ordre dans le slot d'atterrissage (H-1)** : la valeur est calculée avant et après les swaps réels
-  de ce slot ; les deux sont publiées ; seule la plus basse est retenue.
+  de ce slot ; les deux sont publiées ; seule la plus basse est retenue. Le paramètre `slot_order` de
+  l'exécution est tracé dans le bloc avec la mention « non appliqué » (Rd).
 - Non-inclusion, limite de glissement, nouvelles tentatives : paramètres et tirages déterministes de
   `v4sim` ; chaque échec est facturé.
 - Aucune autre règle (stop, stop suiveur sur prix CPMM) dans cette version.
@@ -43,8 +45,11 @@ Code : `cpmmx` 0.1 (décodeur) et `v4cpmm` 0.1 (pont), MANIFEST_cpmm_v01.
   `test_x1_…`). Les réserves d'ouverture corrigées de notre trajectoire sont donc les réserves réelles.
   (ii) Ce que notre achat change : il déplace vers le pool une demande égale à notre mise nette de
   frais. La valeur avec cette demande appliquée à l'état d'atterrissage est publiée à côté de la valeur
-  sur réserves réelles ; **la plus basse est retenue**. *Si RUGGER 02 exige l'état final contrefactuel
-  lui-même, `v4sim` ne l'expose pas : il faut un delta de `v4sim` par R03, ancré à part.*
+  sur réserves réelles ; **la plus basse est retenue**.
+  (iii) **Garde (Rc).** L'égalité (i) n'est montrée que sur la courbe synthétique. Si le rejeu `v4sim`
+  du pool a levé une garde (vente suivie écrêtée, inventaire externe, événement de poussière ou vente
+  nulle ignorés, ou tout drapeau du résultat), le bloc porte `unpriced_counterfactual_curve_differs`
+  et aucun montant. Aucun delta de `v4sim` n'est requis.
 - X-2 deux règles de sortie seulement ; X-3 aucun swap réel rejoué après notre vente ; X-4 côté des
   frais de créateur ou parts inconnus : borne défavorable au vendeur (non créditable) ; X-5 données
   synthétiques seulement ; X-6 ordre dans le slot : voir H-1.
@@ -66,8 +71,11 @@ Code : `cpmmx` 0.1 (décodeur) et `v4cpmm` 0.1 (pont), MANIFEST_cpmm_v01.
 - **C-6** : mutations (frais × 0, latence 0, swap futur, cadre de programme ignoré, programme n'importe
   où dans la pile, un seul ordre dans le slot, frais de transaction oubliés) : chacune fait échouer un test.
 
-## 7. Vecteurs de test publics (conditions V-1 à V-9 de RUGGER 02)
-GO explicite du propriétaire dans la session de R03 ; deux étages (50 à 100 transactions pour l'audit
+## 7. Vecteurs de test publics (conditions V-1′ et V-2 à V-9 de RUGGER 02)
+**V-1′ (remplace V-1)** : GO explicite du propriétaire dans la session de R03, puis au choix
+(a) `api.mainnet-beta.solana.com` sans clé, hôte retiré de la liste d'accès le jour même ; ou
+(b) Helius, 100 crédits au plus, relevés avant et après, aucun slot W1 ni W2, répertoire séparé, de
+préférence après la collecte W1. Deux étages (50 à 100 transactions pour l'audit
 du décodeur, puis ≥ 1 000 swaps sur ≥ 5 pools pour C-1, avec son propre GO) ; pools sans lien avec P0
 (liste 9f19ccac) ni W1, créés avant le premier slot de P0 ; liste de candidats hachée puis tirage par
 sha256(graine ‖ pool), graine fixée par R02 après l'ancrage de la liste, sans remplacement ; ≥ 3 pools
@@ -76,5 +84,6 @@ donne pas ; AmmConfig lu et haché avec son slot ; signatures, sha256 des corps 
 ancrés par R02 **avant** `a12.py`, qui tourne une seule fois et que R02 recalcule.
 
 ## 8. État
-O-1 et T-1 à T-3 corrigés (H-4). C-5 et C-6 passent (65 tests, données synthétiques).
+O-1, T-1 à T-3 et T-3′ corrigés (H-4, Ra). C-5 passe. C-6 : mutations de la liste couvertes par
+68 tests (données synthétiques) ; **à confirmer par les mutations de RUGGER 02** (m10, m10b).
 C-1 à C-4 : **non passés** — aucune donnée réelle.
