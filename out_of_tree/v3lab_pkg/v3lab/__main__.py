@@ -1,7 +1,7 @@
 """MASTER V3 lab CLI (offline; no network, key or order).
 
   python -m v3lab plan                                     # the pre-registered plan and its sha256
-  python -m v3lab pack --source EXPORT --out VISIBLE [--table-from-bundle RUN.json]
+  python -m v3lab pack --source EXPORT --out VISIBLE --table-from-bundle RUN.json
                                                            # visible-only pack (holdout never copied)
   python -m v3lab run --pack VISIBLE --expect-manifest-sha SHA --registry v3_trials.jsonl --out DIR
                       [--trial V3-01 ...] [--at ISO]
@@ -32,8 +32,8 @@ def main(argv=None, *, out=None):
     p.add_argument('--source', type=Path, required=True)
     p.add_argument('--out', type=Path, required=True)
     p.add_argument('--embargo-slots', type=int, default=None)
-    p.add_argument('--table-from-bundle', type=Path, default=None,
-                   help='existing bundle of the same export: non-visible pool files are then never opened')
+    p.add_argument('--table-from-bundle', type=Path, required=True,
+                   help='registered bundle of the same export (pool table); non-visible pool files are never opened')
     r = sub.add_parser('run')
     r.add_argument('--pack', type=Path, required=True)
     r.add_argument('--expect-manifest-sha', required=True, help='MANIFEST sha256 of the pack, anchored by RUGGER 02')

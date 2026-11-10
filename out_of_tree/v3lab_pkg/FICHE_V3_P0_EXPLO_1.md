@@ -3,7 +3,7 @@
 RUGGER 01, 2026-11-10. À ancrer par RUGGER 02 **avant le premier rejeu**.
 
 - **Plan (source unique, lisible par la machine)** : `v3lab/plan.py`, `plan_sha256` = `91e831e0bbb5e278cc3e5f27e29049283624a874e3183c8605d7d627c83e66d2`.
-- **Code V3 qui choisit les données, décide et construit un bundle** : `v3lab_sha256` = `b6c78c25f8335958d507f068e78be01ccde2e1c23cb78b4afceceecb2759256b` (v0.2).
+- **Code V3 qui choisit les données, décide et construit un bundle** : `v3lab_sha256` = `882aed5cd75129490e4be637c91adf35dfb2a837684ed54e25c51b1fe705066e` (v0.3).
 - **Moteur d'exécution et de comptabilité** : celui de l'arbre gelé `aff97638`, appelé sans modification.
 - **Statut de tout résultat** : EXPLORATOIRE. P0 a déjà servi à 25 essais. Rien n'est promu. Un succès donne seulement droit à un pré-enregistrement sur une fenêtre fraîche (W2).
 
@@ -91,7 +91,20 @@ Rendement r d'une position entrée : rendement net du cycle clos (formule gelée
 - Chaque configuration exécutée compte pour un essai, même abandonnée. N cumulé = 25 + essais V3 (33 si les 8 tournent), utilisé pour le DSR.
 - Le registre f1f26e36, N = 32 de W1 et le registre W1 ne sont pas touchés.
 
-## 8. Après
+## 8. Conditions de RUGGER 02 (audit 548b2716) et biais à porter dans tout compte rendu
+
+- **P-1** : le pack se construit uniquement avec `--table-from-bundle` (bundle P0 enregistré `phase3/T16.json`, sha256 75f51dcd…). Le CLI n'a pas d'autre mode ; les archives du holdout ne sont jamais ouvertes.
+- **P-2** : R02 ancre le pack avant le premier rejeu. Le code refuse un pool visible dont l'export ne couvre pas tout l'horizon de résultat (création + embargo ≤ `window_slot_max`).
+- **P-3** : un seul pack. Le registre V3 part vide. N = 25 + toutes les entrées du registre V3, tous packs confondus (faille F-1 corrigée).
+- **P-4** : exécution depuis une worktree propre de l'arbre aff97638, `PYTHONPATH=v3lab_pkg` seul.
+- **Biais** (repris dans chaque rapport, champ `biases`) :
+  - B-1 : hypothèses formées après 25 essais et le livrable G sur les mêmes pools ; p-values nominales et optimistes ;
+  - B-2 : jusqu'à environ 23 % de risque d'au moins un faux succès sur les 5 décisions (un Holm global descriptif est publié) ;
+  - B-3 : H1 est confondu par le type de lancement, corrélé au palier de frais (la dérive par palier est publiée) ;
+  - B-4 : une sortie choisie d'après la sonde n'est légitime que sur W2 ;
+  - B-5 à B-8 : convention −1 pour les positions non closes, DSR descriptif, puissance faible, grappes de créateurs.
+
+## 9. Après
 
 - Aucune promotion à partir de P0, quel que soit le résultat.
 - Les données W1 ne servent pas à développer V3 avant le verdict W1 de R02.

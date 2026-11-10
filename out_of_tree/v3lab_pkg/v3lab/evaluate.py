@@ -12,8 +12,11 @@ promote a policy. Definitions:
 * CVaR 5 %: mean of the ``ceil(5 % n)`` worst ``r``.
 * Intervals: creator-cluster percentile bootstrap, the algorithm of the frozen ``bootstrap_mean_ci``.
 * Deflated Sharpe ratio: PSR against the expected maximum Sharpe of N unskilled trials, with
-  N = 25 (P0 registry) + the V3 trials registered for this pack; the spread is that of the trial
-  Sharpe ratios available (V3 trials on the exploration segment, plus P0 ones when supplied).
+  N = 25 (P0 registry) + EVERY entry of the V3 registry, whatever its pack (R02 F-1: a second pack
+  never resets the count); the spread is that of the trial Sharpe ratios available (V3 trials of
+  this pack on the exploration segment, plus P0 ones when supplied). Descriptive (R02 B-6).
+* ``global_holm_descriptive``: Holm over the five decisions (H1, the three H2 candidates, H3). It
+  does not change a verdict, which follows the pre-registered criteria only.
 """
 from collections import Counter, OrderedDict
 import json
@@ -30,6 +33,18 @@ from bot.p4 import historical_research_replay as hrr
 from v3lab import plan
 
 SCHEMA = 'rugger-master-v3-evaluation-v1'
+# Biases every report of this plan must carry (RUGGER 02, audit 548b2716).
+BIASES = (
+    'B-1: the hypotheses were formed after 25 trials and deliverable G on the same pools: p-values are '
+    'nominal and optimistic',
+    'B-2: up to about 23 % risk of at least one false PASS over the five decisions',
+    'B-3: H1 is confounded by the launch type correlated with the fee tier',
+    'B-4: an exit chosen from the probe is legitimate only on a fresh window (W2)',
+    'B-5: non-closed positions are counted -1 (a convention, not a measurement)',
+    'B-6: the deflated Sharpe ratio is descriptive',
+    'B-7: low power (a few hundred pools, 12.85 h)',
+    'B-8: cycles cluster by creator; intervals resample creators, the permutation test of H1 does not',
+)
 HORIZONS_S = (10, 25, 60, 120, 300, 600, 900)
 MFE_LEVELS = (0.0, 0.10, 0.25, 0.50, 1.00)
 _NORMAL = statistics.NormalDist()
@@ -117,11 +132,24 @@ def arm_metrics(bundle, pools, *, n_boot=plan.N_BOOT, seed=plan.SEED, alpha=plan
         fee_rate_ppm=dict(sorted(Counter(str(row['trade']['fee_rate_ppm']) for row in rows).items())),
         exit_triggers=dict(sorted(Counter((row['trade'].get('exit_trigger') or {}).get('reason', 'none')
                                           for row in closed).items())),
-        sharpe=sharpe_ratio(returns), ci95_creator_cluster=None)
+        sharpe=sharpe_ratio(returns), ci95_creator_cluster=None, p_one_sided_vs_zero=None)
     if len(pessimistic) >= 2:
         means = cluster_bootstrap_means(pessimistic, [row['creator'] for row in rows], n_boot=n_boot, seed=seed)
         metrics['ci95_creator_cluster'] = _interval(means, alpha)
+        metrics['p_one_sided_vs_zero'] = (sum(m <= 0 for m in means) + 1) / (n_boot + 1)
     return metrics
+
+
+def by_fee_tier(bundle, pools):
+    """Closed cycles of one arm by the fee rate applied to our fills: count, mean r, cost0 and drift (R02 B-3)."""
+    tiers = {}
+    for row in _entered(bundle, pools).values():
+        if row['trade']['outcome'] == 'closed' and row['v3'].get('round_trip_cost_return') is not None:
+            tiers.setdefault(row['trade']['fee_rate_ppm'], []).append((_r(row), row['v3']['round_trip_cost_return']))
+    return {str(rate): dict(closed=len(values), mean_return=statistics.fmean(r for r, _c in values),
+                            mean_cost0=statistics.fmean(c for _r0, c in values),
+                            mean_drift=statistics.fmean(r - c for r, c in values))
+            for rate, values in sorted(tiers.items())}
 
 
 def paired(base, candidate, pools, *, n_boot=plan.N_BOOT, seed=plan.SEED, alpha=plan.ALPHA):
@@ -213,7 +241,7 @@ def evaluate(bundles, *, registry_entries, p0_trial_sharpes=(), n_boot=plan.N_BO
     decision = plan.DECISION_SEGMENT
     arms = {trial_id: {name: arm_metrics(bundle, pools[name], n_boot=n_boot) for name in plan.SEGMENTS}
             for trial_id, bundle in sorted(bundles.items())}
-    n_cumulative = plan.P0_REGISTERED_TRIALS + len(registered)
+    n_cumulative = plan.P0_REGISTERED_TRIALS + len(registry_entries)     # every V3 entry, every pack (R02 F-1)
     sharpes = [arms[t]['exploration']['sharpe'] for t in arms] + list(p0_trial_sharpes)
     sharpes = [s for s in sharpes if s is not None]
     spread = statistics.pstdev(sharpes) if len(sharpes) >= 2 else None
@@ -225,16 +253,20 @@ def evaluate(bundles, *, registry_entries, p0_trial_sharpes=(), n_boot=plan.N_BO
                 probabilistic_sharpe_ratio(returns, benchmark) if benchmark is not None and len(returns) >= 3 else None)
     report = dict(schema=SCHEMA, plan=plan.PLAN['plan'], plan_sha256=plan.plan_sha256(), status='EXPLORATORY',
                   manifest_sha256=manifest_sha256, registry_head=registry_entries[-1]['entry_sha256'],
-                  v3_trials=len(registered), n_cumulative=n_cumulative,
+                  v3_trials=len(registered), v3_trials_all_packs=len(registry_entries),
+                  n_cumulative=n_cumulative, biases=list(BIASES),
                   dsr_benchmark=dict(spread=spread, expected_max_sharpe=benchmark, sharpes_used=len(sharpes),
                                      p0_sharpes_supplied=len(list(p0_trial_sharpes))),
                   segments={name: len(pools[name]) for name in plan.SEGMENTS}, arms=arms, hypotheses={})
-    verdicts = {}
+    verdicts, decisions_p = {}, {}
     # --- H1: exact ablation of the reference by the fee veto -------------------------------------
     if {'V3-01', 'V3-07'} <= set(bundles):
         h1 = {name: veto_partition(bundles['V3-01'], bundles['V3-07'], pools[name], n_perm=n_boot, seed=plan.SEED)
               for name in plan.SEGMENTS}
+        for name in plan.SEGMENTS:
+            h1[name]['by_fee_tier'] = by_fee_tier(bundles['V3-01'], pools[name])
         d = h1[decision]
+        decisions_p['H1'] = d['random_abstention_p']
         if d['kept_closed'] < plan.MIN_GROUP or d['removed_closed'] < plan.MIN_GROUP:
             verdict = 'NOT_EVALUABLE'
         else:
@@ -253,6 +285,7 @@ def evaluate(bundles, *, registry_entries, p0_trial_sharpes=(), n_boot=plan.N_BO
         for c, p_holm in zip(candidates, adjusted):
             d = h2[c][decision]
             d['p_holm'] = p_holm
+            decisions_p['H2:' + c] = d['p_one_sided']
             if d['paired'] < plan.MIN_GROUP or p_holm is None:
                 outcome[c] = 'NOT_EVALUABLE'
                 continue
@@ -276,11 +309,17 @@ def evaluate(bundles, *, registry_entries, p0_trial_sharpes=(), n_boot=plan.N_BO
                   and d['ci95_creator_cluster'][0] > 0
                   and all(ref is None or d['pessimistic_mean'] > ref for ref in references))
             verdict = 'PASS_EXPLORATORY' if ok else 'REJECTED_ON_P0'
+        decisions_p['H3'] = arms['V3-08'][decision]['p_one_sided_vs_zero']
         report['hypotheses']['H3'] = {name: dict(entered=arms['V3-08'][name]['entered'],
                                                  pessimistic_mean=arms['V3-08'][name]['pessimistic_mean'],
                                                  ci95_creator_cluster=arms['V3-08'][name]['ci95_creator_cluster'])
                                       for name in plan.SEGMENTS}
         verdicts['H3'] = verdict
+    names = sorted(decisions_p)
+    report['global_holm_descriptive'] = dict(
+        decisions=len(names), p=dict(zip(names, (decisions_p[n] for n in names))),
+        p_holm=dict(zip(names, holm([decisions_p[n] for n in names]))),
+        note='descriptive: Holm over all decisions of the plan; verdicts follow the pre-registered criteria only')
     report['verdicts'] = verdicts
     report['flags'] = dict(exploratory=True, promotion_allowed=False, master_operational_trade=False,
                            counted_in_master_gate=False, profitability_demonstrated=False,

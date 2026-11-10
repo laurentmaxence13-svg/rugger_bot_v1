@@ -109,14 +109,20 @@ def _table_from_bundle(path, manifest, source_sha256):
     return table, excluded
 
 
-def build(source_dir, out_dir, *, embargo_slots=None, table_bundle=None):
+def build(source_dir, out_dir, *, embargo_slots=None, table_bundle=None, read_all_pools=False):
     """Write the visible-only pack; return its summary (counts and hashes, no result of any kind).
 
-    With ``table_bundle`` (an existing bundle of this very export, e.g. a registered P0 run) the pool
-    table (creator, creation slot, exclusions) is taken from it: the files of the non-visible pools
-    are then never opened; their sha256 comes from the source MANIFEST.
+    ``table_bundle`` is REQUIRED on real data (R02 P-1): an existing bundle of this very export (a
+    registered P0 run) gives the pool table (creator, creation slot, exclusions); the files of the
+    non-visible pools are then never opened, their sha256 comes from the source MANIFEST.
+    ``read_all_pools=True`` instead derives the table by reading every pool file. It exists for
+    packs that have no sealed part (the committed test fixtures) and is not offered by the CLI.
     """
     source_dir, out_dir = Path(source_dir), Path(out_dir)
+    if table_bundle is None and not read_all_pools:
+        raise PackError('table_bundle_required')
+    if table_bundle is not None and read_all_pools:
+        raise PackError('table_bundle_and_read_all_pools_are_exclusive')
     if out_dir.exists():
         raise PackError('output_directory_already_exists')
     required = required_embargo_slots()
@@ -130,42 +136,53 @@ def build(source_dir, out_dir, *, embargo_slots=None, table_bundle=None):
     end = manifest.get('window_slot_max')
     if end is not None and (type(end) is not int or end >= plan.S0_W1):
         raise PackError('w1_window_refused')
-    table, digests, excluded = [], {}, {}
-    if table_bundle is not None:
-        table, excluded = _table_from_bundle(table_bundle, manifest, _sha(raw))
-    for entry in sorted(manifest['pools'], key=lambda item: item['pool']):
+    for entry in manifest['pools']:
         if entry['file'] != f"{entry['pool']}.json.gz":
             raise PackError('file_name_mismatch:%s' % entry['file'])
-        if table_bundle is not None:
-            digests[entry['pool']] = entry['sha256']
-            continue
-        data = (source_dir / entry['file']).read_bytes()
-        if _sha(data) != entry['sha256']:
-            raise PackError('sha256_mismatch:%s' % entry['file'])
-        digests[entry['pool']] = entry['sha256']
-        archive = _archive(data, entry)
-        _guard_slots(archive)
-        summary, timeline = summarize(archive)
-        try:
-            hrr.usable_timeline(archive, summary, timeline)
-        except hrr.PoolExcluded as exc:
-            excluded[entry['pool']] = exc.reasons
-            continue
-        facts = hrr.creation_facts(archive)     # creator and creation slot only: no outcome is read
-        table.append(dict(pool=entry['pool'], creator=facts['creator'], created_slot=facts['creation_slot']))
+    digests = {entry['pool']: entry['sha256'] for entry in manifest['pools']}
+    if table_bundle is not None:
+        table, excluded = _table_from_bundle(table_bundle, manifest, _sha(raw))
+        table_sha256 = _sha(Path(table_bundle).read_bytes())
+    else:
+        table, excluded, table_sha256 = [], {}, None
+        for pool in sorted(digests):
+            archive = _checked_archive(source_dir, pool, digests[pool])
+            summary, timeline = summarize(archive)
+            try:
+                hrr.usable_timeline(archive, summary, timeline)
+            except hrr.PoolExcluded as exc:
+                excluded[pool] = exc.reasons
+                continue
+            facts = hrr.creation_facts(archive)
+            table.append(dict(pool=pool, creator=facts['creator'], created_slot=facts['creation_slot']))
     split = chronological_split(table, embargo_slots=embargo_slots)
     segments = {pool: name for name in VISIBLE_SEGMENTS for pool in split[name]}
+    created = {row['pool']: row['created_slot'] for row in table}
+    for pool in sorted(segments):                      # every file that will be copied: hash and W1 guard
+        _checked_archive(source_dir, pool, digests[pool])
+        # R02 P-2 (c): the export must cover the whole outcome horizon of a visible pool, otherwise a
+        # clock exit would be valued on a state that is merely the end of the data.
+        if end is not None and created[pool] + embargo_slots > end:
+            raise PackError('visible_pool_not_covered_to_its_horizon:%s' % pool)
     counts = {name: len(split[name]) for name in split}
     counts['excluded'] = len(excluded)
-    for pool in sorted(segments):                      # every file that will be copied: hash and W1 guard
-        data = (source_dir / f'{pool}.json.gz').read_bytes()
-        if _sha(data) != digests[pool]:
-            raise PackError('sha256_mismatch:%s' % pool)
-        _guard_slots(_archive(data, dict(pool=pool, file=f'{pool}.json.gz')))
-    return _write(source_dir, out_dir, manifest, raw, segments, digests, excluded, counts, embargo_slots, required)
+    extra = dict(table_source='bundle' if table_bundle is not None else 'all_pool_files_read',
+                 table_bundle_sha256=table_sha256, horizon_coverage_checked=end is not None)
+    return _write(source_dir, out_dir, manifest, raw, segments, digests, excluded, counts, embargo_slots, required,
+                  extra)
 
 
-def _write(source_dir, out_dir, manifest, raw, segments, digests, excluded, counts, embargo_slots, required):
+def _checked_archive(source_dir, pool, sha256):
+    data = (source_dir / f'{pool}.json.gz').read_bytes()
+    if _sha(data) != sha256:
+        raise PackError('sha256_mismatch:%s' % pool)
+    archive = _archive(data, dict(pool=pool, file=f'{pool}.json.gz'))
+    _guard_slots(archive)
+    return archive
+
+
+def _write(source_dir, out_dir, manifest, raw, segments, digests, excluded, counts, embargo_slots, required,
+           extra=None):
     """Copy the visible pool files and write MANIFEST, SEGMENTS and SEALED_SHA256 (see ``build``)."""
     out_dir.mkdir(parents=True)
     for pool in sorted(segments):
@@ -178,7 +195,7 @@ def _write(source_dir, out_dir, manifest, raw, segments, digests, excluded, coun
     block = dict(schema=VISIBLE_SCHEMA, source_manifest_sha256=_sha(raw), source_pools=len(manifest['pools']),
                  embargo_slots=embargo_slots, required_embargo_slots=required, counts=dict(sorted(counts.items())),
                  excluded=dict(sorted(excluded.items())), segments_sha256=_sha(segments_raw),
-                 sealed_sha256=_sha(sealed_raw), s0_w1_guard=plan.S0_W1,
+                 sealed_sha256=_sha(sealed_raw), s0_w1_guard=plan.S0_W1, **(extra or {}),
                  rule='only exploration, train and validation pool files are copied; holdout, embargoed, '
                       'creator-overlap and unusable pools are listed by file sha256 in SEALED_SHA256.txt')
     visible = dict(manifest, pools=[entry for entry in manifest['pools'] if entry['pool'] in segments],

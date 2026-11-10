@@ -218,7 +218,7 @@ def test_the_plan_is_hashed_and_every_trial_builds():
 # --- V-A: data guards -------------------------------------------------------------------------
 
 def test_build_copies_visible_pools_only_and_lists_the_others_as_sealed(tmp_path):
-    summary = pack.build(FIXTURES, tmp_path / 'vis')
+    summary = pack.build(FIXTURES, tmp_path / 'vis', read_all_pools=True)
     files = sorted(p.name for p in (tmp_path / 'vis').glob('*.json.gz'))
     segments = json.loads((tmp_path / 'vis' / 'SEGMENTS.json').read_text())
     sealed = (tmp_path / 'vis' / 'SEALED_SHA256.txt').read_text().split()
@@ -227,12 +227,17 @@ def test_build_copies_visible_pools_only_and_lists_the_others_as_sealed(tmp_path
     opened = pack.Pack(tmp_path / 'vis', summary['manifest_sha256'])
     assert [entry['pool'] for entry, _archive, _segment in opened.pools()] == sorted(segments)
     assert set(opened.files_read) == {'MANIFEST.json', 'SEGMENTS.json', 'SEALED_SHA256.txt', *files}
+    assert summary['table_source'] == 'all_pool_files_read' and summary['table_bundle_sha256'] is None
+    with pytest.raises(pack.PackError, match='table_bundle_required'):          # R02 P-1: no default full read
+        pack.build(FIXTURES, tmp_path / 'default')
     with pytest.raises(pack.PackError, match='output_directory_already_exists'):
-        pack.build(FIXTURES, tmp_path / 'vis')
+        pack.build(FIXTURES, tmp_path / 'vis', read_all_pools=True)
     with pytest.raises(pack.PackError, match='embargo_shorter_than_outcome_horizon'):
-        pack.build(FIXTURES, tmp_path / 'short', embargo_slots=100)
+        pack.build(FIXTURES, tmp_path / 'short', embargo_slots=100, read_all_pools=True)
     with pytest.raises(pack.PackError, match='source_is_already_a_visible_pack'):
-        pack.build(tmp_path / 'vis', tmp_path / 'again')
+        pack.build(tmp_path / 'vis', tmp_path / 'again', read_all_pools=True)
+    with pytest.raises(SystemExit):                                              # the CLI has no full-read mode
+        cli.main(['pack', '--source', str(FIXTURES), '--out', str(tmp_path / 'cli')])
 
 
 def test_a_pack_is_refused_unless_anchored_visible_and_free_of_sealed_or_w1_data(visible, tmp_path, monkeypatch):
@@ -260,7 +265,7 @@ def test_a_pack_is_refused_unless_anchored_visible_and_free_of_sealed_or_w1_data
     with pytest.raises(pack.PackError, match='pack_built_with_another_w1_guard'):
         pack.Pack(directory, sha)
     with pytest.raises(pack.PackError, match='w1_slot_refused'):
-        pack.build(FIXTURES, tmp_path / 'w1')
+        pack.build(FIXTURES, tmp_path / 'w1', read_all_pools=True)
 
 
 # --- V-C: registry, counting, run and evaluation ----------------------------------------------
@@ -370,7 +375,18 @@ def test_verdicts_follow_the_pre_registered_criteria():
     assert h2['candidates']['V3-05']['validation']['cvar_5pct_candidate'] == -1.0       # the tail rule rejects it
     assert report['verdicts'] == dict(H1='REJECTED_ON_P0', H2='PASS_EXPLORATORY', H3='PASS_EXPLORATORY')
     assert report['hypotheses']['H1']['validation']['kept_minus_removed'] == pytest.approx(0.0)
-    assert report['n_cumulative'] == 25 + 6
+    assert report['n_cumulative'] == 25 + 6 and len(report['biases']) == 8
+    holm_all = report['global_holm_descriptive']
+    assert holm_all['decisions'] == 5 and set(holm_all['p']) == {'H1', 'H2:V3-03', 'H2:V3-04', 'H2:V3-05', 'H3'}
+    assert all(holm_all['p_holm'][k] >= holm_all['p'][k] for k in holm_all['p'])
+    tiers = report['hypotheses']['H1']['validation']['by_fee_tier']
+    assert set(tiers) == {'12500', '25000'} and tiers['12500']['closed'] == tiers['25000']['closed'] == 30
+    assert tiers['12500']['mean_drift'] == pytest.approx(0.0)
+    # R02 F-1: entries of another pack in the same registry still count in N.
+    other = [dict(preregistration_sha256='x%d' % i, manifest_sha256='another-pack', plan_sha256=plan.plan_sha256(),
+                  trial='V3-0%d' % (i + 1), code_sha256='c', v3lab_sha256='v', entry_sha256='old') for i in range(8)]
+    both = ev.evaluate(bundles, registry_entries=other + _entries(sorted(bundles)), n_boot=400)
+    assert (both['v3_trials'], both['v3_trials_all_packs'], both['n_cumulative']) == (6, 14, 25 + 14)
     arm = report['arms']['V3-05']['validation']
     assert (arm['entered'], arm['closed'], arm['non_closed']) == (60, 40, {'migrated_unpriced': 20})
     assert arm['pessimistic_mean'] == pytest.approx((40 * 0.30 - 20) / 60) and arm['mean_cost0'] == pytest.approx(-0.05)
@@ -406,7 +422,7 @@ def test_probe_reads_mfe_mae_and_the_horizon_curve():
 
 
 def test_a_table_bundle_builds_the_same_pack_without_opening_non_visible_files(tmp_path, monkeypatch):
-    direct = pack.build(FIXTURES, tmp_path / 'direct')
+    direct = pack.build(FIXTURES, tmp_path / 'direct', read_all_pools=True)
     bundle = harness.run_policy(FIXTURES, v2.FixedDelay(delay_s=5), ExitRule(max_hold_s=25, clock_exit=True), PARAMS)
     (tmp_path / 'run.json').write_text(json.dumps(bundle))
     opened, real = [], Path.read_bytes
@@ -417,7 +433,10 @@ def test_a_table_bundle_builds_the_same_pack_without_opening_non_visible_files(t
     monkeypatch.setattr(Path, 'read_bytes', spy)
     via = pack.build(FIXTURES, tmp_path / 'via', table_bundle=tmp_path / 'run.json')
     monkeypatch.undo()
-    assert via == direct
+    same = lambda s: {k: v for k, v in s.items() if k not in ('manifest_sha256', 'table_source', 'table_bundle_sha256')}  # noqa: E731
+    assert same(via) == same(direct) and via['table_source'] == 'bundle'
+    assert via['table_bundle_sha256'] == __import__('hashlib').sha256((tmp_path / 'run.json').read_bytes()).hexdigest()
+    assert (tmp_path / 'via' / 'SEGMENTS.json').read_bytes() == (tmp_path / 'direct' / 'SEGMENTS.json').read_bytes()
     segments = json.loads((tmp_path / 'via' / 'SEGMENTS.json').read_text())
     assert sorted(name for name in opened if name.endswith('.json.gz')) == sorted(f'{p}.json.gz' for p in segments)
     # The bundle also carries trade rows and journals (of sealed pools too): none survives the parsing.
@@ -439,3 +458,20 @@ def test_a_table_bundle_builds_the_same_pack_without_opening_non_visible_files(t
     (tmp_path / 'other.json').write_text(json.dumps(other))
     with pytest.raises(pack.PackError, match='table_bundle_is_not_of_this_export'):
         pack.build(FIXTURES, tmp_path / 'no', table_bundle=tmp_path / 'other.json')
+
+
+def test_a_visible_pool_must_be_covered_to_its_outcome_horizon(tmp_path):
+    """R02 P-2 (c): a clock exit valued on the mere end of the data would distort H2."""
+    def source(name, end):
+        directory = tmp_path / name
+        shutil.copytree(FIXTURES, directory)
+        manifest = json.loads((directory / 'MANIFEST.json').read_text())
+        manifest.update(entry_cutoff_slot=end - 200, window_slot_max=end)
+        (directory / 'MANIFEST.json').write_text(json.dumps(manifest))
+        return directory
+    covered = pack.build(source('wide', 464_700_000), tmp_path / 'ok', read_all_pools=True)
+    assert covered['horizon_coverage_checked'] is True and covered['visible_pools'] >= 1
+    with pytest.raises(pack.PackError, match='visible_pool_not_covered_to_its_horizon'):
+        pack.build(source('short', 464_663_000), tmp_path / 'no', read_all_pools=True)
+    with pytest.raises(pack.PackError, match='w1_window_refused'):
+        pack.build(source('w1', plan.S0_W1 + 10), tmp_path / 'w1out', read_all_pools=True)
