@@ -232,6 +232,13 @@ def build_launchlab_order(*, accounts, pool_address, mint, wallet, context_slot,
         + struct.pack('<QQQ', amount_in, minimum_out, 0)))
     instructions.append(Instruction(TOKEN_PROGRAM,
         (AM(quote_account, False, True), AM(wallet, False, True), AM(wallet, True)), b'\x09'))
+    if side == 'SELL' and amount_in == base_balance:
+        # Total exit: the base token account is empty after the exact-input
+        # sale, so close it in the same atomic transaction and recover its
+        # rent deposit. The token program refuses the close (and so the whole
+        # transaction) if any token is left. A partial sale never closes it.
+        instructions.append(Instruction(TOKEN_PROGRAM,
+            (AM(base_ata, False, True), AM(wallet, False, True), AM(wallet, True)), b'\x09'))
     prepared = compile_legacy(tuple(instructions), fee_payer=wallet,
         recent_blockhash=recent_blockhash, last_valid_block_height=last_valid_block_height)
     if prepared.required_signers != (wallet,):
