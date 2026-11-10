@@ -58,6 +58,14 @@ rouge 2/2 puis vert) :
 - **B2** : `issue_url` est désormais **obligatoire**. Sans lui, le commentaire est refusé, aussi bien
   sur `issue_comment` que sur `issues.closed`.
 
+Ré-audit RUGGER 02 @ `b7159ee` : B1 et B2 levés. Trois observations traitées ensuite (tests
+`KillSwitchOwnerAlerts`, rouge 4/4 puis vert) :
+- **O-1** : un refus dû au kill switch n'est plus journalisé comme « doublon ».
+- **O-2** : `run_outbox` relit le kill switch avant **chaque** envoi ; un passage à ON arrête le drain.
+- **O-3** (décision du propriétaire du 2026-11-10) : le propriétaire est alerté à l'activation, à la
+  levée et en cas d'échec de reprise (`set_kill_switch`, `owner_alert`, `relay_executor.resume`). Les
+  autres escalades restent suspendues tant que le kill switch est ON.
+
 Identité du bot : `ALLOWED_BOTS` reste **vide**. L'identité réelle de l'acteur Claude Cloud / GitHub
 App est **inconnue** et n'est pas devinée. Conséquence : un rapport posté par un acteur bot est refusé.
 **Limite importante** : tous les agents écrivent aujourd'hui sous le compte du propriétaire. La liste

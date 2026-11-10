@@ -300,3 +300,60 @@ class R02AuditBlockers215(Base):
         r = rx.handle_webhook(self.con, "issues", "gha-run:8002", fx("issues_closed_04.json"), NOW, report_comment=c)
         self.assertFalse(r["handled"], r); self.assertIn("issue", r["reason"])
         self.assertEqual(self.outbox(), 0)
+
+
+class KillSwitchOwnerAlerts(Base):
+    """R02 re-audit of #215 @ b7159ee (O-1, O-2) and owner decision of 2026-11-10 (O-3):
+    alerts are kept on activation, on release and on a failed resume."""
+
+    def alerts(self):
+        return [r[0] for r in self.con.execute("SELECT reason FROM escalations ORDER BY id")]
+
+    def queue_creation(self, dedupe):
+        rs.apply_decision(self.con, {"actions": [{"type": "CREATE_ISSUE", "agent": "rugger-04", "title": dedupe,
+                                                  "dedupe": dedupe}]}, NOW, None)
+
+    def test_o3_activation_and_release_alert_the_owner_once_each(self):
+        rs.set_kill_switch(self.con, True, NOW)
+        rs.set_kill_switch(self.con, True, NOW)  # no change: no second alert
+        self.assertEqual([a for a in self.alerts() if "ACTIVATED" in a].__len__(), 1)
+        rs.set_kill_switch(self.con, False, NOW)
+        self.assertEqual([a for a in self.alerts() if "RELEASED" in a].__len__(), 1)
+
+    def test_o1_refusal_under_kill_switch_is_not_reported_as_duplicate(self):
+        rs.set_kill_switch(self.con, True, NOW)
+        ev = {"id": "e1", "action": "closed", "issue": {"number": 200, "state": "closed",
+              "labels": ["rugger-04-run"], "last_comment": "STATUS: COMPLETED"}}
+        r = rs.process_event(self.con, ev, NOW)
+        self.assertIn("kill switch", r["reason"]); self.assertNotIn("idempotent", r["reason"])
+        self.assertEqual(rx._refusal(self.con), "kill switch ON: no action")
+        rs.set_kill_switch(self.con, False, NOW)
+        self.assertEqual(rx._refusal(self.con), "duplicate delivery")
+
+    def test_o2_switch_set_during_the_drain_stops_the_remaining_sends(self):
+        self.queue_creation("d1"); self.queue_creation("d2"); self.queue_creation("d3")
+        sent = []
+
+        def send(payload):
+            sent.append(payload["dedupe"])
+            rs.set_kill_switch(self.con, True, NOW)  # owner flips the switch after the first send
+
+        done = rs.run_outbox(self.con, send)
+        self.assertEqual(len(sent), 1, sent); self.assertEqual(done, sent)
+        self.assertEqual(self.con.execute("SELECT COUNT(*) FROM outbox WHERE status='PENDING'").fetchone()[0], 2)
+
+    def test_o3_failed_resume_alerts_the_owner_and_clean_resume_does_not(self):
+        self.queue_creation("d1")
+        rs.set_kill_switch(self.con, True, NOW)
+
+        def broken(payload):
+            raise RuntimeError("sender down")
+
+        r = rx.resume(self.con, broken, NOW)
+        self.assertFalse(r["resumed"], r)
+        self.assertTrue(any("resume FAILED" in a for a in self.alerts()), self.alerts())
+        before = len([a for a in self.alerts() if "resume FAILED" in a])
+        rs.set_kill_switch(self.con, True, NOW)
+        r = rx.resume(self.con, lambda payload: None, NOW)
+        self.assertTrue(r["resumed"], r); self.assertEqual(r["sent"], ["d1"])
+        self.assertEqual(len([a for a in self.alerts() if "resume FAILED" in a]), before)

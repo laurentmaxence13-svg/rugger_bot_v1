@@ -119,6 +119,11 @@ def _escalate(con, reason, now):
     rs.apply_decision(con, {"actions": [{"type": "ESCALATE_OWNER", "reason": reason}]}, now, None)
 
 
+def _refusal(con) -> str:
+    """Honest reason when apply_decision returned False (R02 O-1): the switch, or a real duplicate."""
+    return "kill switch ON: no action" if rs.kill_switch_on(con) else "duplicate delivery"
+
+
 def handle_webhook(con, event_name: str, delivery_id: str, payload: dict, now: datetime,
                    report_comment: dict | None = None, last_comment: str | None = None) -> dict:
     """Returns {"handled": bool, "reason": str, "decision": dict|None}. Never raises on bad input (fail-closed).
@@ -142,7 +147,8 @@ def handle_webhook(con, event_name: str, delivery_id: str, payload: dict, now: d
             return {"handled": False, "reason": "workflow_run not a failure", "decision": None}
         dec = {"actions": [{"type": "ESCALATE_OWNER", "reason": f"workflow_run {wr.get('id')} concluded {wr.get('conclusion')}"}]}
         ok = rs.apply_decision(con, dec, now, f"{delivery_id}:wf")
-        return {"handled": ok, "reason": "workflow failure escalated" if ok else "duplicate delivery", "decision": dec if ok else None}
+        why = "workflow failure escalated" if ok else _refusal(con)
+        return {"handled": ok, "reason": why, "decision": dec if ok else None}
 
     issue = payload.get("issue")
     if not isinstance(issue, dict) or not isinstance(issue.get("number"), int):
@@ -167,7 +173,8 @@ def handle_webhook(con, event_name: str, delivery_id: str, payload: dict, now: d
                 dec = {"actions": [{"type": "SET_STATE", "agent": agent, "state": "RUNNING", "issue": n}]}
             return {"apply": True, "decision": dec, "keys": (f"{delivery_id}:label",), "reason": "labeled"}
         r = rs.transact(con, now, build_label)
-        return {"handled": r["applied"], "reason": r["reason"] if r["applied"] else "duplicate delivery", "decision": r["decision"]}
+        why = r["reason"] if r["applied"] or r["reason"].startswith("kill switch") else "duplicate delivery"
+        return {"handled": r["applied"], "reason": why, "decision": r["decision"]}
 
     # Completion: an authenticated report comment, delivered either as issue_comment.created or, on
     # issues.closed, as the comment object fetched by the caller (P1-1). Free text is never trusted.
@@ -231,6 +238,24 @@ def catchup(con, now: datetime) -> dict:
     dec = {"actions": rp.watchdog(st, now)["actions"] + rp.promote(st, now)["actions"], "reason": "catch-up"}
     rs.apply_decision(con, dec, now, None)
     return dec
+
+
+def resume(con, send, now: datetime) -> dict:
+    """Release the kill switch and restart: catch-up, then outbox drain. The owner is alerted on the
+    release (set_kill_switch) and again if the restart fails: an exception, or creations left
+    unsent (FAILED or still PENDING) after the drain (owner decision of 2026-11-10)."""
+    rs.set_kill_switch(con, False, now)
+    try:
+        catchup(con, now)
+        sent = drain_outbox(con, send, now)
+    except Exception as exc:  # the alert must survive the failure it reports
+        rs.owner_alert(con, f"resume FAILED after kill switch release: {type(exc).__name__}", now)
+        return {"resumed": False, "reason": f"exception: {type(exc).__name__}", "sent": []}
+    left = con.execute("SELECT COUNT(*) FROM outbox WHERE status IN ('PENDING','FAILED')").fetchone()[0]
+    if left:
+        rs.owner_alert(con, f"resume FAILED after kill switch release: {left} creation(s) not sent", now)
+        return {"resumed": False, "reason": f"{left} creation(s) not sent", "sent": sent}
+    return {"resumed": True, "reason": "resumed", "sent": sent}
 
 
 def dry_run_send(payload: dict) -> None:

@@ -141,6 +141,8 @@ def run_outbox(con, send) -> list:
     Failures increment attempts; after MAX_ATTEMPTS the row is FAILED (owner escalation)."""
     done = []
     for dedupe, payload, attempts in con.execute("SELECT dedupe,payload,attempts FROM outbox WHERE status='PENDING'").fetchall():
+        if kill_switch_on(con):  # re-read before EACH send: a switch set mid-drain stops the drain (R02 O-2)
+            break
         try:
             send(json.loads(payload))
             con.execute("UPDATE outbox SET status='DONE' WHERE dedupe=?", (dedupe,))
@@ -162,12 +164,29 @@ def process_event(con, event: dict, now: datetime, extra_keys: tuple = ()) -> di
         return dec
     dec["actions"] = [a for a in dec["actions"] if a["type"] != "MARK_PROCESSED"]
     if not apply_decision(con, dec, now, key, extra_keys):
-        return {"actions": [], "reason": "idempotent: event already processed"}
+        why = "kill switch ON: no action" if kill_switch_on(con) else "idempotent: event already processed"
+        return {"actions": [], "reason": why}
     return dec
 
 
+def owner_alert(con, reason: str, now: datetime) -> None:
+    """Record an owner alert directly. Unlike planner escalations, it is NOT suppressed by the kill
+    switch: the owner decided (2026-11-10) to keep alerts on activation, release and failed resume."""
+    con.execute("INSERT INTO escalations(reason,at) VALUES(?,?)", (reason, now.isoformat()))
+
+
 def set_kill_switch(con, on: bool, now: datetime) -> None:
-    con.execute("INSERT OR REPLACE INTO meta(k,v) VALUES('kill_switch',?)", (("ON " + now.isoformat()) if on else "OFF",))
+    """Set the switch and alert the owner on every real change (ON->OFF or OFF->ON), atomically."""
+    con.execute("BEGIN IMMEDIATE")
+    try:
+        was = kill_switch_on(con)
+        con.execute("INSERT OR REPLACE INTO meta(k,v) VALUES('kill_switch',?)", (("ON " + now.isoformat()) if on else "OFF",))
+        if was != bool(on):
+            owner_alert(con, "kill switch ACTIVATED: relay stopped" if on else "kill switch RELEASED: relay may resume", now)
+        con.execute("COMMIT")
+    except Exception:
+        con.execute("ROLLBACK")
+        raise
 
 
 def kill_switch_on(con) -> bool:
