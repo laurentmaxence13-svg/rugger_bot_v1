@@ -3,7 +3,8 @@
   python -I -B -m cpmmx.a12 <pool.json[.gz]>                 one pool -> one JSON report on stdout
   python -I -B -m cpmmx.a12 --combine <report.json> ...      the verdict over several pool reports
 
-Pool input (plain data): {"pool", "base_mint", "opened": [slot, block_time] | null,
+Pool input (plain data): {"pool", "base_mint", "quote_mint" (optional, wrapped SOL when absent),
+"opened": [slot, block_time] | null,
 "transactions": {signature: raw transaction}, "amm_config": {"trade_fee_rate", "creator_fee_rate",
 "protocol_fee_rate", "fund_fee_rate"}}. The rates are READ from the pool's AmmConfig account
 (``creator_fee_rate`` 0 when the pool has creator fees disabled); the side of the creator fee is the
@@ -33,6 +34,7 @@ def _inside(interval, value):
 def report(document):
     opened = document.get('opened')
     line = timeline.build(document['pool'], document['transactions'], base_mint=document['base_mint'],
+                          quote_mint=document.get('quote_mint', timeline.WSOL),
                           opened=None if opened is None else tuple(opened))
     swaps = line.swaps
     out = dict(schema='cpmmx-a12-v2', cpmmx_version=VERSION, pool=line.pool, transactions=len(document['transactions']),

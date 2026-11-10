@@ -590,6 +590,22 @@ def test_a12_pool_report_uses_the_config_and_names_every_defect(tmp_path, capsys
     assert a12.main([str(path)]) == 0 and json.loads(capsys.readouterr().out)['passed'] is True
 
 
+def test_a12_pool_with_another_quote_token_needs_its_quote_mint():
+    from cpmmx import a12
+    other = bytes(range(100, 132))
+    fees = curve.Fees(**CONFIG)
+    x, y = 10**12, 10**12
+    got = curve.swap_base_input(10**9, x, y, fees, True)
+    payload = swap_payload(x, y, got.input_amount, got.output_amount, True, other, BASE, got.trade_fee,
+                           got.creator_fee, True)
+    document = dict(pool=POOL_B58, base_mint=BASE_B58, opened=None, amm_config=dict(CONFIG),
+                    transactions=dict(a=tx(1, 0, logs(payload))))
+    with pytest.raises(timeline.TimelineError):
+        a12.report(document)                                      # wrapped SOL assumed: mints differ
+    out = a12.report(dict(document, quote_mint=events.b58encode(other)))
+    assert out['passed'] and out['swaps'] == 1
+
+
 def test_a12_a_direct_deposit_into_a_vault_breaks_the_chain_on_one_side():
     from cpmmx import a12
     fees = curve.Fees(**CONFIG)
