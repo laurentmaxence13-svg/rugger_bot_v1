@@ -63,8 +63,11 @@ def test_net_pnl_is_itemised_and_equals_the_simulated_wallet_delta(tmp_path):
     assert pnl['base_fees_lamports'] == 2 * 5000
     assert pnl['priority_fees_lamports'] == 2 * 500
     assert (pnl['failed_attempts'], pnl['failed_attempts_lamports']) == (4, 4 * 5500)
-    assert pnl['rent_opened_lamports'] == pnl['rent_written_off_lamports'] == 2_039_280
-    assert pnl['rent_recovered_lamports'] == 0
+    # The rent comes back only when the built SELL closes the base token account (chain with the E-1 fix).
+    closed = sold['base_token_account_closed']
+    assert pnl['rent_opened_lamports'] == 2_039_280
+    assert pnl['rent_recovered_lamports'] == (2_039_280 if closed else 0)
+    assert pnl['rent_written_off_lamports'] == (0 if closed else 2_039_280)
     assert pnl['net_pnl_lamports'] == (
         pnl['curve_move_lamports'] - pnl['curve_fees_lamports'] - pnl['base_fees_lamports']
         - pnl['priority_fees_lamports'] - pnl['failed_attempts_lamports']
@@ -154,9 +157,14 @@ def test_second_cycle_reuses_the_open_token_account_without_new_rent(tmp_path):
     harness, _, first = run_fixture_cycle(tmp_path / 'twice.jsonl', others=())
     again = run(harness.buy('dry-run-buy-2', BUY))
     second = run(harness.sell('dry-run-sell-2'))
-    assert again['costs']['rent_opened_lamports'] == 0
-    assert first['pnl']['rent_written_off_lamports'] == 2_039_280
-    assert second['pnl']['rent_written_off_lamports'] == 0
+    if first['base_token_account_closed']:          # E-1 fix: each cycle opens and closes its own account
+        assert again['costs']['rent_opened_lamports'] == 2_039_280
+        assert first['pnl']['rent_written_off_lamports'] == second['pnl']['rent_written_off_lamports'] == 0
+        assert harness.token_account_open is False
+    else:                                            # frozen chain: the account stays open, its rent is lost once
+        assert again['costs']['rent_opened_lamports'] == 0
+        assert first['pnl']['rent_written_off_lamports'] == 2_039_280
+        assert second['pnl']['rent_written_off_lamports'] == 0
     assert harness.realized_pnl_lamports == (
         first['pnl']['net_pnl_lamports'] + second['pnl']['net_pnl_lamports'])
 

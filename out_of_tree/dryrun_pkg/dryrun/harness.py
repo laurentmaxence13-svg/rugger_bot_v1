@@ -87,6 +87,34 @@ def _token_account(mint, owner, amount, lamports):
                 data=[base64.b64encode(bytes(raw)).decode(), 'base64'])
 
 
+def closes_token_account(message, address):
+    """True when the legacy message holds a Token CloseAccount (0x09) whose first account is ``address``."""
+    def shortvec(position):
+        value = shift = 0
+        while True:
+            byte = message[position]
+            position += 1
+            value |= (byte & 0x7f) << shift
+            if byte < 0x80:
+                return value, position
+            shift += 7
+    count, position = shortvec(3)
+    keys = [message[position + 32 * i:position + 32 * i + 32] for i in range(count)]
+    position += 32 * count + 32
+    total_instructions, position = shortvec(position)
+    target = _decode(address)
+    for _ in range(total_instructions):
+        program = keys[message[position]]
+        size, position = shortvec(position + 1)
+        indexes = message[position:position + size]
+        length, position = shortvec(position + size)
+        data = message[position:position + length]
+        position += length
+        if program == _decode(TOKEN_PROGRAM) and data == b'\x09' and indexes and keys[indexes[0]] == target:
+            return True
+    return False
+
+
 def _sha256(raw):
     return hashlib.sha256(raw).hexdigest()
 
@@ -163,7 +191,7 @@ class DryRunHarness:
                 self.position = ShadowPosition(**record['position_after'])
                 self.wallet_lamports = record['wallet_after_lamports']
                 self.realized_pnl_lamports = record['realized_pnl_after_lamports']
-                self.token_account_open = True
+                self.token_account_open = not record.get('base_token_account_closed', False)
             self.bank.apply(fill)
         elif kind == 'cpmm_exit_probe':
             self._decisions[decision] = dict(intent=None, filled=True)
@@ -315,11 +343,15 @@ class DryRunHarness:
         fill = self._quote('SELL', 'SELL', quantity, decision_id)
         costs = self.config.costs.order_costs(rent_opened_lamports=0)
         order = await self._order(decision_id, intent, fill, costs)
+        # Rent comes back only if the built transaction itself closes the emptied base token account.
+        closed = closes_token_account(order.transaction.message, order.base_token_account)
+        recovered = self.config.token_account_rent_lamports if closed else 0
         pnl = close_pnl(self.position, sell_gross_lamports=fill.amount_out + fill.fee,
-                        sell_curve_fee_lamports=fill.fee, sell_costs=costs)
+                        sell_curve_fee_lamports=fill.fee, sell_costs=costs, rent_recovered_lamports=recovered)
         return self._commit(
             'shadow_fill', **self._fill_fields(decision_id, order, fill, costs),
-            wallet_after_lamports=self.wallet_lamports + fill.amount_out - total(costs),
+            wallet_after_lamports=self.wallet_lamports + fill.amount_out - total(costs) + recovered,
+            base_token_account_closed=closed,
             position_after=asdict(ShadowPosition()), position_closed=True, pnl=pnl,
             realized_pnl_after_lamports=self.realized_pnl_lamports + pnl['net_pnl_lamports'])
 

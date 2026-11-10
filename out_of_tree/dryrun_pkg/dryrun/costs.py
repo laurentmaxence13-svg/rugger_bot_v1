@@ -53,22 +53,22 @@ def total(costs):
             + costs['failed_attempts_lamports'] + costs['rent_opened_lamports'])
 
 
-def close_pnl(position, *, sell_gross_lamports, sell_curve_fee_lamports, sell_costs):
+def close_pnl(position, *, sell_gross_lamports, sell_curve_fee_lamports, sell_costs, rent_recovered_lamports=0):
     """Net P&L of a closed shadow position; every line below is additive.
 
     net = curve_move - curve_fees - base_fees - priority_fees
           - failed_attempts_lamports - rent_written_off
 
-    The token-account rent opened by the BUY is written off: the frozen SELL
-    builder contains no instruction closing that account, so no built
-    transaction recovers it.
+    ``rent_recovered_lamports`` is what the built SELL transaction itself returns by
+    closing the base token account (0 when it holds no such instruction: the
+    rent opened by the BUY is then written off).
     """
     into_curve = position.principal_lamports - position.curve_fee_lamports
     curve_fees = position.curve_fee_lamports + sell_curve_fee_lamports
     base_fees = position.base_fee_lamports + sell_costs['base_fee_lamports']
     priority_fees = position.priority_fee_lamports + sell_costs['priority_fee_lamports']
     failed_lamports = position.failed_attempts_lamports + sell_costs['failed_attempts_lamports']
-    rent_recovered = 0
+    rent_recovered = rent_recovered_lamports
     rent_written_off = position.rent_opened_lamports - rent_recovered
     curve_move = sell_gross_lamports - into_curve
     return dict(

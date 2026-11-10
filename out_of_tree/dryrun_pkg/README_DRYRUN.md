@@ -93,3 +93,12 @@ cd <wt_frozen> && PYTHONPATH=<dryrun_pkg> unshare -rn <venv312>/bin/python -B -m
 - One process per journal. Two writers break the chain; the next open refuses it.
 - Sample fixture figures are deterministic (logical clock): the same inputs write the same
   journal bytes. That is reproducibility of a rehearsal, not a market result.
+
+## Delta 0.2 — loyer du compte de jetons (constat E-1 de RUGGER 02, 573939a7)
+
+Le banc lit désormais dans la transaction de vente construite si elle ferme le compte de jetons de base
+(`closes_token_account`, sur les octets du message, jamais sur un drapeau) :
+- chaîne gelée (a054c00) : pas de fermeture, 2 039 280 lamports passés en perte ; cycle de fixture −3 840 770 ;
+- chaîne corrigée (branche `claude/r01-live-close-base-ata`) : fermeture après une vente totale, loyer
+  récupéré ; cycle de fixture −1 801 490.
+Les mêmes 46 tests passent sur les deux arbres ; le solde du portefeuille simulé varie exactement du P&L net.
