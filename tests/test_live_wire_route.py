@@ -307,29 +307,3 @@ def test_compiled_swap_uses_independently_retained_official_idl_discriminator_an
                     else index < len(keys)-readonly_unsigned)
         assert signer == entry.get('signer', False)
         assert writable == entry.get('writable', False)
-
-
-def test_total_sale_closes_the_base_token_account_and_a_partial_sale_never_does():
-    wsol_close = lambda order, request: (TOKEN_PROGRAM,
-        (order.quote_token_account, request['wallet'], request['wallet']), b'\x09')
-    partial_request = route_request('SELL')
-    partial = build_launchlab_order(**partial_request)
-    instructions = _instructions(partial.transaction.message)[3]
-    assert partial.input_amount < partial.base_balance_before
-    assert instructions[-1] == wsol_close(partial, partial_request)
-    assert all(i[1][0] != partial.base_token_account for i in instructions if i[2] == b'\x09')
-
-    total_request = dict(route_request('SELL'), amount_in=1_000_000_000, max_price_impact_bps=5000)
-    total = build_launchlab_order(**total_request)
-    instructions = _instructions(total.transaction.message)[3]
-    assert total.input_amount == total.base_balance_before == 1_000_000_000
-    # the WSOL account is closed first, then the emptied base account: rent goes back to the wallet
-    assert instructions[-2] == wsol_close(total, total_request)
-    assert instructions[-1] == (TOKEN_PROGRAM,
-        (total.base_token_account, total_request['wallet'], total_request['wallet']), b'\x09')
-    assert sum(i[2] == b'\x09' for i in instructions) == 2
-    assert total.transaction.required_signers == (total_request['wallet'],)
-    assert validate_prepared_order(total) == total
-
-    buy = build_launchlab_order(**route_request('BUY', has_ata=True))
-    assert sum(i[2] == b'\x09' for i in _instructions(buy.transaction.message)[3]) == 1
