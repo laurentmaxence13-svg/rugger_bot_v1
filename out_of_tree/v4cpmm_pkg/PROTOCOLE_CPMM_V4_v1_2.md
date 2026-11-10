@@ -84,6 +84,6 @@ donne pas ; AmmConfig lu et haché avec son slot ; signatures, sha256 des corps 
 ancrés par R02 **avant** `a12.py`, qui tourne une seule fois et que R02 recalcule.
 
 ## 8. État
-O-1, T-1 à T-3 et T-3′ corrigés (H-4, Ra). C-5 passe. C-6 : mutations de la liste couvertes par
-68 tests (données synthétiques) ; **à confirmer par les mutations de RUGGER 02** (m10, m10b).
+O-1, T-1 à T-3 et T-3′ corrigés (H-4, Ra). C-5 passe. C-6 passe (confirmé par RUGGER 02, 5234ab9b).
+Rc′ appliquée : `external_real_minus_cf` et `exact_out_replayed_as_budget` non nuls sont des gardes.
 C-1 à C-4 : **non passés** — aucune donnée réelle.

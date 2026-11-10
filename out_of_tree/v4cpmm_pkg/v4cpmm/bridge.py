@@ -33,7 +33,8 @@ APPROXIMATIONS = (
 
 # Counters of the v4sim ledgers that mean the counterfactual curve did not follow a clean replay (R02 Rc).
 CURVE_GUARDS = ('external_sale_clipped', 'tracked_sale_clipped_external', 'tracked_sale_clipped_quote_reserve',
-                'skipped_dust_events', 'skipped_zero_sales')
+                'skipped_dust_events', 'skipped_zero_sales', 'external_real_minus_cf',
+                'exact_out_replayed_as_budget')
 
 
 def curve_guards(result):

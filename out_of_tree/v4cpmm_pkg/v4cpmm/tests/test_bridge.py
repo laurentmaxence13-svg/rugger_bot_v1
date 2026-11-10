@@ -266,6 +266,10 @@ def test_rc_a_guard_of_the_v4sim_replay_leaves_the_position_unpriced():
     for mutate, expected in ((lambda r: r.v4['counters'].__setitem__('tracked_sale_clipped_external', 1),
                               ['tracked_sale_clipped_external']),
                              (lambda r: r.v4['counters'].__setitem__('skipped_dust_events', 2), ['skipped_dust_events']),
+                             (lambda r: r.v4['counters'].__setitem__('external_real_minus_cf', -5),
+                              ['external_real_minus_cf']),
+                             (lambda r: r.v4['counters'].__setitem__('exact_out_replayed_as_budget', 1),
+                              ['exact_out_replayed_as_budget']),
                              (lambda r: r.v4.__setitem__('flags', ['external_inventory_limited']),
                               ['external_inventory_limited'])):
         result = engine.replay(CURVE, FixedOrder(0, 100_000_000, 10**9), MODEL, quote_mint=WSOL_MINT)
