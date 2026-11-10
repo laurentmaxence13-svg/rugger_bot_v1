@@ -82,9 +82,22 @@ def _archive(data, entry):
     return archive
 
 
+TABLE_DROPPED_KEYS = frozenset(('trade', 'trades', 'journal', 'window', 'migration'))
+
+
+def _without_outcomes(pairs):
+    """JSON object hook: a table bundle also holds the trade rows and journals of the sealed pools;
+    they are dropped as the text is parsed, so no outcome of any pool ever reaches this module."""
+    return {key: value for key, value in pairs if key not in TABLE_DROPPED_KEYS}
+
+
 def _table_from_bundle(path, manifest, source_sha256):
-    """Pool table of an existing bundle of the same export: no non-visible pool file is opened at all."""
-    bundle = json.loads(Path(path).read_text(encoding='utf-8'))
+    """Pool table of an existing bundle of the same export: no non-visible pool file is opened at all.
+
+    Only ``pool``, ``creator`` and ``created_slot`` (and the exclusion reasons) are kept; every
+    ``trade``, ``trades``, ``journal``, ``window`` and ``migration`` value is discarded at parse time.
+    """
+    bundle = json.loads(Path(path).read_text(encoding='utf-8'), object_pairs_hook=_without_outcomes)
     if bundle.get('fixtures', {}).get('manifest_sha256') != source_sha256:
         raise PackError('table_bundle_is_not_of_this_export')
     table = [dict(pool=row['pool'], creator=row['creator'], created_slot=row['created_slot'])

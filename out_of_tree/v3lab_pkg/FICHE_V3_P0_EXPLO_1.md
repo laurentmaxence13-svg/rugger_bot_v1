@@ -3,7 +3,7 @@
 RUGGER 01, 2026-11-10. À ancrer par RUGGER 02 **avant le premier rejeu**.
 
 - **Plan (source unique, lisible par la machine)** : `v3lab/plan.py`, `plan_sha256` = `91e831e0bbb5e278cc3e5f27e29049283624a874e3183c8605d7d627c83e66d2`.
-- **Code V3 qui choisit les données, décide et construit un bundle** : `v3lab_sha256` = `880c99bee21680e9d72443e6e644535bfd2891bcabeb6c14b28242f2cbe7ddda`.
+- **Code V3 qui choisit les données, décide et construit un bundle** : `v3lab_sha256` = `b6c78c25f8335958d507f068e78be01ccde2e1c23cb78b4afceceecb2759256b` (v0.2).
 - **Moteur d'exécution et de comptabilité** : celui de l'arbre gelé `aff97638`, appelé sans modification.
 - **Statut de tout résultat** : EXPLORATOIRE. P0 a déjà servi à 25 essais. Rien n'est promu. Un succès donne seulement droit à un pré-enregistrement sur une fenêtre fraîche (W2).
 
@@ -32,7 +32,7 @@ RUGGER 01, 2026-11-10. À ancrer par RUGGER 02 **avant le premier rejeu**.
   - un export brut (P0 ou W1) : refusé, faute du bloc `v3_visible` ;
   - un pack dont le sha du MANIFEST n'est pas celui ancré.
 - **Découpage** : `validation.chronological_split` de l'arbre gelé (4 × 25 %, créateurs disjoints), calculé sur tous les pools de l'export source. Embargo = 6 018 slots, le plus grand horizon de résultat des essais (âge d'entrée + détention + latence).
-  - Avec `--table-from-bundle`, la table (créateur, slot de création, exclusions) vient d'un bundle P0 déjà enregistré : aucun fichier de pool non visible n'est alors ouvert.
+  - Avec `--table-from-bundle`, la table (créateur, slot de création, exclusions) vient d'un bundle P0 déjà enregistré : aucun fichier de pool non visible n'est alors ouvert. Ce bundle contient aussi les lignes de trade et les journaux des pools scellés : le lecteur les écarte pendant l'analyse du JSON (`trade`, `trades`, `journal`, `window`, `migration`), si bien qu'aucun résultat d'aucun pool n'atteint le code.
 - **Usage des segments** : exploration et train servent à vérifier le signe ; la validation sert **une seule fois par hypothèse**. Tout second passage est un nouvel essai.
 - La liste des fichiers lus, avec leur sha256, est écrite dans chaque bundle.
 

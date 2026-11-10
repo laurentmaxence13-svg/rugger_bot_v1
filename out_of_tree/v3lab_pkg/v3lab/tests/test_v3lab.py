@@ -420,6 +420,21 @@ def test_a_table_bundle_builds_the_same_pack_without_opening_non_visible_files(t
     assert via == direct
     segments = json.loads((tmp_path / 'via' / 'SEGMENTS.json').read_text())
     assert sorted(name for name in opened if name.endswith('.json.gz')) == sorted(f'{p}.json.gz' for p in segments)
+    # The bundle also carries trade rows and journals (of sealed pools too): none survives the parsing.
+    raw = (FIXTURES / 'MANIFEST.json').read_bytes()
+    seen, real_hook = [], pack._without_outcomes
+
+    def hook(pairs):
+        seen.append(dict(pairs))
+        return real_hook(pairs)
+    monkeypatch.setattr(pack, '_without_outcomes', hook)
+    table, excluded = pack._table_from_bundle(tmp_path / 'run.json', json.loads(raw),
+                                              __import__('hashlib').sha256(raw).hexdigest())
+    monkeypatch.undo()
+    assert all(set(row) == {'pool', 'creator', 'created_slot'} for row in table) and excluded == {}
+    assert any('trade' in obj for obj in seen) and len(table) == 3     # the outcomes were there, and were dropped
+    kept = json.loads((tmp_path / 'run.json').read_text(), object_pairs_hook=pack._without_outcomes)
+    assert not pack.TABLE_DROPPED_KEYS & {key for row in kept['pools'] for key in row}
     other = dict(bundle, fixtures=dict(bundle['fixtures'], manifest_sha256='0' * 64))
     (tmp_path / 'other.json').write_text(json.dumps(other))
     with pytest.raises(pack.PackError, match='table_bundle_is_not_of_this_export'):
