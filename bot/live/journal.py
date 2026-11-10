@@ -15,6 +15,8 @@ import sqlite3
 APPLICATION_ID = 0x524C5631
 ACTIVE = ('RESERVED', 'SIGNED', 'SUBMITTING', 'SUBMITTED', 'CONFIRMED',
           'UNCERTAIN', 'REORG_PENDING', 'EXPIRED_UNKNOWN')
+UNSENT = ('EXPIRED', 'UNSENT_CANCELLED', 'SIMULATION_FAILED')
+CLEANUP = 'BASE_ACCOUNT_CLEANUP'
 UNRESOLVED = ('UNCERTAIN', 'REORG_PENDING', 'EXPIRED_UNKNOWN')
 
 
@@ -78,6 +80,14 @@ class ExecutionJournal:
             mint TEXT NOT NULL,inventory_pool TEXT NOT NULL,cpmm_pool TEXT NOT NULL,
             binding_json TEXT NOT NULL,PRIMARY KEY(mint,inventory_pool),
             UNIQUE(mint,cpmm_pool));
+          CREATE TABLE IF NOT EXISTS cleanups(
+            decision_id TEXT PRIMARY KEY,mint TEXT NOT NULL,pool TEXT NOT NULL,
+            wallet TEXT NOT NULL,attempt INTEGER NOT NULL,
+            max_dust_burn_atomic INTEGER NOT NULL,outcome TEXT NOT NULL,reason TEXT,
+            fee_lamports INTEGER NOT NULL DEFAULT 0,burned_atomic INTEGER NOT NULL DEFAULT 0,
+            rent_released_lamports INTEGER NOT NULL DEFAULT 0,
+            rent_recovered_lamports INTEGER NOT NULL DEFAULT 0,
+            alerts_json TEXT NOT NULL DEFAULT '[]');
         ''')
         self.con.execute(f'PRAGMA application_id={APPLICATION_ID}')
 
@@ -116,6 +126,7 @@ class ExecutionJournal:
         ledger_digest = None
         kill_reason = None
         migrations = {}
+        cleanups = {}
         for row in self.con.execute('SELECT * FROM audit ORDER BY sequence'):
             digest = hashlib.sha256((previous + row['event_json']).encode()).hexdigest()
             if row['previous_hash'] != previous or row['event_hash'] != digest:
@@ -131,6 +142,21 @@ class ExecutionJournal:
                 if key in migrations:
                     raise ValueError('duplicate_cpmm_migration_audit')
                 migrations[key]=event['binding_json']
+            elif kind == 'cleanup_intent':
+                if decision in cleanups:
+                    raise ValueError('duplicate_cleanup_intent_audit')
+                cleanups[decision] = dict({k: event[k] for k in (
+                    'mint', 'pool', 'wallet', 'attempt', 'max_dust_burn_atomic')},
+                    decision_id=decision, outcome='IN_FLIGHT', reason=None,
+                    fee_lamports=0, burned_atomic=0, rent_released_lamports=0,
+                    rent_recovered_lamports=0, alerts_json='[]')
+            elif kind == 'cleanup_settled':
+                if cleanups.get(decision, {}).get('outcome') != 'IN_FLIGHT':
+                    raise ValueError('cleanup_settlement_audit_corrupt')
+                cleanups[decision].update({k: event[k] for k in (
+                    'outcome', 'reason', 'fee_lamports', 'burned_atomic',
+                    'rent_released_lamports', 'rent_recovered_lamports')},
+                    alerts_json=canonical(event['alerts']))
             elif kind == 'prepared':
                 expected[decision] = dict(state='PREPARED', order_sha256=event['order_sha256'],
                     semantic_digest=event['semantic_digest'], reserved_lamports=0,
@@ -181,6 +207,8 @@ class ExecutionJournal:
             for row in self.con.execute('SELECT * FROM cpmm_migrations')}
         if migrations!=actual_migrations:
             raise ValueError('cpmm_migration_not_bound_to_durable_audit')
+        if cleanups != {row['decision_id']: dict(row) for row in self.con.execute('SELECT * FROM cleanups')}:
+            raise ValueError('cleanup_not_bound_to_durable_audit')
         return previous
 
     def register_cpmm_migration(self,receipt,*,wallet,received_at_ms,
@@ -376,12 +404,133 @@ class ExecutionJournal:
                     raise ValueError('decision_id_reused_with_different_order')
                 return False
             if order.get('route_kind')=='CPMM':self._inventory_pool(order,at)
+            if order.get('route_kind')==CLEANUP:self._cleanup_intent(decision_id,order)
             self.con.execute('INSERT INTO orders(decision_id,semantic_digest,state,created_at_ms,updated_at_ms,order_json) VALUES(?,?,?,?,?,?)',
                              (decision_id, order['semantic_digest'], 'PREPARED', at, at, encoded))
             self._audit('prepared', at, decision_id=decision_id,
                         semantic_digest=order['semantic_digest'],
                         order_sha256=hashlib.sha256(encoded.encode()).hexdigest())
         return True
+
+    def cleanup(self, decision_id):
+        row = self.con.execute('SELECT * FROM cleanups WHERE decision_id=?', (decision_id,)).fetchone()
+        return dict(row) if row else None
+
+    def _cleanup_intent(self, decision_id, order):
+        """The durable intent must precede, and exactly bound, the built order."""
+        intent = self.cleanup(decision_id)
+        if (intent is None or intent['outcome'] != 'IN_FLIGHT'
+                or order.get('side') != 'CLEANUP' or order.get('rent_deposit_lamports') != 0
+                or (intent['mint'], intent['pool'], intent['wallet'], intent['max_dust_burn_atomic'])
+                != (order.get('mint'), order.get('pool'), order.get('user'), order.get('max_dust_burn_atomic'))):
+            raise ValueError('journaled_cleanup_intent_required_before_build')
+        return intent
+
+    def _failed_cleanups(self, mint):
+        """On-chain failures since the last finalized closure of this account."""
+        failed = 0
+        for row in self.con.execute('SELECT outcome FROM cleanups WHERE mint=? ORDER BY rowid', (mint,)):
+            failed = 0 if row['outcome'] == 'CLOSED' else failed + (row['outcome'] == 'FAILED')
+        return failed
+
+    def begin_cleanup(self, decision_id, at, *, mint, wallet, max_dust_burn_atomic):
+        """Journal the dust bound and the in-flight marker BEFORE any build.
+
+        Not a trade: no notional and no trade limit is consumed. A second
+        cleanup of the same position is refused until this one is settled.
+        """
+        from .cleanup import MAX_CLEANUP_ATTEMPTS, assert_cleanup_allowed
+        if (type(decision_id) is not str or not 1 <= len(decision_id) <= 128
+                or any(ord(c) < 33 or ord(c) > 126 for c in decision_id)):
+            raise ValueError('stable_printable_decision_id_required')
+        uint(at); uint(max_dust_burn_atomic)
+        with self.atomic():
+            assert_cleanup_allowed(self, mint=mint, wallet=wallet)
+            if self.cleanup(decision_id) or self.get(decision_id):
+                raise ValueError('cleanup_decision_id_already_used')
+            positions = list(self.con.execute('SELECT pool FROM positions WHERE mint=?', (mint,)))
+            if len(positions) != 1:
+                raise ValueError('cleanup_refused:single_journaled_position_required')
+            if self.con.execute("SELECT 1 FROM cleanups WHERE mint=? AND outcome='IN_FLIGHT'", (mint,)).fetchone():
+                raise ValueError('cleanup_refused:cleanup_already_in_flight_for_position')
+            failed = self._failed_cleanups(mint)
+            if failed >= MAX_CLEANUP_ATTEMPTS:
+                raise ValueError('cleanup_refused:attempt_limit_reached_account_left_open')
+            fields = dict(mint=mint, pool=positions[0]['pool'], wallet=wallet,
+                          attempt=failed + 1, max_dust_burn_atomic=max_dust_burn_atomic)
+            self.con.execute("INSERT INTO cleanups(decision_id,mint,pool,wallet,attempt,max_dust_burn_atomic,outcome) VALUES(?,?,?,?,?,?,'IN_FLIGHT')",
+                             (decision_id, *fields.values()))
+            self._audit('cleanup_intent', at, decision_id=decision_id, **fields)
+        return self.cleanup(decision_id)
+
+    def _settle_cleanup(self, decision_id, at, *, outcome, reason, alerts, fee_lamports=0,
+                        burned_atomic=0, rent_released_lamports=0, rent_recovered_lamports=0):
+        fields = dict(outcome=outcome, reason=reason, fee_lamports=fee_lamports,
+                      burned_atomic=burned_atomic, rent_released_lamports=rent_released_lamports,
+                      rent_recovered_lamports=rent_recovered_lamports)
+        self.con.execute('UPDATE cleanups SET outcome=?,reason=?,fee_lamports=?,burned_atomic=?,rent_released_lamports=?,rent_recovered_lamports=?,alerts_json=? WHERE decision_id=?',
+                         (*fields.values(), canonical(alerts), decision_id))
+        self._audit('cleanup_settled', at, decision_id=decision_id, alerts=alerts, **fields)
+
+    def settle_unsent_cleanup(self, decision_id, at, reason):
+        """Close an intent whose transaction provably never left this engine."""
+        uint(at)
+        if type(reason) is not str or not reason:
+            raise ValueError('explicit_cleanup_refusal_reason_required')
+        with self.atomic():
+            intent, row = self.cleanup(decision_id), self.get(decision_id)
+            if not intent or intent['outcome'] != 'IN_FLIGHT' or (row and row['state'] not in UNSENT):
+                raise ValueError('cleanup_submission_not_provably_unsent')
+            # Any leftover after a total sale is a foreign deposit, whether it
+            # was bounded and built or exceeded the journaled bound.
+            foreign = (json.loads(row['order_json'])['burn_amount'] > 0 if row
+                       else reason.startswith('leftover_exceeds_retained_dust_bound'))
+            self._settle_cleanup(decision_id, at, outcome='NOT_SENT', reason=reason[:256],
+                                 alerts=['foreign_deposit'] if foreign else [])
+
+    def _finalize_cleanup(self, decision_id, order, reconciliation, at):
+        """Release the locked rent only from a finalized, verified closure."""
+        from .cleanup import MAX_CLEANUP_ATTEMPTS
+        intent = self._cleanup_intent(decision_id, order)
+        alerts = ['foreign_deposit'] if order['burn_amount'] > 0 else []
+        fee = reconciliation['fee_lamports']
+        if reconciliation['chain_error'] is not None:
+            # The account stays open and its rent stays a cost of the cycle.
+            if intent['attempt'] >= MAX_CLEANUP_ATTEMPTS:
+                alerts.append('cleanup_attempts_exhausted_account_left_open')
+            self._settle_cleanup(decision_id, at, outcome='FAILED', fee_lamports=fee,
+                                 reason='finalized_chain_error', alerts=alerts)
+            return
+        positions = list(self.con.execute('SELECT * FROM positions WHERE mint=?', (order['mint'],)))
+        if (reconciliation.get('account_closed') is not True or not positions
+                or any(p['quantity_atomic'] != 0 for p in positions)
+                or reconciliation.get('burned_atomic') != order['burn_amount']
+                or any(reconciliation.get(k) != 0 for k in (
+                    'gross_output_lamports', 'sale_proceeds_lamports', 'market_pnl_lamports'))):
+            raise ValueError('cleanup_reconciliation_inventory_or_closure_mismatch')
+        # The returned deposit is recorded apart; it is never sale proceeds
+        # and never rewrites the spend of the day of the BUY.
+        recovered = uint(reconciliation['rent_recovered_lamports'], positive=True)
+        self.con.execute('UPDATE positions SET locked_rent_lamports=0 WHERE mint=?', (order['mint'],))
+        self._settle_cleanup(decision_id, at, outcome='CLOSED', reason=None, alerts=alerts,
+            fee_lamports=fee, burned_atomic=order['burn_amount'],
+            rent_released_lamports=sum(p['locked_rent_lamports'] for p in positions),
+            rent_recovered_lamports=recovered)
+
+    def cleanup_costs(self, mint):
+        """Read-only cycle costs of the base account: fees and net rent.
+
+        Net rent cost = rent locked at the BUY - rent returned by a finalized
+        closure. Rent of an account left open remains a full cost.
+        """
+        rows = list(self.con.execute('SELECT * FROM cleanups WHERE mint=?', (mint,)))
+        locked = self.con.execute('SELECT COALESCE(SUM(locked_rent_lamports),0) FROM positions WHERE mint=?', (mint,)).fetchone()[0]
+        paid = locked + sum(r['rent_released_lamports'] for r in rows)
+        recovered = sum(r['rent_recovered_lamports'] for r in rows)
+        return dict(cleanup_fee_lamports=sum(r['fee_lamports'] for r in rows),
+            rent_paid_lamports=paid, rent_recovered_lamports=recovered,
+            rent_still_locked_lamports=locked, net_rent_cost_lamports=paid - recovered,
+            alerts=sorted({a for r in rows for a in json.loads(r['alerts_json'])}))
 
     def transition(self, decision_id, expected, target, at, *, signature=None,
                    signed_raw=None, failure_type=None, final_admission=None):
@@ -432,7 +581,17 @@ class ExecutionJournal:
             if not row or row['state'] != 'SIMULATED':
                 raise ValueError('reservation_requires_simulated_order')
             order = json.loads(row['order_json'])
-            inventory_pool=self._inventory_pool(order,at,financial=True)
+            cleanup = order.get('route_kind') == CLEANUP
+            if cleanup:
+                # Not a trade: no notional, no inventory and no pool route. Its
+                # eligibility is proven in this same write transaction.
+                from .cleanup import assert_cleanup_allowed
+                self._cleanup_intent(decision_id, order)
+                assert_cleanup_allowed(self, mint=order['mint'], wallet=order['user'],
+                                       exclude_decision_id=decision_id)
+            elif self.con.execute("SELECT 1 FROM cleanups WHERE mint=? AND outcome='IN_FLIGHT'", (order['mint'],)).fetchone():
+                raise ValueError('base_account_cleanup_in_flight_for_mint')
+            inventory_pool=None if cleanup else self._inventory_pool(order,at,financial=True)
             pending = list(self.con.execute('SELECT * FROM orders WHERE state IN (%s)' % ','.join('?' for _ in ACTIVE), ACTIVE))
             reserved = sum(x['reserved_lamports'] for x in pending)
             if len(pending) >= max_in_flight_orders:
@@ -451,7 +610,7 @@ class ExecutionJournal:
                 position_mints = {p['mint'] for p in positions}
                 if order['mint'] not in pending_mints | position_mints and len(pending_mints | position_mints) >= max_open_positions:
                     raise ValueError('open_position_limit')
-            else:
+            elif not cleanup:
                 quantity = order['input_amount']
                 position = next((p for p in positions if p['mint'] == order['mint'] and p['pool'] == inventory_pool), None)
                 pending_quantity = sum(x['reserved_atomic'] for x in pending
@@ -521,15 +680,19 @@ class ExecutionJournal:
             if row['state'] not in ACTIVE:
                 raise ValueError('reconciliation_requires_submitted_execution')
             order = json.loads(row['order_json'])
-            inventory_pool=self._inventory_pool(order,at,financial=True)
+            cleanup = order.get('route_kind') == CLEANUP
+            inventory_pool=None if cleanup else self._inventory_pool(order,at,financial=True)
             fee = uint(reconciliation['fee_lamports'])
             day = datetime.fromtimestamp(at / 1000, timezone.utc).date().isoformat()
             spent, pnl = fee, 0
             failed = reconciliation['chain_error'] is not None
-            if failed:
+            if failed or cleanup:
                 # A reverted instruction set still irreversibly pays the fee.
+                # A cleanup sells nothing: its fee is a realized cost either way.
                 pnl = -fee
-            if not failed:
+            if cleanup:
+                self._finalize_cleanup(decision_id, order, reconciliation, at)
+            elif not failed:
                 delta = reconciliation['token_delta_atomic']
                 position = self.con.execute('SELECT * FROM positions WHERE mint=? AND pool=?', (order['mint'], inventory_pool)).fetchone()
                 if order['side'] == 'BUY':
@@ -552,7 +715,11 @@ class ExecutionJournal:
                              (day, spent, max(0, -pnl), pnl))
             previous_failures = self.con.execute("SELECT value FROM execution_meta WHERE key='consecutive_failures'").fetchone()
             failures = (int(previous_failures[0]) if previous_failures else 0) + 1 if failed else 0
-            self.con.execute("INSERT OR REPLACE INTO execution_meta VALUES('consecutive_failures',?)", (str(failures),))
+            if not cleanup:
+                # A cleanup is not a trade: a third party can force it to fail,
+                # so it neither feeds nor clears the trade failure streak. Its
+                # own bound is MAX_CLEANUP_ATTEMPTS.
+                self.con.execute("INSERT OR REPLACE INTO execution_meta VALUES('consecutive_failures',?)", (str(failures),))
             self.con.execute("UPDATE orders SET state='RECONCILED',reserved_lamports=0,reserved_atomic=0,reconciliation_json=?,updated_at_ms=? WHERE decision_id=?",
                              (canonical(reconciliation), at, decision_id))
             self._audit('reconciled', at, decision_id=decision_id, reconciliation=reconciliation,

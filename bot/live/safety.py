@@ -298,6 +298,10 @@ class HealthEvidence:
             raise ValueError('invalid_clock_offset_ms')
 
 
+_NOTIONAL = ('amount_in_atomic', 'quote_input_atomic', 'quote_output_atomic',
+             'minimum_out_atomic')
+
+
 @dataclass(frozen=True)
 class AdmissionRequest:
     decision_id: str
@@ -336,7 +340,7 @@ class AdmissionRequest:
     def __post_init__(self):
         for key in ('decision_id', 'quote_source_id'):
             _text(getattr(self, key), key)
-        if self.side not in ('buy', 'sell'):
+        if self.side not in ('buy', 'sell', 'cleanup'):
             raise ValueError('invalid_side')
         if self.cluster not in ('mainnet-beta', 'devnet', 'testnet'):
             raise ValueError('invalid_cluster')
@@ -358,7 +362,14 @@ class AdmissionRequest:
                       positive=key in ('amount_in_atomic', 'quote_input_atomic',
                           'quote_output_atomic', 'minimum_out_atomic', 'compute_units',
                           'quote_context_slot', 'observed_bank_slot',
-                          'network_fee_upper_lamports'))
+                          'network_fee_upper_lamports')
+                      and not (self.side == 'cleanup' and key in _NOTIONAL))
+        # A base-account cleanup is not a trade: it swaps nothing, so every
+        # notional/slippage field must be exactly zero rather than merely small.
+        if self.side == 'cleanup' and any(getattr(self, key) != 0 for key in _NOTIONAL + (
+                'slippage_bps', 'price_impact_bps', 'rent_deposit_upper_lamports',
+                'exit_capacity_atomic')):
+            raise ValueError('cleanup_carries_no_notional')
         for key in ('identity_verified', 'route_verified', 'costs_known'):
             _bool(getattr(self, key), key)
         if (type(self.anti_rug_reasons) is not tuple
@@ -388,6 +399,8 @@ def evaluate_admission(request, *, envelope, arming, health, risk, now_ms,
     Loss/capital/entry limits refuse new buys. A bounded, inventory-backed sell
     may still reduce an existing position after the loss limit, but does not
     bypass kill-switch, unresolved submissions, fee, cash or daily spend limits.
+    A base-account cleanup is not a trade: notional, slippage and
+    inventory-for-sell are inapplicable (all zero); every other check applies.
     """
     reasons = []
     if (type(request) is not AdmissionRequest or type(health) is not HealthEvidence
@@ -450,7 +463,8 @@ def evaluate_admission(request, *, envelope, arming, health, risk, now_ms,
         reasons.append('own_costs_unknown')
     if request.amount_in_atomic != request.quote_input_atomic:
         reasons.append('exact_quote_input_mismatch')
-    if (request.slippage_bps > envelope.max_slippage_bps
+    # Inapplicable to a cleanup: no swap, so no minimum output to protect.
+    if request.side != 'cleanup' and (request.slippage_bps > envelope.max_slippage_bps
             or request.slippage_bps > 9999
             or request.minimum_out_atomic > request.quote_output_atomic
             or request.minimum_out_atomic < max(1, request.quote_output_atomic * (10000-request.slippage_bps)//10000)):
@@ -482,7 +496,7 @@ def evaluate_admission(request, *, envelope, arming, health, risk, now_ms,
             if _sum(risk.realized_daily_loss_lamports, risk.pending_loss_lamports,
                     request.network_fee_upper_lamports) >= envelope.max_daily_loss_lamports:
                 reasons.append('daily_loss_limit')
-        else:
+        elif request.side == 'sell':
             position = next((p for p in risk.positions
                              if p.mint == request.mint and p.pool ==
                              (request.position_pool or request.pool)), None)

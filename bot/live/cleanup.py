@@ -7,9 +7,12 @@ optional Token ``Burn`` of an explicitly bounded leftover, then Token
 ``CloseAccount`` returning the account's lamports to our wallet.
 
 Scope of this version (offline only): builder, rebuild validator, read-only
-journal eligibility and a standalone reconciliation. It is NOT a supported
-execution route: ``route_dispatch.validate_execution_order`` refuses it, so
-the engine can neither sign nor send it, and nothing here writes the journal.
+journal eligibility and a standalone reconciliation. It is NOT a trade route:
+``route_dispatch.validate_execution_order`` and ``ExecutionEngine.execute``
+still refuse it. The only way to sign or send it is the distinct
+``ExecutionEngine.cleanup`` route, which journals the dust bound and the
+in-flight marker before the build and then runs the same lifecycle gates as
+any other submission. Nothing in this module writes the journal.
 The recovered rent is the return of a deposit paid at the BUY. It is never
 sale proceeds and never market P&L; only the network fee is a cost.
 """
@@ -31,6 +34,13 @@ TOKEN_CLOSE_ACCOUNT = 9
 # a suggested value for the operator: the builder has NO default and the bound
 # must be fixed in the retained request before any balance is observed.
 SUGGESTED_MAX_DUST_BURN_ATOMIC = 1_000_000
+# Fixed configuration of the engine route (audit decision D-d). It is journaled
+# with every cleanup intent before any balance is observed; a leftover above it
+# is never burned and the account stays open.
+MAX_DUST_BURN_ATOMIC = 1_000_000
+# A third party can make a cleanup fail on chain by depositing tokens, which
+# costs us one fee each time. After this many failures the account is left open.
+MAX_CLEANUP_ATTEMPTS = 3
 CLEANUP_COMPUTE_UNIT_LIMIT = 20_000
 # Orders in these states can no longer move tokens for their mint.
 SETTLED_STATES = ('RECONCILED', 'EXPIRED', 'UNSENT_CANCELLED', 'SIMULATION_FAILED')
@@ -61,13 +71,14 @@ class PreparedBaseAccountCleanup:
     rebuild_request_json: str
 
 
-def journal_cleanup_refusal(journal, *, mint, wallet):
+def journal_cleanup_refusal(journal, *, mint, wallet, exclude_decision_id=None):
     """Read-only: why the journal forbids destroying/closing this account.
 
     Returns None only when the journal proves a finalized, fully sold position
     of this wallet for the mint and nothing for that mint can still move. The
     journal therefore expects a token balance of exactly zero; any observed
     leftover is foreign dust, bounded separately by the retained request.
+    ``exclude_decision_id`` is only the cleanup order being reserved itself.
     """
     _decode(mint); _decode(wallet)
     journal.verify_audit()
@@ -79,9 +90,9 @@ def journal_cleanup_refusal(journal, *, mint, wallet):
     if not positions:
         return 'no_journaled_closed_position_for_mint'
     bought = sold = False
-    for row in journal.con.execute('SELECT state,order_json,reconciliation_json FROM orders'):
+    for row in journal.con.execute('SELECT decision_id,state,order_json,reconciliation_json FROM orders'):
         order = json.loads(row['order_json'])
-        if order.get('mint') != mint:
+        if order.get('mint') != mint or row['decision_id'] == exclude_decision_id:
             continue
         if row['state'] not in SETTLED_STATES:
             return 'unsettled_order_for_mint'
@@ -97,8 +108,9 @@ def journal_cleanup_refusal(journal, *, mint, wallet):
     return None
 
 
-def assert_cleanup_allowed(journal, *, mint, wallet):
-    reason = journal_cleanup_refusal(journal, mint=mint, wallet=wallet)
+def assert_cleanup_allowed(journal, *, mint, wallet, exclude_decision_id=None):
+    reason = journal_cleanup_refusal(journal, mint=mint, wallet=wallet,
+                                     exclude_decision_id=exclude_decision_id)
     if reason:
         raise ValueError('cleanup_refused:' + reason)
 

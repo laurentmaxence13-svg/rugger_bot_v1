@@ -1,5 +1,8 @@
 """LaunchLab/CPMM lifecycle, inactive without explicit financial authority.
 
+The base-token-account cleanup is a distinct route (``cleanup``), not a trade:
+``execute`` refuses it, and it shares every lifecycle gate below.
+
 Transport, isolated signer and fresh admission evidence are injected services.
 There is no key loader, automatic arming, fallback route, transaction rebuild or
 blind send retry. Tests use explicitly isolated signers/RPCs, never a wallet.
@@ -8,12 +11,16 @@ import base64
 import asyncio
 from dataclasses import asdict
 import hashlib
+import inspect
 import json
 import time
 from typing import Protocol
 
 from bot.p3.certification import PROGRAM, _decode, _encode
-from .journal import ACTIVE, ExecutionJournal, canonical, uint
+from .journal import ACTIVE, CLEANUP, UNSENT, ExecutionJournal, canonical, uint
+from .cleanup import (MAX_DUST_BURN_ATOMIC, build_base_account_cleanup,
+                      reconcile_cleanup, validate_prepared_cleanup)
+from .route import TOKEN_PROGRAM
 from .route_dispatch import (validate_execution_order, execution_program,
                              route_kind, order_inventory_pool)
 from .safety import AdmissionRequest, HealthEvidence, Mode, evaluate_admission
@@ -102,6 +109,31 @@ def order_record(order):
     return record
 
 
+def cleanup_record(cleanup, pool):
+    """Journal record of the distinct non-trade route; ``pool`` names the position."""
+    record = asdict(cleanup)
+    record['transaction']['message'] = base64.b64encode(cleanup.transaction.message).decode()
+    record['transaction']['account_keys'] = list(cleanup.transaction.account_keys)
+    record['transaction']['required_signers'] = list(cleanup.transaction.required_signers)
+    record.update(route_kind=CLEANUP, side='CLEANUP', program_id=TOKEN_PROGRAM,
+                  pool=pool, rent_deposit_lamports=0)
+    return record
+
+
+def _reconcile_cleanup_record(row, order, payload):
+    # As for CPMM: a changed serialized record must never let another signed
+    # message settle. Rebuild the exact cleanup from its retained request.
+    try:
+        rebuilt = build_base_account_cleanup(**json.loads(order['rebuild_request_json']))
+        if canonical(order) != canonical(cleanup_record(rebuilt, order.get('pool'))):
+            raise ValueError('serialized_cleanup_order_changed')
+    except (TypeError, KeyError, ValueError, OverflowError):
+        raise ValueError('finalized_cleanup_record_invalid') from None
+    result = reconcile_cleanup(rebuilt, row['signature'], payload)
+    # The returned deposit has its own field. It is never sale proceeds.
+    return dict(result, rent_recovered_lamports=result['deposit_returned_lamports'])
+
+
 def _amount(value):
     if type(value) is not str or not value.isascii() or not value.isdigit() or str(int(value)) != value:
         raise ValueError('canonical_atomic_token_amount_required')
@@ -116,6 +148,8 @@ def reconcile_transaction(row, payload):
     if type(payload) is not dict or payload.get('version', 'legacy') not in ('legacy', None):
         raise ValueError('finalized_legacy_transaction_required')
     order = json.loads(row['order_json'])
+    if order.get('route_kind') == CLEANUP:
+        return _reconcile_cleanup_record(row, order, payload)
     inventory_pool=order_inventory_pool(order)
     if order.get('route_kind')=='CPMM':
         # A changed serialized record must never make an unrelated signed
@@ -279,7 +313,22 @@ class ExecutionEngine:
         wire_parameters = json.loads(order.rebuild_request_json)
         binding=self._cpmm_binding(order) if route_kind(order)=='CPMM' else None
         priority = (wire_parameters['compute_unit_limit'] * wire_parameters['priority_fee_micro_lamports'] + 999999) // 1000000
-        expected = dict(decision_id=decision_id, side=order.side.lower(), wallet=order.user,
+        # A cleanup is not a trade: notional, slippage and inventory-for-sell
+        # are exactly zero/absent. Fee, compute, freshness and identity bind.
+        expected = dict(decision_id=decision_id, side='cleanup', wallet=order.user,
+            program_id=TOKEN_PROGRAM, mint=order.mint,
+            pool=json.loads(self.journal.get(decision_id)['order_json'])['pool'],
+            amount_in_atomic=0, quote_input_atomic=0, quote_output_atomic=0,
+            minimum_out_atomic=0, rent_deposit_upper_lamports=0, slippage_bps=0,
+            price_impact_bps=0, position_pool=None, exit_capacity_atomic=0,
+            network_fee_upper_lamports=order.network_fee_upper_lamports,
+            route_message_sha256=hashlib.sha256(order.transaction.message).hexdigest(),
+            quote_context_slot=order.source_slot,
+            quote_payload_sha256=order.source_account_digest,
+            quote_received_at_ms=order.source_available_at_ms,
+            compute_units=wire_parameters['compute_unit_limit'],
+            priority_fee_lamports=priority) if route_kind(order) == CLEANUP else dict(
+            decision_id=decision_id, side=order.side.lower(), wallet=order.user,
             program_id=execution_program(order), mint=order.mint, pool=order.pool,
             amount_in_atomic=order.input_amount, quote_input_atomic=order.input_amount,
             quote_output_atomic=order.expected_output, minimum_out_atomic=order.minimum_out,
@@ -360,7 +409,8 @@ class ExecutionEngine:
             operational_check()
         request, health, balance, balance_observed_at = self._admission_cache[decision_id]
         record=json.loads(self.journal.get(decision_id)['order_json'])
-        if (record.get('route_kind')!='CPMM'
+        # A cleanup routes through no pool: a migration cannot retire it.
+        if (record.get('route_kind') not in ('CPMM', CLEANUP)
                 and self.journal.inventory_migration(record['mint'],record['pool']) is not None):
             raise ValueError('LaunchLab_route_retired_by_verified_migration')
         if record.get('route_kind')=='CPMM':
@@ -379,12 +429,63 @@ class ExecutionEngine:
             raise ValueError('final_submission_admission_refused:' + ','.join(verdict.reasons))
 
     async def execute(self, decision_id, order):
-        order = validate_execution_order(order)
+        return await self._lifecycle(decision_id, validate_execution_order(order))
+
+    async def cleanup(self, decision_id, *, mint, wallet, build):
+        """Distinct BASE_ACCOUNT_CLEANUP route: not a trade, no notional.
+
+        The fixed dust bound and the in-flight marker are journaled BEFORE
+        ``build(max_dust_burn_atomic)`` observes or builds anything. The built
+        cleanup then passes the same lifecycle as any other submission. An
+        intent whose transaction provably never left is settled as NOT_SENT.
+        """
+        if self.journal.cleanup(decision_id) is not None:
+            # A duplicate only inspects; it never rebuilds, re-signs or re-sends.
+            return self.cleanup_result(decision_id)
+        intent = self.journal.begin_cleanup(decision_id, self.clock_ms(), mint=mint,
+            wallet=wallet, max_dust_burn_atomic=MAX_DUST_BURN_ATOMIC)
+        reason = 'cleanup_not_submitted'
+        try:
+            prepared = build(intent['max_dust_burn_atomic'])
+            if inspect.isawaitable(prepared):
+                prepared = await prepared
+            await self._lifecycle(decision_id, validate_prepared_cleanup(prepared))
+        except BaseException as error:
+            reason = str(error) if type(error) is ValueError and str(error) else type(error).__name__
+            raise
+        finally:
+            self._settle_unsent_cleanup(decision_id, reason)
+        return self.cleanup_result(decision_id)
+
+    def cleanup_result(self, decision_id):
+        return dict(decision_id=decision_id, cleanup=self.journal.cleanup(decision_id),
+                    execution=self.result(decision_id))
+
+    def _settle_unsent_cleanup(self, decision_id, reason):
+        intent = self.journal.cleanup(decision_id)
+        if not intent or intent['outcome'] != 'IN_FLIGHT':
+            return
+        row = self.journal.get(decision_id)
+        if row and row['state'] in ('PREPARED', 'SIMULATED'):
+            # Never reserved or signed: provably unsent, like any such order.
+            self.journal.release_unsent(decision_id, self.clock_ms(), reason)
+            row = self.journal.get(decision_id)
+        if row is None or row['state'] in UNSENT:
+            self.journal.settle_unsent_cleanup(decision_id, self.clock_ms(),
+                (row and row['failure_type']) or reason)
+
+    async def _lifecycle(self, decision_id, order):
         if json.loads(order.rebuild_request_json)['decision_id'] != decision_id:
             raise ValueError('decision_id_not_bound_to_prepared_route')
         if order.transaction.required_signers != (order.user,):
             raise ValueError('exact_isolated_wallet_signer_required')
-        record = order_record(order)
+        if route_kind(order) == CLEANUP:
+            intent = self.journal.cleanup(decision_id)
+            if intent is None:
+                raise ValueError('journaled_cleanup_intent_required_before_build')
+            record = cleanup_record(order, intent['pool'])
+        else:
+            record = order_record(order)
         if route_kind(order)=='CPMM':
             genesis=await self.rpc.genesis_hash() if self.envelope is None else None
             binding=self._cpmm_binding(order,prepared_genesis=genesis)
@@ -466,6 +567,14 @@ class ExecutionEngine:
         return self.result(decision_id)
 
     async def recover(self, decision_id):
+        result = await self._recover(decision_id)
+        if self.journal.cleanup(decision_id) is not None:
+            # An intent with no order, or with a provably unsent one, is closed.
+            self._settle_unsent_cleanup(decision_id, 'recovered_before_submission_marker')
+            result = self.result(decision_id)
+        return result
+
+    async def _recover(self, decision_id):
         row = self.journal.get(decision_id)
         if row and row['state'] in ('RESERVED', 'SIGNED'):
             # SUBMITTING is committed before the sole send call. Earlier

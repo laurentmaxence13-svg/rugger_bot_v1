@@ -223,6 +223,8 @@ def evaluate_live_position(journal, mint, pool, frame, *, entry_plan=None, healt
     settled = []
     for row in journal.con.execute("SELECT * FROM orders WHERE state='RECONCILED'"):
         order = json.loads(row['order_json'])
+        if order.get('route_kind') == 'BASE_ACCOUNT_CLEANUP':
+            continue  # not a trade of this position; it routes through no pool
         if order['mint'] == mint and order_inventory_pool(order) == pool:
             settled.append((row,json.loads(row['reconciliation_json'])))
     last_slot = max(fill['slot'] for _,fill in settled)

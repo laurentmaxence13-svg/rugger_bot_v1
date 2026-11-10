@@ -10,6 +10,8 @@ from bot.p3.certification import PROGRAM,_decode
 from .route import PreparedLaunchLabOrder,validate_prepared_order
 from .cpmm_exit import PreparedCpmmExit,validate_cpmm_exit
 from .cpmm_swap import CPMM_PROGRAM
+from .cleanup import PreparedBaseAccountCleanup
+from .route import TOKEN_PROGRAM
 
 
 def validate_execution_order(order):
@@ -21,10 +23,14 @@ def validate_execution_order(order):
 def route_kind(order):
     if type(order) is PreparedLaunchLabOrder:return 'LAUNCHLAB'
     if type(order) is PreparedCpmmExit:return 'CPMM'
+    # Not a trade: validate_execution_order above keeps refusing it. Only the
+    # engine's distinct cleanup route validates and names this kind.
+    if type(order) is PreparedBaseAccountCleanup:return 'BASE_ACCOUNT_CLEANUP'
     raise ValueError('explicit_supported_execution_route_required')
 
 
 def execution_program(order):
+    if route_kind(order)=='BASE_ACCOUNT_CLEANUP':return TOKEN_PROGRAM
     return CPMM_PROGRAM if route_kind(order)=='CPMM' else PROGRAM
 
 
