@@ -502,14 +502,21 @@ def test_engine_refuses_a_token2022_order_without_journal_signature_or_send(tmp_
         engine, _, rpc, signer, _ = configured(tmp_path / side)
         order = build_launchlab_order_token2022(**t22_request(side))
         decision = json.loads(order.rebuild_request_json)['decision_id']
-        with pytest.raises(ValueError, match='program_not_authorized'):
+        with pytest.raises(ValueError, match='program_not_authorized') as refused:
             run(engine.execute(decision, order))
+        assert str(refused.value).startswith('submission_admission_refused:')
+        # R02 R-T: the engine's lifecycle (unchanged, same for SPL) runs ONE unsigned simulation before
+        # admission; the refused order stays as at most one row, never reserved, signed or sent.
+        rows = [tuple(r) for r in engine.journal.con.execute('SELECT state, signature, reserved_lamports FROM orders')]
+        assert rows == [('SIMULATED', None, 0)]
+        assert len(rpc.simulation_calls) == 1
         disguised = PreparedLaunchLabOrder(**{f.name: getattr(order, f.name)
                                               for f in fields(PreparedLaunchLabOrder)})
         with pytest.raises(ValueError, match='^prepared_route_rebuild_failed$'):
             run(engine.execute(decision + '-disguised', disguised))
         assert engine.journal.con.execute('SELECT COUNT(*) FROM positions').fetchone()[0] == 0
         assert not rpc.send_calls and signer.calls == 0
+        assert len(rpc.simulation_calls) == 1          # the disguised order never reached a simulation
     assert route_dispatch.route_kind(order) == 'LAUNCHLAB_TOKEN2022'
 
 
