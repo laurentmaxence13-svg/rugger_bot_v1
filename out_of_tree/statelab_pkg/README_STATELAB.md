@@ -65,6 +65,19 @@ de courbe ni de migration ; latence d'achat du modèle, sans échec d'inclusion 
 ici devra passer les critères économiques v1 de RUGGER 02 (dont R-1 : 200 cycles clos, 100 créateurs)
 sur d'autres données.
 
+## Instrument associé : `statelab.cohorts` (descriptif, aucun P&L de règle)
+
+    python -B -m statelab.cohorts <pack_visible> --expect-manifest-sha <sha256> --out cohorts.json --markdown cohorts.md
+
+Pour les mêmes points de décision, il répartit les trades RÉELS qui suivent notre atterrissage entre
+des cohortes fixées à la décision (créateur ; acheteurs du slot de création ou du suivant ; autres
+acteurs déjà vus ; nouveaux arrivants) et donne la part des tokens en circulation détenue par chaque
+cohorte à la décision. Identité exacte vérifiée pour chaque point et chaque fenêtre : la somme des
+flux par cohorte égale la variation de la réserve réelle de la courbe, qui fixe à elle seule la
+variation du prix. Segments de découverte seulement ; étiquettes sous les planchers non tabulées.
+Hors empreinte statelab (cohorts.py a son propre sha256 dans le manifeste). 6 tests, 7 fautes
+plantées détectées.
+
 ## Tests
 
 20 tests hors ligne ; 23 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
