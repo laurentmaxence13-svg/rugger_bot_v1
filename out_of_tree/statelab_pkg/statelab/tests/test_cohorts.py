@@ -39,7 +39,7 @@ def test_flows_by_cohort_are_exact_on_a_hand_made_pool():
     row = cohorts.point_flows(EVENTS, 2, FACTS, {}, PARAMS.latency_slots)
     assert row['land_index'] == 2 and row['windows']['latency']['curve_change'] == 0
     circulating = EVENTS[2].state_after().real_base
-    assert row['held_share']['early'] == EVENTS[1].amount_out / circulating
+    assert row['held_share']['early'] == EVENTS[1].amount_out / circulating and row['untracked_ratio'] == 0.0
     assert sum(row['held_share'].values()) == pytest.approx(1.0)
     delta = lambda i: EVENTS[i].real_quote_after - EVENTS[i].real_quote_before     # noqa: E731
     w10 = row['windows']['10']                                   # ages 4 and 7: the sniper sells, a newcomer buys
@@ -120,3 +120,26 @@ def test_validation_pools_are_never_opened_for_flows(visible, monkeypatch):     
     monkeypatch.setattr(cohorts, 'pool_rows', spy)
     cohorts.study(directory, sha)
     assert sorted(seen) == ['exploration', 'train']
+
+
+def test_transfers_are_measured_and_shares_stay_a_composition():
+    """A wallet that sells tokens it received by transfer: tracked holdings exceed the curve count (R03 anomaly)."""
+    pool = _synthetic([(0, 'buy', 500_000_000, 'dev'), (6, 'buy', 300_000_000, 'bob'), (5, 'sell', 12 * 10 ** 12, 'mule'),
+                       (20, 'buy', 10 ** 8, 'zed')])
+    events = pool.events
+    who, held = cohorts.cohort_state(events, 2, 'dev', events[0].slot, ACTOR)
+    assert who['mule'] == 'before' and held['before'] == events[1].amount_out          # the mule holds nothing it bought
+    circulating = events[2].state_after().real_base
+    assert sum(held.values()) - circulating == 12 * 10 ** 12                           # exactly the transferred tokens sold
+    shares, untracked = cohorts.composition(held, circulating)
+    assert sum(shares.values()) == pytest.approx(1.0) and all(0 <= v <= 1 for v in shares.values())
+    assert untracked == pytest.approx(12 * 10 ** 12 / sum(held.values()))
+    facts = dict(creator='dev', creation_slot=events[0].slot, creation_block_time=events[0].block_time)
+    row = cohorts.point_flows(events, 2, facts, {}, PARAMS.latency_slots)
+    assert row['untracked_ratio'] == untracked and max(row['held_share'].values()) <= 1
+    assert cohorts.composition(dict(creator=0, early=0, before=0), 0) == (dict(creator=None, early=None, before=None), None)
+    with pytest.raises(ValueError, match='tracked_holdings_below'):
+        cohorts.composition(dict(creator=1, early=0, before=0), 5)
+    rows = [dict(row, pool='p%d' % i, creator='c%d' % i, segment='train', labels=[['age', 5]]) for i in range(40)]
+    block = cohorts.table(rows)['age:5']
+    assert block['mean_untracked_ratio'] == pytest.approx(untracked) and block['share_with_transfers'] == 1.0

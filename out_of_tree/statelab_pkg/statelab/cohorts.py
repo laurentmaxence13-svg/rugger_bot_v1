@@ -19,8 +19,13 @@ trade moved into the curve equals the change of the curve's real quote over the 
 constant-product curve that change alone fixes the price change. So the table says who pushed the
 price down (or up) after the moment we would have bought, with no model.
 
-Also recorded at the decision (causal): the share of the tokens in circulation held by each cohort
-(positive net positions over the tokens the curve has sold): the inventory that can be sold to us.
+Also recorded at the decision (causal): the composition by cohort of the tokens that traders still hold
+according to their own trades (positive net positions; the three shares add up to 1), i.e. the
+inventory that can be sold to us. Token TRANSFERS are invisible in a pool's trades: a wallet that
+sells tokens it received by transfer has a negative net position, and the tokens tracked as held
+then exceed the tokens the curve has really sold. ``untracked_ratio`` = (tracked held - circulating)
+/ tracked held measures that excess (0 without transfers); it is why a holder who moved its tokens
+to another wallet looks like a holder, and a seller of transferred tokens looks like a newcomer.
 
 Windows: ``latency`` = real trades between the decision and our landing; then one window per horizon
 h of ``statelab.points.HORIZONS_S`` = trades after the landing up to the landing of a clock sale due at
@@ -71,6 +76,16 @@ def cohort_state(events, k, creator, creation_slot, actor_of):
     return cohorts, held
 
 
+def composition(held, circulating):
+    """Shares of the tracked holdings by cohort (they add up to 1) and the excess over the curve's own count."""
+    tracked = sum(held.values())
+    if tracked < circulating:
+        raise ValueError('tracked_holdings_below_the_tokens_sold_by_the_curve')     # buys only add, sells only remove
+    if not tracked:
+        return {name: None for name in held}, None
+    return {name: held[name] / tracked for name in held}, (tracked - circulating) / tracked
+
+
 def _window(events, start, stop, cohorts, actor_of):
     """Signed quote moved into the curve by each cohort over ``events[start:stop]``, with gross buys and sells."""
     flows = {name: dict(net=0, bought=0, sold=0, trades=0) for name in COHORTS}
@@ -94,8 +109,9 @@ def point_flows(events, k, facts, actors, latency_slots):
     entry_time = events[land].block_time
     latency_s = hrr.clock_exit_latency_s(latency_slots)
     circulating = events[k].state_after().real_base
-    row = dict(decision_index=k, land_index=land, circulating_tokens=circulating,
-               held_share={name: (held[name] / circulating if circulating else None) for name in held},
+    shares, untracked = composition(held, circulating)
+    row = dict(decision_index=k, land_index=land, circulating_tokens=circulating, held_share=shares,
+               untracked_ratio=untracked,
                real_quote_at_decision=events[k].state_after().real_quote, windows={})
 
     def add(name, start, stop):
@@ -155,7 +171,9 @@ def table(rows):
         block = dict(probes=len(items), creators=len({r['creator'] for r in items}),
                      mean_real_quote_at_decision_sol=_mean([r['real_quote_at_decision'] / 1e9 for r in items]),
                      mean_held_share={name: _mean([r['held_share'][name] for r in items if r['held_share'][name] is not None])
-                                      for name in COHORTS[:3]}, windows={})
+                                      for name in COHORTS[:3]},
+                     mean_untracked_ratio=_mean([r['untracked_ratio'] for r in items if r['untracked_ratio'] is not None]),
+                     share_with_transfers=sum(bool(r['untracked_ratio']) for r in items) / len(items), windows={})
         for name in ('latency',) + tuple(str(h) for h in HORIZONS_S):
             windows = [r['windows'][name] for r in items]
             sold = {c: sum(w['cohorts'][c]['sold'] for w in windows) for c in COHORTS}
@@ -209,12 +227,14 @@ def _pct(value):
 
 def markdown(document):
     lines = ['> ' + note for note in document['notes']] + [
-        '', '### Qui détient les tokens au moment de la décision (part moyenne des tokens en circulation)', '',
-        '| État | Points | SOL dans la courbe | Créateur | Acheteurs des 2 premiers slots | Autres détenteurs |', '|---|---|---|---|---|---|']
+        '', '### Qui détient les tokens au moment de la décision (composition moyenne des avoirs suivis ; somme = 100 %)', '',
+        '| État | Points | SOL dans la courbe | Créateur | Acheteurs des 2 premiers slots | Autres détenteurs '
+        '| Avoirs non expliqués par la courbe (transferts) | Points avec transferts |', '|---|---|---|---|---|---|---|---|']
     for key, block in document['table'].items():
         h = block['mean_held_share']
         lines.append(f"| {key} | {block['probes']} | {block['mean_real_quote_at_decision_sol']:.3f} | {_pct(h['creator'])} | "
-                     f"{_pct(h['early'])} | {_pct(h['before'])} |")
+                     f"{_pct(h['early'])} | {_pct(h['before'])} | {_pct(block['mean_untracked_ratio'])} | "
+                     f"{_pct(block['share_with_transfers'])} |")
     lines += ['', '### Qui fait bouger la courbe après l’instant où nous aurions atterri — marché réel, SANS notre achat (flux net moyen en SOL ; part des ventes brutes)', '',
               '| État | Fenêtre (s) | Variation moyenne de la courbe (SOL) | Courbe en baisse | Aucun trade | Net créateur | Net premiers slots '
               '| Net autres antérieurs | Net nouveaux | Ventes : créateur | premiers slots | autres antérieurs | nouveaux |',
