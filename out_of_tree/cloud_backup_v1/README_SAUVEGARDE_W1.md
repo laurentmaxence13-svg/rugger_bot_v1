@@ -1,4 +1,4 @@
-# Sauvegarde seule de la collecte W1 sur un stockage privé Google Cloud (v1.1, 2026-11-11 — script inchangé 4d70bf6d, audité CONFORME par R02 en lecture)
+# Sauvegarde seule de la collecte W1 sur un stockage privé Google Cloud (v1.2, 2026-11-11 — script inchangé 4d70bf6d, audité CONFORME par R02 en lecture)
 
 Texte uniquement. Aucun agent n'exécute ces commandes ; elles n'ont JAMAIS été exécutées sur Google Cloud
 (seulement testées hors ligne avec de faux outils). Rien ne doit être lancé avant l'audit de RUGGER 02 et
@@ -31,7 +31,9 @@ la copie. Aucun agent ne peut donc consulter W1 par ce chemin avant le verdict o
 4. Le jour de la copie, après l'ancrage par R02 de la liste des sha256 : `bash backup_only.sh token`, puis saisie du
    jeton dans le formulaire sécurisé de R03 ; à renouveler chaque heure tant que l'envoi dure.
    - Juste après avoir copié le jeton : taper `clear` dans Cloud Shell pour l'effacer de l'écran (règle K-2).
-   - Après chaque phase d'envoi, R03 supprime le secret de son environnement (règle K-3).
+   - Après chaque phase d'envoi, le PROPRIÉTAIRE supprime le secret de l'environnement de R03 (ce qui retire aussi
+     l'autorisation de l'hôte) ; R03 le confirme ensuite en relisant son environnement : aucun secret pour
+     storage.googleapis.com — des noms seulement, jamais de valeur (règle K-3).
 5. `bash backup_only.sh verify`, puis `bash backup_only.sh sha256 SHA256SUMS` avec la liste ancrée.
 
 ## Dossiers et noms
