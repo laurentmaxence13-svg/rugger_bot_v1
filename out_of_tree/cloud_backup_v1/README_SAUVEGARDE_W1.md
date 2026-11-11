@@ -1,4 +1,4 @@
-# Sauvegarde seule de la collecte W1 sur un stockage privé Google Cloud (v1, 2026-11-11)
+# Sauvegarde seule de la collecte W1 sur un stockage privé Google Cloud (v1.1, 2026-11-11 — script inchangé 4d70bf6d, audité CONFORME par R02 en lecture)
 
 Texte uniquement. Aucun agent n'exécute ces commandes ; elles n'ont JAMAIS été exécutées sur Google Cloud
 (seulement testées hors ligne avec de faux outils). Rien ne doit être lancé avant l'audit de RUGGER 02 et
@@ -25,9 +25,22 @@ la copie. Aucun agent ne peut donc consulter W1 par ce chemin avant le verdict o
 
 1. Ouvrir Cloud Shell dans son projet, y déposer `backup_only.sh`, remplir les deux champs.
 2. `bash backup_only.sh setup` (crée le bucket et le compte ; c'est le seul moment où une ressource est créée).
-3. Le jour de la copie, après l'ancrage par R02 de la liste des sha256 : `bash backup_only.sh token`, puis saisie du
+3. Essai à blanc AVANT tout fichier W1 (règle K-6 de R02) : avec un premier jeton, R03 envoie un petit fichier
+   sans valeur et constate : écriture sous `w1-backup/` acceptée (200) ; écriture hors de ce dossier, lecture et
+   liste refusées (403). Un seul résultat différent = on s'arrête.
+4. Le jour de la copie, après l'ancrage par R02 de la liste des sha256 : `bash backup_only.sh token`, puis saisie du
    jeton dans le formulaire sécurisé de R03 ; à renouveler chaque heure tant que l'envoi dure.
-4. `bash backup_only.sh verify`, puis `bash backup_only.sh sha256 SHA256SUMS` avec la liste ancrée.
+   - Juste après avoir copié le jeton : taper `clear` dans Cloud Shell pour l'effacer de l'écran (règle K-2).
+   - Après chaque phase d'envoi, R03 supprime le secret de son environnement (règle K-3).
+5. `bash backup_only.sh verify`, puis `bash backup_only.sh sha256 SHA256SUMS` avec la liste ancrée.
+
+## Dossiers et noms
+
+- Tout est écrit sous `w1-backup/` : données brutes dans `w1-backup/w1-raw/…`, fichiers dérivés dans
+  `w1-backup/w1-derived/…`. La liste `SHA256SUMS` porte les noms relatifs à `w1-backup/` (ex. `w1-raw/part_000`).
+- Le jeton ne peut pas écraser un fichier : chaque fichier a un nom unique, reprise comprise.
+- Aucun effacement automatique : rien n'est supprimé tant que le propriétaire ne lance pas `delete`.
+- Sauvegarde progressive : admise par R02 (avis e372f4c5) pour des fichiers FINALISÉS seulement.
 
 ## Coût — indicatif, à confirmer par R04 et par le propriétaire sur la grille de prix avant l'accord final
 
