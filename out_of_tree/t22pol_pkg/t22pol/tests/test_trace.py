@@ -168,3 +168,18 @@ def test_read_only_size_query_on_the_mint_is_ignored_for_both_token_programs():
     burn_like = (T22, [MINT], bytes([29]))
     assert 'unexpected_instruction_on_mint:Reallocate' in trace.classify_trace(
         creation([POINTER, INIT2, METADATA, MINT_TO, REVOKE, burn_like]), MINT)['reasons']
+
+
+@pytest.mark.parametrize('tag', [21, 23, 24])
+def test_each_admitted_read_only_tag_is_ignored(tag):
+    """R02 R-2' (403e340f): GetAccountDataSize, AmountToUiAmount, UiAmountToAmount write nothing."""
+    query = (T22, [MINT], bytes([tag]) + bytes(8))
+    row = trace.classify_trace(creation([POINTER, INIT2, METADATA, MINT_TO, REVOKE, query]), MINT)
+    assert row['class_'] == 'token2022_allowlisted' and row['reasons'] == []
+
+
+@pytest.mark.parametrize('tag,name', [(22, 'InitializeImmutableOwner'), (29, 'Reallocate')])
+def test_neighbouring_tags_on_the_mint_stay_refused(tag, name):
+    neighbour = (T22, [MINT], bytes([tag]))
+    row = trace.classify_trace(creation([POINTER, INIT2, METADATA, MINT_TO, REVOKE, neighbour]), MINT)
+    assert row['class_'] == 'refused' and row['reasons'] == [f'unexpected_instruction_on_mint:{name}']
