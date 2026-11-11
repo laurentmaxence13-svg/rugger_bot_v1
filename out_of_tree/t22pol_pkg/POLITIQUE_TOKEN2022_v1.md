@@ -78,7 +78,11 @@ déjà ; le refus actuel vient seulement du constructeur d'ordres (`route.py:126
 ## 5. Outils
 - `t22pol.census` : classe de chaque jeton d'un ensemble de pools, raisons de refus, contrôle croisé
   avec le lecteur gelé (`--frozen-check`). Descriptif.
+- `t22pol.trace` : même recensement lu dans la transaction de CRÉATION du pool (les archives P0 ne
+  contiennent aucun compte de mint) : programme du jeton, extensions initialisées avant le mint, option
+  d'autorité de gel, révocation de l'autorité de frappe, taux de frais de transfert. Limite : l'état à
+  la création seulement ; pas de contrôle croisé avec le lecteur gelé.
 - `v3lab.scenarios` : deux vues des mêmes résultats enregistrés — `executable_now` (jetons SPL) et
   `experimental` (+ Token-2022 autorisés) — avec le loyer de notre compte compté comme coût.
 
-34 tests t22pol (la table concorde avec le lecteur gelé sur les 28 types) ; 7 tests v3lab (scenarios + tables).
+48 tests t22pol (la table concorde avec le lecteur gelé sur les 28 types ; 14 tests de la lecture de trace) ; 7 tests v3lab (scenarios + tables).
