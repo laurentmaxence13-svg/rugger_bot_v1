@@ -156,6 +156,8 @@ def table(document, census=None, *, declared_k, n_boot=N_BOOT):
             c['retained'] = all(c['screening'].values())
             if c['retained']:
                 retained.append([key, h])
+    placebo_rows = by_label.get(PLACEBO_CELL, [])
+    placebo_below = not floors(placebo_rows)                    # R02 E-S1: said in every output, automatically
     baseline = None
     if by_label.get(PLACEBO_CELL):
         rows = by_label[PLACEBO_CELL]
@@ -169,14 +171,19 @@ def table(document, census=None, *, declared_k, n_boot=N_BOOT):
         'ASSUMED: SPL Token rent for every row (no census supplied)',
         k=k, k_grid=K_GRID, trials_added_to_n=k, labels_not_computed=sorted(
             key for key in by_label if key != PLACEBO_CELL and key not in grid),
-        placebo_baseline=baseline, cells=cells, retained=retained,
+        placebo_baseline=baseline, placebo_below_floors=placebo_below,
+        placebo_sample=dict(probes=len(placebo_rows), creators=len({r['creator'] for r in placebo_rows})),
+        cells=cells, retained=retained,
         rule=dict(min_probes=MIN_PROBES, min_creators=MIN_CREATORS, bh_q=BH_Q, bh_family=K_GRID, n_boot=n_boot,
                   seed=SEED, alpha=ALPHA, reference_cell=REFERENCE_CELL, placebo_cell=PLACEBO_CELL),
         notes=['fixed cells, horizons, placebo and screening rule, declared in the code before any row was read',
                f'computing this table added {k} to the cumulative trial count N (R02 R-b)',
                'a RETAINED cell is a hypothesis for one confirmation on other data, never a result or a proof',
                'r includes the rent lost by today\'s chain; a position whose curve completed first counts -1',
-               'hindsight_best is an upper bound of any exit, not a rule'])
+               'hindsight_best is an upper bound of any exit, not a rule']
+        + (['PLACEBO BELOW THE SAMPLE FLOORS on this pack (%d probes, %d creators): the paired comparison rests on '
+            'few pools and the screening is under-powered' % (len(placebo_rows), len({r['creator'] for r in placebo_rows}))]
+           if placebo_below else []))
 
 
 def _pct(value, digits=2):
@@ -190,6 +197,10 @@ def _span(interval):
 def markdown(document):
     lines = ['> ' + note for note in document['notes']] + [
         '> loyer : ' + document['rent_basis'],
+        *(['> PLACEBO SOUS PLANCHER sur ce pack (%d sondes, %d créateurs) : la comparaison appariée repose sur peu de '
+           'pools, le criblage manque de puissance' % (document['placebo_sample']['probes'],
+                                                        document['placebo_sample']['creators'])]
+          if document['placebo_below_floors'] else []),
         f"> K = {document['k']} cellules calculées sur {document['k_grid']} ; non calculées (échantillon insuffisant) : "
         + (', '.join(document['labels_not_computed']) or 'aucune'), '',
         '| Cellule | Horizon (s) | Sondes | Créateurs | Rendement net moyen (loyer perdu, migrées −1) | IC 95 % | Part > 0 '

@@ -1,7 +1,0 @@
-b52a6aab060f225bbcb8e8e35a470e5b583ced8360f1708dbb0a5e4c0cbaf5be  ./README_STATELAB.md
-b9f6e4d74b837fcacaff4f17226f619db0e8dc9cea7acafec39bd617b4df4993  ./statelab/__init__.py
-b5b5c6afab70111770d3cc04492cbcadb63b992bd7ff741fd7184f9481d3c573  ./statelab/points.py
-04215eb27f7c0191191dbe2752a43e073cd5998e61292bef52985d3f9a676bf2  ./statelab/study.py
-45ae205aa5a928fc37b9b635f4d6b6e08a455a03d43d4c7c81bd8b302e231671  ./statelab/table.py
-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./statelab/tests/__init__.py
-e80fc8db275d8b7391d8e970d36d49b7da1f75dbc5a2c5f42afebd4cf0005b20  ./statelab/tests/test_statelab.py

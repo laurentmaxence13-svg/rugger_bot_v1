@@ -1,4 +1,4 @@
-# statelab 0.2 — étude d'états des chemins de pools LaunchLab
+# statelab 0.2.1 — étude d'états des chemins de pools LaunchLab
 
 Question testée : existe-t-il un état de la courbe (âge du pool, progression) où un preneur à environ
 une seconde de latence, qui achète 0,1 SOL et revend à un horizon fixe, a une espérance NETTE
@@ -8,6 +8,14 @@ cellule « retenue » n'est qu'une hypothèse à envoyer en confirmation sur d'a
 Version 0.2 = corrections de RUGGER 02 (audit bfb18f0a : C-S1, C-S2, C-S3 ; cadre 243e2cca : R-a à R-f).
 Les lignes produites par la version 0.1 (commit 8f24a84, fichier 7fc1838a chez R03) restent fermées
 et ne servent à aucun tableau.
+
+Version 0.2.1 = point E-S1 de RUGGER 02 (contrôle 63817ac9) : un placebo sous les planchers est dit
+automatiquement dans le tableau (notes et markdown). Aucune règle, aucune valeur et aucune ligne ne
+changent ; les lignes de la 0.2 restent lisibles telles quelles.
+
+Premier tableau calculé (P0 visible, exploration + train, latence 4, K = 30 ancré, N = 64 ensuite) :
+0 cellule retenue sur 30 ; rendement net moyen de -24,9 % à -7,2 % ; toutes les bornes hautes des
+intervalles négatives (vérifié par RUGGER 02, 63817ac9). Placebo sous plancher sur P0 (28 sondes).
 
 ## Fixé dans le code avant toute lecture de données
 
@@ -59,6 +67,6 @@ sur d'autres données.
 
 ## Tests
 
-19 tests hors ligne ; 22 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
+20 tests hors ligne ; 23 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
 latence de vente, une courbe achevée créditée, le loyer oublié, la famille de multiplicité réduite,
 l'appariement hors pool).

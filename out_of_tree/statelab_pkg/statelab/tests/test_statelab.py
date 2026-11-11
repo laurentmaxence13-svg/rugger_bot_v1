@@ -310,7 +310,7 @@ def test_a_buy_that_would_cross_the_boundary_is_refused_not_valued():
 def test_the_study_reads_discovery_segments_only_and_validation_once_per_hypothesis(visible):     # noqa: F811
     directory, sha = visible
     document = study.study(directory, sha)
-    assert document['schema'] == 'statelab-rows-v2' and document['statelab_version'] == '0.2'
+    assert document['schema'] == 'statelab-rows-v2' and document['statelab_version'] == '0.2.1'
     assert document['segments'] == ['exploration', 'train'] and document['confirm_validation'] is None
     assert {row['segment'] for row in document['rows']} <= {'exploration', 'train'} and document['rows']
     assert document['flags'] == dict(strategy_evaluated=False, trial_registered=False, holdout_read=False,
@@ -503,3 +503,20 @@ def test_the_multiplicity_family_is_the_whole_grid_not_the_computed_cells():
     assert c['mean_r'] == pytest.approx(0.09, abs=1e-6) and 0.0056 < c['p_one_sided'] < 0.02
     # with the 5 computed cells as the family this p-value would pass (0.10 x 5 / 5); with the 90 grid cells it fails
     assert c['screening'] == dict(mean_r_positive=True, beats_placebo=True, bh_q10_of_90=False) and c['retained'] is False
+
+
+def test_a_placebo_under_the_floors_is_said_automatically():                                       # R02 E-S1
+    rows = []
+    for i in range(60):
+        name = 'v%03d' % i
+        rows.append(_row(name, [['age', 5]], 99_000_000))
+        if i < 28:
+            rows.append(_row(name, [['placebo', 0]], 90_000_000))                  # 28 probes: under the floor of 30
+    thin = table.table(_document(rows), declared_k=5, n_boot=0)
+    assert thin['placebo_below_floors'] is True and thin['placebo_sample'] == dict(probes=28, creators=28)
+    assert any('PLACEBO BELOW THE SAMPLE FLOORS' in note and '28 probes' in note for note in thin['notes'])
+    assert 'PLACEBO SOUS PLANCHER sur ce pack (28 sondes, 28 créateurs)' in table.markdown(thin)
+    assert thin['cells']['age:5']['25']['vs_placebo']['pairs'] == 28               # still computed on what exists
+    full = table.table(_document(_population()), declared_k=5, n_boot=0)
+    assert full['placebo_below_floors'] is False and 'SOUS PLANCHER' not in table.markdown(full)
+    assert not any('PLACEBO BELOW' in note for note in full['notes'])

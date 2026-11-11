@@ -8,6 +8,8 @@ liquidation). Imports the frozen tree, v3lab (pack, features) and v4sim; modifie
 0.2 (RUGGER 02 audit bfb18f0a, framework 243e2cca): the main value of a horizon is the frozen CLOCK
 EXIT (sale landing after the frozen clock latency), the reference cell and the placebo are declared
 here, the screening rule is declared in ``statelab.table`` and the table counts K trials.
+0.2.1 (R02 E-S1 of 63817ac9): a placebo under the sample floors is said automatically in the table;
+no rule, no value and no row changes.
 """
-VERSION = '0.2'
+VERSION = '0.2.1'
 SCHEMA = 'statelab-rows-v2'
