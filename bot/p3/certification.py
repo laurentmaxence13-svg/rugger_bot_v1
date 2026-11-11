@@ -196,7 +196,9 @@ def certify_snapshot(accounts, addresses):
             mint_programs[role] = owner
     for vault, mint in (('vault_a', 'mint_a'), ('vault_b', 'mint_b')):
         owners = (mint_programs[mint],) if mint in mint_programs else ()
-        data[vault] = raw_account(vault, owners, minimum=165)
+        # Exactly 165 bytes, the rule of bot.p3.token2022.decode_vault (R02 O-T1): a vault carrying an
+        # account extension (e.g. TransferFeeAmount, 178 bytes) is outside the pinned scope.
+        data[vault] = raw_account(vault, owners, length=165)
         if data[vault] is not None:
             matches = data[vault][:32] == public[mint]
             check(vault + '_mint_link', 'PASS' if matches else 'FAIL',

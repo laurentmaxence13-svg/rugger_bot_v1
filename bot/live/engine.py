@@ -281,6 +281,10 @@ def reconcile_transaction(row, payload):
         inventory_pool=inventory_pool)
 
 
+# Cleanup routes the engine accepts, each with its full-rebuild validator (type checked first).
+CLEANUP_ROUTES = {'BASE_ACCOUNT_CLEANUP': validate_prepared_cleanup}
+
+
 class ExecutionEngine:
     def __init__(self, *, journal: ExecutionJournal, rpc, signer=None,
                  verifier=None, mode=Mode.LIVE_PREPARED, envelope=None,
@@ -431,14 +435,20 @@ class ExecutionEngine:
     async def execute(self, decision_id, order):
         return await self._lifecycle(decision_id, validate_execution_order(order))
 
-    async def cleanup(self, decision_id, *, mint, wallet, build):
+    async def cleanup(self, decision_id, *, mint, wallet, build, kind='BASE_ACCOUNT_CLEANUP'):
         """Distinct BASE_ACCOUNT_CLEANUP route: not a trade, no notional.
 
-        The fixed dust bound and the in-flight marker are journaled BEFORE
-        ``build(max_dust_burn_atomic)`` observes or builds anything. The built
-        cleanup then passes the same lifecycle as any other submission. An
-        intent whose transaction provably never left is settled as NOT_SENT.
+        ``kind`` names the cleanup route and is checked BEFORE anything is
+        journaled (R02 O-T2): an unknown kind leaves no intent and no row.
+        The fixed dust bound and the in-flight marker are then journaled
+        BEFORE ``build(max_dust_burn_atomic)`` observes or builds anything
+        (R02 D-a), and the built object must be exactly the type of that
+        kind before it reaches the lifecycle. An intent whose transaction
+        provably never left is settled as NOT_SENT.
         """
+        validate = CLEANUP_ROUTES.get(kind) if type(kind) is str else None
+        if validate is None:
+            raise ValueError('unknown_cleanup_route')
         if self.journal.cleanup(decision_id) is not None:
             # A duplicate only inspects; it never rebuilds, re-signs or re-sends.
             return self.cleanup_result(decision_id)
@@ -449,7 +459,7 @@ class ExecutionEngine:
             prepared = build(intent['max_dust_burn_atomic'])
             if inspect.isawaitable(prepared):
                 prepared = await prepared
-            await self._lifecycle(decision_id, validate_prepared_cleanup(prepared))
+            await self._lifecycle(decision_id, validate(prepared))
         except BaseException as error:
             reason = str(error) if type(error) is ValueError and str(error) else type(error).__name__
             raise

@@ -268,7 +268,9 @@ def reconcile_cleanup(cleanup, signature, payload):
         if type(entries) is not list:
             raise ValueError('complete_token_balances_required')
         if any(type(e) is not dict or type(e.get('accountIndex')) is not int
-               or e['accountIndex'] != base_index for e in entries) or len(entries) > 1:
+               or e['accountIndex'] != base_index
+               or e.get('programId', TOKEN_PROGRAM) != TOKEN_PROGRAM      # R02 O-T3
+               for e in entries) or len(entries) > 1:
             raise ValueError('cleanup_token_balance_entry_invalid')
         tokens[label] = entries
     fee = uint(meta.get('fee'), positive=True)
