@@ -20,7 +20,13 @@ from bot.p3.certification import PROGRAM, _decode, _encode
 from .journal import ACTIVE, CLEANUP, UNSENT, ExecutionJournal, canonical, uint
 from .cleanup import (MAX_DUST_BURN_ATOMIC, build_base_account_cleanup,
                       reconcile_cleanup, validate_prepared_cleanup)
+from .cleanup_token2022 import (build_base_account_cleanup_token2022,
+                               reconcile_cleanup_token2022,
+                               validate_prepared_cleanup_token2022)
 from .route import TOKEN_PROGRAM
+from .route_token2022 import (TOKEN2022_ATA_RENT_LAMPORTS,
+                              build_launchlab_order_token2022)
+from bot.p3.token2022 import TOKEN_2022_PROGRAM
 from .route_dispatch import (validate_execution_order, execution_program,
                              route_kind, order_inventory_pool)
 from .safety import AdmissionRequest, HealthEvidence, Mode, evaluate_admission
@@ -115,21 +121,42 @@ def cleanup_record(cleanup, pool):
     record['transaction']['message'] = base64.b64encode(cleanup.transaction.message).decode()
     record['transaction']['account_keys'] = list(cleanup.transaction.account_keys)
     record['transaction']['required_signers'] = list(cleanup.transaction.required_signers)
-    record.update(route_kind=CLEANUP, side='CLEANUP', program_id=TOKEN_PROGRAM,
+    # Both cleanup routes share the journal's single cleanup bookkeeping
+    # (route_kind CLEANUP); ``program_id`` names the token program invoked.
+    record.update(route_kind=CLEANUP, side='CLEANUP', program_id=execution_program(cleanup),
                   pool=pool, rent_deposit_lamports=0)
     return record
+
+
+def _require_token2022_balance_program(payload, base_index=None):
+    """O-T3': on Token-2022 paths every token-balance entry must name its
+    programId (absent refuses); entries of the position's own account (all of
+    them when ``base_index`` is None) must name Token-2022."""
+    meta = payload.get('meta') if type(payload) is dict else None
+    for label in ('preTokenBalances', 'postTokenBalances'):
+        entries = meta.get(label) if type(meta) is dict else None
+        if type(entries) is not list or any(
+                type(e) is not dict or type(e.get('programId')) is not str
+                or ((base_index is None or e.get('accountIndex') == base_index)
+                    and e['programId'] != TOKEN_2022_PROGRAM) for e in entries):
+            raise ValueError('token2022_balance_program_id_required')
 
 
 def _reconcile_cleanup_record(row, order, payload):
     # As for CPMM: a changed serialized record must never let another signed
     # message settle. Rebuild the exact cleanup from its retained request.
+    token2022 = order.get('program_id') == TOKEN_2022_PROGRAM
+    build, reconcile = ((build_base_account_cleanup_token2022, reconcile_cleanup_token2022)
+                        if token2022 else (build_base_account_cleanup, reconcile_cleanup))
     try:
-        rebuilt = build_base_account_cleanup(**json.loads(order['rebuild_request_json']))
+        rebuilt = build(**json.loads(order['rebuild_request_json']))
         if canonical(order) != canonical(cleanup_record(rebuilt, order.get('pool'))):
             raise ValueError('serialized_cleanup_order_changed')
     except (TypeError, KeyError, ValueError, OverflowError):
         raise ValueError('finalized_cleanup_record_invalid') from None
-    result = reconcile_cleanup(rebuilt, row['signature'], payload)
+    if token2022:
+        _require_token2022_balance_program(payload)
+    result = reconcile(rebuilt, row['signature'], payload)
     # The returned deposit has its own field. It is never sale proceeds.
     return dict(result, rent_recovered_lamports=result['deposit_returned_lamports'])
 
@@ -163,6 +190,17 @@ def reconcile_transaction(row, payload):
                 raise ValueError('serialized_CPMM_order_changed')
         except (TypeError,KeyError,ValueError,OverflowError):
             raise ValueError('finalized_CPMM_route_record_invalid') from None
+    token2022 = order.get('route_kind') == 'LAUNCHLAB_TOKEN2022'
+    if token2022:
+        # As for CPMM: rebuild the distinct Token-2022 route independently.
+        try:
+            rebuilt = build_launchlab_order_token2022(**json.loads(order['rebuild_request_json']))
+            core = order_record(rebuilt)
+            if (canonical({k: order.get(k) for k in core}) != canonical(core)
+                    or rebuilt.base_token_program != TOKEN_2022_PROGRAM):
+                raise ValueError('serialized_token2022_order_changed')
+        except (TypeError, KeyError, ValueError, OverflowError):
+            raise ValueError('finalized_token2022_route_record_invalid') from None
     transaction, meta = payload.get('transaction'), payload.get('meta')
     if type(transaction) is not dict or type(meta) is not dict:
         raise ValueError('finalized_transaction_metadata_missing')
@@ -196,6 +234,8 @@ def reconcile_transaction(row, payload):
                     or index in observed_indices):
                 raise ValueError(token_error_scope + 'finalized_token_balance_account_index_invalid')
             observed_indices.add(index)
+    if token2022:
+        _require_token2022_balance_program(payload, base_index)
     fee = uint(meta.get('fee'))
     if fee > order['network_fee_upper_lamports']:
         raise ValueError('actual_fee_exceeds_reserved_upper_bound')
@@ -262,6 +302,11 @@ def reconcile_transaction(row, payload):
     rent_locked = max(0, after[base_index] - before[base_index])
     if rent_locked > order['rent_deposit_lamports']:
         raise ValueError('actual_rent_exceeds_reserved_upper_bound')
+    if token2022 and rent_locked != (TOKEN2022_ATA_RENT_LAMPORTS
+                                     if order['side'] == 'BUY' and before[base_index] == 0 else 0):
+        # The 170-byte Token-2022 ATA locks exactly its rent when the BUY
+        # creates it, and nothing otherwise.
+        raise ValueError('token2022_ATA_rent_lock_mismatch')
     if order['side'] == 'BUY':
         if token_delta < order['minimum_out']:
             raise ValueError('buy_fill_below_minimum_out')
@@ -282,7 +327,8 @@ def reconcile_transaction(row, payload):
 
 
 # Cleanup routes the engine accepts, each with its full-rebuild validator (type checked first).
-CLEANUP_ROUTES = {'BASE_ACCOUNT_CLEANUP': validate_prepared_cleanup}
+CLEANUP_ROUTES = {'BASE_ACCOUNT_CLEANUP': validate_prepared_cleanup,
+                  'BASE_ACCOUNT_CLEANUP_TOKEN2022': validate_prepared_cleanup_token2022}
 
 
 class ExecutionEngine:
@@ -320,7 +366,7 @@ class ExecutionEngine:
         # A cleanup is not a trade: notional, slippage and inventory-for-sell
         # are exactly zero/absent. Fee, compute, freshness and identity bind.
         expected = dict(decision_id=decision_id, side='cleanup', wallet=order.user,
-            program_id=TOKEN_PROGRAM, mint=order.mint,
+            program_id=execution_program(order), mint=order.mint,
             pool=json.loads(self.journal.get(decision_id)['order_json'])['pool'],
             amount_in_atomic=0, quote_input_atomic=0, quote_output_atomic=0,
             minimum_out_atomic=0, rent_deposit_upper_lamports=0, slippage_bps=0,
@@ -331,7 +377,7 @@ class ExecutionEngine:
             quote_payload_sha256=order.source_account_digest,
             quote_received_at_ms=order.source_available_at_ms,
             compute_units=wire_parameters['compute_unit_limit'],
-            priority_fee_lamports=priority) if route_kind(order) == CLEANUP else dict(
+            priority_fee_lamports=priority) if route_kind(order) in CLEANUP_ROUTES else dict(
             decision_id=decision_id, side=order.side.lower(), wallet=order.user,
             program_id=execution_program(order), mint=order.mint, pool=order.pool,
             amount_in_atomic=order.input_amount, quote_input_atomic=order.input_amount,
@@ -374,13 +420,22 @@ class ExecutionEngine:
             exclude_decision_id=decision_id if own_reservation else None)
         verdict = evaluate_admission(request, envelope=self.envelope,
             arming=self.arming, health=health, risk=risk, now_ms=now)
-        if not verdict.allowed:
-            raise ValueError('submission_admission_refused:' + ','.join(verdict.reasons))
+        reasons = verdict.reasons + self._token2022_program_refusal(route_kind(order), verdict.reasons)
+        if not verdict.allowed or reasons:
+            raise ValueError('submission_admission_refused:' + ','.join(reasons))
         self._admission_cache[decision_id] = (request, health, balance, now)
         return balance
 
+    def _token2022_program_refusal(self, kind, reasons=()):
+        # The Token-2022 trade invokes Token-2022 besides LaunchLab: the owner
+        # envelope must list it explicitly, like any program (no implicit grant).
+        if (kind == 'LAUNCHLAB_TOKEN2022' and TOKEN_2022_PROGRAM not in self.envelope.allowed_programs
+                and 'program_not_authorized' not in reasons):
+            return ('program_not_authorized',)
+        return ()
+
     def _refuse_retired_launchlab_route(self,order):
-        if (route_kind(order)=='LAUNCHLAB'
+        if (route_kind(order) in ('LAUNCHLAB','LAUNCHLAB_TOKEN2022')
                 and self.journal.inventory_migration(order.mint,order.pool) is not None):
             raise ValueError('LaunchLab_route_retired_by_verified_migration')
 
@@ -429,8 +484,9 @@ class ExecutionEngine:
             wallet_balance_lamports=balance, exclude_decision_id=decision_id)
         verdict = evaluate_admission(request, envelope=self.envelope,
             arming=self.arming, health=health, risk=risk, now_ms=self.clock_ms())
-        if not verdict.allowed:
-            raise ValueError('final_submission_admission_refused:' + ','.join(verdict.reasons))
+        reasons = verdict.reasons + self._token2022_program_refusal(record.get('route_kind'), verdict.reasons)
+        if not verdict.allowed or reasons:
+            raise ValueError('final_submission_admission_refused:' + ','.join(reasons))
 
     async def execute(self, decision_id, order):
         return await self._lifecycle(decision_id, validate_execution_order(order))
@@ -489,7 +545,7 @@ class ExecutionEngine:
             raise ValueError('decision_id_not_bound_to_prepared_route')
         if order.transaction.required_signers != (order.user,):
             raise ValueError('exact_isolated_wallet_signer_required')
-        if route_kind(order) == CLEANUP:
+        if route_kind(order) in CLEANUP_ROUTES:
             intent = self.journal.cleanup(decision_id)
             if intent is None:
                 raise ValueError('journaled_cleanup_intent_required_before_build')
@@ -502,6 +558,8 @@ class ExecutionEngine:
             record.update(route_kind='CPMM',program_id=execution_program(order),
                 inventory_pool=binding['inventory_pool'],
                 migration_binding_sha256=binding['binding_sha256'])
+        if route_kind(order) == 'LAUNCHLAB_TOKEN2022':
+            record.update(route_kind='LAUNCHLAB_TOKEN2022')
         if not self.journal.create(decision_id, record, self.clock_ms()):
             # A duplicate can only inspect/recover its original signature; it
             # never silently reconstructs, re-signs or re-sends an order.

@@ -491,27 +491,30 @@ def test_sale_on_a_pool_state_that_cannot_pay_is_refused_by_the_curve():
         build_launchlab_order_token2022(**request)
 
 
-# ------------------------------------------------- not reachable by engine
+# -------------------------------- engine: refused unless Token-2022 is authorized
+# (Before the engine wiring these tests pinned "not reachable". Wired now, they pin the refusal by default:
+#  an envelope that does not list the Token-2022 program admits nothing, and nothing is signed or sent.)
 
 def test_engine_refuses_a_token2022_order_without_journal_signature_or_send(tmp_path):
-    engine, _, rpc, signer, _ = configured(tmp_path)
     for side in ('BUY', 'SELL'):
+        # BUY and SELL fixtures share one decision id: one fresh journal per side.
+        (tmp_path / side).mkdir(mode=0o700)
+        engine, _, rpc, signer, _ = configured(tmp_path / side)
         order = build_launchlab_order_token2022(**t22_request(side))
         decision = json.loads(order.rebuild_request_json)['decision_id']
-        with pytest.raises(ValueError, match='^explicit_supported_execution_route_required$'):
+        with pytest.raises(ValueError, match='program_not_authorized'):
             run(engine.execute(decision, order))
         disguised = PreparedLaunchLabOrder(**{f.name: getattr(order, f.name)
                                               for f in fields(PreparedLaunchLabOrder)})
         with pytest.raises(ValueError, match='^prepared_route_rebuild_failed$'):
-            run(engine.execute(decision, disguised))
-    with pytest.raises(ValueError, match='explicit_supported_execution_route_required'):
-        route_dispatch.route_kind(order)
-    assert engine.journal.con.execute('SELECT COUNT(*) FROM orders').fetchone()[0] == 0
-    assert engine.journal.con.execute('SELECT COUNT(*) FROM positions').fetchone()[0] == 0
-    assert not rpc.send_calls and not rpc.simulation_calls and signer.calls == 0
+            run(engine.execute(decision + '-disguised', disguised))
+        assert engine.journal.con.execute('SELECT COUNT(*) FROM positions').fetchone()[0] == 0
+        assert not rpc.send_calls and signer.calls == 0
+    assert route_dispatch.route_kind(order) == 'LAUNCHLAB_TOKEN2022'
 
 
 def test_engine_cleanup_route_refuses_the_token2022_cleanup(tmp_path):
+    """The default SPL cleanup kind still refuses a Token-2022 cleanup object: kinds never cross."""
     engine, buy, sell, _, rpc, signer = totally_sold(tmp_path)
     sends, signs = len(rpc.send_calls), signer.calls
     orders = engine.journal.con.execute('SELECT COUNT(*) FROM orders').fetchone()[0]
@@ -519,14 +522,11 @@ def test_engine_cleanup_route_refuses_the_token2022_cleanup(tmp_path):
     with pytest.raises(ValueError, match='^builder_generated_cleanup_required$'):
         run(engine.cleanup('t22-cleanup-e', mint=buy.mint, wallet=buy.user,
                            build=lambda bound: cleanup))
-    for check in (route_dispatch.validate_execution_order, route_dispatch.route_kind,
-                  validate_prepared_cleanup):
+    for check in (route_dispatch.validate_execution_order, validate_prepared_cleanup):
         with pytest.raises(ValueError):
             check(cleanup)
     assert engine.journal.con.execute('SELECT COUNT(*) FROM orders').fetchone()[0] == orders
     assert len(rpc.send_calls) == sends and signer.calls == signs
-    # The engine journals its own cleanup intent before any build (existing
-    # design); refused before signing, it is settled as provably NOT_SENT.
     assert engine.journal.cleanup('t22-cleanup-e')['outcome'] == 'NOT_SENT'
     assert engine.journal.get('t22-cleanup-e') is None
 

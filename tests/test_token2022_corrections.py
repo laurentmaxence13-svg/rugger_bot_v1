@@ -63,7 +63,7 @@ def test_unknown_cleanup_route_leaves_no_intent_and_no_row(tmp_path):
     built = []
     with pytest.raises(ValueError, match='unknown_cleanup_route'):
         run(engine.cleanup('t22-cleanup-x', mint=buy.mint, wallet=buy.user,
-                           build=lambda bound: built.append(bound), kind='BASE_ACCOUNT_CLEANUP_TOKEN2022'))
+                           build=lambda bound: built.append(bound), kind='NOT_A_CLEANUP_ROUTE'))
     assert built == [] and engine.journal.cleanup('t22-cleanup-x') is None
     assert engine.journal.get('t22-cleanup-x') is None
 
