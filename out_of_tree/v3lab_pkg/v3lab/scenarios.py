@@ -26,6 +26,12 @@ from v3lab.tables import row
 # of the offline cleanup (fc0dbcc8): 5,000 base + 1 priority lamport. Used only in the *_with_cleanup columns.
 CLEANUP_FEE_LAMPORTS = 5_001
 
+MIN_CLOSED_CONCLUSIVE = 200        # R02 criteria v1 R-1 / H-3: below, a view is NON CONCLUSIVE by rule
+CLEANUP_LABEL = 'NOT executable today: the base-account cleanup is not activated (R02 H-4)'
+LIMITS = ['replay limits (R02 H-5): NC-1 (non-closed positions mostly replay artefacts, column '
+          '"if non-closed lost" is a floor), E-2 (the frozen replay ignores the fundraising cap of the curve), '
+          'P0 visible already used by 34 trials']
+
 SCENARIOS = dict(executable_now=('executable_now',), experimental=('executable_now', 'token2022_allowlisted'))
 
 
@@ -87,7 +93,9 @@ def scenarios(bundles, census):
                notes=['descriptive: same registered rows, filtered by token class; no new trial',
                       'no ranking of this table may be used to choose or promote a strategy',
                       'experimental is NOT executable today: the frozen chain refuses every Token-2022 mint',
-                      'P0 visible only; already used by 34 trials; nothing here is a proof of profitability'])
+                      'P0 visible only; already used by 34 trials; nothing here is a proof of profitability',
+                      f'a view with fewer than {MIN_CLOSED_CONCLUSIVE} closed cycles is NON CONCLUSIVE by rule (R02 H-3)',
+                      'with_cleanup columns: ' + CLEANUP_LABEL] + LIMITS)
     for trial, bundle in sorted(bundles.items()):
         entered = [r for r in bundle['pools'] if r['trade']['entry_index'] is not None]
         excluded = [r for r in entered if by_pool.get(r['pool'], ('unknown', None))[0] not in SCENARIOS['experimental']]
@@ -101,6 +109,8 @@ def scenarios(bundles, census):
             for segment in plan.SEGMENTS + (None,):
                 item = row(view, segment)
                 item.update(_with_rent(view, segment, by_pool))
+                item['conclusive_sample'] = item['closed'] >= MIN_CLOSED_CONCLUSIVE
+                item['with_cleanup_label'] = CLEANUP_LABEL
                 block[segment or 'all_visible'] = item
             out['scenarios'].setdefault(name, {})[trial] = dict(role=bundle.get('role'),
                                                                 bundle_sha256=bundle['bundle_sha256'],
@@ -118,18 +128,20 @@ def _cell(value, digits=2, suffix=''):
 
 
 def markdown(document):
-    lines = []
+    lines = ['> ' + note for note in document['notes']] + ['']
     for name, trials in document['scenarios'].items():
         lines += [f'### {name}', '', '| Essai | Segment | Trades | Clos | P&L net (SOL) | P&L net (%) | P&L avec loyer (SOL) '
-                  '| P&L avec loyer (%) | Réussite avec loyer | Profit factor avec loyer | Drawdown max (SOL) | Non clos |',
-                  '|' + '---|' * 12]
+                  '| P&L avec loyer (%) | Réussite avec loyer | Profit factor avec loyer | Drawdown max (SOL) | Non clos '
+                  '| P&L nettoyage activé (%) — NON exécutable aujourd’hui | Échantillon concluant (≥ 200 clos) |',
+                  '|' + '---|' * 14]
         for trial, body in trials.items():
             for segment, r in body['segments'].items():
                 lines.append(f"| {trial} | {segment} | {r['trades']} | {r['closed']} | {_cell(r['pnl_sol'], 4)} | "
                              f"{_cell(r['pnl_pct'], 2, ' %')} | {_cell(r['pnl_with_rent_sol'], 4)} | "
                              f"{_cell(r['pnl_with_rent_pct'], 2, ' %')} | {_cell(r['win_rate_with_rent_pct'], 1, ' %')} | "
                              f"{_cell(r['profit_factor_with_rent'])} | {_cell(r['max_drawdown_sol'], 4)} | "
-                             f"{sum(r['non_closed'].values())} |")
+                             f"{sum(r['non_closed'].values())} | {_cell(r['pnl_with_cleanup_pct'], 2, ' %')} | "
+                             f"{'oui' if r['conclusive_sample'] else 'NON'} |")
         lines.append('')
     lines += ['### Différence expérimentale − exécutable (effet de la compatibilité Token-2022)', '',
               '| Essai | Segment | Trades | Clos | P&L avec loyer (SOL) | P&L avec loyer (points de %) | Profit factor avec loyer |',

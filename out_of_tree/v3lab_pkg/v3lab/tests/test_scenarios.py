@@ -67,3 +67,13 @@ def test_cleanup_variant_costs_only_the_cleanup_fee():
     assert now['win_rate_with_cleanup_pct'] == 100.0          # the small winner stays a winner
     d = out['difference_experimental_minus_executable']['V3-01']['validation']
     assert d['pnl_with_cleanup_sol'] == pytest.approx((-50_000_000 - scenarios.CLEANUP_FEE_LAMPORTS) / 1e9)
+
+
+def test_labels_required_by_r02_h3_h4_h5():
+    out = scenarios.scenarios({'V3-01': bundle(ROWS)}, CLASSES)
+    seg = out['scenarios']['executable_now']['V3-01']['segments']['validation']
+    assert seg['conclusive_sample'] is False and 'NOT executable today' in seg['with_cleanup_label']
+    notes = ' '.join(out['notes'])
+    assert 'NON CONCLUSIVE' in notes and 'NC-1' in notes and 'E-2' in notes and '34 trials' in notes
+    text = scenarios.markdown(out)
+    assert 'NON exécutable aujourd’hui' in text and '| NON |' in text
