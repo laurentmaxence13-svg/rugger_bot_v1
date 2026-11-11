@@ -241,8 +241,9 @@ def census(document, frozen_check=False):
                 classes=dict(sorted(counts.items())), refusal_reasons=dict(sorted(refusals.items())),
                 extension_sets={' + '.join(k) or '(none)': v for k, v in sorted(sets.items())},
                 frozen_check=frozen_check, disagreements_with_frozen_reader=disagreements,
-                limits=['state at creation; revocations are final and extensions fixed at initialisation '
-                        '(token-2022 processor, R02 02cdf353)',
+                limits=['extensions and authority revocations read at creation are FINAL (token-2022 processor.rs '
+                        '828-850, R02 02cdf353 / 545a06ef); only metadata fields and the metadata pointer can change '
+                        'later, with no effect on transfers',
                         'frozen-reader check runs on mint bytes rebuilt from the trace, not on an archived account'],
                 rows=rows)
 
