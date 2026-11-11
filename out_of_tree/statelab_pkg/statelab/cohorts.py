@@ -43,7 +43,8 @@ from v4sim.engine import landing_index
 from v4sim.io import actors_from_archive
 
 from statelab.points import HORIZONS_S, PLACEBO_CELL, decision_points
-from statelab.study import DISCOVERY_SEGMENTS, MIN_CREATORS, MIN_PROBES, window_cutoff
+from statelab.study import (DEFAULT_POPULATION, DISCOVERY_SEGMENTS, MIN_CREATORS, MIN_PROBES, POPULATIONS, cluster_key,
+                            window_cutoff)
 
 SCHEMA = 'statelab-cohorts-v1'
 COHORTS = ('creator', 'early', 'before', 'new')
@@ -114,15 +115,17 @@ def point_flows(events, k, facts, actors, latency_slots):
     return row
 
 
-def pool_rows(archive, entry, segment, params, cutoff_slot):
+def pool_rows(archive, entry, segment, params, cutoff_slot, population=DEFAULT_POPULATION):
+    if population not in POPULATIONS:
+        raise ValueError('unknown_population')
     summary, timeline = summarize(archive)
     try:
         timeline, _migration = hrr.usable_timeline(archive, summary, timeline)
     except hrr.PoolExcluded as exc:
         return None, list(exc.reasons)
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
-    if not facts['signed_creator_verified']:
-        return None, ['creator_not_signed']                      # the population of statelab.study
+    if population == 'signed' and not facts['signed_creator_verified']:
+        return None, ['creator_not_signed']
     events = timeline.events
     actors, _stats = actors_from_archive(archive, events)
     rows = []
@@ -130,7 +133,7 @@ def pool_rows(archive, entry, segment, params, cutoff_slot):
         if cutoff_slot is not None and events[k].slot > cutoff_slot:
             continue
         rows.append(dict(point_flows(events, k, facts, actors, params.latency_slots), pool=archive.pool,
-                         creator=facts['creator'], segment=segment, labels=labels))
+                         creator=cluster_key(archive, facts), segment=segment, labels=labels))
     return rows, None
 
 
@@ -168,25 +171,27 @@ def table(rows):
     return out
 
 
-def study(pack_dir, expect_manifest_sha256, *, latency_slots=plan.REPLAY['latency_slots']):
+def study(pack_dir, expect_manifest_sha256, *, latency_slots=plan.REPLAY['latency_slots'], population=DEFAULT_POPULATION):
     params = hrr.ReplayParams(latency_slots=latency_slots)
     pack = Pack(pack_dir, expect_manifest_sha256)
     rows, excluded = [], 0
     for entry, archive, segment in pack.pools():
         if segment not in DISCOVERY_SEGMENTS:
             continue
-        result, _reasons = pool_rows(archive, entry, segment, params, window_cutoff(entry, pack.manifest, params))
+        result, _reasons = pool_rows(archive, entry, segment, params, window_cutoff(entry, pack.manifest, params),
+                                     population)
         if result is None:
             excluded += 1
             continue
         rows.extend(result)
     document = dict(schema=SCHEMA, status='EXPLORATORY', pack_manifest_sha256=pack.manifest_sha256,
-                    segments=list(DISCOVERY_SEGMENTS), latency_slots=latency_slots, horizons_s=list(HORIZONS_S),
+                    segments=list(DISCOVERY_SEGMENTS), population=population, latency_slots=latency_slots,
+                    horizons_s=list(HORIZONS_S),
                     rows=len(rows), excluded_pools=excluded, table=table(rows),
                     flags=dict(strategy_evaluated=False, rule_pnl_computed=False, trial_registered=False,
                                holdout_read=False, w1_data_read=False),
-                    notes=['descriptive: real trades after the decision points of the fixed grid, split by cohorts fixed '
-                           'at the decision; no order of ours, no rule, no P&L',
+                    notes=['descriptive: REAL market trades after the decision points of the fixed grid, WITHOUT any buy of '
+                           'ours, split by cohorts fixed at the decision; no order of ours, no rule, no P&L',
                            'identity checked for every point and window: cohort flows add up to the change of the '
                            'curve real quote',
                            'discovery segments only; labels under the sample floors are not tabulated'])
@@ -210,7 +215,7 @@ def markdown(document):
         h = block['mean_held_share']
         lines.append(f"| {key} | {block['probes']} | {block['mean_real_quote_at_decision_sol']:.3f} | {_pct(h['creator'])} | "
                      f"{_pct(h['early'])} | {_pct(h['before'])} |")
-    lines += ['', '### Qui fait bouger la courbe après notre atterrissage (flux net moyen en SOL ; part des ventes brutes)', '',
+    lines += ['', '### Qui fait bouger la courbe après l’instant où nous aurions atterri — marché réel, SANS notre achat (flux net moyen en SOL ; part des ventes brutes)', '',
               '| État | Fenêtre (s) | Variation moyenne de la courbe (SOL) | Courbe en baisse | Aucun trade | Net créateur | Net premiers slots '
               '| Net autres antérieurs | Net nouveaux | Ventes : créateur | premiers slots | autres antérieurs | nouveaux |',
               '|' + '---|' * 13]
@@ -230,10 +235,11 @@ def main(argv=None):
     parser.add_argument('--expect-manifest-sha', required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--markdown', type=Path)
+    parser.add_argument('--population', choices=POPULATIONS, default=DEFAULT_POPULATION)
     a = parser.parse_args(argv)
     if a.out.exists():
         raise SystemExit('output_exists')
-    document = study(a.pack, a.expect_manifest_sha)
+    document = study(a.pack, a.expect_manifest_sha, population=a.population)
     a.out.write_text(json.dumps(document, sort_keys=True, indent=1, allow_nan=False) + '\n', encoding='utf-8')
     if a.markdown:
         a.markdown.write_text(markdown(document), encoding='utf-8')

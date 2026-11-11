@@ -310,7 +310,8 @@ def test_a_buy_that_would_cross_the_boundary_is_refused_not_valued():
 def test_the_study_reads_discovery_segments_only_and_validation_once_per_hypothesis(visible):     # noqa: F811
     directory, sha = visible
     document = study.study(directory, sha)
-    assert document['schema'] == 'statelab-rows-v2' and document['statelab_version'] == '0.2.1'
+    assert document['schema'] == 'statelab-rows-v3' and document['statelab_version'] == '0.3'
+    assert document['population'] == 'all' and all(type(r['creator_signed']) is bool for r in document['rows'])
     assert document['segments'] == ['exploration', 'train'] and document['confirm_validation'] is None
     assert {row['segment'] for row in document['rows']} <= {'exploration', 'train'} and document['rows']
     assert document['flags'] == dict(strategy_evaluated=False, trial_registered=False, holdout_read=False,
@@ -364,7 +365,17 @@ def test_a_pool_whose_creator_is_not_signed_gives_no_row(archives, monkeypatch):
     entry, archive = archives[0]
     real = hrr.creation_facts
     monkeypatch.setattr(hrr, 'creation_facts', lambda a: dict(real(a), signed_creator_verified=False))
-    assert study.pool_rows(archive, entry, 'train', PARAMS, None) == (None, ['creator_not_signed'])
+    assert study.pool_rows(archive, entry, 'train', PARAMS, None, 'signed') == (None, ['creator_not_signed'])
+    rows, dropped = study.pool_rows(archive, entry, 'train', PARAMS, None)          # default population: every replayable pool
+    assert rows and dropped == 0 and all(r['creator_signed'] is False and r['creator'] == real(archive)['creator'] for r in rows)
+    with pytest.raises(ValueError, match='unknown_population'):
+        study.pool_rows(archive, entry, 'train', PARAMS, None, 'other')
+    # no declared creator at all: the cluster is the fee payer of the creation transaction
+    monkeypatch.setattr(hrr, 'creation_facts', lambda a: dict(real(a), signed_creator_verified=False, creator=None))
+    rows, _dropped = study.pool_rows(archive, entry, 'train', PARAMS, None)
+    tx = archive.transactions[real(archive)['creation_signature']]
+    first = tx['transaction']['message']['accountKeys'][0]
+    assert {r['creator'] for r in rows} == {'payer:' + (first['pubkey'] if isinstance(first, dict) else first)}
 
 
 # --- the declared table --------------------------------------------------------------------------

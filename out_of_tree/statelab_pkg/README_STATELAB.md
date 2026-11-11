@@ -1,4 +1,4 @@
-# statelab 0.2.1 — étude d'états des chemins de pools LaunchLab
+# statelab 0.3 — étude d'états des chemins de pools LaunchLab
 
 Question testée : existe-t-il un état de la courbe (âge du pool, progression) où un preneur à environ
 une seconde de latence, qui achète 0,1 SOL et revend à un horizon fixe, a une espérance NETTE
@@ -16,6 +16,20 @@ changent ; les lignes de la 0.2 restent lisibles telles quelles.
 Premier tableau calculé (P0 visible, exploration + train, latence 4, K = 30 ancré, N = 64 ensuite) :
 0 cellule retenue sur 30 ; rendement net moyen de -24,9 % à -7,2 % ; toutes les bornes hautes des
 intervalles négatives (vérifié par RUGGER 02, 63817ac9). Placebo sous plancher sur P0 (28 sondes).
+
+Version 0.3 (décision R02 c2157372, Q1) : la population est « tous les pools rejouables » (la chaîne
+réelle gelée ne dépend pas d'un créateur signé : bot/live/route.py, engine.py et bot/p3/certification.py
+n'y font pas référence) ; grappe = créateur déclaré, sinon payeur de la transaction de création ;
+`--population signed` = sensibilité. Lignes au schéma v3 (champ `creator_signed`). Nouvel instrument
+`statelab.signals` (moteur de sélection, criblage) :
+
+    python -B -m statelab.signals rows.json --declared-k 34 --census <census.json> --markdown signals.md > signals.json
+
+Pour les entrées de la cellule de référence `age:5` à 25 s, il classe les 34 signaux causaux stockés
+dans chaque ligne par leur corrélation de rang avec le rendement net (intervalle par créateurs,
+5 000 tirages), donne le rendement moyen par tiers du signal et retient un signal seulement s'il
+passe Benjamini-Hochberg q = 0,10 sur les 34. Lire les tiers, c'est lire le résultat d'une règle de
+sélection : ce tableau ajoute 34 à N.
 
 ## Fixé dans le code avant toute lecture de données
 
@@ -80,6 +94,6 @@ plantées détectées.
 
 ## Tests
 
-20 tests hors ligne ; 23 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
+31 tests hors ligne (étude, tableau, cohortes, signaux) ; 38 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
 latence de vente, une courbe achevée créditée, le loyer oublié, la famille de multiplicité réduite,
 l'appariement hors pool).

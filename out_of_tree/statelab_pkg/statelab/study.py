@@ -21,6 +21,9 @@ Row conventions (all integers are lamports):
   ``best`` / ``worst`` = HINDSIGHT extremes up to the landing; ``events`` = real events before it;
   ``migrated`` = the counterfactual curve completed before the landing: ``value`` is None, the
   position is not credited and counts r = -1 (R02 criteria v1, R-d).
+Population (R02 c2157372): every replayable pool (``--population all``, the default, the same on P0 and
+on W1); the cluster of a pool is its declared creator, else the fee payer of its creation
+transaction (``cluster_key``); ``--population signed`` keeps signed creators only (sensitivity).
 Segments: discovery reads exploration and train. Reading validation needs ``--confirm-validation``
 with the identifier of ONE pre-registered hypothesis; the flag is written in the output.
 """
@@ -54,6 +57,8 @@ STAKE_LAMPORTS = 100_000_000
 MIN_PROBES, MIN_CREATORS = 30, 20          # a cell below either floor is never computed (R02 C-S3, R-1 spirit)
 DISCOVERY_SEGMENTS = ('exploration', 'train')
 MODE = 'M-P'
+POPULATIONS = ('all', 'signed')
+DEFAULT_POPULATION = 'all'
 
 
 class Probe(Strategy):
@@ -129,16 +134,27 @@ def window_cutoff(entry, manifest, params):
     return min(cutoff, end - hold_gap_slots(rule, params))
 
 
-def pool_rows(archive, entry, segment, params, cutoff_slot):
-    """Rows of one pool, or ``(None, reasons)`` when the pool cannot be replayed or its creator is not signed."""
+def cluster_key(archive, facts):
+    """Cluster of a pool: its declared creator, else the fee payer of its creation transaction (R02 Q1-ii)."""
+    if facts.get('creator'):
+        return facts['creator']
+    tx = archive.transactions[facts['creation_signature']]
+    first = tx['transaction']['message']['accountKeys'][0]
+    return 'payer:' + (first['pubkey'] if isinstance(first, dict) else first)
+
+
+def pool_rows(archive, entry, segment, params, cutoff_slot, population=DEFAULT_POPULATION):
+    """Rows of one pool, or ``(None, reasons)`` when the pool cannot be replayed or is outside the population."""
+    if population not in POPULATIONS:
+        raise ValueError('unknown_population')
     summary, timeline = summarize(archive)
     try:
         timeline, migration = hrr.usable_timeline(archive, summary, timeline)
     except hrr.PoolExcluded as exc:
         return None, list(exc.reasons)
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
-    if not facts['signed_creator_verified']:
-        return None, ['creator_not_signed']                      # same population as the reference policies
+    if population == 'signed' and not facts['signed_creator_verified']:
+        return None, ['creator_not_signed']                      # the population of the reference policies
     events = timeline.events
     actors, _stats = actors_from_archive(archive, events)
     model = params.execution_model()
@@ -149,7 +165,8 @@ def pool_rows(archive, entry, segment, params, cutoff_slot):
             continue
         history = events[:k + 1]
         features = dict(native_features(history, facts), **v3_extras(history, facts))
-        row = dict(pool=archive.pool, creator=facts['creator'], segment=segment, labels=labels,
+        row = dict(pool=archive.pool, creator=cluster_key(archive, facts),
+                   creator_signed=bool(facts['signed_creator_verified']), segment=segment, labels=labels,
                    decision_slot=events[k].slot, decision_block_time=events[k].block_time,
                    pool_migrated_in_data=migration is not None, features=features)
         row.update(probe(timeline, k, actors, model))
@@ -158,7 +175,7 @@ def pool_rows(archive, entry, segment, params, cutoff_slot):
 
 
 def study(pack_dir, expect_manifest_sha256, *, segments=DISCOVERY_SEGMENTS, latency_slots=plan.REPLAY['latency_slots'],
-          confirm_validation=None):
+          confirm_validation=None, population=DEFAULT_POPULATION):
     segments = tuple(segments)
     if set(segments) - set(plan.SEGMENTS):
         raise ValueError('unknown_segment')
@@ -173,7 +190,7 @@ def study(pack_dir, expect_manifest_sha256, *, segments=DISCOVERY_SEGMENTS, late
         if segment not in segments:
             continue
         cutoff = window_cutoff(entry, pack.manifest, params)
-        result, info = pool_rows(archive, entry, segment, params, cutoff)
+        result, info = pool_rows(archive, entry, segment, params, cutoff, population)
         if result is None:
             excluded.append(dict(pool=archive.pool, segment=segment, reasons=info))
             continue
@@ -184,6 +201,7 @@ def study(pack_dir, expect_manifest_sha256, *, segments=DISCOVERY_SEGMENTS, late
         schema=SCHEMA, status='EXPLORATORY', statelab_version=VERSION, statelab_sha256=fingerprint(),
         v4sim_version=V4SIM_VERSION, v4sim_protocol_sha256=PROTOCOL_SHA256, mode=MODE,
         pack_manifest_sha256=pack.manifest_sha256, segments=list(segments), confirm_validation=confirm_validation,
+        population=population,
         constants=dict(stake_lamports=STAKE_LAMPORTS, horizons_s=list(HORIZONS_S), latency_slots=latency_slots,
                        sale_latency_s=sale_latency_s(params.execution_model()), age_grid_s=list(AGE_GRID_S),
                        max_lateness_s=MAX_LATENESS_S, progress_grid_ppm=list(PROGRESS_GRID_PPM),
@@ -224,7 +242,7 @@ def counts(rows):
 def fingerprint():
     root = Path(__file__).resolve().parent
     digest = hashlib.sha256()
-    for name in ('__init__.py', 'points.py', 'study.py', 'table.py'):
+    for name in ('__init__.py', 'points.py', 'study.py', 'table.py', 'signals.py'):
         digest.update(name.encode() + b'\0' + (root / name).read_bytes())
     return digest.hexdigest()
 
@@ -237,11 +255,12 @@ def main(argv=None):
     parser.add_argument('--segments', default=','.join(DISCOVERY_SEGMENTS))
     parser.add_argument('--latency-slots', type=int, default=plan.REPLAY['latency_slots'])
     parser.add_argument('--confirm-validation')
+    parser.add_argument('--population', choices=POPULATIONS, default=DEFAULT_POPULATION)
     a = parser.parse_args(argv)
     if a.out.exists():
         raise SystemExit('output_exists')
     document = study(a.pack, a.expect_manifest_sha, segments=tuple(s for s in a.segments.split(',') if s),
-                     latency_slots=a.latency_slots, confirm_validation=a.confirm_validation)
+                     latency_slots=a.latency_slots, confirm_validation=a.confirm_validation, population=a.population)
     a.out.write_text(json.dumps(document, sort_keys=True, indent=1, allow_nan=False) + '\n', encoding='utf-8')
     # Identifiers and sample sizes only: no value is shown at run time.
     reasons = {}

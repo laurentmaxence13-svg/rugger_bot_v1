@@ -121,8 +121,8 @@ def benjamini_hochberg(pvalues, family, q=BH_Q):
 
 
 def table(document, census=None, *, declared_k, n_boot=N_BOOT):
-    if document.get('schema') != 'statelab-rows-v2':
-        raise ValueError('not_a_statelab_rows_v2_document')
+    if document.get('schema') not in ('statelab-rows-v2', 'statelab-rows-v3'):
+        raise ValueError('not_a_statelab_rows_document')
     rents = None
     if census is not None:
         from v3lab.scenarios import classes

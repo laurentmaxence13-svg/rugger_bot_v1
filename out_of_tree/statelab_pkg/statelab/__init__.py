@@ -10,6 +10,9 @@ EXIT (sale landing after the frozen clock latency), the reference cell and the p
 here, the screening rule is declared in ``statelab.table`` and the table counts K trials.
 0.2.1 (R02 E-S1 of 63817ac9): a placebo under the sample floors is said automatically in the table;
 no rule, no value and no row changes.
+0.3 (R02 decision c2157372, Q1): the population is every replayable pool; a pool whose creator is not
+signed keeps its declared creator as cluster, else the fee payer of its creation transaction; the
+signed-creator sub-population is a sensitivity (``--population signed``) and serves no choice.
 """
-VERSION = '0.2.1'
-SCHEMA = 'statelab-rows-v2'
+VERSION = '0.3'
+SCHEMA = 'statelab-rows-v3'

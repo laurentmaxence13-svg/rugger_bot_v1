@@ -114,9 +114,9 @@ def test_validation_pools_are_never_opened_for_flows(visible, monkeypatch):     
     directory, sha = visible
     seen, real = [], cohorts.pool_rows
 
-    def spy(archive, entry, segment, params, cutoff):
+    def spy(archive, entry, segment, *rest):
         seen.append(segment)
-        return real(archive, entry, segment, params, cutoff)
+        return real(archive, entry, segment, *rest)
     monkeypatch.setattr(cohorts, 'pool_rows', spy)
     cohorts.study(directory, sha)
     assert sorted(seen) == ['exploration', 'train']
