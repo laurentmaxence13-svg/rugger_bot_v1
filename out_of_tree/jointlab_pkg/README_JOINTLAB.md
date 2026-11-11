@@ -12,6 +12,11 @@ probes and checks their frozen fingerprints in its tests.
 - **V (exit)**: clock 25 s (base), clock 60 s, first real sale, curve flow negative (clock 60 s).
 - Base cell: (every pool, placebo, clock 25 s). Plans: `star` (14 cells: each engine alone),
   `combined` (one pre-chosen cell + interaction), `full` (140 cells, descriptive).
+- Effects (conditions of RUGGER 02, 1595460c): a selection is compared with the pools it does NOT select
+  (same entry and exit); an entry or an exit with the base cell; the difference to the MASTER reference entry
+  (age 5 s) is a secondary, descriptive column. A claim needs the cell itself net positive after Holm.
+- On W1 only two parts exist, fixed in the code: discovery [467678545; 468484945) and screen
+  [468484945; 469291345), by pool creation slot; the thirds are cut on the discovery part only.
 - Floors: 30 positions from 20 creator clusters. Holm over the evaluable cells of the plan.
   Each evaluable cell of an analysis adds one trial to the cumulative count N.
 - `rows`, `cutoffs`, `counts` print sample sizes only; `analysis` reads the values.
@@ -22,5 +27,5 @@ probes and checks their frozen fingerprints in its tests.
 
 NOT EXECUTED on any real data. To be audited by RUGGER 02 before any use.
 
-Tests (18, offline): `python -B -m pytest -q jointlab/tests -p no:cacheprovider -W error` from the frozen
+Tests (19, offline): `python -B -m pytest -q jointlab/tests -p no:cacheprovider -W error` from the frozen
 tree, with `statelab_pkg`, `v3lab_pkg` and v4sim 0.2 on `PYTHONPATH`.

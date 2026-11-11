@@ -71,6 +71,7 @@ def test_plans_list_their_cells():
         joint.BASE, ('S4', 'PLACEBO', 'V0'), ('S0', 'A0', 'V0'), ('S0', 'PLACEBO', 'V2'), ('S4', 'A0', 'V2')]
     assert joint.plan_cells('combined', ('S0', 'A5', 'V1')) == [
         joint.BASE, ('S0', 'A5', 'V0'), ('S0', 'PLACEBO', 'V1'), ('S0', 'A5', 'V1')]
+    assert joint.SECONDARY == ('S0', 'A5', 'V0') and joint.SECONDARY in star
     for bad in (None, ('S4', 'PLACEBO', 'V0'), ('S9', 'A0', 'V1'), ('S4', 'A0'), joint.BASE):
         with pytest.raises(ValueError, match='the_combined_plan_needs_one_cell'):
             joint.plan_cells('combined', bad)
@@ -128,8 +129,15 @@ def test_the_star_plan_recovers_each_separate_effect():
     assert result['trials_added_to_n'] == 6 and 'interaction' not in result and result['cutoffs_from_the_same_rows']
     assert cells['S0,PLACEBO,V0']['mean_r'] == pytest.approx(-0.04, abs=1e-8) and 'effect_vs_base' not in cells['S0,PLACEBO,V0']
     assert cells['S4,PLACEBO,V0']['mean_r'] == pytest.approx(-0.03, abs=1e-8)
-    # the selected pools are half of the base cell: the effect against the base is half of the 2 % advantage
-    assert cells['S4,PLACEBO,V0']['effect_vs_base']['mean'] == pytest.approx(0.01, abs=1e-8)
+    # a selection is compared with the pools it does NOT select (R02): the full 2 % advantage, not a diluted half
+    assert 'effect_vs_base' not in cells['S4,PLACEBO,V0']
+    selection = cells['S4,PLACEBO,V0']['effect_vs_unselected']
+    assert selection['mean'] == pytest.approx(0.02, abs=1e-8) and selection['compared_positions'] == 30
+    assert selection['ci95'][0] == pytest.approx(0.02, abs=1e-8) and selection['positive_after_holm']
+    # the MASTER reference entry (age 5 s) is published as a secondary, descriptive difference
+    assert cells['S0,PLACEBO,V0']['diff_vs_age5']['mean'] == pytest.approx(-0.03, abs=1e-8)
+    assert cells['S0,PLACEBO,V0']['diff_vs_age5']['ci95'] == pytest.approx([-0.03, -0.03], abs=1e-8)
+    assert 'diff_vs_age5' not in cells['S0,A5,V0'] and 'p_holm' not in cells['S0,PLACEBO,V0']['diff_vs_age5']
     assert cells['S0,A5,V0']['effect_vs_base']['mean'] == pytest.approx(0.03, abs=1e-8)
     assert cells['S0,PLACEBO,V1']['effect_vs_base']['mean'] == pytest.approx(0.01, abs=1e-8)
     assert cells['S0,PLACEBO,V2']['effect_vs_base']['mean'] == pytest.approx(0.0, abs=1e-8)
@@ -278,20 +286,42 @@ def test_w1_needs_both_anchored_verdicts_and_there_is_no_p0_reader(tmp_path):
         joint.run_export(out, '0' * 64, slot_range=(0, 10 ** 12))
     with pytest.raises(ValueError, match='invalid_slot_range'):
         joint.run_export(out, manifest_sha, slot_range=(5, 5))
-    shift = plan.S0_W1
+    assert joint.W1_PARTS == dict(discovery=(467_678_545, 468_484_945), screen=(468_484_945, 469_291_345))
+    assert joint.W1_CUT_SLOT == (467_678_545 + 469_291_345) // 2 and joint.W1_EVALUATION[0] > plan.S0_W1
+    discovery, screen = joint.W1_PARTS['discovery'], joint.W1_PARTS['screen']
+    first_created = min(r['creation_slot'] for r in plain['rows'])
+    shift = discovery[0] + 10 - first_created                               # the earliest pool is created in the discovery part
     w1, w1_sha = _export(tmp_path, shift=shift)
     for kwargs in ({}, dict(official_verdict_sha256='a' * 64), dict(hypotheses_verdict_sha256='b' * 64),
                    dict(official_verdict_sha256='a' * 64, hypotheses_verdict_sha256='B' * 64),
                    dict(official_verdict_sha256='a' * 64, hypotheses_verdict_sha256='b' * 63)):
         with pytest.raises(ValueError, match='w1_data_need_the_official_verdict_and_the_frozen_hypotheses_verdict'):
-            joint.run_export(w1, w1_sha, slot_range=(0, 10 ** 12), **kwargs)
+            joint.run_export(w1, w1_sha, slot_range=discovery, **kwargs)
     with pytest.raises(ValueError, match='the_two_verdicts_are_two_different_documents'):
-        joint.run_export(w1, w1_sha, slot_range=(0, 10 ** 12), official_verdict_sha256='a' * 64, hypotheses_verdict_sha256='a' * 64)
-    document = joint.run_export(w1, w1_sha, slot_range=(0, 10 ** 12), official_verdict_sha256='a' * 64,
-                                hypotheses_verdict_sha256='b' * 64)
-    assert document['w1_data_read'] is True
+        joint.run_export(w1, w1_sha, slot_range=discovery, official_verdict_sha256='a' * 64, hypotheses_verdict_sha256='a' * 64)
+    both = dict(official_verdict_sha256='a' * 64, hypotheses_verdict_sha256='b' * 64)
+    for free in ((0, 10 ** 12), (discovery[0], screen[1]), (discovery[0], discovery[1] - 1), (discovery[0] + 1, discovery[1])):
+        with pytest.raises(ValueError, match='w1_parts_are_fixed_in_the_code'):
+            joint.run_export(w1, w1_sha, slot_range=free, **both)                # on W1 only the two parts of the code exist
+    document = joint.run_export(w1, w1_sha, slot_range=discovery, **both)
+    later = joint.run_export(w1, w1_sha, slot_range=screen, **both)
+    assert document['w1_data_read'] is True and document['part'] == 'discovery' and later['part'] == 'screen' and plain['part'] is None
+    assert document['rows'] and all(discovery[0] <= r['creation_slot'] < discovery[1] for r in document['rows'])
+    assert all(screen[0] <= r['creation_slot'] < screen[1] for r in later['rows'])
+    assert not {r['pool'] for r in document['rows']} & {r['pool'] for r in later['rows']}
     strip = lambda rows: [{k: v for k, v in r.items() if k not in ('decision_slot', 'entry_slot', 'creation_slot')} for r in rows]   # noqa: E731
-    assert strip(document['rows']) == strip(plain['rows'])
+    kept = {r['pool'] for r in document['rows']}
+    assert strip(document['rows']) == strip([r for r in plain['rows'] if r['pool'] in kept])
+    # the thirds are cut on the discovery part only, and the screen part is analysed with those cutoffs only
+    cuts = joint.cutoffs(document)
+    assert cuts['reference_w1'] is True and tuple(cuts['reference_slot_range']) == discovery
+    with pytest.raises(ValueError, match='thirds_are_cut_on_the_discovery_part_only'):
+        joint.cutoffs(later)
+    foreign = joint.cutoffs(plain)
+    for bad in (foreign, dict(cuts, reference_slot_range=list(screen)), dict(cuts, reference_w1=False)):
+        with pytest.raises(ValueError, match='w1_needs_cutoffs_from_its_discovery_part'):
+            joint.analysis(later, bad, plan='star', declared_cells=0, n_boot=10)
+    assert joint.analysis(later, cuts, plan='star', declared_cells=0, n_boot=10)['cells'] == {}
     # two ranges of creation slots split the POOLS: every pool, with all its rows, is in exactly one part
     created = sorted({r['creation_slot'] for r in plain['rows']})
     assert len(created) == 3
@@ -381,3 +411,14 @@ def test_an_effect_needs_its_interval_above_zero_even_when_holm_passes():
     effect = cells['S0,PLACEBO,V1']['effect_vs_base']
     assert effect['mean'] > 0 and effect['p_holm'] < 0.05 and effect['ci95'][0] <= 0 and effect['positive_after_holm'] is False
     assert cells['S0,PLACEBO,V2']['effect_vs_base']['positive_after_holm'] is True
+
+
+def test_a_selection_effect_needs_enough_unselected_pools():
+    rows = [_row('p%03d' % i, 'PLACEBO', dict(V0=-0.02 if i % 4 else -0.06), flag=bool(i % 4)) for i in range(80)]
+    document = _document(rows)                                              # 60 selected, 20 unselected: under the floor of 30
+    cells = joint.analysis(document, joint.cutoffs(document), plan='star', declared_cells=5, n_boot=100)['cells']
+    block = cells['S4,PLACEBO,V0']
+    assert block['positions'] == 60 and 'effect_vs_unselected' not in block and 'effect_vs_base' not in block
+    more = _document(rows + [_row('q%03d' % i, 'PLACEBO', dict(V0=-0.06)) for i in range(10)])    # 30 unselected
+    block = joint.analysis(more, joint.cutoffs(more), plan='star', declared_cells=5, n_boot=100)['cells']['S4,PLACEBO,V0']
+    assert block['effect_vs_unselected']['mean'] == pytest.approx(0.04, abs=1e-8) and block['effect_vs_unselected']['compared_positions'] == 30

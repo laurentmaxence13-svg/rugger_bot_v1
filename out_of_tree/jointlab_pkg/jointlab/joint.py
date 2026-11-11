@@ -32,7 +32,12 @@ A cell is evaluable with at least 30 positions from 20 creator clusters. Claims 
 cells of the plan. The code never says "profitable".
 
 ``--slot-min`` / ``--slot-max`` bound the CREATION slot of the pools: a pool, with all its entries, belongs
-to one part only (discovery or screen), fixed beforehand.
+to one part only. On W1 the two parts are fixed in the code (``W1_PARTS``: discovery then screen, cut at slot
+468484945) and no other range is accepted; the thirds are cut on the discovery part only.
+
+Effects: a selection is compared with the pools it does NOT select (same entry, same exit); an entry or an
+exit is compared with the base cell; creator clusters are resampled jointly. The difference to the MASTER
+reference entry (age 5 s) is published as a secondary, descriptive column.
 
 Reading W1 needs the sha256 of the anchored official verdict AND of the anchored verdict of the frozen
 hypotheses (W1 becomes development data only after both). There is no reader for the P0 visible pack.
@@ -82,6 +87,10 @@ EXITS = (
     dict(id='V3', label='curve flow negative over 10 s, clock 60 s', flow_window_s=10, clock_s=60),
 )
 BASE = ('S0', 'PLACEBO', 'V0')
+SECONDARY = ('S0', 'A5', 'V0')                       # the reference entry of the MASTER studies, published next to the base
+W1_EVALUATION = (467_678_545, 469_291_345)
+W1_CUT_SLOT = 468_484_945                            # the middle of the W1 evaluation range, written before any reading
+W1_PARTS = dict(discovery=(W1_EVALUATION[0], W1_CUT_SLOT), screen=(W1_CUT_SLOT, W1_EVALUATION[1]))
 PLANS = ('star', 'combined', 'full')
 SELECTION_FEATURES = tuple(s['feature'] for s in SELECTORS if 'feature' in s)
 MIN_POSITIONS, MIN_CLUSTERS = 30, 20
@@ -177,6 +186,8 @@ def run_export(directory, expect_manifest_sha256, *, slot_range, official_verdic
                 raise ValueError('w1_data_need_the_official_verdict_and_the_frozen_hypotheses_verdict')
         if official_verdict_sha256 == hypotheses_verdict_sha256:
             raise ValueError('the_two_verdicts_are_two_different_documents')
+        if tuple(slot_range) not in W1_PARTS.values():
+            raise ValueError('w1_parts_are_fixed_in_the_code')
     params = hrr.ReplayParams(latency_slots=latency_slots)
     rows, missing = [], {}
     for entry, archive in pools:
@@ -187,6 +198,7 @@ def run_export(directory, expect_manifest_sha256, *, slot_range, official_verdic
     document = dict(
         schema=SCHEMA, status='EXPLORATORY', jointlab_sha256=fingerprint(), hypotheses_sha256=hyp.fingerprint(),
         exits_sha256=exits.fingerprint(), pack_manifest_sha256=manifest_sha256, slot_range=list(slot_range),
+        part=next((name for name, bounds in W1_PARTS.items() if reaches_w1 and bounds == tuple(slot_range)), None),
         latency_slots=latency_slots, official_verdict_sha256=official_verdict_sha256,
         hypotheses_verdict_sha256=hypotheses_verdict_sha256, w1_data_read=bool(reaches_w1), pools_read=len(pools),
         missing=dict(sorted(missing.items())), entries={e['id']: sum(r['entry'] == e['id'] for r in rows) for e in ENTRIES},
@@ -201,6 +213,8 @@ def cutoffs(document):
     """{entry: {feature: [first third, second third]}} from the feature values alone (no outcome is read)."""
     if document.get('schema') != SCHEMA:
         raise ValueError('not_a_jointlab_rows_document')
+    if document.get('w1_data_read') and tuple(document.get('slot_range') or ()) != W1_PARTS['discovery']:
+        raise ValueError('thirds_are_cut_on_the_discovery_part_only')
     out = {}
     for entry in ENTRIES:
         block = {}
@@ -210,7 +224,8 @@ def cutoffs(document):
             if len(values) >= 3:
                 block[feature] = [values[(len(values) - 1) // 3], values[(2 * (len(values) - 1) + 2) // 3]]
         out[entry['id']] = block
-    return dict(schema='jointlab-cutoffs-v1', reference_rows_sha256=document['rows_sha256'], cutoffs=out)
+    return dict(schema='jointlab-cutoffs-v1', reference_rows_sha256=document['rows_sha256'],
+                reference_w1=bool(document.get('w1_data_read')), reference_slot_range=document.get('slot_range'), cutoffs=out)
 
 
 def selected(row, selector, cuts):
@@ -333,6 +348,9 @@ def _summary(draws):
 def analysis(document, cuts, census=None, *, plan, declared_cells, cell=None, n_boot=N_BOOT):
     if document.get('schema') != SCHEMA or cuts.get('schema') != 'jointlab-cutoffs-v1':
         raise ValueError('not_jointlab_documents')
+    if document.get('w1_data_read') and not (cuts.get('reference_w1')
+                                             and tuple(cuts.get('reference_slot_range') or ()) == W1_PARTS['discovery']):
+        raise ValueError('w1_needs_cutoffs_from_its_discovery_part')
     sizes = counts(document, cuts, plan, cell)
     if type(declared_cells) is not int or declared_cells != sizes['evaluable_cells']:
         raise ValueError('declared_cells_is_not_the_number_of_evaluable_cells:%d' % sizes['evaluable_cells'])
@@ -347,10 +365,21 @@ def analysis(document, cuts, census=None, *, plan, declared_cells, cell=None, n_
         data[c] = [(position_return(r, c[2], rents), r['creator']) for r in rows]
     mean = {c: statistics.fmean(v for v, _g in items) for c, items in data.items()}
     stats = {('cell', c): [(1.0, items)] for c, items in data.items()}
-    if BASE in data:
+    comparison = {}
+    for c in cells:
+        if c[0] != BASE[0]:                                     # a selection against the pools it does not select
+            selector = next(s for s in SELECTORS if s['id'] == c[0])
+            rest = [r for r in document['rows'] if r['entry'] == c[1] and not selected(r, selector, cuts)]
+            if len(rest) >= MIN_POSITIONS and len({r['creator'] for r in rest}) >= MIN_CLUSTERS:
+                comparison[c] = ('effect_vs_unselected', [(position_return(r, c[2], rents), r['creator']) for r in rest])
+        elif c != BASE and BASE in data:
+            comparison[c] = ('effect_vs_base', data[BASE])
+    for c, (_name, other) in comparison.items():
+        stats[('effect', c)] = [(1.0, data[c]), (-1.0, other)]
+    if SECONDARY in data:
         for c in cells:
-            if c != BASE:
-                stats[('effect', c)] = [(1.0, data[c]), (-1.0, data[BASE])]
+            if c != SECONDARY:
+                stats[('secondary', c)] = [(1.0, data[c]), (-1.0, data[SECONDARY])]
     interaction = None
     if plan == 'combined' and len(cells) == len(plan_cells(plan, cell)):
         singles = [c for c in cells if c not in (BASE, tuple(cell))]
@@ -371,10 +400,14 @@ def analysis(document, cuts, census=None, *, plan, declared_cells, cell=None, n_
             max_drawdown_stakes=max_drawdown(values), top5_share_of_gains=sum(top) / sum(wins) if wins else None,
             migrated=sizes['cells'][','.join(c)]['migrated'])
         cell_p.append(p)
-        if ('effect', c) in draws:
+        if c in comparison:
+            name, other = comparison[c]
             e_interval, e_p = _summary(draws[('effect', c)])
-            block['effect_vs_base'] = dict(mean=mean[c] - mean[BASE], ci95=e_interval, p_one_sided=e_p)
+            block[name] = dict(mean=mean[c] - statistics.fmean(v for v, _g in other), ci95=e_interval, p_one_sided=e_p,
+                               compared_positions=len(other))
             effect_p.append(e_p)
+        if ('secondary', c) in draws:
+            block['diff_vs_age5'] = dict(mean=mean[c] - mean[SECONDARY], ci95=_summary(draws[('secondary', c)])[0])
         out[','.join(c)] = block
     for c, p in zip(cells, holm(cell_p)):
         block = out[','.join(c)]
@@ -382,8 +415,8 @@ def analysis(document, cuts, census=None, *, plan, declared_cells, cell=None, n_
         block['p_holm'] = p
         block['net_positive_after_holm'] = bool(block['mean_r'] > 0 and low is not None and low > 0
                                                 and p is not None and p < 0.05)
-    for c, p in zip([c for c in cells if 'effect_vs_base' in out[','.join(c)]], holm(effect_p)):
-        effect = out[','.join(c)]['effect_vs_base']
+    for c, p in zip([c for c in cells if c in comparison], holm(effect_p)):
+        effect = out[','.join(c)][comparison[c][0]]
         low = (effect['ci95'] or [None])[0]
         effect['p_holm'] = p
         effect['positive_after_holm'] = bool(low is not None and low > 0 and p is not None and p < 0.05)
@@ -396,7 +429,9 @@ def analysis(document, cuts, census=None, *, plan, declared_cells, cell=None, n_
         sizes=sizes['cells'], evaluable_cells=sizes['evaluable_cells'], trials_added_to_n=sizes['evaluable_cells'],
         cells=out, notes=[
             'every evaluable cell of the plan was computed and counts in N; cells under the floors have no value',
-            'effects are differences of cell means to the base cell, creator clusters resampled jointly',
+            'effects: a selection against the pools it does not select (same entry and exit), an entry or an exit '
+            'against the base cell; creator clusters resampled jointly; two Holm families (cells, effects)',
+            'a claim needs the cell itself net positive after Holm: an effect alone never is one',
             'a positive effect is not a positive net result: read net_positive_after_holm of the cell itself',
             'r includes every cost and the rent lost; a migrated position counts -1'])
     if ('interaction', tuple(cell) if cell else None) in draws:
@@ -413,13 +448,13 @@ def markdown(result):
     lines = [f"# jointlab — plan {result['plan']} (exploratory, {result['trials_added_to_n']} trials added to N)", '',
              f"Base cell: {', '.join(result['base'])}. Rent: {result['rent_basis']}.", '',
              '| Cell (S, A, V) | Positions | Clusters | Mean net r | 95 % CI | Median | Winners | Drawdown (stakes) '
-             '| Effect vs base | 95 % CI | Net positive after Holm |', '|---|---|---|---|---|---|---|---|---|---|---|']
+             '| Effect (vs base, or vs unselected for a selection) | 95 % CI | Net positive after Holm |', '|---|---|---|---|---|---|---|---|---|---|---|']
     for key, size in result['sizes'].items():
         block = result['cells'].get(key)
         if block is None:
             lines.append(f"| {key} | {size['positions']} | {size['clusters']} | NOT EVALUABLE | | | | | | | |")
             continue
-        effect = block.get('effect_vs_base')
+        effect = block.get('effect_vs_base') or block.get('effect_vs_unselected')
         ci = block['mean_r_ci95']
         lines.append('| %s | %d | %d | %s | [%s; %s] | %s | %s | %.1f | %s | %s | %s |' % (
             key, block['positions'], block['clusters'], _pct(block['mean_r']), _pct(ci[0]), _pct(ci[1]),
