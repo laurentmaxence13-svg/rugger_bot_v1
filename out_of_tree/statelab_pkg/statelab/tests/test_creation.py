@@ -43,7 +43,7 @@ def test_outer_programs_drop_system_programs_and_flag_a_direct_call(archives):  
         programs = creation.outer_programs(archive.transactions[facts['creation_signature']])
         assert not set(programs) & creation.SYSTEM_PROGRAMS and len(programs) == len(set(programs))
         row = creation.classify(archive)
-        assert (row['launcher'] == 'direct') == (creation.LAUNCHLAB in programs)
+        assert row['launcher'] == '+'.join(programs) and row['launcher'] != 'direct'
 
 
 def test_the_census_counts_discovery_pools_only_and_reads_no_price(visible):                        # noqa: F811

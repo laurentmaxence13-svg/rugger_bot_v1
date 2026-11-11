@@ -14,7 +14,8 @@ Status of a pool (``status``), from the frozen ``hrr.creation_facts``:
   unidentified          no creator can be read (creation not decoded, or the earliest stored
                         transaction is not this pool's creation).
 Also counted: the programs of the OUTER instructions of the creation transaction other than the
-system ones (``launcher``: 'direct' when LaunchLab itself is called at top level), whether the
+system ones (``launcher``, in call order; LaunchLab can appear there for a trade while the creation
+itself is an inner call of another program: the status reasons say which), whether the
 declared creator pays the fees, whether a trade of the pool sits in the creation transaction itself,
 and how many pools share a cluster (declared creator, else fee payer of the creation).
 Discovery segments only (exploration, train).
@@ -69,7 +70,7 @@ def classify(archive, events=()):
         payer = keys[0]['pubkey']
     except (ValueError, KeyError, IndexError, TypeError):
         programs, payer = None, None
-    launcher = None if programs is None else ('direct' if LAUNCHLAB in programs else '+'.join(programs) or 'none')
+    launcher = None if programs is None else ('+'.join(programs) or 'none')        # LaunchLab may sit beside a launcher
     return dict(pool=archive.pool, status=status, reasons=list(reasons), launcher=launcher,
                 creator_pays_fees=None if payer is None or not facts.get('creator') else facts['creator'] == payer,
                 trade_in_creation_transaction=any(e.signature == facts['creation_signature'] for e in events),
