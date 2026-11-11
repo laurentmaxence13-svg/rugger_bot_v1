@@ -1,42 +1,64 @@
-# statelab 0.1 — étude d'états des chemins de pools LaunchLab (descriptif)
+# statelab 0.2 — étude d'états des chemins de pools LaunchLab
 
-But : mesurer, depuis une grille FIXE d'instants de décision causaux, la valeur de liquidation exacte
-d'un achat de 0,1 SOL à des horizons fixes, nette de tous les coûts. C'est le test direct de la
-question « existe-t-il un état de la courbe où un preneur à environ une seconde de latence a une
-espérance nette positive ? ». Aucune stratégie n'est évaluée, aucun essai n'est enregistré, rien
-n'est choisi ni promu.
+Question testée : existe-t-il un état de la courbe (âge du pool, progression) où un preneur à environ
+une seconde de latence, qui achète 0,1 SOL et revend à un horizon fixe, a une espérance NETTE
+positive, meilleure qu'une entrée à un âge tiré au hasard ? Aucune stratégie n'est promue ; une
+cellule « retenue » n'est qu'une hypothèse à envoyer en confirmation sur d'autres données.
 
-Ce qui est fixé AVANT toute lecture de données (constantes du code, couvertes par l'empreinte) :
-- points de décision (`statelab/points.py`) : premier événement entier d'âge >= A pour
-  A = 0, 5, 15, 30, 60, 120, 300, 600, 1200, 2400, 3600 s (retard maximal 30 s) ; premier
-  franchissement à la hausse des niveaux de progression 5, 10, 20, 35, 50, 65, 80 % de la courbe ;
-- mise 0,1 SOL ; horizons 10, 25, 60, 120, 300 s ; latence d'ordre 4 slots (option `--latency-slots`
-  pour les sensibilités 1 et 10) ; une seconde d'allocation pour la latence de vente (`value_late`) ;
-- valorisation : `v4sim` 0.2 inchangé, mode M-P, registres par acteur, liquidation exacte ;
-- population : pools rejouables dont le créateur est signé (celle des politiques de référence) ;
-- une position dont la courbe s'achève avant l'horizon n'est pas créditée (`migrated`, critères R02 v1).
+Version 0.2 = corrections de RUGGER 02 (audit bfb18f0a : C-S1, C-S2, C-S3 ; cadre 243e2cca : R-a à R-f).
+Les lignes produites par la version 0.1 (commit 8f24a84, fichier 7fc1838a chez R03) restent fermées
+et ne servent à aucun tableau.
 
-Données : uniquement un pack visible ancré, lu par `v3lab.pack.Pack` (fichiers scellés et tout slot
-W1 refusés). Découverte sur `exploration` et `train`. La lecture de `validation` exige
-`--confirm-validation <identifiant d'UNE hypothèse pré-enregistrée>` et est inscrite dans la sortie.
+## Fixé dans le code avant toute lecture de données
 
-Commandes (depuis la racine de l'arbre gelé, PYTHONPATH = statelab_pkg : v3lab_pkg : v4sim_pkg) :
+- Grille (`points.py`) : premier événement entier d'âge >= A pour A = 0, 5, 15, 30, 60, 120, 300, 600,
+  1200, 2400, 3600 s (retard maximal 30 s) ; premier franchissement à la hausse de 5, 10, 20, 35, 50,
+  65, 80 % de progression ; horizons 10, 25, 60, 120, 300 s. Grille complète : 18 x 5 = 90 cellules.
+- Placebo (C-S2) : la règle gelée `RandomEntry` de V3-02 — âge cible tiré de l'identifiant du pool
+  (sel `v1`, 0 à 120 s), premier événement entier à cet âge ou après, perdu au-delà de 120 s.
+  Cellule de référence : `age:5` (l'entrée de V3-01).
+- Valeur d'un horizon (C-S1) : la SORTIE À L'HORLOGE gelée — vente due à h, qui atterrit après la
+  latence d'horloge gelée (`clock_exit_latency_s` : 1 s pour 4 slots, 3 s pour 10 slots), derrière
+  tous les événements réels arrivés avant. Égale au lamport près à une sortie à l'horloge rejouée par
+  v4sim 0.2 mode M-P (test sur tous les points et tous les horizons). La valeur sans latence de vente
+  n'est qu'une sensibilité.
+- Rendement d'une sonde (R-d) : (valeur − mise − 2 frais de transaction − loyer) / (capital + loyer),
+  loyer PERDU par la chaîne actuelle (classe du recensement) ; courbe achevée avant l'atterrissage de
+  la vente : −1.
+- Unité (R-e) : une sonde par pool et par cellule ; intervalles par rééchantillonnage des créateurs.
+- Planchers : une étiquette n'est CALCULÉE que si elle compte au moins 30 sondes entrées et 20
+  créateurs. `statelab.study` affiche ces effectifs (aucune valeur) : K = étiquettes calculées x 5
+  horizons est donc connu, déclaré et ancré AVANT la lecture ; `statelab.table --declared-k K` refuse
+  tout autre K. Calculer le tableau ajoute K au nombre cumulé d'essais N (R-b).
+- Criblage (C-S3) : cellule retenue seulement si rendement net moyen > 0 ET borne basse de
+  l'intervalle à 95 % de l'écart apparié au placebo > 0 ET Benjamini-Hochberg q = 0,10 sur les 90
+  cellules de la grille (les cellules non calculées comptent dans la famille).
+- Secondaire : écart apparié à `age:5` ; dérive moyenne (référence martingale = 0).
+- Sensibilités pré-déclarées, publiées pour toutes les cellules, non comptées, sans effet sur un
+  choix : sans latence de vente ; loyer récupéré (nettoyage, NON exécutable aujourd'hui) ; mêmes
+  tableaux avec `--latency-slots 1` et `10`.
 
-    python -B -m statelab.study <pack_visible> --expect-manifest-sha <sha256> --out rows.json
-    python -B -m statelab.table rows.json --census <census.json> --markdown table.md > table.json
+## Données et gardes
 
-`statelab.study` n'affiche que des identifiants et des comptes (aucune valeur). `statelab.table`
-produit le tableau principal : par cellule (âge ou progression) et par horizon, rendement net moyen,
-intervalle par créateurs, coût instantané, dérive, variante loyer perdu, positions migrées, effet de
-la latence de vente, borne rétrospective de sortie. Les cellules sont les étiquettes de la grille :
-rien n'est cherché. Une cellule positive est une hypothèse à pré-enregistrer et à confirmer sur
-d'autres données, jamais un résultat.
+Pack visible ancré lu par `v3lab.pack.Pack` (scellés et tout slot W1 refusés). Découverte sur
+`exploration` et `train`. `validation` exige `--confirm-validation <une hypothèse pré-enregistrée>`
+et est alors lue seule. Population : pools rejouables à créateur signé. Un point dont l'horizon le
+plus long sortirait de la fenêtre collectée est écarté et compté.
 
-Limites dites : P0 visible a déjà servi à 34 essais ; les sondes d'un même pool sont corrélées
-(l'intervalle rééchantillonne les créateurs) ; les états de fin de courbe et les migrations sont
-presque absents de P0 ; la latence d'achat est celle du modèle (pas d'échec d'inclusion ici).
+## Commandes (racine de l'arbre gelé ; PYTHONPATH = statelab_pkg : v3lab_pkg : v4sim_pkg)
 
-Tests : 11 (grille causale, valeurs égales à un recalcul indépendant par l'API des registres,
-rien n'est lu après l'horizon, même entrée que la référence V3-01 au point 5 s, garde des segments,
-fenêtre, courbe achevée dans l'horizon, achat refusé, transaction entière, créateur non signé,
-tableau exact sur lignes faites à la main) ; 11 mutations tuées.
+    python -B -m statelab.study <pack_visible> --expect-manifest-sha <sha256> --out rows_lat4.json
+    python -B -m statelab.table rows_lat4.json --declared-k <K ancré> --census <census.json> --markdown table_lat4.md > table_lat4.json
+
+## Limites dites
+
+P0 visible a déjà servi à 34 essais ; 141 pools seulement en découverte ; presque aucun état de fin
+de courbe ni de migration ; latence d'achat du modèle, sans échec d'inclusion ; une cellule retenue
+ici devra passer les critères économiques v1 de RUGGER 02 (dont R-1 : 200 cycles clos, 100 créateurs)
+sur d'autres données.
+
+## Tests
+
+19 tests hors ligne ; 22 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
+latence de vente, une courbe achevée créditée, le loyer oublié, la famille de multiplicité réduite,
+l'appariement hors pool).

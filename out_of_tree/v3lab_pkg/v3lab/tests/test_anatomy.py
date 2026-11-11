@@ -16,7 +16,7 @@ STATE = CurveState(virtual_base=1_073_000_000_000_000, virtual_quote=30_000_000_
 
 
 def cycle(pool, segment, *, rate=12_500, spent=100_000_000, received=None, creator=None, entry_index=3,
-          outcome='closed', created_slot=1, trades=50, path=None, state=STATE, failed=0):
+          outcome='closed', created_slot=1, trades=50, path=None, state=STATE, failed=0, decision_index=None):
     """A row shaped like ``runner.run_pool``'s, whose fill and instant sale come from the frozen curve."""
     buy = buy_exact_in(state, spent, rate)
     sale = sell_exact_in(buy.after, buy.amount_out, rate)
@@ -24,6 +24,7 @@ def cycle(pool, segment, *, rate=12_500, spent=100_000_000, received=None, creat
     closed = outcome == 'closed'
     tx_costs = 2 * TX if closed else TX
     trade = dict(entry_index=entry_index, entry_signature='sig' + pool, outcome=outcome, spent=spent,
+                 decision_index=entry_index - 1 if decision_index is None else decision_index,
                  tokens=buy.amount_out, received=received if closed else 0, tx_costs=tx_costs,
                  failed_attempt_costs=failed, fee_rate_ppm=rate, hold_slots=100, exit_slot=created_slot + 200,
                  exit_trigger=dict(reason='max_hold_clock', index=entry_index + 2, mark=received),
@@ -45,7 +46,8 @@ def test_the_identity_is_exact_and_matches_the_frozen_curve_fees():
         parts = anatomy.decompose(row)
         assert parts['buy_fee'] == buy.fee
         assert 0 <= sale.fee - parts['sell_fee_at_entry'] <= 1          # the documented 1-lamport ambiguity
-        assert abs(parts['own_impact'] - (buy.amount_in - buy.fee - (sale.amount_out + sale.fee))) <= 1
+        assert abs(parts['rounding'] - (buy.amount_in - buy.fee - (sale.amount_out + sale.fee))) <= 1
+        assert 0 <= parts['rounding'] <= 2_000              # rounding only: an immediate round trip gives the impact back (L-1)
         assert parts['drift'] == 93_000_000 - sale.amount_out
         assert parts['drift'] - sum(v for k, v in parts.items() if k != 'drift') == row['trade']['pnl_lamports']
 
@@ -65,7 +67,7 @@ def test_a_row_that_breaks_the_identity_or_leaves_the_visible_segments_is_refuse
     for patch in (dict(pnl_lamports=row['trade']['pnl_lamports'] + 1), dict(tx_costs=TX), dict(fee_rate_ppm=None)):
         with pytest.raises(ValueError):
             anatomy.decompose(dict(row, trade=dict(row['trade'], **patch)))
-    with pytest.raises(ValueError, match='negative_own_impact'):
+    with pytest.raises(ValueError, match='negative_rounding'):
         anatomy.decompose(dict(row, v3=dict(row['v3'], immediate_mark=row['trade']['spent'])))
     with pytest.raises(ValueError, match='row_outside_the_visible_segments'):
         anatomy.anatomy({'V3-01': bundle([row, cycle('z', 'holdout')[0]])}, n_boot=0)
@@ -90,7 +92,7 @@ def test_money_sums_the_components_and_ranks_the_loss_sources():
     ranked = m['loss_sources_ranked']
     assert [r['lamports'] for r in ranked] == sorted((r['lamports'] for r in ranked), reverse=True)
     assert sum(r['share_of_gross_losses_pct'] for r in ranked) == pytest.approx(100)
-    assert {r['source'] for r in ranked} >= {'buy_fee', 'sell_fee_at_entry', 'own_impact', 'tx_costs', 'negative_drift',
+    assert {r['source'] for r in ranked} >= {'buy_fee', 'sell_fee_at_entry', 'rounding', 'tx_costs', 'negative_drift',
                                              'rent_lost_today'}
     train = out['trials']['V3-01']['money']['train']
     assert train['closed'] == 2 and train['components_lamports']['drift'] == -5_000_000
@@ -111,7 +113,7 @@ def test_the_census_sets_the_rent_and_the_token_class_groups():
     assert set(g['token_class']) == {'executable_now', 'token2022_allowlisted'}
     assert g['creator_earlier_pools']['0']['entered'] == 1 and g['creator_earlier_pools']['1+']['entered'] == 1
     assert g['fee_rate_ppm']['12500']['closed'] == 2 and g['fee_rate_ppm']['12500']['small_sample'] is True
-    assert g['events_before_entry']['4-9']['entered'] == 2
+    assert g['events_before_decision']['2-3']['entered'] == 2
     missing = anatomy.anatomy({'V3-01': bundle([a, cycle('q', 'train')[0]])}, census, n_boot=0)
     assert missing['trials']['V3-01']['money']['all_visible']['rent_lost_today_lamports'] is None   # unknown class: no guess
 
@@ -131,7 +133,7 @@ def test_the_exit_bound_is_hindsight_on_the_probe_path_of_the_same_entry():
     late = json.loads(json.dumps(other))
     late['trade']['entry_index'], late['v3']['path'] = 4, [[1, cost * 3]]       # not the same entry: never paired
     out = anatomy.anatomy({'V3-01': bundle(rows + [other]), 'V3-06': bundle(probes + [late], 'V3-06', 'probe')}, n_boot=0)
-    e = out['trials']['V3-01']['exits']['all_visible']
+    e = out['trials']['V3-01']['exits']['discovery']
     assert e['paired'] == 3 and 'HINDSIGHT' in e['label']
     instant = (rows[2]['v3']['immediate_mark'] - cost) / cost
     assert e['best_exit_mean'] == pytest.approx((0.80 + 0.02 + instant) / 3, abs=1e-6)
@@ -168,8 +170,56 @@ def test_on_bundles_of_a_real_run_every_closed_cycle_satisfies_the_identity(visi
         assert sum(m['components_lamports'][k] * (1 if k == 'drift' else -1)
                    for k in anatomy.COMPONENTS) == m['pnl_lamports']
     assert seen >= 4
-    probe = document['trials']['V3-06']['exits']['all_visible']
-    assert probe['paired'] >= 1 and probe['best_exit_mean'] >= probe['last_recorded_value_mean']
+    probe = document['trials']['V3-06']['exits']['discovery']
+    assert set(document['trials']['V3-06']['exits']) == {'exploration', 'train', 'discovery'}
+    if probe['paired']:
+        assert probe['best_exit_mean'] >= probe['last_recorded_value_mean']
+    assert all(row['segment'] in anatomy.DISCOVERY_SEGMENTS for row in document['positions']['rows'])
     text = anatomy.markdown(document)
     assert '### Où part l’argent' in text and '| V3-01 |' in text and 'rétrospective' in text
     json.dumps(document, allow_nan=False)
+
+
+def test_a_pair_needs_the_same_entry_event_and_the_same_fill():                                   # R02 T-1
+    cost = 100_210_000
+    row, _b, _s = cycle('a', 'train')
+    same = json.loads(json.dumps(row))
+    same['v3']['path'] = [[10, cost * 2]]
+    assert anatomy.exits(bundle([row]), bundle([same], 'V3-06', 'probe'))['paired'] == 1
+    for field, value in (('entry_signature', 'another'), ('spent', row['trade']['spent'] + 1),
+                         ('tokens', row['trade']['tokens'] + 1), ('entry_index', row['trade']['entry_index'] + 1)):
+        other = json.loads(json.dumps(same))
+        other['trade'][field] = value                     # same pool, same index unless stated: not the same entry
+        assert anatomy.exits(bundle([row]), bundle([other], 'V3-06', 'probe')) == dict(paired=0), field
+        listing = anatomy.positions(bundle([row]), bundle([other], 'V3-06', 'probe'))
+        assert 'best_exit_return_HINDSIGHT' not in listing[0], field
+
+
+def test_breakdowns_exit_bound_and_listing_never_read_validation():                                # R02 C-2
+    cost = 100_210_000
+    rows, probes = [], []
+    for name, segment in (('a', 'exploration'), ('b', 'train'), ('c', 'validation'), ('d', 'validation')):
+        row, _b, sale = cycle(name, segment, received=None if segment != 'validation' else 10 ** 9)
+        probe_row = json.loads(json.dumps(row))
+        probe_row['v3']['path'] = [[5, cost * (9 if segment == 'validation' else 1)]]
+        rows.append(row)
+        probes.append(probe_row)
+    out = anatomy.anatomy({'V3-01': bundle(rows), 'V3-06': bundle(probes, 'V3-06', 'probe')}, positions_of='V3-01', n_boot=0)
+    trial = out['trials']['V3-01']
+    assert out['discovery_segments'] == ['exploration', 'train']
+    assert set(trial['exits']) == {'exploration', 'train', 'discovery'} and trial['exits']['discovery']['paired'] == 2
+    assert trial['exits']['discovery']['best_exit_mean'] < 0.01           # the validation winners (x9) are not read
+    assert set(trial['groups']['segment']) == {'exploration', 'train'}
+    assert all(sum(g['entered'] for g in by_key.values()) == 2 for by_key in trial['groups'].values())
+    assert [r['pool'] for r in out['positions']['rows']] == ['a', 'b']
+    assert trial['money']['validation']['closed'] == 2                    # the audited sums stay per segment
+    with pytest.raises(ValueError, match='not_a_discovery_segment'):
+        anatomy.exits(bundle(rows), bundle(probes, 'V3-06', 'probe'), segment='validation')
+    assert 'exploration + train seulement' in anatomy.markdown(out)
+
+
+def test_events_that_land_during_the_order_latency_do_not_change_the_causal_bucket():              # R02 C-1
+    early, _b, _s = cycle('a', 'train', entry_index=1, decision_index=0)
+    late, _b2, _s2 = cycle('b', 'train', entry_index=40, decision_index=0)       # 40 events landed during the latency
+    g = anatomy.anatomy({'V3-01': bundle([early, late])}, n_boot=0)['trials']['V3-01']['groups']
+    assert set(g['events_before_decision']) == {'1'} and g['events_before_decision']['1']['entered'] == 2

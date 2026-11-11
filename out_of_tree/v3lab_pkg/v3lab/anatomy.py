@@ -7,14 +7,16 @@ file, no replay, no new trial; it decides nothing and is not part of the V3 fing
 
 EXACT IDENTITY of a closed cycle (integers, checked for every row; a row that breaks it raises):
 
-    pnl = drift - buy_fee - sell_fee_at_entry - own_impact - tx_costs - failed_attempt_costs
+    pnl = drift - buy_fee - sell_fee_at_entry - rounding - tx_costs - failed_attempt_costs
 
 * ``buy_fee``            curve fee of our buy, ``ceil(spent * rate / 1e6)`` (the frozen curve rule);
 * ``sell_fee_at_entry``  curve fee of selling at once on the state our own buy left (``immediate_mark``
                          is that sale, net; its gross is recovered from the same fee rule; when two
                          gross values give the same net the smaller is kept: at most 1 lamport);
-* ``own_impact``         quote we put on the curve minus the gross quote that immediate sale takes
-                         back: our own price impact and rounding, never negative;
+* ``rounding``           quote we put on the curve minus the gross quote that immediate sale takes
+                         back. On a constant-product curve an immediate round trip gives the own price
+                         impact back, so this is integer rounding only (a few lamports, never negative;
+                         R02 L-1): the own impact shows up in ``drift`` when others trade in between;
 * ``tx_costs``           network and priority fees of our two transactions (frozen model);
 * ``drift``              ``received - immediate_mark``: what the other traders did to the value of
                          our position during the hold (net of the sale fee, as ``v3lab.evaluate``).
@@ -30,8 +32,14 @@ Exit anatomy (needs the probe V3-06, which records the exact liquidation value a
 event for 900 s): for the positions a trial shares with the probe (same entry event, same fill),
 the best value any exit could have taken (HINDSIGHT: an upper bound for every exit rule on these
 entries, never a strategy), how concentrated it is, when it occurs, and how much trading follows
-our entry. Groups (fee tier, events before the entry, creator's earlier pools, token class) are
+our entry. Groups (fee tier, events before the decision, creator's earlier pools, token class) are
 descriptive breakdowns; ``pool_events_total`` uses the whole life of the pool and is HINDSIGHT.
+
+Segments (R02 C-2): the money tables repeat sums already audited for every visible segment. The
+breakdowns, the exit bound and the position listing are DISCOVERY tables: exploration and train
+only, never validation. Version 1 of this module (commit 35de13f) printed them over all visible
+segments and that output was read on 2026-11-11: any hypothesis formed from those views has
+consumed the P0 validation screen and can only be tested on other data.
 """
 import argparse
 from collections import Counter, OrderedDict
@@ -43,11 +51,12 @@ import statistics
 from v3lab import plan
 from v3lab.evaluate import _cost, _interval, cluster_bootstrap_means, load_bundles
 
-SCHEMA = 'v3lab-loss-anatomy-v1'
+SCHEMA = 'v3lab-loss-anatomy-v2'
 FEE_DENOMINATOR = 1_000_000
 SPL_RENT_LAMPORTS = 2_039_280
-COMPONENTS = ('buy_fee', 'sell_fee_at_entry', 'own_impact', 'tx_costs', 'failed_attempt_costs', 'drift')
-ENTRY_COSTS = ('buy_fee', 'sell_fee_at_entry', 'own_impact', 'tx_costs')
+COMPONENTS = ('buy_fee', 'sell_fee_at_entry', 'rounding', 'tx_costs', 'failed_attempt_costs', 'drift')
+ENTRY_COSTS = ('buy_fee', 'sell_fee_at_entry', 'rounding', 'tx_costs')
+DISCOVERY_SEGMENTS = ('exploration', 'train')          # R02 C-2: breakdowns, exit bound and listing never read validation
 SMALL_GROUP = 20
 N_BOOT = 2_000
 EVENT_BUCKETS = ((1, 1), (2, 3), (4, 9), (10, 29), (30, None))
@@ -59,6 +68,9 @@ NOTES = [
     'hindsight columns (best exit, pool_events_total) are upper bounds or context, never achievable rules',
     'closed cycles only in the identity; positions that are not a closed cycle are counted apart',
     'the share of the drift due to the order latency cannot be read from a bundle',
+    'groups, exits and positions are discovery tables: exploration and train only (R02 C-2)',
+    'version 1 (commit 35de13f) showed groups and exits over all visible segments and was read on 2026-11-11: '
+    'a hypothesis formed from those views has consumed the P0 validation screen',
 ]
 
 
@@ -90,11 +102,11 @@ def decompose(record):
         raise ValueError('cost_identity_broken:%s' % record['pool'])
     buy_fee = _ceil_div(spent * rate, FEE_DENOMINATOR)
     gross = _gross_of_net(immediate, rate)
-    parts = dict(buy_fee=buy_fee, sell_fee_at_entry=gross - immediate, own_impact=spent - buy_fee - gross,
+    parts = dict(buy_fee=buy_fee, sell_fee_at_entry=gross - immediate, rounding=spent - buy_fee - gross,
                  tx_costs=trade['tx_costs'], failed_attempt_costs=trade['failed_attempt_costs'],
                  drift=trade['received'] - immediate)
-    if parts['own_impact'] < 0:
-        raise ValueError('negative_own_impact:%s' % record['pool'])
+    if parts['rounding'] < 0:
+        raise ValueError('negative_rounding:%s' % record['pool'])
     total = parts['drift'] - sum(parts[name] for name in COMPONENTS if name != 'drift')
     if total != trade['pnl_lamports']:
         raise ValueError('pnl_identity_broken:%s' % record['pool'])
@@ -106,6 +118,13 @@ def _entered(bundle, segment=None):
         raise ValueError('row_outside_the_visible_segments')          # never a sealed or unknown segment
     return [r for r in bundle['pools'] if r['trade']['entry_index'] is not None
             and (segment is None or r['segment'] == segment)]
+
+
+def _discovery(bundle, segment=None):
+    """Entered positions of the discovery segments only (R02 C-2); ``segment`` must be one of them."""
+    if segment is not None and segment not in DISCOVERY_SEGMENTS:
+        raise ValueError('not_a_discovery_segment')
+    return [r for r in _entered(bundle, segment) if r['segment'] in DISCOVERY_SEGMENTS]
 
 
 def _pct(value, base):
@@ -178,7 +197,8 @@ def group_keys(record, earlier, rents):
     keys = OrderedDict(
         segment=record['segment'],
         fee_rate_ppm=str(trade.get('fee_rate_ppm')),
-        events_before_entry=_bucket(trade['entry_index'] + 1, EVENT_BUCKETS),
+        # causal: the events known at the decision; those that land during the order latency are not (R02 C-1)
+        events_before_decision=_bucket(trade['decision_index'] + 1, EVENT_BUCKETS),
         creator_earlier_pools='0' if earlier.get(record['pool'], 0) == 0 else '1+',
         pool_events_total_HINDSIGHT=_bucket(record.get('trades') or 0, TOTAL_BUCKETS))
     if rents is not None:
@@ -210,7 +230,7 @@ def groups(bundle, rents=None, *, n_boot=N_BOOT, seed=plan.SEED):
     """Descriptive breakdowns of the entered positions; every group carries its size and a small-sample flag."""
     earlier = _earlier_pools(bundle)
     table = {}
-    for record in _entered(bundle):
+    for record in _discovery(bundle):
         for dimension, key in group_keys(record, earlier, rents).items():
             table.setdefault(dimension, {}).setdefault(key, []).append(record)
     return {dimension: {key: _group_row(rows, n_boot, seed) for key, rows in sorted(by_key.items())}
@@ -229,8 +249,8 @@ def _quantile(values, q):
 
 def exits(bundle, probe, rents=None, segment=None):
     """What the exit could change at most on this trial's entries (hindsight on the probe path)."""
-    paths = {r['pool']: r for r in _entered(probe) if r['v3'].get('immediate_mark') is not None and 'path' in r['v3']}
-    rows = [(r, paths[r['pool']]) for r in _entered(bundle, segment)
+    paths = {r['pool']: r for r in _discovery(probe) if r['v3'].get('immediate_mark') is not None and 'path' in r['v3']}
+    rows = [(r, paths[r['pool']]) for r in _discovery(bundle, segment)
             if r['pool'] in paths and _same_entry(r, paths[r['pool']])]
     if not rows:
         return dict(paired=0)
@@ -275,9 +295,9 @@ def exits(bundle, probe, rents=None, segment=None):
 def positions(bundle, probe=None, rents=None):
     """Trade-by-trade listing of one trial (closed cycles decomposed; others with their outcome)."""
     earlier = _earlier_pools(bundle)
-    paths = {} if probe is None else {r['pool']: r for r in _entered(probe) if 'path' in r['v3']}
+    paths = {} if probe is None else {r['pool']: r for r in _discovery(probe) if 'path' in r['v3']}
     rows = []
-    for record in sorted(_entered(bundle), key=lambda r: (r.get('created_slot') or 0, r['pool'])):
+    for record in sorted(_discovery(bundle), key=lambda r: (r.get('created_slot') or 0, r['pool'])):
         trade = record['trade']
         row = dict(pool=record['pool'], creator=record['creator'], created_slot=record.get('created_slot'),
                    outcome=trade['outcome'], hold_slots=trade.get('hold_slots'),
@@ -309,6 +329,7 @@ def anatomy(bundles, census=None, *, positions_of=None, n_boot=N_BOOT):
         rents = classes(census)
     probe = next((b for b in bundles.values() if b.get('role') == 'probe'), None)
     out = dict(schema=SCHEMA, status='EXPLORATORY', plan_sha256=plan.plan_sha256(),
+               discovery_segments=list(DISCOVERY_SEGMENTS),
                rent_basis='token class of the census' if rents is not None else
                'ASSUMED: SPL Token rent for every row (no census supplied)',
                probe=None if probe is None else probe['trial'], notes=list(NOTES), trials={})
@@ -318,8 +339,8 @@ def anatomy(bundles, census=None, *, positions_of=None, n_boot=N_BOOT):
                             for segment in plan.SEGMENTS + (None,)},
                      groups=groups(bundle, rents, n_boot=n_boot))
         if probe is not None:
-            block['exits'] = {segment or 'all_visible': exits(bundle, probe, rents, segment)
-                              for segment in plan.SEGMENTS + (None,)}
+            block['exits'] = {segment or 'discovery': exits(bundle, probe, rents, segment)
+                              for segment in DISCOVERY_SEGMENTS + (None,)}
         out['trials'][trial] = block
     if positions_of is not None:
         out['positions'] = dict(trial=positions_of, rows=positions(bundles[positions_of], probe, rents))
@@ -333,7 +354,7 @@ def _cell(value, digits=2, suffix='', scale=1.0):
 def markdown(document):
     lines = ['> ' + note for note in document['notes']] + ['> loyer : ' + document['rent_basis'], '']
     lines += ['### Où part l’argent (cycles clos, tous segments visibles, en % du capital engagé)', '',
-              '| Essai | Clos | P&L net | Frais de courbe achat | Frais de courbe vente | Impact propre | Frais de transaction '
+              '| Essai | Clos | P&L net | Frais de courbe achat | Frais de courbe vente | Arrondis | Frais de transaction '
               '| Échecs | Dérive pendant la détention | Coût aller-retour instantané | Loyer perdu aujourd’hui | P&L avec loyer '
               '| Cycles à dérive + / 0 / − |', '|' + '---|' * 13]
     for trial, body in document['trials'].items():
@@ -341,7 +362,7 @@ def markdown(document):
         c, d = m['components_pct'], m['drift']
         lines.append(
             f"| {trial} | {m['decomposed']} | {_cell(m['pnl_pct'], 2, ' %')} | {_cell(c['buy_fee'], 2, ' %', -1)} | "
-            f"{_cell(c['sell_fee_at_entry'], 2, ' %', -1)} | {_cell(c['own_impact'], 2, ' %', -1)} | "
+            f"{_cell(c['sell_fee_at_entry'], 2, ' %', -1)} | {_cell(c['rounding'], 4, ' %', -1)} | "
             f"{_cell(c['tx_costs'], 2, ' %', -1)} | {_cell(c['failed_attempt_costs'], 2, ' %', -1)} | "
             f"{_cell(c['drift'], 2, ' %')} | {_cell(m['instant_round_trip_cost_pct'], 2, ' %', -1)} | "
             f"{_cell(m['rent_lost_today_pct'], 2, ' %', -1)} | {_cell(m['pnl_with_rent_pct'], 2, ' %')} | "
@@ -353,12 +374,13 @@ def markdown(document):
             lines.append(f"| {trial} | {item['source']} | {item['lamports'] / 1e9:.4f} | "
                          f"{_cell(item['share_of_gross_losses_pct'], 1, ' %')} |")
     if document.get('probe'):
-        lines += ['', '### Borne supérieure de toute règle de sortie (rétrospective, sonde %s)' % document['probe'], '',
+        lines += ['', '### Borne supérieure de toute règle de sortie (rétrospective, sonde %s ; exploration + train seulement)'
+                  % document['probe'], '',
                   '| Essai | Positions appariées | Meilleure sortie possible (moyenne) | Médiane | Part > 0 | Avec loyer (moyenne) '
                   '| Part du gain due à la 1re position | aux 5 premières | Moyenne sans la 1re | Âge médian du maximum (s) '
                   '| Aucune transaction dans les 25 s |', '|' + '---|' * 11]
         for trial, body in document['trials'].items():
-            e = body['exits']['all_visible']
+            e = body['exits']['discovery']
             if not e['paired']:
                 continue
             lines.append(
@@ -369,7 +391,8 @@ def markdown(document):
                 f"{_cell(e['best_age_s']['median'], 0)} | {_cell(e['events_after_entry']['25']['share_none'], 1, ' %', 100)} |")
     reference = document['trials'].get(plan.PLAN.get('reference', 'V3-01'))
     if reference is not None:
-        lines += ['', '### Ventilations de la référence (descriptif ; un groupe de moins de %d clos est marqué *)' % SMALL_GROUP, '',
+        lines += ['', '### Ventilations de la référence (descriptif ; exploration + train seulement ; un groupe de moins de %d '
+                  'clos est marqué *)' % SMALL_GROUP, '',
                   '| Dimension | Groupe | Entrées | Clos | Rendement net moyen | IC 95 % (créateurs) | Réussite | Coût instantané '
                   '| Dérive moyenne | Part dérive > 0 |', '|' + '---|' * 10]
         for dimension, by_key in reference['groups'].items():
