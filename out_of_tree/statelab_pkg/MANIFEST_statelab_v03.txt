@@ -1,8 +1,9 @@
-3a77faa643debb6364e6191a6fee74808db9b7327dab2927318a5773e7edb986  ./README_STATELAB.md
+a231bcf67b607fffcc12afa7a10c85de0ce2d2813c0b06c76bad56344e207d36  ./README_STATELAB.md
 ddfcfae5bd1986978aed3a01c8a1097f98a91bcf28b62979354cc877152a9ea3  ./statelab/__init__.py
 da74ad2ccead2770a758a27ac5aa8af72bf2d973429aab204479780bd743a2d2  ./statelab/cohorts.py
 15c7af065a074e7202233522af7834d4d7c98bb77d683a9d7fa499e0705d397f  ./statelab/creation.py
 aba5d265e95c16a4f1843dd0977d525ff24340d2a9d907c9b3fb5f2e30484336  ./statelab/exits.py
+81f197253f8d70f0e1fb8c7ed0187a40891574c0172a7a09d2c31e0c820cab8e  ./statelab/hypotheses.py
 b5b5c6afab70111770d3cc04492cbcadb63b992bd7ff741fd7184f9481d3c573  ./statelab/points.py
 a2e4b654b2318b6a8f15356fcf99900b655bddcdd91719a42becb02191b81090  ./statelab/signals.py
 8fe06f57c44909bbfa51a0c55471c55127588e4ba4c246d0423065d7d6c55277  ./statelab/study.py
@@ -11,5 +12,6 @@ e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./statelab/tes
 f85c616502c28255ccc71e05eb6c4e10543c1dd380780c5a720612c23ec8b956  ./statelab/tests/test_cohorts.py
 97de91e8fd054ede2bbb1b3ed1573b4383b056d4a77879025142fcf053491167  ./statelab/tests/test_creation.py
 259ddab996e4ad306322c616ea7bc066bb1ddfb0b46747d5418da60f8be21f4f  ./statelab/tests/test_exits.py
+481e2ede667b79f0de205beea9cd4cf663925fcdb57c6939b6d4298d5792d6db  ./statelab/tests/test_hypotheses.py
 30add2453b4085217e33d65ab01e6e19eaaf15d17c9140aad260bd947e770afb  ./statelab/tests/test_signals.py
 9023c882a4b277e75a650444895f744f98cd9fc68c5b045e5ba6a59b351d864d  ./statelab/tests/test_statelab.py

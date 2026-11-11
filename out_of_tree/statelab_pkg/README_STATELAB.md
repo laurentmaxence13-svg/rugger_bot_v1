@@ -92,8 +92,35 @@ variation du prix. Segments de découverte seulement ; étiquettes sous les plan
 Hors empreinte statelab (cohorts.py a son propre sha256 dans le manifeste). 6 tests, 7 fautes
 plantées détectées.
 
+## Moteur de vente : `statelab.exits`
+
+    python -B -m statelab.exits run   <pack_visible> --expect-manifest-sha <sha256> --out exit_rows.json
+    python -B -m statelab.exits table exit_rows.json --declared-k 6 --census <census.json> --markdown exits.md > exits.json
+
+Sept règles de sortie causales sur les MÊMES entrées (cellule de référence `age:5`) : horloge 25 s
+(référence), prise de bénéfice +10 %, stop −10 %, les deux, stop suiveur 10 %, première vente réelle,
+flux de courbe négatif sur 10 s. « Améliore la sortie » (écart apparié à l'horloge, Holm) est séparé
+de « rentable » (moyenne propre et borne basse > 0). Ajoute 6 à N. 9 tests, 13 fautes plantées détectées.
+
+## Hypothèses W1 : `statelab.hypotheses` (fiche N v0.2)
+
+    python -B -m statelab.hypotheses p0 <pack_visible> --expect-manifest-sha <sha256> --out hw1_rows.json
+    python -B -m statelab.hypotheses export <export> --expect-manifest-sha <sha256> --out hw1_rows_w1.json \
+           --evaluation-min 467678545 --evaluation-max 469291345 --official-verdict-sha256 <sha256 du verdict W1 ancré>
+    python -B -m statelab.hypotheses verdicts hw1_rows.json --declared-m <m> --census <census.json> \
+           --latency10 hw1_rows_lat10.json --markdown hw1.md > hw1.json
+
+Cinq déclencheurs causaux, une position par pool et par hypothèse (première occurrence) ; `p0` et
+`export` n'affichent que des EFFECTIFS (positions, grappes, part de migrées, payeurs distincts) : le gel
+de R02 vient après ces comptes et avant toute valeur. `export` lit le format d'export commun à P0 et à
+W1 ; des slots W1 exigent le sha256 du verdict officiel ancré et la plage d'évaluation ; une décision
+tombant dans l'échauffement ne donne aucune position (jamais une occurrence ultérieure). `verdicts`
+applique les règles gelées : planchers 30 / 20, au plus 10 % de migrées, critère principal (borne basse
+de l'IC > 0 et p de Holm < 0,05 sur la famille évaluable), conditions (i) à (vii) de HW1-5, sensibilité
+« grappe = payeur », mots de verdict fermés. Ajoute 5 à N. 12 tests, 26 fautes plantées détectées.
+
 ## Tests
 
-31 tests hors ligne (étude, tableau, cohortes, signaux) ; 38 fautes plantées, toutes détectées (dont la lecture du futur, l'oubli de la
+56 tests hors ligne (étude, tableau, cohortes, signaux, création, sorties, hypothèses) ; les fautes plantées sont toutes détectées (dont la lecture du futur, l'oubli de la
 latence de vente, une courbe achevée créditée, le loyer oublié, la famille de multiplicité réduite,
 l'appariement hors pool).
