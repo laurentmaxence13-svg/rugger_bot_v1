@@ -97,12 +97,14 @@ def classify_trace(tx, mint):
     except (KeyError, IndexError, TypeError, ValueError) as exc:
         out['reasons'] = [f'creation_trace_unreadable:{exc}']
         return out
-    extensions, reasons, init, mint_authority_revoked = [], [], None, False
+    extensions, reasons, init, mint_authority_revoked, freeze_revoked = [], [], None, False, False
+    values = {}                      # extension value bytes, to rebuild the mint for the frozen-reader check
     for program, accounts, data in instructions:
         if program not in TOKEN_PROGRAMS or not data:
             continue
         if data[:8] == METADATA_INITIALIZE and len(accounts) > 2 and accounts[2] == mint:
             extensions.append(19)
+            values[19] = (accounts[1], data[8:])
             continue
         if data[:8] in GROUP_INITIALIZE and mint in accounts[:3]:
             extensions.append(GROUP_INITIALIZE[data[:8]])
@@ -119,12 +121,15 @@ def classify_trace(tx, mint):
             if init is not None:
                 reasons.append(f'extension_after_mint_initialisation:{policy.name(kind)}')
             extensions.append(kind)
+            values.setdefault(kind, data[2:] if (tag, None) not in EXTENSION_INIT else data[1:])
             if kind == 1:
                 out['transfer_fee_bps'] = _transfer_fee_bps(data)
         elif tag == 6:
             authority_type, has_new = (data[1], data[2]) if len(data) >= 3 else (None, None)
             if authority_type == 0 and has_new == 0 and len(data) == 3:
                 mint_authority_revoked = True
+            elif authority_type == 1 and has_new == 0 and len(data) == 3:
+                freeze_revoked = True        # SetAuthority FreezeAccount -> None: final (MintCannotFreeze after)
             else:
                 reasons.append(f'set_authority_on_mint:type_{authority_type}_new_{"some" if has_new else "none"}')
         elif tag in (7, 14):                                   # MintTo / MintToChecked at creation: supply
@@ -139,7 +144,7 @@ def classify_trace(tx, mint):
     # tag, decimals, mint authority (32), freeze authority COption: flag (1) + key (32 when present)
     if len(data) not in (35, 67) or data[34] not in (0, 1) or (data[34] == 1) != (len(data) == 67):
         reasons.append('initialize_mint_layout_unexpected')
-    elif data[34] == 1:
+    elif data[34] == 1 and not freeze_revoked:
         reasons.append('freeze_authority_present')
     if not mint_authority_revoked:
         reasons.append('mint_authority_not_revoked_at_creation')
@@ -155,17 +160,78 @@ def classify_trace(tx, mint):
             reasons.append('duplicate_extension')
         reasons += [f'extension_refused:{policy.name(k)}' for k in extensions if k not in policy.MINT_ALLOW]
     out['extensions'] = [policy.name(k) for k in extensions]
+    out['freeze_authority_final'] = 'present' if 'freeze_authority_present' in reasons else 'none'
+    out['mint_authority_final'] = 'none' if mint_authority_revoked else 'present'
     out['reasons'] = reasons
+    out['_rebuild'] = dict(decimals=data[1], extensions=list(extensions), values=values)
     if not reasons:
         out['class_'] = 'executable_now' if out['token_program'] == 'spl' else 'token2022_allowlisted'
     return out
 
 
-def census(document):
-    rows = []
+def _canonical_sha256(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+
+
+def rebuild_mint(row):
+    """Mint account bytes implied by the creation trace (state after creation), for the frozen reader."""
+    import base64
+    import struct
+    info = row['_rebuild']
+    base = bytearray(82)
+    base[44], base[45] = info['decimals'], 1
+    if row['mint_authority_final'] == 'present':
+        struct.pack_into('<I', base, 0, 1)
+    if row['freeze_authority_final'] == 'present':
+        struct.pack_into('<I', base, 46, 1)
+    raw = bytes(base)
+    if row['token_program'] == 'token2022':
+        tlv = b''
+        for kind in info['extensions']:
+            value = info['values'].get(kind, b'')
+            if kind == 18:
+                value = value[:64]
+            elif kind == 19:
+                authority, fields = value
+                value = trace_b58decode32(authority) + trace_b58decode32(row['mint']) + fields + struct.pack('<I', 0)
+            tlv += struct.pack('<HH', kind, len(value)) + value
+        raw = raw + bytes(165 - 82) + b'\x01' + tlv
+    owner = policy.TOKEN_2022_PROGRAM if row['token_program'] == 'token2022' else policy.TOKEN_PROGRAM
+    return dict(owner=owner, executable=False, lamports=10**7, data=[base64.b64encode(raw).decode(), 'base64'])
+
+
+def trace_b58decode32(text):
+    raw = b58decode(text)
+    return raw.rjust(32, b'\0')
+
+
+def frozen_reader_decision(row):
+    """Decision of the frozen ``decode_mint`` (+ frozen authority rule) on the rebuilt Token-2022 mint."""
+    from bot.p3.token2022 import TokenEvidenceError, decode_mint
+    try:
+        facts, _raw = decode_mint(rebuild_mint(row), row['mint'])
+    except TokenEvidenceError as exc:
+        return f'refuses:{exc}'
+    if facts['mint_authority_present'] or facts['freeze_authority_present']:
+        return 'refuses:authority_present'
+    return 'accepts'
+
+
+def census(document, frozen_check=False):
+    rows, disagreements = [], []
     for entry in sorted(document['pools'], key=lambda e: e['pool']):
-        rows.append(dict(pool=entry['pool'], creation_signature=entry.get('creation_signature'),
-                         **classify_trace(entry.get('creation_transaction'), entry['mint'])))
+        tx = entry.get('creation_transaction')
+        row = dict(pool=entry['pool'], creation_signature=entry.get('creation_signature'),
+                   creation_body_sha256=None if tx is None else _canonical_sha256(tx),
+                   **classify_trace(tx, entry['mint']))
+        rebuild = row.pop('_rebuild', None)
+        if frozen_check and rebuild is not None and row['token_program'] == 'token2022':
+            row['_rebuild'] = rebuild
+            row['frozen_reader'] = frozen_reader_decision(row)
+            del row['_rebuild']
+            if (row['class_'] == 'token2022_allowlisted') != (row['frozen_reader'] == 'accepts'):
+                disagreements.append(row['pool'])
+        rows.append(row)
     counts = Counter(r['class_'] for r in rows)
     refusals = Counter(reason for r in rows for reason in r['reasons'])
     sets = Counter(tuple(r['extensions']) for r in rows if r['token_program'] == 'token2022')
@@ -174,21 +240,23 @@ def census(document):
                 mint_allow=sorted(policy.name(k) for k in policy.MINT_ALLOW), pools=len(rows),
                 classes=dict(sorted(counts.items())), refusal_reasons=dict(sorted(refusals.items())),
                 extension_sets={' + '.join(k) or '(none)': v for k, v in sorted(sets.items())},
-                frozen_check=False, disagreements_with_frozen_reader=[],
-                limits=['state at creation only: changes by later transactions are not observed',
-                        'no cross-check with the frozen mint reader (no mint account archived)'],
+                frozen_check=frozen_check, disagreements_with_frozen_reader=disagreements,
+                limits=['state at creation; revocations are final and extensions fixed at initialisation '
+                        '(token-2022 processor, R02 02cdf353)',
+                        'frozen-reader check runs on mint bytes rebuilt from the trace, not on an archived account'],
                 rows=rows)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Token-2022 census from creation transactions (descriptive)')
     parser.add_argument('pools', type=Path)
+    parser.add_argument('--frozen-check', action='store_true', help='run from the frozen tree')
     a = parser.parse_args(argv)
     raw = a.pools.read_bytes()
-    out = census(json.loads(raw))
+    out = census(json.loads(raw), a.frozen_check)
     out['input_sha256'] = hashlib.sha256(raw).hexdigest()
     print(json.dumps(out, indent=1, sort_keys=True))
-    return 0
+    return 0 if not out['disagreements_with_frozen_reader'] else 1
 
 
 if __name__ == '__main__':

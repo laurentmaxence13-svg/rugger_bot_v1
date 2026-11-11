@@ -46,3 +46,14 @@ def test_unknown_pools_are_excluded_and_a_bad_census_is_refused():
     with pytest.raises(ValueError):
         scenarios.scenarios({'V3-01': bundle(ROWS)}, dict(CLASSES, disagreements_with_frozen_reader=['p2']))
     assert '### executable_now' in scenarios.markdown(out)
+
+
+def test_difference_is_experimental_minus_executable_and_exclusions_carry_reasons():
+    census = CLASSES
+    census['rows'][2]['reasons'] = ['extension_refused:TransferFeeConfig']
+    out = scenarios.scenarios({'V3-01': bundle(ROWS)}, census)
+    d = out['difference_experimental_minus_executable']['V3-01']['validation']
+    assert (d['trades'], d['closed']) == (1, 1)
+    assert d['pnl_with_rent_sol'] == pytest.approx((-50_000_000 - RENT_T22) / 1e9)
+    assert out['excluded_reasons']['V3-01'] == {'extension_refused:TransferFeeConfig': 1}
+    assert 'Différence expérimentale' in scenarios.markdown(out)

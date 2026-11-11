@@ -31,6 +31,22 @@ def classes(census):
     return {r['pool']: (r['class_'], r['our_account_rent_lamports']) for r in census['rows']}
 
 
+def _reasons(census):
+    return {r['pool']: tuple(r.get('reasons') or ()) for r in census['rows']}
+
+
+DIFFERENCE_FIELDS = ('trades', 'closed', 'pnl_sol', 'pnl_with_rent_sol', 'pnl_with_rent_pct',
+                     'profit_factor_with_rent', 'win_rate_with_rent_pct', 'max_drawdown_sol')
+
+
+def _difference(experimental, executable):
+    out = {}
+    for key in DIFFERENCE_FIELDS:
+        a, b = experimental.get(key), executable.get(key)
+        out[key] = None if a is None or b is None else a - b
+    return out
+
+
 def _filtered(bundle, keep, by_pool):
     pools = [r for r in bundle['pools'] if r['trade']['entry_index'] is None
              or by_pool.get(r['pool'], ('unknown', None))[0] in keep]
@@ -51,6 +67,7 @@ def _with_rent(bundle, segment, by_pool):
 
 def scenarios(bundles, census):
     by_pool = classes(census)
+    reasons = _reasons(census)
     out = dict(schema='v3lab-token-class-scenarios-v1', status='EXPLORATORY', plan_sha256=plan.plan_sha256(),
                census_rows=len(by_pool), scenarios={}, excluded_entries={},
                notes=['descriptive: same registered rows, filtered by token class; no new trial',
@@ -59,9 +76,11 @@ def scenarios(bundles, census):
                       'P0 visible only; already used by 34 trials; nothing here is a proof of profitability'])
     for trial, bundle in sorted(bundles.items()):
         entered = [r for r in bundle['pools'] if r['trade']['entry_index'] is not None]
+        excluded = [r for r in entered if by_pool.get(r['pool'], ('unknown', None))[0] not in SCENARIOS['experimental']]
         out['excluded_entries'][trial] = dict(sorted(Counter(
-            by_pool.get(r['pool'], ('unknown', None))[0] for r in entered
-            if by_pool.get(r['pool'], ('unknown', None))[0] not in SCENARIOS['experimental']).items()))
+            by_pool.get(r['pool'], ('unknown', None))[0] for r in excluded).items()))
+        out.setdefault('excluded_reasons', {})[trial] = dict(sorted(Counter(
+            reason for r in excluded for reason in (reasons.get(r['pool']) or ('not_in_census',))).items()))
         for name, keep in SCENARIOS.items():
             view = _filtered(bundle, keep, by_pool)
             block = {}
@@ -72,6 +91,11 @@ def scenarios(bundles, census):
             out['scenarios'].setdefault(name, {})[trial] = dict(role=bundle.get('role'),
                                                                 bundle_sha256=bundle['bundle_sha256'],
                                                                 segments=block)
+    for trial in bundles:
+        now = out['scenarios']['executable_now'][trial]['segments']
+        exp = out['scenarios']['experimental'][trial]['segments']
+        out.setdefault('difference_experimental_minus_executable', {})[trial] = {
+            segment: _difference(exp[segment], now[segment]) for segment in now}
     return out
 
 
@@ -93,7 +117,14 @@ def markdown(document):
                              f"{_cell(r['profit_factor_with_rent'])} | {_cell(r['max_drawdown_sol'], 4)} | "
                              f"{sum(r['non_closed'].values())} |")
         lines.append('')
-    return '\n'.join(lines)
+    lines += ['### Différence expérimentale − exécutable (effet de la compatibilité Token-2022)', '',
+              '| Essai | Segment | Trades | Clos | P&L avec loyer (SOL) | P&L avec loyer (points de %) | Profit factor avec loyer |',
+              '|' + '---|' * 7]
+    for trial, segments in document['difference_experimental_minus_executable'].items():
+        for segment, d in segments.items():
+            lines.append(f"| {trial} | {segment} | {d['trades']} | {d['closed']} | {_cell(d['pnl_with_rent_sol'], 4)} | "
+                         f"{_cell(d['pnl_with_rent_pct'], 2)} | {_cell(d['profit_factor_with_rent'])} |")
+    return '\n'.join(lines) + '\n'
 
 
 def main(argv=None):

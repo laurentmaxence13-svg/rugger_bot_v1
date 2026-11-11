@@ -8,8 +8,8 @@ from t22pol import policy, trace
 
 ALPH = trace._B58
 SYSTEM, LAUNCHLAB = '11111111111111111111111111111111', 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'
-MINT, POOL, AUTH = 'Mint1111111111111111111111111111111111111111', 'PooL1111111111111111111111111111111111111111', \
-    'Auth1111111111111111111111111111111111111111'
+MINT, POOL, AUTH = 'So11111111111111111111111111111111111111112', 'SysvarRent111111111111111111111111111111111', \
+    'SysvarC1ock11111111111111111111111111111111'
 
 
 def b58(raw):
@@ -39,7 +39,11 @@ T22 = policy.TOKEN_2022_PROGRAM
 POINTER = (T22, [MINT], bytes([39, 0]) + bytes(64))
 INIT2 = (T22, [MINT], bytes([20, 6]) + bytes(32) + b'\x00')
 INIT2_FREEZE = (T22, [MINT], bytes([20, 6]) + bytes(32) + b'\x01' + bytes(32))
-METADATA = (T22, [MINT, AUTH, MINT, AUTH], trace.METADATA_INITIALIZE + bytes(20))
+def _text(b):
+    return struct.pack('<I', len(b)) + b
+
+
+METADATA = (T22, [MINT, AUTH, MINT, AUTH], trace.METADATA_INITIALIZE + _text(b'Name') + _text(b'SYM') + _text(b'https://x'))
 MINT_TO = (T22, [MINT, POOL, AUTH], bytes([7]) + struct.pack('<Q', 10**15))
 REVOKE = (T22, [MINT, AUTH], bytes([6, 0, 0]))
 
@@ -120,3 +124,29 @@ def test_census_output_feeds_the_scenarios(tmp_path, capsys):
     assert out['classes'] == {'refused': 1, 'token2022_allowlisted': 1}
     assert out['extension_sets'] == {'MetadataPointer + TokenMetadata': 1,
                                      'MetadataPointer + TransferFeeConfig + TokenMetadata': 1}
+
+
+FREEZE_REVOKE = (T22, [MINT, AUTH], bytes([6, 1, 0]))
+
+
+def test_freeze_authority_revoked_in_the_creation_is_allowed():
+    row = trace.classify_trace(creation([POINTER, INIT2_FREEZE, METADATA, MINT_TO, REVOKE, FREEZE_REVOKE]), MINT)
+    assert row['class_'] == 'token2022_allowlisted' and row['freeze_authority_final'] == 'none'
+
+
+def test_frozen_reader_agrees_on_mints_rebuilt_from_the_trace():
+    """R02 R-5: allowlisted, fee-bearing, freeze present, freeze revoked, mint authority kept."""
+    cases = {'ok': [POINTER, INIT2, METADATA, MINT_TO, REVOKE],
+             'fee': [POINTER, fee(300), INIT2, METADATA, MINT_TO, REVOKE],
+             'freeze': [POINTER, INIT2_FREEZE, METADATA, MINT_TO, REVOKE],
+             'freeze_revoked': [POINTER, INIT2_FREEZE, METADATA, MINT_TO, REVOKE, FREEZE_REVOKE],
+             'mint_kept': [POINTER, INIT2, METADATA, MINT_TO],
+             'hook': [POINTER, (T22, [MINT], bytes([36, 0]) + bytes(64)), INIT2, METADATA, MINT_TO, REVOKE]}
+    out = trace.census(dict(pools=[dict(pool=k, mint=MINT, creation_transaction=creation(v)) for k, v in cases.items()]),
+                       frozen_check=True)
+    by_pool = {r['pool']: r for r in out['rows']}
+    assert out['disagreements_with_frozen_reader'] == []
+    assert by_pool['ok']['frozen_reader'] == by_pool['freeze_revoked']['frozen_reader'] == 'accepts'
+    assert by_pool['fee']['frozen_reader'].startswith('refuses:') and by_pool['hook']['frozen_reader'].startswith('refuses:')
+    assert by_pool['freeze']['frozen_reader'] == by_pool['mint_kept']['frozen_reader'] == 'refuses:authority_present'
+    assert all(len(r['creation_body_sha256']) == 64 for r in out['rows'])
