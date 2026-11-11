@@ -1,4 +1,4 @@
-# P — Runbook du jour J pour les hypothèses préenregistrées W1 (v1, 2026-11-11)
+# P — Runbook du jour J pour les hypothèses préenregistrées W1 (v2, 2026-11-11 — intègre la revue de R02 4e03d6a6 et les réponses de R03)
 
 Ordre du propriétaire (11/11) : « Le 14 novembre, exécutez d'abord le verdict officiel W1, puis les
 hypothèses préenregistrées selon le protocole gelé. » Ce runbook ne concerne QUE la seconde partie.
@@ -30,12 +30,13 @@ Toute empreinte différente = ARRÊT, message à R01 et R02, aucune exécution.
 
 | # | Qui | Action | Sortie | Arrêt si |
 |---|---|---|---|---|
-| 1 | R03 | Recensement des classes de tokens des pools W1 : `python -B -m t22pol.trace <pools.json> --frozen-check` | `census_w1.json` | désaccord avec le lecteur gelé ; pool sans trace de création |
-| 2 | R02 | Ancre `census_w1.json` (adaptateur audité, conditions déjà fixées) | sha256 | — |
-| 3 | R03 | `python -B -m statelab.hypotheses export <pools W1> --expect-manifest-sha <sha> --evaluation-min 467678545 --evaluation-max 469291345 --official-verdict-sha256 <sha> --out hw1_rows_w1_lat4.json` puis la même avec `--latency-slots 10 --out hw1_rows_w1_lat10.json` | deux lignes d'EFFECTIFS ; fichiers FERMÉS | empreinte affichée ≠ 1e5fb31a ; erreur |
-| 4 | R02 | Lit les effectifs : positions, grappes, payeurs distincts, part de migrées ; fixe m (planchers 30 / 20 ; au plus 10 % de migrées) ; liste à part les non évaluables ; ancre | m, sha256 | — |
-| 5 | R03 | `python -B -m statelab.hypotheses verdicts hw1_rows_w1_lat4.json --declared-m <m> --census census_w1.json --latency10 hw1_rows_w1_lat10.json --markdown hw1_w1.md > hw1_w1.json` | verdicts ; N = 164 | `declared_m` refusé ; classe de token inconnue |
-| 6 | R02 | Recalcul indépendant ; pour toute hypothèse « critère principal atteint » : critères v1 (R-1, R-2, P-1 à P-6, stress) ; prononce le verdict final | verdict ancré | — |
+| 1a | R03 | Entrée du recensement, hors ligne et sans prix : `python3 -I build_trace_input.py <export W1>/pools pools_trace_w1.json` (extracteur ancré par R02 : b861d35c ; le sha256 du fichier produit est affiché d'abord) | `pools_trace_w1.json` | empreinte de l'extracteur ≠ celle ancrée |
+| 1b | R03 | Recensement des classes de tokens : `python -B -m t22pol.trace pools_trace_w1.json --frozen-check` (sans `-I` ; trace.py = version auditée 274fbc30) | `census_w1.json` | code de retour 1 (au moins un désaccord avec le lecteur gelé) |
+| 2 | R02 | Ancre `pools_trace_w1.json` et `census_w1.json`. Pools laissés de côté par l'extracteur : règle de l'ancrage d5cde717, pas d'arrêt à cette étape | sha256 | — |
+| 3 | R03 | `python -B -m statelab.hypotheses export <pools W1> --expect-manifest-sha <sha> --evaluation-min 467678545 --evaluation-max 469291345 --official-verdict-sha256 <sha> --out hw1_rows_w1_lat4.json` puis la même avec `--latency-slots 10 --out hw1_rows_w1_lat10.json` | deux lignes d'EFFECTIFS ; fichiers FERMÉS | empreinte affichée ≠ 1e5fb31a ; manifeste W1 ≠ celui ancré ; plage d'évaluation ≠ [467678545 ; 469291345) ; erreur |
+| 4 | R02 | ANCRE D'ABORD les deux fichiers de lignes, PUIS lit les effectifs : positions, grappes, payeurs distincts, part de migrées ; fixe m (planchers 30 / 20 ; au plus 10 % de migrées) ; liste à part les non évaluables ; ancre m | sha256 des lignes, m | — |
+| 5 | R03 | `python -B -m statelab.hypotheses verdicts hw1_rows_w1_lat4.json --declared-m <m> --census census_w1.json --latency10 hw1_rows_w1_lat10.json --markdown hw1_w1.md > hw1_w1.json` | verdicts ; N = 164 | `declared_m` refusé. Si une position est refusée faute de classe de token : hypothèses NON ÉVALUABLES (recensement incomplet), sans complément |
+| 6 | R02 | Recalcul indépendant, avec les règles qu'il a ancrées AVANT W1 (4e03d6a6, § 6 ci-dessous) ; pour toute hypothèse « critère principal atteint » : critères v1 (R-1, R-2, P-1 à P-6, stress) ; prononce le verdict final | verdict ancré | — |
 | 7 | R01 | Compte rendu au propriétaire, seulement après l'étape 6 | — | — |
 
 ## 3. Ce qui est interdit ce jour-là
@@ -61,3 +62,16 @@ NON ÉVALUABLE / REJETÉE / EXPLORATOIRE NON CONFIRMÉE / NON CONCLUANT / CRITÈ
 CONDITIONS) ATTEINT(S) — CRITÈRES V1 À APPLIQUER. Le code ne dit jamais « rentable ». Un résultat
 positif qui ne satisfait pas tous les critères reste exploratoire et demande une nouvelle
 confirmation indépendante (W2).
+
+## 6. Règles de l'étape 6, déclarées par R02 avant W1 (ancrage 4e03d6a6, registre eb96595f)
+
+R02 a relevé deux écarts entre la fiche gelée et le code gelé. Le code n'est pas modifié ; R02 les traite
+lui-même, avec la même fonction de rendement, le même bootstrap et le même m :
+
+1. Le code INCLUT les positions de classe « refused » (le recensement leur donne un loyer), alors que la
+   fiche dit « exclu et compté » (sur P0 : 2 positions, sans effet). R02 calcule la variante V-fiche (hors
+   « refused ») : un résultat positif exige le code ET V-fiche.
+2. Le code ne calcule pas toutes les sensibilités annoncées par la fiche. R02 calcule V-SPL (exigée pour
+   le mot « exécutable »), V-signés et V-loyer récupéré (publiées, sans effet sur le verdict).
+
+Aucune de ces variantes ne peut rendre positif un résultat que le code gelé ne donne pas positif.

@@ -246,14 +246,12 @@ def test_rows_are_the_audited_probes_triggers_and_features(archives):           
             if k in audited:                                                  # a grid point: the same causal features
                 assert row['features'] == {name: audited[k]['features'][name] for name in joint.SELECTION_FEATURES}
             assert row['creator'] == study.cluster_key(archive, facts) and row['creator_not_signer'] == hyp.creator_not_signer(facts)
-        # a slot range that excludes the decision, or only the landing, gives no position and counts why
-        for row in rows:
-            _kept, reasons = joint.pool_rows(archive, entry, 'export', PARAMS, None, (row['decision_slot'] + 1, 10 ** 12))
-            assert reasons.get(row['entry'] + ':outside_slot_range') == 1
-            if row['entry_slot'] > row['decision_slot']:
-                kept, reasons = joint.pool_rows(archive, entry, 'export', PARAMS, None, (row['decision_slot'], row['entry_slot']))
-                assert row['entry'] not in {r['entry'] for r in kept}
-                assert reasons.get(row['entry'] + ':landing_outside_slot_range') == 1
+        # a pool belongs to the part of its CREATION slot, with all its entries, whenever they are decided
+        created = facts['creation_slot']
+        assert rows and all(r['creation_slot'] == created for r in rows) and max(r['decision_slot'] for r in rows) > created
+        assert joint.pool_rows(archive, entry, 'export', PARAMS, None, (created, created + 1)) == (rows, missing)
+        for outside in ((created + 1, 10 ** 12), (0, created)):
+            assert joint.pool_rows(archive, entry, 'export', PARAMS, None, outside) == ([], {'pool_created_outside_slot_range': 1})
         assert not any(key.endswith('buy_refused') for key in missing)
     assert {'PLACEBO', 'A0', 'A5'} <= seen
 
@@ -292,15 +290,17 @@ def test_w1_needs_both_anchored_verdicts_and_there_is_no_p0_reader(tmp_path):
     document = joint.run_export(w1, w1_sha, slot_range=(0, 10 ** 12), official_verdict_sha256='a' * 64,
                                 hypotheses_verdict_sha256='b' * 64)
     assert document['w1_data_read'] is True
-    strip = lambda rows: [{k: v for k, v in r.items() if k not in ('decision_slot', 'entry_slot')} for r in rows]   # noqa: E731
+    strip = lambda rows: [{k: v for k, v in r.items() if k not in ('decision_slot', 'entry_slot', 'creation_slot')} for r in rows]   # noqa: E731
     assert strip(document['rows']) == strip(plain['rows'])
-    # a slot range keeps only the decisions inside it
-    middle = sorted(r['decision_slot'] for r in plain['rows'])[len(plain['rows']) // 2]
-    first = joint.run_export(out, manifest_sha, slot_range=(0, middle))
-    second = joint.run_export(out, manifest_sha, slot_range=(middle, 10 ** 12))
-    assert all(r['decision_slot'] < middle and r['entry_slot'] < middle for r in first['rows'])
-    assert all(r['decision_slot'] >= middle for r in second['rows'])
-    assert len(first['rows']) + len(second['rows']) <= len(plain['rows'])
+    # two ranges of creation slots split the POOLS: every pool, with all its rows, is in exactly one part
+    created = sorted({r['creation_slot'] for r in plain['rows']})
+    assert len(created) == 3
+    first = joint.run_export(out, manifest_sha, slot_range=(0, created[1]))
+    second = joint.run_export(out, manifest_sha, slot_range=(created[1], 10 ** 12))
+    assert first['rows'] and second['rows'] and not {r['pool'] for r in first['rows']} & {r['pool'] for r in second['rows']}
+    key = lambda r: (r['pool'], r['entry'])                                                             # noqa: E731
+    assert sorted(first['rows'] + second['rows'], key=key) == sorted(plain['rows'], key=key)
+    assert first['missing'].get('pool_created_outside_slot_range') == 2 and second['missing'].get('pool_created_outside_slot_range') == 1
 
 
 def test_the_command_line_prints_sizes_then_values_and_never_overwrites(tmp_path, capsys):

@@ -31,6 +31,9 @@ Plans
 A cell is evaluable with at least 30 positions from 20 creator clusters. Claims use Holm over the evaluable
 cells of the plan. The code never says "profitable".
 
+``--slot-min`` / ``--slot-max`` bound the CREATION slot of the pools: a pool, with all its entries, belongs
+to one part only (discovery or screen), fixed beforehand.
+
 Reading W1 needs the sha256 of the anchored official verdict AND of the anchored verdict of the frozen
 hypotheses (W1 becomes development data only after both). There is no reader for the P0 visible pack.
 """
@@ -119,6 +122,8 @@ def pool_rows(archive, entry, segment, params, cutoff_slot, slot_range=None):
     except hrr.PoolExcluded:
         return [], {'pool_not_replayable': 1}
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
+    if slot_range is not None and not slot_range[0] <= facts['creation_slot'] < slot_range[1]:
+        return [], {'pool_created_outside_slot_range': 1}        # a pool belongs to ONE part: that of its creation
     events = timeline.events
     if not events:
         return [], {'pool_without_trade': 1}
@@ -133,9 +138,6 @@ def pool_rows(archive, entry, segment, params, cutoff_slot, slot_range=None):
         if k is None:
             continue
         slot = events[k].slot
-        if slot_range is not None and not slot_range[0] <= slot < slot_range[1]:
-            miss(key, 'outside_slot_range')
-            continue
         if cutoff_slot is not None and slot > cutoff_slot:
             miss(key, 'exit_would_leave_the_window')
             continue
@@ -148,12 +150,10 @@ def pool_rows(archive, entry, segment, params, cutoff_slot, slot_range=None):
                for o in outcomes.values()):
             raise ValueError('exits_do_not_share_the_same_entry')
         landing = events[first['land_index']].slot
-        if slot_range is not None and not slot_range[0] <= landing < slot_range[1]:
-            miss(key, 'landing_outside_slot_range')
-            continue
         features = dict(native_features(events[:k + 1], facts), **v3_extras(events[:k + 1], facts))
         rows.append(dict(
             pool=archive.pool, creator=cluster_key(archive, facts), segment=segment, entry=key, decision_index=k,
+            creation_slot=facts['creation_slot'],
             decision_slot=slot, decision_block_time=events[k].block_time, entry_slot=landing, cost=first['cost'],
             features={name: features.get(name) for name in SELECTION_FEATURES},
             creator_not_signer=hyp.creator_not_signer(facts),

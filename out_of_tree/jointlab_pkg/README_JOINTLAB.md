@@ -15,6 +15,8 @@ probes and checks their frozen fingerprints in its tests.
 - Floors: 30 positions from 20 creator clusters. Holm over the evaluable cells of the plan.
   Each evaluable cell of an analysis adds one trial to the cumulative count N.
 - `rows`, `cutoffs`, `counts` print sample sizes only; `analysis` reads the values.
+- `--slot-min` / `--slot-max` bound the CREATION slot of the pools: a pool and all its entries belong to one
+  part only (discovery or screen), fixed beforehand (condition of RUGGER 02).
 - Reading W1 needs the sha256 of the anchored official verdict AND of the anchored verdict of the frozen
   hypotheses. There is no reader for the P0 visible pack (its 159 trials are closed).
 
