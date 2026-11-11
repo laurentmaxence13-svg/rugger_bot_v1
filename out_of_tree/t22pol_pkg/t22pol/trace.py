@@ -1,6 +1,6 @@
 """Census from the pool's CREATION transaction (raw ``json`` encoding), when no mint account is archived.
 
-  python -I -B -m t22pol.trace <pools.json>
+  PYTHONPATH=<t22pol_pkg> python -B -m t22pol.trace <pools.json> [--frozen-check]
 
 Input: {"pools": [{"pool", "mint", "creation_signature", "creation_transaction": <raw getTransaction result,
 encoding json>}]}. Read: the program id, the first account and the data of every outer and inner
@@ -41,6 +41,9 @@ NAMES = ('InitializeMint', 'InitializeAccount', 'InitializeMultisig', 'Transfer'
 EXTENSION_INIT = {(25, None): 3, (26, 0): 1, (27, 0): 4, (28, 0): 6, (32, None): 9, (33, 0): 10, (35, None): 12,
                   (36, 0): 14, (37, 0): 16, (39, 0): 18, (40, 0): 20, (41, 0): 22, (42, 0): 24, (43, 0): 25,
                   (44, 0): 26, (46, 0): 28}
+# GetAccountDataSize (21), AmountToUiAmount (23), UiAmountToAmount (24): read-only queries on the mint
+# (official processor returns data and writes nothing); 21 runs whenever an associated account is created.
+READ_ONLY_ON_MINT = frozenset((21, 23, 24))
 METADATA_INITIALIZE = bytes.fromhex('d2e11ea258b84d8d')
 GROUP_INITIALIZE = {bytes.fromhex('79716c2736330004'): 21, bytes.fromhex('9820deb0dfed7486'): 23}
 
@@ -133,6 +136,8 @@ def classify_trace(tx, mint):
             else:
                 reasons.append(f'set_authority_on_mint:type_{authority_type}_new_{"some" if has_new else "none"}')
         elif tag in (7, 14):                                   # MintTo / MintToChecked at creation: supply
+            continue
+        elif tag in READ_ONLY_ON_MINT:                         # queries: they change nothing on the mint
             continue
         else:
             reasons.append(f'unexpected_instruction_on_mint:{_tag_name(tag)}')

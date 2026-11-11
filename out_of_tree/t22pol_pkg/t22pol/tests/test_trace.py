@@ -150,3 +150,21 @@ def test_frozen_reader_agrees_on_mints_rebuilt_from_the_trace():
     assert by_pool['fee']['frozen_reader'].startswith('refuses:') and by_pool['hook']['frozen_reader'].startswith('refuses:')
     assert by_pool['freeze']['frozen_reader'] == by_pool['mint_kept']['frozen_reader'] == 'refuses:authority_present'
     assert all(len(r['creation_body_sha256']) == 64 for r in out['rows'])
+
+
+SIZE_QUERY = (T22, [MINT], bytes([21]) + struct.pack('<H', 7))
+
+
+def test_read_only_size_query_on_the_mint_is_ignored_for_both_token_programs():
+    """R03 run 860974e8: GetAccountDataSize at ATA creation refused 140 pools by mistake."""
+    row = trace.classify_trace(creation([POINTER, INIT2, METADATA, MINT_TO, REVOKE, SIZE_QUERY]), MINT)
+    assert row['class_'] == 'token2022_allowlisted'
+    spl = policy.TOKEN_PROGRAM
+    row = trace.classify_trace(creation([(spl, [MINT], bytes([20, 6]) + bytes(32) + b'\x00'),
+                                         (spl, [MINT, POOL, AUTH], bytes([7]) + bytes(8)),
+                                         (spl, [MINT, AUTH], bytes([6, 0, 0])), (spl, [MINT], bytes([21]))]), MINT)
+    assert row['class_'] == 'executable_now'
+    # a write on the mint is still refused
+    burn_like = (T22, [MINT], bytes([29]))
+    assert 'unexpected_instruction_on_mint:Reallocate' in trace.classify_trace(
+        creation([POINTER, INIT2, METADATA, MINT_TO, REVOKE, burn_like]), MINT)['reasons']
