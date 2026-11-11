@@ -206,7 +206,7 @@ def test_the_table_is_exact_and_separates_improving_from_profitable():
 
 def test_holm_can_refuse_an_improvement_that_a_single_test_would_accept():                         # R02 T-E1
     found = None
-    for winners in range(158, 180):
+    for winners in range(164, 174):
         rows = []
         for i in range(300):
             rules = {rule['id']: dict(migrated=False, value=96_000_000, reason='clock', trigger_age_s=None)

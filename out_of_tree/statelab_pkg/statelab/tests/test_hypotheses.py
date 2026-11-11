@@ -57,6 +57,10 @@ MID = _synthetic(DEEP + [(12, 'sell', 31 * 10 ** 12, 'a'), (12, 'sell', 60 * 10 
 # dumped while it had raised only 1 SOL; it passes 2 SOL only at the very end
 LATEBIG = _synthetic([(0, 'buy', SOL, 'a'), (5, 'sell', 30 * 10 ** 12, 'a'), (40, 'buy', 10 ** 8, 'y'), (10, 'buy', 5 * SOL, 'z'),
                       (5, 'sell', 10 ** 12, 'z')])
+# two thirds of the tokens sold back (not three quarters), a small buy, then a huge buy that lifts real_base far above
+# its past maximum: read one event too far, that future peak would wrongly qualify the small buy (R02 T-H1)
+FUTUREPEAK = _synthetic([(0, 'buy', 3 * SOL, 'a'), (5, 'sell', 62 * 10 ** 12, 'a'), (35, 'buy', 10 ** 8, 'y'),
+                         (5, 'buy', 20 * SOL, 'z'), (5, 'sell', 10 ** 12, 'z')])
 # the large sale leaves less than 5 SOL in the curve
 SHALLOW = _synthetic([(0, 'buy', 3 * SOL, 'a'), (2, 'buy', 3 * SOL, 'b'), (12, 'sell', 80 * 10 ** 12, 'a'), (5, 'buy', SOL, 'd')])
 # pump to more than 2 SOL, dump to less than a quarter of the tokens, then buys at age 20 s (too early) and 45 s
@@ -91,10 +95,13 @@ def test_the_purge_trigger_matches_the_by_hand_rule_and_ignores_the_triggering_b
     assert events[2].side == 'buy' and events[2].block_time - created == 20      # same state, too young: not taken
     big = events[3]
     assert big.real_base_before * 4 <= events[0].real_base_after < big.real_base_after * 4   # the buy itself refills the curve
-    for timeline in (SMALL, HELD, LATEBIG):
+    for timeline in (SMALL, HELD, LATEBIG, FUTUREPEAK):
         ev = timeline.events
         assert hyp.purge_trigger(ev, ev[0].block_time) is None is _purge_by_hand(ev, ev[0].block_time)
     assert max(e.real_quote_after for e in SMALL.events) < 2 * SOL
+    peak = FUTUREPEAK.events                                     # 25 % < share still held < 33 %; the next buy is the future
+    assert peak[0].real_base_after < peak[2].real_base_before * 4 < peak[3].real_base_after
+    assert peak[2].side == 'buy' and peak[2].block_time - peak[0].block_time >= 30
     late = LATEBIG.events                                        # the 2 SOL are reached only AFTER the candidate buys
     assert max(e.real_quote_after for e in late[:3]) < 2 * SOL <= late[-1].real_quote_after
     assert late[2].side == 'buy' and late[2].real_base_before * 4 <= late[0].real_base_after
@@ -102,7 +109,8 @@ def test_the_purge_trigger_matches_the_by_hand_rule_and_ignores_the_triggering_b
 
 
 def test_triggers_never_depend_on_the_future_and_agree_with_the_frozen_features(archives):          # noqa: F811
-    pools = [(t.events, t.events[0].block_time, 'P') for t in (DIP, SLOW, MID, SHALLOW, PURGE, SMALL, HELD, LATEBIG)]
+    pools = [(t.events, t.events[0].block_time, 'P')
+             for t in (DIP, SLOW, MID, SHALLOW, PURGE, SMALL, HELD, LATEBIG, FUTUREPEAK)]
     for _entry, archive in archives:
         timeline, facts, _actors = _pool(archive)
         pools.append((timeline.events, facts['creation_block_time'], archive.pool))
@@ -113,6 +121,12 @@ def test_triggers_never_depend_on_the_future_and_agree_with_the_frozen_features(
             part = events[:cut + 1]
             assert hyp.dip_trigger(part) == (dip if dip is not None and dip <= cut else None)
             assert hyp.purge_trigger(part, created) == (purge if purge is not None and purge <= cut else None)
+            # the same through the public entry point, label triggers included: later events neither create
+            # nor move any trigger (R02 T-H1)
+            facts = dict(creation_block_time=created)
+            whole_life, prefix = hyp.triggers(events, facts, pool), hyp.triggers(part, facts, pool)
+            for key, k in whole_life.items():
+                assert prefix[key] == (k if k is not None and k <= cut else None), (pool, key, cut)
         # the frozen feature price_change_10s uses the same reference: the trigger is its first value <= -10 %
         facts = dict(creator=None, creation_block_time=created, creation_slot=events[0].slot)
         for k in [k for k in range(len(events)) if points.whole(events, k) and events[k].side == 'sell'
@@ -369,3 +383,22 @@ def test_a_positive_mean_is_not_enough_and_holm_can_reject_what_a_single_test_wo
             break
     assert found is not None, 'no calibration point between the single-test and the Holm thresholds'
     assert found['p_holm'] >= 0.05 and found['primary_passed'] is False and found['verdict'] == 'REJETÉE'
+
+
+def test_a_buy_that_lands_outside_the_evaluation_range_gives_no_position(archives):                # R02 T-H2  # noqa: F811
+    found = 0
+    for entry, archive in archives:
+        rows, _missing = hyp.pool_rows(archive, entry, 'export', PARAMS, None)
+        for row in rows:
+            decision, landing = row['decision_slot'], row['entry_slot']
+            if landing == decision:
+                continue                                       # the buy landed in the slot of its decision
+            # the decision is inside the range, the landing is its (excluded) upper bound
+            kept, missing = hyp.pool_rows(archive, entry, 'export', PARAMS, None, (decision, landing))
+            assert not any(r['hypothesis'] == row['hypothesis'] for r in kept)
+            assert missing.get('%s:landing_outside_evaluation_range' % row['hypothesis']) == 1
+            # one slot more and the same position is back, unchanged
+            again, _missing = hyp.pool_rows(archive, entry, 'export', PARAMS, None, (decision, landing + 1))
+            assert [r for r in again if r['hypothesis'] == row['hypothesis']] == [row]
+            found += 1
+    assert found >= 1
