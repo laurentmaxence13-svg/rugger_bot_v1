@@ -202,3 +202,24 @@ def test_the_table_is_exact_and_separates_improving_from_profitable():
         exits.table(document, census, declared_k=6, n_boot=0)
     with pytest.raises(ValueError, match='not_an_exit_rows_document'):
         exits.table(dict(document, schema='x'), declared_k=6)
+
+
+def test_holm_can_refuse_an_improvement_that_a_single_test_would_accept():                         # R02 T-E1
+    found = None
+    for winners in range(158, 180):
+        rows = []
+        for i in range(300):
+            rules = {rule['id']: dict(migrated=False, value=96_000_000, reason='clock', trigger_age_s=None)
+                     for rule in exits.RULES}
+            rules['X1'] = dict(migrated=False, value=96_000_000 + (6_000_000 if i < winners else -6_000_000),
+                               reason='take_profit', trigger_age_s=3)
+            rows.append(dict(pool='p%03d' % i, creator='c%03d' % i, cost=COST, rules=rules))
+        document = dict(schema=exits.SCHEMA, rows=rows, rows_sha256='x', pack_manifest_sha256='m', segments=['train'],
+                        population='all', entries='age:5', entered=300, creators=300)
+        block = exits.table(document, declared_k=6, n_boot=4_000)['rules']['X1']
+        gap = block['vs_clock_25']
+        if gap['ci95'][0] > 0 and 0.05 / 6 <= gap['p_one_sided'] < 0.025:
+            found = block
+            break
+    assert found is not None, 'no calibration point between the single-test and the Holm thresholds'
+    assert found['vs_clock_25']['p_holm'] >= 0.05 and found['improves_the_exit'] is False
