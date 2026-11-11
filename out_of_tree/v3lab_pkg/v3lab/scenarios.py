@@ -22,6 +22,10 @@ from v3lab import plan
 from v3lab.evaluate import _cost, load_bundles
 from v3lab.tables import row
 
+# Network fee of one base-account cleanup (Burn-if-dust + CloseAccount), as measured by R02's end-to-end probe
+# of the offline cleanup (fc0dbcc8): 5,000 base + 1 priority lamport. Used only in the *_with_cleanup columns.
+CLEANUP_FEE_LAMPORTS = 5_001
+
 SCENARIOS = dict(executable_now=('executable_now',), experimental=('executable_now', 'token2022_allowlisted'))
 
 
@@ -36,7 +40,8 @@ def _reasons(census):
 
 
 DIFFERENCE_FIELDS = ('trades', 'closed', 'pnl_sol', 'pnl_with_rent_sol', 'pnl_with_rent_pct',
-                     'profit_factor_with_rent', 'win_rate_with_rent_pct', 'max_drawdown_sol')
+                     'profit_factor_with_rent', 'win_rate_with_rent_pct', 'pnl_with_cleanup_sol',
+                     'pnl_with_cleanup_pct', 'max_drawdown_sol')
 
 
 def _difference(experimental, executable):
@@ -53,16 +58,25 @@ def _filtered(bundle, keep, by_pool):
     return dict(bundle, pools=pools)
 
 
+def _with_cost(closed, cost_of, suffix):
+    nets = [r['trade']['pnl_lamports'] - cost_of(r) for r in closed]
+    capital = sum(_cost(r['trade']) + cost_of(r) for r in closed)
+    gains, losses = sum(n for n in nets if n > 0), -sum(n for n in nets if n < 0)
+    return {f'pnl_{suffix}_sol': sum(nets) / 1e9,
+            f'pnl_{suffix}_pct': None if not capital else 100 * sum(nets) / capital,
+            f'win_rate_{suffix}_pct': None if not nets else 100 * sum(n > 0 for n in nets) / len(nets),
+            f'profit_factor_{suffix}': None if not losses else gains / losses}
+
+
 def _with_rent(bundle, segment, by_pool):
+    """Two cost hypotheses per closed cycle: the rent of our account lost (today's chain) or recovered by the
+    offline cleanup, which then costs only its own network fee (not activable today)."""
     closed = [r for r in bundle['pools'] if r['trade']['entry_index'] is not None
               and r['trade']['outcome'] == 'closed' and (segment is None or r['segment'] == segment)]
-    nets = [r['trade']['pnl_lamports'] - by_pool[r['pool']][1] for r in closed]
-    capital = sum(_cost(r['trade']) + by_pool[r['pool']][1] for r in closed)
-    gains, losses = sum(n for n in nets if n > 0), -sum(n for n in nets if n < 0)
-    return dict(rent_sol=sum(by_pool[r['pool']][1] for r in closed) / 1e9, pnl_with_rent_sol=sum(nets) / 1e9,
-                pnl_with_rent_pct=None if not capital else 100 * sum(nets) / capital,
-                win_rate_with_rent_pct=None if not nets else 100 * sum(n > 0 for n in nets) / len(nets),
-                profit_factor_with_rent=None if not losses else gains / losses)
+    out = dict(rent_sol=sum(by_pool[r['pool']][1] for r in closed) / 1e9)
+    out.update(_with_cost(closed, lambda r: by_pool[r['pool']][1], 'with_rent'))
+    out.update(_with_cost(closed, lambda r: CLEANUP_FEE_LAMPORTS, 'with_cleanup'))
+    return out
 
 
 def scenarios(bundles, census):

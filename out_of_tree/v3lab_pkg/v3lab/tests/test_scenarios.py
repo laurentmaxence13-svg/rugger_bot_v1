@@ -57,3 +57,13 @@ def test_difference_is_experimental_minus_executable_and_exclusions_carry_reason
     assert d['pnl_with_rent_sol'] == pytest.approx((-50_000_000 - RENT_T22) / 1e9)
     assert out['excluded_reasons']['V3-01'] == {'extension_refused:TransferFeeConfig': 1}
     assert 'Différence expérimentale' in scenarios.markdown(out)
+
+
+def test_cleanup_variant_costs_only_the_cleanup_fee():
+    out = scenarios.scenarios({'V3-01': bundle(ROWS)}, CLASSES)
+    now = out['scenarios']['executable_now']['V3-01']['segments']['validation']
+    assert now['pnl_with_cleanup_sol'] == (31_000_000 - 2 * scenarios.CLEANUP_FEE_LAMPORTS) / 1e9
+    assert now['pnl_with_cleanup_sol'] > now['pnl_with_rent_sol']
+    assert now['win_rate_with_cleanup_pct'] == 100.0          # the small winner stays a winner
+    d = out['difference_experimental_minus_executable']['V3-01']['validation']
+    assert d['pnl_with_cleanup_sol'] == pytest.approx((-50_000_000 - scenarios.CLEANUP_FEE_LAMPORTS) / 1e9)
