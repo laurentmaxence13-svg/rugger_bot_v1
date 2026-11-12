@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tools import relay_planner as rp
 
@@ -136,10 +136,11 @@ def _apply_actions(con, decision: dict, now: datetime) -> None:
                 con.execute("UPDATE agents SET state=?, since=NULL WHERE agent=?", (stt, ag))
 
 
-def run_outbox(con, send) -> list:
+def run_outbox(con, send, now: datetime | None = None) -> list:
     """Execute PENDING creations AFTER commit. `send(payload)->None` may raise.
     Failures increment attempts; after MAX_ATTEMPTS the row is FAILED (owner escalation)."""
     done = []
+    now = now if now is not None else datetime.now(timezone.utc)
     for dedupe, payload, attempts in con.execute("SELECT dedupe,payload,attempts FROM outbox WHERE status='PENDING'").fetchall():
         if kill_switch_on(con):  # re-read before EACH send: a switch set mid-drain stops the drain (R02 O-2)
             break
@@ -153,9 +154,7 @@ def run_outbox(con, send) -> list:
                 # e.g. relay_outbox_guard.ReconciliationError: the remote state is ambiguous, an automatic
                 # retry could create a duplicate. Fail the row at once and tell the owner (never suppressed).
                 con.execute("UPDATE outbox SET attempts=?, status='FAILED' WHERE dedupe=?", (n, dedupe))
-                con.execute("INSERT INTO escalations(reason,at) VALUES(?,?)",
-                            (f"outbox {dedupe}: {type(exc).__name__}, automatic retry blocked",
-                             datetime.now().astimezone().isoformat()))
+                owner_alert(con, f"outbox {dedupe}: {type(exc).__name__}, automatic retry blocked", now)
                 continue
             con.execute("UPDATE outbox SET attempts=?, status=? WHERE dedupe=?",
                         (n, "FAILED" if n >= MAX_ATTEMPTS else "PENDING", dedupe))

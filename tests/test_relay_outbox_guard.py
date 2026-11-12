@@ -78,6 +78,33 @@ class GuardWiredIntoOutbox(unittest.TestCase):
         alerts = [r[0] for r in self.con.execute("SELECT reason FROM escalations")]
         self.assertTrue(any("ReconciliationError" in a for a in alerts), alerts)
 
+    def test_c1_alert_time_is_the_utc_time_passed_by_the_caller(self):
+        def create(p):
+            raise TimeoutError("response lost")
+        self.rs.run_outbox(self.con, lambda payload: guarded_send(payload, lambda _: [], create), self.now)
+        at = [r[0] for r in self.con.execute("SELECT at FROM escalations WHERE reason LIKE 'outbox %'")]
+        self.assertEqual(at, [self.now.isoformat()])
+        self.assertTrue(at[0].endswith("+00:00"))
+
+    def test_c2_second_lookup_failure_fails_closed_in_one_attempt(self):
+        calls, lookups = [], []
+
+        def create(p):
+            calls.append(p); raise TimeoutError("response lost")
+
+        def lookup(tag):
+            lookups.append(tag)
+            if len(lookups) == 1:
+                return []
+            raise OSError("search API down")
+
+        send = lambda payload: guarded_send(payload, lookup, create)
+        for _ in range(3):
+            self.rs.run_outbox(self.con, send, self.now)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(self.status(), ("FAILED", 1))
+        self.assertTrue(any("ReconciliationError" in r[0] for r in self.con.execute("SELECT reason FROM escalations")))
+
     def test_crash_after_create_is_reconciled_on_the_next_drain(self):
         remote, calls = [], []
 

@@ -49,7 +49,10 @@ def guarded_send(payload: dict, lookup_exact, create_issue) -> object:
         created = create_issue(enriched)
     except Exception:
         # Network timeout may mean the issue WAS created. Reconcile before retry.
-        matches = lookup_exact(tag)
+        try:
+            matches = lookup_exact(tag)
+        except Exception as exc:  # fail closed: an unreadable remote state must never lead to a retry
+            raise ReconciliationError("lookup failed after an ambiguous create; block automatic retry") from exc
         if not isinstance(matches, list) or len(matches) != 1:
             raise ReconciliationError("ambiguous create result; block automatic retry")
         return matches[0]

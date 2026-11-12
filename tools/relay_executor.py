@@ -227,7 +227,7 @@ def drain_outbox(con, send, now: datetime) -> list:
     """Send PENDING issue creations (after commit). Honours the kill switch."""
     if rs.kill_switch_on(con):
         return []
-    return rs.run_outbox(con, send)
+    return rs.run_outbox(con, send, now)
 
 
 def catchup(con, now: datetime) -> dict:
