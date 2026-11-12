@@ -22,7 +22,8 @@ class GuardedSenderTests(unittest.TestCase):
     def test_timeout_with_existing_issue_reconciles(self):
         def fail(_):
             raise TimeoutError("response lost")
-        result = guarded_send({"dedupe": "task:42"}, lambda _: [{"number": 43}], fail)
+        lookups = iter([[], [{"number": 43}]])
+        result = guarded_send({"dedupe": "task:42"}, lambda _: next(lookups), fail)
         self.assertEqual(result["number"], 43)
 
     def test_timeout_without_proof_blocks_retry(self):
