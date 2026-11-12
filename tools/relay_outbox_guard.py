@@ -15,6 +15,8 @@ MARKER_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,119}$")
 class ReconciliationError(RuntimeError):
     """Fail closed when exactly-once delivery cannot be established."""
 
+    no_retry = True  # relay_store.run_outbox must NOT retry: the row goes FAILED and the owner is alerted
+
 
 def marker(dedupe: str) -> str:
     if not isinstance(dedupe, str) or not MARKER_RE.fullmatch(dedupe):

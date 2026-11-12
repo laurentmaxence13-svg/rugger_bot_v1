@@ -147,8 +147,16 @@ def run_outbox(con, send) -> list:
             send(json.loads(payload))
             con.execute("UPDATE outbox SET status='DONE' WHERE dedupe=?", (dedupe,))
             done.append(dedupe)
-        except Exception:
+        except Exception as exc:
             n = attempts + 1
+            if getattr(exc, "no_retry", False):
+                # e.g. relay_outbox_guard.ReconciliationError: the remote state is ambiguous, an automatic
+                # retry could create a duplicate. Fail the row at once and tell the owner (never suppressed).
+                con.execute("UPDATE outbox SET attempts=?, status='FAILED' WHERE dedupe=?", (n, dedupe))
+                con.execute("INSERT INTO escalations(reason,at) VALUES(?,?)",
+                            (f"outbox {dedupe}: {type(exc).__name__}, automatic retry blocked",
+                             datetime.now().astimezone().isoformat()))
+                continue
             con.execute("UPDATE outbox SET attempts=?, status=? WHERE dedupe=?",
                         (n, "FAILED" if n >= MAX_ATTEMPTS else "PENDING", dedupe))
     return done
