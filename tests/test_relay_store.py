@@ -1,8 +1,8 @@
 import json, os, tempfile, unittest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from tools import relay_planner as rp, relay_store as rs, relay_payload as rpl
 
-NOW = datetime(2026, 11, 6, 12, 0, 0)
+NOW = datetime(2026, 11, 6, 12, 0, 0, tzinfo=timezone.utc)  # aware UTC: the relay refuses naive times (#210 P1-4)
 GOOD = ("STATUS: COMPLETED\nNEXT_TASK:\n  agent: rugger-02\n  title: Audit PR 184\n"
         "  criteria: verifier atomicite checkpoint et fail-closed du quota\n")
 OTHER = GOOD.replace("Audit PR 184", "Audit PR 191")

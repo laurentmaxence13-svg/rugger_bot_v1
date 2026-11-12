@@ -70,6 +70,17 @@ def label_names(labels) -> list:
     return out
 
 
+def parse_since(value):
+    """A RUNNING start time as an aware datetime, or None if missing, malformed or naive (fail-closed)."""
+    if not isinstance(value, str) or not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return dt if dt.tzinfo is not None and dt.utcoffset() is not None else None
+
+
 def _empty_state():
     return {"agents": {a: {"state": "WAITING", "issue": None, "since": None} for a in AGENTS},
             "processed": [], "launches": [], "version": 2}
@@ -84,13 +95,9 @@ def decide(event: dict, state: dict | None, now: datetime) -> dict:
     labels = label_names(issue.get("labels"))
     agent = next((a for a in AGENTS if TRIGGER_LABEL.format(agent=a) in labels), None)
 
-    # Watchdog first: independent of the event.
-    wd = []
-    for a, s in st["agents"].items():
-        if s["state"] == "RUNNING" and s["since"] and \
-                now - datetime.fromisoformat(s["since"]) > timedelta(hours=LIMITS["running_timeout_h"]):
-            wd.append({"type": "ESCALATE_OWNER", "reason": f"watchdog: {a} RUNNING > {LIMITS['running_timeout_h']}h",
-                       "set_state": {a: "BLOCKED"}})
+    # Watchdog first: independent of the event. Same fail-closed rule as watchdog():
+    # a RUNNING agent with a missing/invalid/naive start time is BLOCKED, never an exception (#210 P1-4).
+    wd = watchdog(st, now)["actions"]
 
     if event.get("action") != "closed" or issue.get("state") != "closed" or not agent:
         r = noop("not a closed rugger-0N-run issue")
@@ -178,10 +185,8 @@ def watchdog(state: dict | None, now: datetime) -> dict:
     for a, s in st["agents"].items():
         if s.get("state") != "RUNNING":
             continue
-        try:
-            late = now - datetime.fromisoformat(s["since"]) > timedelta(hours=LIMITS["running_timeout_h"])
-        except (KeyError, TypeError, ValueError):
-            late = True  # unknown start => fail closed
+        since = parse_since(s.get("since"))
+        late = since is None or now - since > timedelta(hours=LIMITS["running_timeout_h"])  # unknown start => fail closed
         if late:
             actions.append({"type": "ESCALATE_OWNER", "reason": f"watchdog: {a} RUNNING > {LIMITS['running_timeout_h']}h or no valid start time",
                             "set_state": {a: "BLOCKED"}})
