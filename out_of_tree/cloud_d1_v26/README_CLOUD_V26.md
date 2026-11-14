@@ -84,6 +84,21 @@ masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, 
     au montant du plafond, avec des seuils à 50 %, 90 % et 100 %. Une alerte prévient, elle n'arrête rien.
   - aucune autre ressource payante : une VM, son disque, le bucket.
 
+## 3 bis. Valeurs à remplir dans `create_vm.sh` (décisions du 14/11, R02 fd5537fd et suites)
+
+- **`BUCKET` : un bucket DÉDIÉ à ce calcul, distinct de celui de la sauvegarde (`w1-backup/`). EXIGÉ par R02.**
+  La VM et le compte `w1-url-signer` ont le rôle `objectAdmin` sur LEUR bucket : ils ne doivent avoir aucun droit
+  sur la copie scellée de W1. Le propriétaire choisit le nom ; `setup` crée le bucket s'il n'existe pas.
+- `MACHINE` : **`n2-highmem-16`** (128 Go). Comptage de R03 (w1_count.json 0f408a1f) : 322 146 signatures
+  retenues, 2 273 pools ; projections : export 70 à 80 Go, series 26 Go, evaluate 26 Gio exigés par la garde.
+- `DEADLINE` : **lancement + 48 h** (borne le calcul à environ 50 $ même sans aucune pause).
+- Plafond de dépense proposé au propriétaire : **60 $** ; alerte de budget à créer **avant** le lancement ;
+  tarif à revérifier par le propriétaire.
+- `workers` : 8 (valeur du script), accepté par R02 pour cette machine.
+- Jeton `relay` : admis par R02 (amendement de K-1) : R03 ne dépose une ancre qu'après le message d'ancrage de
+  R02, en le citant, et lui envoie le code HTTP et la valeur ; une ancre déposée avant l'ancrage vaut STOP.
+- `PROJECT`, `IMAGE`, `INBOUND_SUMS_SHA`, `CODE_COMMIT` : comme en v2.5.
+
 ## 4. Déroulé
 
 **Avant** (hors ligne, sans dépense)
