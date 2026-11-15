@@ -1,4 +1,6 @@
-# R — Évaluation économique préliminaire du bot (v0.1, 2026-11-15)
+# R — Évaluation économique préliminaire du bot : complément détaillé (v0.2, 2026-11-15)
+
+Complément détaillé du rapport court de RUGGER 03 (Phase 0), corrigé selon le contrôle de RUGGER 02.
 
 **Ce document n'est PAS le verdict officiel W1.** Il ne lit aucune donnée de W1. Il ne modifie ni
 n'évalue les cinq hypothèses gelées. C'est une compilation, sans aucun calcul nouveau, de résultats
@@ -30,7 +32,7 @@ moyen = gain ou perte divisé par le capital engagé, sur les cycles achat-vente
 | Étude d'états élargie à tous les pools : 10 × 5 (50 cas) | de −20,5 % à −4,1 % ; aucun cas retenu | 32 à 185 | — |
 | Tri par 34 signaux à l'achat | meilleur tiers : −3,92 % ; aucun tiers positif | 154 pools | — |
 | 7 règles de vente sur les mêmes achats | de −7,88 % à −5,91 % ; aucune rentable | 154 positions | — |
-| Répétition, sur ces données, des hypothèses gelées pour W1 | « repli » −9,05 % ; « purge » −4,47 % ; « créateur non signé » +2,78 % (intervalle [−0,13 ; 6,02], non significatif, −0,91 % avec 10 slots de latence) ; deux hypothèses non évaluables (2 et 25 positions) | 39 / 102 / 96 / 2 / 25 | — |
+| Répétition, sur ces données, des hypothèses gelées pour W1 (ne préjuge pas du résultat sur W1) | « repli » −9,05 % ; « purge » −4,47 % ; « créateur non signé » +2,78 % (intervalle [−0,13 ; 6,02], non significatif, −0,91 % avec 10 slots de latence) ; deux hypothèses non évaluables (2 et 25 positions) | 39 / 102 / 96 / 2 / 25 | — |
 
 La référence ne fait pas mieux que le témoin tiré au hasard.
 
@@ -86,7 +88,7 @@ Facteurs d'échec, par ordre d'importance :
 - **Zones sans données.** Presque aucun pool en fin de courbe (2 positions), une seule migration,
   aucune donnée sur le marché d'après-migration.
 - **Seule moyenne positive observée** (« créateur non signé ») : elle repose sur quelques pools,
-  disparaît sans les cinq meilleurs et devient négative avec 10 slots de latence.
+  tombe à +0,18 % sans les cinq meilleurs, et devient négative (−0,91 %) avec 10 slots de latence.
 
 ## 6. Améliorations envisageables
 
@@ -94,15 +96,34 @@ Facteurs d'échec, par ordre d'importance :
 |---|---|---|
 | Récupérer le loyer en fermant le compte de token | le loyer pèse 2,04 % ; avec ce nettoyage, −4,61 % au lieu de −6,52 % ; non activé | développement hors ligne |
 | Accepter les tokens Token-2022 de la liste stricte | −6,52 % sur 121 opérations au lieu de −9,42 % sur 63 ; réduit la perte, ne rend pas rentable | développement hors ligne |
-| Pools à frais faibles | −3,24 % sur 59 opérations ; réduit la perte, ne la supprime pas | W1 |
-| Achat en fin de courbe, pool encore actif à 10 minutes | non évaluables sur ces données (2 et 25 positions) | W1 |
-| Créateur non signé, à grande échelle | 96 positions, intervalle contenant 0 | W1 |
+| Pools à frais faibles | −3,24 % sur 59 opérations ; réduit la perte, ne la supprime pas | données futures (W2), hypothèse nouvelle |
 | Migration et marché d'après-migration | aucune donnée | une collecte gratuite dans le quota (environ 7 500 crédits estimés), soumise à votre accord |
 
-La conclusion de travail : sur le début de la courbe, il n'y a pas d'avantage à prendre ; s'il en
-existe un, il est ailleurs, là où ces données sont vides. C'est W1 qui peut le dire.
+La conclusion de travail : sur le début de la courbe, ces données ne montrent aucun avantage à
+prendre. Seules des données nouvelles peuvent dire s'il en existe un ailleurs.
 
-## 7. Sources (toutes contrôlées par RUGGER 02, sauf mention « provisoire »)
+## 7. Pour aller plus loin : deux façons d'obtenir une lecture sur W1
+
+Ce document ne contient et ne contiendra aucun chiffre de W1. Deux options, à votre décision :
+
+| | Voie B (Google Cloud) | Lecture préliminaire dans la session de RUGGER 03 |
+|---|---|---|
+| Ce qu'elle donne | le verdict officiel W1, puis les cinq hypothèses gelées | un registre des achats et ventes simulés du MASTER sur W1 : positions ouvertes et closes, gains et pertes après frais, décomposition des coûts, intervalle de confiance ; pour la référence et le témoin, des totaux seulement ; rien sur les hypothèses |
+| Ce qu'elle ne donne pas | — | le verdict officiel (l'étape qui le calcule ne tient pas dans la mémoire disponible) |
+| Coût | 60 USD au plus, déjà cadré ; paquet validé par R02 et prêt | aucun |
+| Délai | vos commandes Cloud Shell, puis le calcul | environ une journée d'outils et d'audit, puis quelques heures de calcul (durée jamais mesurée à cette échelle) |
+| Statut | conforme au protocole gelé | **écart au protocole gelé** : W1 serait lu avant son verdict officiel |
+
+Conditions de la lecture préliminaire, fixées par R02 (conditions (1) et A-2 de sa méthode) :
+1. **votre accord explicite** pour lire W1 avant le verdict officiel ;
+2. **votre choix, avant toute lecture**, entre : (a) le verdict officiel sera calculé ensuite quoi que
+   montre la lecture préliminaire, ou (b) la lecture préliminaire fait foi et W1 est déclaré
+   exploratoire ;
+3. les outils sont audités par R02 avant tout calcul, et la liste de ce qui est lu est fermée
+   d'avance ; les empreintes des fichiers intermédiaires pourront être comparées plus tard à celles
+   de la chaîne officielle.
+
+## 8. Sources (toutes contrôlées par RUGGER 02, sauf mention « provisoire »)
 
 - Table des stratégies : ea576b76 (contrôle 10702f6e) ; vues par classe de token : 3a7c36d2 (d3b1a10a).
 - Décomposition des pertes : anatomy.json f56a76f7, contrôle 37d32c02.
