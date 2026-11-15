@@ -1,4 +1,4 @@
-# R — Évaluation économique préliminaire du bot : complément détaillé (v0.2, 2026-11-15)
+# R — Évaluation économique préliminaire du bot : complément détaillé (v0.3, 2026-11-15)
 
 Complément détaillé du rapport court de RUGGER 03 (Phase 0), corrigé selon le contrôle de RUGGER 02.
 
@@ -115,10 +115,13 @@ Ce document ne contient et ne contiendra aucun chiffre de W1. Deux options, à v
 | Statut | conforme au protocole gelé | **écart au protocole gelé** : W1 serait lu avant son verdict officiel |
 
 Conditions de la lecture préliminaire, fixées par R02 (conditions (1) et A-2 de sa méthode) :
-1. **votre accord explicite** pour lire W1 avant le verdict officiel ;
+1. **votre accord explicite** : W1 est lu avant son verdict officiel et ne sera plus une donnée
+   « non vue » pour toute idée NOUVELLE ; toute amélioration qui en sortira sera une hypothèse à
+   tester sur des données futures (W2), jamais sur W1 ; les règles du verdict officiel et les cinq
+   hypothèses gelées restent inchangées ;
 2. **votre choix, avant toute lecture**, entre : (a) le verdict officiel sera calculé ensuite quoi que
    montre la lecture préliminaire, ou (b) la lecture préliminaire fait foi et W1 est déclaré
-   exploratoire ;
+   exploratoire, avec la mention « non aveugle, outils en flux hors arbre » ;
 3. les outils sont audités par R02 avant tout calcul, et la liste de ce qui est lu est fermée
    d'avance ; les empreintes des fichiers intermédiaires pourront être comparées plus tard à celles
    de la chaîne officielle.
