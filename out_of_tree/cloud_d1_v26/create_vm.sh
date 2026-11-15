@@ -8,14 +8,16 @@
 #        SOLE transport = CAB token typed into RUGGER 03's secure form (R02 decision 95ef4e34, K-1..K-7).
 # Cost (official on-demand price list read on 2026-11-14, cloud.google.com/products/compute/pricing/general-purpose):
 #   n2-highmem-16 (16 vCPU, 128 GB) 1.048112 $/h ; n2-highmem-32 (32 vCPU, 256 GB) 2.096224 $/h, before tax.
-#   The VM is billed only while it RUNS; its disk is billed until `teardown`. DEADLINE stops it whatever happens.
+#   The VM is billed only while it RUNS; its disk is billed until the VM is deleted. At DEADLINE the VM AND its disk
+#   are DELETED automatically (owner condition of 2026-11-15: nothing paid stays active after the limit); `launch`
+#   checks that this automatic deletion is really set and deletes the VM at once if it is not.
 set -euo pipefail
 PROJECT="__FILL: owner-project-id__"; REGION=us-central1; ZONE=us-central1-a
-BUCKET="__FILL: owner-private-bucket__"           # private, us-central1, uniform access, public access prevention ON
+BUCKET="__FILL: owner-private-bucket__"           # DEDICATED to this run (not the backup bucket); private, us-central1
 IMAGE="__FILL: ubuntu-2404-noble-amd64-vYYYYMMDD__"   # a FIXED image name (not a family), recorded in the decision log
 MACHINE="__FILL: n2-highmem-16 or n2-highmem-32 (sized by RUGGER 02 on the exported signature count)__"
-DISK_GB=300                                        # inputs (about 5 GB), pools, bundles, ledger, margin
-DEADLINE="__FILL: RFC 3339 UTC time after which the VM is stopped whatever happens, e.g. 2026-11-17T12:00:00Z__"
+DISK_GB=200                                        # inputs (about 5 GB), pools, bundles, ledger, margin
+DEADLINE="__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 48 h ahead), e.g. 2026-11-17T12:00:00Z__"
 INBOUND_SUMS_SHA="__FILL: sha256 of INBOUND_SHA256SUMS, as anchored by RUGGER 02__"
 S0=467275745
 CODE_COMMIT="__FILL: commit whose tree is aff97638 (R03 c0199a3...)__"
@@ -36,11 +38,13 @@ check_values() {
 case "${1:-}" in
 setup)
   need_filled; check_values; gcloud config set project $PROJECT
-  # 1. Private bucket (created only if absent), then CHECKED (R02 O-2). No automatic deletion (R02 e372f4c5).
+  # 1. Private bucket DEDICATED to this run (created only if absent), then CHECKED (R02 O-2), auto-cleaned after 7 days.
   gcloud storage buckets describe gs://$BUCKET >/dev/null 2>&1 || \
     gcloud storage buckets create gs://$BUCKET --location=$REGION --uniform-bucket-level-access --public-access-prevention
   d=$(gcloud storage buckets describe gs://$BUCKET --format='value(public_access_prevention,uniform_bucket_level_access,location)')
   [ "$d" = "$(printf 'enforced\tTrue\tUS-CENTRAL1')" ] || die "bucket_settings:$d"
+  printf '{"rule":[{"action":{"type":"Delete"},"condition":{"age":7}}]}' > /tmp/lc.json
+  gcloud storage buckets update gs://$BUCKET --lifecycle-file=/tmp/lc.json
   # 2. Two service accounts, bucket-scoped only, no key file ever created.
   for sa in w1-eval-sa w1-url-signer; do
     gcloud iam service-accounts describe $sa@$PROJECT.iam.gserviceaccount.com >/dev/null 2>&1 || \
@@ -88,13 +92,24 @@ print(json.dumps({"accessBoundary": {"accessBoundaryRules": rules}}))' "$BUCKET"
 
 launch)
   need_filled; check_values
+  now=$(date -u +%s); limit=$(date -u -d "$DEADLINE" +%s) || die "bad DEADLINE"
+  [ "$limit" -gt "$now" ] || die "DEADLINE_is_in_the_past"
+  [ "$limit" -le $((now + 48 * 3600)) ] || die "DEADLINE_more_than_48_h_ahead"
   gcloud compute instances create w1-eval --zone=$ZONE --machine-type=$MACHINE \
     --image=$IMAGE --image-project=ubuntu-os-cloud --boot-disk-size=${DISK_GB}GB --boot-disk-type=pd-balanced \
     --no-address --service-account=$VM_SA --scopes=https://www.googleapis.com/auth/devstorage.read_write \
     --shielded-secure-boot --shielded-vtpm --shielded-integrity-monitoring \
-    --termination-time=$DEADLINE --instance-termination-action=STOP \
+    --termination-time=$DEADLINE --instance-termination-action=DELETE \
     --metadata-from-file=startup-script=startup.sh \
     --metadata=bucket=$BUCKET,inbound_sums_sha256=$INBOUND_SUMS_SHA,s0=$S0,workers=8,wait_minutes=$WAIT_MINUTES,deadline=$DEADLINE,code_commit=$CODE_COMMIT,block-project-ssh-keys=TRUE,enable-oslogin=TRUE
+  # the automatic deletion must be really set on the VM, otherwise the VM is deleted now (owner condition)
+  when=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.terminationTime)')
+  action=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.instanceTerminationAction)')
+  if [ -z "$when" ] || [ "$action" != DELETE ]; then
+    gcloud compute instances delete w1-eval --zone=$ZONE --quiet
+    die "automatic_deletion_not_confirmed_vm_deleted:when=$when,action=$action"
+  fi
+  echo "automatic deletion confirmed: scheduling.terminationTime=$when scheduling.instanceTerminationAction=$action (asked: $DEADLINE, DELETE)"
   echo "follow (read only): bash create_vm.sh status" ;;
 
 anchor)         # the owner deposits the digest RUGGER 02 anchored for the step BEFORE this one (the VM waits for it)
@@ -116,16 +131,19 @@ status)
   gcloud compute instances describe w1-eval --zone=$ZONE --format='value(status)'
   gcloud compute instances get-serial-port-output w1-eval --zone=$ZONE 2>/dev/null | grep -E 'STOP|PAUSE|step |EXIT|done|boot ' | tail -20 || true ;;
 
-teardown)       # once RUGGER 03 has downloaded and RUGGER 02 has checked the hashes
+teardown)       # once RUGGER 03 has downloaded and RUGGER 02 has checked the hashes, AND AT THE LATEST AT DEADLINE;
+                # may be run again: what is already gone is skipped, then everything is checked
   need_filled
   gcloud compute instances get-serial-port-output w1-eval --zone=$ZONE > serial_w1-eval.txt 2>/dev/null || true   # kept (R02 C2)
   gcloud compute instances delete w1-eval --zone=$ZONE --quiet || true
   gcloud storage rm -r "gs://$BUCKET/inbound" "gs://$BUCKET/outbound" "gs://$BUCKET/anchors" || true
   gcloud compute disks delete w1-eval --zone=$ZONE --quiet 2>/dev/null || true      # boot disk (auto-deleted with the VM by default)
-  gcloud iam service-accounts delete $VM_SA --quiet; gcloud iam service-accounts delete $SIGNER_SA --quiet
+  gcloud iam service-accounts delete $VM_SA --quiet || true; gcloud iam service-accounts delete $SIGNER_SA --quiet || true
+  sas=$(gcloud iam service-accounts list --filter="email:w1-eval-sa@ OR email:w1-url-signer@" --format='value(email)'); [ -z "$sas" ] || die "service_account_still_present"
   left=$(gcloud compute instances list --filter=name=w1-eval --format='value(name)'); [ -z "$left" ] || die "vm_still_present"
   disk=$(gcloud compute disks list --filter=name=w1-eval --format='value(name)'); [ -z "$disk" ] || die "disk_still_present"
   objs=$(gcloud storage ls "gs://$BUCKET/inbound/**" "gs://$BUCKET/outbound/**" "gs://$BUCKET/anchors/**" 2>/dev/null || true); [ -z "$objs" ] || die "bucket_objects_still_present"
-  echo "teardown OK: no VM, no disk, no service account; inbound/, outbound/ and anchors/ removed (other prefixes untouched)" ;;
+  echo "teardown OK: no VM, no disk, no service account; inbound/, outbound/ and anchors/ removed."
+  echo "The empty dedicated bucket costs nothing; delete it with: gcloud storage buckets delete gs://$BUCKET" ;;
 *) die "usage: setup | token inbound|outbound|relay | launch | anchor STEP SHA256 | start | status | teardown" ;;
 esac

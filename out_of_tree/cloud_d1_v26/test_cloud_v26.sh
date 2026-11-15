@@ -25,10 +25,15 @@ case "$*" in
                           if [[ "${args[-1]}" == */ ]]; then mkdir -p "$dest"; for f in "${args[@]:3:${#args[@]}-4}"; do cp "$f" "$dest/"; done
                           else mkdir -p "$(dirname "$dest")"; cp "${args[3]}" "$dest"; fi ;;
   "storage ls gs://"*"/anchors/expect_"*) [ -f "$(local_path "$3")" ] ;;
+  *"buckets update"*"--lifecycle-file="*) for a in "$@"; do case "$a" in --lifecycle-file=*) cp "${a#--lifecycle-file=}" "$STATE/lifecycle.json" ;; esac; done ;;
   *"buckets describe"*"--format"*) printf 'enforced\tTrue\tUS-CENTRAL1\n' ;;
+  *"instances describe"*"scheduling.terminationTime"*) echo "${FAKE_WHEN-2026-11-17T12:00:00.000Z}" ;;
+  *"instances describe"*"scheduling.instanceTerminationAction"*) echo "${FAKE_ACTION-DELETE}" ;;
   *"buckets describe"*) [ -f "$STATE/bucket_created" ] ;;
   *"buckets create"*) touch "$STATE/bucket_created" ;;
   *"service-accounts describe"*) exit 1 ;;
+  *"service-accounts list"*) echo "${FAKE_SA_LEFT-}" ;;
+  *"instances delete"*|*"service-accounts delete"*|*"disks delete"*|"storage rm "*) [ -z "${FAKE_GONE-}" ] ;;
   *"get-value account"*) echo owner@example.com ;;
   *"print-access-token"*) echo BASE-TOKEN ;;
   *) : ;;
@@ -81,16 +86,19 @@ done
 fill() { sed -e 's/__FILL: owner-project-id__/my-project-123/' -e 's/__FILL: owner-private-bucket__/my-bucket/' \
              -e 's/__FILL: ubuntu-2404-noble-amd64-vYYYYMMDD__/ubuntu-2404-noble-amd64-v20261101/' \
              -e "s/__FILL: n2-highmem-16 or n2-highmem-32 (sized by RUGGER 02 on the exported signature count)__/$1/" \
-             -e "s/__FILL: RFC 3339 UTC time after which the VM is stopped whatever happens, e.g. 2026-11-17T12:00:00Z__/$2/" \
+             -e "s/__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 48 h ahead), e.g. 2026-11-17T12:00:00Z__/$2/" \
              -e "s/__FILL: sha256 of INBOUND_SHA256SUMS, as anchored by RUGGER 02__/$(digest sums)/" \
              -e 's/__FILL: commit whose tree is aff97638 (R03 c0199a3...)__/0123456789abcdef0123456789abcdef01234567/' "$here/create_vm.sh"; }
-fill n2-highmem-32 2026-11-17T12:00:00Z > "$tmp/vm.sh"; grep -q __FILL "$tmp/vm.sh" | grep -v '^#' && fail "a field is left"
-fill n2-standard-4 2026-11-17T12:00:00Z > "$tmp/bad1.sh"; out=$(bash "$tmp/bad1.sh" launch 2>&1) && fail "bad machine ran"; [[ "$out" == *"bad MACHINE"* ]] || fail "$out"
+SOON=$(date -u -d '+40 hours' +%FT%TZ)
+fill n2-highmem-16 "$SOON" > "$tmp/vm.sh"; grep -q __FILL "$tmp/vm.sh" | grep -v '^#' && fail "a field is left"
+fill n2-standard-4 "$SOON" > "$tmp/bad1.sh"; out=$(bash "$tmp/bad1.sh" launch 2>&1) && fail "bad machine ran"; [[ "$out" == *"bad MACHINE"* ]] || fail "$out"
 fill n2-highmem-16 tomorrow > "$tmp/bad2.sh"; out=$(bash "$tmp/bad2.sh" setup 2>&1) && fail "bad deadline ran"; [[ "$out" == *"bad DEADLINE"* ]] || fail "$out"
 [ ! -s "$CALLS" ] || fail "a command was issued before the checks"
 bash "$tmp/vm.sh" setup > "$tmp/out" || fail "setup: $(cat "$tmp/out")"
 grep -q "buckets create gs://my-bucket --location=us-central1 --uniform-bucket-level-access --public-access-prevention" "$CALLS" || fail "bucket flags"
-grep -Eq "lifecycle|keys create|projects add-iam-policy-binding|allUsers|allAuthenticatedUsers|compute instances" "$CALLS" && fail "forbidden command in setup"
+grep -q "buckets update gs://my-bucket --lifecycle-file=/tmp/lc.json" "$CALLS" || fail "lifecycle of the dedicated bucket"
+[ "$(cat "$tmp/lifecycle.json")" = '{"rule":[{"action":{"type":"Delete"},"condition":{"age":7}}]}' ] || fail "lifecycle rule is not: delete after 7 days"
+grep -Eq "keys create|projects add-iam-policy-binding|allUsers|allAuthenticatedUsers|compute instances" "$CALLS" && fail "forbidden command in setup"
 for kind in inbound outbound relay; do
   : > "$CALLS"; out=$(bash "$tmp/vm.sh" token $kind)
   [[ "$out" == *REDUCED-TOKEN* && "$out" != *BASE-TOKEN* ]] || fail "token output $kind"
@@ -104,12 +112,26 @@ for kind in inbound outbound relay; do
   esac
 done
 out=$(bash "$tmp/vm.sh" token both 2>&1) && fail "unknown token kind"
-: > "$CALLS"; bash "$tmp/vm.sh" launch > /dev/null
+: > "$CALLS"; out=$(bash "$tmp/vm.sh" launch) || fail "launch: $out"
+[[ "$out" == *"automatic deletion confirmed"* ]] || fail "launch does not confirm the automatic deletion"
 line=$(grep "compute instances create" "$CALLS")
-for want in "--machine-type=n2-highmem-32" "--boot-disk-size=300GB" "--no-address" "--termination-time=2026-11-17T12:00:00Z" \
-            "--instance-termination-action=STOP" "--shielded-secure-boot" "wait_minutes=180" "deadline=2026-11-17T12:00:00Z" \
+for want in "--machine-type=n2-highmem-16" "--boot-disk-size=200GB" "--no-address" "--termination-time=$SOON" \
+            "--instance-termination-action=DELETE" "--shielded-secure-boot" "wait_minutes=180" "deadline=$SOON" \
             "block-project-ssh-keys=TRUE" "inbound_sums_sha256=$(digest sums)"; do
   [[ "$line" == *"$want"* ]] || fail "launch lacks $want"
+done
+grep -q "compute instances delete" "$CALLS" && fail "a confirmed VM was deleted"
+# the automatic deletion is checked on the created VM: not set, or another action -> the VM is deleted at once
+for bad in "FAKE_WHEN=" "FAKE_ACTION=STOP"; do
+  : > "$CALLS"; out=$(env "$bad" bash "$tmp/vm.sh" launch 2>&1) && fail "unconfirmed launch accepted ($bad)"
+  [[ "$out" == *automatic_deletion_not_confirmed_vm_deleted* ]] || fail "$bad: $out"
+  grep -q "compute instances delete w1-eval --zone=us-central1-a --quiet" "$CALLS" || fail "$bad: VM not deleted"
+done
+# the deadline must be ahead, and at most 48 h ahead: nothing is created otherwise
+for when in "$(date -u -d '+49 hours' +%FT%TZ)" "$(date -u -d '-1 hour' +%FT%TZ)"; do
+  fill n2-highmem-16 "$when" > "$tmp/late.sh"; : > "$CALLS"
+  out=$(bash "$tmp/late.sh" launch 2>&1) && fail "deadline $when accepted"; [[ "$out" == *DEADLINE_* ]] || fail "$out"
+  [ ! -s "$CALLS" ] || fail "something was created with a bad deadline"
 done
 [[ "$line" != *max-run-duration* && "$line" != *chain_mode* && "$line" != *start_step* ]] || fail "old launch option"
 : > "$CALLS"
@@ -123,6 +145,11 @@ rm "$tmp/bucket/anchors/expect_gate.txt"
 : > "$CALLS"; bash "$tmp/vm.sh" teardown > /dev/null
 grep -q "storage rm -r gs://my-bucket/inbound gs://my-bucket/outbound gs://my-bucket/anchors" "$CALLS" || fail "teardown prefixes"
 grep -Eq "storage rm -r gs://my-bucket( |$)|buckets delete|w1-backup" "$CALLS" && fail "teardown touches the backup or the bucket"
+# teardown may be run again (or after the automatic deletion): what is already gone is skipped, the checks still run
+out=$(FAKE_GONE=1 bash "$tmp/vm.sh" teardown 2>&1) || fail "teardown fails when everything is already gone: $out"
+[[ "$out" == *"teardown OK"* ]] || fail "second teardown does not conclude"
+if out=$(FAKE_SA_LEFT=w1-eval-sa@p.iam.gserviceaccount.com bash "$tmp/vm.sh" teardown 2>&1); then fail "teardown accepts a remaining service account"; fi
+[[ "$out" == *service_account_still_present* ]] || fail "wrong teardown refusal: $out"
 echo "A. create_vm.sh OK"
 
 # ------------------------------------------------------------------ B. startup.sh

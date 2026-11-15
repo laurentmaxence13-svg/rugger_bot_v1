@@ -1,9 +1,15 @@
 # W1 — option cloud D1 v2.6 : la chaîne complète sur une machine à grande mémoire (préparée, NON exécutée)
 
-**Statut.** Texte et scripts seulement, jamais exécutés sur Google Cloud. Rien n'est créé ni dépensé sans le GO
-explicite du propriétaire, après l'audit de RUGGER 02. Calcul hors ligne (HISTORICAL_REPLAY). Aucun ordre, aucune
-signature, aucune clé de wallet. Le protocole W1 v2.6.2 et le code gelé ne sont pas modifiés : la machine exécute
-le code gelé tel quel.
+**Statut.** Texte et scripts seulement, jamais exécutés sur Google Cloud. Calcul hors ligne (HISTORICAL_REPLAY).
+Aucun ordre, aucune signature, aucune clé de wallet. Le protocole W1 v2.6.2 et le code gelé ne sont pas modifiés :
+la machine exécute le code gelé tel quel.
+
+**Accord conditionnel du propriétaire du 15/11/2026 04:17Z (8cfead0e)** : voie B autorisée, budget total de
+60 USD au plus, machine 16 vCPU / 128 Go, tarif à vérifier avant toute création, 48 h au plus après le lancement
+avec arrêt automatique vérifié, bucket dédié, alerte budgétaire et mécanisme d'arrêt effectif mis en place avant,
+et **validation préalable de la configuration, des coûts et des sécurités par RUGGER 02**. La version 2.6.1 de ce
+paquet (§2 ter) adapte `create_vm.sh` à ces conditions. `startup.sh`, `r03_transfer.sh` et l'échantillon
+d'identité sont inchangés : ce que R03 dépose dans `inbound/` ne change pas.
 
 ## 1. Pourquoi
 
@@ -22,13 +28,13 @@ d'amender le protocole.
 | Enchaînement | `chained` accepté (C1-C5) | **une étape par ancrage** (R02 d38f6580) : après chaque étape la VM publie `DAYJ_STATE.json` et attend `anchors/expect_<étape>.txt` |
 | Attente | 3 h puis arrêt définitif | `wait_minutes` (180 par défaut) puis **PAUSE** : la VM s'éteint et reprend à son prochain démarrage (`start`) |
 | Second démarrage | refusé | admis après une PAUSE ; **refusé après un STOP** (définitif), 12 démarrages au plus |
-| Machine | n2-highmem-8 (64 Go), disque 100 Go | `n2-highmem-16` (128 Go) ou `n2-highmem-32` (256 Go), disque 300 Go |
-| Limite de durée | `max-run-duration=12h`, suppression | **`termination-time` = date limite absolue**, arrêt (le disque reste jusqu'à `teardown`) ; la VM la contrôle aussi elle-même |
+| Machine | n2-highmem-8 (64 Go), disque 100 Go | `n2-highmem-16` (128 Go) ou `n2-highmem-32` (256 Go), disque 200 Go (v2.6.1) |
+| Limite de durée | `max-run-duration=12h`, suppression | **`termination-time` = date limite absolue, 48 h au plus, SUPPRESSION de la VM et de son disque** (v2.6.1), contrôlée juste après la création ; la VM contrôle aussi la date elle-même |
 | Entrées | le répertoire dayj de R03 | les **collectes** telles quelles (`data_<nom>.tar`) et `STEPS.json` (arguments des étapes et empreintes ancrées) |
 | Contrôle croisé | échantillon d'identité (empreintes des FICHIERS) | échantillon d'identité **corrigé** (§2 bis) **et** `GATE.json` égal à celui de la session de R03 (sha attendu dans `STEPS.json`) |
 | w1aux | v7.3 (63eb3412) | **v7.4** (MANIFEST 31222874, audit R02 46da9df2) |
 | Jetons | inbound, outbound | inbound, outbound, et **relay** (lecture `outbound/` + création `anchors/`), ce dernier **seulement si R02 amende K-1 par écrit** |
-| Nettoyage du bucket | suppression automatique à 7 jours | **aucune** suppression automatique ; `teardown` ne touche que `inbound/`, `outbound/`, `anchors/` (pas la sauvegarde `w1-backup/`) |
+| Nettoyage du bucket | suppression automatique à 7 jours | bucket **dédié** au calcul, distinct de la sauvegarde : suppression automatique à 7 jours rétablie (v2.6.1) ; `teardown` vide `inbound/`, `outbound/`, `anchors/` |
 | URL signées (repli) | présentes | retirées de ce paquet |
 
 ## 2 bis. Défaut de la v2.5 trouvé en préparant la v2.6 : l'échantillon d'identité dépendait de la machine
@@ -54,6 +60,37 @@ ancrer par R02 avant tout usage.** Les empreintes de fichiers restent imprimées
 Remarque : le rapport officiel W1 portera de la même façon l'environnement de la machine qui l'aura produit ; cela
 ne touche ni la décision ni les chiffres, mais son sha de fichier n'est pas comparable d'une machine à l'autre.
 
+## 2 ter. Version 2.6.1 (15/11) : mise en conformité avec les conditions du propriétaire
+
+Seul `create_vm.sh` change (avec ses tests, cette notice, la marche à suivre et le MANIFEST).
+
+| Condition du propriétaire | v2.6 auditée (8d14eaac) | v2.6.1 |
+|---|---|---|
+| « Aucun service payant ne doit rester actif après la limite » | à la date limite la VM était **arrêtée** ; son disque restait facturé jusqu'à `teardown` | à la date limite la VM **et son disque sont supprimés** (`--instance-termination-action=DELETE`) |
+| « Arrêt automatique vérifié » | réglage demandé, jamais relu | `launch` relit `scheduling.terminationTime` et `scheduling.instanceTerminationAction` sur la VM créée ; valeur vide ou autre que DELETE : **la VM est supprimée aussitôt** et le script s'arrête ; sinon il affiche la date et l'action constatées |
+| « 48 heures après le lancement » | date limite libre | `launch` refuse une date limite passée ou à plus de 48 h |
+| Bucket dédié | bucket au choix, sans nettoyage | bucket dédié, objets supprimés d'office après 7 jours |
+| Budget de 60 USD | disque de 300 Go | disque de 200 Go ; date limite proposée : **lancement + 40 h** (§3) |
+| Nettoyage final | `teardown` s'arrêtait si un élément était déjà supprimé | `teardown` peut être relancé (après la suppression automatique aussi) et vérifie en plus qu'aucun compte de service ne reste |
+
+**Limite à connaître (documentation Google « Limit the run time of a VM », lue le 15/11 par extraits).** La date
+limite n'agit que sur une VM **en marche** : « The termination timestamp is automatically cleared whenever a VM is
+stopped or suspended ». Or la VM s'éteint d'elle-même dans trois cas : PAUSE (pas d'ancre dans le délai), fin de la
+chaîne, STOP définitif. Dans ces cas :
+- elle ne coûte plus de calcul, et Google refuse de la redémarrer une fois la date passée (« the time must be in
+  the future; otherwise, any requests to create or rerun the VM fail ») ; `startup.sh` refuse aussi de travailler ;
+- **son disque (200 Go, environ 0,03 $/h, soit 0,65 $ par jour) reste facturé jusqu'à `teardown`**.
+Donc la suppression automatique couvre le cas « la VM tourne encore à la date limite » ; dans les autres cas, c'est
+**`bash create_vm.sh teardown`, à lancer par le propriétaire dès la fin et au plus tard à la date limite**, qui
+supprime tout et le vérifie (aucune VM, aucun disque, aucun compte de service, aucun objet). C'est la dernière
+ligne de la marche à suivre. Rendre ce dernier cas automatique demanderait que la VM reste allumée jusqu'à la
+date limite (dépense inutile) ou qu'elle ait le droit de se supprimer elle-même (droit Compute en plus, refusé
+jusqu'ici par R02, O-2) : non retenu, à la décision de R02.
+
+Contrepartie de la suppression à la date limite (R02, 15/11) : si la date limite tombe en cours de chaîne, les
+sorties intermédiaires restées sur la VM sont perdues ; seuls les fichiers déjà publiés dans `outbound/` restent
+(7 jours). La sauvegarde de la collecte W1 est indépendante et doit être faite et vérifiée avant.
+
 Inchangé : bucket privé contrôlé, comptes de service sans rôle projet ni clé, aucune IP publique, pas de NAT,
 VM protégée, pas de clé SSH, contrôles des fichiers reçus (liste exacte, empreintes, aucun pickle, aucun wheel qui
 masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, conditions K-2 à K-7.
@@ -72,14 +109,22 @@ masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, 
   (0,524 $/h). **À revérifier par le propriétaire dans le calculateur de prix avant son GO.**
 - **Durée** : inconnue à cette échelle ; aucune étape n'a jamais tourné sur 2,2 millions de transactions. La VM
   n'est facturée que lorsqu'elle tourne ; pendant une PAUSE elle est éteinte (seul le disque est facturé).
-- **Plafond à présenter au propriétaire** (formule de R02, d38f6580) :
-  `2 × (durée estimée de la chaîne + attente des audits, au moins 12 h) × tarif horaire + disque + stockage`.
-  Exemple avec une chaîne de 10 h sur n2-highmem-32 : 2 × 22 h × 2,10 $ = 92 $, plus le disque de 300 Go et le
-  stockage (quelques dollars) : **plafond de l'ordre de 100 $**. Sur n2-highmem-16 : de l'ordre de 50 $.
-  Le propriétaire fixe le montant final.
+- **Plafond fixé par le propriétaire le 15/11 : 60 USD au total.** Pire cas avec `n2-highmem-16` et une date
+  limite à **lancement + 40 h**, la VM tournant sans aucune pause :
+  - calcul : 40 h × 1,048112 $ = 41,92 $ ;
+  - disque de 200 Go (pd-balanced, environ 0,10 $ par Go et par mois) : environ 1,10 $ pour 40 h ;
+  - stockage (environ 10 Go pendant 7 jours au plus) et téléchargement des résultats par R03 (quelques Go,
+    environ 0,12 $ par Go) : environ 1,50 $ ;
+  - **total d'environ 44,5 $ hors taxes, soit environ 53 $ avec une TVA de 20 %** si elle s'applique au compte.
+  À 48 h, le même calcul donne environ 53 $ hors taxes et 64 $ avec 20 % de TVA : au-dessus de 60 $. D'où 40 h
+  (validé par R02 le 15/11). Les tarifs du disque, du stockage et du téléchargement sont des ordres de grandeur
+  non relevés sur la page officielle : **le propriétaire vérifie le total, taxes comprises, dans le calculateur
+  de prix ; au-dessus de 60 $, pas de lancement** (condition 2 du propriétaire).
 - **Garde-fous de dépense** :
-  - `DEADLINE` : la VM est arrêtée d'office à cette date (`--termination-time`), quoi qu'il arrive, et refuse
-    elle-même de lancer une étape après. Dépense maximale de calcul = (DEADLINE − lancement) × tarif horaire.
+  - `DEADLINE` : à cette date la VM, si elle tourne encore, est supprimée d'office avec son disque
+    (`--termination-time`, action DELETE, contrôlée par `launch`), et elle refuse elle-même de lancer une étape
+    après. Dépense maximale de calcul = (DEADLINE − lancement) × tarif horaire. Voir la limite au §2 ter.
+  - `teardown` par le propriétaire dès la fin, et au plus tard à la date limite.
   - une alerte de budget (gratuite), à créer par le propriétaire dans la console Facturation → Budgets et alertes,
     au montant du plafond, avec des seuils à 50 %, 90 % et 100 %. Une alerte prévient, elle n'arrête rien.
   - aucune autre ressource payante : une VM, son disque, le bucket.
@@ -91,9 +136,10 @@ masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, 
   sur la copie scellée de W1. Le propriétaire choisit le nom ; `setup` crée le bucket s'il n'existe pas.
 - `MACHINE` : **`n2-highmem-16`** (128 Go). Comptage de R03 (w1_count.json 0f408a1f) : 322 146 signatures
   retenues, 2 273 pools ; projections : export 70 à 80 Go, series 26 Go, evaluate 26 Gio exigés par la garde.
-- `DEADLINE` : **lancement + 48 h** (borne le calcul à environ 50 $ même sans aucune pause).
-- Plafond de dépense proposé au propriétaire : **60 $** ; alerte de budget à créer **avant** le lancement ;
-  tarif à revérifier par le propriétaire.
+- `DEADLINE` : **lancement + 40 h** (v2.6.1 ; `launch` refuse plus de 48 h), à fixer juste avant `launch` :
+  `date -u -d '+40 hours' +%FT%TZ`.
+- Plafond de dépense fixé par le propriétaire : **60 USD au total** ; alerte de budget à créer **avant** le
+  lancement ; tarif à revérifier par le propriétaire.
 - `workers` : 8 (valeur du script), accepté par R02 pour cette machine.
 - Jeton `relay` : admis par R02 (amendement de K-1) : R03 ne dépose une ancre qu'après le message d'ancrage de
   R02, en le citant, et lui envoie le code HTTP et la valeur ; une ancre déposée avant l'ancrage vaut STOP.
@@ -123,6 +169,10 @@ masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, 
 **Fin**
 10. `bash create_vm.sh token outbound` → R03 : `r03_transfer.sh get` → R02 vérifie tous les digests (C3).
 11. `bash create_vm.sh teardown` : VM, disque, comptes de service, `inbound/`, `outbound/`, `anchors/`.
+    **Dès la fin, et au plus tard à la date limite, quoi qu'il soit arrivé** (§2 ter). Puis suppression du bucket
+    vide et relevé de la dépense réelle (Facturation → Rapports), à transmettre à R04.
+
+La marche à suivre du propriétaire, pas à pas, est dans `MARCHE_A_SUIVRE_PROPRIETAIRE.md`.
 
 **Charge pour le propriétaire.** Un jeton d'une heure à chaque phase d'échange et, sans le jeton `relay`, une
 commande `anchor` par étape : de l'ordre de dix à vingt interventions courtes réparties sur la durée de la chaîne.
@@ -182,10 +232,11 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
 `bash test_cloud_v26.sh <python 3.12.3> <dépôt contenant un commit d'arbre aff97638> <ref> <paquet w1aux v7.4>`
 → `ALL OK`.
 - `create_vm.sh` avec de faux `gcloud` et `curl` : refus tant qu'un champ reste à remplir, machine ou date limite
-  invalides, commandes exactes de `setup` (aucune suppression automatique, aucune clé, aucun rôle projet), les
+  invalides, commandes exactes de `setup` (cycle de vie de 7 jours, aucune clé, aucun rôle projet), les
   trois frontières de jeton (inbound : création sous `inbound/` ; outbound : lecture sous `outbound/` ; relay :
-  lecture sous `outbound/` et création sous `anchors/`), options de `launch`, contrôles et non-écrasement de
-  `anchor`, périmètre de `teardown`.
+  lecture sous `outbound/` et création sous `anchors/`), options de `launch` (action DELETE, disque de 200 Go),
+  refus d'une date limite passée ou à plus de 48 h, suppression immédiate de la VM si la suppression automatique
+  n'est pas constatée, contrôles et non-écrasement de `anchor`, périmètre de `teardown`.
 - `startup.sh` réel contre un « bucket » local ; seuls dayj, metrics et l'échantillon d'identité sont remplacés
   par des doubles qui enregistrent leurs appels : premier démarrage (entrées, selfcheck, PAUSE), deux ancres =
   deux étapes avec le bon `--expect-sha` et les bons arguments, fin de chaîne (metrics, tar sans checkpoint,
@@ -193,14 +244,23 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
   dépassée, trop de démarrages, douze altérations des entrées ou des arguments toutes refusées, reprise de trials.
 - 13 défauts volontaires introduits dans les scripts : 12 détectés ; le treizième (un seul des deux contrôles de la
   date limite retiré) est couvert par l'autre contrôle, et le retrait des deux est détecté.
+- v2.6.1 : 10 défauts volontaires de plus dans `create_vm.sh` (contrôle de la suppression automatique retiré,
+  action non contrôlée, VM non conforme laissée en marche, date limite au-delà de 48 h acceptée, date limite
+  passée acceptée, action STOP au lieu de DELETE, `teardown` non rejouable, compte de service restant accepté,
+  nettoyage du bucket à 70 jours, disque de 300 Go) : 10 détectés (le neuvième après ajout d'un contrôle du
+  contenu de la règle de nettoyage).
 - Échantillon d'identité rejoué avec w1aux v7.3 et v7.4 : voir `IDENTITY_V26_RUNS.txt`.
 
 ## 8. Ce qui n'est pas vérifié
 
-- Aucune commande n'a tourné sur Google Cloud : `--termination-time`, la présence de `gcloud` sur l'image, l'accès
-  privé aux API, le jeton `relay` à deux règles, le comportement de la date limite après un arrêt et un
-  redémarrage sont à constater lors d'une répétition à blanc (`launch` avec des entrées factices) si le
-  propriétaire l'autorise.
+- Aucune commande n'a tourné sur Google Cloud : l'option `--termination-time` sur `instances create`, le nom et
+  le format des champs `scheduling.terminationTime` et `scheduling.instanceTerminationAction`, la présence de
+  `gcloud` sur l'image, l'accès privé aux API, le jeton `relay` à deux règles sont à constater au premier
+  lancement réel. Si l'option ou les champs diffèrent, `launch` échoue ou supprime la VM aussitôt : aucun calcul
+  ne démarre sans suppression automatique constatée (défaut sûr, mais le lancement serait alors à corriger).
+- Le comportement de la date limite sur une VM éteinte vient de la documentation Google (extraits lus par un
+  moteur de recherche le 15/11, la page elle-même n'étant pas accessible depuis la session de R01), pas d'un
+  essai.
 - La durée et la mémoire réelles de chaque étape à l'échelle de W1 sont inconnues ; le dimensionnement repose sur
   les mesures de R03 et sur la projection de dayj.
 - Les trois empreintes « cœur » de l'échantillon d'identité n'ont été mesurées que dans la session de R01, sous
