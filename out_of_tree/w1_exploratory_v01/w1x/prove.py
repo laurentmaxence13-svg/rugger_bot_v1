@@ -2,6 +2,7 @@
 
     python -B -m w1x.prove export --window-dir RUN --out NEW_DIR [--buckets N]
     python -B -m w1x.prove series --run-dir PYTH_RUN --study-report REPORT --out NEW_DIR
+    python -B -m w1x.prove subset --run-dir RUN --tx-segments N --out NEW_RUN_DIR
 
 Each command runs the FROZEN function and the streaming one on the same verified run, each in its own child
 process, then compares every file written, byte for byte. It prints one JSON line: ``identical``, the sha256 of
@@ -15,6 +16,10 @@ forked child starts with the memory of its parent.
 * ``series``: frozen ``w1_run.sol_usd_series`` on every transaction row of the run, against the same frozen
   function inside ``stream_series.streaming_series()``. ``w1_run.pyth_entries`` is not used here because it only
   accepts the W1 window (its use on slim rows is covered by the tests of this package); the run must verify.
+* ``subset``: a SMALLER verified run made of the first N tx segments of a verified run (the segment files are
+  copied unchanged; the signature listing is rewritten to the signatures of the kept transactions; no anchor, no
+  call log). It is for MEMORY MEASUREMENTS on several sizes of real opened data only: its manifest carries
+  ``w1x_subset`` and it must never be used as a collection. It must pass the frozen ``backfill.verify``.
 ``RUGGER_NO_DOTENV=1`` required. Offline.
 """
 import argparse
@@ -95,6 +100,50 @@ def _series(kind, run_dir, study_report, out):
     return dict(phases, rows=len(slim), tx_segments=sum(seg['kind'] == 'tx' for seg in manifest['segments']))
 
 
+def subset(run_dir, out, tx_segments):
+    """Write in ``out`` a verified run holding the first ``tx_segments`` tx segments of ``run_dir``."""
+    import gzip
+    import shutil
+    from bot.market import backfill as bf
+    run_dir, out = Path(run_dir), Path(out)
+    if out.exists():
+        raise ProveError('output_exists')
+    checked = bf.verify(run_dir)
+    manifest = json.loads((run_dir / 'manifest.json').read_text())
+    if not checked['ok'] or not manifest['complete'] or manifest['bodies'] != 'gtfa':
+        raise ProveError('source_run_not_verified_complete_gtfa')
+    tx = [seg for seg in manifest['segments'] if seg['kind'] == 'tx']
+    if type(tx_segments) is not int or not 1 <= tx_segments < len(tx):
+        raise ProveError(f'tx_segments_must_be_between_1_and_{len(tx) - 1}')
+    out.mkdir(parents=True)
+    signatures, failed = [], 0
+    for seg in tx[:tx_segments]:
+        shutil.copyfile(run_dir / seg['path'], out / seg['path'])
+        for row in bf.read_segment(out / seg['path']):
+            signatures.append(row['signature'])
+            failed += (row.get('meta') or {}).get('err') is not None
+    listing = 'sig-subset.jsonl.gz'
+    data = gzip.compress(''.join(json.dumps(dict(signature=s), separators=(',', ':')) + '\n' for s in signatures).encode(),
+                         mtime=0)
+    (out / listing).write_bytes(data)
+    kept = dict(manifest)
+    for key in ('gsfa_anchor', 'calls'):
+        kept.pop(key, None)
+    kept['segments'] = tx[:tx_segments] + [dict(kind='sig', path=listing, rows=len(signatures),
+                                                sha256=hashlib.sha256(data).hexdigest())]
+    kept['totals'] = dict(manifest['totals'], transactions=len(signatures), failed_transactions=failed,
+                          duplicate_signatures=len(signatures) - len(set(signatures)))
+    kept['w1x_subset'] = dict(source_manifest_sha256=checked['manifest_sha256'], tx_segments=tx_segments,
+                              of=len(tx), note='memory measurement only, never a collection')
+    (out / 'manifest.json').write_text(json.dumps(kept, indent=1, sort_keys=True))
+    again = bf.verify(out)
+    if not (again['ok'] and again['complete']):
+        raise ProveError('subset_does_not_verify:' + ','.join(again['problems']))
+    return dict(tx_segments=tx_segments, of=len(tx), transactions=len(signatures),
+                gz_bytes=sum((out / seg['path']).stat().st_size for seg in tx[:tx_segments]),
+                manifest_sha256=again['manifest_sha256'], source_manifest_sha256=checked['manifest_sha256'])
+
+
 def _child(queue, function, args):
     started, phases = time.time(), None
     try:
@@ -135,9 +184,16 @@ def main(argv=None, *, out=None):
     series.add_argument('--study-report', type=Path, required=True)
     for p in (export, series):
         p.add_argument('--out', type=Path, required=True, help='new directory: frozen/ and stream/ are written in it')
+    smaller = sub.add_parser('subset')
+    smaller.add_argument('--run-dir', type=Path, required=True)
+    smaller.add_argument('--tx-segments', type=int, required=True)
+    smaller.add_argument('--out', type=Path, required=True, help='new directory: the smaller run')
     a = parser.parse_args(argv)
     if os.environ.get('RUGGER_NO_DOTENV') != '1':
         raise ProveError('set_RUGGER_NO_DOTENV_1')
+    if a.what == 'subset':
+        out.write(json.dumps(dict(what='subset', **subset(a.run_dir, a.out, a.tx_segments)), sort_keys=True) + '\n')
+        return 0
     if a.what == 'export':
         doc = _both(_export, lambda kind, target: (kind, a.window_dir, target, a.buckets), a.out)
     else:

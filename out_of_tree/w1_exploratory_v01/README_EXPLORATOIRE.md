@@ -1,4 +1,4 @@
-# W1 — chaîne EXPLORATOIRE v0.1.1 (préparée, NON exécutée sur W1)
+# W1 — chaîne EXPLORATOIRE v0.1.2 (préparée, NON exécutée sur W1)
 
 **Ce paquet n'est pas la chaîne officielle W1 et ne donne jamais le verdict W1.** Il ne remplace pas le gel
 (protocole R10). Il ne s'exécute sur W1 qu'après l'accord explicite du propriétaire (lecture de W1 avant son
@@ -83,6 +83,12 @@ projection par transaction demandée par R02, plafond de 8 Go). v0.1.1 : pour la
 mémoire de pointe atteinte à la fin de chaque phase (maximum courant : la phase où il monte est celle qui
 domine). À lancer d'un processus neuf.
 
+v0.1.2 : `python -B -m w1x.prove subset --run-dir <run vérifié> --tx-segments N --out <dossier neuf>` fabrique
+un run plus petit, fait des N premiers segments tx (fichiers copiés tels quels, liste des signatures réécrite,
+ni ancre ni journal d'appels, manifeste marqué `w1x_subset`), qui doit passer `bf.verify`. Il ne sert qu'à mesurer
+la mémoire sur plusieurs tailles de données réelles déjà ouvertes (le pilote : 4, 8 puis 13 segments) ; ce n'est
+jamais une collecte.
+
 Mémoire, d'après les preuves de R03 du 15/11 (toutes identiques) et mes mesures synthétiques :
 - la série en flux lit chaque **segment** entier avec le lecteur gelé avant de l'alléger : son pic vaut au moins
   un segment décodé (environ 14 Mo de RAM par Mo gz, mesure de R03). Un run d'un seul segment a donc le même pic
@@ -100,7 +106,7 @@ PYTHONPATH=<checkout>:<parent de w1aux v7.4>:<ce paquet> RUGGER_NO_DOTENV=1 \
 ```
 → 64 tests : `stream_export` 10 (repris de l'option, seule la ligne d'import change) ; `stream_series` 28 ;
 `reading` 12 ; `explore` 12 (dont la chaîne complète sur le pack gelé : bundles 4aee76a3, ledger PASS sans
-rapport, lecture) ; `prove` 2.
+rapport, lecture) ; `prove` 3 (65 tests avec la v0.1.2).
 
 Défauts volontaires :
 - `stream_series.py` : 13 introduits, 13 détectés (erreur de décodage levée hors de l'ordre du gel, drapeau
@@ -122,8 +128,10 @@ Défauts volontaires :
 
 ## 7. Ce qui n'est pas vérifié
 
-- **Rien n'a tourné sur des données réelles.** Je n'ai aucune donnée de collecte dans ma session : les preuves
-  d'identité sur le pilote W1, un pack P0 et les runs Pyth ouverts sont à faire par R03 (`w1x.prove`).
+- **Preuves sur données réelles (R03, 15/11) : identité acquise** pour l'export sur le pilote W1 et pour la série
+  sur les quatre runs d'étude Pyth. **Limite, dans les termes de R02 : aucune preuve d'identité sur une fenêtre
+  réelle de la taille de W1** ; aucun export sur la fenêtre brute P0 (elle contient la partie réservée). Preuves
+  admises : pilote, pack gelé, synthétiques et cas adverses.
 - **Mémoire et durée à l'échelle de W1 : inconnues.** `stream_export` n'a tourné que sur de petites fenêtres ;
   la série allégée garde une ligne par transaction (ordre de grandeur : 1 Ko, soit environ 1 Go pour 718 183
   transactions, non mesuré) ; les réserves de `trials` et `ledger` sont faibles (9 % et 5 %) et reposent sur des
