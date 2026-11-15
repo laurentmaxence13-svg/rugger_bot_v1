@@ -7,8 +7,8 @@ la machine exécute le code gelé tel quel.
 **Accord conditionnel du propriétaire du 15/11/2026 04:17Z (8cfead0e)** : voie B autorisée, budget total de
 60 USD au plus, machine 16 vCPU / 128 Go, tarif à vérifier avant toute création, 48 h au plus après le lancement
 avec arrêt automatique vérifié, bucket dédié, alerte budgétaire et mécanisme d'arrêt effectif mis en place avant,
-et **validation préalable de la configuration, des coûts et des sécurités par RUGGER 02**. Les versions 2.6.1 et
-2.6.2 de ce paquet (§2 ter) adaptent `create_vm.sh` à ces conditions. `startup.sh`, `r03_transfer.sh` et l'échantillon
+et **validation préalable de la configuration, des coûts et des sécurités par RUGGER 02**. Les versions 2.6.1 à
+2.6.3 de ce paquet (§2 ter) adaptent `create_vm.sh` à ces conditions. `startup.sh`, `r03_transfer.sh` et l'échantillon
 d'identité sont inchangés : ce que R03 dépose dans `inbound/` ne change pas.
 
 ## 1. Pourquoi
@@ -60,7 +60,7 @@ ancrer par R02 avant tout usage.** Les empreintes de fichiers restent imprimées
 Remarque : le rapport officiel W1 portera de la même façon l'environnement de la machine qui l'aura produit ; cela
 ne touche ni la décision ni les chiffres, mais son sha de fichier n'est pas comparable d'une machine à l'autre.
 
-## 2 ter. Versions 2.6.1 et 2.6.2 (15/11) : mise en conformité avec les conditions du propriétaire
+## 2 ter. Versions 2.6.1 à 2.6.3 (15/11) : mise en conformité avec les conditions du propriétaire
 
 Seul `create_vm.sh` change (avec ses tests, cette notice, la marche à suivre et le MANIFEST).
 
@@ -79,6 +79,9 @@ automatique, et une étape pouvait déborder la date limite (`startup.sh` ne con
 `start` fait maintenant, dans cet ordre :
 1. refus si la date limite est passée, ou postérieure à la création de la VM + 48 h (la date limite du fichier ne
    peut pas repousser la limite fixée au lancement au-delà des 48 h du propriétaire) ;
+   - v2.6.3 (demande de R02) : refus si le statut de la VM n'est pas TERMINATED (une VM qui tourne déjà n'est pas
+     touchée), et refus si sa sortie série contient une ligne « STOP: » (STOP définitif : inutile de payer un
+     démarrage que `startup.sh` refuserait) ; si la sortie série est illisible, ce second contrôle ne bloque pas ;
 2. `set-scheduling` (même date limite, action DELETE) **avant** le démarrage ; refus de démarrer si la commande
    échoue ;
 3. relecture : refus de démarrer si la date est vide, si l'action n'est pas DELETE ou si la date relue ne désigne
@@ -257,7 +260,7 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
   lecture sous `outbound/` et création sous `anchors/`), options de `launch` (action DELETE, disque de 200 Go),
   refus d'une date limite passée ou à plus de 48 h, suppression immédiate de la VM si la suppression automatique
   n'est pas constatée (vide, autre action, autre instant, notation illisible), `start` (réglage remis avant le
-  démarrage, relu avant et après, sept cas de refus sans démarrage, suppression si le réglage disparaît après le
+  démarrage, relu avant et après, dix cas de refus sans démarrage, suppression si le réglage disparaît après le
   démarrage, refus après la date limite), contrôles et non-écrasement de `anchor`, périmètre de `teardown`.
 - `startup.sh` réel contre un « bucket » local ; seuls dayj, metrics et l'échantillon d'identité sont remplacés
   par des doubles qui enregistrent leurs appels : premier démarrage (entrées, selfcheck, PAUSE), deux ancres =
@@ -274,7 +277,8 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
 - v2.6.2 : 10 défauts volontaires dans `start` et dans le contrôle commun (réglage non remis, échec de
   `set-scheduling` ignoré, pas de contrôle avant le démarrage, pas de contrôle après, réglage perdu toléré,
   redémarrage après la date limite, date limite repoussée au-delà de la création + 48 h, instant non comparé,
-  action non comparée, action STOP) : 10 détectés.
+  action non comparée, action STOP) : 10 détectés. v2.6.3 : 2 de plus (statut non contrôlé, STOP définitif non
+  contrôlé) : 2 détectés.
 - Échantillon d'identité rejoué avec w1aux v7.3 et v7.4 : voir `IDENTITY_V26_RUNS.txt`.
 
 ## 8. Ce qui n'est pas vérifié

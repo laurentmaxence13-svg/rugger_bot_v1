@@ -35,6 +35,8 @@ case "$*" in
   *"instances describe"*"scheduling.terminationTime"*)
      if [ -e "$STATE/started" ] && [ -n "${FAKE_LOST_AFTER_START-}" ]; then echo
      elif [ -n "${FAKE_WHEN+x}" ]; then echo "$FAKE_WHEN"; else cat "$STATE/when" 2>/dev/null || true; fi ;;
+  *"instances describe"*"value(status)"*) echo "${FAKE_STATUS-TERMINATED}" ;;
+  *"get-serial-port-output"*) echo "${FAKE_SERIAL-startup-script: PAUSE: no_anchor_for_gate_within_180_minutes}" ;;
   *"instances describe"*"creationTimestamp"*) echo "${FAKE_CREATED-$(TZ=America/Los_Angeles date +%FT%T.000%:z)}" ;;
   *"instances describe"*"scheduling.instanceTerminationAction"*) echo "${FAKE_ACTION-DELETE}" ;;
   *"buckets describe"*) [ -f "$STATE/bucket_created" ] ;;
@@ -152,11 +154,12 @@ grep -q "compute instances set-scheduling w1-eval --zone=us-central1-a --termina
 grep -q "compute instances delete" "$CALLS" && fail "a confirmed VM was deleted by start"
 # not set, refused, another action, another instant, unreadable: the VM is NOT started
 for bad in "FAKE_SET_FAIL=1" "FAKE_WHEN=" "FAKE_ACTION=STOP" "FAKE_WHEN=$(date -u -d '+41 hours' +%FT%TZ)" "FAKE_WHEN=some day" \
-           "FAKE_CREATED=$(date -u -d '-9 hours' +%FT%TZ)" "FAKE_CREATED=some day"; do
+           "FAKE_CREATED=$(date -u -d '-9 hours' +%FT%TZ)" "FAKE_CREATED=some day" \
+           "FAKE_STATUS=RUNNING" "FAKE_STATUS=" "FAKE_SERIAL=startup-script: STOP: rc=1"; do
   : > "$CALLS"; out=$(env "$bad" bash "$tmp/vm.sh" start 2>&1) && fail "unsafe start accepted ($bad)"
   [[ "$out" == *no_restart* ]] || fail "$bad: $out"
   grep -q "compute instances start" "$CALLS" && fail "$bad: the VM was started"
-  if [[ "$bad" == FAKE_CREATED* ]]; then grep -q "set-scheduling" "$CALLS" && fail "$bad: deadline moved beyond 48 h after the creation"; fi
+  if [[ "$bad" == FAKE_CREATED* || "$bad" == FAKE_STATUS* || "$bad" == FAKE_SERIAL* ]]; then grep -q "set-scheduling" "$CALLS" && fail "$bad: the scheduling was touched"; fi
 done
 # set before the start but gone after it: the VM is deleted at once
 : > "$CALLS"; out=$(FAKE_LOST_AFTER_START=1 bash "$tmp/vm.sh" start 2>&1) && fail "start accepted a lost automatic deletion"

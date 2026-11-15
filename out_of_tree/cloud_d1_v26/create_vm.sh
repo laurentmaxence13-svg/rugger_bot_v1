@@ -135,6 +135,12 @@ start)          # after a pause (the VM powers off when no anchor came within WA
   created=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(creationTimestamp)')
   born=$(date -u -d "$created" +%s 2>/dev/null) || die "creation_time_unreadable_no_restart:$created"
   [ "$limit" -le $((born + 48 * 3600)) ] || die "DEADLINE_more_than_48_h_after_the_creation_of_the_vm_no_restart"
+  # only a VM that is powered off after a PAUSE is started again: not a running one, not one that reported a final STOP
+  status=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(status)')
+  [ "$status" = TERMINATED ] || die "vm_status_is_${status:-unknown}_no_restart"
+  if gcloud compute instances get-serial-port-output w1-eval --zone=$ZONE 2>/dev/null | grep -q 'STOP: '; then
+    die "vm_reported_a_final_STOP_no_restart_run_teardown"
+  fi
   gcloud compute instances set-scheduling w1-eval --zone=$ZONE --termination-time=$DEADLINE --instance-termination-action=DELETE \
     || die "automatic_deletion_refused_no_restart_run_teardown"
   scheduling_ok || die "automatic_deletion_not_confirmed_no_restart_run_teardown:when=$when,action=$action"

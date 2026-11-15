@@ -1,6 +1,6 @@
 # W1 — calcul officiel sur Google Cloud (voie B) : marche à suivre du propriétaire
 
-Paquet cloud v2.6.2. Tout se fait dans **Cloud Shell**, dans VOTRE projet Google Cloud. Aucun agent n'a accès à
+Paquet cloud v2.6.3. Tout se fait dans **Cloud Shell**, dans VOTRE projet Google Cloud. Aucun agent n'a accès à
 votre compte. Chaque commande se lance telle quelle. Si un message commence par `STOP:`, n'allez pas plus loin et
 transmettez la ligne à RUGGER 04.
 
@@ -15,7 +15,7 @@ transmettez la ligne à RUGGER 04.
    seuils 50 %, 90 % et 100 %. Une alerte vous prévient par courriel ; elle n'arrête rien toute seule.
 3. **Fichiers.** Dans Cloud Shell, menu ⋮ → Importer : `create_vm.sh` et `startup.sh`, dans le même dossier.
    **Avant toute modification**, lancez `sha256sum create_vm.sh startup.sh` et comparez :
-   - `create_vm.sh` : `cf00921d2df80ecb59afb2d4f15e9c91f35b337c87ee9f21310f6dc3d6255f98`
+   - `create_vm.sh` : `cab7097a6ba80d0cb896c98e850548f43de1acaade8b6fb4e8d9e52e14926a23`
    - `startup.sh` : `82f7f9cfd339d28cb894d09622015861f2805321467d724043b4572c63aadcc5`
 
    Si une valeur diffère, n'utilisez pas le fichier et prévenez RUGGER 04 (c'est une autre version).
