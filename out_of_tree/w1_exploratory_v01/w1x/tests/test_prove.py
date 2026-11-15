@@ -31,6 +31,12 @@ def test_export_proof_on_the_frozen_test_window(tmp_path):
     assert code == 0 and doc['identical'] and doc['what'] == 'export'
     assert doc['frozen']['files'] == doc['stream']['files'] and 'MANIFEST.json' in doc['frozen']['files'] and len(doc['frozen']['files']) == 4
     assert doc['frozen']['error'] is None and doc['stream']['peak_mb'] > 0 and doc['stream']['seconds'] >= 0
+    phases = doc['stream']['phases']                      # a running maximum, phase after phase
+    assert set(phases) == {'start', 'verify', 'first_pass', 'second_pass', 'third_pass'}
+    assert phases['start'] <= phases['verify'] <= phases['first_pass'] <= phases['second_pass'] <= phases['third_pass'] == doc['stream']['peak_mb']
+    assert doc['frozen']['phases'] is None
+    from w1x import stream_export
+    assert stream_export.verify.__name__ == 'verify' and stream_export._first_pass.__name__ == '_first_pass'   # untouched here
     with pytest.raises(prove.ProveError, match='output_exists'):
         _run(['export', '--window-dir', str(tmp_path / 'w'), '--out', str(tmp_path / 'proof')])
 
@@ -45,6 +51,9 @@ def test_series_proof_and_a_difference_is_reported(tmp_path, monkeypatch):
     code, doc = _run(['series', '--run-dir', str(window), '--study-report', str(study), '--out', str(tmp_path / 'proof')])
     assert code == 0 and doc['identical']
     assert sorted(doc['stream']['files']) == ['sol_usd_series.json.gz', 'sol_usd_series.json.gz.decoding.json']
+    phases = doc['stream']['phases']
+    assert (phases['rows'], phases['tx_segments']) == (60, 3) and phases['verify'] <= phases['slim_rows'] <= phases['series']
+    assert phases['series'] == doc['stream']['peak_mb'] and doc['frozen']['phases'] is None
     # a streaming step that changes one byte is seen, and so is a failure of either side
     from w1x import stream_series
     slim = stream_series._slim

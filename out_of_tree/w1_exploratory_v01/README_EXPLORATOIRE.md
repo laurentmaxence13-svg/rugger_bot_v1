@@ -1,4 +1,4 @@
-# W1 — chaîne EXPLORATOIRE v0.1 (préparée, NON exécutée sur W1)
+# W1 — chaîne EXPLORATOIRE v0.1.1 (préparée, NON exécutée sur W1)
 
 **Ce paquet n'est pas la chaîne officielle W1 et ne donne jamais le verdict W1.** Il ne remplace pas le gel
 (protocole R10). Il ne s'exécute sur W1 qu'après l'accord explicite du propriétaire (lecture de W1 avant son
@@ -79,7 +79,17 @@ python -B -m w1x.prove series --run-dir <run Pyth ouvert> --study-report <rappor
 ```
 Chaque commande exécute la fonction gelée et la fonction en flux dans deux processus, compare tous les fichiers
 octet pour octet, et imprime `identical`, les sha256, la mémoire de pointe et la durée de chacun (pour la
-projection par transaction demandée par R02, plafond de 8 Go).
+projection par transaction demandée par R02, plafond de 8 Go). v0.1.1 : pour la voie en flux, `phases` donne la
+mémoire de pointe atteinte à la fin de chaque phase (maximum courant : la phase où il monte est celle qui
+domine). À lancer d'un processus neuf.
+
+Mémoire, d'après les preuves de R03 du 15/11 (toutes identiques) et mes mesures synthétiques :
+- la série en flux lit chaque **segment** entier avec le lecteur gelé avant de l'alléger : son pic vaut au moins
+  un segment décodé (environ 14 Mo de RAM par Mo gz, mesure de R03). Un run d'un seul segment a donc le même pic
+  dans les deux voies (c'est le cas des quatre runs d'étude). Par transaction, mesuré au traceur d'allocation :
+  ligne allégée 1 560 octets, point 494 octets, série et texte JSON 395 octets de plus par point ;
+- l'export en flux ne garde aucune transaction de la fenêtre ; grandissent avec la fenêtre la vérification gelée
+  (listes et ensembles de signatures) et les transactions de création des pools créés.
 
 ## 6. Tests (aucun réseau)
 

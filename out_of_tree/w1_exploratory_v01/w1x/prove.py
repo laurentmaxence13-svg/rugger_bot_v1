@@ -6,7 +6,9 @@
 Each command runs the FROZEN function and the streaming one on the same verified run, each in its own child
 process, then compares every file written, byte for byte. It prints one JSON line: ``identical``, the sha256 of
 every file of both trees, the peak memory (MB) and the seconds of each child. No outcome, no return: an export
-and a price series only.
+and a price series only. For the streaming child, ``phases`` gives the peak memory reached at the end of each
+phase (a running maximum: the phase where it rises is the one that dominates). Run it from a fresh process: a
+forked child starts with the memory of its parent.
 
 * ``export``: frozen ``backfill_export.export_pools`` against ``stream_export.export_pools`` (default options).
   Meant for the W1 pilot and an opened P0 pack (the frozen one needs the memory of the whole run).
@@ -36,13 +38,35 @@ def _tree(path):
             for p in sorted(path.rglob('*')) if p.is_file()}
 
 
+def _peak_mb():
+    return round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1)
+
+
 def _export(kind, window_dir, out, buckets):
     from bot.market import backfill_export as bx
     from w1x import stream_export
     if kind == 'frozen':
         bx.export_pools(window_dir, out)
-    else:
+        return None
+    phases = dict(start=_peak_mb())
+
+    def marked(name, function):                        # same call, then the peak memory reached so far
+        def call(*args, **kwargs):
+            try:
+                return function(*args, **kwargs)
+            finally:
+                phases[name] = _peak_mb()
+        return call
+    names = dict(verify='verify', _first_pass='first_pass', _second_pass='second_pass', _export_bucket='third_pass')
+    saved = {name: getattr(stream_export, name) for name in names}
+    for name, phase in names.items():
+        setattr(stream_export, name, marked(phase, saved[name]))
+    try:
         stream_export.export_pools(window_dir, out, **({} if buckets is None else dict(buckets=buckets)))
+    finally:
+        for name, function in saved.items():
+            setattr(stream_export, name, function)
+    return phases
 
 
 def _series(kind, run_dir, study_report, out):
@@ -61,20 +85,24 @@ def _series(kind, run_dir, study_report, out):
     Path(out).mkdir(parents=True)
     if kind == 'frozen':
         w1_run.sol_usd_series(rows(), study_report, sha, Path(out) / 'sol_usd_series.json.gz')
-    else:
-        with stream_series.streaming_series():
-            w1_run.sol_usd_series(rows(), study_report, sha, Path(out) / 'sol_usd_series.json.gz')
+        return None
+    phases = dict(verify=_peak_mb())
+    with stream_series.streaming_series():
+        slim = rows()
+        phases['slim_rows'] = _peak_mb()
+        w1_run.sol_usd_series(slim, study_report, sha, Path(out) / 'sol_usd_series.json.gz')
+    phases['series'] = _peak_mb()
+    return dict(phases, rows=len(slim), tx_segments=sum(seg['kind'] == 'tx' for seg in manifest['segments']))
 
 
 def _child(queue, function, args):
-    started = time.time()
+    started, phases = time.time(), None
     try:
-        function(*args)
+        phases = function(*args)
         error = None
     except Exception as exc:                               # reported, compared, never hidden
         error = f'{type(exc).__name__}:{exc}'
-    queue.put(dict(error=error, seconds=round(time.time() - started, 1),
-                   peak_mb=round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1)))
+    queue.put(dict(error=error, seconds=round(time.time() - started, 1), peak_mb=_peak_mb(), phases=phases))
 
 
 def _both(function, args_of, out):
