@@ -1,6 +1,6 @@
 # W1 — calcul officiel sur Google Cloud (voie B) : marche à suivre du propriétaire
 
-Paquet cloud v2.6.1. Tout se fait dans **Cloud Shell**, dans VOTRE projet Google Cloud. Aucun agent n'a accès à
+Paquet cloud v2.6.2. Tout se fait dans **Cloud Shell**, dans VOTRE projet Google Cloud. Aucun agent n'a accès à
 votre compte. Chaque commande se lance telle quelle. Si un message commence par `STOP:`, n'allez pas plus loin et
 transmettez la ligne à RUGGER 04.
 
@@ -14,6 +14,11 @@ transmettez la ligne à RUGGER 04.
 2. **Alerte de budget.** Console → Facturation → Budgets et alertes → créer un budget de **60 $** sur ce projet,
    seuils 50 %, 90 % et 100 %. Une alerte vous prévient par courriel ; elle n'arrête rien toute seule.
 3. **Fichiers.** Dans Cloud Shell, menu ⋮ → Importer : `create_vm.sh` et `startup.sh`, dans le même dossier.
+   **Avant toute modification**, lancez `sha256sum create_vm.sh startup.sh` et comparez :
+   - `create_vm.sh` : `cf00921d2df80ecb59afb2d4f15e9c91f35b337c87ee9f21310f6dc3d6255f98`
+   - `startup.sh` : `82f7f9cfd339d28cb894d09622015861f2805321467d724043b4572c63aadcc5`
+
+   Si une valeur diffère, n'utilisez pas le fichier et prévenez RUGGER 04 (c'est une autre version).
 4. **Valeurs à remplir** en haut de `create_vm.sh` (bouton « Ouvrir l'éditeur ») :
 
 | Champ | Valeur |
@@ -27,6 +32,7 @@ transmettez la ligne à RUGGER 04.
 | `CODE_COMMIT` | transmis par RUGGER 04 |
 
 Pour l'étape 1, mettez déjà une date limite provisoire (la même commande) ; vous la referez avant l'étape 3.
+**Après l'étape 3, ne modifiez plus `DEADLINE`** : l'étape 5 s'en sert pour remettre la suppression automatique.
 
 ## Les étapes
 
@@ -36,20 +42,23 @@ Pour l'étape 1, mettez déjà une date limite provisoire (la même commande) ; 
 | 2 | `bash create_vm.sh token inbound` | un jeton (longue chaîne) | le coller **uniquement** dans le formulaire sécurisé de RUGGER 03, puis taper `clear`. RUGGER 03 dépose les données (4,7 Go). S'il lui faut plus d'une heure, il vous redemande un jeton. |
 | 3 | refaire `DEADLINE`, puis `bash create_vm.sh launch` | `automatic deletion confirmed: …` | transmettre cette ligne à RUGGER 04. **La dépense commence ici.** Si la ligne n'apparaît pas, la machine a été supprimée par le script : transmettre le message. |
 | 4 | `bash create_vm.sh token relay`, à chaque demande de RUGGER 04 | un jeton | même geste qu'à l'étape 2. Il sert à RUGGER 03 pour faire passer les validations de RUGGER 02 à la machine, étape par étape. |
-| 5 | `bash create_vm.sh start`, seulement si RUGGER 04 le demande | `started` | la machine s'éteint d'elle-même après 3 h sans validation (elle ne coûte alors que son disque) ; cette commande la relance. |
+| 5 | `bash create_vm.sh start`, seulement si RUGGER 04 le demande | `automatic deletion confirmed (start): …` | la machine s'éteint d'elle-même après 3 h sans validation (elle ne coûte alors que son disque) ; cette commande remet la suppression automatique, la contrôle, puis relance la machine. Transmettre la ligne à RUGGER 04. Si elle affiche `STOP:`, la machine n'a pas redémarré : transmettre le message. |
 | 6 | `bash create_vm.sh token outbound`, à la fin | un jeton | même geste. RUGGER 03 télécharge les résultats, RUGGER 02 les vérifie. |
-| 7 | `bash create_vm.sh teardown` | `teardown OK` | puis la commande `gcloud storage buckets delete …` affichée, et relever la dépense réelle : Facturation → Rapports. |
+| 7 | `bash create_vm.sh teardown`, **seulement quand RUGGER 04 confirme que RUGGER 03 a téléchargé les résultats et que RUGGER 02 les a vérifiés** — ou à la date limite | `teardown OK` | puis la commande `gcloud storage buckets delete …` affichée, et relever la dépense réelle : Facturation → Rapports. |
 
 `bash create_vm.sh status` montre à tout moment où en est la machine (lecture seule).
 
 ## Règle de fin : l'étape 7, au plus tard à la date limite
 
 - Si la machine **tourne encore** à la date limite, Google la supprime avec son disque, automatiquement.
-- Si elle est **déjà éteinte** (attente, fin du calcul ou échec), Google ne la supprime pas : elle ne peut plus
-  redémarrer, mais son disque coûte encore environ 0,65 $ par jour tant que l'étape 7 n'est pas faite.
-- Donc : **lancez l'étape 7 dès que RUGGER 04 vous dit que les résultats sont vérifiés, et de toute façon au plus
-  tard à la date limite, même si rien n'est fini.** Elle peut être relancée sans risque ; `teardown OK` signifie :
-  plus de machine, plus de disque, plus de compte de service, plus de fichier.
+- Si elle est **déjà éteinte** (attente, fin du calcul ou échec), Google ne la supprime pas. Passé la date limite,
+  l'étape 5 refuse de la relancer et la machine refuse elle-même de travailler ; mais son disque coûte encore
+  environ 0,65 $ par jour tant que l'étape 7 n'est pas faite.
+- Donc : **lancez l'étape 7 dès que RUGGER 04 vous dit que les résultats sont téléchargés et vérifiés, et de toute
+  façon au plus tard à la date limite, même si rien n'est fini.** Pas avant : elle efface les résultats restés
+  sur Google Cloud. Elle peut être relancée sans risque ; `teardown OK` signifie : plus de machine, plus de
+  disque, plus de compte de service, plus de fichier.
+- La sauvegarde de la collecte W1 (opération séparée, bucket séparé) doit être faite et vérifiée avant l'étape 7.
 - En cas d'alerte de budget, de doute ou d'anomalie : étape 7 tout de suite.
 
 ## Ce que vous ne faites jamais

@@ -35,6 +35,13 @@ check_values() {
   [[ "$CODE_COMMIT" =~ ^[0-9a-f]{40}$ ]] || die "bad CODE_COMMIT"
 }
 
+# Reads the automatic deletion really set on the VM; true only when the VM is to be DELETED at the instant DEADLINE.
+scheduling_ok() {
+  when=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.terminationTime)')
+  action=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.instanceTerminationAction)')
+  [ -n "$when" ] && [ "$action" = DELETE ] && [ "$(date -u -d "$when" +%s 2>/dev/null || echo unreadable)" = "$limit" ]
+}
+
 case "${1:-}" in
 setup)
   need_filled; check_values; gcloud config set project $PROJECT
@@ -103,9 +110,7 @@ launch)
     --metadata-from-file=startup-script=startup.sh \
     --metadata=bucket=$BUCKET,inbound_sums_sha256=$INBOUND_SUMS_SHA,s0=$S0,workers=8,wait_minutes=$WAIT_MINUTES,deadline=$DEADLINE,code_commit=$CODE_COMMIT,block-project-ssh-keys=TRUE,enable-oslogin=TRUE
   # the automatic deletion must be really set on the VM, otherwise the VM is deleted now (owner condition)
-  when=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.terminationTime)')
-  action=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(scheduling.instanceTerminationAction)')
-  if [ -z "$when" ] || [ "$action" != DELETE ]; then
+  if ! scheduling_ok; then
     gcloud compute instances delete w1-eval --zone=$ZONE --quiet
     die "automatic_deletion_not_confirmed_vm_deleted:when=$when,action=$action"
   fi
@@ -121,9 +126,24 @@ anchor)         # the owner deposits the digest RUGGER 02 anchored for the step 
   gcloud storage cp --quiet /tmp/expect_$step.txt "gs://$BUCKET/anchors/expect_$step.txt"; rm -f /tmp/expect_$step.txt
   echo "anchor deposited for $step (dayj itself refuses a digest that is not the previous step's)" ;;
 
-start)          # after a pause (the VM powers off when no anchor came within WAIT_MINUTES): start it again
-  need_filled
+start)          # after a pause (the VM powers off when no anchor came within WAIT_MINUTES): start it again.
+                # A stop CLEARS the automatic deletion (Google documentation): it is set again and checked BEFORE the
+                # VM starts, and checked once more after (R02 C-1). DEADLINE must be the one of `launch`.
+  need_filled; check_values
+  now=$(date -u +%s); limit=$(date -u -d "$DEADLINE" +%s) || die "bad DEADLINE"
+  [ "$limit" -gt "$now" ] || die "DEADLINE_is_in_the_past_no_restart_run_teardown"
+  created=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(creationTimestamp)')
+  born=$(date -u -d "$created" +%s 2>/dev/null) || die "creation_time_unreadable_no_restart:$created"
+  [ "$limit" -le $((born + 48 * 3600)) ] || die "DEADLINE_more_than_48_h_after_the_creation_of_the_vm_no_restart"
+  gcloud compute instances set-scheduling w1-eval --zone=$ZONE --termination-time=$DEADLINE --instance-termination-action=DELETE \
+    || die "automatic_deletion_refused_no_restart_run_teardown"
+  scheduling_ok || die "automatic_deletion_not_confirmed_no_restart_run_teardown:when=$when,action=$action"
   gcloud compute instances start w1-eval --zone=$ZONE
+  if ! scheduling_ok; then
+    gcloud compute instances delete w1-eval --zone=$ZONE --quiet
+    die "automatic_deletion_lost_after_start_vm_deleted:when=$when,action=$action"
+  fi
+  echo "automatic deletion confirmed (start): scheduling.terminationTime=$when scheduling.instanceTerminationAction=$action (asked: $DEADLINE, DELETE)"
   echo "started; follow: bash create_vm.sh status" ;;
 
 status)

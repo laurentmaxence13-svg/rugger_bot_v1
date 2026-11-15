@@ -7,8 +7,8 @@ la machine exécute le code gelé tel quel.
 **Accord conditionnel du propriétaire du 15/11/2026 04:17Z (8cfead0e)** : voie B autorisée, budget total de
 60 USD au plus, machine 16 vCPU / 128 Go, tarif à vérifier avant toute création, 48 h au plus après le lancement
 avec arrêt automatique vérifié, bucket dédié, alerte budgétaire et mécanisme d'arrêt effectif mis en place avant,
-et **validation préalable de la configuration, des coûts et des sécurités par RUGGER 02**. La version 2.6.1 de ce
-paquet (§2 ter) adapte `create_vm.sh` à ces conditions. `startup.sh`, `r03_transfer.sh` et l'échantillon
+et **validation préalable de la configuration, des coûts et des sécurités par RUGGER 02**. Les versions 2.6.1 et
+2.6.2 de ce paquet (§2 ter) adaptent `create_vm.sh` à ces conditions. `startup.sh`, `r03_transfer.sh` et l'échantillon
 d'identité sont inchangés : ce que R03 dépose dans `inbound/` ne change pas.
 
 ## 1. Pourquoi
@@ -60,7 +60,7 @@ ancrer par R02 avant tout usage.** Les empreintes de fichiers restent imprimées
 Remarque : le rapport officiel W1 portera de la même façon l'environnement de la machine qui l'aura produit ; cela
 ne touche ni la décision ni les chiffres, mais son sha de fichier n'est pas comparable d'une machine à l'autre.
 
-## 2 ter. Version 2.6.1 (15/11) : mise en conformité avec les conditions du propriétaire
+## 2 ter. Versions 2.6.1 et 2.6.2 (15/11) : mise en conformité avec les conditions du propriétaire
 
 Seul `create_vm.sh` change (avec ses tests, cette notice, la marche à suivre et le MANIFEST).
 
@@ -73,19 +73,38 @@ Seul `create_vm.sh` change (avec ses tests, cette notice, la marche à suivre et
 | Budget de 60 USD | disque de 300 Go | disque de 200 Go ; date limite proposée : **lancement + 40 h** (§3) |
 | Nettoyage final | `teardown` s'arrêtait si un élément était déjà supprimé | `teardown` peut être relancé (après la suppression automatique aussi) et vérifie en plus qu'aucun compte de service ne reste |
 
+**v2.6.2 : correction C-1 de RUGGER 02 (audit de la v2.6.1, 51e0d72c).** Un arrêt efface la suppression
+automatique (citation ci-dessous). En v2.6.1, après une PAUSE, `start` relançait donc la VM **sans** suppression
+automatique, et une étape pouvait déborder la date limite (`startup.sh` ne contrôle la date qu'entre deux étapes).
+`start` fait maintenant, dans cet ordre :
+1. refus si la date limite est passée, ou postérieure à la création de la VM + 48 h (la date limite du fichier ne
+   peut pas repousser la limite fixée au lancement au-delà des 48 h du propriétaire) ;
+2. `set-scheduling` (même date limite, action DELETE) **avant** le démarrage ; refus de démarrer si la commande
+   échoue ;
+3. relecture : refus de démarrer si la date est vide, si l'action n'est pas DELETE ou si la date relue ne désigne
+   pas le même instant que la date limite ;
+4. démarrage, puis nouvelle relecture : si le réglage a disparu, **la VM est supprimée aussitôt** ;
+5. affichage de « automatic deletion confirmed (start): … ».
+`launch` compare aussi, désormais, l'instant relu à la date limite (comparaison en secondes, indépendante de la
+notation). Si Google refuse `set-scheduling` sur une VM arrêtée, ou rend la date dans une notation illisible : pas
+de redémarrage, puis `teardown` (défaut sûr ; la chaîne serait alors à reprendre sur une nouvelle VM).
+
 **Limite à connaître (documentation Google « Limit the run time of a VM », lue le 15/11 par extraits).** La date
 limite n'agit que sur une VM **en marche** : « The termination timestamp is automatically cleared whenever a VM is
 stopped or suspended ». Or la VM s'éteint d'elle-même dans trois cas : PAUSE (pas d'ancre dans le délai), fin de la
 chaîne, STOP définitif. Dans ces cas :
-- elle ne coûte plus de calcul, et Google refuse de la redémarrer une fois la date passée (« the time must be in
-  the future; otherwise, any requests to create or rerun the VM fail ») ; `startup.sh` refuse aussi de travailler ;
+- elle ne coûte plus de calcul ; une fois la date passée, `start` refuse de la redémarrer et `startup.sh` refuse
+  de travailler (on ne compte pas sur Google pour ce refus, puisque la date est effacée à l'arrêt) ;
 - **son disque (200 Go, environ 0,03 $/h, soit 0,65 $ par jour) reste facturé jusqu'à `teardown`**.
 Donc la suppression automatique couvre le cas « la VM tourne encore à la date limite » ; dans les autres cas, c'est
 **`bash create_vm.sh teardown`, à lancer par le propriétaire dès la fin et au plus tard à la date limite**, qui
 supprime tout et le vérifie (aucune VM, aucun disque, aucun compte de service, aucun objet). C'est la dernière
 ligne de la marche à suivre. Rendre ce dernier cas automatique demanderait que la VM reste allumée jusqu'à la
-date limite (dépense inutile) ou qu'elle ait le droit de se supprimer elle-même (droit Compute en plus, refusé
-jusqu'ici par R02, O-2) : non retenu, à la décision de R02.
+date limite (dépense inutile) ou qu'elle ait le droit de se supprimer elle-même (droit Compute en plus) : **les
+deux options sont refusées par R02, qui accepte ce reliquat** (moins de 1 $ par jour, `teardown` obligatoire au
+plus tard à la date limite, rappelé par R04, publié dans le compte rendu au propriétaire). `teardown` ne se lance
+qu'après le téléchargement des résultats par R03 et la vérification de R02, ou à la date limite ; la sauvegarde de
+la collecte W1 doit être vérifiée avant.
 
 Contrepartie de la suppression à la date limite (R02, 15/11) : si la date limite tombe en cours de chaîne, les
 sorties intermédiaires restées sur la VM sont perdues ; seuls les fichiers déjà publiés dans `outbound/` restent
@@ -164,7 +183,8 @@ masque un module), arbre aff97638, CPython 3.12.3 x86_64, registre P0 f1f26e36, 
 8. L'ancre est déposée : soit par le propriétaire (`bash create_vm.sh anchor <étape suivante> <sha256>`), soit par
    R03 (`r03_transfer.sh anchor`, jeton `relay`, si R02 l'a admis).
 9. La VM exécute l'étape suivante. Si aucune ancre n'arrive en `WAIT_MINUTES`, elle s'éteint (PAUSE) :
-   `bash create_vm.sh start` la relance une fois l'ancre déposée. `bash create_vm.sh status` montre où elle en est.
+   `bash create_vm.sh start` la relance une fois l'ancre déposée, après avoir remis et contrôlé la suppression
+   automatique (§2 ter) ; la valeur `DEADLINE` du fichier ne doit pas avoir changé depuis `launch`. `bash create_vm.sh status` montre où elle en est.
 
 **Fin**
 10. `bash create_vm.sh token outbound` → R03 : `r03_transfer.sh get` → R02 vérifie tous les digests (C3).
@@ -236,7 +256,9 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
   trois frontières de jeton (inbound : création sous `inbound/` ; outbound : lecture sous `outbound/` ; relay :
   lecture sous `outbound/` et création sous `anchors/`), options de `launch` (action DELETE, disque de 200 Go),
   refus d'une date limite passée ou à plus de 48 h, suppression immédiate de la VM si la suppression automatique
-  n'est pas constatée, contrôles et non-écrasement de `anchor`, périmètre de `teardown`.
+  n'est pas constatée (vide, autre action, autre instant, notation illisible), `start` (réglage remis avant le
+  démarrage, relu avant et après, sept cas de refus sans démarrage, suppression si le réglage disparaît après le
+  démarrage, refus après la date limite), contrôles et non-écrasement de `anchor`, périmètre de `teardown`.
 - `startup.sh` réel contre un « bucket » local ; seuls dayj, metrics et l'échantillon d'identité sont remplacés
   par des doubles qui enregistrent leurs appels : premier démarrage (entrées, selfcheck, PAUSE), deux ancres =
   deux étapes avec le bon `--expect-sha` et les bons arguments, fin de chaîne (metrics, tar sans checkpoint,
@@ -249,12 +271,17 @@ sont des données de chaîne brutes) et s'arrête à la première correspondance
   passée acceptée, action STOP au lieu de DELETE, `teardown` non rejouable, compte de service restant accepté,
   nettoyage du bucket à 70 jours, disque de 300 Go) : 10 détectés (le neuvième après ajout d'un contrôle du
   contenu de la règle de nettoyage).
+- v2.6.2 : 10 défauts volontaires dans `start` et dans le contrôle commun (réglage non remis, échec de
+  `set-scheduling` ignoré, pas de contrôle avant le démarrage, pas de contrôle après, réglage perdu toléré,
+  redémarrage après la date limite, date limite repoussée au-delà de la création + 48 h, instant non comparé,
+  action non comparée, action STOP) : 10 détectés.
 - Échantillon d'identité rejoué avec w1aux v7.3 et v7.4 : voir `IDENTITY_V26_RUNS.txt`.
 
 ## 8. Ce qui n'est pas vérifié
 
-- Aucune commande n'a tourné sur Google Cloud : l'option `--termination-time` sur `instances create`, le nom et
-  le format des champs `scheduling.terminationTime` et `scheduling.instanceTerminationAction`, la présence de
+- Aucune commande n'a tourné sur Google Cloud : l'option `--termination-time` sur `instances create` et sur
+  `instances set-scheduling` (VM arrêtée), le nom et le format des champs `scheduling.terminationTime`,
+  `scheduling.instanceTerminationAction` et `creationTimestamp`, la présence de
   `gcloud` sur l'image, l'accès privé aux API, le jeton `relay` à deux règles sont à constater au premier
   lancement réel. Si l'option ou les champs diffèrent, `launch` échoue ou supprime la VM aussitôt : aucun calcul
   ne démarre sans suppression automatique constatée (défaut sûr, mais le lancement serait alors à corriger).

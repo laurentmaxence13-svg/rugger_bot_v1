@@ -27,7 +27,15 @@ case "$*" in
   "storage ls gs://"*"/anchors/expect_"*) [ -f "$(local_path "$3")" ] ;;
   *"buckets update"*"--lifecycle-file="*) for a in "$@"; do case "$a" in --lifecycle-file=*) cp "${a#--lifecycle-file=}" "$STATE/lifecycle.json" ;; esac; done ;;
   *"buckets describe"*"--format"*) printf 'enforced\tTrue\tUS-CENTRAL1\n' ;;
-  *"instances describe"*"scheduling.terminationTime"*) echo "${FAKE_WHEN-2026-11-17T12:00:00.000Z}" ;;
+  # the fake Compute Engine stores the termination time it is given and returns it in ANOTHER notation of the same instant
+  *"set-scheduling"*|*"instances create"*) [[ "$*" != *set-scheduling* ]] || [ -z "${FAKE_SET_FAIL-}" ] || exit 1
+     for a in "$@"; do case "$a" in --termination-time=*) TZ=America/Los_Angeles date -d "${a#--termination-time=}" +%FT%T.000%:z > "$STATE/when" ;; esac; done
+     rm -f "$STATE/started" ;;
+  *"instances start"*) touch "$STATE/started" ;;
+  *"instances describe"*"scheduling.terminationTime"*)
+     if [ -e "$STATE/started" ] && [ -n "${FAKE_LOST_AFTER_START-}" ]; then echo
+     elif [ -n "${FAKE_WHEN+x}" ]; then echo "$FAKE_WHEN"; else cat "$STATE/when" 2>/dev/null || true; fi ;;
+  *"instances describe"*"creationTimestamp"*) echo "${FAKE_CREATED-$(TZ=America/Los_Angeles date +%FT%T.000%:z)}" ;;
   *"instances describe"*"scheduling.instanceTerminationAction"*) echo "${FAKE_ACTION-DELETE}" ;;
   *"buckets describe"*) [ -f "$STATE/bucket_created" ] ;;
   *"buckets create"*) touch "$STATE/bucket_created" ;;
@@ -122,7 +130,7 @@ for want in "--machine-type=n2-highmem-16" "--boot-disk-size=200GB" "--no-addres
 done
 grep -q "compute instances delete" "$CALLS" && fail "a confirmed VM was deleted"
 # the automatic deletion is checked on the created VM: not set, or another action -> the VM is deleted at once
-for bad in "FAKE_WHEN=" "FAKE_ACTION=STOP"; do
+for bad in "FAKE_WHEN=" "FAKE_ACTION=STOP" "FAKE_WHEN=$(date -u -d '+41 hours' +%FT%TZ)" "FAKE_WHEN=some day"; do
   : > "$CALLS"; out=$(env "$bad" bash "$tmp/vm.sh" launch 2>&1) && fail "unconfirmed launch accepted ($bad)"
   [[ "$out" == *automatic_deletion_not_confirmed_vm_deleted* ]] || fail "$bad: $out"
   grep -q "compute instances delete w1-eval --zone=us-central1-a --quiet" "$CALLS" || fail "$bad: VM not deleted"
@@ -134,6 +142,30 @@ for when in "$(date -u -d '+49 hours' +%FT%TZ)" "$(date -u -d '-1 hour' +%FT%TZ)
   [ ! -s "$CALLS" ] || fail "something was created with a bad deadline"
 done
 [[ "$line" != *max-run-duration* && "$line" != *chain_mode* && "$line" != *start_step* ]] || fail "old launch option"
+# start (R02 C-1): a stop clears the automatic deletion, so it is set again and checked BEFORE the VM starts
+bash "$tmp/vm.sh" launch > /dev/null; : > "$CALLS"; rm -f "$tmp/when"          # the stop has cleared it
+out=$(bash "$tmp/vm.sh" start) || fail "start: $out"
+[[ "$out" == *"automatic deletion confirmed (start)"* ]] || fail "start does not confirm the automatic deletion"
+grep -q "compute instances set-scheduling w1-eval --zone=us-central1-a --termination-time=$SOON --instance-termination-action=DELETE" "$CALLS" || fail "start does not set the automatic deletion again"
+[ "$(grep -n "set-scheduling" "$CALLS" | cut -d: -f1)" -lt "$(grep -n "compute instances start" "$CALLS" | cut -d: -f1)" ] || fail "the VM starts before its automatic deletion is set"
+[ "$(grep -c "scheduling.terminationTime" "$CALLS")" = 2 ] || fail "start must read the scheduling before AND after the start"
+grep -q "compute instances delete" "$CALLS" && fail "a confirmed VM was deleted by start"
+# not set, refused, another action, another instant, unreadable: the VM is NOT started
+for bad in "FAKE_SET_FAIL=1" "FAKE_WHEN=" "FAKE_ACTION=STOP" "FAKE_WHEN=$(date -u -d '+41 hours' +%FT%TZ)" "FAKE_WHEN=some day" \
+           "FAKE_CREATED=$(date -u -d '-9 hours' +%FT%TZ)" "FAKE_CREATED=some day"; do
+  : > "$CALLS"; out=$(env "$bad" bash "$tmp/vm.sh" start 2>&1) && fail "unsafe start accepted ($bad)"
+  [[ "$out" == *no_restart* ]] || fail "$bad: $out"
+  grep -q "compute instances start" "$CALLS" && fail "$bad: the VM was started"
+  if [[ "$bad" == FAKE_CREATED* ]]; then grep -q "set-scheduling" "$CALLS" && fail "$bad: deadline moved beyond 48 h after the creation"; fi
+done
+# set before the start but gone after it: the VM is deleted at once
+: > "$CALLS"; out=$(FAKE_LOST_AFTER_START=1 bash "$tmp/vm.sh" start 2>&1) && fail "start accepted a lost automatic deletion"
+[[ "$out" == *automatic_deletion_lost_after_start_vm_deleted* ]] || fail "lost after start: $out"
+grep -q "compute instances delete w1-eval --zone=us-central1-a --quiet" "$CALLS" || fail "lost after start: VM not deleted"
+# a past deadline: no restart, nothing issued
+fill n2-highmem-16 "$(date -u -d '-1 hour' +%FT%TZ)" > "$tmp/late.sh"; : > "$CALLS"
+out=$(bash "$tmp/late.sh" start 2>&1) && fail "start after the deadline accepted"; [[ "$out" == *DEADLINE_is_in_the_past_no_restart* ]] || fail "$out"
+[ ! -s "$CALLS" ] || fail "start issued a command after the deadline"
 : > "$CALLS"
 out=$(bash "$tmp/vm.sh" anchor selfcheck "$(digest x)" 2>&1) && fail "anchor for selfcheck"
 out=$(bash "$tmp/vm.sh" anchor gate nothex 2>&1) && fail "bad sha accepted"; [[ "$out" == *bad_sha256* ]] || fail "$out"
@@ -150,6 +182,10 @@ out=$(FAKE_GONE=1 bash "$tmp/vm.sh" teardown 2>&1) || fail "teardown fails when 
 [[ "$out" == *"teardown OK"* ]] || fail "second teardown does not conclude"
 if out=$(FAKE_SA_LEFT=w1-eval-sa@p.iam.gserviceaccount.com bash "$tmp/vm.sh" teardown 2>&1); then fail "teardown accepts a remaining service account"; fi
 [[ "$out" == *service_account_still_present* ]] || fail "wrong teardown refusal: $out"
+# the owner procedure gives the sha256 of the two scripts to check after the upload: they must be the real ones
+for f in create_vm.sh startup.sh; do
+  grep -q "\`$f\` : \`$(sha256sum "$here/$f" | cut -d' ' -f1)\`" "$here/MARCHE_A_SUIVRE_PROPRIETAIRE.md" || fail "owner procedure: wrong sha256 for $f"
+done
 echo "A. create_vm.sh OK"
 
 # ------------------------------------------------------------------ B. startup.sh
