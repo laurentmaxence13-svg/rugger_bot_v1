@@ -33,7 +33,7 @@ def _keys(doc, prefix=''):
 
 def test_every_figure_is_the_reading_s_with_its_key(tmp_path):
     path, sha = _reading(tmp_path)
-    assert RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--out', str(tmp_path / 's.md')]) == 0
+    assert RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--chain-hours', '21', '--out', str(tmp_path / 's.md')]) == 0
     text = (tmp_path / 's.md').read_text(encoding='utf-8')
     doc = json.loads(path.read_text(encoding='utf-8'))
     assert text.startswith('# EXPLORATOIRE — NON OFFICIEL — pas le verdict W1 — pas une preuve de rentabilité future')
@@ -53,6 +53,9 @@ def test_every_figure_is_the_reading_s_with_its_key(tmp_path):
             '(en nombre de cycles, non en résultat).') in text
     assert ("(159 essais exploratoires comptés sur les données de développement, en plus des essais préenregistrés du "
             "protocole W1 ; chiffre donné par RUGGER 02)") in text
+    assert ("- Durée du calcul : environ 21 heures (chiffre donné par RUGGER 02 à partir des durées enregistrées). Le temps "
+            "du rejeu gelé croît à peu près comme le carré du nombre d'événements d'un pool tant que le MASTER n'est pas "
+            "entré : c'est une limite pratique de l'outil, sans effet sur les résultats.") in text
     assert [line for line in text.splitlines() if line.startswith('## ')] == [
         '## 1. Réponse courte', '## 2. Positions', '## 3. Résultat après frais et distribution (cycles clôturés)',
         "## 4. Où part l'argent", '## 5. MASTER contre référence et contre hasard (totaux seulement)', '## 6. Fiabilité',
@@ -73,7 +76,7 @@ def test_every_figure_is_the_reading_s_with_its_key(tmp_path):
 
 def test_no_closed_cycle_and_interval_sentences(tmp_path):
     path, sha = _reading(tmp_path, empty=True)
-    RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--out', str(tmp_path / 's.md')])
+    RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--chain-hours', '21', '--out', str(tmp_path / 's.md')])
     text = (tmp_path / 's.md').read_text(encoding='utf-8')
     assert "n'en a clôturé aucune : il n'y a pas de résultat à lire" in text and 'Aucun cycle clôturé : pas de décomposition.' in text
     assert 'non calculé (`master.Q2_result_lamports.net_sum`)' in text
@@ -86,21 +89,26 @@ def test_no_closed_cycle_and_interval_sentences(tmp_path):
 def test_guards_anchored_sha_stamp_forbidden_wording(tmp_path, monkeypatch):
     path, sha = _reading(tmp_path)
     with pytest.raises(RS.SyntheseError, match='reading_is_not_the_anchored_one'):
-        RS.main(['--reading', str(path), '--reading-sha256', '0' * 64, '--n-trials', '159', '--out', str(tmp_path / 's.md')])
+        RS.main(['--reading', str(path), '--reading-sha256', '0' * 64, '--n-trials', '159', '--chain-hours', '21', '--out', str(tmp_path / 's.md')])
     (tmp_path / 's.md').write_text('x')
     with pytest.raises(RS.SyntheseError, match='output_exists'):
-        RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--out', str(tmp_path / 's.md')])
+        RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--chain-hours', '21', '--out', str(tmp_path / 's.md')])
     doc = json.loads(path.read_text(encoding='utf-8'))
     with pytest.raises(RS.SyntheseError, match='not_the_preliminary_reading'):
-        RS.render(dict(doc, stamp='autre', _sha256=sha), 159)
+        RS.render(dict(doc, stamp='autre', _sha256=sha), 159, 21)
     with pytest.raises(RS.SyntheseError, match='n_trials_must_be_given_by_r02'):
-        RS.render(dict(doc, _sha256=sha), None)
+        RS.render(dict(doc, _sha256=sha), None, 21)
+    for bad in (None, 0, -3, 2.5, '21'):
+        with pytest.raises(RS.SyntheseError, match='chain_hours_must_be_given_by_r02'):
+            RS.render(dict(doc, _sha256=sha), 159, bad)
+    with pytest.raises(SystemExit):                                             # the argument is required
+        RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--out', str(tmp_path / 'z.md')])
     for word in ('rentable', 'prouvé', 'démontré', 'significatif', 'confirme', 'valide', 'par mois', 'annuel'):
         monkeypatch.setattr(RS, 'HEADER', RS.HEADER + ' ' + word)
         with pytest.raises(RS.SyntheseError, match='forbidden_wording'):
-            RS.render(dict(doc, _sha256=sha), 159)
+            RS.render(dict(doc, _sha256=sha), 159, 21)
         monkeypatch.undo()
-    text = RS.render(dict(doc, _sha256=sha), 159)                               # the fixed text itself passes
+    text = RS.render(dict(doc, _sha256=sha), 159, 21)                               # the fixed text itself passes
     for phrase in RS.ALLOWED:                                                   # outside the allowed quotations: nothing
         text = text.replace(phrase, '')
     assert not RS.FORBIDDEN.search(text)
@@ -113,7 +121,7 @@ def test_an_absent_key_is_shown_as_not_computed_never_guessed(tmp_path):
     del doc['master']['Q2_result_lamports']['net_median'], doc['master']['Q3_distribution_lamports']
     del doc['master']['Q4_failure_factors']['exit_reasons'], doc['others']['reference'], doc['master']['Q1_positions']['not_closed']
     del doc['population']['evaluation_max'], doc['master']['Q6_interval_95_of_the_mean_net_return']['low']
-    text = RS.render(dict(doc, _sha256=sha), 159)
+    text = RS.render(dict(doc, _sha256=sha), 159, 21)
     for key in ('master.Q2_result_lamports.net_median', 'master.Q3_distribution_lamports.p10', 'master.Q4_failure_factors.exit_reasons',
                 'others.reference.closed_cycles', 'others.reference.decomposition_lamports.net', 'master.Q1_positions.not_closed',
                 'master.Q6_interval_95_of_the_mean_net_return.low'):

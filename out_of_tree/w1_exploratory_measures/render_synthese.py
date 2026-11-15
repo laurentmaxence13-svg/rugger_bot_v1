@@ -4,11 +4,11 @@ Plan, sources and forbidden wordings fixed by RUGGER 02 BEFORE any reading (addi
 adds no figure: every number is read in the JSON and printed with its key; the only arithmetic is the change of
 unit (lamports to SOL, ratio to per cent) and the length of the evaluation range in slots. The text around the
 figures is fixed here, before the reading; no result figure is written in this file. A key absent from the reading
-is shown as "non calculé", never guessed. The number of trials counted so far is given by RUGGER 02 on the command
-line. Standard library only.
+is shown as "non calculé", never guessed. The number of trials counted so far and the duration of the computation
+(hours, from the recorded step durations) are given by RUGGER 02 on the command line. Standard library only.
 
     python -B render_synthese.py --reading LECTURE_PRELIMINAIRE.json --reading-sha256 <sha anchored by R02> \
-        --n-trials <N counted by R02> --out FILE.md
+        --n-trials <N counted by R02> --chain-hours <H given by R02> --out FILE.md
 """
 import argparse
 import hashlib
@@ -81,9 +81,11 @@ def _interval_sentence(low, high):
     return "L'intervalle contient zéro : le signe du résultat n'est pas établi."
 
 
-def render(doc, n_trials):
+def render(doc, n_trials, chain_hours):
     if type(n_trials) is not int or n_trials < 1:
         raise SyntheseError('n_trials_must_be_given_by_r02')
+    if type(chain_hours) is not int or chain_hours < 1:
+        raise SyntheseError('chain_hours_must_be_given_by_r02')
     if doc.get('stamp') != STAMP or doc.get('schema') != 'rugger-w1-preliminary-reading-v1':
         raise SyntheseError('not_the_preliminary_reading')
     f = Figures(doc)
@@ -193,7 +195,11 @@ def render(doc, n_trials):
               "- Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction "
               f"pour le nombre d'essais ({n_trials} essais exploratoires comptés sur les données de développement, en "
               'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02) ne sont calculés ici.',
-              "- Lecture non aveugle : elle a été faite avant le verdict officiel.", '',
+              "- Lecture non aveugle : elle a été faite avant le verdict officiel.",
+              f'- Durée du calcul : environ {chain_hours} heures (chiffre donné par RUGGER 02 à partir des durées '
+              "enregistrées). Le temps du rejeu gelé croît à peu près comme le carré du nombre d'événements d'un pool "
+              "tant que le MASTER n'est pas entré : c'est une limite pratique de l'outil, sans effet sur les "
+              'résultats.', '',
               '## 7. Pistes d\'amélioration', '',
               'Ce sont des HYPOTHÈSES, à tester sur des données futures (W2), jamais sur W1. Elles viennent de ce que '
               'les données de développement avaient déjà établi ; aucune ventilation de W1 n\'a été faite pour en '
@@ -231,6 +237,8 @@ def main(argv=None):
     parser.add_argument('--reading', type=Path, required=True)
     parser.add_argument('--reading-sha256', required=True, help='sha256 of the reading, as anchored by RUGGER 02')
     parser.add_argument('--n-trials', type=int, required=True, help='trials counted so far, as given by RUGGER 02')
+    parser.add_argument('--chain-hours', type=int, required=True,
+                        help='duration of the computation in hours, as given by RUGGER 02 from the recorded durations')
     parser.add_argument('--out', type=Path, required=True)
     a = parser.parse_args(argv)
     sha = hashlib.sha256(a.reading.read_bytes()).hexdigest()
@@ -240,7 +248,7 @@ def main(argv=None):
         raise SyntheseError('output_exists')
     doc = json.loads(a.reading.read_text(encoding='utf-8'))
     doc['_sha256'] = sha
-    a.out.write_text(render(doc, a.n_trials), encoding='utf-8')
+    a.out.write_text(render(doc, a.n_trials, a.chain_hours), encoding='utf-8')
     return 0
 
 

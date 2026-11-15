@@ -1,4 +1,4 @@
-> **EXEMPLE FICTIF — AUCUNE DONNÉE DE W1.** Rendu du gabarit sur la lecture inventée des tests (w1x/tests/test_reading.py) : tous les chiffres ci-dessous sont faux par construction. Il ne sert qu'à relire le texte fixe et la mise en page.
+> **EXEMPLE FICTIF — AUCUNE DONNÉE DE W1.** Rendu du gabarit sur la lecture inventée des tests (w1x/tests/test_reading.py) : tous les chiffres ci-dessous sont faux par construction, y compris la durée. Il ne sert qu'à relire le texte fixe et la mise en page.
 
 # EXPLORATOIRE — NON OFFICIEL — pas le verdict W1 — pas une preuve de rentabilité future
 
@@ -93,6 +93,7 @@ Cette comparaison préfigure, sans les remplacer, les tests officiels.
 - Les outils en flux utilisés pour cette lecture produisent les mêmes fichiers que la chaîne gelée sur les jeux de référence seulement (pilote, jeux de prix ouverts, jeux synthétiques), pas sur une fenêtre réelle de la taille de W1.
 - Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction pour le nombre d'essais (159 essais exploratoires comptés sur les données de développement, en plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02) ne sont calculés ici.
 - Lecture non aveugle : elle a été faite avant le verdict officiel.
+- Durée du calcul : environ 21 heures (chiffre donné par RUGGER 02 à partir des durées enregistrées). Le temps du rejeu gelé croît à peu près comme le carré du nombre d'événements d'un pool tant que le MASTER n'est pas entré : c'est une limite pratique de l'outil, sans effet sur les résultats.
 
 ## 7. Pistes d'amélioration
 
