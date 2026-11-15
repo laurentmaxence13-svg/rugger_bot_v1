@@ -126,7 +126,7 @@ out=$(bash "$tmp/vm.sh" token both 2>&1) && fail "unknown token kind"
 [[ "$out" == *"automatic deletion confirmed"* ]] || fail "launch does not confirm the automatic deletion"
 line=$(grep "compute instances create" "$CALLS")
 for want in "--machine-type=n2-highmem-16" "--boot-disk-size=200GB" "--no-address" "--termination-time=$SOON" \
-            "--instance-termination-action=DELETE" "--shielded-secure-boot" "wait_minutes=180" "deadline=$SOON" \
+            "--instance-termination-action=DELETE" "--shielded-secure-boot" "wait_minutes=600" "deadline=$SOON" \
             "block-project-ssh-keys=TRUE" "inbound_sums_sha256=$(digest sums)"; do
   [[ "$line" == *"$want"* ]] || fail "launch lacks $want"
 done

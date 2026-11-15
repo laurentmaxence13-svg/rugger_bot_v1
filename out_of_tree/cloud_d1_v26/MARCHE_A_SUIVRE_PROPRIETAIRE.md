@@ -15,7 +15,7 @@ transmettez la ligne à RUGGER 04.
    seuils 50 %, 90 % et 100 %. Une alerte vous prévient par courriel ; elle n'arrête rien toute seule.
 3. **Fichiers.** Dans Cloud Shell, menu ⋮ → Importer : `create_vm.sh` et `startup.sh`, dans le même dossier.
    **Avant toute modification**, lancez `sha256sum create_vm.sh startup.sh` et comparez :
-   - `create_vm.sh` : `cab7097a6ba80d0cb896c98e850548f43de1acaade8b6fb4e8d9e52e14926a23`
+   - `create_vm.sh` : `42def3b4530c7c597d0c8f1f5a2214667b196886af269989baeee7ce37e68787`
    - `startup.sh` : `82f7f9cfd339d28cb894d09622015861f2805321467d724043b4572c63aadcc5`
 
    Si une valeur diffère, n'utilisez pas le fichier et prévenez RUGGER 04 (c'est une autre version).
@@ -42,7 +42,7 @@ Pour l'étape 1, mettez déjà une date limite provisoire (la même commande) ; 
 | 2 | `bash create_vm.sh token inbound` | un jeton (longue chaîne) | le coller **uniquement** dans le formulaire sécurisé de RUGGER 03, puis taper `clear`. RUGGER 03 dépose les données (4,7 Go). S'il lui faut plus d'une heure, il vous redemande un jeton. |
 | 3 | refaire `DEADLINE`, puis `bash create_vm.sh launch` | `automatic deletion confirmed: …` | transmettre cette ligne à RUGGER 04. **La dépense commence ici.** Si la ligne n'apparaît pas, la machine a été supprimée par le script : transmettre le message. |
 | 4 | `bash create_vm.sh token relay`, à chaque demande de RUGGER 04 | un jeton | même geste qu'à l'étape 2. Il sert à RUGGER 03 pour faire passer les validations de RUGGER 02 à la machine, étape par étape. |
-| 5 | `bash create_vm.sh start`, seulement si RUGGER 04 le demande | `automatic deletion confirmed (start): …` | la machine s'éteint d'elle-même après 3 h sans validation (elle ne coûte alors que son disque) ; cette commande remet la suppression automatique, la contrôle, puis relance la machine. Transmettre la ligne à RUGGER 04. Si elle affiche `STOP:`, la machine n'a pas redémarré : transmettre le message. |
+| 5 | `bash create_vm.sh start`, seulement si RUGGER 04 le demande | `automatic deletion confirmed (start): …` | la machine s'éteint d'elle-même après 10 h sans validation (elle ne coûte alors que son disque) ; cette commande remet la suppression automatique, la contrôle, puis relance la machine. Transmettre la ligne à RUGGER 04. Si elle affiche `STOP:`, la machine n'a pas redémarré : transmettre le message. |
 | 6 | `bash create_vm.sh token outbound`, à la fin | un jeton | même geste. RUGGER 03 télécharge les résultats, RUGGER 02 les vérifie. |
 | 7 | `bash create_vm.sh teardown`, **seulement quand RUGGER 04 confirme que RUGGER 03 a téléchargé les résultats et que RUGGER 02 les a vérifiés** — ou à la date limite | `teardown OK` | puis la commande `gcloud storage buckets delete …` affichée, et relever la dépense réelle : Facturation → Rapports. |
 

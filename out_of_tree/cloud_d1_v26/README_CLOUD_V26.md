@@ -26,7 +26,7 @@ d'amender le protocole.
 |---|---|---|
 | Étapes sur la VM | à partir de `trials` ou `evaluate` | **toute la chaîne** : selfcheck, gate, export, series, trials, evaluate, ledger, dossier |
 | Enchaînement | `chained` accepté (C1-C5) | **une étape par ancrage** (R02 d38f6580) : après chaque étape la VM publie `DAYJ_STATE.json` et attend `anchors/expect_<étape>.txt` |
-| Attente | 3 h puis arrêt définitif | `wait_minutes` (180 par défaut) puis **PAUSE** : la VM s'éteint et reprend à son prochain démarrage (`start`) |
+| Attente | 3 h puis arrêt définitif | `wait_minutes` (180 en v2.6, **600 depuis la v2.6.3**) puis **PAUSE** : la VM s'éteint et reprend à son prochain démarrage (`start`) |
 | Second démarrage | refusé | admis après une PAUSE ; **refusé après un STOP** (définitif), 12 démarrages au plus |
 | Machine | n2-highmem-8 (64 Go), disque 100 Go | `n2-highmem-16` (128 Go) ou `n2-highmem-32` (256 Go), disque 200 Go (v2.6.1) |
 | Limite de durée | `max-run-duration=12h`, suppression | **`termination-time` = date limite absolue, 48 h au plus, SUPPRESSION de la VM et de son disque** (v2.6.1), contrôlée juste après la création ; la VM contrôle aussi la date elle-même |
@@ -88,6 +88,10 @@ automatique, et une étape pouvait déborder la date limite (`startup.sh` ne con
    pas le même instant que la date limite ;
 4. démarrage, puis nouvelle relecture : si le réglage a disparu, **la VM est supprimée aussitôt** ;
 5. affichage de « automatic deletion confirmed (start): … ».
+**v2.6.3, décision de R02 (15/11 04:38Z) : `WAIT_MINUTES=600`.** La VM attend une ancre 10 h au lieu de 3 h avant
+de s'éteindre, pour couvrir une nuit sans passer par `start`, chemin jamais vérifié sur Google Cloud. Le pire cas
+de dépense ne change pas : il est déjà calculé sur 40 h de marche continue, borné par la date limite.
+
 `launch` compare aussi, désormais, l'instant relu à la date limite (comparaison en secondes, indépendante de la
 notation). Si Google refuse `set-scheduling` sur une VM arrêtée, ou rend la date dans une notation illisible : pas
 de redémarrage, puis `teardown` (défaut sûr ; la chaîne serait alors à reprendre sur une nouvelle VM).
