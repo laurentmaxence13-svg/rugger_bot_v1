@@ -49,6 +49,10 @@ def test_every_figure_is_the_reading_s_with_its_key(tmp_path):
     assert '`stop_loss` : 3 (`master.Q4_failure_factors.exit_reasons.stop_loss`)' in text
     assert '-0,003000 SOL (`others.reference.mean_net_pnl_lamports`)' in text and '+12,00 % (`others.placebo_random.mean_net_return`)' in text
     assert "L'intervalle contient zéro : le signe du résultat n'est pas établi." in text
+    assert ('les cinq plus présents détiennent 90,0 % (`master.Q5_creators.share_of_the_5_largest`) des cycles clôturés '
+            '(en nombre de cycles, non en résultat).') in text
+    assert ("(159 essais exploratoires comptés sur les données de développement, en plus des essais préenregistrés du "
+            "protocole W1 ; chiffre donné par RUGGER 02)") in text
     assert [line for line in text.splitlines() if line.startswith('## ')] == [
         '## 1. Réponse courte', '## 2. Positions', '## 3. Résultat après frais et distribution (cycles clôturés)',
         "## 4. Où part l'argent", '## 5. MASTER contre référence et contre hasard (totaux seulement)', '## 6. Fiabilité',
@@ -129,4 +133,7 @@ def test_no_result_figure_is_written_in_the_script_and_the_fixed_wording_is_r02_
     assert "de l'ordre de 4 jours (durée exacte non mesurée dans cette lecture)" in source
     assert 'collecte soumise à votre accord' in source and 'HYPOTHÈSES, à tester sur des données futures (W2), jamais sur W1' in source
     assert 'préfigure, sans les remplacer, les tests officiels' in source
+    assert 'des cycles clôturés (en nombre de cycles, non en résultat).' in source
+    assert ('essais exploratoires comptés sur les données de développement, en \'\n' in source
+            and 'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02' in source)
     assert RS.HEADER == 'EXPLORATOIRE — NON OFFICIEL — pas le verdict W1 — pas une preuve de rentabilité future'

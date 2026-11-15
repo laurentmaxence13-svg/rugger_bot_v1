@@ -87,11 +87,11 @@ Cette comparaison préfigure, sans les remplacer, les tests officiels.
 ## 6. Fiabilité
 
 - Intervalle de confiance à 95 % du rendement net moyen : de -3,86 % (`master.Q6_interval_95_of_the_mean_net_return.low`) à +3,20 % (`master.Q6_interval_95_of_the_mean_net_return.high`) ; rééchantillonnage par créateur, 2000 (`master.Q6_interval_95_of_the_mean_net_return.draws`) tirages, 6 (`master.Q6_interval_95_of_the_mean_net_return.clusters`) créateurs ou pools distincts. L'intervalle contient zéro : le signe du résultat n'est pas établi.
-- Concentration : 6 (`master.Q5_creators.distinct_clusters`) créateurs ou pools distincts parmi les cycles clôturés ; les cinq plus présents en détiennent 90,0 % (`master.Q5_creators.share_of_the_5_largest`).
+- Concentration : 6 (`master.Q5_creators.distinct_clusters`) créateurs ou pools distincts parmi les cycles clôturés ; les cinq plus présents détiennent 90,0 % (`master.Q5_creators.share_of_the_5_largest`) des cycles clôturés (en nombre de cycles, non en résultat).
 - Une seule période : plage d'évaluation de 1 000 slots (`population.evaluation_max` − `population.evaluation_min`), de l'ordre de 4 jours (durée exacte non mesurée dans cette lecture).
 - Coûts, latence et mise sont ceux du protocole gelé ; nos ordres simulés n'ont pas existé : leur effet sur les autres acteurs est inconnu.
 - Les outils en flux utilisés pour cette lecture produisent les mêmes fichiers que la chaîne gelée sur les jeux de référence seulement (pilote, jeux de prix ouverts, jeux synthétiques), pas sur une fenêtre réelle de la taille de W1.
-- Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction pour le nombre d'essais (159 essais comptés à ce jour, chiffre donné par RUGGER 02) ne sont calculés ici.
+- Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction pour le nombre d'essais (159 essais exploratoires comptés sur les données de développement, en plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02) ne sont calculés ici.
 - Lecture non aveugle : elle a été faite avant le verdict officiel.
 
 ## 7. Pistes d'amélioration

@@ -181,7 +181,8 @@ def render(doc, n_trials):
               f.percent(q6 + '.high') + ' ; rééchantillonnage par créateur, ' + f.count(q6 + '.draws') + ' tirages, ' +
               f.count(q6 + '.clusters') + ' créateurs ou pools distincts. ' + _interval_sentence(low, high),
               '- Concentration : ' + f.count(q5 + '.distinct_clusters') + ' créateurs ou pools distincts parmi les cycles '
-              'clôturés ; les cinq plus présents en détiennent ' + f.percent(q5 + '.share_of_the_5_largest', signed=False) + '.',
+              'clôturés ; les cinq plus présents détiennent ' + f.percent(q5 + '.share_of_the_5_largest', signed=False) +
+              ' des cycles clôturés (en nombre de cycles, non en résultat).',
               "- Une seule période : plage d'évaluation de " + _slots(f) + " slots (`population.evaluation_max` − "
               "`population.evaluation_min`), de l'ordre de 4 jours (durée exacte non mesurée dans cette lecture).",
               '- Coûts, latence et mise sont ceux du protocole gelé ; nos ordres simulés n\'ont pas existé : leur effet '
@@ -190,8 +191,8 @@ def render(doc, n_trials):
               'les jeux de référence seulement (pilote, jeux de prix ouverts, jeux synthétiques), pas sur une fenêtre '
               'réelle de la taille de W1.',
               "- Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction "
-              f"pour le nombre d'essais ({n_trials} essais comptés à ce jour, chiffre donné par RUGGER 02) ne sont "
-              'calculés ici.',
+              f"pour le nombre d'essais ({n_trials} essais exploratoires comptés sur les données de développement, en "
+              'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02) ne sont calculés ici.',
               "- Lecture non aveugle : elle a été faite avant le verdict officiel.", '',
               '## 7. Pistes d\'amélioration', '',
               'Ce sont des HYPOTHÈSES, à tester sur des données futures (W2), jamais sur W1. Elles viennent de ce que '
