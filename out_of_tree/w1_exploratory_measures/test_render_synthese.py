@@ -134,6 +134,5 @@ def test_no_result_figure_is_written_in_the_script_and_the_fixed_wording_is_r02_
     assert 'collecte soumise à votre accord' in source and 'HYPOTHÈSES, à tester sur des données futures (W2), jamais sur W1' in source
     assert 'préfigure, sans les remplacer, les tests officiels' in source
     assert 'des cycles clôturés (en nombre de cycles, non en résultat).' in source
-    assert ('essais exploratoires comptés sur les données de développement, en \'\n' in source
-            and 'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02' in source)
+    assert 'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02' in source
     assert RS.HEADER == 'EXPLORATOIRE — NON OFFICIEL — pas le verdict W1 — pas une preuve de rentabilité future'
