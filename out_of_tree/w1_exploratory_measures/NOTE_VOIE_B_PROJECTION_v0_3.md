@@ -1,10 +1,11 @@
-# Voie B (verdict officiel W1 sur Google Cloud) : projection à partir des durées MESURÉES — v0.2, 18/11/2026
+# Voie B (verdict officiel W1 sur Google Cloud) : projection à partir des durées MESURÉES — v0.3, 19/11/2026
 
 **La voie B est SUSPENDUE depuis votre décision du 15/11 (b9e596e3). Cette note n'engage aucune dépense** : elle
 chiffre ce que coûterait le verdict officiel, pour votre décision le moment venu.
 
 Aucun résultat de W1 n'est utilisé ici : seulement des durées, des dates de fichiers et des comptages relevés par
-RUGGER 03 dans la lecture préliminaire (message du 18/11 à 17:47Z). Chiffres recalculés par RUGGER 02.
+RUGGER 03 dans la lecture préliminaire (message du 18/11 à 17:47Z), et une borne calculée sur le code pour le
+ledger (acceptée par RUGGER 02 le 18/11, registre 0c51450f). Chiffres recalculés par RUGGER 02.
 
 ## 1. Ce qui a été mesuré (session de RUGGER 03 : 4 vCPU Intel Xeon 2,30 GHz, 4 processus de calcul)
 
@@ -37,9 +38,24 @@ réelle par processus reste à mesurer par le selfcheck sur la machine (§ 5) :
 | série (version gelée) | environ 0,25 h |
 | **trials** | **30 à 32 h** (239 à 257 heures-processus / 8) ; le plus gros pool, environ 95 min, ne limite pas |
 | evaluate | non mesuré : 1 à 3 h (estimation) |
-| ledger | **à compléter** par la durée mesurée chez R03 (étape suivante de la lecture préliminaire) |
+| ledger | **≤ 130 h en séquentiel ; inconnu sous la borne ; option P1** (voir § 2 bis) |
 | attentes des ancrages de R02 (7 étapes) | 2 à 4 h si chaque ancrage arrive dans la demi-heure |
 | **Total, sans le ledger** | **environ 34 à 41 h** |
+
+## 2 bis. Le ledger : une borne haute seulement
+
+Le ledger refait, sur **un seul processus**, l'observation du MASTER jusqu'à chaque décision d'entrée, pool par
+pool et pour chacun des 4 bundles L1 ; son coût croît comme le carré du nombre d'événements du pool. D'après le code
+seul, sans lire aucun résultat, il fait au plus le travail d'observation des 4 rejeux L1 correspondants :
+**≤ 4 × 8,03 h × 4 processus ≈ 128 heures-processus, plus environ 1 h de lecture, soit ≤ 130 h en séquentiel**
+(borne acceptée par R02, 0c51450f). Il fait sans doute bien moins (il saute les pools sans entrée et s'arrête à la
+dernière décision d'entrée), mais on ne peut pas le dire sans lire des résultats : **aucun chiffre central**. Le
+premier essai chez R03 a tourné plus de 2 h, le second tourne depuis le 18/11 à 19:54Z.
+
+**Option P1** (autorisée par R02 à l'écriture seulement, audit et PASS requis avant tout usage) : le même ledger,
+réparti par pool sur plusieurs processus, fichiers identiques octet pour octet. Borne divisée par le nombre de
+processus, plus deux passes de lecture (environ 1 h, estimation) : **≤ 17 h environ avec 8 processus**. Sur la voie B,
+elle demanderait en plus un amendement du paquet cloud (audit de R02 et votre accord).
 
 ## 3. Conséquence : l'enveloppe accordée ne suffit pas
 
@@ -48,18 +64,22 @@ limite à lancement + 40 h et refuse plus de 48 h.
 
 - Avec 40 h, la date limite tomberait **avant la fin** de la chaîne dès que le ledger dure plus de quelques heures
   ou qu'un ancrage tarde : la machine serait supprimée avec le calcul en cours.
-- Il faut compter **de l'ordre de 45 à 60 h** de machine, ledger compris (fourchette à resserrer avec la durée
-  mesurée du ledger).
-- Coût au tarif relevé le 14/11 (1,048112 $/h, à revérifier) : 45 h → 47 $ HT ; 60 h → 63 $ HT ; plus le disque de
-  200 Go (environ 0,03 $/h, soit 1,4 à 1,6 $) et le stockage et le téléchargement (environ 1,5 $). **Total : environ
-  50 à 66 $ HT, soit 60 à 79 $ TTC avec 20 % de TVA.** Au-dessus du plafond de 60 $ dans presque tous les cas.
+- **Avec une telle borne sur le ledger, l'enveloppe de 48 h et 60 $ est encore plus insuffisante.** Bornes hautes
+  de la chaîne (34 à 41 h sans le ledger, plus le ledger) :
+  - ledger séquentiel (paquet actuel) : **jusqu'à 164 à 171 h** de machine, soit jusqu'à environ 178 à 186 $ HT,
+    **214 à 223 $ TTC** ;
+  - ledger P1 sur 8 processus (amendement) : **jusqu'à 51 à 58 h**, soit jusqu'à environ 57 à 64 $ HT,
+    **68 à 77 $ TTC**.
+  Ce sont des bornes hautes, pas des prévisions : la durée réelle du ledger est inconnue sous la borne.
+- Calcul : tarif relevé le 14/11 (1,048112 $/h, à revérifier), plus le disque de 200 Go (environ 0,03 $/h × la
+  durée), plus le stockage et le téléchargement (environ 1,5 $), plus 20 % de TVA.
 
 ## 4. Options, pour la décision du propriétaire
 
 | Option | Durée de machine | Coût TTC estimé | Ce qu'elle demande |
 |---|---|---|---|
-| A. Même paquet, enveloppe élargie (date limite à 60 h, plafond relevé) | 45 à 60 h | 60 à 79 $ | nouvel accord du propriétaire (durée et montant) ; amendement du paquet (la limite de 48 h est codée) ; audit de R02 |
-| B. Machine deux fois plus grande (n2-highmem-32, 16 processus) | 25 à 35 h | environ 63 à 88 $ (2,096 $/h × 25 à 35 h, plus 20 %) | amendement du paquet (nombre de processus) ; audit ; accord |
+| A. Même paquet, enveloppe élargie (date limite relevée, plafond relevé) | jusqu'à 164 à 171 h avec le ledger séquentiel ; jusqu'à 51 à 58 h avec P1 | jusqu'à 214 à 223 $ ; avec P1, jusqu'à 68 à 77 $ | nouvel accord du propriétaire (durée et montant) ; amendement du paquet (la limite de 48 h est codée ; P1 en plus si retenu) ; audit de R02 |
+| B. Machine deux fois plus grande (n2-highmem-32, 16 processus) | 25 à 35 h sans le ledger ; le ledger séquentiel n'en profite pas (≤ 130 h) ; avec P1 sur 16 processus, ≤ 9 h environ | sans P1 : non borné utilement ; avec P1 : jusqu'à environ 88 à 114 $ (2,096 $/h × 34 à 44 h, disque et stockage, plus 20 %) | amendement du paquet (nombre de processus, P1) ; audit ; accord |
 | C. **Réutiliser sur la machine les 29 549 résultats par pool déjà calculés chez R03** | trials réduit à la relecture des archives (environ 1 h) : **environ 5 à 10 h de machine plus le ledger** | **environ 8 à 15 $ plus le ledger** | voir ci-dessous |
 
 **Option C, détail.** Le module de calcul parallèle audité (w1aux v7.4, `parallel.py`) range chaque résultat par
@@ -95,6 +115,7 @@ reste l'option économique, avec ses conditions.
 
 - La vitesse d'un processus sur n2-highmem-16 par rapport à la machine de R03 (processeurs différents) : la
   projection suppose la même vitesse. Un essai de quelques minutes sur la machine (selfcheck) la donnerait.
-- La durée d'evaluate (jamais exécuté à cette échelle) et celle du ledger (mesurée bientôt chez R03).
+- La durée d'evaluate (jamais exécuté à cette échelle) et celle du ledger : pour le ledger, une borne haute
+  seulement (§ 2 bis) ; l'option P1 n'est pas encore auditée.
 - Le tarif horaire et les taxes, à revérifier dans le calculateur par le propriétaire.
 - L'option C n'a pas été essayée : l'égalité des clés entre deux machines n'est démontrée que par construction.
