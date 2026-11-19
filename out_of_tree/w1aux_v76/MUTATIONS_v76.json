@@ -1,0 +1,174 @@
+{
+ "module": "w1aux/ledger_resume.py",
+ "module_sha256": "1ec071f4de84387e8a41287ae990b4a35d1a08e37af472582e7ed8579a8f2770",
+ "tests": "w1aux/tests/test_ledger_resume.py",
+ "tests_sha256": "5443a50fafb9600d2c0f501a2536b138efe06fd8a56bb7eeaef1cb35899aaa4a",
+ "runner": "mutations_v76_runner.py",
+ "runner_sha256": "4bfbacc8d1051ddeb11070109933d71f3d832349d68f98c44333f05681314aef",
+ "interpreter": "CPython 3.12.3, pytest -W error",
+ "detected": 31,
+ "total": 31,
+ "history": [
+  "run 1 discarded: ran concurrently with another run in the same directory on two module versions",
+  "run 2: 22/31, exposed weak tests (key test masked by the occurrence rank, .tmp removal, index repair, unused results); tests strengthened, module unchanged",
+  "run 3 (this one): 30/31 on the final module; archive_sha_not_in_key then detected after one more test fix"
+ ],
+ "mutants": [
+  {
+   "mutant": "no_occurrence_rank",
+   "detected": true,
+   "last": "1 failed in 33.26s"
+  },
+  {
+   "mutant": "timeline_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 102.52s (0:01:42)"
+  },
+  {
+   "mutant": "params_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 105.52s (0:01:45)"
+  },
+  {
+   "mutant": "indices_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 108.27s (0:01:48)"
+  },
+  {
+   "mutant": "history_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 100.50s (0:01:40)"
+  },
+  {
+   "mutant": "series_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 102.44s (0:01:42)"
+  },
+  {
+   "mutant": "archive_sha_not_in_key",
+   "detected": true,
+   "last": "1 failed, 20 passed in 108.28s (0:01:48)",
+   "note": "undetected in the full run (the test changed the pool and the sha together); test fixed (same pool, other sha), mutant re-run alone: detected"
+  },
+  {
+   "mutant": "eager_archive_accepted",
+   "detected": true,
+   "last": "1 failed, 20 passed in 105.03s (0:01:45)"
+  },
+  {
+   "mutant": "kwargs_accepted",
+   "detected": true,
+   "last": "1 failed, 20 passed in 103.04s (0:01:43)"
+  },
+  {
+   "mutant": "sha_not_checked",
+   "detected": true,
+   "last": "1 failed, 5 passed in 81.39s (0:01:21)"
+  },
+  {
+   "mutant": "missing_file_crashes",
+   "detected": true,
+   "last": "1 failed, 7 passed in 86.89s (0:01:26)"
+  },
+  {
+   "mutant": "embedded_key_not_checked",
+   "detected": true,
+   "last": "1 failed, 8 passed in 83.43s (0:01:23)"
+  },
+  {
+   "mutant": "foreign_accepted",
+   "detected": true,
+   "last": "1 failed, 12 passed in 90.10s (0:01:30)"
+  },
+  {
+   "mutant": "orphan_accepted",
+   "detected": true,
+   "last": "1 failed, 10 passed in 89.15s (0:01:29)"
+  },
+  {
+   "mutant": "tmp_not_removed",
+   "detected": true,
+   "last": "1 failed, 9 passed in 89.21s (0:01:29)"
+  },
+  {
+   "mutant": "meta_not_checked",
+   "detected": true,
+   "last": "1 failed, 14 passed in 94.38s (0:01:34)"
+  },
+  {
+   "mutant": "meta_missing_accepted",
+   "detected": true,
+   "last": "1 failed, 15 passed in 93.40s (0:01:33)"
+  },
+  {
+   "mutant": "bad_line_ignored",
+   "detected": true,
+   "last": "1 failed, 13 passed in 92.70s (0:01:32)"
+  },
+  {
+   "mutant": "tail_not_rewritten",
+   "detected": true,
+   "last": "1 failed, 9 passed in 82.60s (0:01:22)"
+  },
+  {
+   "mutant": "file_before_index",
+   "detected": true,
+   "last": "1 failed in 30.91s"
+  },
+  {
+   "mutant": "result_not_stored",
+   "detected": true,
+   "last": "1 failed in 32.37s"
+  },
+  {
+   "mutant": "cache_never_read",
+   "detected": true,
+   "last": "1 failed in 32.33s"
+  },
+  {
+   "mutant": "lookup_without_check",
+   "detected": true,
+   "last": "1 failed, 17 passed in 99.78s (0:01:39)"
+  },
+  {
+   "mutant": "unused_results_accepted",
+   "detected": true,
+   "last": "1 failed, 18 passed in 97.43s (0:01:37)"
+  },
+  {
+   "mutant": "binding_not_required",
+   "detected": true,
+   "last": "1 failed, 19 passed in 97.22s (0:01:37)"
+  },
+  {
+   "mutant": "not_reentrancy_guarded",
+   "detected": true,
+   "last": "1 failed, 19 passed in 99.03s (0:01:39)"
+  },
+  {
+   "mutant": "ledger_sha_not_checked",
+   "detected": true,
+   "last": "1 failed, 19 passed in 102.60s (0:01:42)"
+  },
+  {
+   "mutant": "no_lazy_archives",
+   "detected": true,
+   "last": "1 failed in 33.02s"
+  },
+  {
+   "mutant": "openings_file_refused",
+   "detected": true,
+   "last": "1 failed in 35.38s"
+  },
+  {
+   "mutant": "resumes_not_counted",
+   "detected": true,
+   "last": "1 failed in 33.09s"
+  },
+  {
+   "mutant": "reused_not_counted",
+   "detected": true,
+   "last": "1 failed in 36.14s"
+  }
+ ]
+}
