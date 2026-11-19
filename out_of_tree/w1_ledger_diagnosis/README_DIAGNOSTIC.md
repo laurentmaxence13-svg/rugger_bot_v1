@@ -7,6 +7,10 @@ il n'écrit rien dans la racine et ne lit que la copie gelée de `ledger/ledger.
 
     python -B -m w1diag.histogram --ledger <copie gelée>/ledger.json --ledger-sha256 <sha ancré par R02>
 
+Pour la copie gelée du ledger W1X, le sha256 de `ledger.json` à passer est
+`cea0175851c88e7ce85d284317927a6763387e93a5e024de2f7e90d79d9ee18a`, ancré par R02 (registre a87f54e8). La valeur
+335ef4ff est l'identifiant du registre de R02, pas l'empreinte du fichier.
+
 Le script vérifie d'abord le sha256 ancré, puis imprime **une seule ligne**, limitée aux clés de la liste blanche
 `verdict`, `mismatch_entries`, `histogram`, `pools_touched_by_trial` et `l1_plan_not_re_derived_by_trial` :
 
