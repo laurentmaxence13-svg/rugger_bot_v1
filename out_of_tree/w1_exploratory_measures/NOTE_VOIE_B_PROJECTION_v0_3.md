@@ -55,7 +55,11 @@ premier essai chez R03 a tourné plus de 2 h, le second tourne depuis le 18/11 �
 **Option P1** (autorisée par R02 à l'écriture seulement, audit et PASS requis avant tout usage) : le même ledger,
 réparti par pool sur plusieurs processus, fichiers identiques octet pour octet. Borne divisée par le nombre de
 processus, plus deux passes de lecture (environ 1 h, estimation) : **≤ 17 h environ avec 8 processus**. Sur la voie B,
-elle demanderait en plus un amendement du paquet cloud (audit de R02 et votre accord).
+elle demanderait en plus un amendement du paquet cloud (audit de R02 et votre accord). Code audité conforme par R02
+(07b3a3e6), mais **pas utilisable dans la session de R03** : sa garde mémoire, non dérogeable, exige
+1,5 × (8,6 Go de projection du ledger séquentiel + N × la projection du plus gros pool), ce qui dépasse les
+13,4 Gio du conteneur de R03 dès N = 2. Elle tient sur n2-highmem-16 (128 Go). La lecture préliminaire
+garde donc le ledger séquentiel.
 
 ## 3. Conséquence : l'enveloppe accordée ne suffit pas
 
