@@ -1,0 +1,9 @@
+{"mutant": "check_not_filtered", "detected": true}
+{"mutant": "name_not_filtered", "detected": true}
+{"mutant": "counted_per_string", "detected": true}
+{"mutant": "true_counted", "detected": true}
+{"mutant": "sha_not_checked", "detected": true}
+{"mutant": "cycles_leaked", "detected": true}
+{"mutant": "pool_list_leaked", "detected": true}
+{"mutant": "verdict_raw", "detected": true}
+detected 8/8
