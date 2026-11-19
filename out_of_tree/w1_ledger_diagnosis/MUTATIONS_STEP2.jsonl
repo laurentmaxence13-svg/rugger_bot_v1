@@ -1,0 +1,11 @@
+{"mutant": "other_trial_selected", "detected": true}
+{"mutant": "other_check_selected", "detected": true}
+{"mutant": "multiple_not_integer_checked", "detected": true}
+{"mutant": "raw_outcome", "detected": true}
+{"mutant": "raw_arm", "detected": true}
+{"mutant": "mark_value_leaked", "detected": true}
+{"mutant": "migration_note_ignored", "detected": true}
+{"mutant": "missing_rows_accepted", "detected": true}
+{"mutant": "ledger_sha_not_checked", "detected": true}
+{"mutant": "tx_value_leaked", "detected": true}
+detected 10/10

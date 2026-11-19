@@ -41,3 +41,23 @@ interdite, masquage des noms, sha ancré exigé, cas PASS. Défauts volontaires 
 ## Étape 2
 
 L'étape 2 est écrite après le résultat de l'étape 1 (R02).
+
+## Étape 2 : la forme des 93 écarts `tx_costs` de L1_event_horizon (`w1diag.c1_table`, R02 abb5fb04)
+
+L'étape 1 a mis P1-bis hors de cause : FAIL, 93 entrées, `tx_costs` seulement, et seulement dans L1_event_horizon.
+L'hypothèse à tester est celle de R02, vérifiée par R01 dans le code figé (voir `PROJET_C1.md`).
+
+    python -B -m w1diag.c1_table --ledger <copie gelée>/ledger.json --ledger-sha256 cea0175851c88e7ce85d284317927a6763387e93a5e024de2f7e90d79d9ee18a \
+        --bundle <racine>/run/bundles/L1_event_horizon.json.gz --bundle-sha256 <sha ancré dans run/bundles/SHA256SUMS.json>
+
+Le script lit deux sources, et vérifie le sha256 ancré de chacune :
+
+- `ledger.json`, uniquement pour sélectionner les entrées de L1_event_horizon en écart `tx_costs`, par (bras, pool) :
+  les entrées du ledger ne portent ni `tx_costs`, ni les notes, ni `mark_pnl_lamports` ;
+- le bundle, pour lire la ligne rejouée, qui porte ces champs ainsi que `exit_index`.
+
+Sortie : une ligne, avec les clés `entries` et `table`. Chaque ligne de `table` donne : bras, issue, multiple entier de
+`tx_costs / (base + priority)`, présence de `mark_pnl_lamports`, note `exit_after_migration`, présence d'`exit_index`,
+et le nombre. Aucun montant, aucun pool.
+
+Tests : 4 tests. Défauts volontaires : `MUTATIONS_STEP2.jsonl` (10/10).
