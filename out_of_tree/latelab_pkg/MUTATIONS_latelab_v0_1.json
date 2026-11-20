@@ -1,0 +1,50 @@
+[
+ {
+  "mutant": "tier_strict",
+  "detected": true
+ },
+ {
+  "mutant": "cut_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "eval_upper_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_zero",
+  "detected": true
+ },
+ {
+  "mutant": "rent_recovered_by_default",
+  "detected": true
+ },
+ {
+  "mutant": "rank_by_mean",
+  "detected": true
+ },
+ {
+  "mutant": "cluster_floor_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "other_labels_kept",
+  "detected": true
+ },
+ {
+  "mutant": "screen_any_cells",
+  "detected": true
+ },
+ {
+  "mutant": "discovery_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "pass_without_floor",
+  "detected": true
+ },
+ {
+  "mutant": "stop_changed",
+  "detected": true
+ }
+]
