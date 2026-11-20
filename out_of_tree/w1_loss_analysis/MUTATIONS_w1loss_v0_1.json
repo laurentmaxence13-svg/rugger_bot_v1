@@ -1,0 +1,74 @@
+[
+ {
+  "mutant": "cf_threshold_inclusive",
+  "detected": false
+ },
+ {
+  "mutant": "range_filter_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "trial_filter_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "closed_filter_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "quantile_rank",
+  "detected": true
+ },
+ {
+  "mutant": "cost_denominator",
+  "detected": true
+ },
+ {
+  "mutant": "gross_on_cost",
+  "detected": true
+ },
+ {
+  "mutant": "age_off_by_one",
+  "detected": true
+ },
+ {
+  "mutant": "age_bounds",
+  "detected": true
+ },
+ {
+  "mutant": "thirds_cut",
+  "detected": true
+ },
+ {
+  "mutant": "identity_forced",
+  "detected": true
+ },
+ {
+  "mutant": "unverified_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "ledger_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "verdict_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "cf_zero_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "sell_fee_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "pairs_not_common",
+  "detected": true
+ },
+ {
+  "mutant": "overwrite_allowed",
+  "detected": true
+ }
+]
