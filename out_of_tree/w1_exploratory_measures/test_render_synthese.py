@@ -138,9 +138,58 @@ def test_no_result_figure_is_written_in_the_script_and_the_fixed_wording_is_r02_
     assert numbers <= {0, 1, 100, 1_000_000_000}, numbers                       # units and comparisons only
     text_only = re.sub(r'`[^`]*`', '', source)
     assert not re.search(r'\d+[,.]\d+ ?(SOL|%)', text_only)
-    assert "de l'ordre de 4 jours (durée exacte non mesurée dans cette lecture)" in source
+    assert "de l'ordre de 4 jours" not in source                            # R02 20/11: no duration guessed
+    assert "durée d'horloge non mesurée dans cette lecture." in source
     assert 'collecte soumise à votre accord' in source and 'HYPOTHÈSES, à tester sur des données futures (W2), jamais sur W1' in source
     assert 'préfigure, sans les remplacer, les tests officiels' in source
     assert 'des cycles clôturés (en nombre de cycles, non en résultat).' in source
     assert 'plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02' in source
     assert RS.HEADER == 'EXPLORATOIRE — NON OFFICIEL — pas le verdict W1 — pas une preuve de rentabilité future'
+
+
+def test_costs_are_shown_as_amounts_without_sign_and_the_net_keeps_its_sign(tmp_path):
+    """R02 20/11 (3): a cost is never printed with an ambiguous '+'."""
+    path, sha = _reading(tmp_path)
+    assert RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--chain-hours', '21',
+                    '--out', str(tmp_path / 's.md')]) == 0
+    text = (tmp_path / 's.md').read_text(encoding='utf-8')
+    doc = json.loads(path.read_text(encoding='utf-8'))
+    rows = [line for line in text.splitlines() if line.startswith('| Coût')]
+    assert len(rows) == 4 + 4                                            # 4 cost rows in section 4, 4 in section 5
+    for line in rows:
+        assert not re.search(r'[+]\d', line), line
+    d = doc['master']['Q4_failure_factors']['decomposition_lamports']
+    for part in ('slippage', 'launchlab_fees', 'tx_costs', 'failed_attempt_costs'):
+        key = f'master.Q4_failure_factors.decomposition_lamports.{part}'
+        shown = f"{abs(d[part]) / 1_000_000_000:.6f}".replace('.', ',') + f' SOL (`{key}`)'
+        assert shown in text and ('coût négatif, gain de ' + shown in text) is (d[part] < 0), part
+    assert 'Net = Brut − somme des coûts.' in text
+    net = 'master.Q4_failure_factors.decomposition_lamports.net'
+    assert re.search(r'\| Net \| [+-]\d+,\d{6} SOL \(`' + re.escape(net) + r'`\)', text)
+    assert 'ATTENTION : les colonnes MASTER et Référence diffèrent' in text     # the fictitious reading differs
+    assert "durée d'horloge non mesurée dans cette lecture." in text
+
+
+def test_a_negative_cost_is_named_a_gain_and_the_clock_hours_are_r02_s(tmp_path):
+    f = RS.Figures(dict(a=dict(b=-1_500_000, c=2_000_000)))
+    assert f.cost('a.b') == 'coût négatif, gain de 0,001500 SOL (`a.b`)'
+    assert f.cost('a.c') == '0,002000 SOL (`a.c`)' and f.cost('a.z') == 'non calculé (`a.z`)'
+    path, sha = _reading(tmp_path)
+    assert RS.main(['--reading', str(path), '--reading-sha256', sha, '--n-trials', '159', '--chain-hours', '21',
+                    '--evaluation-hours', '96', '--out', str(tmp_path / 's.md')]) == 0
+    text = (tmp_path / 's.md').read_text(encoding='utf-8')
+    assert "soit environ 96 heures d'horloge de la chaîne (block_time ; chiffre donné par RUGGER 02)." in text
+    with pytest.raises(RS.SyntheseError, match='evaluation_hours_must_be_given_by_r02'):
+        RS.render(json.loads(path.read_text(encoding='utf-8')) | {'_sha256': sha}, 159, 21, 0)
+
+
+def test_identical_master_and_reference_columns_are_explained_as_expected_by_the_code():
+    parts = dict(market_move=5, slippage=0, launchlab_fees=2, tx_costs=1, failed_attempt_costs=0, net=2)
+    doc = dict(master=dict(Q1_positions=dict(closed=3), Q2_result_lamports=dict(net_mean=-7),
+                           Q4_failure_factors=dict(decomposition_lamports=dict(parts))),
+               others=dict(reference=dict(closed_cycles=3, mean_net_pnl_lamports=-7, decomposition_lamports=dict(parts))))
+    f = RS.Figures(doc)
+    q = ('master.Q1_positions', 'master.Q2_result_lamports', 'master.Q4_failure_factors')
+    assert RS._identity_sentence(f, *q).startswith('Les colonnes MASTER et Référence sont identiques')
+    doc['others']['reference']['decomposition_lamports']['tx_costs'] = 2
+    assert RS._identity_sentence(f, *q).startswith('ATTENTION')

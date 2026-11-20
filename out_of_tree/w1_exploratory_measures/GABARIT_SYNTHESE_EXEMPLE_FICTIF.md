@@ -49,14 +49,16 @@ Sur la plage d'évaluation de W1, le MASTER a ouvert 15 (`master.Q1_positions.op
 
 ## 4. Où part l'argent
 
-| Poste (total des cycles clôturés) | |
+Les coûts sont donnés en montant, sans signe ; ils se retranchent du brut : Net = Brut − somme des coûts.
+
+| Poste (total des cycles clôturés) | Montant |
 |---|---|
 | Brut : évolution du prix pendant la détention | +0,042100 SOL (`master.Q4_failure_factors.decomposition_lamports.market_move`) |
-| − glissement de nos propres ordres | +0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.slippage`) |
-| − frais de la courbe (achat et vente) | +0,035000 SOL (`master.Q4_failure_factors.decomposition_lamports.launchlab_fees`) |
-| − frais de transaction | +0,002100 SOL (`master.Q4_failure_factors.decomposition_lamports.tx_costs`) |
-| − tentatives échouées | +0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.failed_attempt_costs`) |
-| = Net | +0,005000 SOL (`master.Q4_failure_factors.decomposition_lamports.net`) |
+| Coût : glissement de nos propres ordres | 0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.slippage`) |
+| Coût : frais de la courbe (achat et vente) | 0,035000 SOL (`master.Q4_failure_factors.decomposition_lamports.launchlab_fees`) |
+| Coût : frais de transaction | 0,002100 SOL (`master.Q4_failure_factors.decomposition_lamports.tx_costs`) |
+| Coût : tentatives échouées | 0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.failed_attempt_costs`) |
+| Net | +0,005000 SOL (`master.Q4_failure_factors.decomposition_lamports.net`) |
 | Résidu de cette identité (rapporté tel quel, en lamports) | 0.0 (`master.Q4_failure_factors.decomposition_lamports.identity_residual`) |
 
 Motifs de sortie des cycles clôturés :
@@ -73,22 +75,25 @@ Motifs de sortie des cycles clôturés :
 
 Cette comparaison préfigure, sans les remplacer, les tests officiels.
 
+ATTENTION : les colonnes MASTER et Référence diffèrent, alors que le code gelé les rend identiques (le MASTER entre exactement quand `early_sniping` entre, avec le même plan de sortie). Écart à expliquer avant toute conclusion.
+
 | | MASTER | Référence | Hasard (placebo) |
 |---|---|---|---|
 | Cycles clôturés | 10 (`master.Q1_positions.closed`) | 2 (`others.reference.closed_cycles`) | 1 (`others.placebo_random.closed_cycles`) |
 | Net moyen par opération | +0,000500 SOL (`master.Q2_result_lamports.net_mean`) | -0,003000 SOL (`others.reference.mean_net_pnl_lamports`) | +0,006000 SOL (`others.placebo_random.mean_net_pnl_lamports`) |
 | Rendement net moyen | +0,50 % (`master.Q2_result_lamports.net_return_mean`) | -3,00 % (`others.reference.mean_net_return`) | +12,00 % (`others.placebo_random.mean_net_return`) |
 | Brut (total) | +0,042100 SOL (`master.Q4_failure_factors.decomposition_lamports.market_move`) | +0,001420 SOL (`others.reference.decomposition_lamports.market_move`) | +0,009710 SOL (`others.placebo_random.decomposition_lamports.market_move`) |
-| Glissement (total) | +0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.slippage`) | +0,000000 SOL (`others.reference.decomposition_lamports.slippage`) | +0,000000 SOL (`others.placebo_random.decomposition_lamports.slippage`) |
-| Frais de la courbe (total) | +0,035000 SOL (`master.Q4_failure_factors.decomposition_lamports.launchlab_fees`) | +0,007000 SOL (`others.reference.decomposition_lamports.launchlab_fees`) | +0,003500 SOL (`others.placebo_random.decomposition_lamports.launchlab_fees`) |
-| Frais de transaction (total) | +0,002100 SOL (`master.Q4_failure_factors.decomposition_lamports.tx_costs`) | +0,000420 SOL (`others.reference.decomposition_lamports.tx_costs`) | +0,000210 SOL (`others.placebo_random.decomposition_lamports.tx_costs`) |
+| Coût : glissement (total) | 0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.slippage`) | 0,000000 SOL (`others.reference.decomposition_lamports.slippage`) | 0,000000 SOL (`others.placebo_random.decomposition_lamports.slippage`) |
+| Coût : frais de la courbe (total) | 0,035000 SOL (`master.Q4_failure_factors.decomposition_lamports.launchlab_fees`) | 0,007000 SOL (`others.reference.decomposition_lamports.launchlab_fees`) | 0,003500 SOL (`others.placebo_random.decomposition_lamports.launchlab_fees`) |
+| Coût : frais de transaction (total) | 0,002100 SOL (`master.Q4_failure_factors.decomposition_lamports.tx_costs`) | 0,000420 SOL (`others.reference.decomposition_lamports.tx_costs`) | 0,000210 SOL (`others.placebo_random.decomposition_lamports.tx_costs`) |
+| Coût : tentatives échouées (total) | 0,000000 SOL (`master.Q4_failure_factors.decomposition_lamports.failed_attempt_costs`) | 0,000000 SOL (`others.reference.decomposition_lamports.failed_attempt_costs`) | 0,000000 SOL (`others.placebo_random.decomposition_lamports.failed_attempt_costs`) |
 | Net (total) | +0,005000 SOL (`master.Q4_failure_factors.decomposition_lamports.net`) | -0,006000 SOL (`others.reference.decomposition_lamports.net`) | +0,006000 SOL (`others.placebo_random.decomposition_lamports.net`) |
 
 ## 6. Fiabilité
 
 - Intervalle de confiance à 95 % du rendement net moyen : de -3,86 % (`master.Q6_interval_95_of_the_mean_net_return.low`) à +3,20 % (`master.Q6_interval_95_of_the_mean_net_return.high`) ; rééchantillonnage par créateur, 2000 (`master.Q6_interval_95_of_the_mean_net_return.draws`) tirages, 6 (`master.Q6_interval_95_of_the_mean_net_return.clusters`) créateurs ou pools distincts. L'intervalle contient zéro : le signe du résultat n'est pas établi.
 - Concentration : 6 (`master.Q5_creators.distinct_clusters`) créateurs ou pools distincts parmi les cycles clôturés ; les cinq plus présents détiennent 90,0 % (`master.Q5_creators.share_of_the_5_largest`) des cycles clôturés (en nombre de cycles, non en résultat).
-- Une seule période : plage d'évaluation de 1 000 slots (`population.evaluation_max` − `population.evaluation_min`), de l'ordre de 4 jours (durée exacte non mesurée dans cette lecture).
+- Une seule période : plage d'évaluation de 1 000 slots (`population.evaluation_max` − `population.evaluation_min`), durée d'horloge non mesurée dans cette lecture.
 - Coûts, latence et mise sont ceux du protocole gelé ; nos ordres simulés n'ont pas existé : leur effet sur les autres acteurs est inconnu.
 - Les outils en flux utilisés pour cette lecture produisent les mêmes fichiers que la chaîne gelée sur les jeux de référence seulement (pilote, jeux de prix ouverts, jeux synthétiques), pas sur une fenêtre réelle de la taille de W1.
 - Ce n'est pas la décision W1 : ni le test officiel contre la référence et le hasard, ni la correction pour le nombre d'essais (159 essais exploratoires comptés sur les données de développement, en plus des essais préenregistrés du protocole W1 ; chiffre donné par RUGGER 02) ne sont calculés ici.
