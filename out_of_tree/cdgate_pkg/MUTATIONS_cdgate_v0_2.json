@@ -1,0 +1,58 @@
+[
+ {
+  "mutant": "not_whole_event",
+  "detected": true
+ },
+ {
+  "mutant": "age_strict",
+  "detected": true
+ },
+ {
+  "mutant": "rate_reads_future",
+  "detected": true
+ },
+ {
+  "mutant": "tier_strict",
+  "detected": true
+ },
+ {
+  "mutant": "raw_rate_comparison",
+  "detected": true
+ },
+ {
+  "mutant": "tier_floor_not_round",
+  "detected": true
+ },
+ {
+  "mutant": "clock_60",
+  "detected": true
+ },
+ {
+  "mutant": "hw1_600s_replayed",
+  "detected": true
+ },
+ {
+  "mutant": "gate_without_n",
+  "detected": true
+ },
+ {
+  "mutant": "gate_on_mean",
+  "detected": true
+ },
+ {
+  "mutant": "sell_fee_on_net",
+  "detected": true
+ },
+ {
+  "mutant": "outside_range_read",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_unrestricted",
+  "detected": true
+ }
+]

@@ -36,7 +36,8 @@ def test_eligibility_is_the_causal_rate_at_most_2500(monkeypatch):
         return fake.rate, {}
     monkeypatch.setattr(G, 'causal_fee_rate', fake)
     events = list(range(10))
-    for rate, ok in ((2_500, True), (2_501, False), (0, True), (10_000, False)):
+    for rate, ok in ((2_500, True), (2_501, True), (2_502, True), (2_749, True), (2_750, False), (3_000, False),
+                     (0, True), (10_000, False)):
         fake.rate = rate
         assert G.eligible(events, 4) == (ok, rate)
     assert set(seen) == {5}                                         # events up to the decision only
@@ -147,3 +148,16 @@ def test_outside_the_evaluation_range_nothing_is_read(tmp_path, monkeypatch):
     assert G.main(['--pools', str(PACK), '--manifest-sha256', sha, '--out', str(tmp_path / 'o')]) == 0
     doc = json.loads((tmp_path / 'o' / 'CDGATE.json').read_text())
     assert doc['c_d']['cycles']['late_pools'] == 0 and doc['c_d']['n'] == 0
+
+
+def test_tier_rule_on_the_real_causal_rate():
+    """R02 B-1: a real 2 500 ppm rate on a 123 457 lamport buy gives fee 309 and the interval [2 495 ; 2 502]."""
+    Fe = namedtuple('Fe', 'side amount_in amount_out protocol_fee platform_fee creator_fee share_fee')
+    event = Fe('buy', 123_457, 1, 309, 0, 0, 0)
+    rate, evidence = G.causal_fee_rate([event])
+    assert evidence['interval_ppm'] == [2_495, 2_502] and rate == 2_502
+    assert G.eligible([event], 0) == (True, 2_502)                  # tier 2 500: eligible, the raw rate kept for costs
+    high = Fe('buy', 100_000, 1, 275, 0, 0, 0)                     # 2 750 ppm exactly
+    rate, _evidence = G.causal_fee_rate([high])
+    assert rate == 2_750 and G.tier(rate) == 3_000 and G.eligible([high], 0) == (False, 2_750)
+    assert [G.tier(r) for r in (2_249, 2_250, 2_499, 2_749)] == [2_000, 2_000, 2_500, 2_500]   # as feeage tier_of

@@ -1,4 +1,4 @@
-"""cdgate 0.1 -- NON-REFUTATION GATE of the FROZEN rule C-D on W1 (R02, register entry written before any run; the rule
+"""cdgate 0.2 (0.1 + the TIER of the causal rate, R02 B-1) -- NON-REFUTATION GATE of the FROZEN rule C-D on W1 (R02, register entry written before any run; the rule
 is dossier A v1.6 section 10, branch « constant » = conjunction, fixed by Q3, R02 557648f4). EXPLORATORY: C-D was chosen
 on W1, so the estimate is biased upwards; the gate can only KILL C-D, never confirm it.
 
@@ -6,7 +6,8 @@ on W1, so the estimate is biased upwards; the gate can only KILL C-D, never conf
 
 RULE (unchanged): for each W1 pool created in [EVAL_MIN, EVAL_MAX) (latelab 0.4 constants, the whole range) and
 replayable, the decision is the FIRST WHOLE event of age >= 450 slots (event slot - creation slot); the pool is
-ELIGIBLE iff the frozen ``causal_fee_rate`` of the events up to that decision is <= 2 500 ppm. Buy 0.1 SOL, landing
+ELIGIBLE iff the TIER of the frozen ``causal_fee_rate`` of the events up to that decision is <= 2 500 ppm; the tier is
+the rate rounded to the nearest 500 ppm, exactly as feeage 0.2 ``tier_of`` (Q4); the raw rate stays the one of the costs. Buy 0.1 SOL, landing
 after 4 slots, one position per pool, causal curve fees, 2 x (5 000 + 100 000) lamports, rent LOST, take profit +7 %
 or stop loss -5 % of the cost, otherwise the clock at 30 s (L1_HORIZON_MS), sale after the frozen clock latency
 (``statelab.exits.run_rule``, unchanged); a position whose curve completes before the sale counts -1.
@@ -40,7 +41,8 @@ from statelab.study import STAKE_LAMPORTS, cluster_key
 from v3lab import plan
 from w1aux.lazy import clear_cache, load_fixtures_lazy
 
-SCHEMA = 'cdgate-v0.1'
+SCHEMA = 'cdgate-v0.2'
+TIER_STEP_PPM = 500                                          # feeage 0.2 tier_of (Q4, R02 B-1)
 LATE_SLOTS, LOW_TIER_PPM, HW1_AGE_S = 450, 2_500, 600
 RULE = dict(id='TP7_SL5_CLOCK30', take_profit=0.07, stop_loss=0.05, clock_s=30)
 LATENCY_SENSITIVITY_SLOTS = 10
@@ -57,9 +59,13 @@ def decision_index(events, creation_slot):
     return next((k for k, e in enumerate(events) if e.slot - creation_slot >= LATE_SLOTS and whole(events, k)), None)
 
 
+def tier(rate):
+    return int(round(rate / TIER_STEP_PPM)) * TIER_STEP_PPM
+
+
 def eligible(events, k):
     rate, _evidence = causal_fee_rate(events[:k + 1])
-    return rate <= LOW_TIER_PPM, rate
+    return tier(rate) <= LOW_TIER_PPM, rate
 
 
 def decompose(outcome, rate):
@@ -174,7 +180,9 @@ def run(pools_dir, manifest_sha256, params):
         clear_cache()
     cd = gate(rows['cd'])
     eligible_total = len(rows['cd']) + counts['cd_refused'] + counts['cd_at_or_after_600s']
-    cd['cycles'] = dict(late_pools=counts['late_pool'], eligible=eligible_total, closed=len(rows['cd']),
+    cd['cycles'] = dict(late_pools=counts['late_pool'], eligible=eligible_total, eligible_at_tier_le_2500=eligible_total,
+                        q4_reference='feeage Q4: 53 pools in the evaluation range at tier <= 2 500 ppm, before exclusions',
+                        closed=len(rows['cd']),
                         refused_buys=counts['cd_refused'], at_or_after_600s_counted_not_read=counts['cd_at_or_after_600s'],
                         share_at_or_after_600s=(counts['cd_at_or_after_600s'] / eligible_total) if eligible_total else None,
                         share_refused=(counts['cd_refused'] / eligible_total) if eligible_total else None)
