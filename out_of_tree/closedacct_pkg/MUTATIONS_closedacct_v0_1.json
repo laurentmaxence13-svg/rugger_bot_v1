@@ -1,0 +1,30 @@
+[
+ {
+  "mutant": "fee_live_default_as_main",
+  "detected": true
+ },
+ {
+  "mutant": "cleanup_fee_free",
+  "detected": true
+ },
+ {
+  "mutant": "failed_attempts_free",
+  "detected": true
+ },
+ {
+  "mutant": "never_left_open",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_zero",
+  "detected": true
+ },
+ {
+  "mutant": "incomplete_sale_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "open_mode_rent_recovered",
+  "detected": true
+ }
+]
