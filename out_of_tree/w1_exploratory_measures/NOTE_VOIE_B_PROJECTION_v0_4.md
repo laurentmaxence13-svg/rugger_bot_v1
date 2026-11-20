@@ -1,4 +1,4 @@
-# Verdict officiel W1 (B1) : coût, durée et routes — v0.4, 20/11/2026 (RUGGER 01, pour R04 ; audit R02 requis)
+# Verdict officiel W1 (B1) : coût, durée et routes — v0.4.1, 20/11/2026 (RUGGER 01, pour R04 ; avis R02 257bf065 intégré)
 
 **Statut.** La voie B (Google Cloud) est SUSPENDUE depuis la décision du 15/11 (b9e596e3). Cette note n'engage aucune
 dépense. Elle remplace la v0.3 (ddf5f216) sur les points ci-dessous. Tout ce qui n'est pas repris ici reste valable,
@@ -19,8 +19,10 @@ Aucun résultat de W1 n'est utilisé ici : seulement des durées. Ce qui reste �
    - La chaîne officielle s'arrêterait alors avant le dossier.
    - Il faut donc un **amendement C1** du paquet : w1aux v7.7, `ledger_c1` (audité par R02, PASS a03e12d0) et
      l'appel `--c1` dans la chaîne officielle. Cet amendement demande l'audit de R02 et l'accord du propriétaire.
-   - L'accord du 20/11 couvrait la correction pour la chaîne exploratoire. Son extension à la chaîne officielle
-     reste à confirmer.
+   - C'est un AMENDEMENT du paquet cloud audité et figé, v2.6.3 (423dfd43). La décision du propriétaire du 20/11
+     portait sur le ledger W1, pas sur le paquet. Il faut donc son **accord EXPLICITE**, présenté AVEC B1.
+   - Il faut ensuite une **v2.6.4 auditée par R02** : w1aux v7.7, `ledger_c1`, `--c1`, et des tests sur un pilote
+     (R02 257bf065).
 
 ## 1. Durées projetées sur n2-highmem-16 (8 processus), en supposant la vitesse par processus de R03 ⚠
 
@@ -54,25 +56,19 @@ Le plafond proposé correspond à la borne haute, plus 15 % de marge.
 - A2 tient dans le montant au point haut (57 $), mais pas dans les 40 h : la DEADLINE doit passer à 50 h ;
 - C tient largement dans les deux.
 
-**Recommandation de R02 (v0.3), que je maintiens : A (calcul intégral).** Les résultats de R03 servent alors de
+**Recommandation de R02 (257bf065), que je maintiens : A (calcul intégral), de préférence A2.** Le tarif est à relire par R03. C n'est admissible que comme amendement, aux conditions 1 à 6 de R02. Les résultats de R03 servent alors de
 reproduction indépendante gratuite. A2 coûte moins que A1, mais P1 n'est pas encore exécuté sur données réelles ;
 A1 est la plus simple à auditer.
 
-## 3. Route locale conforme (sans dépense) ? — OUI EN PRINCIPE, mais c'est une décision de méthode (R02)
+## 3. Route locale (sans dépense) : NON RECEVABLE comme verdict officiel (R02 257bf065)
 
-- **Ce qui existe déjà chez R03 (chaîne exploratoire)** : mêmes fonctions gelées, mêmes identités que dayj (le
-  module `explore` refuse tout changement d'identité), bundles et ledger C1 ANCRÉS par R02. Le ledger reprenable a
-  tourné sans incident, et sa mémoire tient en 1,4 Go.
-- **Ce qui manque pour un verdict « officiel »** :
-  1. l'étape `evaluate` gelée, jamais appelée par `explore`, exécutée sur les bundles ancrés ;
-  2. un amendement déclaré : les bundles exploratoires ancrés valent entrées officielles.
-- **Coût** : 0 $. **Durée** : evaluate, 1 à 3 h (estimation), plus les ancrages.
-- **Faiblesses** :
-  - pas de reproduction indépendante : tout a été calculé dans le même conteneur ;
-  - le conteneur a déjà redémarré trois fois ;
-  - c'est un écart au paquet officiel de l'accord du 15/11.
-- **Mon avis** : c'est la route la moins chère. À soumettre à R02, qui dira si elle est admissible ; je ne la
-  recommande pas avant son avis.
+R02 l'écarte pour trois raisons :
+- **Origine des bundles** : les bundles exploratoires viennent de l'export EN FLUX, pas de `w1_collection.export`
+  (R10). Leur identité avec l'export officiel n'est pas prouvée sur W1.
+- **Pas de reproduction** : aucune reproduction indépendante n'existe.
+- **Pas de déblocage de HW1** : elle ne débloquerait pas la lecture HW1, qui exige le verdict officiel ANCRÉ.
+
+Elle est retirée des options.
 
 ## 4. Ce que le propriétaire aurait à faire
 
@@ -84,9 +80,6 @@ amendements ci-dessus :
 4. lancer `create_vm.sh launch`. La dépense commence ici.
 5. transmettre les lignes de confirmation à R04 ;
 6. laisser la suppression automatique à la DEADLINE.
-
-**Route locale** : un seul accord écrit, pour l'amendement « bundles ancrés = entrées officielles » et l'exécution
-d'evaluate par R03. Aucune dépense.
 
 **Prérequis : la sauvegarde W1** (état donné par R03 le 20/11) doit être terminée avant toute route.
 - Lots 1 à 5 : 724 objets envoyés, sans échec (R02 cc59695a). Le propriétaire doit encore exécuter le bloc de
