@@ -1,35 +1,36 @@
-"""latelab 0.1 — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
-RUGGER 01; conditions of RUGGER 02 53ae2cae). EXPLORATORY: a cell kept here is an hypothesis, confirmed on W2 only.
+"""latelab 0.2 — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
+RUGGER 01; decision of RUGGER 02 04ecafed: option (iii), C-D frozen first in dossier A v1.6 § 10 and anchored by
+R02 BEFORE any run; the tier-restricted cells L2 and L4 are NEVER evaluated). EXPLORATORY: a cell kept here is an hypothesis, confirmed on W2 only.
 
   python -B -m latelab.study discover --pools <W1 export> --manifest-sha256 <anchored> --out <OUT>
-  python -B -m latelab.study screen   --pools <W1 export> --manifest-sha256 <anchored> --cells L1,L3 \
+  python -B -m latelab.study screen   --pools <W1 export> --manifest-sha256 <anchored> --cell L1 \
          --discovery <ANCHORED discovery json> --discovery-sha256 <sha> --out <OUT>
 
 REUSED UNCHANGED: ``statelab.points.decision_points`` (labels ``age:A``: first whole event of age >= A, at most
 30 s late), ``statelab.exits.run_rule`` (v4sim mode M-P, buy of 0.1 SOL landing after the frozen order latency,
 causal sale rule, frozen clock exit, a position whose curve completes before the sale counts -1),
-``bot.market.replay.causal_fee_rate`` (the fee tier KNOWN at the decision), ``statelab.study.cluster_key``,
+``statelab.study.cluster_key``,
 ``hrr.usable_timeline`` / ``creation_facts``, ``w1aux.lazy`` (one archive in memory).
 
 POPULATION: exported W1 pools CREATED in [EVAL_MIN, EVAL_MAX), replayable. Halves by creation slot: discovery
 < CUT_SLOT <= screen (R02 condition 2).
 
 FIREWALL HW1 (R02 53ae2cae, tested): only the labels ``age:120`` and ``age:300`` are used (< 600 s); no progress
-label, no trigger on a sale, no reserve level, no ratio to a past price or maximum, no signer status. The ONLY
-selection variable of 0.1 is the causal fee tier. Overlap of the exit window with HW1-4 is declared.
+label, no trigger on a sale, no reserve level, no ratio to a past price or maximum, no signer status, and NO
+selection variable at all: the fee tier is not even read, so no breakdown by tier, age or slice can be produced
+(R02 04ecafed condition 2). Ages 120 and 300 s with a 60 s exit end before 360 s: no overlap with HW1-4 (600 s).
 
-GRID (fixed; N + 4 at discovery, N + 2 at the screen):
-  L1 age:120, every tier          L2 age:120, tier <= 2 500 ppm
-  L3 age:300, every tier          L4 age:300, tier <= 2 500 ppm
-EXIT (R02 condition 3): take profit +7 %, stop loss -5 % (of the cost), else the clock at EXIT_CLOCK_S.
+GRID (fixed; N + 2 at discovery, N + 1 at the screen):  L1 age:120   L3 age:300   (every pool, no selection)
+EXIT (R02 04ecafed condition 1): the frozen clock at 60 s, unique, no take profit, no stop.
 RETURN: r = (received - cost - rent) / (cost + rent), rent LOST (SPL rent of the frozen chain); -1 if migrated.
 A ``rent recovered`` mean is published apart. Comparator: the statelab placebo label (random age <= 120 s) under the
 same exit, reported per half, never a cell.
 PER CELL: n, clusters, mean, median, win rate, 95 % interval of the mean by creator-cluster bootstrap (seed
 20261120, 2 000 draws), share of the 5 best pools in the positive P&L, migrated share; n < 30 or < 20 clusters =
-« non interprétable ». DISCOVERY ranks the interpretable cells by the lower bound of the interval and names the top
-2 (R02 condition 4); SCREEN recomputes those 2 only (an anchored discovery is required) and passes a cell if its mean
-is > 0 with n >= 30. Output: counts and returns only, no pool or creator (tested). Nothing is printed.
+« non interprétable ». DISCOVERY ranks the interpretable cells by the lower bound of the interval and names the
+best ONE (``top1``); SCREEN recomputes that cell only (an anchored discovery is required) and passes it if its mean
+is > 0 with n >= 30 and >= 20 clusters; never a proof. The placebo is DESCRIPTIVE. Output: counts and returns only,
+no pool or creator (tested). Nothing is printed.
 """
 import argparse
 import hashlib
@@ -40,7 +41,6 @@ import statistics
 from pathlib import Path
 
 from bot.market.collector import summarize
-from bot.market.replay import causal_fee_rate
 from bot.p4 import historical_research_replay as hrr
 from statelab.exits import SPL_RENT_LAMPORTS, run_rule
 from statelab.points import decision_points
@@ -48,13 +48,11 @@ from statelab.study import cluster_key
 from v3lab import plan
 from w1aux.lazy import clear_cache, load_fixtures_lazy
 
-SCHEMA = 'latelab-v0.1'
+SCHEMA = 'latelab-v0.2'
 EVAL_MIN, EVAL_MAX, CUT_SLOT = 467_678_545, 469_291_345, 468_484_945
-LOW_TIER_PPM = 2_500
-EXIT_CLOCK_S = 30                      # the status quo's frozen horizon (to be confirmed by R02)
-RULE = dict(id='TP7_SL5', take_profit=0.07, stop_loss=0.05, clock_s=EXIT_CLOCK_S)
-CELLS = dict(L1=dict(age=120, low_tier=False), L2=dict(age=120, low_tier=True),
-             L3=dict(age=300, low_tier=False), L4=dict(age=300, low_tier=True))
+EXIT_CLOCK_S = 60
+RULE = dict(id='CLOCK60', clock_s=EXIT_CLOCK_S)
+CELLS = dict(L1=dict(age=120), L3=dict(age=300))
 AGES = (120, 300)
 PLACEBO = ['placebo', 0]
 SEED, DRAWS, MIN_N, MIN_CLUSTERS = 20261120, 2_000, 30, 20
@@ -87,7 +85,7 @@ def half_of(creation_slot):
 
 
 def pool_points(archive, params):
-    """(half, cluster, [(label, fee tier ppm, outcome)]) of one pool; None when outside or not replayable."""
+    """(half, cluster, [(label, outcome)]) of one pool; None when outside or not replayable."""
     facts = dict(hrr.creation_facts(archive), pool=archive.pool)
     half = half_of(facts['creation_slot'])
     if half is None:
@@ -106,12 +104,11 @@ def pool_points(archive, params):
         kept = [label for label in labels if label == PLACEBO or (label[0] == 'age' and label[1] in AGES)]
         if not kept:
             continue
-        tier, _evidence = causal_fee_rate(events[:k + 1])
         outcome = run_rule(timeline, k, actors, model, RULE)
         if outcome is None:
             continue                                         # the buy itself is refused: no position
         for label in kept:
-            points.append((f'{label[0]}:{label[1]}', tier, outcome))
+            points.append((f'{label[0]}:{label[1]}', outcome))
     return half, cluster_key(archive, facts), points
 
 
@@ -143,15 +140,13 @@ def summary(items):
 
 
 def cell_items(pools, half, cell):
-    spec = CELLS[cell]
     return [(cluster, outcome) for h, cluster, points in pools if h == half
-            for label, tier, outcome in points
-            if label == f"age:{spec['age']}" and (not spec['low_tier'] or tier <= LOW_TIER_PPM)]
+            for label, outcome in points if label == f"age:{CELLS[cell]['age']}"]
 
 
 def placebo_items(pools, half):
     return [(cluster, outcome) for h, cluster, points in pools if h == half
-            for label, _tier, outcome in points if label == 'placebo:0']
+            for label, outcome in points if label == 'placebo:0']
 
 
 def collect(pools_dir, manifest_sha256, params):
@@ -173,17 +168,16 @@ def discover(pools):
     cells = {cell: summary(cell_items(pools, 'discovery', cell)) for cell in CELLS}
     ranked = sorted((c for c in cells if cells[c]['interpretable'] and cells[c]['interval_95']['low'] is not None),
                     key=lambda c: (-cells[c]['interval_95']['low'], c))
-    return dict(half='discovery', cells=cells, placebo=summary(placebo_items(pools, 'discovery')),
-                ranking_rule='interpretable cells by the lower bound of the 95 % interval', top2=ranked[:2],
+    return dict(half='discovery', cells=cells, placebo_descriptive=summary(placebo_items(pools, 'discovery')),
+                ranking_rule='interpretable cells by the lower bound of the 95 % interval', top1=ranked[:1],
                 trials_added=len(CELLS))
 
 
-def screen(pools, cells):
-    out = {cell: summary(cell_items(pools, 'screen', cell)) for cell in cells}
-    for s in out.values():
-        s['passes'] = s['n'] >= MIN_N and s['mean_net_return'] is not None and s['mean_net_return'] > 0
-    return dict(half='screen', cells=out, placebo=summary(placebo_items(pools, 'screen')),
-                pass_rule='mean > 0 and n >= 30; never a proof', trials_added=len(cells))
+def screen(pools, cell):
+    out = summary(cell_items(pools, 'screen', cell))
+    out['passes'] = out['interpretable'] and out['mean_net_return'] is not None and out['mean_net_return'] > 0
+    return dict(half='screen', cells={cell: out}, placebo_descriptive=summary(placebo_items(pools, 'screen')),
+                pass_rule='mean > 0 with n >= 30 and >= 20 clusters; never a proof', trials_added=1)
 
 
 def _write(out_dir, doc):
@@ -200,8 +194,9 @@ def _base(params, manifest_sha256):
     return dict(schema=SCHEMA, category='EXPLORATORY_W1_DEVELOPMENT', rule=RULE, cells_grid=CELLS,
                 cut_slot=CUT_SLOT, evaluation=[EVAL_MIN, EVAL_MAX], latency_slots=params.latency_slots,
                 rent='lost (SPL rent of the frozen chain), recovered published apart',
-                firewall=dict(labels=['age:120', 'age:300', 'placebo:0'], selection=['causal fee tier'],
-                              hw1_overlap_declared='exit window may overlap the HW1-4 survivor age (600 s)'),
+                firewall=dict(labels=['age:120', 'age:300', 'placebo:0'], selection=[],
+                              hw1='ages 120/300 s + 60 s exit end before 360 s: no overlap with HW1-4 (600 s)',
+                              c_d='L2/L4 never evaluated; C-D frozen in dossier A v1.6 section 10 before any run'),
                 input=dict(manifest_sha256=manifest_sha256))
 
 
@@ -210,7 +205,7 @@ def main(argv=None):
     parser.add_argument('mode', choices=('discover', 'screen'))
     parser.add_argument('--pools', type=Path, required=True)
     parser.add_argument('--manifest-sha256', required=True)
-    parser.add_argument('--cells', default=None)
+    parser.add_argument('--cell', default=None)
     parser.add_argument('--discovery', type=Path, default=None)
     parser.add_argument('--discovery-sha256', default=None)
     parser.add_argument('--latency-slots', type=int, default=None)
@@ -223,14 +218,13 @@ def main(argv=None):
         raw = a.discovery.read_bytes()
         if hashlib.sha256(raw).hexdigest() != a.discovery_sha256:
             raise LateLabError('discovery_is_not_the_anchored_one')
-        top2 = json.loads(raw)['top2']
-        cells = [] if a.cells is None else a.cells.split(',')
-        if cells != top2 or not cells:
-            raise LateLabError('screen_cells_must_be_the_anchored_top2')
+        top1 = json.loads(raw)['top1']
+        if not top1 or a.cell != top1[0]:
+            raise LateLabError('screen_cell_must_be_the_anchored_top1')
     if a.out.exists():
         raise LateLabError('output_exists')
     pools = collect(a.pools, a.manifest_sha256, params)
-    doc = dict(_base(params, a.manifest_sha256), **(discover(pools) if a.mode == 'discover' else screen(pools, cells)))
+    doc = dict(_base(params, a.manifest_sha256), **(discover(pools) if a.mode == 'discover' else screen(pools, a.cell)))
     if a.mode == 'screen':
         doc['input']['discovery_sha256'] = a.discovery_sha256
     _write(a.out, doc)

@@ -1,9 +1,5 @@
 [
  {
-  "mutant": "tier_strict",
-  "detected": true
- },
- {
   "mutant": "cut_inclusive",
   "detected": true
  },
@@ -32,7 +28,7 @@
   "detected": true
  },
  {
-  "mutant": "screen_any_cells",
+  "mutant": "screen_any_cell",
   "detected": true
  },
  {
@@ -44,7 +40,11 @@
   "detected": true
  },
  {
-  "mutant": "stop_changed",
+  "mutant": "clock_changed",
+  "detected": true
+ },
+ {
+  "mutant": "top2_instead_of_top1",
   "detected": true
  }
 ]

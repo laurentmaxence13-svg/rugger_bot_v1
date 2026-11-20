@@ -3,7 +3,6 @@ from pathlib import Path
 D, V, W, M, PP = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]), sys.argv[5]
 src = (D / 'latelab' / 'study.py').read_text()
 MUT = [
- ("(not spec['low_tier'] or tier <= LOW_TIER_PPM)", "(not spec['low_tier'] or tier < LOW_TIER_PPM)", 'tier_strict'),
  ("return 'discovery' if creation_slot < CUT_SLOT else 'screen'", "return 'discovery' if creation_slot <= CUT_SLOT else 'screen'", 'cut_inclusive'),
  ("if not EVAL_MIN <= creation_slot < EVAL_MAX:", "if not EVAL_MIN <= creation_slot <= EVAL_MAX:", 'eval_upper_inclusive'),
  ("        return -1.0", "        return 0.0", 'migrated_zero'),
@@ -11,10 +10,11 @@ MUT = [
  ("key=lambda c: (-cells[c]['interval_95']['low'], c))", "key=lambda c: (-cells[c]['mean_net_return'], c))", 'rank_by_mean'),
  ("interpretable = len(returns) >= MIN_N and len(clusters) >= MIN_CLUSTERS", "interpretable = len(returns) >= MIN_N", 'cluster_floor_dropped'),
  ("label[0] == 'age' and label[1] in AGES)]", "label[0] in ('age', 'progress'))]", 'other_labels_kept'),
- ("if cells != top2 or not cells:", "if not cells:", 'screen_any_cells'),
+ ("if not top1 or a.cell != top1[0]:", "if not top1:", 'screen_any_cell'),
  ("if hashlib.sha256(raw).hexdigest() != a.discovery_sha256:", "if False:", 'discovery_sha_ignored'),
- ("s['passes'] = s['n'] >= MIN_N and s['mean_net_return'] is not None and s['mean_net_return'] > 0", "s['passes'] = s['mean_net_return'] is not None and s['mean_net_return'] > 0", 'pass_without_floor'),
- ("RULE = dict(id='TP7_SL5', take_profit=0.07, stop_loss=0.05, clock_s=EXIT_CLOCK_S)", "RULE = dict(id='TP7_SL5', take_profit=0.07, stop_loss=0.10, clock_s=EXIT_CLOCK_S)", 'stop_changed'),
+ ("out['passes'] = out['interpretable'] and out['mean_net_return'] is not None and out['mean_net_return'] > 0", "out['passes'] = out['mean_net_return'] is not None and out['mean_net_return'] > 0", 'pass_without_floor'),
+ ("RULE = dict(id='CLOCK60', clock_s=EXIT_CLOCK_S)", "RULE = dict(id='CLOCK60', clock_s=30)", 'clock_changed'),
+ ("ranking_rule='interpretable cells by the lower bound of the 95 % interval', top1=ranked[:1],", "ranking_rule='interpretable cells by the lower bound of the 95 % interval', top1=ranked[:2],", 'top2_instead_of_top1'),
 ]
 out = []
 for old, new, name in MUT:

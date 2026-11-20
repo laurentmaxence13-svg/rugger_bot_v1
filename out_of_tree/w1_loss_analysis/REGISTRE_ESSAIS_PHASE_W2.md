@@ -11,3 +11,4 @@ Règles de comptage :
 | 2026-11-20 | Porte de C-A (T1, palier 12 500 ppm), ancrée par R02 (f2f86f74) | W1, ledger ancré | — | **160** | da1e5758 (R02 2333dcff) | ÉCHEC : n = 46, net −5,45 % [−10,89 ; −0,55] ; C-A retiré |
 | 2026-11-20 | Liste des pools migrés (w1migr 0.1.1) | W1, bundle L1 | — | 160 (hors N, population) | eef9fb48 | 12 membres ; C-C irréalisable |
 | 2026-11-20 | Candidat C-D (entrée tardive à palier bas), écrit après regard sur les E = 7 ventilations W1 (R02 3cd2ffa2) | — | — | **161** | — | N + 1 à l'écriture ; aucune évaluation sur W1 |
+| 2026-11-20 | C-D FIGÉ (dossier A v1.6 § 10, deux branches, critère Q3 mécanique), avant latelab ; L2 et L4 jamais évaluées | — | — | 161 (déjà compté) | — | option (iii) de R02 04ecafed |

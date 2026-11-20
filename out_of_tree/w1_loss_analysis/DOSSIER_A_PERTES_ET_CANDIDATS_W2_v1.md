@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.5 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.6 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -280,3 +280,38 @@ pourrait être positif : brut d'environ +2,9 %, contre un seuil d'environ 0,71 %
 4. **Taille de W2** : avec C-B et C-D, la durée est fixée par C-D (≥ 30 jours), sauf déclaration de sous-puissance.
    Le coût en crédits suit, à environ 60 000 par jour, soit environ 1,8 M pour 30 jours : plus d'un mois de quota
    et probablement l'offre Developer (dossier C).
+
+## 10. C-D FIGÉ (option (iii) de R02, 04ecafed) — AVANT toute exécution de latelab, sans évaluation sur W1
+
+**Statut.** C-D est figé ici, avec ses deux branches et un critère Q3 mécanique écrit d'avance. latelab ne
+s'exécute qu'après l'ancrage de cette section par R02. Les cellules L2 et L4 (conjonction tardif × palier bas)
+ne sont **jamais** évaluées sur W1. N = 161 est déjà compté pour C-D (§ 9).
+
+**Critère Q3, mécanique, appliqué tel quel** à la sortie `all` de `FEE_AGE_POPULATION.json` (feeage 0.2 sur P0
+visible, sortie ancrée par R02). Le palier « DÉCROÎT avec l'âge » si et seulement si les deux conditions sont
+vraies :
+- `constancy.changing / constancy.pools_with_two_usable_events ≥ 0,05` ;
+- `constancy.changing_non_increasing / constancy.changing ≥ 0,90`.
+
+Sinon, le palier est « CONSTANT ». Si `changing = 0`, le palier est « CONSTANT ».
+
+**Branche « décroît » : règle unique.** Entrée au PREMIER événement entier dont le palier de frais causal
+(`causal_fee_rate` gelé, connu à la décision) vaut ≤ 2 500 ppm, quel que soit l'âge du pool.
+
+**Branche « constant » : conjonction v1.5, inchangée.** Le pool est éligible si son palier causal à la décision
+vaut ≤ 2 500 ppm. L'entrée a lieu au PREMIER événement entier d'âge ≥ 450 slots.
+
+**Commun aux deux branches :**
+- achat de 0,1 SOL, atterrissage après 4 slots ;
+- une position par pool ;
+- frais de courbe causaux ;
+- 2 × (5 000 + 100 000) lamports par transaction ;
+- **loyer PERDU** par défaut (R02 f2f86f74) ;
+- sortie TP 7 % / SL 5 % du coût, sinon à l'horloge à l'**horizon gelé du statu quo, 30 s**. C'est la constante
+  `bot/master_v2/w1_run.py` l. 37 `L1_HORIZON_MS = 30_000` (arbre aff97638), appliquée par
+  `hrr.ReplayParams(exit_horizon_ms=L1_HORIZON_MS, …)` l. 61 ; confirmé par R02 (04ecafed). La vente atterrit après
+  la latence d'horloge gelée.
+- une position dont la courbe s'achève avant la vente compte −1.
+
+**Critères GO W2** : ceux du protocole (dossier B de R02), sans assouplissement. Chevauchement avec HW1-4 déclaré.
+C-D ne modifie aucune hypothèse gelée.
