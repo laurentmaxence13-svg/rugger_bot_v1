@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.1 (RUGGER 01, 2026-11-20)
 
 **Statut.** EXPLORATOIRE. Le dossier attend l'audit de RUGGER 02 (dossier B). Il ne modifie aucun résultat W1, ne
 fige rien et ne lance rien. Il remplace la note v0.1, qui reste dans l'historique.
@@ -151,3 +151,30 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
 - **B3** : durée et calendrier de W2 (§ 4), plafond de crédits, offre Helius.
 - Sans B1 ni B2, W2 ne comporterait que C-A face aux comparateurs, avec un échec attendu. **Je déconseille de
   lancer W2 dans cette configuration.**
+
+## 6. Taux d'entrée : ce qui est connu, ce qui ne l'est pas (R02 141155dd)
+
+| Bras | Cycles clôturés par jour | Source | Statut |
+|---|---|---|---|
+| Statu quo (≡ MASTER W1) | ≈ 32 | W1 ancré : 128 sur ≈ 4 j (1 612 800 slots à 215 ms) | **connu** |
+| Placebo | ≈ 86 | W1 ancré : 343 sur ≈ 4 j | **connu** |
+| C-A palier bas | ≈ 15 | part P0 (59 sur 124) × 32 | estimé ; connu sur W1 après T1 (effectif du palier 12 500) |
+| C-B (HW1-5) | ≈ 125 | P0 : 40 % des pools ; W1 : 1 250 pools d'évaluation en ≈ 4 j | estimé ; connu après la lecture HW1 |
+| C-C (CPMM) | ≈ 12 à 25 | estimation de R03 (50 à 100 pools migrés sur W1) | inconnu ; connu après le pilote |
+
+**Puissance vérifiée par R02** : n = 160 détecte environ +2,7 % (K = 1), +3,0 % (K = 2) et +3,2 % (K = 3). Le palier
+bas demande environ 24 à 26 jours pour +2 %. Aujourd'hui, seuls le statu quo et le placebo ont un taux d'entrée
+mesuré sur W1. Le taux de C-A le sera dès l'exécution de w1loss (B0).
+
+## 7. Errata de la note v0.1 (audit R02 5c4e0ae8 ; chiffres de la note jugés conformes)
+
+- a) S1, « ≈ 790 positions en 5 jours » : ce chiffre vient de la fiche K v0.1 (H1 sur P0 visible, 59 sur 360
+  pools). Sa population est la référence à délai de 5 s sur TOUS les pools, pas le MASTER à créateur signé. Pour le
+  MASTER, le bon chiffre est d'environ 15 par jour (§ 6), soit environ 75 en 5 jours.
+- b) S3(c), `jointlab` : chaque cellule examinée compte dans N. Le pare-feu HW1 est obligatoire (ni real_base, ni
+  real_quote, ni progress, ni créateur non signataire, ni âge ≥ 600 s) tant que la lecture HW1 n'a pas eu lieu.
+  Sinon, S3(c) attend cette lecture. Le dossier A ne retient PAS `jointlab`.
+- c) Le constat « l'écart MASTER − placebo vient des frais et non du brut » n'est pas apparié. Il reste au
+  conditionnel jusqu'au tableau T6.
+- d) Bras W2 : A0 = statu quo, A1 = placebo, A2 à A4 = au plus K = 3 candidats (C-A, C-B, C-C, chacun sous sa
+  porte), plus l'abstention comme comparateur.

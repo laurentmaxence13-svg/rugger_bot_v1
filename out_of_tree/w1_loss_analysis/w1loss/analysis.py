@@ -1,4 +1,4 @@
-"""w1loss 0.2 — DESCRIPTIVE breakdown of the W1 ledger positions already computed (phase « rentabilité », owner
+"""w1loss 0.3 — DESCRIPTIVE breakdown of the W1 ledger positions already computed (phase « rentabilité », owner
 directive of 2026-11-20). EXPLORATORY: it changes no W1 figure, computes no verdict and evaluates no hypothesis.
 
 The list of tables is CLOSED and written before any W1 data is read; a table that cannot be computed is None.
@@ -6,6 +6,9 @@ Standard library only, no network. Nothing is printed: two stamped files are wri
 ``VENTILATION_W1.md``.
 
 INPUTS (nothing else is opened)
+* ``LECTURE_PRELIMINAIRE.json``, the anchored preliminary reading (its sha256 is given): T0 must equal it to the
+  lamport (n, net, gross, fees, tx, slippage, failed of the MASTER and the placebo), otherwise nothing is written
+  (R02 audit 5c4e0ae8, L2-3);
 * ``ledger.json`` of the anchored W1 ledger (verdict PASS, no mismatch, ``w1_report`` null), whose sha256 must be
   the one given (anchored by RUGGER 02);
 * the L1 bundle, whose file sha256 must be the one the ledger recorded; only the pool facts (pool, creation slot)
@@ -37,7 +40,8 @@ T5 chronological thirds by entry slot: n, mean gross and net returns;
 T6 paired master - placebo on the pools where both closed: n, mean and median differences of gross, fees and net
    returns;
 T7 by scorer plan (tp_pct, sl_pct of the bundle row's ``exit_conditions``): n, mean gross and net returns.
-Every class and T6 carry the 95 % interval of the mean net return (T6: of the mean difference) by cluster bootstrap
+Every class and T6 carry the 95 % intervals of the mean net return AND of the mean gross return (T6: of the mean
+differences) by cluster bootstrap
 (cluster = creator recorded by the bundle, else the pool; clusters drawn with replacement, 2 000 draws,
 ``random.Random(20261120)``, percentiles 2.5 and 97.5 by rank) and ``interpretable`` = n >= 30; a class under 30
 cycles is « non interprétable ». Quantile: value of rank ceil(q n) (as w1x.reading). No test, no selection.
@@ -54,7 +58,8 @@ import random
 from pathlib import Path
 
 STAMP = 'EXPLORATOIRE — VENTILATION DESCRIPTIVE — NE CHANGE AUCUN RÉSULTAT W1'
-SCHEMA = 'rugger-w1-loss-breakdown-v0.2'
+SCHEMA = 'rugger-w1-loss-breakdown-v0.3'
+E_BREAKDOWNS = 7                       # R02 141155dd: closed list T1-T7 anchored, counted apart from N
 SEED, DRAWS, MIN_INTERPRETABLE = 20261120, 2_000, 30
 CF_LABEL = 'approximation au premier ordre (sans effet sur le prix ni sur la décision d\'entrée)'
 READ_FIELDS = dict(row=('trial', 'arm', 'pool', 'outcome', 'verified', 'pnl_lamports', 'net_return', 'decomposition',
@@ -133,13 +138,15 @@ def _summary(positions):
                 mean_tx_return=_mean([p['tx_return'] for p in positions]),
                 mean_net_return=_mean(nets), median_net_return=quantile(nets, 0.5),
                 win_rate=(sum(1 for p in positions if p['pnl'] > 0) / len(positions)) if positions else None,
-                interval_95_mean_net_return=_interval(positions))
+                interval_95_mean_net_return=_interval(positions),
+                interval_95_mean_gross_return=_interval(positions, lambda p: p['gross_return']))
 
 
 def _short(positions):
     return dict(n=len(positions), mean_gross_return=_mean([p['gross_return'] for p in positions]),
                 mean_net_return=_mean([p['net_return'] for p in positions]),
-                interval_95_mean_net_return=_interval(positions))
+                interval_95_mean_net_return=_interval(positions),
+                interval_95_mean_gross_return=_interval(positions, lambda p: p['gross_return']))
 
 
 def _groups(positions, key):
@@ -202,10 +209,12 @@ def _paired(master, placebo):
     m, p = {x['pool']: x for x in master}, {x['pool']: x for x in placebo}
     common = sorted(set(m) & set(p))
     diff = {k: [m[x][k] - p[x][k] for x in common] for k in ('gross_return', 'fee_return', 'net_return')}
-    pairs = [dict(cluster=m[x]['cluster'], net_return=d) for x, d in zip(common, diff['net_return'])]
+    pairs = [dict(cluster=m[x]['cluster'], net_return=d, gross_return=g)
+             for x, d, g in zip(common, diff['net_return'], diff['gross_return'])]
     return dict(n=len(common), **{f'mean_diff_{k}': _mean(v) for k, v in diff.items()},
                 **{f'median_diff_{k}': quantile(v, 0.5) for k, v in diff.items()},
-                interval_95_mean_diff_net_return=_interval(pairs))
+                interval_95_mean_diff_net_return=_interval(pairs),
+                interval_95_mean_diff_gross_return=_interval(pairs, lambda q: q['gross_return']))
 
 
 def breakdown(ledger, bundle, *, evaluation_min, evaluation_max):
@@ -238,7 +247,7 @@ def breakdown(ledger, bundle, *, evaluation_min, evaluation_max):
                 reference_column='MASTER (≡ référence early_sniping par construction du code gelé)',
                 firewall=dict(arms_read=list(ARMS + (REFERENCE,)), trial_read=TRIAL, frozen_hypotheses_evaluated=False,
                               age_classes_stop_at_slots=AGE_EDGES[-1], fields_read=READ_FIELDS),
-                breakdowns=['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'],
+                breakdowns=['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'], E=E_BREAKDOWNS,
                 flags=dict(official_w1_verdict=False, w1_figure_changed=False, selection_made=False,
                            counterfactual='first order in the fee rate, tokens not recomputed',
                            profitability_demonstrated=False))
@@ -286,16 +295,57 @@ def markdown(doc):
         lines += [f"| {k} | {s['n']} | {_pct(s['mean_gross_return'])} | {_pct(s['mean_net_return'])} | {_ci(s)} |"
                   for k, s in t['T7_scorer_plan'].items()]
         lines.append('')
+    lines += ["IC à 95 % du brut moyen par classe : dans `VENTILATION_W1.json` (`interval_95_mean_gross_return`).", '']
     p = doc['T6_paired_master_minus_placebo']
     lines += ['## MASTER − placebo, mêmes pools', '', f"Paires : {p['n']} ; écart moyen brut {_pct(p['mean_diff_gross_return'])}, "
               f"frais {_pct(p['mean_diff_fee_return'])}, net {_pct(p['mean_diff_net_return'])} "
               f"(IC 95 % {_ci(dict(interval_95_mean_net_return=p['interval_95_mean_diff_net_return']))}).", '',
-              'Descriptif seulement : aucun intervalle, aucun test, aucune sélection. Toute piste qui en sort est une '
-              'HYPOTHÈSE à préenregistrer et à tester sur W2.', '']
+              f"E = {doc['E']} ventilations, comptées à part de N. Intervalles descriptifs, aucun test, aucune sélection. "
+              'Toute piste qui en sort est une HYPOTHÈSE à préenregistrer et à tester sur W2.', '']
     return '\n'.join(lines)
 
 
-def run(ledger_path, ledger_sha256, bundle_path, out_dir, *, evaluation_min, evaluation_max):
+READING_ARMS = dict(master=('master', 'Q4_failure_factors', 'decomposition_lamports'),
+                    placebo_random=('others', 'placebo_random', 'decomposition_lamports'))
+
+
+def _dig(doc, path):
+    for key in path:
+        doc = (doc or {}).get(key)
+    return doc
+
+
+def check_against_reading(doc, reading):
+    """T0 must equal the anchored preliminary reading to the lamport, otherwise BreakdownError."""
+    population = reading.get('population') or {}
+    if (population.get('evaluation_min'), population.get('evaluation_max')) != (
+            doc['population']['evaluation_min'], doc['population']['evaluation_max']):
+        raise BreakdownError('reading_population_differs')
+    counts = dict(master=_dig(reading, ('master', 'Q1_positions', 'closed')),
+                  placebo_random=_dig(reading, ('others', 'placebo_random', 'closed_cycles')))
+    for arm, path in READING_ARMS.items():
+        t0, parts = doc['arms'][arm]['T0_totals'], _dig(reading, path)
+        if t0['n'] != counts[arm] or (parts is None and t0['n']):
+            raise BreakdownError('reading_count_differs:' + arm)
+        if parts is None:
+            continue
+        pairs = dict(gross=('market_move', t0['gross_sum_lamports']), slippage=('slippage', t0['slippage_sum_lamports']),
+                     fees=('launchlab_fees', t0['fees_sum_lamports']), tx=('tx_costs', t0['tx_sum_lamports']),
+                     failed=('failed_attempt_costs', t0['failed_sum_lamports']), net=('net', t0['pnl_sum_lamports']))
+        for name, (key, ours) in pairs.items():
+            theirs = parts.get(key)
+            if theirs is None or abs(theirs - ours) >= 1:
+                raise BreakdownError(f'reading_sum_differs:{arm}:{name}')
+    return dict(reading_checked=True, arms=sorted(READING_ARMS), tolerance_lamports='< 1')
+
+
+def run(ledger_path, ledger_sha256, bundle_path, out_dir, *, evaluation_min, evaluation_max, reading_path=None,
+        reading_sha256=None):
+    if reading_path is None or reading_sha256 is None:
+        raise BreakdownError('anchored_reading_required')
+    reading_raw = Path(reading_path).read_bytes()
+    if hashlib.sha256(reading_raw).hexdigest() != reading_sha256:
+        raise BreakdownError('reading_is_not_the_anchored_one')
     raw = Path(ledger_path).read_bytes()
     if hashlib.sha256(raw).hexdigest() != ledger_sha256:
         raise BreakdownError('ledger_is_not_the_anchored_one')
@@ -308,7 +358,9 @@ def run(ledger_path, ledger_sha256, bundle_path, out_dir, *, evaluation_min, eva
         raise BreakdownError('output_exists')
     doc = breakdown(ledger, json.loads(gzip.decompress(bundle_raw)), evaluation_min=evaluation_min,
                     evaluation_max=evaluation_max)
-    doc['inputs'] = dict(ledger_sha256=ledger_sha256, bundle_sha256=hashlib.sha256(bundle_raw).hexdigest())
+    doc['reading_check'] = check_against_reading(doc, json.loads(reading_raw))
+    doc['inputs'] = dict(ledger_sha256=ledger_sha256, bundle_sha256=hashlib.sha256(bundle_raw).hexdigest(),
+                         reading_sha256=reading_sha256)
     out.mkdir(parents=True)
     (out / 'VENTILATION_W1.json').write_text(json.dumps(doc, sort_keys=True, indent=1, allow_nan=False) + '\n',
                                              encoding='utf-8')
@@ -324,10 +376,12 @@ def main(argv=None):
     parser.add_argument('--l1-bundle', type=Path, required=True)
     parser.add_argument('--evaluation-min', type=int, required=True)
     parser.add_argument('--evaluation-max', type=int, required=True)
+    parser.add_argument('--reading', type=Path, required=True, help='anchored LECTURE_PRELIMINAIRE.json')
+    parser.add_argument('--reading-sha256', required=True)
     parser.add_argument('--out', type=Path, required=True)
     a = parser.parse_args(argv)
     sums = run(a.ledger, a.ledger_sha256, a.l1_bundle, a.out, evaluation_min=a.evaluation_min,
-               evaluation_max=a.evaluation_max)
+               evaluation_max=a.evaluation_max, reading_path=a.reading, reading_sha256=a.reading_sha256)
     Path(a.out / 'SHA256SUMS.json').write_text(json.dumps(sums, sort_keys=True, indent=1) + '\n', encoding='utf-8')
     return 0
 
