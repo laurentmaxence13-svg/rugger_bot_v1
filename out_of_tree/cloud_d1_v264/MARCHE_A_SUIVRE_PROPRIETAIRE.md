@@ -14,14 +14,14 @@ transmettez la ligne à RUGGER 04.
 ## Avant de commencer (aucune dépense)
 
 1. **Tarif.** Calculateur de prix Google Cloud : machine `n2-highmem-16`, région `us-central1` (Iowa), à la
-   demande, **50 heures**, disque « Balanced » de 200 Go. Attendu : environ 1,05 $/h, soit environ 54 $ hors taxes
-   au maximum (50 h). La durée prévue est de 36 à 43 h, soit 48 à 57 $ TTC. **Si le total pour 50 h, taxes comprises,
-   dépasse 66 $, ne lancez rien** et prévenez RUGGER 04.
+   demande, **49 heures**, disque « Balanced » de 200 Go. Attendu : environ 1,05 $/h, soit environ 54,3 $ hors taxes
+   au maximum (49 h × 1,048112 $ + disque ≈ 1,5 $ + stockage ≈ 1,5 $), soit ≈ 65,2 $ TTC. La durée prévue est de 36 à 43 h
+   (48 à 57 $ TTC). **Si le total pour 49 h, taxes comprises, dépasse 66 $, ne lancez rien** et prévenez RUGGER 04.
 2. **Alerte de budget.** Console → Facturation → Budgets et alertes → créer un budget de **66 $** sur ce projet,
    seuils 50 %, 90 % et 100 %. Une alerte vous prévient par courriel ; elle n'arrête rien toute seule.
 3. **Fichiers.** Dans Cloud Shell, menu ⋮ → Importer : `create_vm.sh` et `startup.sh`, dans le même dossier.
    **Avant toute modification**, lancez `sha256sum create_vm.sh startup.sh` et comparez :
-   - `create_vm.sh` : `0a4d4d66dea974a7172c2eb9f603a198601c4cc07c1ee2ca2c566bf1473666e3`
+   - `create_vm.sh` : `e3db965492bf768b1e1e49a5993812bb0a979b9aa0ed9996bba0fbaaa0b42932`
    - `startup.sh` : `b9d34c876b38ae32b31be8be1012874aaf48a5ad1da3ab8dbe65288982387805`
 
    Si une valeur diffère, n'utilisez pas le fichier et prévenez RUGGER 04 (c'est une autre version).
@@ -33,7 +33,7 @@ transmettez la ligne à RUGGER 04.
 | `BUCKET` | un nom **nouveau**, réservé à ce calcul (pas celui de la sauvegarde), par exemple `w1-calcul-` suivi de quelques caractères de votre choix |
 | `IMAGE` | le nom affiché par : `gcloud compute images describe-from-family ubuntu-2404-lts-amd64 --project=ubuntu-os-cloud --format='value(name)'` (à transmettre à RUGGER 04) |
 | `MACHINE` | `n2-highmem-16` |
-| `DEADLINE` | la date limite, à fixer **juste avant l'étape 3** : résultat de `date -u -d '+50 hours' +%FT%TZ` (50 h au plus, refusé au-delà) |
+| `DEADLINE` | la date limite, à fixer **juste avant l'étape 3** : résultat de `date -u -d '+49 hours' +%FT%TZ` (49 h au plus, refusé au-delà : plafond de 66 $ TTC) |
 | `INBOUND_SUMS_SHA` | transmis par RUGGER 04 (ancré par RUGGER 02) |
 | `CODE_COMMIT` | transmis par RUGGER 04 |
 

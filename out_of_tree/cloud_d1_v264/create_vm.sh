@@ -17,7 +17,7 @@ BUCKET="__FILL: owner-private-bucket__"           # DEDICATED to this run (not t
 IMAGE="__FILL: ubuntu-2404-noble-amd64-vYYYYMMDD__"   # a FIXED image name (not a family), recorded in the decision log
 MACHINE="__FILL: n2-highmem-16 or n2-highmem-32 (sized by RUGGER 02 on the exported signature count)__"
 DISK_GB=200                                        # inputs (about 5 GB), pools, bundles, ledger, margin
-DEADLINE="__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 50 h ahead; v2.6.4, option A2), e.g. 2026-11-17T12:00:00Z__"
+DEADLINE="__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 49 h ahead; v2.6.4, option A2: 66 $ TTC cap), e.g. 2026-11-17T12:00:00Z__"
 INBOUND_SUMS_SHA="__FILL: sha256 of INBOUND_SHA256SUMS, as anchored by RUGGER 02__"
 S0=467275745
 CODE_COMMIT="__FILL: commit whose tree is aff97638 (R03 c0199a3...)__"
@@ -101,7 +101,7 @@ launch)
   need_filled; check_values
   now=$(date -u +%s); limit=$(date -u -d "$DEADLINE" +%s) || die "bad DEADLINE"
   [ "$limit" -gt "$now" ] || die "DEADLINE_is_in_the_past"
-  [ "$limit" -le $((now + 50 * 3600)) ] || die "DEADLINE_more_than_50_h_ahead"
+  [ "$limit" -le $((now + 49 * 3600)) ] || die "DEADLINE_more_than_49_h_ahead"
   gcloud compute instances create w1-eval --zone=$ZONE --machine-type=$MACHINE \
     --image=$IMAGE --image-project=ubuntu-os-cloud --boot-disk-size=${DISK_GB}GB --boot-disk-type=pd-balanced \
     --no-address --service-account=$VM_SA --scopes=https://www.googleapis.com/auth/devstorage.read_write \
@@ -134,7 +134,7 @@ start)          # after a pause (the VM powers off when no anchor came within WA
   [ "$limit" -gt "$now" ] || die "DEADLINE_is_in_the_past_no_restart_run_teardown"
   created=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(creationTimestamp)')
   born=$(date -u -d "$created" +%s 2>/dev/null) || die "creation_time_unreadable_no_restart:$created"
-  [ "$limit" -le $((born + 50 * 3600)) ] || die "DEADLINE_more_than_50_h_after_the_creation_of_the_vm_no_restart"
+  [ "$limit" -le $((born + 49 * 3600)) ] || die "DEADLINE_more_than_49_h_after_the_creation_of_the_vm_no_restart"
   # only a VM that is powered off after a PAUSE is started again: not a running one, not one that reported a final STOP
   status=$(gcloud compute instances describe w1-eval --zone=$ZONE --format='value(status)')
   [ "$status" = TERMINATED ] || die "vm_status_is_${status:-unknown}_no_restart"

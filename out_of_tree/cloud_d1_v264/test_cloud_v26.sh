@@ -1,5 +1,5 @@
 #!/bin/bash
-# Offline tests of the v2.6.4 cloud package (option A2: C1 + P1 ledger launcher, DEADLINE <= 50 h) with STUB gcloud / curl / shutdown / sleep (no network, no Google account).
+# Offline tests of the v2.6.4 cloud package (option A2: C1 + P1 ledger launcher, DEADLINE <= 49 h) with STUB gcloud / curl / shutdown / sleep (no network, no Google account).
 # Usage: bash test_cloud_v26.sh <python 3.12.3 x86_64> <git checkout holding a commit of tree aff97638> <ref of that commit>
 #                                <w1aux v7.8 package dir (parent of w1aux/)>
 # create_vm.sh: refusals, the exact commands issued, the three token boundaries.
@@ -107,7 +107,7 @@ done
 fill() { sed -e 's/__FILL: owner-project-id__/my-project-123/' -e 's/__FILL: owner-private-bucket__/my-bucket/' \
              -e 's/__FILL: ubuntu-2404-noble-amd64-vYYYYMMDD__/ubuntu-2404-noble-amd64-v20261101/' \
              -e "s/__FILL: n2-highmem-16 or n2-highmem-32 (sized by RUGGER 02 on the exported signature count)__/$1/" \
-             -e "s/__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 50 h ahead; v2.6.4, option A2), e.g. 2026-11-17T12:00:00Z__/$2/" \
+             -e "s/__FILL: RFC 3339 UTC time at which the VM is deleted whatever happens (at most 49 h ahead; v2.6.4, option A2: 66 $ TTC cap), e.g. 2026-11-17T12:00:00Z__/$2/" \
              -e "s/__FILL: sha256 of INBOUND_SHA256SUMS, as anchored by RUGGER 02__/$(digest sums)/" \
              -e 's/__FILL: commit whose tree is aff97638 (R03 c0199a3...)__/0123456789abcdef0123456789abcdef01234567/' "$here/create_vm.sh"; }
 SOON=$(date -u -d '+40 hours' +%FT%TZ)
@@ -148,8 +148,8 @@ for bad in "FAKE_WHEN=" "FAKE_ACTION=STOP" "FAKE_WHEN=$(date -u -d '+41 hours' +
   [[ "$out" == *automatic_deletion_not_confirmed_vm_deleted* ]] || fail "$bad: $out"
   grep -q "compute instances delete w1-eval --zone=us-central1-a --quiet" "$CALLS" || fail "$bad: VM not deleted"
 done
-# the deadline must be ahead, and at most 50 h ahead (v2.6.4): nothing is created otherwise
-for when in "$(date -u -d '+51 hours' +%FT%TZ)" "$(date -u -d '-1 hour' +%FT%TZ)"; do
+# the deadline must be ahead, and at most 49 h ahead (v2.6.4): nothing is created otherwise
+for when in "$(date -u -d '+50 hours' +%FT%TZ)" "$(date -u -d '-1 hour' +%FT%TZ)"; do
   fill n2-highmem-16 "$when" > "$tmp/late.sh"; : > "$CALLS"
   out=$(bash "$tmp/late.sh" launch 2>&1) && fail "deadline $when accepted"; [[ "$out" == *DEADLINE_* ]] || fail "$out"
   [ ! -s "$CALLS" ] || fail "something was created with a bad deadline"
