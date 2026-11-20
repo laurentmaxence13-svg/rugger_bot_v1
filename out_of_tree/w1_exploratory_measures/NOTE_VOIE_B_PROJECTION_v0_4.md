@@ -8,11 +8,12 @@ Aucun résultat de W1 n'est utilisé ici : seulement des durées. Ce qui reste �
 
 ## 0. Ce qui change depuis la v0.3
 
-1. **Le ledger a maintenant une durée MESURÉE.**
-   - La v0.3 ne donnait qu'une borne : ≤ 130 h en séquentiel.
-   - Le ledger reprenable v7.6 a tourné chez R03 sur W1. Ses 2 344 appels, sur un seul processus, ont pris
-     **environ 11 h 30** ⚠ : chiffre de mes notes de projet, à confirmer par R03 avec les horodatages ancrés.
-   - La relance avec la correction C1 a repris les 2 344 résultats en cache et a duré 5 min 14 s (registre R02).
+1. **Le ledger a maintenant une durée MESURÉE** (R03, horodatages, 20/11). La v0.3 ne donnait qu'une borne : ≤ 130 h
+   en séquentiel.
+   - Le ledger reprenable v7.6 a tourné chez R03 sur W1, un seul processus, 2 344 appels. Il a duré **11 h 31 min
+     05 s**, du 19/11 03:18:45Z au 19/11 14:49:50Z.
+   - Un seul lancement, sans redémarrage. Mémoire : un plateau de 1,35 à 1,41 Go, avec un pic à 2,39 Go.
+   - La relance avec la correction C1 a repris les 2 344 résultats en cache et a duré 313,5 s.
 2. **Le paquet cloud de référence échouerait au ledger.**
    - Le paquet v2.6 (423dfd43) embarque w1aux **v7.4**. Son ledger signale à tort les 93 lignes C1 et donne FAIL.
    - La chaîne officielle s'arrêterait alors avant le dossier.
@@ -28,7 +29,7 @@ Aucun résultat de W1 n'est utilisé ici : seulement des durées. Ce qui reste �
 | selfcheck, export, série | ≈ 1 à 1,5 h |
 | trials (239 à 257 heures-processus / 8) | 30 à 32 h |
 | evaluate (jamais mesuré) | 1 à 3 h (estimation) |
-| ledger séquentiel (mesuré chez R03) ⚠ | ≈ 11,5 h |
+| ledger séquentiel (mesuré chez R03 : 11 h 31) | ≈ 11,5 h |
 | ancrages R02 (7 étapes) | 2 à 4 h |
 | **Total, calcul intégral, ledger séquentiel** | **≈ 46 à 52 h** |
 | Total avec le ledger P1 sur 8 processus (≈ 1,5 à 2,5 h) | ≈ 36 à 43 h |
@@ -87,13 +88,19 @@ amendements ci-dessus :
 **Route locale** : un seul accord écrit, pour l'amendement « bundles ancrés = entrées officielles » et l'exécution
 d'evaluate par R03. Aucune dépense.
 
-**Prérequis** : la sauvegarde W1 (lot 6, tâche #95), dont le script a été audité CONFORME par R02, doit être
-terminée avant toute route qui modifie l'état de la session de R03. Il reste : le chiffrage par R04, la correction
-du préfixe par R03 et l'accord final du propriétaire.
+**Prérequis : la sauvegarde W1** (état donné par R03 le 20/11) doit être terminée avant toute route.
+- Lots 1 à 5 : 724 objets envoyés, sans échec (R02 cc59695a). Le propriétaire doit encore exécuter le bloc de
+  vérification (30db3a77).
+- Lot 6a : 11 965 objets envoyés sur 31 921. L'envoi s'est arrêté sur une erreur HTTP 503, puis le jeton a expiré.
+- Lot 6b : non envoyé.
+- La reprise est prête (resume6.sh, PASS 23b3f520). Elle attend que le propriétaire fournisse un NOUVEAU jeton par
+  le formulaire sécurisé ; l'ancien est considéré comme compromis.
+- Ensuite : le contrôle de comptage final (count.sh v2, 32 655 objets attendus), puis le retrait du secret.
+- Un **lot 7** reste à préparer et à faire auditer par R02 : ledger C1, lecture, ledger en échec, et sorties de
+  w1loss et de w1migr.
 
 ## 5. Non vérifié
 
-- La durée exacte du ledger ⚠ (R03).
 - La vitesse par processus sur n2-highmem-16 : un selfcheck de quelques minutes la donnerait.
 - La durée d'evaluate.
 - Le tarif.
