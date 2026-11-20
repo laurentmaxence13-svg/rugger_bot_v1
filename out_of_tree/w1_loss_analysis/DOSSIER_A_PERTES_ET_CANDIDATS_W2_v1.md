@@ -168,7 +168,7 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
   - le rapport donne le nombre de pools plafonnés.
   - **Diagnostic préalable** : 1 requête, 50 crédits au plus. Si la méthode est refusée en Free, le pilote demande
     l'offre Developer (≈ 59 $ TTC), donc l'accord du propriétaire.
-  - **À trancher par R02** : lire `record['migration']` dans l'export W1 avant le verdict officiel.
+  - **Population du pilote** : lecture de `record['migration']` ADMISE par R02 (f5ad8d36) ; outil `w1migr` 0.1.1 (PASS 45813426 pour la 0.1). **Limite déclarée** : seuls les pools exportés, donc créés dans la fenêtre collectée, y figurent ; un pool créé avant W1 et migré pendant W1 est absent.
 - **B3** : durée et calendrier de W2 (§ 4), plafond de crédits, offre Helius.
 - Sans B1 ni B2, W2 ne comporterait que C-A face aux comparateurs, avec un échec attendu. **Je déconseille de
   lancer W2 dans cette configuration.**

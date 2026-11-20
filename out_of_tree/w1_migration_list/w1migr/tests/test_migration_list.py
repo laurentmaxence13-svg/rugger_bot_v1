@@ -36,6 +36,7 @@ def test_members_rule_pilot_order_and_counts():
     assert keys == sorted(keys)
     assert doc['pilot'] == names[:10] and doc['counts'] == dict(members=14, pilot=10, migrated_without_slot=1)
     assert doc['migrated_without_slot'] == ['x_after']
+    assert doc['limits'] == [M.POPULATION_LIMIT] and 'created before W1' in M.POPULATION_LIMIT
     assert doc['flags'] == dict(values_read=False, arms_read=False, counted_in_n=False, official_w1_verdict=False)
     # same slot: the transaction index decides, then the pool
     same = [m for m in doc['members'] if m['boundary_slot'] == 467_700_000]

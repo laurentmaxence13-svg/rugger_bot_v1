@@ -1,4 +1,4 @@
-"""w1migr 0.1 — READ-ONLY list of the W1 pools that reached the LaunchLab migration boundary (population of the frozen
+"""w1migr 0.1.1 — READ-ONLY list of the W1 pools that reached the LaunchLab migration boundary (population of the frozen
 HW1-M2 / pilot CPMM), admitted by RUGGER 02 before the official W1 verdict (f5ad8d36): a population fact, no value.
 
 INPUT: the L1 bundle (sha256 given, the one the anchored ledger recorded). Only these fields are read (tested):
@@ -13,7 +13,7 @@ its slot is not in the bundle: it is listed apart, never selected, and counted.
 PILOT SELECTION (fixed before any look): the first ``pilot_size`` members by (boundary slot, transaction index,
 pool), nothing else.
 
-OUTPUT: ``MIGRATION_LIST.json`` (rule, counts, members with pool id and boundary slot/index, pilot list, migrated
+OUTPUT: ``MIGRATION_LIST.json`` (rule, declared limit (POPULATION_LIMIT), counts, members with pool id and boundary slot/index, pilot list, migrated
 pools without slot). Nothing is printed. Out of N (population).
 """
 import argparse
@@ -22,7 +22,9 @@ import hashlib
 import json
 from pathlib import Path
 
-SCHEMA = 'rugger-w1-migration-list-v0.1'
+SCHEMA = 'rugger-w1-migration-list-v0.1.1'
+POPULATION_LIMIT = ('population = the EXPORTED pools, i.e. created in the collected window: a pool created before W1 '
+                    'and migrated during W1 is not in it (R02 45813426)')
 SLOT_MIN, SLOT_MAX, PILOT_SIZE = 467_678_395, 469_291_345, 10
 AFTER_BOUNDARY = 'events_after_migration_boundary'
 
@@ -55,6 +57,7 @@ def migration_list(bundle, *, slot_min=SLOT_MIN, slot_max=SLOT_MAX, pilot_size=P
                 rule=dict(member=f'migration boundary slot in [{slot_min}, {slot_max})', slot_min=slot_min,
                           slot_max=slot_max, boundary='slot of the first buy crossing the LaunchLab migration boundary',
                           pilot=f'first {pilot_size} members by (boundary slot, transaction index, pool)'),
+                limits=[POPULATION_LIMIT],
                 counts=dict(members=len(members), pilot=min(pilot_size, len(members)),
                             migrated_without_slot=len(without_slot)),
                 members=members, pilot=[m['pool'] for m in members[:pilot_size]],

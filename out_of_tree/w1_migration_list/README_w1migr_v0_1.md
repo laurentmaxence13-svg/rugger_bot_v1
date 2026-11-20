@@ -1,4 +1,4 @@
-# w1migr 0.1 — liste des pools W1 migrés (population du pilote CPMM et de HW1-M2)
+# w1migr 0.1.1 — liste des pools W1 migrés (population du pilote CPMM et de HW1-M2)
 
 Lecture admise avant le verdict officiel W1 par RUGGER 02 (f5ad8d36). C'est un fait de population, sans aucune
 valeur, et il ne compte pas dans N. **Écrit, non exécuté** : R02 audite le script, puis R03 l'exécute, puis R02
@@ -15,6 +15,7 @@ ancre la liste AVANT toute requête CPMM.
   frontière. Ils sont listés à part, comptés, et jamais sélectionnés.
 - **Sélection du pilote**, fixée avant tout regard : les 10 premiers membres, triés par slot de frontière, puis
   indice de transaction, puis pool.
+- **Limite déclarée** (R02 45813426, écrite dans la sortie) : la population est celle des pools EXPORTÉS, donc créés dans la fenêtre collectée. Un pool créé avant W1 et migré pendant W1 n'y figure pas.
 - **Sortie** : `MIGRATION_LIST.json`, qui contient la règle, les comptes, les membres (pool, slot, indice), le
   pilote et les migrés sans slot. Elle ne contient aucune valeur, aucun bras et aucune progression.
 
