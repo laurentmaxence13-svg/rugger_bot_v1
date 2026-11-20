@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.3 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.4 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -75,7 +75,15 @@ et l'abstention (0).
 Une fois ancrée par R02, chaque porte ci-dessous s'applique telle quelle, et un candidat qui échoue à sa porte
 n'est JAMAIS remplacé par une variante.
 
-### C-A « Statu quo à palier bas »
+### C-A « Statu quo à palier bas » — RETIRÉ : PORTE EN ÉCHEC (R02 2333dcff)
+
+**Résultat de la porte.** Source : ventilation W1 vérifiée et ancrée, JSON da1e5758 et .md f5d1388e. Au palier
+12 500 ppm, le MASTER compte n = 46 positions, pour un net moyen de −5,45 %, avec un IC à 95 % de [−10,89 % ;
+−0,55 %].
+- La borne haute est sous 0 : la porte échoue, et C-A est RETIRÉ.
+- L'emplacement reste vide. N passe de 159 à 160.
+
+Règle telle qu'ancrée (pour mémoire) :
 
 - **Règle** : la décision W1 inchangée (scoreur, filtres, plan de sortie et horizon gelés), plus un veto si le taux
   de frais causal à la décision (`causal_fee_rate`, ledger `fee_rate_ppm`) dépasse 15 000 ppm.
@@ -146,7 +154,7 @@ Règle telle qu'ancrée (pour mémoire) :
   données réelles.
 - **Dépend de** B2 (pilote, accord du propriétaire, crédits gratuits).
 
-**Choix de candidat que je recommande (mis à jour : C-C est vide)** : il ne reste que C-B et C-A. C-B en priorité, car c'est le seul qui ait à la fois un effectif suffisant
+**Choix de candidat (mis à jour : C-A retiré, C-C vide)** : **il ne reste que C-B**, qui dépend de B1. Pour mémoire, l'ancien raisonnement : C-B en priorité, car c'est le seul qui ait à la fois un effectif suffisant
 pour une W2 courte et un indice, même fragile, de brut positif. C-C vient ensuite, comme seul levier de coût
 crédible. C-A sert surtout de témoin de coût : la porte le retirera probablement.
 
@@ -214,3 +222,28 @@ mesuré sur W1. Le taux de C-A le sera dès l'exécution de w1loss (B0).
   conditionnel jusqu'au tableau T6.
 - d) Bras W2 : A0 = statu quo, A1 = placebo, A2 à A4 = au plus K = 3 candidats (C-A, C-B, C-C, chacun sous sa
   porte), plus l'abstention comme comparateur.
+
+## 8. Ventilation W1 vérifiée : observations à reprendre comme HYPOTHÈSES (R02 2333dcff)
+
+Ces observations sont EXPLORATOIRES. Elles ont été sélectionnées APRÈS regard sur W1. Aucune ne remplace C-A. Toute
+règle qui en sortirait compterait dans N et devrait être testée sur des données nouvelles.
+
+| Observation (W1, ventilation ancrée da1e5758) | Chiffre | Lecture |
+|---|---|---|
+| Il existe un palier LaunchLab à **2 500 ppm** (0,25 % par transaction) | MASTER : n = 12, non interprétable. Placebo : +0,16 % [−1,48 ; +1,71] | **Seule moyenne nette non négative observée.** À ce palier, le seuil de brut tombe à environ 0,71 %, comme sur CPMM, mais sur LaunchLab même et sans migration |
+| Entrées à ≥ 450 slots (environ 97 s ou plus après la création) | Brut +2,90 % [+0,90 ; +5,22] ; net −0,75 % | **Premier brut positif établi** (IC au-dessus de 0). Les frais l'effacent |
+| Entrées dans les 5 premiers slots | Net −9,77 % | Les plus perdantes, ce qui concorde avec le mécanisme de cohorte |
+| MASTER contre placebo, apparié | +1,23 % [−2,23 ; +4,82] | Non significatif |
+| Tiers chronologiques | Dégradation au fil des tiers | Instabilité dans le temps |
+
+**Hypothèse qui en découle, NON proposée en remplacement de C-A.** Les deux observations positives sont
+indépendantes l'une de l'autre :
+- un brut positif aux entrées tardives (≥ 450 slots) ;
+- un net proche de 0 au palier de 2 500 ppm.
+Leur conjonction, entrée tardive ET palier bas, est arithmétiquement la seule combinaison dont le net attendu
+pourrait être positif : brut d'environ +2,9 %, contre un seuil d'environ 0,71 %.
+- Elle n'est PAS évaluée.
+- L'évaluer sur W1 serait un essai sélectionné après regard (N + 1) et ne prouverait rien.
+- Sa seule épreuve valable est une fenêtre future.
+- Son effectif risque d'être très faible : 12 positions MASTER au palier de 2 500 ppm sur 4 jours.
+- Sa place (W2 ou phase ultérieure) est à trancher par R02 et par le propriétaire.
