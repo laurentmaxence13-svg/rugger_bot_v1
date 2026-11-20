@@ -61,6 +61,28 @@ trois lignes sont interprétables. N = 163.
 - Un résultat positif reste une HYPOTHÈSE à confirmer sur W2.
 - **À trancher par R02** : `top5_token_share` (des parts détenues, et non des réserves) est-il hors HW1 ?
 
+## 2 bis. Résultats sur la moitié 2 de W1 (ancrés et lus par R02 ; N = 166) — AUCUN ne passe : l'emplacement L est VIDE
+
+Sortie à l'horloge de 60 s, 0,1 SOL, latence de 4 slots, loyer perdu. Seuils de population de la moitié 1, ancrés
+avant la moitié 2 : unique_buyers ≥ 26 ; top5_holder_share ≤ 0,770.
+
+| Règle | n (grappes) | Net moyen [IC 95 %] | Médiane | Gagnantes | Part des 5 meilleurs | Net, loyer récupéré | Verdict |
+|---|---|---|---|---|---|---|---|
+| L1, crible (`age:120`, tous) | 106 (83) | **−10,29 %** [−13,81 ; −6,35] | −7,80 % | 11 % | 73 % | −8,47 % | échoue |
+| **T1** (`age:120`, unique_buyers ≥ 26) | 34 (34) | **−5,59 %** [−11,17 ; −0,09] | −6,37 % | **32 %** | 76 % | −3,67 % | échoue |
+| T3p (`age:300`, top5_holder_share ≤ 0,770) | 23 (23) | −10,62 % [−18,03 ; −4,18] | −9,70 % | 22 % | 100 % | −8,80 % | échoue (n < 30) |
+| Placebo, descriptif | 200 (164) | −10,41 % [−13,02 ; −7,36] | −6,61 % | 10 % | 62 % | −8,59 % | — |
+
+- **Lecture.** La moitié 2 est nettement plus défavorable que la moitié 1 : le placebo y fait −10,4 %, contre −5,7 %.
+  - T1 fait mieux que L1 (+4,7 points, gagnantes 32 % contre 11 %), mais le net reste NÉGATIF, avec un IC sous zéro.
+    C'est un indice descriptif que la largeur de la demande compte. Ce n'est pas une stratégie : aucune règle
+    positive n'existe.
+  - Aucune modification de T1 ni de T3p n'est permise après cette lecture (R02).
+- **Piste 4 (sorties).** Aucun crible n'est positif. Selon ma recommandation, E1 et E2 ne sont donc PAS jouées, et le
+  compteur reste à 166, plus 1 pour la porte C-D.
+- **Ce qui reste** : la porte C-D (cdgate 0.1, en audit chez R02). C'est le seul candidat où un brut ≈ 0 n'est pas
+  loin de l'équilibre, à condition de fermer le compte de jetons.
+
 ## 3. CPMM après migration : ce qu'on apprend SANS collecte
 
 - **Fréquence** : 12 pools migrés sur 2 273 exportés dans W1, soit ≈ 0,5 %, ≈ 2 à 3 par jour. La donnée existante
