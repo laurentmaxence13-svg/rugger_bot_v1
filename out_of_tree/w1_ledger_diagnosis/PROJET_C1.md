@@ -49,6 +49,15 @@ déjà testée).
 - Sinon, l'attendu est 1 ×, et l'issue re-dérivée doit être égale à celle du bundle.
 - Le `scope` reste `entry_only` pour ces issues. Le P&L n'est ni vérifié ni compté : il n'y en a pas.
 
+**Résultat de l'étape 2 sur W1 (R03, 20/11 08:00Z ; R02 3708a816)** : les 93 lignes sont toutes valorisées, avec
+2 × `tx_costs`, `exit_index` présent et marquage présent.
+
+- 91 ont été réétiquetées par `_apply_window`, en `open_at_window_end`.
+- 2 l'ont été par `_migrated`, de `open_at_end` à `migrated_unpriced`, **sans la note** `exit_after_migration`.
+
+La note ne peut donc pas servir de discriminant. C1-b s'appuie sur la re-dérivation par `derive_hold` : issue
+valorisée et `exit_index` égal. Le cas `_exit_after_migration` n'apparaît pas dans W1, mais il reste testé.
+
 **C1-a (minimale, moins indépendante) :** `own = 2 si exit_index n'est pas None, sinon 1`. Cette variante est rejetée
 si R02 exige l'indépendance.
 
