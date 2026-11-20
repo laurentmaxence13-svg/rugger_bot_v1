@@ -12,3 +12,10 @@ propcache==0.5.4
 python-dotenv==1.2.4
 typing_extensions==4.16.0
 yarl==1.25.1
+# v2.6.4 correction (R02 question of 20/11, selfcheck ed7f97c4): bot/live/solana_signatures.py imports cryptography
+# INSIDE verify_compiled_rpc_signatures; without it the replay records 'ed25519_signatures_not_verified', so
+# creator_history and blocking_reasons change and the selfcheck gives ed7f97c4 instead of 4aee76a3. These three pins
+# are the versions of the reference venv; with them, wheels unpacked by zipfile and python -S, the selfcheck gives 4aee76a3.
+cffi==2.1.1
+cryptography==46.0.7
+pycparser==3.12

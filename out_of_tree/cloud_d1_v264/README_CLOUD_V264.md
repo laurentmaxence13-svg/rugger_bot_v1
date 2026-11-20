@@ -25,3 +25,25 @@ Il ne peut être lancé qu'après trois conditions :
   - La trace est écrite hors de `dayj/`, puis publiée.
   - Une DEADLINE à + 50 h est refusée, et le démarrage aussi au-delà de 49 h après la création.
 - Le tarif reste à relire par RUGGER 03.
+
+## Corrections après l'audit R02 2a3eb5f8 (20/11)
+
+- **M-1.** Le manifeste périmé `MANIFEST_d1_v264.txt` est supprimé. Un seul manifeste fait foi : `MANIFEST_v264.txt`.
+- **Usage du test.** Le 3ᵉ argument de `test_cloud_v26.sh` doit être un nom de branche simple, pas un sha.
+- **Selfcheck hors environnement de référence (question R02 : ed7f97c4 au lieu de 4aee76a3).**
+  - **Cause, reproduite chez R01.** `bot/live/solana_signatures.py` importe `cryptography` À L'INTÉRIEUR de
+    `verify_compiled_rpc_signatures`. Sans ce paquet, le rejeu inscrit `ed25519_signatures_not_verified`.
+    `creator_history` et `blocking_reasons` changent alors, et les 9 bundles avec eux.
+  - **Le problème.** La liste `requirements-dayj.txt`, établie « par import », ne contenait pas ce paquet. La VM
+    n'installe que cette liste.
+  - **Correction.** Ajout de `cffi==2.1.1`, `cryptography==46.0.7` et `pycparser==3.12`, les versions de l'environnement
+    de référence.
+  - **Preuves (R01, CPython 3.12.3, `python -S`, roues dépaquetées par zipfile, PYTHONPATH dans l'ordre de la VM).**
+
+| Paquets installés | Selfcheck |
+|---|---|
+| Ancienne liste seule | **ed7f97c4** (la valeur de R02) |
+| Nouvelle liste, 14 roues téléchargées par la commande exacte de `r03_transfer.sh` | **4aee76a3** |
+
+  - **Sans effet.** Ni PYTHONHASHSEED=0, ni TZ, ni le chemin absolu, ni un export `git archive` réinitialisé ne changent
+    le résultat (4aee76a3).

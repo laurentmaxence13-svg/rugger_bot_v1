@@ -1,6 +1,6 @@
 #!/bin/bash
 # Offline tests of the v2.6.4 cloud package (option A2: C1 + P1 ledger launcher, DEADLINE <= 49 h) with STUB gcloud / curl / shutdown / sleep (no network, no Google account).
-# Usage: bash test_cloud_v26.sh <python 3.12.3 x86_64> <git checkout holding a commit of tree aff97638> <ref of that commit>
+# Usage: bash test_cloud_v26.sh <python 3.12.3 x86_64> <git checkout holding a commit of tree aff97638> <ref of that commit: a plain branch name, e.g. claude/r01-w1-frozen-tree-aff97638, not a sha>
 #                                <w1aux v7.8 package dir (parent of w1aux/)>
 # create_vm.sh: refusals, the exact commands issued, the three token boundaries.
 # startup.sh: the real script runs against a local "bucket"; only dayj, metrics and the identity sample are
