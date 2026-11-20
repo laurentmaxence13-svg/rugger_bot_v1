@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.7 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.8 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -321,16 +321,16 @@ C-D ne modifie aucune hypothèse gelée.
 Aucun des trois n'est démontré. Chacun a une porte ou une condition fixée d'avance. Un emplacement qui ne passe pas
 reste VIDE, sans repêchage.
 
-| Critère | **C-B : une hypothèse HW1 gelée** | **C-D : achat tardif à frais bas** (figé § 10, ancré 4ca90c76) | **L : meilleure cellule latelab** (L1 ou L3) |
+| Critère | **C-B : une hypothèse HW1 gelée** | **C-D : achat tardif à frais bas** (figé § 10, ancré 4ca90c76 ; branche « conjonction », Q3 R02 557648f4) | **L : meilleure cellule latelab** (L1 ou L3) |
 |---|---|---|---|
 | **Sélection** | Celle de l'hypothèse retenue : la 1ʳᵉ, dans l'ordre HW1-5, 1, 2, 4, 3, dont le verdict W1 unique est positif. Exemple, HW1-5 : pools dont le créateur déclaré ne signe pas la création | Palier de frais causal ≤ 2 500 ppm, connu à la décision | Tous les pools rejouables : aucune sélection |
-| **Achat** | Déclencheur gelé le 11/11 (HW1-5 : premier événement entier d'âge ≤ 30 s) | Branche « décroît » : 1ᵉʳ événement au palier ≤ 2 500 ppm. Branche « constant » : 1ᵉʳ événement d'âge ≥ 450 slots (environ 97 s) d'un pool éligible. Le choix vient du critère Q3 sur feeage P0, ancré 0d51a917. 0,1 SOL, latence 4 slots | `age:120` ou `age:300`, selon la cellule de tête de la découverte, confirmée au crible |
+| **Achat** | Déclencheur gelé le 11/11 (HW1-5 : premier événement entier d'âge ≤ 30 s) | **Branche « constant » (conjonction), retenue par Q3** : 1ᵉʳ événement d'âge ≥ 450 slots (environ 97 s) d'un pool dont le palier causal à cet événement est ≤ 2 500 ppm. 0,1 SOL, latence 4 slots. (La branche « décroît » est écartée : 7 pools sur 279 changent de palier, soit 0,0251 < 0,05.) | `age:120` ou `age:300`, selon la cellule de tête de la découverte, confirmée au crible |
 | **Vente** | Horizon gelé de l'hypothèse (HW1-5 : horloge 10 s) | TP +7 %, SL −5 %, sinon horloge à 30 s (`w1_run.py` l. 37) | Horloge 60 s |
 | **Rentabilité attendue, et pourquoi** | P0 : HW1-5 à +2,78 % [−0,13 ; +6,02], mais fragile. W1 : inconnu jusqu'à la lecture unique | Arithmétique seulement, sans évaluation : brut tardif +2,90 % [+0,90 ; +5,22] (W1, cellule choisie après regard), contre un seuil d'environ 0,71 % au palier de 2 500 ppm. Cela donne environ +2 % SI le brut tardif tient sur les pools à frais bas, ce qui n'est pas mesuré | Au palier moyen, le net tardif W1 vaut −0,75 % : **négatif attendu**. Il n'entre en W2 que si le crible donne un net > 0 |
-| **Risque** | Sensibilité à la latence (−0,91 % à 10 slots sur P0) ; gains concentrés sur les 5 meilleurs pools ; perte maximale −100 % de la mise si le pool migre | Effectif faible (environ 8 à 12 entrées par jour) ; palier possiblement confondu avec le type de lancement ; loyer de −2,05 % si le compte n'est pas fermé ; SL −5 % hors glissement | Frais moyens, environ 3,5 % par aller-retour ; brut tardif non confirmé hors W1 |
+| **Risque** | Sensibilité à la latence (−0,91 % à 10 slots sur P0) ; gains concentrés sur les 5 meilleurs pools ; perte maximale −100 % de la mise si le pool migre | Effectif : 13,21 pools par jour sur la plage d'évaluation W1 (53 pools en ≈ 4,0 j ; 16,94 par jour sur tout W1), avant exclusions du rejeu (Q4, R02 6d149227) ; **persistance du palier de 2 500 ppm non garantie** : AUCUN événement à ce palier sur P0 visible (palier minimal 10 000 ppm ; 181 pools tardifs, 0 à palier bas), alors qu'il existe dans W1 ; palier possiblement confondu avec le type de lancement ; loyer de −2,05 % si le compte n'est pas fermé ; SL −5 % hors glissement | Frais moyens, environ 3,5 % par aller-retour ; brut tardif non confirmé hors W1 |
 | **Exécution par le bot réel** | **Douteuse pour HW1-5** : il faut décider sur la transaction de création et atterrir en 4 slots, ce qui n'est pas démontré | **La plus simple** : entrée tardive, sans course de latence ; palier lu à la décision ; fermeture du compte à prouver hors ligne | Simple, comme C-D |
-| **Validation hors échantillon** | (1) Verdict officiel W1, qui demande la dépense A2 ; (2) lecture HW1 unique ; (3) W2 avec les critères GO, plus la latence à 10 slots et le contrôle sans les 5 meilleurs pools (pour HW1-5) | W2 seulement, critères GO du dossier B. Durée ≥ 30 jours pour 390 cycles, sinon sous-puissance déclarée d'avance | Découverte (moitié 1), puis crible (moitié 2, 1 cellule), puis W2 |
-| **Statut** | Conditionnel à B1 | Figé, en attente de Q3 (déjà ancré, non lu) | Conditionnel à latelab, dont le code est passé par R02 |
+| **Validation hors échantillon** | (1) Verdict officiel W1, qui demande la dépense A2 ; (2) lecture HW1 unique ; (3) W2 avec les critères GO, plus la latence à 10 slots et le contrôle sans les 5 meilleurs pools (pour HW1-5) | W2 seulement, critères GO du dossier B. **K = 3 : 414 cycles par bras, soit ≈ 35 à 52 jours (dossier B v1.1)** ; au taux Q4 mesuré (13,21 par jour avant exclusions) ce serait ≈ 31 jours au mieux. Durée à arrêter par R02 ; sinon sous-puissance déclarée d'avance. Une règle d'arrêt « palier disparu » est à prévoir | Découverte (moitié 1), puis crible (moitié 2, 1 cellule), puis W2 |
+| **Statut** | Conditionnel à B1 | Figé ; branche fixée par Q3 (CONSTANT) ; taux connu par Q4 ; jamais évalué sur W1 | Conditionnel à latelab, dont le code est passé par R02 |
 
 **Mon classement** :
 1. **C-D**, seul candidat dont l'économie (palier bas) et le moment (tardif) vont dans le même sens, et le plus
@@ -343,3 +343,18 @@ signaux autorisés. Les mécanismes voisins à étudier seraient alors :
 - l'après-migration CPMM, avec une collecte de toutes les migrations du programme ;
 - les plateformes de lancement à 0,25 % ;
 - les pools établis.
+
+## 12. Q3 et Q4 : résultats de population (comptes seulement, hors N ; ancrés par R02)
+
+| Mesure | P0 visible (0d51a917, Q3) | W1, tout (e46f2e74, Q4) | W1, plage d'évaluation (Q4) |
+|---|---|---|---|
+| Pools | 360 (≈ 0,37 j) | 2 273 (≈ 5,0 j) | 1 250 (≈ 4,0 j) |
+| Pools avec ≥ 2 événements exploitables | 279 | 1 640 | 1 029 |
+| Palier qui change | 7 (0 qui ne remonte jamais) | 86 (9) | 51 (1) |
+| Pools tardifs (≥ 450 slots) | 181 | 1 248 | 767 |
+| dont au palier ≤ 2 500 ppm au 1ᵉʳ événement tardif | **0** | 85 (16,94 / j) | **53 (13,21 / j)** |
+
+- **Q3** : critère figé appliqué tel quel par R02 : 7 / 279 = 0,0251 < 0,05 → CONSTANT → branche conjonction.
+- **Fait à déclarer** : le palier de 2 500 ppm est apparu entre P0 et W1. Aucune évaluation n'en est faite ici. Sa
+  persistance pendant W2 est un risque de C-D, à couvrir par une règle d'arrêt pré-enregistrée.
+- Ces comptes ne lisent aucun rendement. Ils ne changent pas C-D, figé au § 10.
