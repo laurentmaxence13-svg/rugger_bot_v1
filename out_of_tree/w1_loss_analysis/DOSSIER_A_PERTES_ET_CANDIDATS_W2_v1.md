@@ -1,4 +1,6 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.1 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.2 (RUGGER 01, 2026-11-20)
+
+**Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
 **Statut.** EXPLORATOIRE. Le dossier attend l'audit de RUGGER 02 (dossier B). Il ne modifie aucun résultat W1, ne
 fige rien et ne lance rien. Il remplace la note v0.1, qui reste dans l'historique.
@@ -61,7 +63,7 @@ la case le dit.
 | **Changer l'entrée** : états hors début de courbe (fin de courbe, survivants, repli, purge) ou créateur non signataire | P0 : NON SIGNÉ +2,78 % [−0,13 ; +6,02] (96 positions), mais −0,91 % à 10 slots de latence et ≈ 0 sans les 5 meilleurs pools. Les autres : rejetées ou non évaluables sur P0. W1 : lecture HW1 unique après le verdict officiel | Vise la cause (le brut) | Effectifs faibles en fin de courbe ; décision sur la transaction de création pour NON SIGNÉ, ce qui n'est pas démontré en réel | **Élevé** si l'on choisit après lecture : il faut une règle de sélection écrite d'avance (§ 3) | Idem |
 | Règle de sortie | ≤ +0,4 point (P0) | — | La borne rétrospective est proche de 0 | Élevé | Aucun bras proposé |
 | Moins de transactions | Rien à gagner : 2 transactions par cycle, déjà le minimum | — | — | — | — |
-| Loyer | Pas un gain : il faut le **modéliser** dans W2 (fermeture du compte et ses frais), sinon le compter comme perdu (−2,05 %) | Réalisme | La fermeture du compte en réel reste à prouver (branche `claude/r01-live-close-base-ata`) | — | Le protocole W2 fixe le mode avant le gel |
+| Loyer | Pas un gain. **Par défaut, il est PERDU** (−2,05 %, à remesurer ; R02 f2f86f74). Le mode « compte fermé » n'est admis que dans un cas : la fermeture et ses frais sont modélisés dans le simulateur AVANT le gel (déclarée et testée, comme C1), ET le code réel la prouve hors ligne et à blanc | Réalisme | La fermeture du compte en réel reste à prouver (branche `claude/r01-live-close-base-ata`) | — | Les deux mesures sont publiées ; le GO s'applique au mode gelé |
 | Mise plus grande | +0,17 point au mieux (transaction) ; impact accru | — | Marginal | — | Stress seulement |
 
 ## 3. Candidats W2 (K ≤ 3), prêts à geler, avec leur règle de sélection écrite AVANT toute lecture
@@ -87,7 +89,7 @@ n'est JAMAIS remplacé par une variante.
   par la part T1.
 - **Taille W2** : pour un net de +2 % : 390 cycles, soit environ 26 jours ; pour +1 % : environ 100 jours.
 - **Limites** : net attendu négatif ; confondu avec le type de lancement.
-- **Essais** : l'évaluation de la porte compte N + 1.
+- **Essais** : l'évaluation de la porte compte N + 1 (R02 f2f86f74 : c'est une décision fondée sur W1).
 
 ### C-B « Entrée hors début de courbe » (une seule hypothèse HW1, choisie par une règle fixe)
 
@@ -109,6 +111,13 @@ n'est JAMAIS remplacé par une variante.
   - HW1-5 est sensible à la latence ;
   - une hypothèse HW1 dont plus de 10 % des positions migrent est non évaluable sans CPMM.
 - **Dépend de** B1 (verdict officiel W1, puis lecture HW1 : N = 164).
+- **Ajouts obligatoires (R02 f2f86f74)** :
+  - (i) un seul candidat, sans cumul ;
+  - (ii) pour HW1-5, le GO W2 exige en plus deux choses, qui sont ses faiblesses connues sur P0 :
+    - la robustesse à 10 slots de latence : un net moyen > 0 à 10 slots ;
+    - un net moyen > 0 sans les 5 meilleurs pools ;
+  - (iii) limite déclarée : rien ne démontre aujourd'hui qu'une décision prise sur la transaction de création soit
+    réalisable en réel (détecter, décider et atterrir en 4 slots).
 
 ### C-C « CPMM après la migration »
 
@@ -138,16 +147,28 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
 - **Recommandation** : la durée de W2 se fixe au gel, d'après les candidats retenus par les portes.
   - Avec C-B (HW1-5) seul : 5 à 12 jours.
   - Avec C-A ou C-C : au moins 16 à 32 jours, ou les accepter comme sous-puissants (déclaré NON CONCLUANT d'avance).
-- **Crédits** : R03 compte environ 60 000 par jour de fenêtre. Une W2 de 12 jours demande environ 0,73 M crédits,
-  soit un mois gratuit. Réserve de R03 : la disponibilité de `getTransactionsForAddress` en offre Free.
+- **Crédits (aligné sur le dossier C de R03)** : environ 60 000 crédits par jour de fenêtre. Une W2 de 12 jours
+  demande environ 0,73 M crédits, ce qui tient dans le quota mensuel de l'offre Free. MAIS la documentation actuelle
+  de Helius réserve `getTransactionsForAddress` aux offres Developer et au-delà. Si un diagnostic de 1 requête au plus
+  (≤ 50 crédits, avec le solde relevé avant et après) confirme ce refus en Free, la collecte demande l'offre
+  Developer : environ 59 $ TTC par mois, avec l'accord du propriétaire. Le chiffrage fait foi dans le dossier C.
+- **Écart-type par bras (R02 f2f86f74)** : σ = 13,7 % est celui du MASTER. Au gel, la taille de chaque bras se
+  recalcule avec le σ de P0 propre à ce bras, et l'on retient la plus grande des deux tailles.
 
 ## 5. Décisions du propriétaire (à présenter par R04)
 
 - **B0** : exécuter w1loss sur le ledger ancré (hors ligne, quelques secondes, aucun coût). Nécessaire à la porte
   de C-A.
 - **B1** : verdict officiel W1 (dépense de calcul, note voie B). Il ouvre la lecture HW1 et la porte de C-B.
-- **B2** : pilote CPMM réel sur quelques pools migrés (crédits gratuits ; plafond par pool que je proposerai).
-  Nécessaire à la porte de C-C.
+- **B2** : pilote CPMM réel, nécessaire à la porte de C-C. Plafonds proposés, jugés cohérents par R03 :
+  - au plus 10 pools migrés, les premiers dans l'ordre chronologique de migration ;
+  - 60 minutes après le premier swap de chaque pool ;
+  - 1 500 crédits par pool, soit environ 14 800 transactions ;
+  - 15 000 crédits au total, avec arrêt à 98 % ;
+  - le rapport donne le nombre de pools plafonnés.
+  - **Diagnostic préalable** : 1 requête, 50 crédits au plus. Si la méthode est refusée en Free, le pilote demande
+    l'offre Developer (≈ 59 $ TTC), donc l'accord du propriétaire.
+  - **À trancher par R02** : lire `record['migration']` dans l'export W1 avant le verdict officiel.
 - **B3** : durée et calendrier de W2 (§ 4), plafond de crédits, offre Helius.
 - Sans B1 ni B2, W2 ne comporterait que C-A face aux comparateurs, avec un échec attendu. **Je déconseille de
   lancer W2 dans cette configuration.**
