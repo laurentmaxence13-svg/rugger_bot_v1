@@ -96,16 +96,32 @@ def test_frozen_pack_smoke_run_and_output_whitelist(tmp_path, monkeypatch):
     monkeypatch.setattr(L, 'EVAL_MIN', 1)
     monkeypatch.setattr(L, 'CUT_SLOT', 2)                                   # every frozen pool in the screen half
     monkeypatch.setattr(L, 'EVAL_MAX', 10 ** 12)
+    dossier = tmp_path / 'dossier_a.md'
+    dossier.write_text('## 10. C-D FIGÉ (test)\n', encoding='utf-8')
+    dsha = hashlib.sha256(dossier.read_bytes()).hexdigest()
+    anchored = ['--dossier-a', str(dossier), '--dossier-a-sha256', dsha]
+    with pytest.raises(L.LateLabError, match='anchored_dossier_a_required'):
+        L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, '--out', str(tmp_path / 'x')])
+    with pytest.raises(L.LateLabError, match='dossier_a_is_not_the_anchored_one'):
+        L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, '--dossier-a', str(dossier),
+                '--dossier-a-sha256', '0' * 64, '--out', str(tmp_path / 'x')])
+    other = tmp_path / 'other.md'
+    other.write_text('no freeze here', encoding='utf-8')
+    with pytest.raises(L.LateLabError, match='dossier_a_does_not_freeze_c_d'):
+        L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, '--dossier-a', str(other),
+                '--dossier-a-sha256', hashlib.sha256(other.read_bytes()).hexdigest(), '--out', str(tmp_path / 'x')])
+    assert not (tmp_path / 'x').exists()
     with pytest.raises(L.LateLabError, match='manifest_is_not_the_anchored_one'):
-        L.main(['discover', '--pools', str(pools), '--manifest-sha256', '0' * 64, '--out', str(tmp_path / 'x')])
-    assert L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, '--out', str(tmp_path / 'o')]) == 0
+        L.main(['discover', '--pools', str(pools), '--manifest-sha256', '0' * 64, *anchored, '--out', str(tmp_path / 'x')])
+    assert L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, *anchored, '--out', str(tmp_path / 'o')]) == 0
     text = (tmp_path / 'o' / 'LATELAB.json').read_text()
     doc = json.loads(text)
     assert doc['half'] == 'discovery' and all(c['n'] == 0 for c in doc['cells'].values())   # short pools: no late point
     for name in json.loads((pools / 'MANIFEST.json').read_text())['pools']:
         assert name['pool'] not in text
+    assert doc['input']['dossier_a_sha256'] == dsha
     with pytest.raises(L.LateLabError, match='output_exists'):
-        L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, '--out', str(tmp_path / 'o')])
+        L.main(['discover', '--pools', str(pools), '--manifest-sha256', sha, *anchored, '--out', str(tmp_path / 'o')])
 
 
 def test_pool_points_replays_the_real_exit_rule_without_reading_any_tier(monkeypatch):
@@ -153,3 +169,15 @@ def test_ranking_uses_the_lower_bound_not_the_mean_and_the_floors():
     assert L.screen([('screen', f'c{i % 10}', [('age:120', _o(130_000_000))]) for i in range(40)], 'L1')['cells']['L1']['passes'] is False
     small = L.screen([('screen', f'c{i}', [('age:120', _o(130_000_000))]) for i in range(29)], 'L1')
     assert small['cells']['L1']['mean_net_return'] > 0 and small['cells']['L1']['passes'] is False      # n < 30
+
+
+def test_no_cell_can_filter_on_the_tier_or_slice_l1_l3():
+    """R02 04ecafed conditions 1 and 4: L2/L4 absent; a cell is defined by its age only; no breakdown exists."""
+    assert L.CELLS == {'L1': {'age': 120}, 'L3': {'age': 300}}
+    pools = [('discovery', f'c{i}', [('age:120', _o(100_000_000 + i))]) for i in range(5)]
+    items = L.cell_items(pools, 'discovery', 'L1')
+    assert len(items) == 5                                                            # every pool, no selection
+    keys = set(L.summary(items))
+    assert not keys & {'tiers', 'by_tier', 'by_age', 'slices', 'thirds'}
+    params = inspect.signature(L.cell_items).parameters
+    assert list(params) == ['pools', 'half', 'cell']                                   # nothing to filter with

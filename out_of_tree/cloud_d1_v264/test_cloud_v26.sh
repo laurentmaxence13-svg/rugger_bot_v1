@@ -311,4 +311,20 @@ import json; p='$tmp/w1/dayj/DAYJ_STATE.json'; s=json.load(open(p)); s['trials_s
 : > "$CALLS"; boot || fail "resume boot: $(log | tail -5)"
 grep -q "^dayj --step trials .*--workers 8 --resume$" "$CALLS" || fail "trials not resumed: $(grep 'step trials' "$CALLS")"
 echo "B. startup.sh OK"
+
+# ------------------------------------------------------------------ C. r03_transfer.sh prepare (R02, v2.6.4 audit)
+# The REAL script, with only the anchored P0 registry sha replaced by the one of a local stand-in (the registry
+# itself is R03's): it must accept the w1aux v7.8 package (manifest 426ed6cb) and put w1aux_v78.tar in the inbound
+# set, and refuse any other w1aux tree (here: v7.8 plus one file).
+r3="$tmp/r3"; mkdir -p "$r3/data"; echo '{"x": 1}' > "$r3/data/m.json"; echo '{}' > "$r3/reg.jsonl"
+sed "s/f1f26e366bec2cdc3093bf027617d453d6d7dfbdd4b721173c290433004f47de/$(sha256sum "$r3/reg.jsonl" | cut -d' ' -f1)/" \
+    "$here/r03_transfer.sh" > "$r3/r03.sh"
+echo '{}' > "$r3/steps.json"
+bash "$r3/r03.sh" prepare "$W1AUX" "$REPO" "refs/heads/$REF" "$r3/reg.jsonl" "$here" "$r3/steps.json" "$r3/out" d="$r3/data" > "$r3/log" 2>&1 || true
+[ -f "$r3/out/w1aux_v78.tar" ] || fail "r03_transfer prepare refuses the w1aux v7.8 package: $(tail -2 "$r3/log")"
+grep -q "w1aux_manifest" "$r3/log" && fail "r03_transfer checks another w1aux manifest"
+cp -r "$W1AUX" "$r3/pkg_other"; echo "# extra" > "$r3/pkg_other/w1aux/extra.py"
+out=$(bash "$r3/r03.sh" prepare "$r3/pkg_other" "$REPO" "refs/heads/$REF" "$r3/reg.jsonl" "$here" "$r3/steps.json" "$r3/out2" d="$r3/data" 2>&1) && fail "another w1aux tree accepted"
+[[ "$out" == *w1aux_manifest* ]] || fail "other w1aux tree: $out"
+echo "C. r03_transfer.sh prepare OK"
 echo "ALL OK"

@@ -1,8 +1,9 @@
-"""latelab 0.2 — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
+"""latelab 0.3 — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
 RUGGER 01; decision of RUGGER 02 04ecafed: option (iii), C-D frozen first in dossier A v1.6 § 10 and anchored by
 R02 BEFORE any run; the tier-restricted cells L2 and L4 are NEVER evaluated). EXPLORATORY: a cell kept here is an hypothesis, confirmed on W2 only.
 
-  python -B -m latelab.study discover --pools <W1 export> --manifest-sha256 <anchored> --out <OUT>
+  python -B -m latelab.study discover --pools <W1 export> --manifest-sha256 <anchored> \
+         --dossier-a <DOSSIER_A v1.6> --dossier-a-sha256 <sha anchored by R02> --out <OUT>
   python -B -m latelab.study screen   --pools <W1 export> --manifest-sha256 <anchored> --cell L1 \
          --discovery <ANCHORED discovery json> --discovery-sha256 <sha> --out <OUT>
 
@@ -48,7 +49,7 @@ from statelab.study import cluster_key
 from v3lab import plan
 from w1aux.lazy import clear_cache, load_fixtures_lazy
 
-SCHEMA = 'latelab-v0.2'
+SCHEMA = 'latelab-v0.3'
 EVAL_MIN, EVAL_MAX, CUT_SLOT = 467_678_545, 469_291_345, 468_484_945
 EXIT_CLOCK_S = 60
 RULE = dict(id='CLOCK60', clock_s=EXIT_CLOCK_S)
@@ -209,6 +210,8 @@ def main(argv=None):
     parser.add_argument('--discovery', type=Path, default=None)
     parser.add_argument('--discovery-sha256', default=None)
     parser.add_argument('--latency-slots', type=int, default=None)
+    parser.add_argument('--dossier-a', type=Path, default=None, help='dossier A v1.6 (C-D frozen), as anchored by R02')
+    parser.add_argument('--dossier-a-sha256', default=None)
     parser.add_argument('--out', type=Path, required=True)
     a = parser.parse_args(argv)
     params = hrr.ReplayParams(latency_slots=plan.REPLAY['latency_slots'] if a.latency_slots is None else a.latency_slots)
@@ -221,12 +224,21 @@ def main(argv=None):
         top1 = json.loads(raw)['top1']
         if not top1 or a.cell != top1[0]:
             raise LateLabError('screen_cell_must_be_the_anchored_top1')
+    if a.mode == 'discover':                     # R02 04ecafed: C-D is frozen and anchored BEFORE any run
+        if a.dossier_a is None or a.dossier_a_sha256 is None:
+            raise LateLabError('anchored_dossier_a_required')
+        if hashlib.sha256(a.dossier_a.read_bytes()).hexdigest() != a.dossier_a_sha256:
+            raise LateLabError('dossier_a_is_not_the_anchored_one')
+        if 'C-D FIGÉ' not in a.dossier_a.read_text(encoding='utf-8'):
+            raise LateLabError('dossier_a_does_not_freeze_c_d')
     if a.out.exists():
         raise LateLabError('output_exists')
     pools = collect(a.pools, a.manifest_sha256, params)
     doc = dict(_base(params, a.manifest_sha256), **(discover(pools) if a.mode == 'discover' else screen(pools, a.cell)))
     if a.mode == 'screen':
         doc['input']['discovery_sha256'] = a.discovery_sha256
+    else:
+        doc['input']['dossier_a_sha256'] = a.dossier_a_sha256
     _write(a.out, doc)
     return 0
 

@@ -24,7 +24,7 @@ prepare)
   commit=$(git -C "$repo" rev-parse "$ref^{commit}")
   [ "$(sha "$reg")" = f1f26e366bec2cdc3093bf027617d453d6d7dfbdd4b721173c290433004f47de ] || die p0_registry
   m=$(cd "$pkg" && find w1aux -type f ! -path '*__pycache__*' | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1)
-  [ "$m" = 31222874e019e3c24a9cb8b39e40b1ca4c5b6e4dff9e4aca283abef54310ac86 ] || die "w1aux_manifest:$m"
+  [ "$m" = 426ed6cb394ad465a66a546741f3f010298b31b51cd579d8394a258d7e380b71 ] || die "w1aux_manifest:$m"   # w1aux v7.8 (v2.6.4)
   git -C "$repo" bundle create "$out/w1code.bundle" "$ref"
   "${TAR[@]}" --exclude='__pycache__' -cf "$out/w1aux_v78.tar" -C "$pkg" w1aux
   # the collected data, as they are (run directories with their manifests); never a checkpoint, never a pickle

@@ -46,5 +46,13 @@
  {
   "mutant": "top2_instead_of_top1",
   "detected": true
+ },
+ {
+  "mutant": "dossier_a_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "dossier_a_content_ignored",
+  "detected": true
  }
 ]

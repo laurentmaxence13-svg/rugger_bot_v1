@@ -212,7 +212,7 @@ Avec le jeton `relay`, un renouvellement de jeton par heure d'activité.
 | Fichier | Contenu | Contrôle sur la VM |
 |---|---|---|
 | `w1code.bundle` | bundle git du commit d'arbre **aff97638** | `HEAD^{tree}` = aff97638 |
-| `w1aux_v74.tar` | w1aux v7.4 complet | sha du manifeste = **31222874** ; ne contient que `w1aux/` |
+| `w1aux_v78.tar` | w1aux v7.8 complet (v2.6.4) | sha du manifeste = **426ed6cb** ; ne contient que `w1aux/` |
 | `wheels/*.whl` | `requirements-dayj.txt`, versions exactes | sha256 dans les SUMS ; aucun module masqué |
 | `identity_check_v26.py`, `IDENTITY_REFERENCE_V26.json` | échantillon d'équivalence corrigé (§2 bis) | trois empreintes indépendantes de la machine égales |
 | `data_<nom>.tar` | une collecte ou un fichier, tel quel (LaunchLab, SOL/USD, pilote, autres runs du mois, résumé des blocs, relevé du propriétaire, rapport d'étude) | extraits dans `data/<nom>/` ; chemins relatifs, fichiers ordinaires, aucun pickle |
