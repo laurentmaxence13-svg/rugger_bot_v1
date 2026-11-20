@@ -83,6 +83,49 @@ avant la moitié 2 : unique_buyers ≥ 26 ; top5_holder_share ≤ 0,770.
 - **Ce qui reste** : la porte C-D (cdgate 0.1, en audit chez R02). C'est le seul candidat où un brut ≈ 0 n'est pas
   loin de l'équilibre, à condition de fermer le compte de jetons.
 
+## 2 ter. Porte de non-réfutation de C-D sur W1 (cdgate 0.2 ; sortie ancrée et lue par R02, 2b173f10 ; N = 167) — C-D RETIRÉ
+
+Règle figée : 1ᵉʳ événement entier à 450 slots ou plus, palier causal ≤ 2 500 ppm, 0,1 SOL, latence de 4 slots,
+TP +7 % ou SL −5 %, sinon horloge à 30 s ; loyer perdu. Population : toute la plage d'évaluation W1.
+
+| Mesure | **C-D** | Placebo à palier bas (descriptif) | MASTER W1 (cité) |
+|---|---|---|---|
+| Trades (grappes) | 46 (41) | 35 (34) | — |
+| Net moyen [IC 95 %] | **−4,59 %** [−7,40 ; **−2,42**] | −1,82 % [−3,29 ; −0,33] | −4,26 % |
+| Net médian | −2,69 % | −2,69 % | — |
+| Gagnantes | 8,7 % | 20 % | — |
+| Meilleur / pire trade | +9,6 % / −47,7 % | — | — |
+| Brut (part de la mise) | −1,94 % | +0,89 % | — |
+| Frais de courbe | 0,49 % | 0,50 % | — |
+| Transactions | 0,21 % | 0,21 % | — |
+| Loyer (perdu) | 2,04 % | 2,04 % | — |
+| Net, loyer récupéré | −2,64 % | **+0,17 %** | — |
+| Net à 10 slots de latence | −4,70 % | — | — |
+| Glissement à l'achat | −3,5 % (prix en baisse avant l'atterrissage) | +0,5 % | — |
+| Sorties | horloge 39, SL 5, TP 2 | horloge 28, SL 1, TP 6 | — |
+
+**Cycles.** 771 pools tardifs, 53 éligibles (= Q4), 46 clôturés. 7 entrées à 600 s ou plus ont été comptées, mais
+pas lues (13 %). Aucun achat refusé.
+
+**Verdict.** La porte n'est pas passée : la borne haute de l'IC vaut −2,42 %, sous 0. C-D est retiré de W2, sans
+variante ni repêchage (R02).
+
+**Exécutabilité.** La règle est simple : palier lu à la décision, aucune course de latence. Mais même avec des frais
+de 0,5 %, le brut est négatif (−1,9 %).
+
+**Lecture.**
+- Entrer tard ne crée pas d'avantage, même à frais bas.
+- Le placebo à palier bas (entrée aléatoire à 120 s ou moins, même sortie) est le SEUL chiffre proche de l'équilibre :
+  +0,17 % loyer récupéré, n = 35, 20 % de gagnantes.
+- C'est une observation faite après regard, sur un comparateur. Ce n'est pas une règle.
+- **Hypothèse nouvelle, pour des données NEUVES seulement** : « entrée précoce sur un pool à palier ≤ 2 500 ppm, avec
+  fermeture du compte de jetons ». Elle n'est testable ni sur W1 ni sur P0 visible (aucun palier bas sur P0).
+
+**Bilan des candidats W2.**
+- C-A retiré ; C-C vide ; C-D retiré ; L vide.
+- Il reste C-B : une hypothèse HW1 gelée, lisible seulement après le verdict officiel W1, donc après la dépense A2
+  (B1).
+
 ## 3. CPMM après migration : ce qu'on apprend SANS collecte
 
 - **Fréquence** : 12 pools migrés sur 2 273 exportés dans W1, soit ≈ 0,5 %, ≈ 2 à 3 par jour. La donnée existante
