@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.4 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.5 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -247,3 +247,36 @@ pourrait être positif : brut d'environ +2,9 %, contre un seuil d'environ 0,71 %
 - Sa seule épreuve valable est une fenêtre future.
 - Son effectif risque d'être très faible : 12 positions MASTER au palier de 2 500 ppm sur 4 jours.
 - Sa place (W2 ou phase ultérieure) est à trancher par R02 et par le propriétaire.
+
+## 9. Candidat C-D « entrée tardive à palier bas » — BROUILLON, admissible en principe (R02 3cd2ffa2)
+
+**Provenance déclarée** : choisi parmi les E = 7 ventilations W1, APRÈS regard. Il compte N + 1 dès cette écriture
+(N passe de 160 à 161). Aucune évaluation de la conjonction n'a été faite sur W1 et aucune ne le sera.
+
+**Règle (brouillon, autonome, sans le scoreur, seuils existants seulement)** :
+- **Éligibilité** : un pool LaunchLab dont le palier de frais causal, connu à la décision, vaut ≤ 2 500 ppm. C'est un
+  palier observé ; pas d'autre seuil.
+- **Entrée** : au PREMIER événement entier d'âge ≥ 450 slots, borne de la classe ancrée. Achat de 0,1 SOL,
+  atterrissage après 4 slots.
+- **Sortie** : celle du statu quo, TP 7 % / SL 5 %, à l'horizon gelé (préférence de R02).
+- **Coûts** :
+  - frais de courbe causaux ;
+  - 2 × (5 000 + 100 000) lamports par transaction ;
+  - loyer PERDU par défaut (R02 f2f86f74).
+- **Une seule position par pool.**
+
+**Préalables avant le gel** (conditions de R02) :
+1. **Q3**, à trancher sur P0 et par le code, sans W1 : le palier baisse-t-il avec l'âge du pool ? Si oui, « tardif »
+   et « 2 500 ppm » sont confondus. La règle s'écrit alors comme UNE seule condition causale : le palier à la
+   décision, quel que soit l'âge. Outil : `feeage` 0.1 (5a05482b), à auditer.
+2. **Q4**, taux d'entrée par comptage de population audité : pools atteignant 450 slots au palier de 2 500 ppm,
+   sans aucune valeur. Même outil.
+   - Si 390 cycles dépassent la durée de W2, C-D est déclaré sous-puissant d'avance, ou retiré.
+   - Effectifs W1 ancrés (f5d1388e) : placebo au palier de 2 500 ppm, n = 32 ; MASTER à ≥ 450 slots, n = 38 ;
+     placebo à ≥ 450 slots, n = 46. Cela donne au plus environ 8 à 12 entrées éligibles par jour, soit **au moins
+     30 jours pour 390 cycles. La puissance est le point dur.**
+3. **Chevauchement déclaré avec HW1-4** (survivant, 600 s). Un pool actif à 450 slots (environ 97 s) peut l'être
+   aussi à 600 s, mais les deux déclencheurs diffèrent par l'âge. C-D ne modifie aucune hypothèse gelée.
+4. **Taille de W2** : avec C-B et C-D, la durée est fixée par C-D (≥ 30 jours), sauf déclaration de sous-puissance.
+   Le coût en crédits suit, à environ 60 000 par jour, soit environ 1,8 M pour 30 jours : plus d'un mois de quota
+   et probablement l'offre Developer (dossier C).
