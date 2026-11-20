@@ -1,0 +1,7 @@
+d2359fda81dd1b647092922c50bab21d89f4da56b611e8dcad04aaa0255e4a53  ./MUTATIONS_cdgate_v0_1.json
+f960630faa61072cca6cf894c358388623ec86cd84e2f8a741759d1240fb0ae3  ./README_CDGATE_v0_1.md
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./cdgate/__init__.py
+95eb21d3cd96540cfbc8d46ac94e98c0557988e40c41f440e61ab8d2fefd466e  ./cdgate/gate.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./cdgate/tests/__init__.py
+96a11da8f7d70b66f796e9b67b5e00400fe58076864da46bdd94cd14d067c0c7  ./cdgate/tests/test_gate.py
+22525dd81c6b5ce21e06dab3f221f2b57df6397234e62fe5370d49c2bec560e8  ./mutations_cdgate_runner.py
