@@ -1,0 +1,104 @@
+{
+ "module": "w1aux/ledger_c1.py",
+ "module_sha256": "e130f1f9493fa40825eabb5072784523b76dce26b28d676f1410c8c8a5492224",
+ "tests": "w1aux/tests/test_ledger_c1.py",
+ "tests_sha256": "53eab8f11785006d563e0d79ba5d9134afe30c485a10115a9d089b3012fad9f0",
+ "runner": "mutations_v77_runner.py",
+ "runner_sha256": "2498e25552979f5e4224be3f25903850e1e967d628e4044592c2658500b41e96",
+ "interpreter": "CPython 3.12.3, pytest -W error",
+ "detected": 18,
+ "total": 18,
+ "note": "run on the final test file (22 tests); an earlier run on the first 18 tests also gave 18/18",
+ "mutants": [
+  {
+   "mutant": "applied_to_every_outcome",
+   "detected": true,
+   "last": "1 failed in 33.41s"
+  },
+  {
+   "mutant": "early_stop_ignored",
+   "detected": true,
+   "last": "1 failed, 14 passed in 33.88s"
+  },
+  {
+   "mutant": "always_two",
+   "detected": true,
+   "last": "1 failed, 11 passed in 37.20s"
+  },
+  {
+   "mutant": "always_one",
+   "detected": true,
+   "last": "1 failed, 1 passed in 36.38s"
+  },
+  {
+   "mutant": "old_cost_mismatches_kept",
+   "detected": true,
+   "last": "1 failed, 1 passed in 34.80s"
+  },
+  {
+   "mutant": "failed_not_rechecked",
+   "detected": true,
+   "last": "1 failed, 10 passed in 35.32s"
+  },
+  {
+   "mutant": "exit_index_not_checked",
+   "detected": true,
+   "last": "1 failed, 1 passed in 33.04s"
+  },
+  {
+   "mutant": "note_ignored",
+   "detected": true,
+   "last": "1 failed, 5 passed in 33.22s"
+  },
+  {
+   "mutant": "consistency_not_checked",
+   "detected": true,
+   "last": "1 failed, 1 passed in 31.15s"
+  },
+  {
+   "mutant": "unpriced_outcome_not_checked",
+   "detected": true,
+   "last": "1 failed, 13 passed in 35.21s"
+  },
+  {
+   "mutant": "priced_set_wrong",
+   "detected": true,
+   "last": "1 failed, 1 passed in 35.44s"
+  },
+  {
+   "mutant": "window_not_covered",
+   "detected": true,
+   "last": "1 failed in 31.38s"
+  },
+  {
+   "mutant": "rule_flag_missing",
+   "detected": true,
+   "last": "1 failed, 1 passed in 32.77s"
+  },
+  {
+   "mutant": "not_restored",
+   "detected": true,
+   "last": "1 failed, 1 passed in 33.73s"
+  },
+  {
+   "mutant": "not_reentrancy_guarded",
+   "detected": true,
+   "last": "1 failed, 16 passed in 37.15s"
+  },
+  {
+   "mutant": "ledger_sha_not_checked",
+   "detected": true,
+   "last": "1 failed, 16 passed in 38.47s"
+  },
+  {
+   "mutant": "double_wrap_accepted",
+   "detected": true,
+   "last": "1 failed, 16 passed in 36.88s"
+  },
+  {
+   "mutant": "rule_not_declared",
+   "detected": true,
+   "last": "1 failed in 36.17s"
+  }
+ ]
+}

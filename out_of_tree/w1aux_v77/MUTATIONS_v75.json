@@ -1,0 +1,123 @@
+{
+ "module": "w1aux/ledger_parallel.py",
+ "module_sha256": "5c4ad5fa77602475d59a5506f216d92af1af3007ae143d01441209f2be42856a",
+ "tests": "w1aux/tests/test_ledger_parallel.py",
+ "tests_sha256": "9f377b4c14cb83b274e7403d489c4941263c96ace1f7342f521f0eac901da973",
+ "runner": "mutations_v75_runner.py",
+ "runner_sha256": "990f11faa53943b2686d9056356c422350947d5fb66cbdf9a835dfc482ec2e65",
+ "interpreter": "CPython 3.12.3, pytest -W error",
+ "detected": 22,
+ "total": 22,
+ "mutants": [
+  {
+   "mutant": "lookup_without_argument_check",
+   "detected": true,
+   "last": "1 failed, 14 passed in 72.10s (0:01:12)"
+  },
+  {
+   "mutant": "kwargs_not_checked",
+   "detected": true,
+   "last": "1 failed, 21 passed in 71.19s (0:01:11)"
+  },
+  {
+   "mutant": "unused_results_accepted",
+   "detected": true,
+   "last": "1 failed, 15 passed in 70.71s (0:01:10)"
+  },
+  {
+   "mutant": "results_at_wrong_rank",
+   "detected": true,
+   "last": "1 failed, 17 passed in 71.00s (0:01:10)"
+  },
+  {
+   "mutant": "sequential_results_at_wrong_rank",
+   "detected": true,
+   "last": "1 failed, 17 passed in 68.97s (0:01:08)"
+  },
+  {
+   "mutant": "worker_error_swallowed",
+   "detected": true,
+   "last": "1 failed, 12 passed in 68.18s (0:01:08)"
+  },
+  {
+   "mutant": "dead_worker_not_reported",
+   "detected": true,
+   "last": "1 failed, 13 passed in 69.18s (0:01:09)"
+  },
+  {
+   "mutant": "missing_result_accepted",
+   "detected": true,
+   "last": "1 failed, 22 passed in 70.82s (0:01:10)"
+  },
+  {
+   "mutant": "recorder_returns_none",
+   "detected": true,
+   "last": "1 failed in 31.00s"
+  },
+  {
+   "mutant": "no_lazy_archives",
+   "detected": true,
+   "last": "1 failed, 16 passed in 72.23s (0:01:12)"
+  },
+  {
+   "mutant": "history_always_same",
+   "detected": true,
+   "last": "1 failed, 18 passed in 73.93s (0:01:13)"
+  },
+  {
+   "mutant": "history_label_ignored",
+   "detected": true,
+   "last": "1 failed, 18 passed in 72.16s (0:01:12)"
+  },
+  {
+   "mutant": "smallest_first",
+   "detected": true,
+   "last": "1 failed, 17 passed in 71.77s (0:01:11)"
+  },
+  {
+   "mutant": "ledger_sha_not_checked",
+   "detected": true,
+   "last": "1 failed, 16 passed in 71.28s (0:01:11)"
+  },
+  {
+   "mutant": "not_reentrancy_guarded",
+   "detected": true,
+   "last": "1 failed, 16 passed in 71.85s (0:01:11)"
+  },
+  {
+   "mutant": "workers_not_validated",
+   "detected": true,
+   "last": "1 failed, 16 passed in 71.83s (0:01:11)"
+  },
+  {
+   "mutant": "build_ledger_not_restored",
+   "detected": true,
+   "last": "1 failed, 1 passed in 31.82s"
+  },
+  {
+   "mutant": "assembly_ignores_computed_plans",
+   "detected": true,
+   "last": "1 failed in 31.09s"
+  },
+  {
+   "mutant": "probe_peak_not_recorded",
+   "detected": true,
+   "last": "1 failed in 30.62s"
+  },
+  {
+   "mutant": "worker_peaks_not_recorded",
+   "detected": true,
+   "last": "1 failed, 1 passed in 31.53s"
+  },
+  {
+   "mutant": "recorded_events_not_counted",
+   "detected": true,
+   "last": "1 failed in 30.14s"
+  },
+  {
+   "mutant": "probe_only_no_assembly",
+   "detected": true,
+   "last": "1 failed in 30.00s"
+  }
+ ]
+}

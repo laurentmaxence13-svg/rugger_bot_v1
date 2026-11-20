@@ -1,0 +1,62 @@
+{
+ "purpose": "LOAD MEASUREMENT ONLY (synthetic packs: frozen pack x K, renamed copies; no economic reading)",
+ "method": "two fresh processes per pack: ledger.main v7.4 sequential eager, then inside ledger_resume.resumable_ledger; peak = ru_maxrss",
+ "interpreter": "CPython 3.12.3",
+ "script": "lr_measure/measure.py (not shipped)",
+ "packs": {
+  "x12": [
+   {
+    "mode": "seq",
+    "pools": 36,
+    "signatures": 2076,
+    "peak_rss_mb": 100,
+    "seconds": 0.9,
+    "ledger_sha256": "751cdd6b8624e6c9",
+    "md_sha256": "f147d578a87895f8"
+   },
+   {
+    "mode": "res",
+    "pools": 36,
+    "signatures": 2076,
+    "peak_rss_mb": 104,
+    "seconds": 3.0,
+    "ledger_sha256": "751cdd6b8624e6c9",
+    "md_sha256": "f147d578a87895f8",
+    "calls": 4,
+    "recorded_events": 8,
+    "probe_peak_rss_mb": 96,
+    "compute_peak_rss_mb": 96
+   }
+  ],
+  "x150": [
+   {
+    "mode": "seq",
+    "pools": 450,
+    "signatures": 25950,
+    "peak_rss_mb": 621,
+    "seconds": 10.7,
+    "ledger_sha256": "ddaa3abf06c583e5",
+    "md_sha256": "afcbd54cb61c3258"
+   },
+   {
+    "mode": "res",
+    "pools": 450,
+    "signatures": 25950,
+    "peak_rss_mb": 632,
+    "seconds": 24.8,
+    "ledger_sha256": "ddaa3abf06c583e5",
+    "md_sha256": "afcbd54cb61c3258",
+    "calls": 4,
+    "recorded_events": 8,
+    "probe_peak_rss_mb": 621,
+    "compute_peak_rss_mb": 621
+   }
+  ]
+ },
+ "reading": [
+  "identical ledger.json and ledger.md sha256 in both modes at both sizes",
+  "peak memory: resumable = sequential + 4 MB (x12) and + 11 MB (x150, about +2 %): NO saving shown at this scale",
+  "duration of the linear passes: resumable about 2.3 x sequential (probe + assembly); at x150 +14 s for 25 950 signatures, i.e. about 3 min for the 322 146 W1 signatures if linear (extrapolation, not measured)",
+  "these packs have only 4 L1 calls (one pool with entries): they measure the linear passes, not the observer"
+ ]
+}
