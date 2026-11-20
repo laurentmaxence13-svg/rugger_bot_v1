@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.6 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.7 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -315,3 +315,31 @@ vaut ≤ 2 500 ppm. L'entrée a lieu au PREMIER événement entier d'âge ≥ 45
 
 **Critères GO W2** : ceux du protocole (dossier B de R02), sans assouplissement. Chevauchement avec HW1-4 déclaré.
 C-D ne modifie aucune hypothèse gelée.
+
+## 11. Les 3 candidats W2 (K = 3, dossier B v1.1 de R02), au format demandé par le propriétaire
+
+Aucun des trois n'est démontré. Chacun a une porte ou une condition fixée d'avance. Un emplacement qui ne passe pas
+reste VIDE, sans repêchage.
+
+| Critère | **C-B : une hypothèse HW1 gelée** | **C-D : achat tardif à frais bas** (figé § 10, ancré 4ca90c76) | **L : meilleure cellule latelab** (L1 ou L3) |
+|---|---|---|---|
+| **Sélection** | Celle de l'hypothèse retenue : la 1ʳᵉ, dans l'ordre HW1-5, 1, 2, 4, 3, dont le verdict W1 unique est positif. Exemple, HW1-5 : pools dont le créateur déclaré ne signe pas la création | Palier de frais causal ≤ 2 500 ppm, connu à la décision | Tous les pools rejouables : aucune sélection |
+| **Achat** | Déclencheur gelé le 11/11 (HW1-5 : premier événement entier d'âge ≤ 30 s) | Branche « décroît » : 1ᵉʳ événement au palier ≤ 2 500 ppm. Branche « constant » : 1ᵉʳ événement d'âge ≥ 450 slots (environ 97 s) d'un pool éligible. Le choix vient du critère Q3 sur feeage P0, ancré 0d51a917. 0,1 SOL, latence 4 slots | `age:120` ou `age:300`, selon la cellule de tête de la découverte, confirmée au crible |
+| **Vente** | Horizon gelé de l'hypothèse (HW1-5 : horloge 10 s) | TP +7 %, SL −5 %, sinon horloge à 30 s (`w1_run.py` l. 37) | Horloge 60 s |
+| **Rentabilité attendue, et pourquoi** | P0 : HW1-5 à +2,78 % [−0,13 ; +6,02], mais fragile. W1 : inconnu jusqu'à la lecture unique | Arithmétique seulement, sans évaluation : brut tardif +2,90 % [+0,90 ; +5,22] (W1, cellule choisie après regard), contre un seuil d'environ 0,71 % au palier de 2 500 ppm. Cela donne environ +2 % SI le brut tardif tient sur les pools à frais bas, ce qui n'est pas mesuré | Au palier moyen, le net tardif W1 vaut −0,75 % : **négatif attendu**. Il n'entre en W2 que si le crible donne un net > 0 |
+| **Risque** | Sensibilité à la latence (−0,91 % à 10 slots sur P0) ; gains concentrés sur les 5 meilleurs pools ; perte maximale −100 % de la mise si le pool migre | Effectif faible (environ 8 à 12 entrées par jour) ; palier possiblement confondu avec le type de lancement ; loyer de −2,05 % si le compte n'est pas fermé ; SL −5 % hors glissement | Frais moyens, environ 3,5 % par aller-retour ; brut tardif non confirmé hors W1 |
+| **Exécution par le bot réel** | **Douteuse pour HW1-5** : il faut décider sur la transaction de création et atterrir en 4 slots, ce qui n'est pas démontré | **La plus simple** : entrée tardive, sans course de latence ; palier lu à la décision ; fermeture du compte à prouver hors ligne | Simple, comme C-D |
+| **Validation hors échantillon** | (1) Verdict officiel W1, qui demande la dépense A2 ; (2) lecture HW1 unique ; (3) W2 avec les critères GO, plus la latence à 10 slots et le contrôle sans les 5 meilleurs pools (pour HW1-5) | W2 seulement, critères GO du dossier B. Durée ≥ 30 jours pour 390 cycles, sinon sous-puissance déclarée d'avance | Découverte (moitié 1), puis crible (moitié 2, 1 cellule), puis W2 |
+| **Statut** | Conditionnel à B1 | Figé, en attente de Q3 (déjà ancré, non lu) | Conditionnel à latelab, dont le code est passé par R02 |
+
+**Mon classement** :
+1. **C-D**, seul candidat dont l'économie (palier bas) et le moment (tardif) vont dans le même sens, et le plus
+   simple à exécuter.
+2. **C-B**, s'il passe, parce que c'est la seule preuve confirmatoire possible sur W1.
+3. **L**, surtout comme mesure du « tardif » seul. Il est probablement négatif aux frais moyens.
+
+**Si les trois échouent**, cela montre qu'aucun avantage n'existe dans l'univers « courbe LaunchLab » avec les
+signaux autorisés. Les mécanismes voisins à étudier seraient alors :
+- l'après-migration CPMM, avec une collecte de toutes les migrations du programme ;
+- les plateformes de lancement à 0,25 % ;
+- les pools établis.
