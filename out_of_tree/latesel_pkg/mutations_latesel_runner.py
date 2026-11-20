@@ -16,6 +16,8 @@ MUT = [
  ("        if doc.get('schema') != SCHEMA or doc.get('hypotheses') != json.loads(json.dumps(HYPOTHESES)):", "        if False:", 'hypotheses_check_dropped'),
  ("    out['passes'] = out['interpretable'] and out['mean_net_return'] is not None and out['mean_net_return'] > 0", "    out['passes'] = out['mean_net_return'] is not None and out['mean_net_return'] > 0", 'pass_without_floor'),
  ("            if got is None or got[1] != 'screen':", "            if got is None:", 'screen_on_both_halves'),
+ ("            if got is None or got[1] != 'discovery':", "            if got is None:", 'quantiles_on_both_halves'),
+ ("return value >= threshold if spec['keep'] == '>=' else value <= threshold", "return value > threshold if spec['keep'] == '>=' else value <= threshold", 'strict_tercile'),
 ]
 out = []
 for old, new, name in MUT:

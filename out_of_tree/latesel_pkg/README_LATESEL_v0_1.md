@@ -32,3 +32,11 @@ PYTHONPATH=<aff97638>:<statelab_pkg>:<v3lab_pkg>:<v4sim_pkg>:<w1aux_v78>:<latela
 leur crible : celui dont la borne basse de l'IC 95 % sur la moitié 2 est la plus haute.
 
 **Preuves.** 8 tests réussis. Défauts volontaires : 13 sur 13 détectés (`MUTATIONS_latesel_v0_1.json`).
+
+## Tests 0.2 (audit R02 de la 0.1) — `select.py` inchangé (sha 320bef32)
+
+- **Nouveau test.** Si toutes les moitiés sont en 2, les quantiles ont n_points = 0. C'est le test miroir de celui du crible.
+- **Défauts volontaires** : 15 sur 15 détectés, dont les 2 défauts de R02 (« tercile strict » et « quantiles sur
+  les deux moitiés ») ; voir `MUTATIONS_latesel_v0_2.json`.
+- **Tests** : 9 réussis.
+- **Exécution** : celle de la 0.1 reste valable, avec le même code.

@@ -167,3 +167,15 @@ def test_verdict_pass_rule_uses_the_floors_and_the_sign():
     assert S.verdict([_pos(110_000_000, f'c{i % 10}') for i in range(40)])['passes'] is False   # < 20 clusters
     assert S.verdict([_pos(90_000_000, f'c{i % 25}') for i in range(40)])['passes'] is False    # mean < 0
     assert S.verdict([])['passes'] is False
+
+
+def test_quantiles_read_half_1_only(tmp_path, monkeypatch):
+    """R02 audit of 0.1: the mirror of the screen test; every pool in half 2 -> no quantile point."""
+    _fake_points(monkeypatch)
+    sha = hashlib.sha256((PACK / 'MANIFEST.json').read_bytes()).hexdigest()
+    monkeypatch.setattr(LL, 'EVAL_MIN', 1)
+    monkeypatch.setattr(LL, 'CUT_SLOT', 2)                         # every frozen pool in half 2
+    monkeypatch.setattr(LL, 'EVAL_MAX', 10 ** 12)
+    assert S.main(['quantiles', '--pools', str(PACK), '--manifest-sha256', sha, '--out', str(tmp_path / 'q')]) == 0
+    q = json.loads((tmp_path / 'q' / 'LATESEL.json').read_text())
+    assert all(t['n_points'] == 0 and t['threshold'] is None for t in q['thresholds'].values())

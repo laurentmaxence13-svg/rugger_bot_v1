@@ -1,0 +1,62 @@
+[
+ {
+  "mutant": "creator_counted_as_buyer",
+  "detected": true
+ },
+ {
+  "mutant": "sells_not_subtracted",
+  "detected": true
+ },
+ {
+  "mutant": "top1_instead_of_top5",
+  "detected": true
+ },
+ {
+  "mutant": "creator_in_holders",
+  "detected": true
+ },
+ {
+  "mutant": "keep_inverted",
+  "detected": true
+ },
+ {
+  "mutant": "missing_kept",
+  "detected": true
+ },
+ {
+  "mutant": "tercile_changed",
+  "detected": true
+ },
+ {
+  "mutant": "quantiles_on_half_2",
+  "detected": true
+ },
+ {
+  "mutant": "future_read",
+  "detected": true
+ },
+ {
+  "mutant": "quantiles_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "hypotheses_check_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "pass_without_floor",
+  "detected": true
+ },
+ {
+  "mutant": "screen_on_both_halves",
+  "detected": true
+ },
+ {
+  "mutant": "quantiles_on_both_halves",
+  "detected": true
+ },
+ {
+  "mutant": "strict_tercile",
+  "detected": true
+ }
+]
