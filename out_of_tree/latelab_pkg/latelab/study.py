@@ -1,4 +1,4 @@
-"""latelab 0.3 — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
+"""latelab 0.4 (0.3 + the exit_reasons key of a migrated position, R02 0d0ffd06) — LATE entries on W1 (development data), a grid FIXED here before any data is read (plan v0.2 of
 RUGGER 01; decision of RUGGER 02 04ecafed: option (iii), C-D frozen first in dossier A v1.6 § 10 and anchored by
 R02 BEFORE any run; the tier-restricted cells L2 and L4 are NEVER evaluated). EXPLORATORY: a cell kept here is an hypothesis, confirmed on W2 only.
 
@@ -129,6 +129,7 @@ def summary(items):
     by_pool = sorted((r for r in returns if r > 0), reverse=True)
     interval = bootstrap(clusters)
     interpretable = len(returns) >= MIN_N and len(clusters) >= MIN_CLUSTERS
+    keys = ['migrated' if o['migrated'] else o['reason'] for _c, o in items]      # as statelab (l. 231); R02 0d0ffd06
     return dict(n=len(returns), clusters=len(clusters), mean_net_return=statistics.fmean(returns) if returns else None,
                 median_net_return=statistics.median(returns) if returns else None,
                 win_rate=(sum(r > 0 for r in returns) / len(returns)) if returns else None,
@@ -136,8 +137,8 @@ def summary(items):
                 interval_95=interval, interpretable=interpretable,
                 share_of_the_5_best_in_positive=(sum(by_pool[:5]) / sum(by_pool)) if by_pool else None,
                 migrated_share=(sum(o['migrated'] for _c, o in items) / len(items)) if items else None,
-                exit_reasons=dict(sorted({r: sum(1 for _c, o in items if o['reason'] == r)
-                                          for r in {o['reason'] for _c, o in items}}.items(), key=lambda kv: str(kv[0]))))
+                exit_reasons=dict(sorted({r: sum(1 for k in keys if k == r)
+                                          for r in set(keys)}.items(), key=lambda kv: str(kv[0]))))
 
 
 def cell_items(pools, half, cell):

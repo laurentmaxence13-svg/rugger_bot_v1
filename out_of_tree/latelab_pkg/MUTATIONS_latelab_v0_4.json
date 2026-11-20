@@ -1,0 +1,62 @@
+[
+ {
+  "mutant": "cut_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "eval_upper_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_zero",
+  "detected": true
+ },
+ {
+  "mutant": "rent_recovered_by_default",
+  "detected": true
+ },
+ {
+  "mutant": "rank_by_mean",
+  "detected": true
+ },
+ {
+  "mutant": "cluster_floor_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "other_labels_kept",
+  "detected": true
+ },
+ {
+  "mutant": "screen_any_cell",
+  "detected": true
+ },
+ {
+  "mutant": "discovery_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "pass_without_floor",
+  "detected": true
+ },
+ {
+  "mutant": "clock_changed",
+  "detected": true
+ },
+ {
+  "mutant": "top2_instead_of_top1",
+  "detected": true
+ },
+ {
+  "mutant": "dossier_a_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "dossier_a_content_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_key_none",
+  "detected": true
+ }
+]

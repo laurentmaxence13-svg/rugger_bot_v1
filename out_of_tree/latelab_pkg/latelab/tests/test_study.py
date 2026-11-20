@@ -181,3 +181,14 @@ def test_no_cell_can_filter_on_the_tier_or_slice_l1_l3():
     assert not keys & {'tiers', 'by_tier', 'by_age', 'slices', 'thirds'}
     params = inspect.signature(L.cell_items).parameters
     assert list(params) == ['pools', 'half', 'cell']                                   # nothing to filter with
+
+
+def test_a_migrated_position_is_written_under_the_key_migrated(tmp_path):
+    """R02 0d0ffd06: run_rule gives reason=None for a migrated position; the summary must still be writable."""
+    items = [('c1', _o(None, migrated=True, reason=None)), ('c2', _o(101_000_000)), ('c3', _o(None, migrated=True, reason=None))]
+    doc = L.summary(items)
+    assert doc['exit_reasons'] == {'clock': 1, 'migrated': 2}
+    sha = L._write(tmp_path / 'out', dict(cells=dict(L1=doc)))
+    written = json.loads((tmp_path / 'out' / 'LATELAB.json').read_text())
+    assert written['cells']['L1']['exit_reasons'] == {'clock': 1, 'migrated': 2}
+    assert sha == hashlib.sha256((tmp_path / 'out' / 'LATELAB.json').read_bytes()).hexdigest()

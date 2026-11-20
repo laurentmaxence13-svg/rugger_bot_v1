@@ -17,6 +17,7 @@ MUT = [
  ("ranking_rule='interpretable cells by the lower bound of the 95 % interval', top1=ranked[:1],", "ranking_rule='interpretable cells by the lower bound of the 95 % interval', top1=ranked[:2],", 'top2_instead_of_top1'),
  ("if hashlib.sha256(a.dossier_a.read_bytes()).hexdigest() != a.dossier_a_sha256:", "if False:", 'dossier_a_sha_ignored'),
  ("        if 'C-D FIGÉ' not in a.dossier_a.read_text(encoding='utf-8'):", "        if False:", 'dossier_a_content_ignored'),
+ ("    keys = ['migrated' if o['migrated'] else o['reason'] for _c, o in items]", "    keys = [o['reason'] for _c, o in items]", 'migrated_key_none'),
 ]
 out = []
 for old, new, name in MUT:
