@@ -1,0 +1,38 @@
+[
+ {
+  "mutant": "upper_bound_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "lower_bound_exclusive",
+  "detected": true
+ },
+ {
+  "mutant": "index_ignored_in_order",
+  "detected": true
+ },
+ {
+  "mutant": "pilot_last",
+  "detected": true
+ },
+ {
+  "mutant": "any_exclusion_counted",
+  "detected": true
+ },
+ {
+  "mutant": "sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "duplicates_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "overwrite_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "slot_type_unchecked",
+  "detected": true
+ }
+]
