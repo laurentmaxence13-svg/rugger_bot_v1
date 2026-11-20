@@ -27,7 +27,8 @@ trois lignes sont interprétables. N = 163.
   - Le seuil à battre n'est plus de +0,75 point. **Il faut ≈ +3,5 points de brut** (≈ +5,5 avec le loyer perdu)
     pour qu'une sélection tardive devienne positive au palier moyen.
   - L'argument arithmétique de C-D (§ 11 du Dossier A) s'appuyait sur ce +2,90 %. Il est **affaibli**. Au palier de
-    2 500 ppm, l'aller-retour coûte ≈ 0,7 % : C-D reste le seul cas où un brut ≈ 0 n'est pas loin de l'équilibre.
+    2 500 ppm, l'aller-retour coûte ≈ 0,7 %. Il faut y ajouter 2,05 % de loyer si le compte de jetons n'est pas fermé.
+    C-D reste le seul cas où un brut ≈ 0 n'est pas loin de l'équilibre, À CONDITION de fermer le compte.
   - C-D n'est pas évalué ici. Il reste figé pour W2.
   - T1 et T3p restent figés tels quels (R02 8ce50be9) : ce résultat ne les redéfinit pas.
 
