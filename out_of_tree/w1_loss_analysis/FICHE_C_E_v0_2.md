@@ -51,9 +51,12 @@ de progression ou de signataire n'est lu. La sélection ne lit que le palier de 
   - Effet minimal δ gelé du Dossier B : **+2 %**.
   - **Résultat attendu en W2 : NO-GO ou INCONCLUSIF.**
   - Durée W2 ≈ **48 à 64 jours**. C'est l'estimation de R02, sur ≈ 35 points en 4,01 jours.
-- **Puissance (indicatif, R01).** L'écart-type par cycle est d'environ 4,4 %, d'après l'IC du placebo. Détecter
-  +0,5 % demanderait ≈ 600 cycles ; détecter +1 %, ≈ 150. C-E n'a donc AUCUNE chance de démontrer un net positif de
-  l'ordre de ce qui a été observé.
+- **Puissance (Dossier B § 6.1, R02).**
+  - σ = max(13,7 %, σ du bras) ; δ gelé = +2 % ; donc **n_min = 414** et D ≈ 48 j (c = 1) à 64 j (c = 0,75).
+  - Aucune estimation de σ tirée des 35 positions observées n'est utilisée : elles sont choisies après regard et à
+    queue lourde.
+- **Recommandation (R01 et R02).** C-E est recevable, mais NON recommandé. Son espérance est ≈ 0, et il allongerait
+  W2 à 48–64 jours.
 
 ## Validation
 

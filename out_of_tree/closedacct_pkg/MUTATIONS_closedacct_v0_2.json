@@ -1,0 +1,38 @@
+[
+ {
+  "mutant": "fee_live_default_as_main",
+  "detected": true
+ },
+ {
+  "mutant": "closed_on_cost",
+  "detected": true
+ },
+ {
+  "mutant": "open_on_cost_plus_rent",
+  "detected": true
+ },
+ {
+  "mutant": "cleanup_fee_free",
+  "detected": true
+ },
+ {
+  "mutant": "failed_attempts_free",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_attempts_1",
+  "detected": true
+ },
+ {
+  "mutant": "never_left_open",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_minus_one",
+  "detected": true
+ },
+ {
+  "mutant": "incomplete_sale_accepted",
+  "detected": true
+ }
+]

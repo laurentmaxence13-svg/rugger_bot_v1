@@ -4,12 +4,14 @@ D, V, W, M, PP = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]),
 src = (D / 'closedacct' / 'model.py').read_text()
 MUT = [
  ("CLEANUP_FEE_LAMPORTS = 105_000", "CLEANUP_FEE_LAMPORTS = 5_000", 'fee_live_default_as_main'),
- ("    return (outcome['value'] - outcome['cost'] - fees) / outcome['cost']", "    return (outcome['value'] - outcome['cost']) / outcome['cost']", 'cleanup_fee_free'),
- ("    fees = (failed_attempts + 1) * cleanup_fee", "    fees = cleanup_fee", 'failed_attempts_free'),
+ ("    return (received - outcome['cost'] - (failed_attempts + 1) * cleanup_fee) / stake", "    return (received - outcome['cost'] - (failed_attempts + 1) * cleanup_fee) / outcome['cost']", 'closed_on_cost'),
+ ("    return (_received(outcome) - outcome['cost'] - rent) / stake", "    return (_received(outcome) - outcome['cost'] - rent) / (outcome['cost'] + rent)", 'open_on_cost_plus_rent'),
+ ("    return (received - outcome['cost'] - (failed_attempts + 1) * cleanup_fee) / stake", "    return (received - outcome['cost']) / stake", 'cleanup_fee_free'),
+ ("(failed_attempts + 1) * cleanup_fee) / stake", "cleanup_fee) / stake", 'failed_attempts_free'),
+ ("FROZEN_FAILED_ATTEMPTS = 0 ", "FROZEN_FAILED_ATTEMPTS = 1 ", 'frozen_attempts_1'),
  ("    if failed_attempts == MAX_CLEANUP_ATTEMPTS:", "    if False:", 'never_left_open'),
- ("    if outcome['migrated']:\n        return -1.0\n    if outcome.get('value')", "    if outcome['migrated']:\n        return 0.0\n    if outcome.get('value')", 'migrated_zero'),
- ("        raise ClosedAccountError('closed_mode_requires_a_total_sale')", "        return 0.0", 'incomplete_sale_accepted'),
- ("    return (outcome['value'] - outcome['cost'] - rent) / (outcome['cost'] + rent)\n\n\ndef net_return_closed", "    return (outcome['value'] - outcome['cost']) / outcome['cost']\n\n\ndef net_return_closed", 'open_mode_rent_recovered'),
+ ("        return net_return_open(outcome, rent=rent, stake=stake)", "        return -1.0", 'migrated_minus_one'),
+ ("        raise ClosedAccountError('closed_mode_requires_a_total_sale')", "        return 0", 'incomplete_sale_accepted'),
 ]
 out = []
 for old, new, name in MUT:
