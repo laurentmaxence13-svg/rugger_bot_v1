@@ -4,18 +4,32 @@ RUGGER 01, 20/11/2026, pour R02 (audit) et R04 (suivi).
 - **Statut** : EXPLORATOIRE. Aucune dépense, aucune collecte, aucune donnée protégée.
 - **Compteur d'essais** : N = 163 après la découverte latelab (161 + 2). Le crible latelab porterait N à 164.
 
-## 1. latelab 0.4, découverte sur la moitié 1 de W1
+## 1. latelab 0.4, découverte sur la moitié 1 de W1 — sortie ANCRÉE par R02 (7351512d, lue par R02 en premier)
 
-EN ATTENTE de la sortie, ancrée par R02, de l'exécution de R03 (PASS de la 0.4 : d116070a). Rien n'a été lu. Le
-tableau suivra, pour L1 (`age:120`), L3 (`age:300`) et le placebo :
-- n, grappes, net moyen et son IC 95 % par grappes ;
-- médiane, part de gagnantes, part des 5 meilleurs ;
-- part de migrées ;
-- top1.
+Les trois cellules ont : sortie à l'horloge de 60 s, 0,1 SOL, latence de 4 slots, loyer perdu, aucune sélection. Les
+trois lignes sont interprétables. N = 163.
 
-**Seuil à battre.** Le brut tardif W1 vaut +2,90 % (ventilation T4, ≥ 450 slots). Les frais moyens sont d'environ
-3,6 % par aller-retour. Le net de départ est donc ≈ −0,75 %. Une sélection doit ajouter au moins +0,75 point de brut
-pour devenir positive.
+| Cellule | n (grappes) | Net moyen [IC 95 %] | Médiane | Gagnantes | Part des 5 meilleurs dans les gains | Net, loyer récupéré |
+|---|---|---|---|---|---|---|
+| **L1** `age:120` | 178 (174) | **−5,14 %** [−7,42 ; −2,90] | −4,15 % | 11 % | 56 % | −3,21 % |
+| **L3** `age:300` | 82 (77) | **−7,81 %** [−10,77 ; −4,76] | −5,12 % | 12 % | 82 % | −5,94 % |
+| Placebo (âge ≤ 120 s), descriptif | 270 (254) | −5,67 % [−7,54 ; −3,75] | −4,63 % | 13 % | 53 % | −3,75 % |
+
+- **top1 = L1.** Son crible sur la moitié 2 a été calculé par R03 (sha 20aba3f5) ; il attend l'ancrage de R02, et rien
+  n'en est lu. Avec lui, N = 164. Une réussite est très improbable.
+- **Lecture.**
+  - Sans sélection, une entrée tardive perd autant que le placebo.
+  - Loyer récupéré, le net est de −3,2 %, soit à peu près l'aller-retour de frais (≈ 3,5 %) : **le brut d'une entrée
+    tardive non sélectionnée est ≈ 0**.
+  - Le « +2,90 % » de la ventilation T4 portait sur les positions du MASTER (déjà sélectionnées, autre sortie). Il
+    NE se généralise PAS à tous les pools tardifs.
+- **Conséquence.**
+  - Le seuil à battre n'est plus de +0,75 point. **Il faut ≈ +3,5 points de brut** (≈ +5,5 avec le loyer perdu)
+    pour qu'une sélection tardive devienne positive au palier moyen.
+  - L'argument arithmétique de C-D (§ 11 du Dossier A) s'appuyait sur ce +2,90 %. Il est **affaibli**. Au palier de
+    2 500 ppm, l'aller-retour coûte ≈ 0,7 % : C-D reste le seul cas où un brut ≈ 0 n'est pas loin de l'équilibre.
+  - C-D n'est pas évalué ici. Il reste figé pour W2.
+  - T1 et T3p restent figés tels quels (R02 8ce50be9) : ce résultat ne les redéfinit pas.
 
 ## 2. Trois hypothèses de sélection tardive : 1 essai chacune, sur la moitié 2 uniquement
 
