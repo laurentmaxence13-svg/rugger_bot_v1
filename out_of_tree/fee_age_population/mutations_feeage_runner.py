@@ -1,6 +1,6 @@
 import json, shutil, subprocess, sys
 from pathlib import Path
-D, V, W, M = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4])
+D, V, W, M, X = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]), sys.argv[5]   # X: w1aux path
 src = (D / 'feeage' / 'population.py').read_text()
 MUT = [
  ("if fees < MIN_FEE_LAMPORTS:", "if fees <= MIN_FEE_LAMPORTS:", 'min_fee_inclusive'),
@@ -12,6 +12,10 @@ MUT = [
  ("if manifest_sha != manifest_sha256:", "if False:", 'manifest_ignored'),
  ("usable.append((event.slot - creation_slot, tier))", "usable.append((event.slot, tier))", 'age_not_relative'),
  ("days = span * SLOT_MS / 1000 / 86_400", "days = span * 400 / 1000 / 86_400", 'clock_400ms'),
+ ("late_low += first_late <= LOW_TIER_PPM", "late_low += first_late == LOW_TIER_PPM", 'low_tier_equality'),
+ ("inside = [f for f in facts if evaluation_min <= f[0] < evaluation_max]", "inside = [f for f in facts if evaluation_min <= f[0] <= evaluation_max]", 'range_upper_inclusive'),
+ ("span = span_slots if span_slots is not None else", "span = None if False else", 'span_slots_ignored'),
+ ("        clear_cache()\n", "        pass\n", 'cache_not_cleared'),
 ]
 out = []
 for old, new, name in MUT:
@@ -20,7 +24,7 @@ for old, new, name in MUT:
     shutil.copytree(D / 'feeage', work / 'feeage')
     (work / 'feeage' / 'population.py').write_text(src.replace(old, new))
     r = subprocess.run([V, '-B', '-m', 'pytest', str(work / 'feeage' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],
-                       cwd=W, env={'PYTHONPATH': f'{W}:{work}', 'PATH': '/usr/bin:/bin', 'RUGGER_NO_DOTENV': '1'},
+                       cwd=W, env={'PYTHONPATH': f'{W}:{X}:{work}', 'PATH': '/usr/bin:/bin', 'RUGGER_NO_DOTENV': '1'},
                        capture_output=True, text=True)
     out.append(dict(mutant=name, detected=r.returncode != 0))
 print(json.dumps(out, indent=1))

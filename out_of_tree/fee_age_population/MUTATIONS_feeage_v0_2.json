@@ -1,0 +1,54 @@
+[
+ {
+  "mutant": "min_fee_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "no_tier_rounding",
+  "detected": true
+ },
+ {
+  "mutant": "strict_decrease",
+  "detected": true
+ },
+ {
+  "mutant": "last_late_tier",
+  "detected": true
+ },
+ {
+  "mutant": "late_exclusive",
+  "detected": true
+ },
+ {
+  "mutant": "single_event_counted",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "age_not_relative",
+  "detected": true
+ },
+ {
+  "mutant": "clock_400ms",
+  "detected": true
+ },
+ {
+  "mutant": "low_tier_equality",
+  "detected": true
+ },
+ {
+  "mutant": "range_upper_inclusive",
+  "detected": true
+ },
+ {
+  "mutant": "span_slots_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "cache_not_cleared",
+  "detected": true
+ }
+]

@@ -1,12 +1,13 @@
-"""feeage 0.1 — POPULATION facts on the LaunchLab fee rate versus pool age (prerequisite of candidate C-D, R02
+"""feeage 0.2 — POPULATION facts on the LaunchLab fee rate versus pool age (prerequisite of candidate C-D, R02
 3cd2ffa2, points 3 and 4). No value: no P&L, no return, no reserve, no progress, no signer is read (tested).
 
 Q3 (R02): does the LaunchLab fee rate DECREASE with pool age? If so, « late » and « 2 500 ppm » are confounded and C-D
 must be written as ONE causal condition.
-Q4 (R02): entry rate of C-D established by a population count: pools that reach age >= 450 slots while trading at the
-2 500 ppm tier.
+Q4 (R02): entry rate of C-D established by a population count: pools that reach age >= 450 slots while trading at a
+tier <= 2 500 ppm (R02 bbac1ffb: ``<=``, not ``==``).
 
-INPUT: an exported pools directory (MANIFEST.json + archives, sha256 checked by the frozen ``load_fixtures``). Only
+INPUT: an exported pools directory (MANIFEST.json + archives), read through ``w1aux.lazy.load_fixtures_lazy`` (the
+same checks as the frozen ``load_fixtures`` on the same bytes, but ONE archive in memory at a time; R02 bbac1ffb). Only
 these fields of each decoded trade event are used: ``slot``, ``side``, ``amount_in``, ``amount_out`` and the four fee
 fields (``FEE_FIELDS``); the pool age is ``event.slot - creation_slot`` (frozen ``creation_facts``).
 
@@ -19,8 +20,10 @@ OUTPUT (``FEE_AGE_POPULATION.json``; nothing printed): counts only.
   those whose tier never increases with age (non-increasing), with the count of (first tier -> last tier) pairs;
 * tiers by age class (slots) [0,5) [5,25) [25,50) [50,150) [150,450) >=450: number of usable events per tier;
 * C-D population: pools with at least one usable event at age >= 450 slots; those whose tier at their FIRST usable
-  event at age >= 450 is 2 500 ppm; creation-slot span of the population, and the counts per day at the declared
+  event at age >= 450 is <= 2 500 ppm; creation-slot span of the population, and the counts per day at the declared
   clock of 215 ms per slot (measured, R02/R03).
+Everything is given for ALL the pools and, when an evaluation range is given, for the pools CREATED in
+[evaluation_min, evaluation_max) (per day over the width of the range), comparable with the preliminary reading.
 """
 import argparse
 import hashlib
@@ -29,9 +32,10 @@ from pathlib import Path
 
 from bot.market.collector import summarize
 from bot.market.launchlab_events import implied_fee_rate_ppm
-from bot.p4.historical_research_replay import creation_facts, load_fixtures
+from bot.p4.historical_research_replay import creation_facts
+from w1aux.lazy import clear_cache, load_fixtures_lazy
 
-SCHEMA = 'rugger-fee-age-population-v0.1'
+SCHEMA = 'rugger-fee-age-population-v0.2'
 FEE_FIELDS = ('protocol_fee', 'platform_fee', 'creator_fee', 'share_fee')
 MIN_FEE_LAMPORTS = 1_000
 TIER_STEP_PPM = 500
@@ -75,8 +79,9 @@ def pool_facts(archive):
     return creation_slot, usable, small
 
 
-def population(pools):
-    """``pools``: iterable of (creation_slot, [(age, tier)], small)."""
+def population(pools, *, span_slots=None):
+    """``pools``: iterable of (creation_slot, [(age, tier)], small). ``span_slots``: the width used for the counts per
+    day (default: the creation-slot span of the pools)."""
     constancy = dict(pools_with_two_usable_events=0, constant=0, changing=0, changing_non_increasing=0,
                      first_to_last={})
     by_age = {}
@@ -102,8 +107,8 @@ def population(pools):
         first_late = next((tier for age, tier in usable if age >= LATE_SLOTS), None)
         if first_late is not None:
             late += 1
-            late_low += first_late == LOW_TIER_PPM
-    span = (max(slots) - min(slots)) if slots else 0
+            late_low += first_late <= LOW_TIER_PPM
+    span = span_slots if span_slots is not None else ((max(slots) - min(slots)) if slots else 0)
     days = span * SLOT_MS / 1000 / 86_400
     order = [age_class(edge) for edge in AGE_EDGES] + ['negative']
     return dict(schema=SCHEMA, category='POPULATION_FACT', pools=len(slots), usable_events=usable_total,
@@ -111,7 +116,7 @@ def population(pools):
                 tiers_by_age_class={k: dict(sorted(by_age[k].items(), key=lambda kv: int(kv[0])))
                                     for k in order if k in by_age},
                 c_d_population=dict(rule=f'pool with a usable event at age >= {LATE_SLOTS} slots; low = tier at that '
-                                         f'first late event == {LOW_TIER_PPM} ppm',
+                                         f'first late event <= {LOW_TIER_PPM} ppm',
                                     late_pools=late, late_pools_at_low_tier=late_low,
                                     creation_slot_span=span, days_at_declared_clock=round(days, 3),
                                     late_low_per_day=round(late_low / days, 2) if days else None),
@@ -120,14 +125,28 @@ def population(pools):
                 flags=dict(values_read=False, curve_state_read=False, counted_in_n=False))
 
 
-def run(pools_dir, manifest_sha256, out_dir, label):
-    manifest_sha, _digests, entries, _manifest = load_fixtures(pools_dir)
+def run(pools_dir, manifest_sha256, out_dir, label, evaluation_min=None, evaluation_max=None):
+    if (evaluation_min is None) != (evaluation_max is None) or (
+            evaluation_min is not None and not evaluation_min < evaluation_max):
+        raise FeeAgeError('invalid_evaluation_range')
+    manifest_sha, _digests, entries, _manifest = load_fixtures_lazy(pools_dir)
     if manifest_sha != manifest_sha256:
         raise FeeAgeError('manifest_is_not_the_anchored_one')
     out = Path(out_dir)
     if out.exists():
         raise FeeAgeError('output_exists')
-    doc = population(pool_facts(archive) for _entry, archive in entries)
+    facts = []
+    try:
+        for _entry, archive in entries:                       # one archive parsed and held at a time
+            facts.append(pool_facts(archive))
+    finally:
+        clear_cache()
+    doc = dict(schema=SCHEMA, all=population(facts))
+    if evaluation_min is not None:
+        inside = [f for f in facts if evaluation_min <= f[0] < evaluation_max]
+        doc['evaluation_range'] = dict(population(inside, span_slots=evaluation_max - evaluation_min),
+                                       evaluation_min=evaluation_min, evaluation_max=evaluation_max,
+                                       rule='pools CREATED in [evaluation_min, evaluation_max)')
     doc['input'] = dict(label=label, manifest_sha256=manifest_sha)
     out.mkdir(parents=True)
     path = out / 'FEE_AGE_POPULATION.json'
@@ -140,9 +159,11 @@ def main(argv=None):
     parser.add_argument('--pools', type=Path, required=True)
     parser.add_argument('--manifest-sha256', required=True)
     parser.add_argument('--label', required=True, help='P0 or W1, as admitted by RUGGER 02')
+    parser.add_argument('--evaluation-min', type=int, default=None)
+    parser.add_argument('--evaluation-max', type=int, default=None)
     parser.add_argument('--out', type=Path, required=True)
     a = parser.parse_args(argv)
-    run(a.pools, a.manifest_sha256, a.out, a.label)
+    run(a.pools, a.manifest_sha256, a.out, a.label, a.evaluation_min, a.evaluation_max)
     return 0
 
 
