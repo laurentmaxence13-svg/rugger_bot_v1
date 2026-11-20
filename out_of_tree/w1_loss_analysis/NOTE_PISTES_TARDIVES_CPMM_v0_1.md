@@ -19,6 +19,8 @@ pour devenir positive.
 
 ## 2. Trois hypothèses de sélection tardive : 1 essai chacune, sur la moitié 2 uniquement
 
+> **Mise à jour du 20/11 (audit R02).** T2 est retiré. T3 devient **T3p**, qui utilise `top5_holder_share` calculée sur les seuls montants des échanges (créateur exclu). `top5_token_share` est interdite : son dénominateur est real_base. **T1 et T3p sont figés**, avant toute sortie latelab. Outil : latesel 0.1. Compteur hors HW1 : au plus 168.
+
 **Règles communes.**
 - **Entrée** : le point de la cellule tardive, `age:120`, ou `age:300` pour T3. On ajoute un seul filtre causal, calculé
   sur l'historique jusqu'à l'événement de décision. Ce filtre vient des `FEATURES` existantes de `statelab.signals`.
