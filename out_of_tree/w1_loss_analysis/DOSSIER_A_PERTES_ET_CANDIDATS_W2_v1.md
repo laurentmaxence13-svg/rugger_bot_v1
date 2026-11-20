@@ -1,4 +1,4 @@
-# Dossier A — Pertes W1 et candidats W2 — v1.2 (RUGGER 01, 2026-11-20)
+# Dossier A — Pertes W1 et candidats W2 — v1.3 (RUGGER 01, 2026-11-20)
 
 **Audit R02 de la v1** (fc7b3a54, registre f2f86f74) : PASS SOUS RÉSERVES ; les portes sont ANCRÉES. Ses réserves sont intégrées ci-dessous (marque « R02 f2f86f74 »).
 
@@ -119,7 +119,20 @@ n'est JAMAIS remplacé par une variante.
   - (iii) limite déclarée : rien ne démontre aujourd'hui qu'une décision prise sur la transaction de création soit
     réalisable en réel (détecter, décider et atterrir en 4 slots).
 
-### C-C « CPMM après la migration »
+### C-C « CPMM après la migration » — EMPLACEMENT VIDE (constat R02 d4a01934)
+
+**Constat.** W1 ne compte que **12 pools migrés**, soit environ 3 par jour (sortie de w1migr 0.1.1, fait de
+population, à ancrer). R03 en estimait 50 à 100.
+- La porte ancrée de C-C, le critère C-1 sur au moins 20 pools migrés du pilote réel, est **inatteignable** : 12
+  pools au plus, et 10 dans le pilote.
+- En W2, 390 cycles demanderaient environ 130 jours.
+- Selon la règle ancrée, l'emplacement reste VIDE.
+- Toute autre forme de CPMM, avec une autre source de pools ou une autre porte, serait un NOUVEAU candidat. Il
+  faudrait l'écrire avant tout regard sur des données CPMM et le soumettre au propriétaire.
+- Je n'en propose pas : au rythme d'environ 3 migrations par jour, aucune forme ne serait assez puissante.
+- Le levier « frais 0,25 % » reste une piste d'ÉTUDE descriptive, pas un candidat W2.
+
+Règle telle qu'ancrée (pour mémoire) :
 
 - **Règle** : HW1-M2, telle que figée le 11/11. Achat de 0,1 SOL sur le pool CPMM 60 s après son premier swap,
   vente 300 s plus tard ; frais du pool lus sur la chaîne ; loyer compris.
@@ -133,7 +146,7 @@ n'est JAMAIS remplacé par une variante.
   données réelles.
 - **Dépend de** B2 (pilote, accord du propriétaire, crédits gratuits).
 
-**Choix de candidat que je recommande** : C-B en priorité, car c'est le seul qui ait à la fois un effectif suffisant
+**Choix de candidat que je recommande (mis à jour : C-C est vide)** : il ne reste que C-B et C-A. C-B en priorité, car c'est le seul qui ait à la fois un effectif suffisant
 pour une W2 courte et un indice, même fragile, de brut positif. C-C vient ensuite, comme seul levier de coût
 crédible. C-A sert surtout de témoin de coût : la porte le retirera probablement.
 
@@ -146,7 +159,8 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
   - C-B (HW1-5) : environ 600 cycles, soit un effet d'environ +1,6 %.
 - **Recommandation** : la durée de W2 se fixe au gel, d'après les candidats retenus par les portes.
   - Avec C-B (HW1-5) seul : 5 à 12 jours.
-  - Avec C-A ou C-C : au moins 16 à 32 jours, ou les accepter comme sous-puissants (déclaré NON CONCLUANT d'avance).
+  - Avec C-A : environ 24 à 26 jours pour +2 %, ou l'accepter comme sous-puissant (déclaré NON CONCLUANT d'avance).
+  - C-C ne compte plus : son emplacement est vide (§ 3).
 - **Crédits (aligné sur le dossier C de R03)** : environ 60 000 crédits par jour de fenêtre. Une W2 de 12 jours
   demande environ 0,73 M crédits, ce qui tient dans le quota mensuel de l'offre Free. MAIS la documentation actuelle
   de Helius réserve `getTransactionsForAddress` aux offres Developer et au-delà. Si un diagnostic de 1 requête au plus
@@ -160,7 +174,8 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
 - **B0** : exécuter w1loss sur le ledger ancré (hors ligne, quelques secondes, aucun coût). Nécessaire à la porte
   de C-A.
 - **B1** : verdict officiel W1 (dépense de calcul, note voie B). Il ouvre la lecture HW1 et la porte de C-B.
-- **B2** : pilote CPMM réel, nécessaire à la porte de C-C. Plafonds proposés, jugés cohérents par R03 :
+- **B2 — SANS OBJET pour W2** (C-C vide, constat R02 d4a01934). Un pilote CPMM ne servirait plus qu'à une étude
+  descriptive : ce n'est pas une priorité, et je ne le recommande pas. Pour mémoire, la proposition de pilote : Plafonds proposés, jugés cohérents par R03 :
   - au plus 10 pools migrés, les premiers dans l'ordre chronologique de migration ;
   - 60 minutes après le premier swap de chaque pool ;
   - 1 500 crédits par pool, soit environ 14 800 transactions ;
@@ -170,7 +185,7 @@ crédible. C-A sert surtout de témoin de coût : la porte le retirera probablem
     l'offre Developer (≈ 59 $ TTC), donc l'accord du propriétaire.
   - **Population du pilote** : lecture de `record['migration']` ADMISE par R02 (f5ad8d36) ; outil `w1migr` 0.1.1 (PASS 45813426 pour la 0.1). **Limite déclarée** : seuls les pools exportés, donc créés dans la fenêtre collectée, y figurent ; un pool créé avant W1 et migré pendant W1 est absent.
 - **B3** : durée et calendrier de W2 (§ 4), plafond de crédits, offre Helius.
-- Sans B1 ni B2, W2 ne comporterait que C-A face aux comparateurs, avec un échec attendu. **Je déconseille de
+- Sans B1, W2 ne comporterait que C-A face aux comparateurs, avec un échec attendu. **B1 est donc la décision qui conditionne l'intérêt même de W2.** **Je déconseille de
   lancer W2 dans cette configuration.**
 
 ## 6. Taux d'entrée : ce qui est connu, ce qui ne l'est pas (R02 141155dd)
