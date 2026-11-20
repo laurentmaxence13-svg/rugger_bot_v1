@@ -1,0 +1,11 @@
+{
+ "bundles_sums_sha256": "ba14a5db7a66b277f59b9ddf2222bb9364b33e75496483300707aadef5044b72",
+ "core_definition": "report without its runtime key; ledger without w1_report.sha256; sha256 of canonical JSON",
+ "file_digests_are_machine_dependent": "w1_report.json and ledger.json file sha256 include the kernel string (v2.5 reference 44aaa9e3 / fd68eea7 under 6.18.44-fc-v378; beddda5d / 7285d7fb under 6.18.44-fc-v470)",
+ "ledger_core_sha256": "c810727cabb8c4ad7e2ccb23561e1022f8bc0fa666ecc5713fa9698829dd4896",
+ "measured_by": "R01 session 2026-11-14, CPython 3.12.3 x86_64, tree aff97638: w1aux v7.3 (63eb3412) and v7.4 (31222874) give these same three values",
+ "sample": "synthetic_x40",
+ "signatures": 6920,
+ "to_confirm_by": "R03 session (must be equal) and anchoring by R02 before any cloud run",
+ "w1_report_core_sha256": "10e189602ba54430bcd57dc3062e44cada18dedf1a82535cebd55b73db880865"
+}
