@@ -1,11 +1,12 @@
-# Fiche C-E — « entrée précoce à palier bas, compte de jetons fermé » — v0.1, à geler (RUGGER 01, 21/11/2026)
+# Fiche C-E — « entrée précoce à palier bas, compte de jetons fermé » — v0.2, à geler (RUGGER 01, 21/11/2026 ; R02 85d2e959)
 
 **Statut.** Brouillon soumis à R02. Il est figé AVANT toute nouvelle lecture.
 - **Choisi après regard.** C-E vient du placebo à palier bas de la porte C-D. Sur W1, ce placebo fait +0,17 % loyer
   récupéré (n = 35 ; cdgate 0.2, 2b173f10).
 - **Jugé sur W2 SEULEMENT.** C-E ne peut être jugé ni sur W1, déjà lu, ni sur P0 visible, qui n'a aucun palier bas.
 - **Emplacement.** Il vise un emplacement W2 resté VIDE ; K = 3 est inchangé.
-- **Compteur N.** R02 dit si le choix de C-E compte dans N.
+- **Compteur N.** R02 déclare C-E recevable dans un emplacement vide (85d2e959). N passe à **168** dès l'écriture.
+- **Interdit.** Aucune évaluation de C-E, ni d'une variante, sur W1.
 
 ## Règle causale complète
 
@@ -16,7 +17,7 @@
 | Sélection | Palier du `causal_fee_rate` gelé (événements jusqu'à la décision), arrondi à 500 ppm comme feeage `tier_of` : ≤ 2 500 ppm |
 | Achat | 0,1 SOL, atterrissage après 4 slots, frais de courbe causaux, 5 000 + 100 000 lamports par transaction ; une position par pool |
 | Vente | TP +7 % ou SL −5 % du coût, sinon horloge à 30 s (`statelab.exits.run_rule`, règle de cdgate) |
-| Compte de jetons | FERMÉ après la vente totale, par une transaction séparée (conception live : branche `claude/r01-live-close-base-ata`, 9674826, jamais armée). Le modèle hors ligne est `closedacct` 0.1 : loyer récupéré, frais de nettoyage de 105 000 lamports (prudent) ; après 3 échecs, le compte reste ouvert et le loyer est perdu |
+| Compte de jetons | FERMÉ après la vente totale **seulement si P-5 (`closedacct`) est livré et audité par R02 AVANT le gel ; sinon, loyer PERDU**. La fermeture se fait par une transaction séparée (conception live : branche `claude/r01-live-close-base-ata`, 9674826, jamais armée). Le modèle hors ligne est `closedacct` 0.1 : loyer récupéré, frais de nettoyage de 105 000 lamports (prudent) ; après 3 échecs, le compte reste ouvert et le loyer est perdu |
 | Migrée | −1 (pas de vente, donc pas de fermeture) |
 
 **Pare-feu HW1.** L'âge de décision est ≤ 120 s, donc sans recouvrement avec HW1-4 (600 s). Aucun signal de réserve,
@@ -45,11 +46,14 @@ de progression ou de signataire n'est lu. La sélection ne lit que le palier de 
   - L'entrée à âge pseudo-aléatoire est exécutable : c'est un calcul local.
 - **Taux d'entrée.** ≈ 35 positions sur la plage W1 (≈ 4 j), soit **≈ 9 par jour**, à faire confirmer par R03 sur des
   comptes de population.
-- **Puissance.**
-  - L'écart-type par cycle est d'environ 4,4 %, d'après l'IC du placebo (n = 35).
-  - Pour détecter un net de +0,5 % (puissance de 80 %), il faut ≈ 600 cycles, soit ≈ 70 jours.
-  - Pour +1 %, il faut ≈ 150 cycles, soit ≈ 17 jours.
-  - **C-E est sous-puissant à moins de +1 % de vrai net** : c'est à déclarer d'avance (Dossier B).
+- **Déclaré d'avance (R02 85d2e959).**
+  - Effet observé sur W1 (biaisé) : +0,17 %.
+  - Effet minimal δ gelé du Dossier B : **+2 %**.
+  - **Résultat attendu en W2 : NO-GO ou INCONCLUSIF.**
+  - Durée W2 ≈ **48 à 64 jours**. C'est l'estimation de R02, sur ≈ 35 points en 4,01 jours.
+- **Puissance (indicatif, R01).** L'écart-type par cycle est d'environ 4,4 %, d'après l'IC du placebo. Détecter
+  +0,5 % demanderait ≈ 600 cycles ; détecter +1 %, ≈ 150. C-E n'a donc AUCUNE chance de démontrer un net positif de
+  l'ordre de ce qui a été observé.
 
 ## Validation
 
