@@ -1,0 +1,110 @@
+[
+ {
+  "mutant": "landing_one_slot_early",
+  "detected": true
+ },
+ {
+  "mutant": "latency_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sell_before_exit_latency",
+  "detected": true
+ },
+ {
+  "mutant": "clock_exit_early",
+  "detected": true
+ },
+ {
+  "mutant": "holding_ignores_real_trades",
+  "detected": true
+ },
+ {
+  "mutant": "exit_latency_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sale_tx_cost_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "time_order_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "push_after_end_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "streaming_not_swapped_in",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_engine_not_restored",
+  "detected": true
+ },
+ {
+  "mutant": "reconcile_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "reference_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "threshold_lowered",
+  "detected": true
+ },
+ {
+  "mutant": "label_genuine",
+  "detected": true
+ },
+ {
+  "mutant": "series_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "series_guard_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "series_optional",
+  "detected": true
+ },
+ {
+  "mutant": "series_not_passed_to_the_stream",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_arm_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "creator_history_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "declared_rate_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "journal_kept_in_memory",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "expected_bundle_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "pnl_in_counts",
+  "detected": true
+ },
+ {
+  "mutant": "replay_pool_not_restored",
+  "detected": true
+ }
+]

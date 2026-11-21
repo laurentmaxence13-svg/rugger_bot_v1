@@ -18,6 +18,18 @@ MUT = [
  ("    if hashlib.sha256(raw).hexdigest() != a.reference_sha256:", "    if False:", 'reference_sha_ignored'),
  ("    return dict(min_qualified_cycles=POLICY['min_qualified_cycles'], min_creator_groups=POLICY['min_creator_groups'],", "    return dict(min_qualified_cycles=10, min_creator_groups=POLICY['min_creator_groups'],", 'threshold_lowered'),
  ("CATEGORY = 'HISTORICAL_REPLAY'", "CATEGORY = 'GENUINE_MASTER_PAPER'", 'label_genuine'),
+ ("    if _sha_file(path) != sha256:", "    if False:", 'series_sha_unchecked'),
+ ("    if series.label != 'COLLECTED' or series.max_age_ms == sus.MAX_AGE_MS and series.max_confidence_ppm is None:", "    if False:", 'series_guard_dropped'),
+ ("    if path is None or sha256 is None:\n        raise StreamError('sol_usd_series_required')", "    if False:\n        raise StreamError('sol_usd_series_required')", 'series_optional'),
+ ("            bundle = l1_bundle(pools_dir, series)", "            bundle = l1_bundle(pools_dir, None if streaming else series)", 'series_not_passed_to_the_stream'),
+ ("                          placebo_arm=True)\n\n\ndef records", "                          placebo_arm=False)\n\n\ndef records", 'placebo_arm_dropped'),
+ ("hrr.CreatorHistory.from_archives([a for _e, a in hrr.load_fixtures(pools_dir)[2]], 'manifest'),", "None,", 'creator_history_dropped'),
+ ("    if params.sol_usd is not None:\n        raise StreamError('declared_sol_usd_rate_refused')", "    if False:\n        raise StreamError('declared_sol_usd_rate_refused')", 'declared_rate_accepted'),
+ ("        del JOURNALS[start:]\n", "", 'journal_kept_in_memory'),
+ ("    if _sha_file(Path(pools_dir) / 'MANIFEST.json') != manifest_sha256:", "    if False:", 'manifest_unchecked'),
+ ("    ok = doc['identical_to_reference'] and reconciled == closed and doc.get('matches_expected_bundle', True)", "    ok = doc['identical_to_reference'] and reconciled == closed", 'expected_bundle_ignored'),
+ ("    keep = ('decisions', 'enter_decisions', 'entries', 'outcomes', 'closed_cycles', 'blocking_reasons')", "    keep = ('decisions', 'enter_decisions', 'entries', 'outcomes', 'closed_cycles', 'blocking_reasons', 'pnl_lamports')", 'pnl_in_counts'),
+ ("    hrr.replay_pool = _journaled_replay_pool(original, journal_dir)\n    try:\n        yield\n    finally:\n        hrr.replay_pool = original", "    hrr.replay_pool = _journaled_replay_pool(original, journal_dir)\n    try:\n        yield\n    finally:\n        pass", 'replay_pool_not_restored'),
 ]
 out = []
 for old, new, name in MUT:

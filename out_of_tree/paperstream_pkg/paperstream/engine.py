@@ -1,30 +1,40 @@
-"""paperstream 0.1 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions).
-HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order; nothing is sent, signed or read
-from the network; no key; no economic conclusion (it reproduces a known replay: not a trial, N unchanged).
+"""paperstream 0.2 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
+0.2 per R02 decision 06181c21). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
+nothing is sent, signed or read from the network; no key; no economic conclusion (it reproduces a known replay: not a
+trial, N unchanged).
 
-  python -B -m paperstream.engine reference --pools <pack> --manifest-sha256 <anchored> --out <DIR>   (batch, frozen)
-  python -B -m paperstream.engine run --pools <pack> --manifest-sha256 <anchored> \
-         --reference <REFERENCE.json> --reference-sha256 <anchored> --out <DIR>                        (streaming)
+  python -B -m paperstream.engine reference --pools <pack> --manifest-sha256 <anchored> \
+         --sol-usd-series <series.json[.gz]> --sol-usd-series-sha256 <anchored> [--workers W] --out <DIR>      (batch)
+  python -B -m paperstream.engine run       --pools <pack> --manifest-sha256 <anchored> \
+         --sol-usd-series <series.json[.gz]> --sol-usd-series-sha256 <anchored> [--workers W] \
+         --reference <REFERENCE.json> --reference-sha256 <anchored> [--expect-bundle-sha256 <W1 L1>] --out <DIR> (stream)
 
+0.2 (R02 06181c21). (1) The SOL/USD series is MANDATORY: the file's sha256 is checked BEFORE it is read, it is loaded by
+the loader of the frozen W1 trials step (``sus.load_series``, as ``w1_run.run_trials``) under the same guard (COLLECTED,
+measured acceptance) and passed IDENTICALLY to the batch and the streaming runs. (2) No declared SOL/USD rate: there is
+no such input, and ``l1_params().sol_usd`` must be None. (3) ``StreamTrade`` and ``stream_replay`` are unchanged from
+0.1 (source sha256 tested). (4) 0.1 looped over ``replay_pool`` itself, without the collection window, the creator
+history and the placebo arm: 0.2 calls THE frozen ``hrr.run_replay`` with the arguments of the L1 bundle of
+``w1_run.run_trials`` (``l1_params()``, the series, ``L1_EXIT``, ``CreatorHistory.from_archives(..., 'manifest')``,
+``placebo_arm=True``), so that the batch bundle IS the frozen W1 L1 bundle (``--expect-bundle-sha256``).
 WHAT IS STREAMED. ``StreamTrade`` is a push-based copy of the state machine of the frozen ``bot.market.replay.replay``:
-the strategy sees ``events[:k + 1]`` only, the history pushed so far (it cannot be given a later event: pushes are
-checked for time order and refused after the end); a decision lands after the frozen latency, as soon as an event past
-the landing slot arrives (or at the end); holding replays each pushed real trade on the shifted curve with the frozen
-``_replay_real``; the exit, the clock exit, the migration stop and the final mark are those of ``replay``.
-WHAT IS NOT CHANGED. ``streaming_engine()`` swaps ONLY the trade engine of the frozen ``hrr.replay_pool`` (the name
-``replay`` inside ``bot.p4.historical_research_replay``) for the streaming one, inside a context manager that restores
-it; the frozen MASTER arm (``ResearchArm``, the MASTER V2 scorer of W1), the observer, the costs, the trade rows, the
-clock-exit rows, the migration and window rules are the frozen code, with the W1 L1 parameters (``w1_run.l1_params()``,
-latency 4, clock horizon 30 s).
-IDENTITY (R02 condition 3): ``reference`` writes the frozen BATCH records of the same input; ``run`` refuses a reference
-that is not the anchored one and states whether the streaming records are BYTE-IDENTICAL (canonical JSON), no tolerance.
-JOURNAL: one PAPER journal per pool and arm (DECISION / BUY / SELL / END), reconciled with the frozen trade row
-(received - spent - tx - failed = P&L, zero residual).
-LABELS (condition 4): category HISTORICAL_REPLAY; the protected thresholds are read from ``bot.master_decision.POLICY``
-(50 qualified cycles, 20 creator groups; condition 5) and these replayed cycles NEVER count toward them.
+the strategy sees ``events[:k + 1]`` only, the history pushed so far (pushes are checked for time order and refused after
+the end); a decision lands after the frozen latency; holding replays each pushed real trade on the shifted curve with the
+frozen ``_replay_real``; the exit, the clock exit, the migration stop and the final mark are those of ``replay``.
+WHAT IS NOT CHANGED. ``streaming_engine()`` swaps ONLY the trade engine (the name ``replay`` inside
+``bot.p4.historical_research_replay``) for the streaming one, and restores it; everything else is the frozen code.
+LARGE PACKS (W1). ``--workers`` runs inside ``w1aux.lazy.lazy_archives()`` and ``w1aux.parallel.parallel_replays``
+(forked workers inherit the swapped engine), WITHOUT checkpoint: no batch result can ever be served to the streaming run.
+JOURNAL: one PAPER journal per pool and arm (DECISION / BUY / SELL / MARK_AT_END), written per pool by the process that
+replayed it, reconciled with the frozen trade row (received - spent - tx - failed = P&L, zero residual).
+IDENTITY: the frozen ``bundle_sha256`` AND the sha256 of the canonical JSON of the whole bundle, batch vs streaming, no
+tolerance. Reported counts only (entries, outcomes, closed cycles per arm), no P&L in the summary documents.
+LABELS: category HISTORICAL_REPLAY; the protected thresholds are read from ``bot.master_decision.POLICY`` (50 qualified
+cycles, 20 creator groups) and these replayed cycles NEVER count toward them.
 """
 import argparse
 import contextlib
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -34,9 +44,10 @@ from bot.market.launchlab_curve import CurveError, buy_exact_in, sell_exact_in
 from bot.master_decision import POLICY
 from bot.master_v2 import w1_run
 from bot.p4 import historical_research_replay as hrr
-from w1aux.lazy import clear_cache, load_fixtures_lazy
+from bot.p4 import sol_usd_series as sus
+from w1aux import lazy, parallel
 
-SCHEMA = 'paperstream-v0.1'
+SCHEMA = 'paperstream-v0.2'
 CATEGORY = 'HISTORICAL_REPLAY'
 
 
@@ -243,24 +254,97 @@ def _canonical(doc):
     return json.dumps(doc, sort_keys=True, separators=(',', ':'), default=str)
 
 
-def records(pools_dir, manifest_sha256, *, streaming):
-    manifest_sha, _digests, entries, _manifest = load_fixtures_lazy(pools_dir)
-    if manifest_sha != manifest_sha256:
-        raise StreamError('manifest_is_not_the_anchored_one')
-    params = w1_run.l1_params()
-    out, excluded = [], 0
-    JOURNALS.clear()
-    context = streaming_engine() if streaming else contextlib.nullcontext()
+def _sha_file(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(1 << 20), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def load_anchored_series(path, sha256):
+    """The SOL/USD series of the frozen W1 chain: anchored file, frozen loader, the guard of w1_run.run_trials."""
+    if path is None or sha256 is None:
+        raise StreamError('sol_usd_series_required')
+    if not Path(path).is_file():
+        raise StreamError('sol_usd_series_missing')
+    if _sha_file(path) != sha256:
+        raise StreamError('sol_usd_series_is_not_the_anchored_one')
+    series = sus.load_series(path)
+    if series.label != 'COLLECTED' or series.max_age_ms == sus.MAX_AGE_MS and series.max_confidence_ppm is None:
+        raise StreamError('w1_needs_a_collected_series_with_its_measured_acceptance')
+    return series
+
+
+def _journaled_replay_pool(original, journal_dir):
+    """Per-pool function used while streaming: the frozen replay_pool, then its PAPER journals written to one file."""
+    def replay_pool(archive, *args, **kwargs):
+        start = len(JOURNALS)
+        record = original(archive, *args, **kwargs)
+        path = Path(journal_dir) / (record['pool'] + '.json')
+        if path.exists():
+            raise StreamError('journal_written_twice')
+        part = path.with_suffix('.part')
+        part.write_text(json.dumps(JOURNALS[start:], sort_keys=True, default=str), encoding='utf-8')
+        part.rename(path)
+        del JOURNALS[start:]
+        return record
+    return replay_pool
+
+
+@contextlib.contextmanager
+def _journals_to(journal_dir):
+    original = hrr.replay_pool
+    hrr.replay_pool = _journaled_replay_pool(original, journal_dir)
     try:
-        with context:
-            for _entry, archive in entries:
-                try:
-                    out.append(hrr.replay_pool(archive, params, quote_mint=R.WSOL_MINT, exit_options=w1_run.L1_EXIT))
-                except hrr.PoolExcluded:
-                    excluded += 1
+        yield
     finally:
-        clear_cache()
-    return out, excluded, list(JOURNALS)
+        hrr.replay_pool = original
+
+
+def _read_journals(journal_dir):
+    out = []
+    for path in sorted(Path(journal_dir).glob('*.json')):
+        out.extend(json.loads(path.read_text(encoding='utf-8')))
+    return out
+
+
+def l1_bundle(pools_dir, series):
+    """THE frozen call of w1_run.run_trials for the L1 bundle (same arguments, same order)."""
+    params = w1_run.l1_params()
+    if params.sol_usd is not None:
+        raise StreamError('declared_sol_usd_rate_refused')
+    return hrr.run_replay(pools_dir, params, series, w1_run.L1_EXIT,
+                          hrr.CreatorHistory.from_archives([a for _e, a in hrr.load_fixtures(pools_dir)[2]], 'manifest'),
+                          placebo_arm=True)
+
+
+def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming, journal_dir=None, workers=1):
+    """(bundle, journals): the frozen L1 bundle, computed by the frozen batch engine or by the streaming one."""
+    if _sha_file(Path(pools_dir) / 'MANIFEST.json') != manifest_sha256:
+        raise StreamError('manifest_is_not_the_anchored_one')
+    series = load_anchored_series(series_path, series_sha256)
+    if type(workers) is not int or workers < 1:
+        raise StreamError('workers_must_be_a_positive_integer')
+    if streaming and journal_dir is None:
+        raise StreamError('journal_dir_required_when_streaming')
+    JOURNALS.clear()
+    with contextlib.ExitStack() as stack:
+        if streaming:
+            Path(journal_dir).mkdir(parents=True, exist_ok=False)
+            stack.enter_context(streaming_engine())
+            stack.enter_context(_journals_to(journal_dir))
+        stack.enter_context(lazy.lazy_archives())
+        if workers > 1:
+            stack.enter_context(parallel.parallel_replays(workers))          # no checkpoint: nothing reused
+        try:
+            bundle = l1_bundle(pools_dir, series)
+        finally:
+            lazy.clear_cache()
+    journals = _read_journals(journal_dir) if streaming else []
+    if JOURNALS:
+        raise StreamError('journal_not_written')
+    return bundle, journals
 
 
 def reconcile(record, journals):
@@ -286,21 +370,34 @@ def thresholds():
                 reason='HISTORICAL_REPLAY cycles never count toward the protected thresholds')
 
 
-def _document(recs, excluded, manifest_sha256, **extra):
-    return dict(schema=SCHEMA, category=CATEGORY, params='w1_run.l1_params() + L1_EXIT (latency 4, clock 30 s)',
-                input=dict(manifest_sha256=manifest_sha256), pools=len(recs), excluded=excluded,
-                records_sha256=hashlib.sha256(_canonical(recs).encode()).hexdigest(), thresholds=thresholds(),
-                network=False, trials_added=0, **extra)
+def counts(bundle):
+    """Counts per arm (no P&L): decisions, entries, outcomes, closed cycles, blocking reasons."""
+    keep = ('decisions', 'enter_decisions', 'entries', 'outcomes', 'closed_cycles', 'blocking_reasons')
+    return {arm: {k: row[k] for k in keep} for arm, row in bundle['totals'].items()}
 
 
-def _write(out_dir, name, doc):
-    out = Path(out_dir)
-    if out.exists():
-        raise StreamError('output_exists')
-    out.mkdir(parents=True)
+def _document(bundle, manifest_sha256, series_sha256, series, **extra):
+    return dict(schema=SCHEMA, category=CATEGORY,
+                params='w1_run.l1_params() + L1_EXIT + CreatorHistory(manifest) + placebo arm (the W1 L1 bundle call)',
+                input=dict(manifest_sha256=manifest_sha256, sol_usd_series_file_sha256=series_sha256,
+                           sol_usd_series_sha256=series.sha256, sol_usd_series_points=len(series.points)),
+                pools=len(bundle['pools']), excluded=len(bundle.get('excluded_pools', [])),
+                bundle_sha256=bundle['bundle_sha256'],
+                canonical_sha256=hashlib.sha256(_canonical(bundle).encode()).hexdigest(),
+                counts=counts(bundle), thresholds=thresholds(), network=False, trials_added=0, **extra)
+
+
+def _write(out, name, doc):
     path = out / name
     path.write_text(json.dumps(doc, sort_keys=True, indent=1, default=str) + '\n', encoding='utf-8')
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return _sha_file(path)
+
+
+def _write_gz(out, name, doc):
+    path = out / name
+    with gzip.open(path, 'wt', encoding='utf-8') as handle:
+        handle.write(_canonical(doc))
+    return _sha_file(path)
 
 
 def main(argv=None):
@@ -311,32 +408,51 @@ def main(argv=None):
     for p in (ref, run):
         p.add_argument('--pools', type=Path, required=True)
         p.add_argument('--manifest-sha256', required=True)
+        p.add_argument('--sol-usd-series', type=Path, required=True)
+        p.add_argument('--sol-usd-series-sha256', required=True)
+        p.add_argument('--workers', type=int, default=1)
         p.add_argument('--out', type=Path, required=True)
     run.add_argument('--reference', type=Path, required=True)
     run.add_argument('--reference-sha256', required=True)
+    run.add_argument('--expect-bundle-sha256')
     a = parser.parse_args(argv)
     if a.out.exists():
         raise StreamError('output_exists')
-    if a.command == 'reference':
-        recs, excluded, _j = records(a.pools, a.manifest_sha256, streaming=False)
-        doc = _document(recs, excluded, a.manifest_sha256, engine='frozen batch replay (bot.market.replay.replay)',
-                        records=recs)
+    reference = None
+    if a.command == 'run':
+        raw = a.reference.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != a.reference_sha256:
+            raise StreamError('reference_is_not_the_anchored_one')
+        reference = json.loads(raw)
+        if reference.get('input', {}).get('manifest_sha256') != a.manifest_sha256 or \
+                reference['input'].get('sol_usd_series_file_sha256') != a.sol_usd_series_sha256:
+            raise StreamError('reference_of_another_input')
+    a.out.mkdir(parents=True)
+    streaming = a.command == 'run'
+    bundle, journals = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256,
+                               streaming=streaming, journal_dir=a.out / 'journals' if streaming else None,
+                               workers=a.workers)
+    series = load_anchored_series(a.sol_usd_series, a.sol_usd_series_sha256)
+    bundle_file = _write_gz(a.out, 'BUNDLE.json.gz', bundle)
+    if not streaming:
+        doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
+                        engine='frozen batch replay (bot.market.replay.replay)', bundle_file_sha256=bundle_file)
         print(_write(a.out, 'REFERENCE.json', doc))
         return 0
-    raw = a.reference.read_bytes()
-    if hashlib.sha256(raw).hexdigest() != a.reference_sha256:
-        raise StreamError('reference_is_not_the_anchored_one')
-    reference = json.loads(raw)
-    if reference.get('input', {}).get('manifest_sha256') != a.manifest_sha256:
-        raise StreamError('reference_of_another_input')
-    recs, excluded, journals = records(a.pools, a.manifest_sha256, streaming=True)
-    reconciled = sum(reconcile(r, journals) for r in recs)
-    doc = _document(recs, excluded, a.manifest_sha256, engine='paperstream StreamTrade (events pushed one by one)',
-                    reference_sha256=a.reference_sha256,
-                    identical_to_reference=_canonical(recs) == _canonical(reference['records']),
-                    reconciled_cycles=reconciled, records=recs, journals=journals)
+    reconciled = sum(reconcile(r, journals) for r in bundle['pools'])
+    closed = sum(1 for r in bundle['pools'] for row in r['arms'].values() if row.get('pnl_lamports') is not None)
+    doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
+                    engine='paperstream StreamTrade (events pushed one by one)', bundle_file_sha256=bundle_file,
+                    reference_sha256=a.reference_sha256, reconciled_cycles=reconciled, closed_cycles_all_arms=closed,
+                    journals_sha256=hashlib.sha256(_canonical(journals).encode()).hexdigest())
+    doc['identical_to_reference'] = (doc['bundle_sha256'] == reference['bundle_sha256']
+                                     and doc['canonical_sha256'] == reference['canonical_sha256'])
+    if a.expect_bundle_sha256 is not None:
+        doc['expected_bundle_sha256'] = a.expect_bundle_sha256
+        doc['matches_expected_bundle'] = doc['bundle_sha256'] == a.expect_bundle_sha256
     print(_write(a.out, 'PAPERSTREAM.json', doc))
-    return 0 if doc['identical_to_reference'] else 1
+    ok = doc['identical_to_reference'] and reconciled == closed and doc.get('matches_expected_bundle', True)
+    return 0 if ok else 1
 
 
 if __name__ == '__main__':
