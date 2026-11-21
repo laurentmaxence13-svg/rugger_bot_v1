@@ -1,0 +1,110 @@
+[
+ {
+  "mutant": "printed_sha_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "rc_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "schema_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "network_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "trials_added_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "not_a_trial_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "memory_override_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "firewall_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "series_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "expected_file_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "expected_json_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "expected_field_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "identity_file_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "identity_json_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "identity_field_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "journal_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "master_closed_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "labels_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "cycles_sum_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "field_consistent_always_true",
+  "detected": true
+ },
+ {
+  "mutant": "invalid_reported_as_failed",
+  "detected": true
+ },
+ {
+  "mutant": "reason_values_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "reason_keys_not_exempt",
+  "detected": true
+ },
+ {
+  "mutant": "firewall_not_recursive",
+  "detected": true
+ },
+ {
+  "mutant": "zero_cycles_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "checkpoint_mode_unchecked",
+  "detected": true
+ }
+]

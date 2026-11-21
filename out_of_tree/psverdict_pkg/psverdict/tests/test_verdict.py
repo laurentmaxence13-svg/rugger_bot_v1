@@ -118,13 +118,38 @@ def _tampered(run, tmp_path, change):
     ('network', lambda d, o: d.update(network=True), ['network'], 'INVALID_RUN'),
     ('not_a_trial', lambda d, o: d.update(identity_check_not_a_trial=False), ['not_a_trial'], 'INVALID_RUN'),
     ('index_mode', lambda d, o: _batch_index(d, o), ['checkpoint'], 'INVALID_RUN'),
-    ('firewall', lambda d, o: d.update(note='pnl_lamports 12'), ['firewall'], 'INVALID_RUN'),
+    ('firewall_top', lambda d, o: d.update(pnl_lamports=12), ['firewall'], 'INVALID_RUN'),
+    ('firewall_nested', lambda d, o: d['counts']['master'].update(net_return=0.1), ['firewall'], 'INVALID_RUN'),
+    ('firewall_deep', lambda d, o: d['memory'].update(x=[{'mark_pnl_lamports': 1}]), ['firewall'], 'INVALID_RUN'),
+    ('firewall_hw', lambda d, o: d.update(HW1_label=1), ['firewall'], 'INVALID_RUN'),
+    ('reason_not_int', lambda d, o: d['counts']['master']['blocking_reasons'].update(x='1'), ['firewall'], 'INVALID_RUN'),
+    ('labels_count', lambda d, o: d['thresholds'].update(these_cycles_count_toward_them=True), ['labels'], 'INVALID_RUN'),
+    ('labels_operational', lambda d, o: d['thresholds'].update(operational_master_entry=True), ['labels'], 'INVALID_RUN'),
+    ('cycles_sum', lambda d, o: d['counts']['master'].update(closed_cycles=d['counts']['master']['closed_cycles'] + 1),
+     ['cycles_sum', 'master_closed'], 'IDENTITY_FAILED'),
+    ('no_cycle', lambda d, o: d.update(reconciled_cycles=0, closed_cycles_all_arms=0), ['cycles_sum', 'journal'], 'IDENTITY_FAILED'),
     ('index', lambda d, o: (o / 'CHECKPOINT_INDEX.json').write_text('{}'), ['checkpoint'], 'INVALID_RUN'),
 ])
 def test_each_failure_is_named(run, tmp_path, name, change, failed, verdict):
     out, sha = _tampered(run, tmp_path, change)
     res = _check(run, out=out, printed_sha256=sha)
     assert res['failed'] == failed and res['verdict'] == verdict, name
+
+
+def test_frozen_reason_names_never_trip_the_firewall(run, tmp_path):
+    """R02 V-1 (a): reason names of the frozen engine (keys of blocking_reasons) may contain any token."""
+    def change(d, o):
+        d['counts']['master']['blocking_reasons'].update({'high_volatility_return': 3,
+                                                          'causal_adjacent_price_return_proxy': 1,
+                                                          'critical_veto:mark_pnl_HW': 2})
+    out, sha = _tampered(run, tmp_path, change)
+    res = _check(run, out=out, printed_sha256=sha)
+    assert res['verdict'] == 'IDENTITY_PROVEN' and res['firewall_offending_keys'] == []
+
+
+def test_the_r02_anchors():
+    assert (V.W1_MANIFEST[:8], V.W1_SERIES[:8], V.W1_MASTER_CLOSED) == ('ebe1959d', '7458f615', 128)
+    assert V.firewall({'a': {'blocking_reasons': {'net_return': 1}, 'net_return': 1}}) == ['a/net_return']
 
 
 def test_cli(run, capsys):
