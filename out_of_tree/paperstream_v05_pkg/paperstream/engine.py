@@ -1,4 +1,4 @@
-"""paperstream 0.5 (DRAFT, not audited) -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
+"""paperstream 0.5.1 (DRAFT; 0.5 PASS conditionnel R02) -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
 0.2 per R02 decision 06181c21; 0.3 per R02 requirements of 15:51Z/15:52Z/15:52:53Z; 0.4 per R02 audit K-1..K-3; 0.5 = performance draft, owner directive 21/11 18:50Z via R04). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
 nothing is sent, signed or read from the network; no key; no economic conclusion (it reproduces a known replay: not a
 trial, N unchanged).
@@ -31,6 +31,13 @@ SOL/USD series is loaded ONCE per command (0.4 loaded it in main and again in re
 reconciliation indexes the journals by (pool, arm) once (``reconcile_all``) instead of scanning them per cycle; the
 rules of ``residual`` and the refusals are unchanged. StreamTrade and stream_replay are unchanged.
 
+0.5.1 (R02 conditional PASS of 0.5): (M) with --fast-analyser the memory guard adds the memo margin: workers x the
+largest gz archive of the pack x MEMO_BYTES_PER_GZ_BYTE (8.0, above the 4.8 to 7.1 measured on the fixtures; to be
+replaced by the value R03 measures with ``paperstream.memo_probe`` on the largest W1 archive and R02 anchors);
+(V) --verify-fast (requires --fast-analyser): every value served by the memo is recomputed, any difference raises;
+(C) --perf-counters: per pool, full evaluations (build_features called) vs short waits, wall and CPU seconds, written
+to PERF_COUNTERS.json by size rank, WITHOUT any pool id or result; the bundle is unchanged (tested).
+
 0.2 (R02 06181c21). (1) The SOL/USD series is MANDATORY: the file's sha256 is checked BEFORE it is read, it is loaded by
 the loader of the frozen W1 trials step (``sus.load_series``, as ``w1_run.run_trials``) under the same guard (COLLECTED,
 measured acceptance) and passed IDENTICALLY to the batch and the streaming runs. (2) No declared SOL/USD rate: there is
@@ -61,6 +68,7 @@ import inspect
 import json
 import os
 import tempfile
+import time
 import zlib
 from dataclasses import asdict
 from pathlib import Path
@@ -74,7 +82,8 @@ from bot.p4 import sol_usd_series as sus
 from paperstream import fast
 from w1aux import dayj, lazy, parallel
 
-SCHEMA = 'paperstream-v0.5'
+SCHEMA = 'paperstream-v0.5.1'
+MEMO_BYTES_PER_GZ_BYTE = 8.0
 CATEGORY = 'HISTORICAL_REPLAY'
 
 
@@ -437,6 +446,80 @@ def l1_bundle(pools_dir, series):
                           placebo_arm=True)
 
 
+PERF = {'full': 0, 'calls': 0}
+
+
+def _opaque(pool):
+    return hashlib.sha256(pool.encode()).hexdigest()[:16]
+
+
+@contextlib.contextmanager
+def perf_counters(perf_dir):
+    """(C) per pool: build_features calls (full evaluations) and _evaluate calls, wall / CPU seconds; one file per pool
+    named by an opaque hash, written by the process that replayed it. Counting only: the frozen results are untouched."""
+    Path(perf_dir).mkdir(parents=True, exist_ok=False)
+    build, evaluate, replay_pool = hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool
+
+    def counted_build(*args, **kwargs):
+        PERF['full'] += 1
+        return build(*args, **kwargs)
+
+    def counted_evaluate(self, history):
+        PERF['calls'] += 1
+        return evaluate(self, history)
+
+    def timed(archive, *args, **kwargs):
+        PERF.update(full=0, calls=0)
+        wall, cpu = time.perf_counter(), time.process_time()
+        try:
+            return replay_pool(archive, *args, **kwargs)
+        finally:
+            row = dict(full_evaluations=PERF['full'], short_waits=PERF['calls'] - PERF['full'],
+                       wall_s=round(time.perf_counter() - wall, 3), cpu_s=round(time.process_time() - cpu, 3))
+            (Path(perf_dir) / (_opaque(archive.pool) + '.json')).write_text(json.dumps(row), encoding='utf-8')
+    hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool = counted_build, counted_evaluate, timed
+    try:
+        yield
+    finally:
+        hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool = build, evaluate, replay_pool
+
+
+def perf_table(pools_dir, perf_dir):
+    """Rows by gz size rank (1 = largest): no pool id, no result."""
+    manifest = json.loads((Path(pools_dir) / 'MANIFEST.json').read_text())
+    entries = sorted(manifest['pools'], key=lambda e: (-(Path(pools_dir) / e['file']).stat().st_size, e['file']))
+    rows = []
+    for rank, entry in enumerate(entries, 1):
+        path = Path(perf_dir) / (_opaque(entry['pool']) + '.json')
+        row = json.loads(path.read_text()) if path.exists() else dict(full_evaluations=None, short_waits=None,
+                                                                     wall_s=None, cpu_s=None)
+        rows.append(dict(rank=rank, gz_bytes=(Path(pools_dir) / entry['file']).stat().st_size, **row))
+    return dict(schema='paperstream-perf-v0.1', rows=rows,
+                note='technical counters only; no pool id, no result; 0 evaluations = reused from checkpoint or excluded')
+
+
+def fast_memory_mb(pools_dir, workers):
+    """(M) memo margin: workers x the largest gz archive x MEMO_BYTES_PER_GZ_BYTE, in MB."""
+    manifest = json.loads((Path(pools_dir) / 'MANIFEST.json').read_text())
+    largest = max((Path(pools_dir) / e['file']).stat().st_size for e in manifest['pools'])
+    return round(workers * largest * MEMO_BYTES_PER_GZ_BYTE / 2 ** 20)
+
+
+def memory_check(pools_dir, workers, fast_analyser, override):
+    """The dayj guard of the trials step, plus the memo margin when the memo is on."""
+    memory = dayj.memory_projection(pools_dir, 'trials')
+    if fast_analyser:
+        memory['fast_memo_mb'] = fast_memory_mb(pools_dir, workers)
+        memory['memo_bytes_per_gz_byte'] = MEMO_BYTES_PER_GZ_BYTE
+        total = memory['projected_mb'] + memory['fast_memo_mb']
+        memory['projected_with_memo_mb'] = total
+        available = memory['available_mb']
+        memory['fits'] = available is not None and available >= dayj.MEMORY_MARGIN * total
+    if not memory['fits'] and not override:
+        raise StreamError('memory_projection_exceeds_available_owner_decision_needed:' + json.dumps(memory, sort_keys=True))
+    return memory
+
+
 def checkpoint_context(manifest_sha256, series, fast_analyser=False):
     return dict(streaming_code_sha256=streaming_code_sha256(), sol_usd_series_sha256=series.sha256,
                 fast_analyser=bool(fast_analyser),
@@ -446,7 +529,7 @@ def checkpoint_context(manifest_sha256, series, fast_analyser=False):
 
 
 def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming, journal_dir=None, workers=1,
-            checkpoint_dir=None, fast_analyser=False, series=None, _verify_fast=False):
+            checkpoint_dir=None, fast_analyser=False, series=None, _verify_fast=False, perf_dir=None):
     """(bundle, journals): the frozen L1 bundle, computed by the frozen batch engine or by the streaming one."""
     if _sha_file(Path(pools_dir) / 'MANIFEST.json') != manifest_sha256:
         raise StreamError('manifest_is_not_the_anchored_one')
@@ -458,6 +541,8 @@ def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming
         raise StreamError('workers_must_be_a_positive_integer')
     if streaming and journal_dir is None:
         raise StreamError('journal_dir_required_when_streaming')
+    if _verify_fast and not fast_analyser:
+        raise StreamError('verify_fast_requires_fast_analyser')
     if checkpoint_dir is not None and not streaming:
         raise StreamError('checkpoint_is_for_the_streaming_run_only')
     checkpoint = (None if checkpoint_dir is None
@@ -470,6 +555,8 @@ def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming
             stack.enter_context(_journals_to(journal_dir, checkpoint))
         if fast_analyser:                                 # P-1, one memo per pool, outermost per-pool wrapper
             stack.enter_context(fast.fast_replay_pool(hrr, verify=_verify_fast))
+        if perf_dir is not None:                          # (C) outermost: measures the frozen work, memo included
+            stack.enter_context(perf_counters(perf_dir))
         stack.enter_context(lazy.lazy_archives())
         if workers > 1:
             stack.enter_context(parallel.parallel_replays(workers))          # no checkpoint: nothing reused
@@ -592,6 +679,8 @@ def main(argv=None):
         p.add_argument('--workers', type=int, default=1)
         p.add_argument('--fast-analyser', action='store_true',
                        help='0.5 draft: memoized frozen analyser helpers (byte identity tested); off by default')
+        p.add_argument('--verify-fast', action='store_true', help='with --fast-analyser: recompute every memo value')
+        p.add_argument('--perf-counters', action='store_true', help='technical counters per pool (no id, no result)')
         p.add_argument('--memory-override', action='store_true',
                        help='skip the dayj memory guard: NOT usable without the written agreement of R02')
         p.add_argument('--out', type=Path, required=True)
@@ -628,28 +717,32 @@ def main(argv=None):
                     reference['input'].get('sol_usd_series_file_sha256') != a.sol_usd_series_sha256:
                 raise StreamError('reference_of_another_input')
     series = load_anchored_series(a.sol_usd_series, a.sol_usd_series_sha256)
-    try:                                         # the dayj guard of the trials step, projected from the MANIFEST
-        memory = dayj.memory_guard('trials', a.pools, a.memory_override)
-    except dayj.DayJError as exc:
-        raise StreamError(str(exc)) from None
+    if a.verify_fast and not a.fast_analyser:
+        raise StreamError('verify_fast_requires_fast_analyser')
+    memory = memory_check(a.pools, a.workers, a.fast_analyser, a.memory_override)    # dayj guard + memo margin (M)
     a.out.mkdir(parents=True)
     if a.command == 'reference':
         bundle, _j = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256,
-                             streaming=False, workers=a.workers, fast_analyser=a.fast_analyser, series=series)
+                             streaming=False, workers=a.workers, fast_analyser=a.fast_analyser, series=series,
+                             _verify_fast=a.verify_fast, perf_dir=a.out / 'perf' if a.perf_counters else None)
         doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
                         engine='frozen batch replay (bot.market.replay.replay)', memory=memory,
-                        memory_override=a.memory_override, fast_analyser=a.fast_analyser)
+                        memory_override=a.memory_override, fast_analyser=a.fast_analyser, verify_fast=a.verify_fast)
+        if a.perf_counters:
+            doc['perf_counters_sha256'] = _write(a.out, 'PERF_COUNTERS.json', perf_table(a.pools, a.out / 'perf'))
         print(_write(a.out, 'REFERENCE.json', doc))
         return 0
     result = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256, streaming=True,
                      journal_dir=a.out / 'journals', workers=a.workers, checkpoint_dir=a.checkpoint,
-                     fast_analyser=a.fast_analyser, series=series)
+                     fast_analyser=a.fast_analyser, series=series, _verify_fast=a.verify_fast,
+                     perf_dir=a.out / 'perf' if a.perf_counters else None)
     bundle, journals = result[0], result[1]
     reconciled = reconcile_all(bundle['pools'], journals)
     closed = sum(1 for r in bundle['pools'] for row in r['arms'].values() if row.get('pnl_lamports') is not None)
     doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
                     engine='paperstream StreamTrade (events pushed one by one)', memory=memory,
-                    memory_override=a.memory_override, fast_analyser=a.fast_analyser, reconciled_cycles=reconciled,
+                    memory_override=a.memory_override, fast_analyser=a.fast_analyser, verify_fast=a.verify_fast,
+                    reconciled_cycles=reconciled,
                     closed_cycles_all_arms=closed,
                     journals_sha256=hashlib.sha256(_canonical(journals).encode()).hexdigest())
     doc['bundle_sha256_consistent'] = doc['bundle_sha256'] == doc['bundle_sha256_recomputed']
@@ -670,6 +763,8 @@ def main(argv=None):
         doc['expected_bundle_field_sha256'] = a.expect_bundle_field_sha256
         doc['matches_expected_bundle_field'] = doc['bundle_sha256'] == a.expect_bundle_field_sha256
         ok = ok and doc['matches_expected_bundle_field']
+    if a.perf_counters:
+        doc['perf_counters_sha256'] = _write(a.out, 'PERF_COUNTERS.json', perf_table(a.pools, a.out / 'perf'))
     if a.checkpoint is not None:
         index = result[2]
         doc['checkpoint_index_sha256'] = _write(a.out, 'CHECKPOINT_INDEX.json', index)

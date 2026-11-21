@@ -149,7 +149,7 @@ def test_the_fast_flag_is_in_the_checkpoint_key_and_the_output(series, tmp_path,
     assert E.main(['reference', *common, '--fast-analyser', '--out', str(tmp_path / 'ref')]) == 0
     capsys.readouterr()
     doc = json.loads((tmp_path / 'ref' / 'REFERENCE.json').read_text())
-    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5'
+    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5.1'
 
 
 def test_the_series_is_loaded_once_per_command(series, tmp_path, monkeypatch, capsys):
@@ -200,3 +200,116 @@ def test_the_streaming_code_sha_covers_the_fast_module():
     parts.append(inspect.getsource(F))
     expected = hashlib.sha256('\n'.join(parts + [harness.code_fingerprint()]).encode()).hexdigest()
     assert E.streaming_code_sha256() == expected != without
+
+
+# ---- 0.5.1 (R02 conditional PASS) -------------------------------------------------------------------------------
+def test_memo_probe_reports_sizes_only(capsys):
+    from paperstream import memo_probe
+    manifest = json.loads((PACK / 'MANIFEST.json').read_text())
+    entry = max(manifest['pools'], key=lambda e: (PACK / e['file']).stat().st_size)
+    assert memo_probe.main(['--archive', str(PACK / entry['file']), '--sha256', entry['sha256']]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert tuple(sorted(out)) == tuple(sorted(memo_probe.KEYS)) and out['transactions'] > 0
+    assert 4 < out['dumps_per_gz_byte'] < E.MEMO_BYTES_PER_GZ_BYTE and entry['pool'] not in json.dumps(out)
+    with pytest.raises(ValueError, match='archive_is_not_the_anchored_one'):
+        memo_probe.probe(PACK / entry['file'], '0' * 64)
+
+
+def test_the_memory_guard_adds_the_memo_margin(series, tmp_path, monkeypatch):
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    largest = max(p.stat().st_size for p in PACK.glob('*.json.gz'))
+    assert E.fast_memory_mb(PACK, 4) == round(4 * largest * E.MEMO_BYTES_PER_GZ_BYTE / 2 ** 20)
+    base = dayj.memory_projection(PACK, 'trials')['projected_mb']
+    margin = E.fast_memory_mb(PACK, 1)
+    edge = int(dayj.MEMORY_MARGIN * base) + 1                              # enough without the memo, not with it
+    monkeypatch.setattr(dayj, '_memory_available_mb', lambda: edge)
+    monkeypatch.setattr(E, 'fast_memory_mb', lambda pools, workers: max(margin, base))
+    import contextlib, io
+    with contextlib.redirect_stdout(io.StringIO()):
+        assert E.main(['reference', *common, '--out', str(tmp_path / 'slow')]) == 0
+        with pytest.raises(E.StreamError, match='memory_projection_exceeds_available_owner_decision_needed'):
+            E.main(['reference', *common, '--fast-analyser', '--out', str(tmp_path / 'fast')])
+        assert E.main(['reference', *common, '--fast-analyser', '--memory-override', '--out', str(tmp_path / 'f2')]) == 0
+    doc = json.loads((tmp_path / 'f2' / 'REFERENCE.json').read_text())
+    assert doc['memory']['fits'] is False and doc['memory']['projected_with_memo_mb'] == base + max(margin, base)
+
+
+def test_verify_fast_cli_and_its_requirement(series, tmp_path, capsys):
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    with pytest.raises(E.StreamError, match='verify_fast_requires_fast_analyser'):
+        E.main(['reference', *common, '--verify-fast', '--out', str(tmp_path / 'x')])
+    with pytest.raises(E.StreamError, match='verify_fast_requires_fast_analyser'):
+        E.records(PACK, SHA, path, sha, streaming=False, _verify_fast=True)
+    before = F.STATS['hits']
+    assert E.main(['reference', *common, '--fast-analyser', '--verify-fast', '--out', str(tmp_path / 'v')]) == 0
+    capsys.readouterr()
+    doc = json.loads((tmp_path / 'v' / 'REFERENCE.json').read_text())
+    assert doc['verify_fast'] is True and F.STATS['hits'] > before
+    assert doc['bundle_sha256'] == _frozen(PACK, path)['bundle_sha256']
+
+
+@pytest.mark.parametrize('workers', [1, 2])
+def test_perf_counters_change_nothing_and_name_no_pool(series, tmp_path, workers, capsys):
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha,
+              '--workers', str(workers)]
+    assert E.main(['reference', *common, '--perf-counters', '--out', str(tmp_path / 'p')]) == 0
+    assert E.main(['reference', *common, '--out', str(tmp_path / 'q')]) == 0
+    capsys.readouterr()
+    with_p = json.loads((tmp_path / 'p' / 'REFERENCE.json').read_text())
+    without = json.loads((tmp_path / 'q' / 'REFERENCE.json').read_text())
+    assert with_p['bundle_sha256'] == without['bundle_sha256'] == _frozen(PACK, path)['bundle_sha256']
+    text = (tmp_path / 'p' / 'PERF_COUNTERS.json').read_text()
+    assert with_p['perf_counters_sha256'] == hashlib.sha256(text.encode()).hexdigest()
+    table = json.loads(text)
+    rows = table['rows']
+    assert [r['rank'] for r in rows] == [1, 2, 3] and rows[0]['gz_bytes'] >= rows[1]['gz_bytes'] >= rows[2]['gz_bytes']
+    total = sum(r['full_evaluations'] + r['short_waits'] for r in rows)
+    assert total == sum(t['decisions'] for t in [with_p['counts']['master']])                 # one evaluation per index
+    assert all(r['wall_s'] >= 0 and r['cpu_s'] >= 0 for r in rows)
+    for entry in json.loads((PACK / 'MANIFEST.json').read_text())['pools']:
+        assert entry['pool'] not in text
+    for word in ('pnl', 'return', 'HW', 'mark_'):
+        assert word not in text
+    assert hrr.build_features.__module__ != __name__ and hrr.replay_pool.__module__ == hrr.__name__
+
+
+def test_verify_fast_refusal_writes_nothing_and_the_flag_reaches_the_memo(series, tmp_path, monkeypatch, capsys):
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    with pytest.raises(E.StreamError, match='verify_fast_requires_fast_analyser'):
+        E.main(['run', *common, '--verify-fast', '--expect-bundle-file-sha256', '0' * 64,
+                '--expect-bundle-json-sha256', '0' * 64, '--out', str(tmp_path / 'r')])
+    assert not (tmp_path / 'r').exists()                                  # refused before anything is written
+    seen = []
+    original = F.memoized
+
+    def spy(verify=False):
+        seen.append(verify)
+        return original(verify)
+    monkeypatch.setattr(F, 'memoized', spy)
+    assert E.main(['reference', *common, '--fast-analyser', '--verify-fast', '--out', str(tmp_path / 'v')]) == 0
+    assert E.main(['reference', *common, '--fast-analyser', '--out', str(tmp_path / 'n')]) == 0
+    capsys.readouterr()
+    assert seen[:3] == [True, True, True] and seen[3:] == [False, False, False]
+
+
+def test_perf_full_evaluations_match_an_independent_count(series, tmp_path, monkeypatch, capsys):
+    path, sha = series
+    calls = []
+    build = hrr.build_features
+
+    def counting(*args, **kwargs):
+        calls.append(1)
+        return build(*args, **kwargs)
+    monkeypatch.setattr(hrr, 'build_features', counting)
+    _frozen(PACK, path)
+    independent = len(calls)
+    monkeypatch.setattr(hrr, 'build_features', build)
+    assert E.main(['reference', '--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path),
+                   '--sol-usd-series-sha256', sha, '--perf-counters', '--out', str(tmp_path / 'p')]) == 0
+    capsys.readouterr()
+    rows = json.loads((tmp_path / 'p' / 'PERF_COUNTERS.json').read_text())['rows']
+    assert independent > 0 and sum(r['full_evaluations'] for r in rows) == independent

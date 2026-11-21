@@ -14,6 +14,13 @@ MUT = [
  ('engine.py', "    elif not isinstance(series, sus.SolUsdSeries):", "    elif False:", 'series_type_unchecked'),
  ('engine.py', "        if fast_analyser:                                 # P-1", "        if False:                                 # P-1", 'fast_flag_ignored'),
  ('engine.py', "    parts.append(inspect.getsource(fast))", "    pass", 'fast_source_not_in_code_sha'),
+ ('engine.py', "        total = memory['projected_mb'] + memory['fast_memo_mb']", "        total = memory['projected_mb']", 'memo_margin_not_added'),
+ ('engine.py', "    memory = dayj.memory_projection(pools_dir, 'trials')\n    if fast_analyser:", "    memory = dayj.memory_projection(pools_dir, 'trials')\n    if False:", 'memo_margin_skipped'),
+ ('engine.py', "    if a.verify_fast and not a.fast_analyser:\n        raise StreamError('verify_fast_requires_fast_analyser')", "    if False:\n        raise StreamError('verify_fast_requires_fast_analyser')", 'verify_requirement_cli_dropped'),
+ ('engine.py', "                             _verify_fast=a.verify_fast, perf_dir=a.out / 'perf' if a.perf_counters else None)", "                             _verify_fast=False, perf_dir=a.out / 'perf' if a.perf_counters else None)", 'verify_flag_not_passed'),
+ ('engine.py', "        PERF['full'] += 1\n", "", 'full_evaluations_not_counted'),
+ ('engine.py', "    hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool = counted_build, counted_evaluate, timed\n    try:\n        yield\n    finally:\n        hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool = build, evaluate, replay_pool", "    hrr.build_features, hrr._PoolObserver._evaluate, hrr.replay_pool = counted_build, counted_evaluate, timed\n    try:\n        yield\n    finally:\n        pass", 'perf_wrappers_not_restored'),
+ ('memo_probe.py', "    if hashlib.sha256(raw).hexdigest() != sha256:", "    if False:", 'probe_sha_unchecked'),
 ]
 out = []
 for fname, old, new, name in MUT:

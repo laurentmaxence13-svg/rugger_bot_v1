@@ -1,0 +1,103 @@
+{
+ "total": 19,
+ "detected": 19,
+ "scope": "new parts of 0.5 and 0.5.1 (fast.py, P-2, P-3, checkpoint key, memo margin, verify-fast, perf counters, memo_probe); the 0.4 parts are covered by the 0.4 suite",
+ "note": "full run: 16/19 (verify_requirement_cli_dropped, verify_flag_not_passed, full_evaluations_not_counted survived); 2 tests added (tests only added); the 3 re-run on the final tests: 3/3",
+ "mutants": [
+  {
+   "mutant": "memo_object_unchecked",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "classify_not_copied",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "verify_ignored",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "shim_ignores_kwargs",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "json_not_restored",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "no_memo_per_pool",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "fast_flag_not_in_key",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "reconcile_all_duplicates_allowed",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "series_loaded_twice",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "series_type_unchecked",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "fast_flag_ignored",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "fast_source_not_in_code_sha",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "memo_margin_not_added",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "memo_margin_skipped",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "verify_requirement_cli_dropped",
+   "detected": true,
+   "run": "full run 0.5.1; re-run on the final tests (2 tests added)"
+  },
+  {
+   "mutant": "verify_flag_not_passed",
+   "detected": true,
+   "run": "full run 0.5.1; re-run on the final tests (2 tests added)"
+  },
+  {
+   "mutant": "full_evaluations_not_counted",
+   "detected": true,
+   "run": "full run 0.5.1; re-run on the final tests (2 tests added)"
+  },
+  {
+   "mutant": "perf_wrappers_not_restored",
+   "detected": true,
+   "run": "full run 0.5.1"
+  },
+  {
+   "mutant": "probe_sha_unchecked",
+   "detected": true,
+   "run": "full run 0.5.1"
+  }
+ ]
+}
