@@ -1,0 +1,34 @@
+[
+ {
+  "mutant": "windows_not_consecutive",
+  "detected": true
+ },
+ {
+  "mutant": "ledger_without_c1",
+  "detected": true
+ },
+ {
+  "mutant": "no_margin_no_pilot",
+  "detected": true
+ },
+ {
+  "mutant": "single_month",
+  "detected": true
+ },
+ {
+  "mutant": "run_window_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "dayj_s0_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "plan_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "consecutive_unchecked",
+  "detected": true
+ }
+]
