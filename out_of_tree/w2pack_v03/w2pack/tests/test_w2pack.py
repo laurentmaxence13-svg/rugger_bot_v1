@@ -96,6 +96,14 @@ def test_window_0_is_exactly_the_frozen_w1_bounds_and_window_i_follows_s0_plus_i
         assert P.window_bounds(cfg, i) == w1.bounds(467_275_745 + i * 1_612_800)
 
 
+def test_quota_months_follow_the_frozen_main_run_cap_two_windows_with_margin_three_without():
+    m = P.monthly(P.W2Config(s0=1, windows=15))
+    assert m['windows_per_month'] == 2 and m['months_required'] == 8
+    assert all(x['reserved'] <= 1_000_000 for x in m['months'])
+    assert P.monthly(P.W2Config(s0=1, windows=15, margin=1.0))['windows_per_month'] == 3
+    assert [P.monthly(P.W2Config(s0=1, windows=k))['months_required'] for k in (1, 4, 8, 15)] == [1, 2, 4, 8]
+
+
 def test_k_windows_tile_the_evaluation_union_exactly():
     for k in (1, 4, 8, 15):
         cfg = P.W2Config(s0=500_000_000, windows=k)

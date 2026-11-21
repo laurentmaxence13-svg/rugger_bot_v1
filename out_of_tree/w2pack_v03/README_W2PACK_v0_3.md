@@ -1,4 +1,4 @@
-# w2pack 0.2 — collecte W2 paramétrée par fenêtre (R03) — écrit et testé hors ligne, NON exécuté en réseau
+# w2pack 0.3 — collecte W2 paramétrée par fenêtre (R03) — écrit et testé hors ligne, NON exécuté en réseau
 
 - La collecte reste celle du code GELÉ (`bot.market.backfill_cli run`, arbre aff97638). w2pack ne remplace que les
   bornes par k fenêtres GELÉES consécutives (Dossier B v1.6 § 7, R02 7b867c0f) : fenêtre i = `w1_collection.bounds`
@@ -26,3 +26,13 @@ Tests, lancés depuis l'arbre gelé avec `PYTHONPATH=<arbre>:<w2pack>`, `unshare
 
 Gabarits `configs/W2_k{4,8,15}_TEMPLATE.json` : s0 vaut 1, à remplacer par le S0 gelé de W2.
 Le calcul par lot (export, série, trials) et le ledger reprenable restent dans P-4 (R01).
+
+## Mois de quota sous la règle GELÉE (v0.3, R02 2a6901f8)
+
+`w1_collection.main_run_cap` impose par mois de collecte : 1 000 000 ≥ dépense du pilote + plafond de chaque run du
+mois (SOL/USD compris), QUEL QUE SOIT le forfait Helius. `plan` donne `quota_months` :
+- par fenêtre, un run LaunchLab et un run SOL/USD, plafonnés à leur dépense W1 mesurée × la marge :
+  343 323 et 108 867 avec ×1,5 ;
+- 2 fenêtres par mois avec la marge ×1,5 (910 743 réservés, pilote 6 363 compris), 3 sans marge ;
+- mois requis avec la marge : k = 1 → 1, k = 4 → 2, k = 8 → 4, k = 15 → 8.
+Au lancement, le `check_run_cap` gelé s'applique de toute façon à chaque run.

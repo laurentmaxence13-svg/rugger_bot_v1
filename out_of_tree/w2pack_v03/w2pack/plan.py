@@ -17,7 +17,10 @@ from bot.market import w1_collection as w1
 
 SLOT_MS = 215
 WINDOW_EVALUATION_SLOTS = w1.EVALUATION_SLOTS        # 1 612 800, frozen
-W1_CREDITS = 228_882 + 72_578                        # LaunchLab + SOL/USD, measured (W1 manifests)
+W1_LAUNCHLAB_CREDITS = 228_882                       # measured, W1 LaunchLab manifest
+W1_SOL_USD_CREDITS = 72_578                          # measured, W1 SOL/USD manifest
+W1_CREDITS = W1_LAUNCHLAB_CREDITS + W1_SOL_USD_CREDITS
+W1_PILOT_SPEND = 6_363                               # measured, W1 pilot spend ledger (counted, not provider-billed)
 W1_COLLECTED_SLOTS = 2_020_112
 COSTS = w1.COSTS                                     # 'helius-documented-20261108'
 
@@ -30,8 +33,9 @@ class PlanError(ValueError):
 class W2Config:
     s0: int
     windows: int
-    credit_cap: int = 10_000_000
+    credit_cap: int = 10_000_000             # provider plan (Developer: 10 M per month); the FROZEN cap below still applies
     margin: float = 1.5
+    pilot_spend: int = W1_PILOT_SPEND
 
     def check(self):
         if type(self.s0) is not int or self.s0 <= 0:
@@ -42,6 +46,8 @@ class W2Config:
             raise PlanError('invalid_credit_cap')
         if not 1.0 <= self.margin <= 3.0:
             raise PlanError('invalid_margin')
+        if type(self.pilot_spend) is not int or not 0 <= self.pilot_spend <= w1.PILOT_MAX_CREDITS:
+            raise PlanError('invalid_pilot_spend')
         return self
 
     @property
@@ -87,9 +93,32 @@ def projection(cfg):
                 overlap_slots_per_extra_window=w1.WARMUP_SLOTS + w1.GAP_SLOTS)
 
 
+def monthly(cfg):
+    """Quota months under the FROZEN rule of ``w1_collection.main_run_cap``: in one collection month,
+    CREDIT_CAP (1 000 000) >= pilot spend + the cap of every run of the month (each run reserves its cap).
+    Per window: one LaunchLab run and one SOL/USD run, each capped at its W1 measured spend x margin.
+    Windows are packed in order, whole windows only."""
+    ll = round(W1_LAUNCHLAB_CREDITS * cfg.margin)
+    sol = round(W1_SOL_USD_CREDITS * cfg.margin)
+    per_window = ll + sol
+    room = w1.CREDIT_CAP - cfg.pilot_spend
+    if per_window > room:
+        raise PlanError('one_window_does_not_fit_a_quota_month')
+    per_month = room // per_window
+    months, i = [], 0
+    while i < cfg.windows:
+        group = list(range(i, min(i + per_month, cfg.windows)))
+        months.append(dict(month=len(months), windows=group, reserved=cfg.pilot_spend + per_window * len(group)))
+        i += per_month
+    assert all(m['reserved'] <= w1.CREDIT_CAP for m in months)
+    return dict(rule='w1_collection.main_run_cap: CREDIT_CAP - pilot spend - caps of the other runs of the month',
+                credit_cap_month=w1.CREDIT_CAP, pilot_spend=cfg.pilot_spend, launchlab_cap_per_window=ll,
+                sol_usd_cap_per_window=sol, windows_per_month=per_month, months=months, months_required=len(months))
+
+
 def plan(cfg):
     u = union(cfg)
     days = lambda slots: round(slots * SLOT_MS / 86_400_000, 3)
     return dict(schema='w2pack-plan-v0.2', config=asdict(cfg), union=u, days_evaluation=days(u['evaluation_slots']),
                 days_distinct=days(u['distinct_slots']), days_per_window_run=days(W1_COLLECTED_SLOTS),
-                windows=windows(cfg), projection=projection(cfg), costs=COSTS)
+                windows=windows(cfg), projection=projection(cfg), quota_months=monthly(cfg), costs=COSTS)
