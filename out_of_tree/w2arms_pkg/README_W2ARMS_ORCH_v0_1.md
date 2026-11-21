@@ -25,3 +25,8 @@ Dossier B v1.8 (R02 2a6901f8).
 **Preuves.**
 - `test_orch.py` : 5 tests réussis (16 au total avec `test_ce.py`).
 - Défauts volontaires : 8 sur 8 détectés (`MUTATIONS_orch_v0_1.json`).
+
+**`--after-reading` (décision R02 ii, Dossier B v1.9).** C'est le relevé du tableau de bord Helius fait PAR LE
+PROPRIÉTAIRE après la collecte de CHAQUE fenêtre. Lui seul peut le fournir. dayj l'enregistre sans le juger. R02
+contrôle ensuite que la dépense réelle est égale à la dépense comptée, moins une tolérance s. Ce n'est pas une
+signature de R02.
