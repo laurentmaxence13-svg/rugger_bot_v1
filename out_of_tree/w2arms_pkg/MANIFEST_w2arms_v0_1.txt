@@ -1,0 +1,7 @@
+a4cf1cdf60a677a3b7db7ff8e5ff4d6654bebfb94a13602ad6639c5b4ca0e4ee  ./MUTATIONS_w2arms_v0_1.json
+233b440eee63b19d3a5f1b09abf3a9a196ce6d9bca5e5ded7d88122387c5c1f5  ./README_W2ARMS_v0_1.md
+8a903bf4e5ca79dd9d71f95060420e9179e3b9537ea38ea25bb8cf0586bfa433  ./mutations_w2arms_runner.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./w2arms/__init__.py
+a161ad492d5ec86adfce9c63b38466240b32e2142f99a856cb78e48ab04b0df1  ./w2arms/ce.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./w2arms/tests/__init__.py
+a7cb3d91d39ecf4a8068fb497db9f3b92b8a842205a76e02054d145c4e41eee5  ./w2arms/tests/test_ce.py

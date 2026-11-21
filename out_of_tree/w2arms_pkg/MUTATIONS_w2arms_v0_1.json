@@ -1,0 +1,62 @@
+[
+ {
+  "mutant": "tier_restriction_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_restricted_to_low_tier",
+  "detected": true
+ },
+ {
+  "mutant": "alpha_not_bonferroni",
+  "detected": true
+ },
+ {
+  "mutant": "seed_not_from_anchor",
+  "detected": true
+ },
+ {
+  "mutant": "halves_cut_one_window",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_mode_open",
+  "detected": true
+ },
+ {
+  "mutant": "n_min_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "rule_6_4_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "windows_not_checked",
+  "detected": true
+ },
+ {
+  "mutant": "duplicates_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "rows_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "migrated_closed",
+  "detected": true
+ },
+ {
+  "mutant": "latency10_not_applied",
+  "detected": true
+ },
+ {
+  "mutant": "outside_window_read",
+  "detected": true
+ },
+ {
+  "mutant": "c2_skipped",
+  "detected": true
+ }
+]
