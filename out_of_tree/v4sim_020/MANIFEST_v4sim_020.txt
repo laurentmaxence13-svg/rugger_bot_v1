@@ -1,0 +1,18 @@
+a154ade44df5920534b5b364a735009251116a5b4f2ea3f9a95a99e5f16fd74c  ./README_V4SIM.md
+eb9236cdf93e560921921d62e35df4c3220e3dab002164d628246405e705214b  ./out/tests_journal_v020.txt
+43685e1af58a4f44a2953e0ea65b47f703c84fc90237ec5d73441ebbfa9043f9  ./tools/prep_a3.py
+b565beeb1fa825a31fcff51858cde80f88858d57dd95037b9f23c43fd01e8b2a  ./v4sim_pkg/v4sim/__init__.py
+28b2afe7b9167551eeac6c82891c7e3d7c2b5bde2070911afe84a445991b2b54  ./v4sim_pkg/v4sim/batch.py
+8517c4115676a44edf8efae16fc32022cc8e3e526a0f18f3184a196e94389cd4  ./v4sim_pkg/v4sim/engine.py
+867e16a0fc51c4bf0834c4d3b2ccb958760e83e575ac79f1827f2953c9fe81c9  ./v4sim_pkg/v4sim/io.py
+3f6f484a8d4a204f5ebb424b0a72809a283e9d3011f7148b982fc5934726a30c  ./v4sim_pkg/v4sim/ledger.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./v4sim_pkg/v4sim/tests/__init__.py
+6b66de67334225a04dd7c25fcef8c30c5c9190bde21fcd4c914bface04146980  ./v4sim_pkg/v4sim/tests/test_acceptance.py
+bd17659ea97418acfa3cfd44f0551dbb680fe9c0463542b201ffc288ad6d3a69  ./v4sim_pkg/v4sim/valuation.py
+7ae50b8804bdb76bebc4c43b6e9b3c98740ec3c72b51c378ba6697013e2c766e  ./v4synth/gen_pack.py
+99beb3fb0ea095543e1b67464143d76212e3f15f3baf44cf82d81f74bd2b8be0  (expected) out/stress100_v020.json = python -m v4sim.batch <stress100>
+a7720db3800679a6d986fa38251f0f75f1bb5ea477274c89431cfd77dc1b32e8  (expected) packs/random500/MANIFEST.json, seed 20261110
+60e051959a76b355f4b81aa1dd2304223da362dd582261f1a31fcf5ed80edbf1  (expected) packs/stress100/MANIFEST.json, seed 20261110
+d1d863daf227cd57363004ae89fe6aad99f3c921610904cb9369178ed0559ba1  (expected) a3/x40/MANIFEST.json (tools/prep_a3.py)
+e5d4d910279a876fbac3dfaf2cf3e9b79da10b00d02739bff73db202efe52a34  (expected) a3/series.json (tools/prep_a3.py)
+2fe085a33c5604f30468e08e4c0ee096f9881d8efbf24fad0c5faf51af03db67  (code fingerprint) v4sim.batch.code_fingerprint()
