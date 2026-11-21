@@ -1,5 +1,5 @@
-"""paperstream 0.3 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
-0.2 per R02 decision 06181c21; 0.3 per R02 requirements of 15:51Z/15:52Z/15:52:53Z). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
+"""paperstream 0.4 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
+0.2 per R02 decision 06181c21; 0.3 per R02 requirements of 15:51Z/15:52Z/15:52:53Z; 0.4 per R02 audit K-1..K-3). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
 nothing is sent, signed or read from the network; no key; no economic conclusion (it reproduces a known replay: not a
 trial, N unchanged).
 
@@ -15,6 +15,14 @@ line, never read from a file this run produces); ``--reference`` (batch) stays f
 CHECKPOINT, STREAMING ONLY, canonical JSON (no pickle, never the trials checkpoint): see ``Checkpoint``. (c) ZERO RESIDUAL
 is defined by ``RECONCILED`` and ``reconcile``. (d) Firewall: the summary documents hold identities, closed cycles and
 reason counts only: no return, no P&L, no hypothesis label.
+
+0.4 (R02 K-1..K-3). The anchored W1 value is the sha256 of the FILE run/bundles/L1.json.gz written by
+``w1_run._write_json`` (gzip, mtime 0, of the strict canonical JSON, bundle_sha256 field inside), not the bundle_sha256
+field. The stream is compared on BOTH (``--expect-bundle-file-sha256`` AND ``--expect-bundle-json-sha256``, given
+together): the file sha is obtained by calling ``w1_run._write_json`` itself into a temporary directory outside
+``--out``, deleted afterwards; the json sha is the sha256 of the decompressed content (``_canonical_strict``), which does
+not depend on zlib; ``zlib.ZLIB_RUNTIME_VERSION`` is published. rc=0 also requires the bundle_sha256 field to equal its
+recomputation (``hrr._sha``). All bundle hashes use the strict serialization of run_trials (no default, no NaN).
 
 0.2 (R02 06181c21). (1) The SOL/USD series is MANDATORY: the file's sha256 is checked BEFORE it is read, it is loaded by
 the loader of the frozen W1 trials step (``sus.load_series``, as ``w1_run.run_trials``) under the same guard (COLLECTED,
@@ -45,6 +53,8 @@ import hashlib
 import inspect
 import json
 import os
+import tempfile
+import zlib
 from dataclasses import asdict
 from pathlib import Path
 
@@ -56,7 +66,7 @@ from bot.p4 import historical_research_replay as hrr
 from bot.p4 import sol_usd_series as sus
 from w1aux import dayj, lazy, parallel
 
-SCHEMA = 'paperstream-v0.3'
+SCHEMA = 'paperstream-v0.4'
 CATEGORY = 'HISTORICAL_REPLAY'
 
 
@@ -512,9 +522,22 @@ def _document(bundle, manifest_sha256, series_sha256, series, **extra):
                 pools=len(bundle['pools']), excluded=len(bundle.get('excluded_pools', [])),
                 bundle_sha256=bundle['bundle_sha256'],
                 bundle_sha256_recomputed=hrr._sha({k: v for k, v in bundle.items() if k != 'bundle_sha256'}),
-                canonical_sha256=hashlib.sha256(_canonical(bundle).encode()).hexdigest(),
+                bundle_json_sha256=bundle_json_sha256(bundle),
+                bundle_file_sha256=bundle_file_sha256(bundle), zlib_runtime_version=zlib.ZLIB_RUNTIME_VERSION,
                 counts=counts(bundle), thresholds=thresholds(), network=False, trials_added=0,
                 identity_check_not_a_trial=True, **extra)
+
+
+def bundle_json_sha256(bundle):
+    """sha256 of the decompressed content of run/bundles/L1.json.gz: the strict canonical JSON of w1_run._write_json."""
+    return hashlib.sha256(_canonical_strict(bundle).encode()).hexdigest()
+
+
+def bundle_file_sha256(bundle):
+    """sha256 of the bundle file exactly as w1_run.run_trials writes it (``w1_run._write_json`` itself, into a temporary
+    directory that is deleted afterwards; the bundle file holds P&L and is never kept)."""
+    with tempfile.TemporaryDirectory(prefix='paperstream_bundle_') as tmp:
+        return w1_run._write_json(Path(tmp) / 'bundles' / 'L1.json.gz', bundle)
 
 
 def _write(out, name, doc):
@@ -539,7 +562,10 @@ def main(argv=None):
         p.add_argument('--out', type=Path, required=True)
     run.add_argument('--reference', type=Path)
     run.add_argument('--reference-sha256')
-    run.add_argument('--expect-bundle-sha256')
+    run.add_argument('--expect-bundle-file-sha256', help='sha256 of the anchored run/bundles/L1.json.gz file')
+    run.add_argument('--expect-bundle-json-sha256', help='sha256 of its decompressed content')
+    run.add_argument('--expect-bundle-field-sha256',
+                     help='its internal bundle_sha256 field: an EXTRA check, never a substitute for file + json')
     run.add_argument('--checkpoint', type=Path)
     a = parser.parse_args(argv)
     if a.out.exists():
@@ -548,8 +574,14 @@ def main(argv=None):
     if a.command == 'run':
         if (a.reference is None) != (a.reference_sha256 is None):
             raise StreamError('reference_and_its_sha256_go_together')
-        if a.reference is None and a.expect_bundle_sha256 is None:
+        if (a.expect_bundle_file_sha256 is None) != (a.expect_bundle_json_sha256 is None):
+            raise StreamError('bundle_file_and_json_sha256_go_together')
+        if a.reference is None and a.expect_bundle_file_sha256 is None:
             raise StreamError('nothing_to_compare_with')
+        if a.expect_bundle_field_sha256 is not None and a.expect_bundle_file_sha256 is None:
+            raise StreamError('bundle_field_sha256_is_an_extra_check_not_a_substitute')
+        if Path(tempfile.gettempdir()).resolve().is_relative_to(a.out.resolve()):
+            raise StreamError('temporary_directory_inside_the_output')
         if a.checkpoint is not None and a.checkpoint.resolve().is_relative_to(a.out.resolve()):
             raise StreamError('checkpoint_inside_the_output')
         if a.reference is not None:
@@ -584,16 +616,24 @@ def main(argv=None):
                     memory_override=a.memory_override, reconciled_cycles=reconciled,
                     closed_cycles_all_arms=closed,
                     journals_sha256=hashlib.sha256(_canonical(journals).encode()).hexdigest())
-    ok = reconciled == closed
+    doc['bundle_sha256_consistent'] = doc['bundle_sha256'] == doc['bundle_sha256_recomputed']
+    ok = reconciled == closed and doc['bundle_sha256_consistent']
     if reference is not None:
         doc['reference_sha256'] = a.reference_sha256
         doc['identical_to_reference'] = (doc['bundle_sha256'] == reference['bundle_sha256']
-                                         and doc['canonical_sha256'] == reference['canonical_sha256'])
+                                         and doc['bundle_json_sha256'] == reference['bundle_json_sha256'])
         ok = ok and doc['identical_to_reference']
-    if a.expect_bundle_sha256 is not None:
-        doc['expected_bundle_sha256'] = a.expect_bundle_sha256
-        doc['matches_expected_bundle'] = doc['bundle_sha256'] == a.expect_bundle_sha256
-        ok = ok and doc['matches_expected_bundle']
+    if a.expect_bundle_file_sha256 is not None:
+        doc['expected_bundle_file_sha256'] = a.expect_bundle_file_sha256
+        doc['expected_bundle_json_sha256'] = a.expect_bundle_json_sha256
+        doc['matches_expected_bundle_file'] = doc['bundle_file_sha256'] == a.expect_bundle_file_sha256
+        doc['matches_expected_bundle_json'] = doc['bundle_json_sha256'] == a.expect_bundle_json_sha256
+        ok = ok and doc['matches_expected_bundle_file']
+        ok = ok and doc['matches_expected_bundle_json']
+    if a.expect_bundle_field_sha256 is not None:
+        doc['expected_bundle_field_sha256'] = a.expect_bundle_field_sha256
+        doc['matches_expected_bundle_field'] = doc['bundle_sha256'] == a.expect_bundle_field_sha256
+        ok = ok and doc['matches_expected_bundle_field']
     if a.checkpoint is not None:
         index = result[2]
         doc['checkpoint_index_sha256'] = _write(a.out, 'CHECKPOINT_INDEX.json', index)

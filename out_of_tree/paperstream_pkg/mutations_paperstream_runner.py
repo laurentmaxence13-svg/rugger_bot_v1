@@ -26,7 +26,8 @@ MUT = [
  ("    if params.sol_usd is not None:\n        raise StreamError('declared_sol_usd_rate_refused')", "    if False:\n        raise StreamError('declared_sol_usd_rate_refused')", 'declared_rate_accepted'),
  ("        del JOURNALS[start:]\n        if checkpoint is not None:\n            checkpoint.put(pool, record", "        if checkpoint is not None:\n            checkpoint.put(pool, record", 'journal_kept_in_memory'),
  ("    if _sha_file(Path(pools_dir) / 'MANIFEST.json') != manifest_sha256:", "    if False:", 'manifest_unchecked'),
- ("        ok = ok and doc['matches_expected_bundle']", "        pass", 'expected_bundle_ignored'),
+ ("        ok = ok and doc['matches_expected_bundle_file']\n", "", 'expected_bundle_file_ignored'),
+ ("        ok = ok and doc['matches_expected_bundle_json']\n", "", 'expected_bundle_json_ignored'),
  ("    keep = ('decisions', 'enter_decisions', 'entries', 'outcomes', 'closed_cycles', 'blocking_reasons')", "    keep = ('decisions', 'enter_decisions', 'entries', 'outcomes', 'closed_cycles', 'blocking_reasons', 'pnl_lamports')", 'pnl_in_counts'),
  ("    hrr.replay_pool = _journaled_replay_pool(original, journal_dir, checkpoint)\n    try:\n        yield\n    finally:\n        hrr.replay_pool = original", "    hrr.replay_pool = _journaled_replay_pool(original, journal_dir, checkpoint)\n    try:\n        yield\n    finally:\n        pass", 'replay_pool_not_restored'),
  ("        if doc.get('key') != self.key(pool):", "        if False:", 'checkpoint_key_unchecked'),
@@ -35,11 +36,18 @@ MUT = [
  ("    if checkpoint_dir is not None and not streaming:\n        raise StreamError('checkpoint_is_for_the_streaming_run_only')", "    if False:\n        raise StreamError('checkpoint_is_for_the_streaming_run_only')", 'checkpoint_in_batch_allowed'),
  ("                  tx_costs=buy['tx_cost'] + sell['tx_cost'] - row['tx_costs'])", "                  tx_costs=0)", 'residual_tx_costs_dropped'),
  ("    checks = dict(pnl=sell['received'] - buy['spent'] - (buy['tx_cost'] + sell['tx_cost']) - row['failed_attempt_costs']", "    checks = dict(pnl=sell['received'] - buy['spent'] - (buy['tx_cost'] + sell['tx_cost'])", 'residual_failed_costs_dropped'),
- ("        if a.reference is None and a.expect_bundle_sha256 is None:\n            raise StreamError('nothing_to_compare_with')", "        if False:\n            raise StreamError('nothing_to_compare_with')", 'run_without_comparison'),
+ ("        if a.reference is None and a.expect_bundle_file_sha256 is None:\n            raise StreamError('nothing_to_compare_with')", "        if False:\n            raise StreamError('nothing_to_compare_with')", 'run_without_comparison'),
  ("                write(pool, doc['journals'])\n", "", 'reused_entry_journals_dropped'),
  ("                  placebo_arm=True)\n\n\ndef checkpoint_context", "                  placebo_arm=False)\n\n\ndef checkpoint_context", 'placebo_arm_dropped_03'),
 
  ("        memory = dayj.memory_guard('trials', a.pools, a.memory_override)", "        memory = dayj.memory_guard('trials', a.pools, True)", 'memory_guard_bypassed'),
+ ("    ok = reconciled == closed and doc['bundle_sha256_consistent']", "    ok = reconciled == closed", 'bundle_sha_consistency_ignored'),
+ ("    return hashlib.sha256(_canonical_strict(bundle).encode()).hexdigest()", "    return hashlib.sha256(_canonical(bundle).encode()).hexdigest()", 'json_sha_lax_serialization'),
+ ("        return w1_run._write_json(Path(tmp) / 'bundles' / 'L1.json.gz', bundle)", "        return w1_run._write_json(Path(tmp) / 'bundles' / 'L1.json', bundle)", 'file_sha_without_gzip'),
+ ("        if (a.expect_bundle_file_sha256 is None) != (a.expect_bundle_json_sha256 is None):", "        if False:", 'file_and_json_not_paired'),
+ ("                                         and doc['bundle_json_sha256'] == reference['bundle_json_sha256'])", ")", 'reference_json_sha_ignored'),
+ ("        ok = ok and doc['matches_expected_bundle_field']\n", "", 'expected_bundle_field_ignored'),
+ ("        if a.expect_bundle_field_sha256 is not None and a.expect_bundle_file_sha256 is None:", "        if False:", 'field_sha_as_substitute'),
 ]
 out = []
 for old, new, name in MUT:

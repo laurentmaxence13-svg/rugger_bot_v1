@@ -1,4 +1,4 @@
-"""paperstream 0.3: streaming = frozen W1 L1 bundle (byte for byte), anchored SOL/USD series mandatory, no lookahead,
+"""paperstream 0.4: streaming = frozen W1 L1 bundle (byte for byte), anchored SOL/USD series mandatory, no lookahead,
 offline, labels, thresholds, journal."""
 import gzip
 import hashlib
@@ -303,6 +303,56 @@ def test_memory_guard_of_dayj_and_its_override(series, tmp_path, monkeypatch, ca
     assert json.loads((tmp_path / 'fits' / 'REFERENCE.json').read_text())['memory']['fits'] is True
 
 
+def test_rc_requires_the_bundle_sha_field_to_equal_its_recomputation(series, tmp_path, monkeypatch, capsys):
+    """R02 K-2: a bundle whose bundle_sha256 field is not its recomputation fails, even if the expected shas match."""
+    path, sha = series
+    original = E.records
+
+    def tampered(*args, **kwargs):
+        out = original(*args, **kwargs)
+        out[0]['bundle_sha256'] = '0' * 64
+        return out
+    monkeypatch.setattr(E, 'records', tampered)
+    bad, _j = tampered(PACK, SHA, path, sha, streaming=True, journal_dir=tmp_path / 'probe')
+    file_sha = E.bundle_file_sha256(bad)
+    json_sha = E.bundle_json_sha256(bad)
+    assert E.main(['run', '--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path),
+                   '--sol-usd-series-sha256', sha, '--expect-bundle-file-sha256', file_sha,
+                   '--expect-bundle-json-sha256', json_sha, '--out', str(tmp_path / 'run')]) == 1
+    doc = json.loads((tmp_path / 'run' / 'PAPERSTREAM.json').read_text())
+    assert doc['matches_expected_bundle_file'] is doc['matches_expected_bundle_json'] is True
+    assert doc['bundle_sha256_consistent'] is False
+
+
+def test_bundle_hashes_use_the_strict_serialization_of_run_trials(series, tmp_path):
+    """R02 K-3: no default=str, no NaN: a bundle that run_trials could not write is refused here too."""
+    bundle, _j = _records(series, tmp_path, False)
+    doc = E._document(bundle, SHA, series[1], sus.load_series(series[0]))
+    assert doc['bundle_json_sha256'] == hashlib.sha256(json.dumps(bundle, sort_keys=True, separators=(',', ':'),
+                                                                  allow_nan=False).encode()).hexdigest()
+    assert doc['bundle_file_sha256'] == E.bundle_file_sha256(bundle)
+    for poison in (float('nan'), object()):
+        for function in (E.bundle_json_sha256, E.bundle_file_sha256):
+            with pytest.raises((ValueError, TypeError)):
+                function(dict(bundle, poison=poison))
+
+
+def test_a_reference_with_the_same_field_but_another_json_sha_is_not_identical(series, tmp_path, capsys):
+    """identical_to_reference needs the bundle_sha256 field AND the json sha of the reference."""
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    assert E.main(['reference', *common, '--out', str(tmp_path / 'ref')]) == 0
+    capsys.readouterr()
+    doc = json.loads((tmp_path / 'ref' / 'REFERENCE.json').read_text())
+    forged = tmp_path / 'forged.json'
+    forged.write_text(json.dumps(dict(doc, bundle_json_sha256='0' * 64)))
+    forged_sha = hashlib.sha256(forged.read_bytes()).hexdigest()
+    assert E.main(['run', *common, '--reference', str(forged), '--reference-sha256', forged_sha,
+                   '--out', str(tmp_path / 'run')]) == 1
+    out = json.loads((tmp_path / 'run' / 'PAPERSTREAM.json').read_text())
+    assert out['bundle_sha256'] == doc['bundle_sha256'] and out['identical_to_reference'] is False
+
+
 def _entries(ck):
     return sorted(p for p in ck.glob('*.json'))
 
@@ -339,9 +389,20 @@ def test_a_foreign_or_altered_entry_is_refused_and_recomputed(series, tmp_path, 
     assert json.loads(entry.read_text())['key']['mode'] == 'stream'      # the entry is rewritten with the right key
 
 
+def _w1_anchor(series, tmp_path):
+    """The W1 anchor, made exactly as on W1 (R02 K-1): the frozen direct L1 bundle written by w1_run._write_json to
+    run/bundles/L1.json.gz; (file sha256, sha256 of its decompressed content)."""
+    path = tmp_path / 'w1run' / 'bundles' / 'L1.json.gz'
+    file_sha = w1_run._write_json(path, _frozen(sus.load_series(series[0])))
+    assert file_sha == hashlib.sha256(path.read_bytes()).hexdigest()
+    return file_sha, hashlib.sha256(gzip.decompress(path.read_bytes())).hexdigest()
+
+
 def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
     path, sha = series
     common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    file_sha, json_sha = _w1_anchor(series, tmp_path)
+    expect = ['--expect-bundle-file-sha256', file_sha, '--expect-bundle-json-sha256', json_sha]
     assert E.main(['reference', *common, '--out', str(tmp_path / 'ref')]) == 0
     ref_sha = capsys.readouterr().out.strip()
     ref = tmp_path / 'ref' / 'REFERENCE.json'
@@ -357,10 +418,13 @@ def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
         E.main(['reference', *common[:4], '--out', str(tmp_path / 'z')])                  # series argument required
     capsys.readouterr()
     assert E.main(['run', *common, '--reference', str(ref), '--reference-sha256', ref_sha,
-                   '--expect-bundle-sha256', reference['bundle_sha256'], '--out', str(tmp_path / 'run')]) == 0
+                   *expect, '--out', str(tmp_path / 'run')]) == 0
     text = (tmp_path / 'run' / 'PAPERSTREAM.json').read_text()
     doc = json.loads(text)
-    assert doc['identical_to_reference'] is True and doc['matches_expected_bundle'] is True
+    assert doc['identical_to_reference'] is True and doc['matches_expected_bundle_file'] is True
+    assert doc['matches_expected_bundle_json'] is True and doc['bundle_sha256_consistent'] is True
+    assert (doc['bundle_file_sha256'], doc['bundle_json_sha256']) == (file_sha, json_sha) and doc['zlib_runtime_version']
+    assert reference['bundle_file_sha256'] == file_sha and reference['bundle_json_sha256'] == json_sha
     assert doc['category'] == 'HISTORICAL_REPLAY' and doc['network'] is False and doc['trials_added'] == 0
     assert doc['reconciled_cycles'] == doc['closed_cycles_all_arms'] >= 1                  # placebo cycle on the pack
     for word in ('genuine', 'GENUINE', 'MASTER_CYCLE', 'operational_trade": true', 'LIVE', 'pnl', 'return', 'HW',
@@ -370,10 +434,11 @@ def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
     assert not list((tmp_path / 'run').glob('*.gz'))                     # no bundle (no P&L) written
     capsys.readouterr()
     # W1 mode: the STREAM ALONE against the anchored sha, with a checkpoint outside the output
-    assert E.main(['run', *common, '--expect-bundle-sha256', reference['bundle_sha256'], '--checkpoint',
+    assert E.main(['run', *common, *expect, '--checkpoint',
                    str(tmp_path / 'ck'), '--out', str(tmp_path / 'alone')]) == 0
     alone = json.loads((tmp_path / 'alone' / 'PAPERSTREAM.json').read_text())
-    assert alone['matches_expected_bundle'] is True and 'identical_to_reference' not in alone
+    assert alone['matches_expected_bundle_file'] is alone['matches_expected_bundle_json'] is True
+    assert 'identical_to_reference' not in alone and alone['bundle_file_sha256'] == file_sha
     assert alone['checkpoint_counts'] == {'absent': 3}
     index = (tmp_path / 'alone' / 'CHECKPOINT_INDEX.json')
     assert alone['checkpoint_index_sha256'] == hashlib.sha256(index.read_bytes()).hexdigest()
@@ -384,11 +449,26 @@ def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
     with pytest.raises(E.StreamError, match='reference_and_its_sha256_go_together'):
         E.main(['run', *common, '--reference', str(ref), '--out', str(tmp_path / 'half')])
     with pytest.raises(E.StreamError, match='checkpoint_inside_the_output'):
-        E.main(['run', *common, '--expect-bundle-sha256', '1' * 64, '--checkpoint', str(tmp_path / 'in' / 'ck'),
+        E.main(['run', *common, *expect, '--checkpoint', str(tmp_path / 'in' / 'ck'),
                 '--out', str(tmp_path / 'in')])
     capsys.readouterr()
-    assert E.main(['run', *common, '--reference', str(ref), '--reference-sha256', ref_sha,
-                   '--expect-bundle-sha256', '1' * 64, '--out', str(tmp_path / 'run2')]) == 1
+    for i, wrong in enumerate((['--expect-bundle-file-sha256', '1' * 64, '--expect-bundle-json-sha256', json_sha],
+                               ['--expect-bundle-file-sha256', file_sha, '--expect-bundle-json-sha256', '1' * 64])):
+        assert E.main(['run', *common, *wrong, '--out', str(tmp_path / f'wrong{i}')]) == 1   # BOTH equalities needed
+        capsys.readouterr()
+    with pytest.raises(E.StreamError, match='bundle_file_and_json_sha256_go_together'):
+        E.main(['run', *common, *expect[:2], '--out', str(tmp_path / 'one')])
+    field = reference['bundle_sha256']                                     # the internal field (R02 16:33Z)
+    assert E.main(['run', *common, *expect, '--expect-bundle-field-sha256', field, '--out', str(tmp_path / 'field')]) == 0
+    assert json.loads((tmp_path / 'field' / 'PAPERSTREAM.json').read_text())['matches_expected_bundle_field'] is True
+    assert E.main(['run', *common, *expect, '--expect-bundle-field-sha256', '1' * 64, '--out', str(tmp_path / 'fieldx')]) == 1
+    capsys.readouterr()
+    with pytest.raises(E.StreamError, match='bundle_field_sha256_is_an_extra_check_not_a_substitute'):
+        E.main(['run', *common, '--reference', str(ref), '--reference-sha256', ref_sha,
+                '--expect-bundle-field-sha256', field, '--out', str(tmp_path / 'fieldonly')])
+    with pytest.raises(SystemExit):
+        E.main(['run', *common, '--expect-bundle-sha256', file_sha, '--out', str(tmp_path / 'old')])  # 0.3 option gone
+    capsys.readouterr()
     with pytest.raises(E.StreamError, match='output_exists'):
         E.main(['reference', *common, '--out', str(tmp_path / 'ref')])
 
