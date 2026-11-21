@@ -1,0 +1,187 @@
+{
+ "total": 36,
+ "detected": 36,
+ "note": "run 2: 35/36 (residual_tx_costs_dropped survived: no row-side injection); 3 row-side residual cases added to the tests (tests only added); the 3 residual/reconcile mutants re-run on the final tests: 3/3",
+ "mutants": [
+  {
+   "mutant": "landing_one_slot_early",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "latency_ignored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "sell_before_exit_latency",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "clock_exit_early",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "holding_ignores_real_trades",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "exit_latency_ignored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "sale_tx_cost_dropped",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "time_order_unchecked",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "push_after_end_allowed",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "streaming_not_swapped_in",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "frozen_engine_not_restored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "reconcile_unchecked",
+   "detected": true,
+   "run": "full run 2; re-run 3 on the final tests (row-side residual cases added)"
+  },
+  {
+   "mutant": "reference_sha_ignored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "threshold_lowered",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "label_genuine",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "series_sha_unchecked",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "series_guard_dropped",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "series_optional",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "series_not_passed_to_the_stream",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "creator_history_dropped",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "declared_rate_accepted",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "journal_kept_in_memory",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "manifest_unchecked",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "expected_bundle_ignored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "pnl_in_counts",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "replay_pool_not_restored",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "checkpoint_key_unchecked",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "checkpoint_sha_unchecked",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "checkpoint_mode_not_in_key",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "checkpoint_in_batch_allowed",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "residual_tx_costs_dropped",
+   "detected": true,
+   "run": "full run 2; re-run 3 on the final tests (row-side residual cases added)"
+  },
+  {
+   "mutant": "residual_failed_costs_dropped",
+   "detected": true,
+   "run": "full run 2; re-run 3 on the final tests (row-side residual cases added)"
+  },
+  {
+   "mutant": "run_without_comparison",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "reused_entry_journals_dropped",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "placebo_arm_dropped_03",
+   "detected": true,
+   "run": "full run 2"
+  },
+  {
+   "mutant": "memory_guard_bypassed",
+   "detected": true,
+   "run": "full run 2"
+  }
+ ]
+}

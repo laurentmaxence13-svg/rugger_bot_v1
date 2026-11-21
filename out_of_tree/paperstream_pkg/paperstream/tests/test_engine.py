@@ -1,4 +1,4 @@
-"""paperstream 0.2: streaming = frozen W1 L1 bundle (byte for byte), anchored SOL/USD series mandatory, no lookahead,
+"""paperstream 0.3: streaming = frozen W1 L1 bundle (byte for byte), anchored SOL/USD series mandatory, no lookahead,
 offline, labels, thresholds, journal."""
 import gzip
 import hashlib
@@ -180,15 +180,163 @@ def test_stream_trade_is_unchanged_from_0_1():
     assert hashlib.sha256(inspect.getsource(E.stream_replay).encode()).hexdigest() == STREAM_REPLAY_V01
 
 
-def test_unforced_observer_with_the_series_is_not_blocked_by_the_rate(series, tmp_path):
-    """R02 06181c21 point 6: observe() NOT replaced; with the series, sol_usd_rate_unavailable no longer blocks."""
+def _frozen(series_doc):
+    return hrr.run_replay(PACK, w1_run.l1_params(), series_doc, w1_run.L1_EXIT,
+                          hrr.CreatorHistory.from_archives([a for _e, a in hrr.load_fixtures(PACK)[2]], 'manifest'),
+                          placebo_arm=True)
+
+
+def test_unforced_observer_with_the_series_exact_rate_reason_counts(series, tmp_path):
+    """R02 point 6 / 15:51Z point 3: observe() NOT replaced. The count of sol_usd_rate_unavailable is EQUAL in batch and
+    stream and equal to the frozen engine's, per arm; at least one decision is taken (the placebo arm enters)."""
+    batch, _ = _records(series, tmp_path, False)
+    streamed, _j = _records(series, tmp_path, True)
+    frozen = _frozen(sus.load_series(series[0]))
+    for arm in frozen['totals']:
+        n = [b['totals'][arm]['blocking_reasons'].get('sol_usd_rate_unavailable', 0) for b in (batch, streamed, frozen)]
+        assert n[0] == n[1] == n[2] == 0, (arm, n)                    # the synthetic series covers every decision
+        assert batch['totals'][arm]['decisions'] == streamed['totals'][arm]['decisions'] > 0
+    assert streamed['totals'][hrr.PLACEBO_ARM]['entries'] >= 1           # a decision is taken, not only WAITs
+    without = _frozen(None)['totals']['master']
+    assert without['blocking_reasons']['sol_usd_rate_unavailable'] == without['decisions'] > 0   # the 0.1 blockage
+
+
+@pytest.mark.parametrize('field', ['received', 'spent', 'tx_cost_buy', 'tx_cost_sell', 'failed', 'pnl',
+                                   'row_spent', 'row_received', 'row_tx_costs'])
+def test_zero_residual_is_defined_and_an_injected_residual_fails(series, tmp_path, field):
+    bundle, journals = _records(series, tmp_path, True)
+    closed = [(r, name, row) for r in bundle['pools'] for name, row in r['arms'].items() if row.get('pnl_lamports') is not None]
+    assert closed and E.RECONCILED == ('SELL.received', 'BUY.spent', 'BUY.tx_cost', 'SELL.tx_cost',
+                                       'row.failed_attempt_costs', 'row.pnl_lamports')
+    record, arm, row = closed[0]
+    journal = next(j for j in journals if j['pool'] == record['pool'] and j['arm'] == arm)
+    assert E.residual(row, journal) == [] and E.reconcile(record, journals) >= 1
+    bad_j, bad_row = json.loads(json.dumps(journal)), dict(row)
+    buy = next(e for e in bad_j['events'] if e['kind'] == 'BUY')
+    sell = next(e for e in bad_j['events'] if e['kind'] == 'SELL')
+    if field == 'received':
+        sell['received'] += 1
+    elif field == 'spent':
+        buy['spent'] += 1
+    elif field == 'tx_cost_buy':
+        buy['tx_cost'] += 1
+    elif field == 'tx_cost_sell':
+        sell['tx_cost'] += 1
+    elif field == 'failed':
+        bad_row['failed_attempt_costs'] += 1
+    elif field.startswith('row_'):
+        bad_row[field[4:]] += 1                                          # the frozen row against its journal
+    else:
+        bad_row['pnl_lamports'] += 1
+    assert E.residual(bad_row, bad_j) != []
+    others = [j for j in journals if j is not journal]
+    with pytest.raises(E.StreamError, match='journal_does_not_reconcile'):
+        E.reconcile(dict(record, arms=dict(record['arms'], **{arm: bad_row})), others + [bad_j])
+
+
+def _cut_after(monkeypatch, n):
+    """Simulated interruption: the frozen replay_pool raises after n pools (as a restarted machine would stop)."""
+    original, done = hrr.replay_pool, []
+
+    def cut(*args, **kwargs):
+        if len(done) >= n:
+            raise KeyboardInterrupt('simulated_restart')
+        done.append(1)
+        return original(*args, **kwargs)
+    monkeypatch.setattr(hrr, 'replay_pool', cut)
+
+
+def test_checkpoint_cut_then_resume_is_byte_identical(series, tmp_path, monkeypatch):
+    clean, clean_j = _records(series, tmp_path, True, name='clean')
+    ck = tmp_path / 'ck'
+    with monkeypatch.context() as m:
+        _cut_after(m, 2)
+        with pytest.raises(KeyboardInterrupt):
+            _records(series, tmp_path, True, name='cut', checkpoint_dir=ck)
+    assert hrr.replay is R.replay and hrr.replay_pool.__module__ == hrr.__name__
+    bundle, journals, index = _records(series, tmp_path, True, name='resumed', checkpoint_dir=ck)
+    assert bundle['bundle_sha256'] == clean['bundle_sha256'] and E._canonical(bundle) == E._canonical(clean)
+    assert E._canonical(journals) == E._canonical(clean_j)
+    assert index['counts'] == {'absent': 1, 'reused': 2} and len(index['entries']) == 3
+    assert index['context']['mode'] == 'stream' and index['context']['manifest_sha256'] == SHA
+    again, _j, index2 = _records(series, tmp_path, True, name='again', checkpoint_dir=ck)
+    assert again['bundle_sha256'] == clean['bundle_sha256'] and index2['counts'] == {'reused': 3}
+    with pytest.raises(E.StreamError, match='checkpoint_is_for_the_streaming_run_only'):
+        E.records(PACK, SHA, *series, streaming=False, checkpoint_dir=tmp_path / 'ck2')
+    assert not list(ck.glob('*.pkl'))                                    # canonical JSON only, no pickle
+
+
+def test_checkpoint_with_forked_workers(series, tmp_path):
+    clean, clean_j = _records(series, tmp_path, True, name='clean')
+    ck = tmp_path / 'ck'
+    first, j1, i1 = _records(series, tmp_path, True, name='w1', checkpoint_dir=ck, workers=2)
+    second, j2, i2 = _records(series, tmp_path, True, name='w2', checkpoint_dir=ck, workers=2)
+    assert first['bundle_sha256'] == second['bundle_sha256'] == clean['bundle_sha256']
+    assert E._canonical(j1) == E._canonical(j2) == E._canonical(clean_j)
+    assert i1['counts'] == {'absent': 3} and i2['counts'] == {'reused': 3}
+
+
+def test_the_reported_sha_is_the_frozen_canonical_sha_of_run_trials(series, tmp_path):
+    """R02 16:06Z: the bundle is not written, so the reported bundle_sha256 must be the frozen one: hrr._sha (the
+    canonical JSON of hrr._canonical, used by run_replay and therefore by w1_run.run_trials) over the bundle without
+    its own sha field, recomputed and equal to the frozen direct call."""
     bundle, _j = _records(series, tmp_path, True)
-    master = bundle['totals']['master']
-    assert master['decisions'] > 0 and 'sol_usd_rate_unavailable' not in master['blocking_reasons']
-    without = hrr.run_replay(PACK, w1_run.l1_params(), None, w1_run.L1_EXIT,
-                             hrr.CreatorHistory.from_archives([a for _e, a in hrr.load_fixtures(PACK)[2]], 'manifest'),
-                             placebo_arm=True)['totals']['master']
-    assert without['blocking_reasons'].get('sol_usd_rate_unavailable') == without['decisions']   # the 0.1 blockage
+    doc = E._document(bundle, SHA, series[1], sus.load_series(series[0]))
+    body = {k: v for k, v in bundle.items() if k != 'bundle_sha256'}
+    assert doc['bundle_sha256'] == doc['bundle_sha256_recomputed'] == hrr._sha(body) == _frozen(sus.load_series(series[0]))['bundle_sha256']
+    assert hrr._canonical(body) == json.dumps(body, sort_keys=True, separators=(',', ':'), allow_nan=False)
+    assert 'hrr.run_replay(pools_dir, l1_params(), series, L1_EXIT' in inspect.getsource(w1_run.run_trials)
+
+
+def test_memory_guard_of_dayj_and_its_override(series, tmp_path, monkeypatch, capsys):
+    path, sha = series
+    common = ['--pools', str(PACK), '--manifest-sha256', SHA, '--sol-usd-series', str(path), '--sol-usd-series-sha256', sha]
+    monkeypatch.setattr(dayj, '_memory_available_mb', lambda: 1)
+    with pytest.raises(E.StreamError, match='memory_projection_exceeds_available_owner_decision_needed'):
+        E.main(['reference', *common, '--out', str(tmp_path / 'small')])
+    assert not (tmp_path / 'small').exists()                             # refused before anything is written
+    assert E.main(['reference', *common, '--memory-override', '--out', str(tmp_path / 'forced')]) == 0
+    doc = json.loads((tmp_path / 'forced' / 'REFERENCE.json').read_text())
+    assert doc['memory_override'] is True and doc['memory']['fits'] is False and doc['memory']['step'] == 'trials'
+    monkeypatch.setattr(dayj, '_memory_available_mb', lambda: 10 ** 7)
+    assert E.main(['reference', *common, '--out', str(tmp_path / 'fits')]) == 0
+    assert json.loads((tmp_path / 'fits' / 'REFERENCE.json').read_text())['memory']['fits'] is True
+
+
+def _entries(ck):
+    return sorted(p for p in ck.glob('*.json'))
+
+
+@pytest.mark.parametrize('change', ['batch_mode', 'other_series', 'other_code', 'altered_content', 'other_pool'])
+def test_a_foreign_or_altered_entry_is_refused_and_recomputed(series, tmp_path, change):
+    ck = tmp_path / 'ck'
+    clean, _j, _i = _records(series, tmp_path, True, name='first', checkpoint_dir=ck)
+    entry = _entries(ck)[0]
+    pool = entry.name[:-len('.json')]
+    doc = json.loads(entry.read_text())
+    if change == 'altered_content':
+        if doc['record'] is not None:
+            doc['record']['trades'] += 1
+        else:
+            doc['excluded'] = ['tampered']
+        entry.write_text(E._canonical_strict(doc))                       # sha line NOT updated
+        expected = 'sha_mismatch'
+    else:
+        if change == 'batch_mode':
+            doc['key']['mode'] = 'batch'
+        elif change == 'other_series':
+            doc['key']['sol_usd_series_sha256'] = '0' * 64
+        elif change == 'other_code':
+            doc['key']['streaming_code_sha256'] = '0' * 64
+        else:
+            doc['key']['pool'] = 'another'
+        entry.write_text(E._canonical_strict(doc))
+        (ck / (pool + '.sha256')).write_text(hashlib.sha256(entry.read_bytes()).hexdigest())   # a self-consistent sha
+        expected = 'key_mismatch'
+    bundle, _j, index = _records(series, tmp_path, True, name='second', checkpoint_dir=ck)
+    assert index['last_states'][pool] == expected and index['counts'][expected] == 1
+    assert bundle['bundle_sha256'] == clean['bundle_sha256']             # recomputed, identical
+    assert json.loads(entry.read_text())['key']['mode'] == 'stream'      # the entry is rewritten with the right key
 
 
 def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
@@ -199,8 +347,7 @@ def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
     ref = tmp_path / 'ref' / 'REFERENCE.json'
     assert ref_sha == hashlib.sha256(ref.read_bytes()).hexdigest()
     reference = json.loads(ref.read_text())
-    bundle = json.loads(gzip.decompress((tmp_path / 'ref' / 'BUNDLE.json.gz').read_bytes()))
-    assert bundle['bundle_sha256'] == reference['bundle_sha256']
+    assert reference['bundle_sha256'] == _records(series, tmp_path, False)[0]['bundle_sha256']
     assert reference['input']['sol_usd_series_file_sha256'] == sha and 'pnl_lamports' not in json.dumps(reference['counts'])
     with pytest.raises(E.StreamError, match='reference_is_not_the_anchored_one'):
         E.main(['run', *common, '--reference', str(ref), '--reference-sha256', '0' * 64, '--out', str(tmp_path / 'x')])
@@ -216,8 +363,29 @@ def test_cli_reference_then_anchored_run(series, tmp_path, capsys):
     assert doc['identical_to_reference'] is True and doc['matches_expected_bundle'] is True
     assert doc['category'] == 'HISTORICAL_REPLAY' and doc['network'] is False and doc['trials_added'] == 0
     assert doc['reconciled_cycles'] == doc['closed_cycles_all_arms'] >= 1                  # placebo cycle on the pack
-    for word in ('genuine', 'GENUINE', 'MASTER_CYCLE', 'operational_trade": true', 'LIVE', 'pnl_lamports'):
-        assert word not in text, word
+    for word in ('genuine', 'GENUINE', 'MASTER_CYCLE', 'operational_trade": true', 'LIVE', 'pnl', 'return', 'HW',
+                 'hypothes', 'mark_'):
+        assert word not in text, word                                   # firewall: identities and counts only
+    assert doc['trials_added'] == 0 and doc['identity_check_not_a_trial'] is True
+    assert not list((tmp_path / 'run').glob('*.gz'))                     # no bundle (no P&L) written
+    capsys.readouterr()
+    # W1 mode: the STREAM ALONE against the anchored sha, with a checkpoint outside the output
+    assert E.main(['run', *common, '--expect-bundle-sha256', reference['bundle_sha256'], '--checkpoint',
+                   str(tmp_path / 'ck'), '--out', str(tmp_path / 'alone')]) == 0
+    alone = json.loads((tmp_path / 'alone' / 'PAPERSTREAM.json').read_text())
+    assert alone['matches_expected_bundle'] is True and 'identical_to_reference' not in alone
+    assert alone['checkpoint_counts'] == {'absent': 3}
+    index = (tmp_path / 'alone' / 'CHECKPOINT_INDEX.json')
+    assert alone['checkpoint_index_sha256'] == hashlib.sha256(index.read_bytes()).hexdigest()
+    for word in ('pnl', 'return', 'HW'):
+        assert word not in index.read_text(), word
+    with pytest.raises(E.StreamError, match='nothing_to_compare_with'):
+        E.main(['run', *common, '--out', str(tmp_path / 'none')])
+    with pytest.raises(E.StreamError, match='reference_and_its_sha256_go_together'):
+        E.main(['run', *common, '--reference', str(ref), '--out', str(tmp_path / 'half')])
+    with pytest.raises(E.StreamError, match='checkpoint_inside_the_output'):
+        E.main(['run', *common, '--expect-bundle-sha256', '1' * 64, '--checkpoint', str(tmp_path / 'in' / 'ck'),
+                '--out', str(tmp_path / 'in')])
     capsys.readouterr()
     assert E.main(['run', *common, '--reference', str(ref), '--reference-sha256', ref_sha,
                    '--expect-bundle-sha256', '1' * 64, '--out', str(tmp_path / 'run2')]) == 1

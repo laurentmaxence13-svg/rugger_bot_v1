@@ -1,5 +1,5 @@
-"""paperstream 0.2 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
-0.2 per R02 decision 06181c21). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
+"""paperstream 0.3 -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
+0.2 per R02 decision 06181c21; 0.3 per R02 requirements of 15:51Z/15:52Z/15:52:53Z). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
 nothing is sent, signed or read from the network; no key; no economic conclusion (it reproduces a known replay: not a
 trial, N unchanged).
 
@@ -7,7 +7,14 @@ trial, N unchanged).
          --sol-usd-series <series.json[.gz]> --sol-usd-series-sha256 <anchored> [--workers W] --out <DIR>      (batch)
   python -B -m paperstream.engine run       --pools <pack> --manifest-sha256 <anchored> \
          --sol-usd-series <series.json[.gz]> --sol-usd-series-sha256 <anchored> [--workers W] \
-         --reference <REFERENCE.json> --reference-sha256 <anchored> [--expect-bundle-sha256 <W1 L1>] --out <DIR> (stream)
+         [--reference <REFERENCE.json> --reference-sha256 <anchored>] [--expect-bundle-sha256 <anchored W1 L1>] \
+         [--checkpoint <paperstream checkpoint DIR>] --out <DIR>                                             (stream)
+
+0.3 (R02). (a) W1: the STREAM ALONE against the anchored L1 bundle sha (``--expect-bundle-sha256``, given on the command
+line, never read from a file this run produces); ``--reference`` (batch) stays for the fixtures and P0. (b) Per-pool
+CHECKPOINT, STREAMING ONLY, canonical JSON (no pickle, never the trials checkpoint): see ``Checkpoint``. (c) ZERO RESIDUAL
+is defined by ``RECONCILED`` and ``reconcile``. (d) Firewall: the summary documents hold identities, closed cycles and
+reason counts only: no return, no P&L, no hypothesis label.
 
 0.2 (R02 06181c21). (1) The SOL/USD series is MANDATORY: the file's sha256 is checked BEFORE it is read, it is loaded by
 the loader of the frozen W1 trials step (``sus.load_series``, as ``w1_run.run_trials``) under the same guard (COLLECTED,
@@ -34,9 +41,11 @@ cycles, 20 creator groups) and these replayed cycles NEVER count toward them.
 """
 import argparse
 import contextlib
-import gzip
 import hashlib
+import inspect
 import json
+import os
+from dataclasses import asdict
 from pathlib import Path
 
 from bot.market import replay as R
@@ -45,9 +54,9 @@ from bot.master_decision import POLICY
 from bot.master_v2 import w1_run
 from bot.p4 import historical_research_replay as hrr
 from bot.p4 import sol_usd_series as sus
-from w1aux import lazy, parallel
+from w1aux import dayj, lazy, parallel
 
-SCHEMA = 'paperstream-v0.2'
+SCHEMA = 'paperstream-v0.3'
 CATEGORY = 'HISTORICAL_REPLAY'
 
 
@@ -276,26 +285,116 @@ def load_anchored_series(path, sha256):
     return series
 
 
-def _journaled_replay_pool(original, journal_dir):
-    """Per-pool function used while streaming: the frozen replay_pool, then its PAPER journals written to one file."""
-    def replay_pool(archive, *args, **kwargs):
-        start = len(JOURNALS)
-        record = original(archive, *args, **kwargs)
-        path = Path(journal_dir) / (record['pool'] + '.json')
+def streaming_code_sha256():
+    """sha256 of the source of the streaming code path (StreamTrade, stream_replay, streaming_engine, the per-pool
+    wrapper and the checkpoint) and of the frozen code fingerprint: any change invalidates every checkpoint entry."""
+    parts = [inspect.getsource(o) for o in (StreamTrade, stream_replay, streaming_engine, _journaled_replay_pool,
+                                             Checkpoint)]
+    from bot.master_v2 import harness
+    parts.append(harness.code_fingerprint())
+    return hashlib.sha256('\n'.join(parts).encode()).hexdigest()
+
+
+class Checkpoint:
+    """Per-pool checkpoint of the STREAMING run only (R02 15:52:53Z): one canonical JSON entry per pool
+    (``<pool>.json``: key, record or exclusion, PAPER journals) and its sha256 (``<pool>.sha256``, written after the
+    entry is complete). An entry is reused ONLY if its key equals the expected key (mode "stream", streaming code sha,
+    series sha, MANIFEST sha, params sha, pool) AND its file sha equals the sha line; otherwise the pool is recomputed
+    and the reason is recorded (``status/<pool>.json``). No pickle; nothing of a batch run can match (mode)."""
+
+    def __init__(self, directory, context):
+        self.dir = Path(directory)
+        self.context = dict(context, mode='stream')
+        (self.dir / 'status').mkdir(parents=True, exist_ok=True)
+
+    def key(self, pool):
+        return dict(self.context, pool=pool)
+
+    def _paths(self, pool):
+        return self.dir / (pool + '.json'), self.dir / (pool + '.sha256')
+
+    def get(self, pool):
+        entry, sha = self._paths(pool)
+        if not entry.exists() or not sha.exists():
+            return None, 'absent'
+        if _sha_file(entry) != sha.read_text(encoding='utf-8').strip():
+            return None, 'sha_mismatch'
+        doc = json.loads(entry.read_text(encoding='utf-8'))
+        if doc.get('key') != self.key(pool):
+            return None, 'key_mismatch'
+        return doc, 'reused'
+
+    def put(self, pool, record, excluded, journals):
+        entry, sha = self._paths(pool)
+        doc = dict(key=self.key(pool), record=record, excluded=excluded, journals=journals)
+        for path, text in ((entry, _canonical_strict(doc)), (sha, None)):
+            part = path.with_name(path.name + '.part')
+            part.write_text(text if text is not None else _sha_file(entry), encoding='utf-8')
+            os.replace(part, path)
+
+    def status(self, pool, state):
+        (self.dir / 'status' / (pool + '.json')).write_text(json.dumps(dict(pool=pool, state=state)), encoding='utf-8')
+
+    def index(self):
+        rows, states = {}, {}
+        for path in sorted(self.dir.glob('*.sha256')):
+            rows[path.name[:-len('.sha256')]] = path.read_text(encoding='utf-8').strip()
+        for path in sorted((self.dir / 'status').glob('*.json')):
+            row = json.loads(path.read_text(encoding='utf-8'))
+            states[row['pool']] = row['state']
+        counts = {}
+        for state in states.values():
+            counts[state] = counts.get(state, 0) + 1
+        return dict(context=self.context, entries=rows, last_states=states, counts=dict(sorted(counts.items())))
+
+
+def _canonical_strict(doc):
+    return json.dumps(doc, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+def _journaled_replay_pool(original, journal_dir, checkpoint=None):
+    """Per-pool function used while streaming: the frozen replay_pool (or a verified checkpoint entry of the same key),
+    then its PAPER journals written to one file by the process that replayed the pool."""
+    def write(pool, journals):
+        path = Path(journal_dir) / (pool + '.json')
         if path.exists():
             raise StreamError('journal_written_twice')
-        part = path.with_suffix('.part')
-        part.write_text(json.dumps(JOURNALS[start:], sort_keys=True, default=str), encoding='utf-8')
-        part.rename(path)
+        part = path.with_name(path.name + '.part')
+        part.write_text(json.dumps(journals, sort_keys=True), encoding='utf-8')
+        os.replace(part, path)
+
+    def replay_pool(archive, *args, **kwargs):
+        pool = archive.pool
+        if checkpoint is not None:
+            doc, state = checkpoint.get(pool)
+            checkpoint.status(pool, state)
+            if doc is not None:
+                write(pool, doc['journals'])
+                if doc['excluded'] is not None:
+                    raise hrr.PoolExcluded(doc['excluded'])
+                return doc['record']
+        start = len(JOURNALS)
+        try:
+            record = original(archive, *args, **kwargs)
+        except hrr.PoolExcluded as exc:
+            del JOURNALS[start:]
+            if checkpoint is not None:
+                checkpoint.put(pool, None, list(exc.reasons), [])
+            write(pool, [])
+            raise
+        journals = json.loads(json.dumps(JOURNALS[start:]))
         del JOURNALS[start:]
+        if checkpoint is not None:
+            checkpoint.put(pool, record, None, journals)
+        write(pool, journals)
         return record
     return replay_pool
 
 
 @contextlib.contextmanager
-def _journals_to(journal_dir):
+def _journals_to(journal_dir, checkpoint=None):
     original = hrr.replay_pool
-    hrr.replay_pool = _journaled_replay_pool(original, journal_dir)
+    hrr.replay_pool = _journaled_replay_pool(original, journal_dir, checkpoint)
     try:
         yield
     finally:
@@ -319,7 +418,15 @@ def l1_bundle(pools_dir, series):
                           placebo_arm=True)
 
 
-def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming, journal_dir=None, workers=1):
+def checkpoint_context(manifest_sha256, series):
+    return dict(streaming_code_sha256=streaming_code_sha256(), sol_usd_series_sha256=series.sha256,
+                manifest_sha256=manifest_sha256,
+                params_sha256=hashlib.sha256(_canonical_strict(dict(params=asdict(w1_run.l1_params()),
+                                                                    exit=w1_run.L1_EXIT.record())).encode()).hexdigest())
+
+
+def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming, journal_dir=None, workers=1,
+            checkpoint_dir=None):
     """(bundle, journals): the frozen L1 bundle, computed by the frozen batch engine or by the streaming one."""
     if _sha_file(Path(pools_dir) / 'MANIFEST.json') != manifest_sha256:
         raise StreamError('manifest_is_not_the_anchored_one')
@@ -328,12 +435,15 @@ def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming
         raise StreamError('workers_must_be_a_positive_integer')
     if streaming and journal_dir is None:
         raise StreamError('journal_dir_required_when_streaming')
+    if checkpoint_dir is not None and not streaming:
+        raise StreamError('checkpoint_is_for_the_streaming_run_only')
+    checkpoint = None if checkpoint_dir is None else Checkpoint(checkpoint_dir, checkpoint_context(manifest_sha256, series))
     JOURNALS.clear()
     with contextlib.ExitStack() as stack:
         if streaming:
             Path(journal_dir).mkdir(parents=True, exist_ok=False)
             stack.enter_context(streaming_engine())
-            stack.enter_context(_journals_to(journal_dir))
+            stack.enter_context(_journals_to(journal_dir, checkpoint))
         stack.enter_context(lazy.lazy_archives())
         if workers > 1:
             stack.enter_context(parallel.parallel_replays(workers))          # no checkpoint: nothing reused
@@ -344,21 +454,39 @@ def records(pools_dir, manifest_sha256, series_path, series_sha256, *, streaming
     journals = _read_journals(journal_dir) if streaming else []
     if JOURNALS:
         raise StreamError('journal_not_written')
+    if checkpoint is not None:
+        return bundle, journals, checkpoint.index()
     return bundle, journals
 
 
+RECONCILED = ('SELL.received', 'BUY.spent', 'BUY.tx_cost', 'SELL.tx_cost', 'row.failed_attempt_costs', 'row.pnl_lamports')
+
+
+def residual(row, journal):
+    """ZERO RESIDUAL, defined: for every closed cycle (frozen trade row with a P&L), from its PAPER journal,
+    SELL.received - BUY.spent - (BUY.tx_cost + SELL.tx_cost) - row.failed_attempt_costs - row.pnl_lamports == 0,
+    and the journal amounts equal the row's (BUY.spent == row.spent, SELL.received == row.received,
+    BUY.tx_cost + SELL.tx_cost == row.tx_costs). Returns the list of non-zero differences."""
+    buys = [e for e in journal['events'] if e['kind'] == 'BUY']
+    sells = [e for e in journal['events'] if e['kind'] == 'SELL']
+    if len(buys) != 1 or len(sells) != 1:
+        return [('journal_shape', len(buys), len(sells))]
+    buy, sell = buys[0], sells[0]
+    checks = dict(pnl=sell['received'] - buy['spent'] - (buy['tx_cost'] + sell['tx_cost']) - row['failed_attempt_costs']
+                  - row['pnl_lamports'],
+                  spent=buy['spent'] - row['spent'], received=sell['received'] - row['received'],
+                  tx_costs=buy['tx_cost'] + sell['tx_cost'] - row['tx_costs'])
+    return [(name, value) for name, value in sorted(checks.items()) if value != 0]
+
+
 def reconcile(record, journals):
-    """Each arm's trade row against its PAPER journal: received - spent - tx - failed = P&L, zero residual."""
+    """Each closed cycle of the record against its PAPER journal (``residual``); raises on any non-zero residual."""
     checked = 0
     for name, row in record['arms'].items():
         if row.get('pnl_lamports') is None:
             continue
-        journal = next(j for j in journals if j['pool'] == record['pool'] and j['arm'] == name)
-        buy = next(e for e in journal['events'] if e['kind'] == 'BUY')
-        sell = next(e for e in journal['events'] if e['kind'] == 'SELL')
-        residual = (sell['received'] - buy['spent'] - (buy['tx_cost'] + sell['tx_cost']) - row['failed_attempt_costs']
-                    - row['pnl_lamports'])
-        if residual != 0:
+        found = [j for j in journals if j['pool'] == record['pool'] and j['arm'] == name]
+        if len(found) != 1 or residual(row, found[0]):
             raise StreamError('journal_does_not_reconcile')
         checked += 1
     return checked
@@ -383,20 +511,15 @@ def _document(bundle, manifest_sha256, series_sha256, series, **extra):
                            sol_usd_series_sha256=series.sha256, sol_usd_series_points=len(series.points)),
                 pools=len(bundle['pools']), excluded=len(bundle.get('excluded_pools', [])),
                 bundle_sha256=bundle['bundle_sha256'],
+                bundle_sha256_recomputed=hrr._sha({k: v for k, v in bundle.items() if k != 'bundle_sha256'}),
                 canonical_sha256=hashlib.sha256(_canonical(bundle).encode()).hexdigest(),
-                counts=counts(bundle), thresholds=thresholds(), network=False, trials_added=0, **extra)
+                counts=counts(bundle), thresholds=thresholds(), network=False, trials_added=0,
+                identity_check_not_a_trial=True, **extra)
 
 
 def _write(out, name, doc):
     path = out / name
     path.write_text(json.dumps(doc, sort_keys=True, indent=1, default=str) + '\n', encoding='utf-8')
-    return _sha_file(path)
-
-
-def _write_gz(out, name, doc):
-    path = out / name
-    with gzip.open(path, 'wt', encoding='utf-8') as handle:
-        handle.write(_canonical(doc))
     return _sha_file(path)
 
 
@@ -411,47 +534,71 @@ def main(argv=None):
         p.add_argument('--sol-usd-series', type=Path, required=True)
         p.add_argument('--sol-usd-series-sha256', required=True)
         p.add_argument('--workers', type=int, default=1)
+        p.add_argument('--memory-override', action='store_true',
+                       help='skip the dayj memory guard: NOT usable without the written agreement of R02')
         p.add_argument('--out', type=Path, required=True)
-    run.add_argument('--reference', type=Path, required=True)
-    run.add_argument('--reference-sha256', required=True)
+    run.add_argument('--reference', type=Path)
+    run.add_argument('--reference-sha256')
     run.add_argument('--expect-bundle-sha256')
+    run.add_argument('--checkpoint', type=Path)
     a = parser.parse_args(argv)
     if a.out.exists():
         raise StreamError('output_exists')
     reference = None
     if a.command == 'run':
-        raw = a.reference.read_bytes()
-        if hashlib.sha256(raw).hexdigest() != a.reference_sha256:
-            raise StreamError('reference_is_not_the_anchored_one')
-        reference = json.loads(raw)
-        if reference.get('input', {}).get('manifest_sha256') != a.manifest_sha256 or \
-                reference['input'].get('sol_usd_series_file_sha256') != a.sol_usd_series_sha256:
-            raise StreamError('reference_of_another_input')
-    a.out.mkdir(parents=True)
-    streaming = a.command == 'run'
-    bundle, journals = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256,
-                               streaming=streaming, journal_dir=a.out / 'journals' if streaming else None,
-                               workers=a.workers)
+        if (a.reference is None) != (a.reference_sha256 is None):
+            raise StreamError('reference_and_its_sha256_go_together')
+        if a.reference is None and a.expect_bundle_sha256 is None:
+            raise StreamError('nothing_to_compare_with')
+        if a.checkpoint is not None and a.checkpoint.resolve().is_relative_to(a.out.resolve()):
+            raise StreamError('checkpoint_inside_the_output')
+        if a.reference is not None:
+            raw = a.reference.read_bytes()
+            if hashlib.sha256(raw).hexdigest() != a.reference_sha256:
+                raise StreamError('reference_is_not_the_anchored_one')
+            reference = json.loads(raw)
+            if reference.get('input', {}).get('manifest_sha256') != a.manifest_sha256 or \
+                    reference['input'].get('sol_usd_series_file_sha256') != a.sol_usd_series_sha256:
+                raise StreamError('reference_of_another_input')
     series = load_anchored_series(a.sol_usd_series, a.sol_usd_series_sha256)
-    bundle_file = _write_gz(a.out, 'BUNDLE.json.gz', bundle)
-    if not streaming:
+    try:                                         # the dayj guard of the trials step, projected from the MANIFEST
+        memory = dayj.memory_guard('trials', a.pools, a.memory_override)
+    except dayj.DayJError as exc:
+        raise StreamError(str(exc)) from None
+    a.out.mkdir(parents=True)
+    if a.command == 'reference':
+        bundle, _j = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256,
+                             streaming=False, workers=a.workers)
         doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
-                        engine='frozen batch replay (bot.market.replay.replay)', bundle_file_sha256=bundle_file)
+                        engine='frozen batch replay (bot.market.replay.replay)', memory=memory,
+                        memory_override=a.memory_override)
         print(_write(a.out, 'REFERENCE.json', doc))
         return 0
+    result = records(a.pools, a.manifest_sha256, a.sol_usd_series, a.sol_usd_series_sha256, streaming=True,
+                     journal_dir=a.out / 'journals', workers=a.workers, checkpoint_dir=a.checkpoint)
+    bundle, journals = result[0], result[1]
     reconciled = sum(reconcile(r, journals) for r in bundle['pools'])
     closed = sum(1 for r in bundle['pools'] for row in r['arms'].values() if row.get('pnl_lamports') is not None)
     doc = _document(bundle, a.manifest_sha256, a.sol_usd_series_sha256, series,
-                    engine='paperstream StreamTrade (events pushed one by one)', bundle_file_sha256=bundle_file,
-                    reference_sha256=a.reference_sha256, reconciled_cycles=reconciled, closed_cycles_all_arms=closed,
+                    engine='paperstream StreamTrade (events pushed one by one)', memory=memory,
+                    memory_override=a.memory_override, reconciled_cycles=reconciled,
+                    closed_cycles_all_arms=closed,
                     journals_sha256=hashlib.sha256(_canonical(journals).encode()).hexdigest())
-    doc['identical_to_reference'] = (doc['bundle_sha256'] == reference['bundle_sha256']
-                                     and doc['canonical_sha256'] == reference['canonical_sha256'])
+    ok = reconciled == closed
+    if reference is not None:
+        doc['reference_sha256'] = a.reference_sha256
+        doc['identical_to_reference'] = (doc['bundle_sha256'] == reference['bundle_sha256']
+                                         and doc['canonical_sha256'] == reference['canonical_sha256'])
+        ok = ok and doc['identical_to_reference']
     if a.expect_bundle_sha256 is not None:
         doc['expected_bundle_sha256'] = a.expect_bundle_sha256
         doc['matches_expected_bundle'] = doc['bundle_sha256'] == a.expect_bundle_sha256
+        ok = ok and doc['matches_expected_bundle']
+    if a.checkpoint is not None:
+        index = result[2]
+        doc['checkpoint_index_sha256'] = _write(a.out, 'CHECKPOINT_INDEX.json', index)
+        doc['checkpoint_counts'] = index['counts']
     print(_write(a.out, 'PAPERSTREAM.json', doc))
-    ok = doc['identical_to_reference'] and reconciled == closed and doc.get('matches_expected_bundle', True)
     return 0 if ok else 1
 
 
