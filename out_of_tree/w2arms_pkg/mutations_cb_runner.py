@@ -15,6 +15,12 @@ MUT = [
  ("    if n < n_min:", "    if False:", 'n_min_ignored'),
  ("            if low <= slot < high:", "            if True:", 'creation_slots_outside_window'),
  ("        raise CbError(error)", "        pass", 'anchored_files_unchecked'),
+ ("        c5 = slow is not None and slow > 0 and without_best5 is not None and without_best5 > 0", "        c5 = without_best5 is not None and without_best5 > 0", 'c5_without_latency10'),
+ ("        c5 = slow is not None and slow > 0 and without_best5 is not None and without_best5 > 0", "        c5 = slow is not None and slow > 0", 'c5_without_best5_rule'),
+ ("    without_best5 = W._mean(sorted(nets)[:-5]) if len(nets) > 5 else None", "    without_best5 = W._mean(sorted(nets)[5:]) if len(nets) > 5 else None", 'drops_the_5_worst'),
+ ("    if hypothesis == 'HW1-5' and latency10_docs is None:", "    if False:", 'latency10_optional_for_hw1_5'),
+ ("                d.get('latency_slots') != 10 or list(d.get('evaluation', [])) != list(x['evaluation'])", "                False or list(d.get('evaluation', [])) != list(x['evaluation'])", 'latency10_slots_unchecked'),
+ ("    else:\n        c5 = True", "    else:\n        c5 = False", 'c5_fails_other_hypotheses'),
 ]
 out = []
 for old, new, name in MUT:

@@ -1,0 +1,74 @@
+[
+ {
+  "mutant": "frozen_mode_closed",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_not_same_pool",
+  "detected": true
+ },
+ {
+  "mutant": "horizon_not_frozen",
+  "detected": true
+ },
+ {
+  "mutant": "halves_not_by_creation",
+  "detected": true
+ },
+ {
+  "mutant": "fingerprint_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "latency_source_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "duplicates_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "missing_creation_slot_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "go_on_c1_only",
+  "detected": true
+ },
+ {
+  "mutant": "n_min_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "creation_slots_outside_window",
+  "detected": true
+ },
+ {
+  "mutant": "anchored_files_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "c5_without_latency10",
+  "detected": true
+ },
+ {
+  "mutant": "c5_without_best5_rule",
+  "detected": true
+ },
+ {
+  "mutant": "drops_the_5_worst",
+  "detected": true
+ },
+ {
+  "mutant": "latency10_optional_for_hw1_5",
+  "detected": true
+ },
+ {
+  "mutant": "latency10_slots_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "c5_fails_other_hypotheses",
+  "detected": true
+ }
+]

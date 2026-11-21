@@ -1,4 +1,4 @@
-"""w2arms.cb 0.1 -- the W2 verdict of the arm C-B (one frozen HW1 hypothesis, chosen after the single HW1 reading by the
+"""w2arms.cb 0.2 (0.1 + condition 5 of R02, dossier B v1.9) -- the W2 verdict of the arm C-B (one frozen HW1 hypothesis, chosen after the single HW1 reading by the
 rule of dossier A section 11), section 5 of dossier B v1.8. The POSITIONS are those of the frozen
 ``statelab.hypotheses export`` (fingerprint 1e5fb31a, unchanged), one document per W2 window; nothing is replayed here.
 
@@ -15,7 +15,9 @@ rule of dossier A section 11), section 5 of dossier B v1.8. The POSITIONS are th
   default); the closed-account mode (closedacct 0.2) is published apart;
 * conditions and decision: those of ``w2arms.ce.verdict`` (alpha 0.05 / 3 one-sided, 10 000 draws, seed = first 8 hex
   digits of the freeze anchor, halves by CREATION slot at EVAL_MIN_1 + k x 1 612 800 / 2, cost identity in lamports,
-  INCONCLUSIVE if n < 414, DESCRIPTIVE never applies to C-B (no low-tier rule), section 3 of C-B: none, c5 = PASS);
+  INCONCLUSIVE if n < 414, DESCRIPTIVE never applies to C-B (no low-tier rule));
+* CONDITION 5 (R02, dossier B v1.9): if the hypothesis is HW1-5, mean net > 0 at 10 slots (the --latency10 rows of the
+  same windows, required) AND mean net > 0 without the 5 best pools; PASS for any other hypothesis;
 * ``creation-slots``: the creation slot of each pool of a window, read from the export (no value, no return), anchored
   by R02 like the rows; the halves need it because the frozen rows carry the decision slot only.
 """
@@ -150,20 +152,32 @@ def verdict(hypothesis, docs, slot_docs, *, freeze_anchor_sha256, latency10_docs
                       c2_superiority_to_paired_placebo=low_diff is not None and low_diff > 0,
                       c3_both_halves_positive=all(h is not None and h > 0 for h in halves),
                       c4_cost_identity_zero_residual=bool(cand) and all(x == 0 for x in residuals),
-                      c5_section_3=True)
+                      c5_section_3=None)                    # set below, once the 10-slot rows are read
+    parts = [decomposition_lamports(r, horizon, rents) for r in cand]
+    share = (lambda i: W._mean([p[i] / STAKE_LAMPORTS for p in parts]))
+    slow = None
+    if hypothesis == 'HW1-5' and latency10_docs is None:
+        raise CbError('hw1_5_needs_the_latency10_rows')
+    if latency10_docs is not None:
+        if len(latency10_docs) != len(docs) or any(
+                d.get('latency_slots') != 10 or list(d.get('evaluation', [])) != list(x['evaluation'])
+                or d.get('hypotheses_sha256') != FROZEN_HYPOTHESES_SHA256 for d, x in zip(latency10_docs, docs)):
+            raise CbError('latency10_rows_are_not_the_10_slot_run_of_the_same_windows')
+        rows10 = [r for d in latency10_docs for r in d['rows'] if r['hypothesis'] == hypothesis]
+        slow = W._mean([net(r, horizon, rents) for r in rows10])
+    nets = [net(r, horizon, rents) for r in cand]
+    without_best5 = W._mean(sorted(nets)[:-5]) if len(nets) > 5 else None
+    if hypothesis == 'HW1-5':
+        c5 = slow is not None and slow > 0 and without_best5 is not None and without_best5 > 0
+    else:
+        c5 = True
+    conditions['c5_section_3'] = c5
     if n < n_min:
         decision = 'INCONCLUSIVE'
     elif all(conditions.values()):
         decision = 'GO'
     else:
         decision = 'NO-GO'
-    parts = [decomposition_lamports(r, horizon, rents) for r in cand]
-    share = (lambda i: W._mean([p[i] / STAKE_LAMPORTS for p in parts]))
-    slow = None
-    if latency10_docs is not None:
-        rows10 = [r for d in latency10_docs for r in d['rows'] if r['hypothesis'] == hypothesis]
-        slow = W._mean([net(r, horizon, rents) for r in rows10])
-    nets = [net(r, horizon, rents) for r in cand]
     return dict(schema=SCHEMA_VERDICT, candidate='C-B', hypothesis=hypothesis, horizon_s=int(horizon), frozen_mode='rent_lost',
                 windows=len(docs), n=n, n_min=n_min, clusters=len(groups), seed=seed, draws=W.DRAWS,
                 alpha_one_sided=W.ALPHA_ONE_SIDED, mean_net_return=W._mean(nets), lower_bound_mean=low_mean,
@@ -173,7 +187,8 @@ def verdict(hypothesis, docs, slot_docs, *, freeze_anchor_sha256, latency10_docs
                 decomposition_mean_share_of_stake=dict(gross=share(0), curve_fees=share(1), tx=share(2), rent=share(3),
                                                        net=share(4)),
                 published_apart=dict(closed_account_mode=W._mean([net(r, horizon, rents, 'closed') for r in cand]),
-                                     latency_10_slots=slow, win_rate=W._mean([v > 0 for v in nets]),
+                                     latency_10_slots=slow, without_best_5_pools=without_best5,
+                                     win_rate=W._mean([v > 0 for v in nets]),
                                      min=min(nets, default=None), max=max(nets, default=None)),
                 rent_basis='token class of the census' if rents is not None else 'ASSUMED: SPL Token rent for every pool',
                 inputs=dict(freeze_anchor_sha256=freeze_anchor_sha256))

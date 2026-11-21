@@ -36,3 +36,18 @@
   ont conduit à 2 tests ajoutés.
 
 **À confirmer par R02.** Le placebo apparié de C-B est-il bien la règle gelée de statelab (même pool, même horizon) ?
+
+## cb 0.2 — condition 5 et placebo confirmés par R02 (Dossier B v1.9)
+
+- **Placebo apparié de C-B.** R02 le CONFIRME : c'est le placebo gelé de statelab, sur les MÊMES pools, au même
+  horizon, avec la même sortie et la même latence (fiche W1 § 4).
+- **Condition c5, pour HW1-5.**
+  - Le net moyen est > 0 à 10 slots. Les lignes `--latency10` des mêmes fenêtres sont OBLIGATOIRES ; elles sont
+    contrôlées (latence 10, mêmes plages, empreinte gelée).
+  - ET le net moyen est > 0 sans les 5 meilleurs pools.
+- **Condition c5, pour toute autre hypothèse :** PASS.
+- **Publié à part :** `without_best_5_pools`.
+- **Preuves.**
+  - Tests : 11 dans `test_cb.py`, 27 pour w2arms. Le test réel du pack passe par la commande, avec l'export gelé à
+    10 slots.
+  - Défauts volontaires : 18 sur 18 (`MUTATIONS_cb_v0_2.json`).
