@@ -1,0 +1,50 @@
+[
+ {
+  "mutant": "frozen_mode_closed",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_not_same_pool",
+  "detected": true
+ },
+ {
+  "mutant": "horizon_not_frozen",
+  "detected": true
+ },
+ {
+  "mutant": "halves_not_by_creation",
+  "detected": true
+ },
+ {
+  "mutant": "fingerprint_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "latency_source_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "duplicates_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "missing_creation_slot_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "go_on_c1_only",
+  "detected": true
+ },
+ {
+  "mutant": "n_min_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "creation_slots_outside_window",
+  "detected": true
+ },
+ {
+  "mutant": "anchored_files_unchecked",
+  "detected": true
+ }
+]
