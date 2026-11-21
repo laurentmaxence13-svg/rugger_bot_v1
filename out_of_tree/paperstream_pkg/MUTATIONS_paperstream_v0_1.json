@@ -1,0 +1,62 @@
+[
+ {
+  "mutant": "landing_one_slot_early",
+  "detected": true
+ },
+ {
+  "mutant": "latency_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sell_before_exit_latency",
+  "detected": true
+ },
+ {
+  "mutant": "clock_exit_early",
+  "detected": true
+ },
+ {
+  "mutant": "holding_ignores_real_trades",
+  "detected": true
+ },
+ {
+  "mutant": "exit_latency_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sale_tx_cost_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "time_order_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "push_after_end_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "streaming_not_swapped_in",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_engine_not_restored",
+  "detected": true
+ },
+ {
+  "mutant": "reconcile_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "reference_sha_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "threshold_lowered",
+  "detected": true
+ },
+ {
+  "mutant": "label_genuine",
+  "detected": true
+ }
+]
