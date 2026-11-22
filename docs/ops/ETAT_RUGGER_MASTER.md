@@ -47,8 +47,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 
 | Prio | Tâche | Agent | Autorisation | État |
 |---|---|---|---|---|
-| P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | En cours depuis 15:29:53Z. À 21:29Z, 111 pools sur 2 273 et 68,6 % (déclaré) ; aucun redémarrage (epoch 197) |
-| P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | En attente de la fin du run |
+| P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | **Fait** : de 15:29:53Z à 22:00:48Z, sans coupure, rc 0 |
+| P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | **VERIFIED** (14/14). Ancrage R02 en attente |
 | P1 | Profil technique d'un pool, puis vérification de la 0.5.2.1 sur W1 (ps0521verdict 0.1) | R03, après GO de R02 | A5 | En attente du verdict 0.5.1 |
 | P2 | Préparer hors ligne la chaîne verdict W1, puis HW1, puis C-B : scripts, critères gelés, tests | R01 ; audit R02 | A1 | w1chain 0.1 livrée (5a87ea8, vérifié). Audit R02 : **CORRECTIONS REQUISES** (c6629433). K-1, bloquant : le critère (viii) est exigé à tort pour l'admission, et la condition de sensibilité au payeur manque. w1chain 0.2 (a49f398, MANIFEST eff1d847) corrige K-1. **PASS R02** (déclaré). |
 | P2 | Audit complet du modèle de coûts | R02 | A1 | **Fait** (voir § 4) |
@@ -74,6 +74,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | 22/11 20:24Z | cpmmfmt 0.1, exécution unique sur P0 aca7de08, rc 0. Résultats : 360 archives, dont 8 CPMM ; 21 475 tx, dont 26 CPMM ; 26 frames sur 26 décodées, dont 25 swap_current ; creditable_for_c1 = false ; aucun réseau. | FORMAT_COUNTS.json, sha 44826f54 | déclaré (R03). Audit R02 : **FORMAT CONFORME** (registre fe3488ca). LpChange et l'ancien format ne sont pas exercés. Non créditable pour C-1. |
 
 | 22/11 20:28Z | Audit du modèle de coûts. **Partie marché exacte** (frais de courbe, impact propre, rejeu des échanges réels, latence). **Exécution incomplète**, et toujours dans le sens optimiste : N-1 loyer ignoré ; N-2 fermeture ; N-3 échecs ; N-4 atterrissage supposé certain ; N-5 aucune garde de glissement ; N-6 MEV/Jito ; N-7 WSOL ; N-8 positions ouvertes exclues. Le net W1 de −4,26 % est une **borne haute** (≈ −6,3 % avec le loyer). C-B prudent, mais ne couvre pas N-4 à N-6. Règle fixée avant W2 : « rentable » exigera en plus un net > 0 avec 1 échec et 10 slots, ainsi qu'une mesure PAPER temps réel de l'atterrissage et du glissement. | AUDIT_MODELE_COUTS_PAPER_CB_R02_v1_0.md (registre R02) | déclaré (R02) |
+
+| 22/11 22:00Z | PAPERSTREAM 0.5.1 sur W1 : **VERIFIED**, 14 contrôles sur 14 true. Les 3 sha du bundle sont identiques ; master 191 ; 913 cycles réconciliés sur les 3 bras. Mémoire : somme des RSS ≤ 1 347 Mio contre 8 749 Mo projetés (ratio 0,154), sans override. Le résultat 0.4 est inchangé. **Aucun gain de vitesse** (6 h 31). Cause : SolUsdSeries.as_of, corrigée en 0.5.2.1. | ps051verdict02_out1.json, sha 1997a9d8 ; PAPERSTREAM.json cc2af356 | déclaré (R03) ; ancrage R02 en attente |
 
 ## 5. Incidents
 
