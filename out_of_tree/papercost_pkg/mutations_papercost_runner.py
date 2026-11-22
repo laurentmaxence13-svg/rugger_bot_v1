@@ -24,6 +24,14 @@ MUT = [
  ("            count += 1\n        return count", "            count += 1\n        return 0", 'probability_ignored'),
  ("    tx = row['tx_costs'] if priced else min(row['tx_costs'], TX_FEE_LAMPORTS)", "    tx = 0", 'transactions_forgotten'),
 ]
+# Baseline guard (R02, 21:34Z): the unmutated package must PASS with this PYTHONPATH, otherwise a collection error would
+# make every mutant look detected.
+base = subprocess.run([V, '-B', '-m', 'pytest', str(D / 'papercost' / 'tests'), '-p', 'no:cacheprovider', '-q', '-W', 'error'],
+                      cwd=W, env={'PYTHONPATH': f'{PP}:{D}', 'PATH': '/usr/bin:/bin', 'RUGGER_NO_DOTENV': '1'},
+                      capture_output=True, text=True, timeout=600)
+if base.returncode != 0:
+    print(base.stdout[-2000:], base.stderr[-2000:])
+    raise SystemExit('baseline_does_not_pass: no mutant is run')
 out = []
 for old, new, name in MUT:
     assert src.count(old) == 1, name
