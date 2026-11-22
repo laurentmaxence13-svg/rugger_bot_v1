@@ -1,6 +1,6 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-22 à 19:50Z.
+Mis à jour le 2026-11-22 à 20:27Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
@@ -12,7 +12,7 @@ Légende des preuves :
 | A1 | Travaux techniques hors ligne permanents | Directive d'autonomie du 22/11 | Recherche, code, tests, mutation, intégrité, audits, protocoles, documentation, commits, préparation. Aucune exécution sur les données protégées hors des autorisations A3 à A5. |
 | A2 | Analyses hors ligne sur les données déjà autorisées | 21/11 | Après PASS de R02. Une seule exécution par analyse. Les critères sont fixés avant l'exécution. |
 | A3 | Verdict technique PAPERSTREAM W1 | Décision de continuité du 22/11, point 1 | R02 documente 191/128 et rend un verdict distinct. L'échec initial de psverdict reste enregistré. Aucun recalcul qui remplacerait le premier résultat. |
-| A4 | cpmmfmt 0.1, une fois, sur P0 visible aca7de08 | 22/11, point 2 | Hors ligne, sans réseau, sans données réservées. Contrôle par R02. **Bloquée par la plateforme** : le classifieur de R03 exige que le propriétaire écrive l'autorisation dans la session R03. |
+| A4 | cpmmfmt 0.1, une fois, sur P0 visible aca7de08 | 22/11, point 2 | Hors ligne, sans réseau, sans données réservées. Contrôle par R02. **Consommée** : le propriétaire a écrit l'autorisation dans la session R03 vers 20:24Z, puis l'exécution unique a eu lieu. |
 | A5 | Vérifications hors ligne de PAPERSTREAM 0.5.x sur W1 | 22/11, point 3 | Après validation de R02. Les résultats du run 0.4 ne sont jamais remplacés. Objectif : identité exacte avec W1 et respect des limites mémoire. |
 
 **Non autorisé** (le silence du propriétaire ne vaut jamais accord) :
@@ -35,7 +35,6 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5.
 
 | Décision | Ce qui est prêt | Débloque |
 |---|---|---|
-| Écrire l'autorisation A4 dans la session R03 | Texte transmis le 22/11 à 15:27Z | Contrôle du format CPMM |
 | Signer l'exception A2 : fiche R02 v1.1 (e2a93ea8) avec son erratum v2.6.6, B1, C1/P1, ≤ 66 $ TTC, risque de sauvegarde | Paquet v2.6.6 au PASS de R02 (d0c2ccd, MANIFEST 490a28f1) ; texte du § 7 transmis à 17:43Z | Verdict officiel W1, puis HW1, puis C-B |
 | Pilote CPMM : source U-2, puis GO étape 0 (≤ 100 crédits), puis GO étape 1 (≤ 50 k) | Protocole v1.2 (a3a285a1) | Données CPMM réelles |
 | Variables W2 : format, k, plafond, plan Helius | Dossier B v1.9 | Lancement W2 |
@@ -45,7 +44,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5.
 
 | Prio | Tâche | Agent | Autorisation | État |
 |---|---|---|---|---|
-| P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | En cours depuis 15:29:53Z (déclaré) |
+| P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | En cours depuis 15:29:53Z. À 20:20Z, 51 pools sur 2 273 et 53,3 % des octets traités (déclaré) |
+| P1 | Auditer la sortie cpmmfmt (sha 44826f54) | R02 | A4 | À faire |
 | P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | En attente de la fin du run |
 | P1 | Profil technique d'un pool, puis vérification de la 0.5.2.1 sur W1 (ps0521verdict 0.1) | R03, après GO de R02 | A5 | En attente du verdict 0.5.1 |
 | P2 | Préparer hors ligne la chaîne verdict W1, puis HW1, puis C-B : scripts, critères gelés, tests | R01 ; audit R02 | A1 | À faire |
@@ -64,6 +64,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5.
 | 22/11 15:37Z | Réconciliation : 191 = 63 (échauffement) + 128 (évaluation) + 0 | cyclesplit db66af7, sortie 90adc6b0 | déclaré ; commit vérifié |
 | 22/11 | PASS de R02 : ps051verdict 0.2 (092ab57), A2 v2.6.6 (d0c2ccd), paperstream 0.5.2.1 (99a8a35), ps0521verdict 0.1 (5bc67c6) | registre R02 | commits vérifiés ; PASS déclarés |
 | 22/11 | Fiche d'exception A2 v1.1 | e2a93ea8 | déclaré (R02) |
+| 22/11 20:24Z | cpmmfmt 0.1, exécution unique sur P0 aca7de08, rc 0. Résultats : 360 archives, dont 8 CPMM ; 21 475 tx, dont 26 CPMM ; 26 frames sur 26 décodées, dont 25 swap_current ; creditable_for_c1 = false ; aucun réseau. | FORMAT_COUNTS.json, sha 44826f54 | déclaré (R03) ; audit R02 en attente |
 
 ## 5. Incidents
 
