@@ -1,0 +1,46 @@
+[
+ {
+  "mutant": "rank_smallest_first",
+  "detected": true
+ },
+ {
+  "mutant": "archive_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "creator_history_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "placebo_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "window_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "exit_options_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "not_top_30",
+  "detected": true
+ },
+ {
+  "mutant": "sorted_by_tottime",
+  "detected": true
+ },
+ {
+  "mutant": "full_paths",
+  "detected": true
+ },
+ {
+  "mutant": "rank_zero_accepted",
+  "detected": true
+ }
+]
