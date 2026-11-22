@@ -1,0 +1,42 @@
+[
+ {
+  "mutant": "floor_removed",
+  "detected": true
+ },
+ {
+  "mutant": "two_sided_alpha",
+  "detected": true
+ },
+ {
+  "mutant": "entry_share_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "cost_not_subtracted",
+  "detected": true
+ },
+ {
+  "mutant": "eaten_effect_not_detected",
+  "detected": true
+ },
+ {
+  "mutant": "gapped_pool_admitted",
+  "detected": true
+ },
+ {
+  "mutant": "guard_refusals_not_counted",
+  "detected": true
+ },
+ {
+  "mutant": "engine_only_mixes_rent",
+  "detected": true
+ },
+ {
+  "mutant": "marked_adopted",
+  "detected": true
+ },
+ {
+  "mutant": "h1_off_in_primary",
+  "detected": true
+ }
+]
