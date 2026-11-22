@@ -1,0 +1,114 @@
+[
+ {
+  "mutant": "latency_zero",
+  "detected": true
+ },
+ {
+  "mutant": "h1_buy_best_case",
+  "detected": true
+ },
+ {
+  "mutant": "h1_sale_best_case",
+  "detected": true
+ },
+ {
+  "mutant": "sale_before_slot_only",
+  "detected": true
+ },
+ {
+  "mutant": "buy_before_slot_only",
+  "detected": true
+ },
+ {
+  "mutant": "sale_only_with_our_buy",
+  "detected": true
+ },
+ {
+  "mutant": "fees_zero",
+  "detected": true
+ },
+ {
+  "mutant": "tx_fees_forgotten",
+  "detected": true
+ },
+ {
+  "mutant": "sale_failures_free",
+  "detected": true
+ },
+ {
+  "mutant": "wsol_close_free",
+  "detected": true
+ },
+ {
+  "mutant": "cleanup_free",
+  "detected": true
+ },
+ {
+  "mutant": "left_open_rent_kept",
+  "detected": true
+ },
+ {
+  "mutant": "universe_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "config_not_hashed_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "exit_in_landing_slot",
+  "detected": true
+ },
+ {
+  "mutant": "clock_guard_removed",
+  "detected": true
+ },
+ {
+  "mutant": "gate_reproduction_skipped",
+  "detected": true
+ },
+ {
+  "mutant": "gate_continuity_skipped",
+  "detected": true
+ },
+ {
+  "mutant": "gate_transfer_fee_skipped",
+  "detected": true
+ },
+ {
+  "mutant": "gate_skipped_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "min_entries_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "min_pools_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "mean_instead_of_upper_bound",
+  "detected": true
+ },
+ {
+  "mutant": "bound_sign_wrong",
+  "detected": true
+ },
+ {
+  "mutant": "g0_none_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "trial_cap_off_by_one",
+  "detected": true
+ },
+ {
+  "mutant": "creator_fee_in_tokens_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_code_unchecked",
+  "detected": true
+ }
+]
