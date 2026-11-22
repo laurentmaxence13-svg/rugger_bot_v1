@@ -1,6 +1,7 @@
-# w1chain 0.1 — chaîne hors ligne verdict W1 → lecture HW1 → choix de C-B → verdict W2 de C-B (tâche P2-a)
+# w1chain 0.2 — chaîne hors ligne verdict W1 → lecture HW1 → choix de C-B → verdict W2 de C-B (tâche P2-a)
 
-RUGGER 01, 22/11/2026. ÉCRIT, TESTÉ SUR FIXTURES, NON EXÉCUTÉ sur W1 ni W2. Aucune donnée W1/W2 lue.
+RUGGER 01, 22/11/2026. **0.2 = 0.1 + correction K-1 de R02** (audit de 5a87ea8) : admission de HW1-5 = (i) à (vii) ET sensibilité grappe = payeur de la création cohérente ; (viii) consignée, jamais bloquante (liste fermée de R02 436ccbad § 4).
+ ÉCRIT, TESTÉ SUR FIXTURES, NON EXÉCUTÉ sur W1 ni W2. Aucune donnée W1/W2 lue.
 Source des tâches : `docs/ops/ETAT_RUGGER_MASTER.md` (62c4525). Base : runbook HW1 v2 (74a74cf) et v3 (2df1b92),
 inchangés ; Dossier A § 3 et § 11 (règle C-B) ; Dossier B v1.9 (critères GO de C-B).
 
@@ -32,15 +33,18 @@ inchangés ; Dossier A § 3 et § 11 (règle C-B) ; Dossier B v1.9 (critères GO
 ## Points déclarés, à valider par R02 (aucun n'est une règle nouvelle)
 
 1. **Document final de R02 (étape 6)** : je propose le schéma `w1chain-hw1-final-v1` :
-   `{"schema", "hw1_verdicts_file_sha256", "final": {HW1-1..HW1-5: mot}, "hw1_5_conditions_r02": {"i".."viii": true|false}}`.
+   `{"schema", "hw1_verdicts_file_sha256", "final": {HW1-1..HW1-5: mot}, "hw1_5_conditions_r02": {"i".."viii", "payer_cluster_sensitivity_consistent": true|false}}`.
    Mots admis : EXPLORATOIRE POSITIVE, CONFIRMÉE SUR W1 (positifs) ; NÉGATIVE, REJETÉE, NON ÉVALUABLE, NON CONCLUANT,
    EXPLORATOIRE NON CONFIRMÉE (non positifs).
 2. **Lien code / R02** (règle 6 de R02, 4e03d6a6) : un mot final positif n'est accepté que si le code gelé a donné son
    mot positif (« CRITÈRE PRINCIPAL ATTEINT — … » ; pour HW1-5 « CRITÈRE PRINCIPAL ET CONDITIONS ATTEINTS — … »).
    Sinon ARRÊT (`r02_positive_where_the_frozen_code_is_not`). Un mot positif du code SANS mot positif de R02 ne
    sélectionne rien.
-3. **HW1-5** : les conditions (i) à (viii) de R02 (d70251db) doivent toutes valoir `true` ; leur contenu reste celui
-   de R02, la chaîne ne les recalcule pas.
+3. **HW1-5** (liste FERMÉE de R02, 436ccbad § 4) : `hw1_5_conditions_r02` contient exactement les clés `i` à `viii`
+   et `payer_cluster_sensitivity_consistent`, toutes booléennes. ADMISSION = (i) à (vii) ET
+   `payer_cluster_sensitivity_consistent` à `true` ; (viii) (R-1, qui ne sert qu'au mot « rentable ») est CONSIGNÉE
+   dans la sortie (`hw1_5_recorded_not_blocking`), jamais bloquante. Contenu des conditions : celui de R02, non
+   recalculé. Points (1) à (4) acceptés par R02.
 4. **Nombre de fenêtres W2 (k)** et s0 de W2 : variables du propriétaire (Dossier B v1.9) ; simples entrées ici.
 
 ## Tests et mutants
@@ -48,7 +52,7 @@ inchangés ; Dossier A § 3 et § 11 (règle C-B) ; Dossier B v1.9 (critères GO
 - 31 tests (`w1chain/tests/test_chain.py`), dont une chaîne COMPLÈTE `plan → check-rows → verdicts → select → cb-plan`
   sur les 3 pools publics de fixture décalés dans la plage W1 (positions réelles HW1-5 et placebo ; m = 0, donc C-B
   VIDE), et l'égalité d'octets avec la CLI gelée de statelab.
-- Mutants : 29/29 détectés (`MUTATIONS_w1chain_v0_1.json`, lanceur `mutations_w1chain_runner.py`).
+- Mutants : 33/33 détectés (`MUTATIONS_w1chain_v0_2.json` ; 4 nouveaux : (viii) bloquante, sensibilité non exigée, conditions non booléennes, (viii) non consignée, lanceur `mutations_w1chain_runner.py`).
 
 Commande (depuis l'arbre gelé, SANS `-I`) :
 `env -i PYTHONPATH=<wt_w1>:<statelab_pkg>:<v3lab_pkg>:<v4sim_pkg>:<w1aux_v78>:<latelab_pkg>:<cdgate_pkg>:<closedacct_pkg>:<w2arms_pkg>:<w1chain_pkg> PATH=/usr/bin:/bin RUGGER_NO_DOTENV=1 python3.12 -B -m pytest <w1chain_pkg>/w1chain/tests -p no:cacheprovider -q -W error`

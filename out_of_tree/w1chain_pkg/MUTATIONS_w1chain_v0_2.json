@@ -114,5 +114,21 @@
  {
   "mutant": "select_trials_unchecked",
   "detected": true
+ },
+ {
+  "mutant": "viii_blocking",
+  "detected": true
+ },
+ {
+  "mutant": "payer_sensitivity_not_required",
+  "detected": true
+ },
+ {
+  "mutant": "conditions_not_boolean_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "viii_not_recorded",
+  "detected": true
  }
 ]

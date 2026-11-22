@@ -1,4 +1,4 @@
-"""w1chain 0.1 -- the offline chain  W1 official verdict -> single HW1 reading -> choice of C-B -> W2 C-B verdict
+"""w1chain 0.2 (0.1 + K-1 of R02: admission of HW1-5 = (i)-(vii) + payer-cluster sensitivity; (viii) recorded) -- the offline chain  W1 official verdict -> single HW1 reading -> choice of C-B -> W2 C-B verdict
 (task P2-a of docs/ops/ETAT_RUGGER_MASTER.md 62c4525). It PLANS, CHECKS and calls the FROZEN functions only; it changes
 no rule, threshold, horizon, population or criterion, and it never reads a W1 or W2 value before its anchor.
 
@@ -27,8 +27,8 @@ Steps (runbook HW1 v2 74a74cf, steps 1a-7, updated by v3 2df1b92; nothing change
 * ``select`` (after step 6): the C-B rule of dossier A section 3 / section 11, frozen on 20/11: the FIRST of HW1-5,
   HW1-1, HW1-2, HW1-4, HW1-3 whose single W1 verdict is "EXPLORATOIRE POSITIVE" or "CONFIRMEE SUR W1" (the FINAL words
   of R02, step 6). A final word of R02 is positive only where the frozen code gave its positive word (rule 6 of R02,
-  4e03d6a6: no variant makes positive what the code does not); for HW1-5 the conditions (i) to (viii) of R02 (d70251db)
-  must all hold. No such hypothesis: C-B stays EMPTY ("VIDE"), without any second pass.
+  4e03d6a6: no variant makes positive what the code does not); for HW1-5 the conditions (i) to (vii) of R02 AND the
+  payer-cluster sensitivity must hold (closed list 436ccbad section 4); (viii) R-1 is recorded, never blocking. No such hypothesis: C-B stays EMPTY ("VIDE"), without any second pass.
 * ``cb-plan``: the W2 commands of the chosen hypothesis (statelab export per window with the W1 official verdict sha,
   ``w2arms.cb creation-slots``, then ONE ``w2arms.cb verdict``); with an EMPTY C-B it writes no command. The number of
   windows k is a W2 variable of the owner (dossier B v1.9): an input here.
@@ -62,7 +62,11 @@ FINAL_POSITIVE = ('EXPLORATOIRE POSITIVE', 'CONFIRMÉE SUR W1')
 FINAL_WORDS = FINAL_POSITIVE + ('NÉGATIVE', 'REJETÉE', 'NON ÉVALUABLE', 'NON CONCLUANT', 'EXPLORATOIRE NON CONFIRMÉE')
 CODE_POSITIVE = dict(primary='CRITÈRE PRINCIPAL ATTEINT — CRITÈRES V1 À APPLIQUER',
                      exploratory='CRITÈRE PRINCIPAL ET CONDITIONS ATTEINTS — CRITÈRES V1 À APPLIQUER')
-HW1_5_CONDITIONS = ('i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii')
+# R02 closed list 436ccbad section 4: admission of HW1-5 = (i) to (vii) AND the payer-of-the-creation cluster
+# sensitivity consistent with the primary result; (viii) R-1 serves the word "rentable" only: recorded, never blocking.
+HW1_5_ADMISSION = ('i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'payer_cluster_sensitivity_consistent')
+HW1_5_RECORDED = ('viii',)
+HW1_5_CONDITIONS = HW1_5_ADMISSION + HW1_5_RECORDED
 TRIAL_CAP_OUTSIDE_HW1 = 170
 HW1_TRIALS = 5
 
@@ -244,7 +248,7 @@ def select(the_plan, hw1, hw1_sha256, final):
     words = final.get('final') or {}
     if sorted(words) != sorted(CB_ORDER) or any(words[k] not in FINAL_WORDS for k in words):
         raise ChainError('r02_final_words_incomplete_or_unknown')
-    reasons, chosen = {}, None
+    reasons, chosen, recorded = {}, None, None
     for hypothesis in CB_ORDER:
         code = hw1['hypotheses'][hypothesis]['verdict']
         positive_final = words[hypothesis] in FINAL_POSITIVE
@@ -253,8 +257,11 @@ def select(the_plan, hw1, hw1_sha256, final):
             raise ChainError('r02_positive_where_the_frozen_code_is_not:%s' % hypothesis)
         if positive_final and hypothesis == 'HW1-5':
             conditions = final.get('hw1_5_conditions_r02') or {}
-            if sorted(conditions) != sorted(HW1_5_CONDITIONS) or any(v is not True for v in conditions.values()):
-                raise ChainError('hw1_5_positive_without_the_conditions_i_to_viii')
+            if sorted(conditions) != sorted(HW1_5_CONDITIONS) or any(type(v) is not bool for v in conditions.values()):
+                raise ChainError('hw1_5_conditions_incomplete_or_not_boolean')
+            if any(conditions[k] is not True for k in HW1_5_ADMISSION):
+                raise ChainError('hw1_5_positive_without_the_admission_conditions')
+            recorded = {k: conditions[k] for k in HW1_5_RECORDED}
         reasons[hypothesis] = dict(code_verdict=code, r02_final=words[hypothesis], positive=positive_final)
         if positive_final and chosen is None:
             chosen = hypothesis
@@ -263,7 +270,7 @@ def select(the_plan, hw1, hw1_sha256, final):
         horizon = next(h['horizon'] for h in H.HYPOTHESES if h['id'] == chosen)
     return dict(schema=SCHEMA_SELECTION, rule='dossier A section 3 / 11: first positive of HW1-5, 1, 2, 4, 3; else EMPTY',
                 order=list(CB_ORDER), cb_hypothesis=chosen, status='RETENUE' if chosen else 'VIDE', horizon_s=horizon,
-                per_hypothesis=reasons, inputs=dict(official_verdict_sha256=the_plan['official_verdict_sha256'],
+                per_hypothesis=reasons, hw1_5_recorded_not_blocking=recorded, inputs=dict(official_verdict_sha256=the_plan['official_verdict_sha256'],
                                                     hw1_verdicts_file_sha256=hw1_sha256,
                                                     export_manifest_sha256=the_plan['export_manifest_sha256']),
                 trials=the_plan['trials'], dossier_b=dict(DOSSIER_B))

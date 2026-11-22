@@ -302,22 +302,44 @@ def test_only_the_two_positive_final_words_select(tmp_path):
     assert C.FINAL_POSITIVE == ('EXPLORATOIRE POSITIVE', 'CONFIRMÉE SUR W1')
 
 
-def test_hw1_5_needs_the_eight_conditions_of_r02(tmp_path):
+def test_hw1_5_admission_is_i_to_vii_and_the_payer_sensitivity_and_viii_is_recorded_only(tmp_path):
+    assert C.HW1_5_ADMISSION == ('i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'payer_cluster_sensitivity_consistent')
+    assert C.HW1_5_RECORDED == ('viii',)
     words = dict({k: 'REJETÉE' for k in C.CB_ORDER}, **{'HW1-5': 'EXPLORATOIRE POSITIVE'})
+    the_plan, hw1 = _plan(tmp_path), _hw1(_codes(HW1_5=X))
+
+    def run(**change):
+        final = _final(words)
+        final['hw1_5_conditions_r02'].update(change)
+        return C.select(the_plan, hw1, '12' * 32, final)
+    out = run(viii=False)                                        # R-1 only serves the word "rentable"
+    assert out['cb_hypothesis'] == 'HW1-5' and out['status'] == 'RETENUE'
+    assert out['hw1_5_recorded_not_blocking'] == dict(viii=False)
+    assert run()['hw1_5_recorded_not_blocking'] == dict(viii=True)
+    for key in C.HW1_5_ADMISSION:
+        with pytest.raises(C.ChainError, match='hw1_5_positive_without_the_admission_conditions'):
+            run(**{key: False})
+    with pytest.raises(C.ChainError, match='hw1_5_positive_without_the_admission_conditions'):
+        run(payer_cluster_sensitivity_consistent=False, viii=True)
     for conditions in (False, None):
-        with pytest.raises(C.ChainError, match='hw1_5_positive_without_the_conditions_i_to_viii'):
+        with pytest.raises(C.ChainError, match='hw1_5_'):
             _select(tmp_path, _codes(HW1_5=X), words, conditions=conditions)
-    final = _final(words)
-    del final['hw1_5_conditions_r02']['viii']
-    with pytest.raises(C.ChainError, match='conditions_i_to_viii'):
-        C.select(_plan(tmp_path), _hw1(_codes(HW1_5=X)), '12' * 32, final)
-    final = _final(words)
-    final['hw1_5_conditions_r02']['iv'] = 'yes'
-    with pytest.raises(C.ChainError, match='conditions_i_to_viii'):
-        C.select(_plan(tmp_path), _hw1(_codes(HW1_5=X)), '12' * 32, final)
-    # a negative HW1-5 needs no condition
+    for drop in ('viii', 'payer_cluster_sensitivity_consistent', 'iv'):
+        final = _final(words)
+        del final['hw1_5_conditions_r02'][drop]
+        with pytest.raises(C.ChainError, match='hw1_5_conditions_incomplete_or_not_boolean'):
+            C.select(the_plan, hw1, '12' * 32, final)
+    for bad in ('yes', 1, None):
+        with pytest.raises(C.ChainError, match='hw1_5_conditions_incomplete_or_not_boolean'):
+            run(viii=bad)
+    with pytest.raises(C.ChainError, match='hw1_5_conditions_incomplete_or_not_boolean'):
+        run(ix=True)
+    # a negative HW1-5 needs no condition; another hypothesis selected records nothing
     neg = {k: 'REJETÉE' for k in C.CB_ORDER}
     assert _select(tmp_path, _codes(), neg, conditions=None)['status'] == 'VIDE'
+    one = dict(neg, **{'HW1-1': 'EXPLORATOIRE POSITIVE'})
+    out = _select(tmp_path, _codes(HW1_1=P), one, conditions=None)
+    assert out['cb_hypothesis'] == 'HW1-1' and out['hw1_5_recorded_not_blocking'] is None
 
 
 def test_the_selection_inputs_are_checked(tmp_path):

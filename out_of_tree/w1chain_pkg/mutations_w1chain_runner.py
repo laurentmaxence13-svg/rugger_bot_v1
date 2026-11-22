@@ -32,6 +32,10 @@ MUT = [
  ("        lat4 = _read_anchored(a.rows_lat4, a.rows_lat4_sha256, 'rows_lat4')", "        lat4 = Path(a.rows_lat4).read_bytes()", 'cli_rows_unanchored'),
  ("        census = _read_anchored(a.census, a.census_sha256, 'census')", "        census = Path(a.census).read_bytes()", 'cli_census_unanchored'),
  ("    if hw1.get('trials_added_to_n') != HW1_TRIALS:", "    if False:", 'select_trials_unchecked'),
+ ("            if any(conditions[k] is not True for k in HW1_5_ADMISSION):", "            if any(conditions[k] is not True for k in HW1_5_CONDITIONS):", 'viii_blocking'),
+ ("HW1_5_ADMISSION = ('i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'payer_cluster_sensitivity_consistent')", "HW1_5_ADMISSION = ('i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii')", 'payer_sensitivity_not_required'),
+ ("            if sorted(conditions) != sorted(HW1_5_CONDITIONS) or any(type(v) is not bool for v in conditions.values()):", "            if sorted(conditions) != sorted(HW1_5_CONDITIONS):", 'conditions_not_boolean_allowed'),
+ ("            recorded = {k: conditions[k] for k in HW1_5_RECORDED}", "            recorded = None", 'viii_not_recorded'),
 ]
 out = []
 for old, new, name in MUT:
