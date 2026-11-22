@@ -1,0 +1,82 @@
+[
+ {
+  "mutant": "buy_failure_delay_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "buy_h1_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "guard_failure_still_enters",
+  "detected": true
+ },
+ {
+  "mutant": "guard_failure_not_charged",
+  "detected": true
+ },
+ {
+  "mutant": "sale_h1_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sale_failures_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "resend_not_delayed",
+  "detected": true
+ },
+ {
+  "mutant": "sale_guard_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "rent_not_lost",
+  "detected": true
+ },
+ {
+  "mutant": "cleanup_free",
+  "detected": true
+ },
+ {
+  "mutant": "left_open_rent_kept",
+  "detected": true
+ },
+ {
+  "mutant": "wsol_one_tx_only",
+  "detected": true
+ },
+ {
+  "mutant": "unpriced_not_at_zero",
+  "detected": true
+ },
+ {
+  "mutant": "failures_not_charged",
+  "detected": true
+ },
+ {
+  "mutant": "guard_failure_not_counted",
+  "detected": true
+ },
+ {
+  "mutant": "open_positions_excluded",
+  "detected": true
+ },
+ {
+  "mutant": "engine_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "summary_counts_closed_only",
+  "detected": true
+ },
+ {
+  "mutant": "probability_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "transactions_forgotten",
+  "detected": true
+ }
+]
