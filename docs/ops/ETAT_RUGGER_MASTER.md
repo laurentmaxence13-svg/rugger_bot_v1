@@ -40,6 +40,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | Signer l'exception A2 : fiche R02 v1.1 (e2a93ea8) avec son erratum v2.6.6, B1, C1/P1, ≤ 66 $ TTC, risque de sauvegarde | Paquet v2.6.6 au PASS de R02 (d0c2ccd, MANIFEST 490a28f1) ; texte du § 7 transmis à 17:43Z | Verdict officiel W1, puis HW1, puis C-B |
 | Pilote CPMM : source U-2, puis GO étape 0 (≤ 100 crédits), puis GO étape 1 (≤ 50 k) | Protocole v1.2 (a3a285a1) | Données CPMM réelles |
 | Variables W2 : format, k, plafond, plan Helius | Dossier B v1.9 | Lancement W2 |
+| Mesurer les échecs de transaction (N-4) : demande une nouvelle collecte qui conserve aussi les transactions échouées | landslip 0.1 (8e432a5) | Coût réel des échecs |
 | Prérequis PAPER_LIVE D-1 à D-7 (hôte 24 h, source, crédits, SOL/USD, secret, interface, texte d'autorisation) | Protocole PAPER_LIVE v0.1 (a94a660), en audit | PAPER prospectif en flux réel |
 | Retrait du secret Helius de l'environnement R03 ; désactivation des 4 routines d'étiquette du 05/11 | — | Hygiène |
 
@@ -50,7 +51,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | **Fait** : de 15:29:53Z à 22:00:48Z, sans coupure, rc 0 |
 | P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | **VERIFIED** (14/14). Ancrage R02 en attente |
 | P1 | Profil technique d'un pool, puis vérification de la 0.5.2.1 sur W1 (ps0521verdict 0.1) | R03, après GO de R02 | A5 | **0.5.2.1 VERIFIED** (14/14) |
-| P1 | landslip 0.1 measure sur W1 ancré ebe1959d (comptes seulement) | R03, après GO de R02 | A2 | Exécutée sur les 2 273 pools, sans erreur (déclaré R03, 22:42Z). Sortie brute envoyée à R02 pour ancrage avant toute lecture. |
+| P1 | landslip 0.1 measure sur W1 ancré ebe1959d (comptes seulement) | R03, après GO de R02 | A2 | Exécutée sur les 2 273 pools, sans erreur (déclaré R03, 22:42Z). Ancrée et lue par R02. |
 | P2 | Préparer hors ligne la chaîne verdict W1, puis HW1, puis C-B : scripts, critères gelés, tests | R01 ; audit R02 | A1 | w1chain 0.1 livrée (5a87ea8, vérifié). Audit R02 : **CORRECTIONS REQUISES** (c6629433). K-1, bloquant : le critère (viii) est exigé à tort pour l'admission, et la condition de sensibilité au payeur manque. w1chain 0.2 (a49f398, MANIFEST eff1d847) corrige K-1. **PASS R02** (déclaré). |
 | P2 | Audit complet du modèle de coûts | R02 | A1 | **Fait** (voir § 4) |
 | P3 | Plan de mesure hors ligne de l'atterrissage (N-4) et du glissement (N-5) sur les tx déjà collectées ; garde de glissement pour le moteur PAPER (préparation seulement) | R01 ; audit R02 | A1 | À faire |
@@ -79,6 +80,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | 22/11 22:00Z | PAPERSTREAM 0.5.1 sur W1 : **VERIFIED**, 14 contrôles sur 14 true. Les 3 sha du bundle sont identiques ; master 191 ; 913 cycles réconciliés sur les 3 bras. Mémoire : somme des RSS ≤ 1 347 Mio contre 8 749 Mo projetés (ratio 0,154), sans override. Le résultat 0.4 est inchangé. **Aucun gain de vitesse** (6 h 31). Cause : SolUsdSeries.as_of, corrigée en 0.5.2.1. | ps051verdict02_out1.json, sha 1997a9d8 ; PAPERSTREAM.json cc2af356 | déclaré (R03) ; ancrage R02 en attente |
 
 | 22/11 22:40Z | PAPERSTREAM **0.5.2.1** sur W1 : **VERIFIED** (14 contrôles sur 14 true). Durée 20 min 05 s, contre 6 h 31 pour la 0.5.1 (≈ ×19,5). W1 reproduit à l'octet : 3 sha, master 191, 913 cycles sur les 3 bras. Somme des RSS ≤ 1 512 Mio, contre 8 749 Mo projetés. Résultats 0.4 et 0.5.1 inchangés. | sortie ps0521verdict sha 173ed23b ; PAPERSTREAM.json cb287a2d | déclaré (R03) ; ancrage R02 en attente |
+
+| 22/11 22:44Z | landslip 0.1 measure sur W1 (comptes seulement). **Lecture corrigée par R02** : 60,4 % des achats suivent un autre trade du pool à ≤ 3 slots, et 63,8 % à ≤ 4. L'activité est dense : des trades s'intercalent souvent pendant notre latence de 4 slots, ce qui est cohérent avec H-1 et la garde. Notre glissement n'est **pas** mesuré. Phrase retirée par R02 : « ~60 % des achats d'autrui atterrissent avant nous ». **Échecs (N-4)** : mesure structurellement nulle, car l'export ne conserve que les transactions réussies (backfill_export.py:166-167). N-4 n'est mesurable qu'avec une nouvelle collecte : BLOQUÉ PAR LE PROPRIÉTAIRE. | registre R02 | déclaré (R02) |
 
 ## 5. Incidents
 
