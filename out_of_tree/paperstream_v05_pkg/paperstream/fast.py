@@ -1,4 +1,4 @@
-"""paperstream 0.5 -- OPT-IN memoization of the pure per-transaction helpers of the frozen analyser (performance only).
+"""paperstream 0.5.2 -- OPT-IN memoization of the pure per-transaction helpers of the frozen analyser (performance only).
 
 Measured (R01, 21/11, fixtures): the replay engine is negligible; ~100 % of the time is the frozen observer, which for
 EVERY decision re-runs, over ALL the pool's past transactions, helpers whose result depends only on one transaction and
@@ -13,12 +13,27 @@ of ``wallet_graph_snapshot``. Within ``memoized()`` each of them is computed onc
 - ``verify=True`` recomputes every served value and raises on any difference (tests);
 - the frozen functions are restored on exit. No frozen file is modified.
 Byte identity (bundle_sha256 AND the strict canonical JSON) with the frozen run is a test, not an assumption.
+
+0.5.2 (R02 22/11 17:15Z). On W1 the dominant term was elsewhere (measured: no gain of 0.5.1 on the large pools; the
+fixture benchmark of 0.5/0.5.1 used a ONE-point SOL/USD series): ``_PoolObserver._past_prices`` calls
+``SolUsdSeries.as_of`` for EVERY past event at EVERY full decision, and ``as_of`` scans the points linearly (W1: 21 937
+points). Two more pure helpers are memoized, same rules (identity key with a strong reference, one memo per pool,
+verify mode, restored on exit):
+- ``SolUsdSeries.as_of(slot, transaction_index, decision_ms)``: a method of a FROZEN dataclass whose result depends on
+  its arguments and the frozen fields only (sol_usd_series.py:149-183); in ``_past_prices`` the arguments are those of
+  the PAST event (its slot, index and ``block_time * 1000 + receipt_latency_ms``), constant across decisions, so the key
+  repeats; the result is ``(point, age, refusal)`` where ``point`` is the series' own dict, returned as the same object
+  (as the frozen code does);
+- ``_PoolObserver._quote(event, sol)``: two floats from the event's state and the rate (historical_research_replay.py
+  :410-414), keyed by the event object, the observer and the rate.
 """
 import contextlib
 import json as _json
 
 from bot.analyser import behavior_pipeline as bp
 from bot.analyser import final_decision_engine as fde
+from bot.p4 import historical_research_replay as _hrr
+from bot.p4 import sol_usd_series as _sus
 
 STATS = {'hits': 0, 'misses': 0, 'pools': 0}
 
@@ -61,7 +76,7 @@ class JsonShim:
 def memoized(verify=False):
     memo = Memo(verify)
     saved = dict(cm=fde._contains_mint, ccb=fde.classify_creator_behavior, ob=bp._owner_balances, sw=bp._is_swap,
-                 js=bp.json)
+                 js=bp.json, asof=_sus.SolUsdSeries.as_of, quote=_hrr._PoolObserver._quote)
     fde._contains_mint = lambda tx, mint: memo.get('contains', tx, (mint,), lambda: saved['cm'](tx, mint))
     fde.classify_creator_behavior = lambda tx, mint, creator: memo.get(
         'classify', tx, (mint, creator), lambda: saved['ccb'](tx, mint, creator), copy=dict)
@@ -69,11 +84,21 @@ def memoized(verify=False):
         'balances', tx, (mint, field), lambda: saved['ob'](tx, mint, field), copy=dict)
     bp._is_swap = lambda tx: memo.get('swap', tx, (), lambda: saved['sw'](tx))
     bp.json = JsonShim(memo)
+
+    def as_of(self, *, slot, transaction_index, decision_ms):
+        return memo.get('as_of', self, (slot, transaction_index, decision_ms),
+                        lambda: saved['asof'](self, slot=slot, transaction_index=transaction_index,
+                                              decision_ms=decision_ms))
+
+    def quote(self, event, sol):
+        return memo.get('quote', event, (id(self), sol), lambda: saved['quote'](self, event, sol))
+    _sus.SolUsdSeries.as_of, _hrr._PoolObserver._quote = as_of, quote
     try:
         yield memo
     finally:
         fde._contains_mint, fde.classify_creator_behavior = saved['cm'], saved['ccb']
         bp._owner_balances, bp._is_swap, bp.json = saved['ob'], saved['sw'], saved['js']
+        _sus.SolUsdSeries.as_of, _hrr._PoolObserver._quote = saved['asof'], saved['quote']
 
 
 def per_pool(original, verify=False):

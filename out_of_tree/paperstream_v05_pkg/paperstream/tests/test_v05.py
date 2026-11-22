@@ -149,7 +149,7 @@ def test_the_fast_flag_is_in_the_checkpoint_key_and_the_output(series, tmp_path,
     assert E.main(['reference', *common, '--fast-analyser', '--out', str(tmp_path / 'ref')]) == 0
     capsys.readouterr()
     doc = json.loads((tmp_path / 'ref' / 'REFERENCE.json').read_text())
-    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5.1'
+    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5.2'
 
 
 def test_the_series_is_loaded_once_per_command(series, tmp_path, monkeypatch, capsys):

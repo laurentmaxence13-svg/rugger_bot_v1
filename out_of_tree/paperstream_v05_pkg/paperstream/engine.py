@@ -1,4 +1,4 @@
-"""paperstream 0.5.1 (DRAFT; 0.5 PASS conditionnel R02) -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
+"""paperstream 0.5.2 (DRAFT) -- offline STREAMING PAPER engine of the frozen MASTER (plan v0.1 accepted by R02 with 7 conditions;
 0.2 per R02 decision 06181c21; 0.3 per R02 requirements of 15:51Z/15:52Z/15:52:53Z; 0.4 per R02 audit K-1..K-3; 0.5 = performance draft, owner directive 21/11 18:50Z via R04). HISTORICAL_REPLAY ONLY: recorded LaunchLab events are pushed ONE BY ONE, in time order;
 nothing is sent, signed or read from the network; no key; no economic conclusion (it reproduces a known replay: not a
 trial, N unchanged).
@@ -82,7 +82,7 @@ from bot.p4 import sol_usd_series as sus
 from paperstream import fast
 from w1aux import dayj, lazy, parallel
 
-SCHEMA = 'paperstream-v0.5.1'
+SCHEMA = 'paperstream-v0.5.2'
 MEMO_BYTES_PER_GZ_BYTE = 8.0
 CATEGORY = 'HISTORICAL_REPLAY'
 
