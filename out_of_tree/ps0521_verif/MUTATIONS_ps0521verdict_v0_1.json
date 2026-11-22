@@ -1,0 +1,26 @@
+[
+ {
+  "mutant": "old_schema_expected",
+  "detected": true
+ },
+ {
+  "mutant": "schema_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "window_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "old_window_note",
+  "detected": true
+ },
+ {
+  "mutant": "rule_1_always",
+  "detected": true
+ },
+ {
+  "mutant": "rule_2_without_rss",
+  "detected": true
+ }
+]
