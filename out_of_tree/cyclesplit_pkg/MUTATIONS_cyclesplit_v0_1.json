@@ -1,0 +1,34 @@
+[
+ {
+  "mutant": "min_inclusive_for_before",
+  "detected": true
+ },
+ {
+  "mutant": "max_inclusive_for_inside",
+  "detected": true
+ },
+ {
+  "mutant": "wrong_arm",
+  "detected": true
+ },
+ {
+  "mutant": "every_outcome_counted",
+  "detected": true
+ },
+ {
+  "mutant": "sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_total_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "missing_slot_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "bounds_not_the_frozen_ones",
+  "detected": true
+ }
+]
