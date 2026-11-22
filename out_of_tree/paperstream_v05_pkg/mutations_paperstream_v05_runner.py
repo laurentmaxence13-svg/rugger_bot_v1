@@ -2,7 +2,7 @@ import json, shutil, subprocess, sys
 from pathlib import Path
 D, V, W, M, PP = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]), sys.argv[5]
 MUT = [
- ('fast.py', "        if found is not None and found[0] is tx:", "        if found is not None:", 'memo_object_unchecked'),
+ ('fast.py', "        if found is not None and found[0] is tx and found[2] is owner:", "        if found is not None and found[2] is owner:", 'memo_object_unchecked'),
  ('fast.py', "        'classify', tx, (mint, creator), lambda: saved['ccb'](tx, mint, creator), copy=dict)", "        'classify', tx, (mint, creator), lambda: saved['ccb'](tx, mint, creator))", 'classify_not_copied'),
  ('fast.py', "            if self.verify and compute() != value:", "            if False:", 'verify_ignored'),
  ('fast.py', "        if type(obj) is dict and kwargs == {'separators': (',', ':')}:", "        if type(obj) is dict:", 'shim_ignores_kwargs'),

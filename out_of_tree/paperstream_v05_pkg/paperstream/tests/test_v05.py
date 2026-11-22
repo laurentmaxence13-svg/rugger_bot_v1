@@ -91,7 +91,7 @@ def test_the_memo_never_serves_another_object_and_copies_mutables():
     memo = F.Memo()
     a, b = {'x': 1}, {'x': 1}
     calls = []
-    memo.store[('n', id(b), ())] = (a, 'stale')                     # an entry whose id is b's but holds another object
+    memo.store[('n', id(b), ())] = (a, 'stale', None)               # an entry whose id is b's but holds another object
     assert memo.get('n', b, (), lambda: calls.append(1) or 'fresh') == 'fresh' and calls == [1]
     first = memo.get('d', a, (), lambda: {'k': 1}, copy=dict)
     first['k'] = 99                                                   # a caller mutating its result
@@ -149,7 +149,7 @@ def test_the_fast_flag_is_in_the_checkpoint_key_and_the_output(series, tmp_path,
     assert E.main(['reference', *common, '--fast-analyser', '--out', str(tmp_path / 'ref')]) == 0
     capsys.readouterr()
     doc = json.loads((tmp_path / 'ref' / 'REFERENCE.json').read_text())
-    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5.2'
+    assert doc['fast_analyser'] is True and doc['schema'] == 'paperstream-v0.5.2.1'
 
 
 def test_the_series_is_loaded_once_per_command(series, tmp_path, monkeypatch, capsys):

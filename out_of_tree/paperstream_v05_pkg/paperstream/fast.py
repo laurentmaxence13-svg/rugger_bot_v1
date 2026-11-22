@@ -1,4 +1,4 @@
-"""paperstream 0.5.2 -- OPT-IN memoization of the pure per-transaction helpers of the frozen analyser (performance only).
+"""paperstream 0.5.2.1 -- OPT-IN memoization of the pure per-transaction helpers of the frozen analyser (performance only).
 
 Measured (R01, 21/11, fixtures): the replay engine is negligible; ~100 % of the time is the frozen observer, which for
 EVERY decision re-runs, over ALL the pool's past transactions, helpers whose result depends only on one transaction and
@@ -25,7 +25,8 @@ verify mode, restored on exit):
   repeats; the result is ``(point, age, refusal)`` where ``point`` is the series' own dict, returned as the same object
   (as the frozen code does);
 - ``_PoolObserver._quote(event, sol)``: two floats from the event's state and the rate (historical_research_replay.py
-  :410-414), keyed by the event object, the observer and the rate.
+  :410-414), keyed by the event object, the observer and the rate; 0.5.2.1 (R02): the entry keeps a strong
+  reference to the OBSERVER too (``owner``), so that an observer freed in the middle of a pool can never lend its id.
 """
 import contextlib
 import json as _json
@@ -42,10 +43,12 @@ class Memo:
     def __init__(self, verify=False):
         self.store, self.verify = {}, verify
 
-    def get(self, name, tx, args, compute, copy=None):
-        key = (name, id(tx), args)
+    def get(self, name, tx, args, compute, copy=None, owner=None):
+        """``owner`` (0.5.2.1, R02): a second object the result depends on (the observer of ``_quote``); the entry keeps
+        a strong reference to it too and is served only if BOTH objects are the very ones of the call."""
+        key = (name, id(tx), args) if owner is None else (name, id(tx), id(owner), args)
         found = self.store.get(key)
-        if found is not None and found[0] is tx:
+        if found is not None and found[0] is tx and found[2] is owner:
             STATS['hits'] += 1
             value = found[1]
             if self.verify and compute() != value:
@@ -53,7 +56,7 @@ class Memo:
             return copy(value) if copy else value
         STATS['misses'] += 1
         value = compute()
-        self.store[key] = (tx, value)
+        self.store[key] = (tx, value, owner)
         return copy(value) if copy else value
 
 
@@ -91,7 +94,7 @@ def memoized(verify=False):
                                               decision_ms=decision_ms))
 
     def quote(self, event, sol):
-        return memo.get('quote', event, (id(self), sol), lambda: saved['quote'](self, event, sol))
+        return memo.get('quote', event, (sol,), lambda: saved['quote'](self, event, sol), owner=self)
     _sus.SolUsdSeries.as_of, _hrr._PoolObserver._quote = as_of, quote
     try:
         yield memo

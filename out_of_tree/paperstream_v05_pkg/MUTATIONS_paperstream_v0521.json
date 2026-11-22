@@ -1,0 +1,30 @@
+[
+ {
+  "mutant": "new_memos_not_installed",
+  "detected": true
+ },
+ {
+  "mutant": "new_memos_not_restored",
+  "detected": true
+ },
+ {
+  "mutant": "decision_ms_not_in_key",
+  "detected": true
+ },
+ {
+  "mutant": "rate_not_in_quote_key",
+  "detected": true
+ },
+ {
+  "mutant": "owner_not_checked",
+  "detected": true
+ },
+ {
+  "mutant": "owner_not_kept",
+  "detected": true
+ },
+ {
+  "mutant": "memo_object_unchecked",
+  "detected": true
+ }
+]

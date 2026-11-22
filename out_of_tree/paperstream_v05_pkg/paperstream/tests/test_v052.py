@@ -127,3 +127,16 @@ def test_quote_memo_keys_on_the_event_and_the_rate(tmp_path):
     with F.memoized(verify=True):
         got = (observer._quote(event, low), observer._quote(event, high), observer._quote(event, low))
     assert got == (expected[0], expected[1], expected[0]) and expected[0] != expected[1]
+
+
+def test_quote_entry_keeps_its_observer_and_refuses_a_reused_id():
+    """R02 0.5.2.1: an entry is served only for the very observer it was computed for (forced id reuse)."""
+    memo = F.Memo()
+    event, old_observer, new_observer = object(), object(), object()
+    key = ('quote', id(event), id(new_observer), (5,))
+    memo.store[key] = (event, 'stale', old_observer)                # same ids in the key, another observer inside
+    assert memo.get('quote', event, (5,), lambda: 'fresh', owner=new_observer) == 'fresh'
+    assert memo.store[key][2] is new_observer                       # the entry now holds the right observer
+    assert memo.get('quote', event, (5,), lambda: 'never', owner=new_observer) == 'fresh'
+    import inspect
+    assert 'owner=self' in inspect.getsource(F.memoized)

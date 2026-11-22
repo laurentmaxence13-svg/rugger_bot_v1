@@ -59,3 +59,17 @@ l'objet avec une référence forte, mode verify, fonctions restaurées.
   - taux absent de la clé.
 - Les mutants de la 0.5 et de la 0.5.1 portent sur du code inchangé.
 - `bigseries` ne sert qu'aux tests : ce n'est jamais une entrée d'un run W1 ou P0.
+
+## 0.5.2.1 (réserve mineure de R02, 18:03Z)
+
+- **La réserve.** La clé de `_quote`, (id(observateur), taux), ne gardait PAS de référence forte à l'observateur.
+- **La correction.** `Memo.get(..., owner=...)` garde maintenant l'objet `owner` dans l'entrée. L'entrée n'est servie que
+  si l'événement ET l'observateur sont exactement ceux de l'appel. `_quote` passe `owner=self`. Le schéma devient
+  `paperstream-v0.5.2.1`.
+- **Le test.** Il force la réutilisation de l'identifiant : une entrée dont la clé porte les mêmes id, mais qui contient
+  un autre observateur, est refusée, recalculée, puis remplacée.
+- **Preuves.**
+  - 70 tests sous `-W error`.
+  - Mutations : 7 sur 7 (MUTATIONS_paperstream_v0521.json). Ce sont les 4 de la 0.5.2, plus le propriétaire non vérifié,
+    le propriétaire non gardé (l'ancienne clé `id(self)`), et l'objet non vérifié.
+  - L'ancre du mutant `memo_object_unchecked` du runner de la 0.5 a été mise à jour (la ligne a changé).
