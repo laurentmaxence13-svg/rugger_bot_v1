@@ -1,0 +1,5 @@
+23cb88750eb05d6115f3413945d5d4cd7b0ad98449f704aadb2873312381c40b  ./PROTOCOLE_VERIF_PS051_v0_1.md
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./ps051verdict/__init__.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./ps051verdict/tests/__init__.py
+8d847df00932051de9a0fcf5c4157a4fcf991deac36e61e5e03dfda081ab7ce2  ./ps051verdict/tests/test_verdict.py
+1f9b15acaa37be24e9efc1161625033ec6aa72eeebeff799a6eeadf57fe9fcca  ./ps051verdict/verdict.py

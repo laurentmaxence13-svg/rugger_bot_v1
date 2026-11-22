@@ -133,3 +133,36 @@ population.
 - Avec le cache, on mesure ×3,1 sur les fixtures. Sur W1, le gain est à mesurer, car les grosses transactions pèsent
   davantage.
 - Le compteur technique donnera la répartition par rang.
+
+## 6. Avenant v0.2 (R02, 22/11 15:32Z et 15:33Z, fixé avant tout résultat) : M-2 et ps051verdict 0.2
+
+**Pourquoi.** Sur cgroup v1, `usage_in_bytes` et `max_usage_in_bytes` comprennent le cache de pages : la lecture des
+données suffit à les faire grimper. De plus, `max_usage_in_bytes` court depuis le démarrage du conteneur.
+
+**L'échantillonneur de R03**, lancé à 15:32:51Z, en lecture seule. Il écrit une ligne par minute :
+`<iso> <rss de memory.stat> <somme des VmRSS des processus du run> <usage_in_bytes> <max_usage_in_bytes>`, en octets.
+Le §2 ci-dessus est remplacé par ce format.
+
+**La règle M-2.** Elle compare à la mémoire disponible consignée par le run au lancement (`memory.available_mb`) :
+1. si max(max_usage_in_bytes) ≤ disponible, c'est PASS ;
+2. sinon, si max(somme VmRSS) ≤ disponible ET max(rss) ≤ disponible, c'est PASS, avec la mention « unsampled window
+   15:29:53-15:32:51Z » ;
+3. sinon, c'est MEMORY_EXCEEDED.
+
+Les pics de chaque colonne et le numéro de la règle appliquée sont publiés.
+
+**Format du journal.** Il est exact : 5 colonnes, des entiers. Une ligne malformée est refusée et donne
+`memory_log_malformed_line:<n>`, de même qu'un journal sans échantillon.
+
+**Décisions de R02 enregistrées :**
+- I-6 = 191 est confirmé.
+- Il n'y a pas de verify sur P0 visible, faute de série COLLECTED. La condition 3 est remplacée par l'identité W1
+  (3 sha) et par les tests de verify.
+- G-6 refuse tout `key_mismatch` et tout `sha_mismatch`. C'est accepté avant le run.
+
+**Preuves de ps051verdict 0.2 : 22 tests**, dont :
+- la règle 1 ;
+- la règle 2, avec un cache élevé et une mémoire anonyme basse, qui donne VERIFIED avec la mention ;
+- la règle 3, une fois par la somme des VmRSS et une fois par le rss de memory.stat ;
+- les pics par colonne ;
+- 5 journaux refusés : vide, lignes vides, 4 colonnes (format v0.1), 6 colonnes, valeur non numérique.

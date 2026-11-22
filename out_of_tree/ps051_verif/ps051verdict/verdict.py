@@ -1,4 +1,4 @@
-"""ps051verdict 0.1 -- one-pass, read-only verdict of the paperstream 0.5.1 --fast-analyser verification run on W1.
+"""ps051verdict 0.2 -- one-pass, read-only verdict of the paperstream 0.5.1 --fast-analyser verification run on W1.
 
 Owner decision 22/11 ~14:45Z (point 3, via R04): offline verification on already authorized data, after R02's
 validation; goal: prove that the accelerated engine reproduces EXACTLY the W1 result and respects the memory limits;
@@ -15,9 +15,14 @@ WHOLE-bundle count of the anchored W1 L1 bundle, documented by R02: not the 128 
 Integrity (G-1..G-6): printed sha = PAPERSTREAM.json sha; rc = 0; input MANIFEST ebe1959d and series file 7458f615;
 network false, trials_added 0, identity_check_not_a_trial; checkpoint index sha and one entry per pool, context
 mode stream with fast_analyser true, no sha_mismatch / key_mismatch state.
-Memory (M-1..M-3): the dayj guard passed WITHOUT override with the memo margin (memory.fits, memory_override false,
-fast_memo_mb present); the peak of the memory log (max of every sample and of the cgroup peak) <= the memory available
-recorded by the run at its start (memory.available_mb); reported: peak, projection with memo, ratio.
+Memory: M-1 the dayj guard passed WITHOUT override with the memo margin (memory.fits, memory_override false,
+fast_memo_mb present). M-2 (0.2, R02 registry, fixed before any result; host in cgroup v1): the log has EXACTLY five
+columns per line, '<iso> <rss of memory.stat> <sum of VmRSS of the run processes> <usage_in_bytes>
+<max_usage_in_bytes>' (bytes); a log without any sample, or a malformed line, is refused. Rule, against the memory
+available recorded by the run at its start (memory.available_mb): (1) max(max_usage_in_bytes) <= available -> PASS;
+(2) otherwise max(sum RSS) <= available AND max(rss) <= available -> PASS with the note 'unsampled window
+15:29:53-15:32:51Z' (usage/max_usage include the page cache and the whole container since its boot); (3) otherwise
+MEMORY_EXCEEDED. Every column's peak is published.
 Verdict: VERIFIED (all), IDENTITY_FAILED (an identity check fails on a valid run), MEMORY_EXCEEDED, INVALID_RUN.
 """
 import argparse
@@ -43,19 +48,36 @@ def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def memory_peak_mb(log_path):
-    """Peak in MB of a monitor log: lines '<iso time> <memory.current bytes> <memory.peak bytes | NA>'."""
-    peak = 0
-    for line in Path(log_path).read_text(encoding='utf-8').splitlines():
-        parts = line.split()
-        if len(parts) < 2:
+UNSAMPLED_WINDOW = '15:29:53-15:32:51Z'          # R02 registry: run start to the first sample of the sampler
+COLUMNS = ('rss', 'sum_vmrss', 'usage', 'max_usage')
+
+
+def memory_peaks_mb(log_path):
+    """Peaks in MB of the 5-column cgroup v1 log '<iso> <rss> <sum VmRSS> <usage_in_bytes> <max_usage_in_bytes>'."""
+    peaks, samples = dict.fromkeys(COLUMNS, 0), 0
+    for number, line in enumerate(Path(log_path).read_text(encoding='utf-8').splitlines(), 1):
+        if not line.strip():
             continue
-        for value in parts[1:3]:
-            if value.isdigit():
-                peak = max(peak, int(value))
-    if not peak:
+        parts = line.split()
+        if len(parts) != 5 or not all(v.isdigit() for v in parts[1:]):
+            raise VerdictError(f'memory_log_malformed_line:{number}')
+        for name, value in zip(COLUMNS, parts[1:]):
+            peaks[name] = max(peaks[name], int(value))
+        samples += 1
+    if not samples:
         raise VerdictError('memory_log_has_no_sample')
-    return round(peak / 2 ** 20)
+    return {name: round(value / 2 ** 20) for name, value in peaks.items()}, samples
+
+
+def memory_rule(peaks, available):
+    """(rule number, PASS?, note) of R02's M-2 rule."""
+    if type(available) not in (int, float):
+        return 3, False, 'available_memory_not_recorded'
+    if peaks['max_usage'] <= available:
+        return 1, True, None
+    if peaks['sum_vmrss'] <= available and peaks['rss'] <= available:
+        return 2, True, 'unsampled window ' + UNSAMPLED_WINDOW
+    return 3, False, None
 
 
 def check(run_dir, *, printed_sha256, rc, mem_log, anchors=W1):
@@ -99,9 +121,10 @@ def check(run_dir, *, printed_sha256, rc, mem_log, anchors=W1):
     memory = doc.get('memory') or {}
     c['M1_guard_without_override'] = (memory.get('fits') is True and doc.get('memory_override') is False
                                       and type(memory.get('fast_memo_mb')) is int)
-    peak = memory_peak_mb(mem_log)
+    peaks, samples = memory_peaks_mb(mem_log)
     available = memory.get('available_mb')
-    c['M2_peak_within_available'] = type(available) in (int, float) and peak <= available
+    rule, ok, note = memory_rule(peaks, available)
+    c['M2_peak_within_available'] = ok
     failed = sorted(name for name, ok in c.items() if not ok)
     if not failed:
         verdict = 'VERIFIED'
@@ -112,10 +135,10 @@ def check(run_dir, *, printed_sha256, rc, mem_log, anchors=W1):
     else:
         verdict = 'MEMORY_EXCEEDED'
     projected = memory.get('projected_with_memo_mb')
-    return dict(schema='ps051verdict-v0.1', verdict=verdict, failed=failed, checks=dict(sorted(c.items())),
-                memory=dict(peak_mb=peak, available_mb=available, projected_with_memo_mb=projected,
-                            fast_memo_mb=memory.get('fast_memo_mb'),
-                            peak_over_projection=round(peak / projected, 3) if projected else None),
+    return dict(schema='ps051verdict-v0.2', verdict=verdict, failed=failed, checks=dict(sorted(c.items())),
+                memory=dict(peaks_mb=peaks, samples=samples, available_mb=available, rule=rule, note=note,
+                            projected_with_memo_mb=projected, fast_memo_mb=memory.get('fast_memo_mb'),
+                            sum_vmrss_over_projection=round(peaks['sum_vmrss'] / projected, 3) if projected else None),
                 checkpoint_counts=doc.get('checkpoint_counts'), perf_counters_sha256=doc.get('perf_counters_sha256'),
                 scope='identity of the accelerated streaming engine with the anchored W1 L1 bundle: HISTORICAL_REPLAY, '
                       'not a trial, not a genuine Master trade; the 0.4 result (out3) is unchanged')
