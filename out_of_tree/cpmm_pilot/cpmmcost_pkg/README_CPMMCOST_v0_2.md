@@ -1,6 +1,10 @@
-# cpmmcost 0.1 — modèle de coûts complet d'une position du pilote CPMM (tâche P2-b)
+# cpmmcost 0.2 — modèle de coûts complet d'une position du pilote CPMM (tâche P2-b)
 
-RUGGER 01, 22/11/2026. ÉCRIT ET TESTÉ SUR DONNÉES SYNTHÉTIQUES. Aucune donnée CPMM réelle n'existe : C-1 n'est pas
+RUGGER 01, 22/11/2026. **0.2 = 0.1 + audit R02 de 6cd08e6 (PASS conditionnel)** :
+- (a) une tentative échouée puis renvoyée atterrit 4 slots PLUS TARD par échec, avec H-1 sur le slot reporté ;
+- (c) graine de G-1 = int(sha256 de la FICHE DE GEL du pilote[:8], 16), fixée par R02.
+
+ÉCRIT ET TESTÉ SUR DONNÉES SYNTHÉTIQUES. Aucune donnée CPMM réelle n'existe : C-1 n'est pas
 passé, rien n'est créditable, aucun essai n'est consommé.
 
 Bases :
@@ -22,7 +26,7 @@ cp-swap (`cpmmx.curve`), et les taux LUS dans l'AmmConfig, haché avec son slot.
 | Délais | L'achat atterrit 4 slots après le swap de décision. La vente atterrit au slot de sortie, ou à l'heure de l'horloge. |
 | Ordre dans le slot (H-1) | Pire cas : le MOINS de jetons à l'achat, la valeur la PLUS BASSE à la vente, entre les états avant et après les swaps réels du slot (ou de la seconde). |
 | X-1 (ii) | La vente est aussi valorisée avec notre achat laissé dans le pool ; la plus basse des deux est retenue. |
-| Échecs | Chaque tentative échouée (achat, vente, nettoyage) est facturée 105 000 lamports. Hypothèse gelée : 0 échec. Sensibilité : 1 de chaque. Un échec ne déplace pas l'état d'atterrissage (déclaré). |
+| Échecs | Chaque tentative échouée (achat, vente, nettoyage) est facturée 105 000 lamports. Hypothèse gelée (primaire) : 0 échec. Sensibilité : 1 de chaque. Un achat ou une vente renvoyés atterrissent +4 slots par échec, sur un autre état, avec H-1 (R02). Pour la sortie d'horloge, c'est +4 slots après le slot du dernier swap à l'heure de l'horloge. Le nettoyage, après la vente totale, ne touche aucun prix. |
 | Fermeture des comptes (C-a) | Compte jeton FERMÉ en transaction séparée : (échecs + 1) × 105 000, loyer rendu. Après 3 échecs, le compte reste ouvert : loyer perdu + 3 × 105 000. L'enveloppe WSOL est fermée à part (+105 000, hypothèse défavorable), tant que la fermeture dans la vente n'est pas montrée sur une transaction publique réelle. |
 
 **Rendement sur la mise.** r = (reçu − mise − transactions − fermeture WSOL − nettoyage [− loyer perdu]) / 0,1 SOL.
@@ -58,7 +62,8 @@ cp-swap (`cpmmx.curve`), et les taux LUS dans l'AmmConfig, haché avec son slot.
 1. Si G-0 (C-1 à C-3 des swaps du pilote, entrée ancrée) n'est pas `true` : STOP, aucun nombre publié.
 2. Si n < 30 ou s'il y a moins de 20 pools : INCONCLUSIF.
 3. Borne haute unilatérale à 95 % du net moyen (bootstrap de 10 000 tirages groupés par pool, graine = les 8 premiers
-   chiffres hexadécimaux de l'ancre de gel ; fonction auditée `w2arms.ce.lower_bound`) : si elle est < 0 → NO-GO.
+   chiffres hexadécimaux du sha256 de la FICHE DE GEL du pilote, ancrée par R02 — liste U-2 hachée, R-CP1, seuil,
+   sha du code, ancre du protocole v1.2 ; fonction auditée `w2arms.ce.lower_bound`) : si elle est < 0 → NO-GO.
 4. Sinon GO_PILOTE. Ce GO autorise seulement à PROPOSER une confirmation préenregistrée, sur une fenêtre nouvelle,
    avec les critères c1 à c5 du Dossier B. Il ne veut jamais dire « rentable ».
 
@@ -70,9 +75,9 @@ refuse tout dépassement.
 
 ## Tests et mutants
 
-- 13 tests, dont une chaîne complète : transactions brutes synthétiques (simulateur indépendant de `cpmmx`), puis
+- 15 tests, dont une chaîne complète : transactions brutes synthétiques (simulateur indépendant de `cpmmx`), puis
   décodeur, admission et coût.
-- Mutants : 28/28 détectés (`MUTATIONS_cpmmcost_v0_1.json`). Ils couvrent la latence 0, H-1 en meilleur cas (achat et
+- Mutants : 32/32 détectés (`MUTATIONS_cpmmcost_v0_2.json`). Nouveaux : délai d'échec ignoré à l'achat, à la vente et à l'horloge ; graine qui n'est pas le préfixe de la fiche. Ils couvrent la latence 0, H-1 en meilleur cas (achat et
   vente), un seul état, des frais × 0, des frais de transaction, des échecs, une fermeture WSOL ou un nettoyage
   oubliés, un loyer conservé, l'univers, l'AmmConfig, les gardes de sortie, l'admission, G-1 (n, pools, borne, signe),
   G-0, le plafond d'essais et le code gelé.

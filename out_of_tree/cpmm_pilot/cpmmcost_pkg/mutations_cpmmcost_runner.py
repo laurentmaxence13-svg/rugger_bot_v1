@@ -3,10 +3,14 @@ from pathlib import Path
 D, V, W, M, PP = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]), sys.argv[5]
 src = (D / 'cpmmcost' / 'model.py').read_text()
 MUT = [
- ("    land = decision.slot + LATENCY_SLOTS", "    land = decision.slot", 'latency_zero'),
+ ("    land = decision.slot + LATENCY_SLOTS * (1 + failures.buy)", "    land = decision.slot", 'latency_zero'),
+ ("    land = decision.slot + LATENCY_SLOTS * (1 + failures.buy)", "    land = decision.slot + LATENCY_SLOTS", 'buy_failure_delay_ignored'),
+ ("        sale_slot = exit_slot + LATENCY_SLOTS * failures.sell", "        sale_slot = exit_slot", 'sale_failure_delay_ignored'),
+ ("        if failures.sell:                                            # the resent sale: slots after the clock landing", "        if False:", 'clock_sale_failure_delay_ignored'),
+ ("seed=int(freeze_sheet_sha256[:8], 16), draws=draws", "seed=int(freeze_sheet_sha256[-8:], 16), draws=draws", 'seed_not_the_sheet_prefix'),
  ("    bought, buy_state = min(buys, key=lambda pair: pair[0].output_amount)", "    bought, buy_state = max(buys, key=lambda pair: pair[0].output_amount)", 'h1_buy_best_case'),
  ("    sold, sell_state, kind, limit = min(candidates, key=lambda row: row[0].output_amount)", "    sold, sell_state, kind, limit = max(candidates, key=lambda row: row[0].output_amount)", 'h1_sale_best_case'),
- ("        limits = [dict(slot_limit=exit_slot - 1), dict(slot_limit=exit_slot)]", "        limits = [dict(slot_limit=exit_slot - 1)]", 'sale_before_slot_only'),
+ ("        sale_slot = exit_slot + LATENCY_SLOTS * failures.sell\n        limits = [dict(slot_limit=sale_slot - 1), dict(slot_limit=sale_slot)]", "        sale_slot = exit_slot + LATENCY_SLOTS * failures.sell\n        limits = [dict(slot_limit=sale_slot - 1)]", 'sale_before_slot_only'),
  ("    states = [_state(line, fees, slot_limit=land - 1), _state(line, fees, slot_limit=land)]", "    states = [_state(line, fees, slot_limit=land - 1)]", 'buy_before_slot_only'),
  ("        for state, kind in ((real, 'real_reserves'), (_with_our_buy(real, bought, buy_state), 'with_our_buy')):", "        for state, kind in ((_with_our_buy(real, bought, buy_state), 'with_our_buy'),):", 'sale_only_with_our_buy'),
  ("    return curve.Fees(config['trade_fee_rate'], config.get('creator_fee_rate', 0),", "    return curve.Fees(0, config.get('creator_fee_rate', 0),", 'fees_zero'),

@@ -1,4 +1,5 @@
-"""cpmmcost 0.1 -- the full cost model of one position of the CPMM pilot on ESTABLISHED Raydium CPMM pools (task P2-b of
+"""cpmmcost 0.2 (0.1 + R02 audit of 6cd08e6: a failed attempt lands LATER, +4 slots per failure, with H-1; seed of G-1 =
+the pilot FREEZE SHEET) -- the full cost model of one position of the CPMM pilot on ESTABLISHED Raydium CPMM pools (task P2-b of
 docs/ops/ETAT_RUGGER_MASTER.md 62c4525; pilot note v0.2 b4c6562c, sections 2.1 to 2.5; protocol CPMM v1.2 a3a285a1).
 Nothing here reads collected data, selects a pool or tunes anything: there is no CPMM data yet (C-1 not passed).
 
@@ -12,7 +13,9 @@ Every amount is computed on the RESERVES THE PROGRAM LOGGED (``cpmmx.timeline``)
   X-1 (ii): the sale is also valued with our buy left in the pool, and the lower value is kept;
 * FAILURES: each failed attempt of the buy, of the sale or of the cleanup is charged one transaction (105 000
   lamports, the conservative fee of the frozen chain); frozen hypothesis 0 failures, sensitivity 1 (closedacct 0.2);
-  a failure does not move the landing state (declared: only its fee is modelled);
+  a failed and resent order lands LATER, on another state (R02): +LATENCY_SLOTS slots per failure of the buy or of the
+  sale, with H-1 on the delayed landing slot (for the clock exit, after the slot of the last swap at the clock time);
+  the cleanup comes after the total sale and moves no price;
 * ACCOUNT CLOSING (C-a of R02): the base token account is CLOSED in a SEPARATE transaction after the total sale: its
   rent comes back, the cost is (failed + 1) x 105 000; after 3 failed cleanups it stays open (rent lost + 3 fees);
   the WSOL wrapper is closed in a SEPARATE transaction too (unfavourable hypothesis of the note, +105 000), until a
@@ -167,14 +170,15 @@ def position(line, decision_index, config, *, exit_slot=None, exit_time=None, fa
     fees = fees_from_amm_config(config)
     frozen_check()
     decision = line.swaps[decision_index]
-    land = decision.slot + LATENCY_SLOTS
+    land = decision.slot + LATENCY_SLOTS * (1 + failures.buy)
     # H-1 at the buy: the state before and after the real swaps of the landing slot; the FEWER tokens are kept
     states = [_state(line, fees, slot_limit=land - 1), _state(line, fees, slot_limit=land)]
     if exit_slot is not None:
         if type(exit_slot) is not int or exit_slot <= land:
             raise CostError('exit_before_the_buy_landed')
-        limits = [dict(slot_limit=exit_slot - 1), dict(slot_limit=exit_slot)]
-        done = TL.executed(line, slot_limit=exit_slot)
+        sale_slot = exit_slot + LATENCY_SLOTS * failures.sell
+        limits = [dict(slot_limit=sale_slot - 1), dict(slot_limit=sale_slot)]
+        done = TL.executed(line, slot_limit=sale_slot)
     else:
         if type(exit_time) is not int or exit_time <= decision.block_time:
             raise CostError('exit_before_the_buy_landed')
@@ -183,6 +187,11 @@ def position(line, decision_index, config, *, exit_slot=None, exit_time=None, fa
         if any(s.block_time > exit_time - 1 for s in landed):       # the sale must see every swap before our buy
             raise CostError('exit_before_the_buy_landed')
         done = TL.executed(line, time_limit=exit_time)
+        if failures.sell:                                            # the resent sale: slots after the clock landing
+            base_slot = max([s.slot for s in done] + [land])
+            sale_slot = base_slot + LATENCY_SLOTS * failures.sell
+            limits = [dict(slot_limit=sale_slot - 1), dict(slot_limit=sale_slot)]
+            done = TL.executed(line, slot_limit=sale_slot)
     on_input = creator_side(line, len(done) - 1)
     buys = [(_buy_on(s, fees, on_input), s) for s in states]
     bought, buy_state = min(buys, key=lambda pair: pair[0].output_amount)
@@ -269,11 +278,13 @@ def trials(n_before):
                 left_after=TRIAL_CAP_OUTSIDE_HW1 - n_before - 1)
 
 
-def pilot_verdict(positions, *, g0_passed, freeze_anchor_sha256, draws=DRAWS):
+def pilot_verdict(positions, *, g0_passed, freeze_sheet_sha256, draws=DRAWS):
     """Section 2.5 in order: G-0 (C-1 to C-3 of the pilot swaps, an anchored input), then G-1; GO only PROPOSES a study."""
-    if (type(freeze_anchor_sha256) is not str or len(freeze_anchor_sha256) != 64
-            or any(c not in '0123456789abcdef' for c in freeze_anchor_sha256)):
-        raise CostError('freeze_anchor_sha256_required')
+    # seed fixed by R02: int(sha256 of the pilot FREEZE SHEET[:8], 16); the sheet (anchored by R02 at the freeze) holds
+    # the hashed U-2 list, R-CP1, the threshold, the code sha and the anchor of protocol v1.2 (a3a285a1)
+    if (type(freeze_sheet_sha256) is not str or len(freeze_sheet_sha256) != 64
+            or any(c not in '0123456789abcdef' for c in freeze_sheet_sha256)):
+        raise CostError('freeze_sheet_sha256_required')
     base = dict(labels=list(LABELS), counts_for_operational_master=False, min_entries=MIN_ENTRIES, min_pools=MIN_POOLS)
     if g0_passed is not True:
         return dict(base, decision='STOP', reason='g0_decoder_not_passed', published_numbers=False)
@@ -288,7 +299,7 @@ def pilot_verdict(positions, *, g0_passed, freeze_anchor_sha256, draws=DRAWS):
         return -sum(r['net_return'] for r in rows) / len(rows) if rows else None
     upper = None
     if n:
-        low = W.lower_bound(groups, neg_mean, seed=int(freeze_anchor_sha256[:8], 16), draws=draws, alpha=ALPHA_UPPER)
+        low = W.lower_bound(groups, neg_mean, seed=int(freeze_sheet_sha256[:8], 16), draws=draws, alpha=ALPHA_UPPER)
         upper = None if low is None else -low
     if n < MIN_ENTRIES or pools < MIN_POOLS:
         decision = 'INCONCLUSIF'
@@ -297,6 +308,6 @@ def pilot_verdict(positions, *, g0_passed, freeze_anchor_sha256, draws=DRAWS):
     else:
         decision = 'GO_PILOTE'
     return dict(base, decision=decision, n=n, pools=pools, mean_net_return=mean, upper_bound_95_one_sided=upper,
-                draws=draws, published_numbers=True,
+                draws=draws, seed=int(freeze_sheet_sha256[:8], 16), published_numbers=True,
                 meaning='GO_PILOTE only allows PROPOSING a pre-registered confirmation on a NEW window with the dossier '
                         'B criteria c1-c5; it never means profitable')

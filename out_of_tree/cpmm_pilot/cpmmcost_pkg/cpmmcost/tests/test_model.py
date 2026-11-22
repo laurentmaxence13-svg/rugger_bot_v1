@@ -56,7 +56,8 @@ def test_the_net_matches_closedacct_and_failures_and_closings_are_charged():
     line, _ = market([(1000, 'buy', 10 ** 6)])
     frozen = M.position(line, 0, CONFIG, exit_slot=2000)
     one = M.position(line, 0, CONFIG, exit_slot=2000, failures=M.SENSITIVITY_FAILURES)
-    assert frozen['net_lamports'] - one['net_lamports'] == 3 * 105_000
+    assert frozen['net_lamports'] - one['net_lamports'] == 3 * 105_000          # quiet pool: the delay moves no price
+    assert one['buy_landing_slot'] == 1008 and one['exit']['state_kept']['slot_limit'] in (2003, 2004)
     left_open = M.position(line, 0, CONFIG, exit_slot=2000, failures=M.Failures(cleanup=3))
     assert frozen['net_lamports'] - left_open['net_lamports'] == CA.SPL_RENT_LAMPORTS + 2 * 105_000
     assert left_open['decomposition_share_of_stake']['rent_lost'] == -CA.SPL_RENT_LAMPORTS / M.STAKE_LAMPORTS
@@ -160,22 +161,22 @@ def test_the_pool_gate_admits_a_clean_pool_and_names_each_exclusion():
 def test_the_pilot_verdict_follows_section_2_5_in_order():
     def rows(n, pools, value):
         return [dict(pool='p%02d' % (i % pools), net_return=value) for i in range(n)]
-    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=False, freeze_anchor_sha256=ANCHOR)['decision'] == 'STOP'
-    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=None, freeze_anchor_sha256=ANCHOR)['published_numbers'] is False
-    assert M.pilot_verdict(rows(29, 24, 0.05), g0_passed=True, freeze_anchor_sha256=ANCHOR)['decision'] == 'INCONCLUSIF'
-    assert M.pilot_verdict(rows(40, 19, 0.05), g0_passed=True, freeze_anchor_sha256=ANCHOR)['decision'] == 'INCONCLUSIF'
-    nogo = M.pilot_verdict(rows(40, 20, -0.01), g0_passed=True, freeze_anchor_sha256=ANCHOR, draws=500)
+    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=False, freeze_sheet_sha256=ANCHOR)['decision'] == 'STOP'
+    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=None, freeze_sheet_sha256=ANCHOR)['published_numbers'] is False
+    assert M.pilot_verdict(rows(29, 24, 0.05), g0_passed=True, freeze_sheet_sha256=ANCHOR)['decision'] == 'INCONCLUSIF'
+    assert M.pilot_verdict(rows(40, 19, 0.05), g0_passed=True, freeze_sheet_sha256=ANCHOR)['decision'] == 'INCONCLUSIF'
+    nogo = M.pilot_verdict(rows(40, 20, -0.01), g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=500)
     same = rows(20, 20, -0.002) + rows(20, 20, 0.001)                          # every pool at -0.05 %: no spread
-    assert M.pilot_verdict(same, g0_passed=True, freeze_anchor_sha256=ANCHOR, draws=500)['decision'] == 'NO-GO'
+    assert M.pilot_verdict(same, g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=500)['decision'] == 'NO-GO'
     assert nogo['decision'] == 'NO-GO' and nogo['upper_bound_95_one_sided'] == pytest.approx(-0.01)
     mixed = [dict(pool='p%02d' % (i % 20), net_return=0.01 if i % 20 < 10 else -0.012) for i in range(40)]
-    out = M.pilot_verdict(mixed, g0_passed=True, freeze_anchor_sha256=ANCHOR, draws=500)
+    out = M.pilot_verdict(mixed, g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=500)
     assert out['decision'] == 'GO_PILOTE' and out['upper_bound_95_one_sided'] >= 0 > out['mean_net_return']
     assert out['counts_for_operational_master'] is False and 'never means profitable' in out['meaning']
-    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=True, freeze_anchor_sha256=ANCHOR, draws=500)['draws'] == 500
+    assert M.pilot_verdict(rows(40, 24, 0.05), g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=500)['draws'] == 500
     assert M.DRAWS == 10_000 and (M.MIN_ENTRIES, M.MIN_POOLS, M.ALPHA_UPPER) == (30, 20, 0.05)
-    with pytest.raises(M.CostError, match='freeze_anchor_sha256_required'):
-        M.pilot_verdict(rows(40, 24, 0.05), g0_passed=True, freeze_anchor_sha256='x')
+    with pytest.raises(M.CostError, match='freeze_sheet_sha256_required'):
+        M.pilot_verdict(rows(40, 24, 0.05), g0_passed=True, freeze_sheet_sha256='x')
 
 
 def test_r_cp1_is_one_trial_under_the_cap():
@@ -210,3 +211,43 @@ def test_the_decoder_and_closedacct_are_the_audited_files(monkeypatch):
         M.position(line, 0, CONFIG, exit_slot=2000)
     with pytest.raises(M.CostError, match='frozen_code_differs'):
         M.pool_gate(line, CONFIG)
+
+
+def test_a_failed_attempt_lands_4_slots_later_on_another_state_with_h1():
+    # a big real buy at slot 1006: after the first landing (1004), before the resent one (1008)
+    line, _ = market([(1000, 'buy', 10 ** 6), (1006, 'buy', 20 * SOL)])
+    first = M.position(line, 0, CONFIG, exit_slot=2000)
+    late = M.position(line, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1))
+    assert first['buy_landing_slot'] == 1004 and late['buy_landing_slot'] == 1008
+    assert late['tokens'] < first['tokens']
+    # H-1 on the delayed slot: a real buy INSIDE slot 1008 is taken against us too
+    inside, _ = market([(1000, 'buy', 10 ** 6), (1008, 'buy', 20 * SOL)])
+    assert M.position(inside, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1))['tokens'] <         M.position(inside, 0, CONFIG, exit_slot=2000)['tokens']
+    # the sale: a big real sale at slot 2002, after the first sale landing (2000), before the resent one (2004)
+    dump, _ = market([(1000, 'buy', 10 ** 6), (2002, 'sell', 2 * 10 ** 14)])
+    sale = M.position(dump, 0, CONFIG, exit_slot=2000)
+    resent = M.position(dump, 0, CONFIG, exit_slot=2000, failures=M.Failures(sell=1))
+    assert resent['received'] < sale['received'] and resent['exit']['state_kept']['slot_limit'] in (2003, 2004)
+    # a delayed buy that lands after the exit point is refused
+    with pytest.raises(M.CostError, match='exit_before_the_buy_landed'):
+        M.position(line, 0, CONFIG, exit_slot=1006, failures=M.Failures(buy=1))
+    # the clock exit: a resent sale lands 4 slots after the slot of the last swap at the clock time
+    clock_line, _ = market([(1000, 'buy', 10 ** 6), (2800, 'buy', 10 ** 6), (2803, 'sell', 2 * 10 ** 14)])
+    on_time = M.position(clock_line, 0, CONFIG, exit_time=2800)
+    resent = M.position(clock_line, 0, CONFIG, exit_time=2800, failures=M.Failures(sell=1))
+    assert resent['exit']['state_kept']['slot_limit'] in (2803, 2804) and resent['received'] < on_time['received']
+
+
+def test_the_g1_seed_is_the_freeze_sheet():
+    rows = [dict(pool='p%02d' % (i % 24), net_return=((i * 37) % 23 - 11) / 1000) for i in range(60)]
+    a = M.pilot_verdict(rows, g0_passed=True, freeze_sheet_sha256='0000002a' + 'f' * 56, draws=300)
+    assert a['seed'] == 42
+    assert a == M.pilot_verdict(rows, g0_passed=True, freeze_sheet_sha256='0000002a' + 'e' * 56, draws=300)
+    groups = {}
+    for r in rows:
+        groups.setdefault(r['pool'], []).append(r)
+    neg = lambda rs: -sum(r['net_return'] for r in rs) / len(rs)                 # noqa: E731
+    from w2arms import ce as W
+    assert a['upper_bound_95_one_sided'] == -W.lower_bound(groups, neg, seed=42, draws=300, alpha=0.05)
+    other = M.pilot_verdict(rows, g0_passed=True, freeze_sheet_sha256='0000002b' + 'f' * 56, draws=300)
+    assert other['upper_bound_95_one_sided'] == -W.lower_bound(groups, neg, seed=43, draws=300, alpha=0.05)

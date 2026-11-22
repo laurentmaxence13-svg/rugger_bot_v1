@@ -4,6 +4,22 @@
   "detected": true
  },
  {
+  "mutant": "buy_failure_delay_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sale_failure_delay_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "clock_sale_failure_delay_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "seed_not_the_sheet_prefix",
+  "detected": true
+ },
+ {
   "mutant": "h1_buy_best_case",
   "detected": true
  },
