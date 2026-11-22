@@ -1,0 +1,86 @@
+[
+ {
+  "mutant": "any_frame_inside_launchlab",
+  "detected": true
+ },
+ {
+  "mutant": "several_names_per_frame",
+  "detected": true
+ },
+ {
+  "mutant": "failures_not_counted",
+  "detected": true
+ },
+ {
+  "mutant": "wrong_discriminator",
+  "detected": true
+ },
+ {
+  "mutant": "zero_price_bucket",
+  "detected": true
+ },
+ {
+  "mutant": "bucket_edges",
+  "detected": true
+ },
+ {
+  "mutant": "sells_counted",
+  "detected": true
+ },
+ {
+  "mutant": "gap_edges",
+  "detected": true
+ },
+ {
+  "mutant": "holdout_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "events_not_ordered",
+  "detected": true
+ },
+ {
+  "mutant": "events_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "minimum_rounded_up",
+  "detected": true
+ },
+ {
+  "mutant": "buy_best_landing",
+  "detected": true
+ },
+ {
+  "mutant": "buy_guard_always_5pct",
+  "detected": true
+ },
+ {
+  "mutant": "buy_guard_never_fails",
+  "detected": true
+ },
+ {
+  "mutant": "sale_retries_forever",
+  "detected": true
+ },
+ {
+  "mutant": "sale_guard_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "sale_best_landing",
+  "detected": true
+ },
+ {
+  "mutant": "any_buy_threshold",
+  "detected": true
+ },
+ {
+  "mutant": "primary_not_2pct",
+  "detected": true
+ }
+]
