@@ -1,0 +1,1 @@
+startup-script: PAUSE: no_anchor_for_gate_within_180_minutes
