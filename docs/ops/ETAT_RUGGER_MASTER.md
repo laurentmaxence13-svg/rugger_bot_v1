@@ -50,7 +50,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | En attente de la fin du run |
 | P1 | Profil technique d'un pool, puis vérification de la 0.5.2.1 sur W1 (ps0521verdict 0.1) | R03, après GO de R02 | A5 | En attente du verdict 0.5.1 |
 | P2 | Préparer hors ligne la chaîne verdict W1, puis HW1, puis C-B : scripts, critères gelés, tests | R01 ; audit R02 | A1 | À faire |
-| P2 | Audit complet du modèle de coûts : frais de courbe et de tx, impact de prix, délais, échecs, fermeture des comptes (rent) | R02 | A1 | Lancé à 20:26Z (déclaré) |
+| P2 | Audit complet du modèle de coûts | R02 | A1 | **Fait** (voir § 4) |
+| P3 | Plan de mesure hors ligne de l'atterrissage (N-4) et du glissement (N-5) sur les tx déjà collectées ; garde de glissement pour le moteur PAPER (préparation seulement) | R01 ; audit R02 | A1 | À faire |
 | P2 | Préparer la réorientation CPMM, sans exploitation rétrospective : simulateur de coûts, critères gelés, decoder prêt pour cpmmfmt | R01 ; audit R02 | A1 | À faire |
 | P3 | Liste des obstacles au PAPER BUY/SELL en flux temps réel, avec plan de tests hors ligne. Les rejeux restent étiquetés HISTORICAL_REPLAY. | R01 ; audit R02 | A1 | À faire |
 | P4 | Préparer A2 v2.6.6 hors ligne : create_vm.sh sans valeurs de projet, checklist propriétaire | R04 | A1 | Prêt à remplir sur signature |
@@ -66,6 +67,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | 22/11 | PASS de R02 : cyclesplit 0.1 (db66af7), paperstream 0.5.2 (672eeae), ps051verdict 0.2 (092ab57), A2 v2.6.6 (d0c2ccd), paperstream 0.5.2.1 (99a8a35), ps0521verdict 0.1 (5bc67c6) | registre R02 | commits vérifiés ; PASS déclarés |
 | 22/11 | Fiche d'exception A2 v1.1 | e2a93ea8 | déclaré (R02) |
 | 22/11 20:24Z | cpmmfmt 0.1, exécution unique sur P0 aca7de08, rc 0. Résultats : 360 archives, dont 8 CPMM ; 21 475 tx, dont 26 CPMM ; 26 frames sur 26 décodées, dont 25 swap_current ; creditable_for_c1 = false ; aucun réseau. | FORMAT_COUNTS.json, sha 44826f54 | déclaré (R03). Audit R02 : **FORMAT CONFORME** (registre fe3488ca). LpChange et l'ancien format ne sont pas exercés. Non créditable pour C-1. |
+
+| 22/11 20:28Z | Audit du modèle de coûts. **Partie marché exacte** (frais de courbe, impact propre, rejeu des échanges réels, latence). **Exécution incomplète**, et toujours dans le sens optimiste : N-1 loyer ignoré ; N-2 fermeture ; N-3 échecs ; N-4 atterrissage supposé certain ; N-5 aucune garde de glissement ; N-6 MEV/Jito ; N-7 WSOL ; N-8 positions ouvertes exclues. Le net W1 de −4,26 % est une **borne haute** (≈ −6,3 % avec le loyer). C-B prudent, mais ne couvre pas N-4 à N-6. Règle fixée avant W2 : « rentable » exigera en plus un net > 0 avec 1 échec et 10 slots, ainsi qu'une mesure PAPER temps réel de l'atterrissage et du glissement. | AUDIT_MODELE_COUTS_PAPER_CB_R02_v1_0.md (registre R02) | déclaré (R02) |
 
 ## 5. Incidents
 
