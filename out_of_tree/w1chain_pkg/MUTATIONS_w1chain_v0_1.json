@@ -1,0 +1,118 @@
+[
+ {
+  "mutant": "trial_cap_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "hw1_trials_not_added",
+  "detected": true
+ },
+ {
+  "mutant": "order_changed",
+  "detected": true
+ },
+ {
+  "mutant": "order_3_before_4",
+  "detected": true
+ },
+ {
+  "mutant": "r02_may_override_the_code",
+  "detected": true
+ },
+ {
+  "mutant": "hw1_5_conditions_skipped",
+  "detected": true
+ },
+ {
+  "mutant": "last_positive_chosen",
+  "detected": true
+ },
+ {
+  "mutant": "final_not_tied_to_verdicts",
+  "detected": true
+ },
+ {
+  "mutant": "official_verdict_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "evaluation_range_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "rows_official_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "rows_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "rows_manifest_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "w1_flag_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "counts_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "n_min_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "frozen_shas_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "not_the_cli_bytes",
+  "detected": true
+ },
+ {
+  "mutant": "latency10_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "census_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "empty_cb_gets_commands",
+  "detected": true
+ },
+ {
+  "mutant": "w2_overlap_allowed",
+  "detected": true
+ },
+ {
+  "mutant": "windows_not_consecutive",
+  "detected": true
+ },
+ {
+  "mutant": "hw1_5_primary_word",
+  "detected": true
+ },
+ {
+  "mutant": "unconfirmed_counts_as_positive",
+  "detected": true
+ },
+ {
+  "mutant": "lat_pools_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "cli_rows_unanchored",
+  "detected": true
+ },
+ {
+  "mutant": "cli_census_unanchored",
+  "detected": true
+ },
+ {
+  "mutant": "select_trials_unchecked",
+  "detected": true
+ }
+]
