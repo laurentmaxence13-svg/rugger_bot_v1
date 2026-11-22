@@ -53,11 +53,11 @@ Pour l'étape 1, mettez déjà une date limite provisoire (la même commande) ; 
 | # | Commande | Ce que vous devez voir | Ensuite |
 |---|---|---|---|
 | 1 | `bash create_vm.sh setup` | `setup OK` | — |
-| 2 | `bash create_vm.sh token inbound` | un jeton (longue chaîne) | **vous-même**, au moment où RUGGER 04 vous le dit, vous le déposez comme *network secret* de l'environnement de RUGGER 03, dans les réglages de l'environnement, comme le décrit la fiche R02 v1.1 (e2a93ea8). Ne le collez jamais dans une conversation. Puis tapez `clear`. Personne ne vous le redemande : RUGGER 03 dépose les données (4,7 Go) avec ce secret. |
+| 2 | `bash create_vm.sh token inbound` | un jeton (longue chaîne) | voir « Les jetons » ci-dessous : vous le déposez **vous-même** comme *network secret* de l'environnement de RUGGER 03, pour l'hôte `storage.googleapis.com`. Jamais dans une conversation. Puis tapez `clear`. |
 | 3 | refaire `DEADLINE`, puis `bash create_vm.sh launch` | `automatic deletion confirmed: …` | transmettre cette ligne à RUGGER 04. **La dépense commence ici.** Si la ligne n'apparaît pas, la machine a été supprimée par le script : transmettre le message. |
 | 4 | `bash create_vm.sh progress`, à chaque demande de RUGGER 04 (une fois par étape) | une ligne `PROGRESS {…}` : l'étape, son digest, le sha de DAYJ_STATE.json, ses fichiers, des détails sans aucun P&L | copiez la ligne à RUGGER 04 (ce n'est pas un secret). RUGGER 02 l'ancre, puis RUGGER 04 vous renvoie une commande `bash create_vm.sh anchor <étape> <sha>` : lancez-la telle quelle. Elle affiche `anchor deposited for …` et refuse d'écraser une ancre déjà déposée. Si vous vous trompez en recopiant, la machine se met en pause, sans risque. **Il n'y a plus de jeton relais.** |
 | 5 | `bash create_vm.sh start`, seulement si RUGGER 04 le demande | `automatic deletion confirmed (start): …` | la machine s'éteint d'elle-même après 10 h sans validation (elle ne coûte alors que son disque) ; cette commande remet la suppression automatique, la contrôle, puis relance la machine. Transmettre la ligne à RUGGER 04. Si elle affiche `STOP:`, la machine n'a pas redémarré : transmettre le message. |
-| 6 | `bash create_vm.sh token outbound`, à la fin | un jeton | même geste qu'à l'étape 2 (*network secret*, jamais dans une conversation). RUGGER 03 télécharge les résultats, RUGGER 02 les vérifie. |
+| 6 | `bash create_vm.sh token outbound`, à la fin | un jeton | même geste qu'à l'étape 2. RUGGER 03 télécharge les résultats, RUGGER 02 les vérifie. Retirez ensuite le secret. |
 | 7 | `bash create_vm.sh teardown`, **seulement quand RUGGER 04 confirme que RUGGER 03 a téléchargé les résultats et que RUGGER 02 les a vérifiés** — ou à la date limite | `teardown OK` | puis la commande `gcloud storage buckets delete …` affichée, et relever la dépense réelle : Facturation → Rapports. |
 
 `bash create_vm.sh status` montre à tout moment où en est la machine (lecture seule).
@@ -103,18 +103,31 @@ gcloud storage cp --no-clobber expect_series.txt expect_trials.txt gs://MON_BUCK
 - La sauvegarde de la collecte W1 (opération séparée, bucket séparé) doit être faite et vérifiée avant l'étape 7.
 - En cas d'alerte de budget, de doute ou d'anomalie : étape 7 tout de suite.
 
+## Les jetons (fiche R02 v1.1, e2a93ea8, § 2, reprise mot pour mot)
+
+« Ce que R03 fait : les 2 seuls transferts, put de l'INBOUND (≈ 4,5 Go) et get des résultats. Le propriétaire dépose
+LUI-MÊME, aux deux moments prévus et sans qu'on le lui redemande, un jeton OAuth réduit au seul bucket (préfixe
+inbound/, puis outbound/). Il le dépose comme « network secret » de l'environnement R03, pour l'hôte
+storage.googleapis.com, dans les réglages de l'environnement. Le proxy l'injecte ; R03 ne le lit jamais. Ces jetons
+durent ≈ 1 h ; un put de 27 fichiers et un get tiennent chacun dans ce délai. Le jeton est retiré par le propriétaire
+après chaque usage. Réserve : le 21/11, 4 jetons ont rendu 401 pour une cause non établie. Avant le put, R03 fait donc
+un essai de lecture du bucket vide ; en cas de 401, STOP, sans nouvelle demande. Alternative : le propriétaire fait
+lui-même le put et le get depuis sa machine. »
+
+**R03 n'appelle jamais `request_credential`.** Personne ne vous redemande de jeton.
+
 ## Vos interventions, en tout (environ 15, courtes)
 
 1. `setup` ;
 2. l'alerte de budget à 66 $ ;
-3. le jeton inbound, déposé comme *network secret* (1, éventuellement 2 si l'envoi dépasse une heure) ;
+3. le jeton inbound, déposé comme *network secret*, puis retiré après usage ;
 4. `launch` ;
 5. éventuellement, les 2 ancres de l'option (i) ;
 6. pour chaque étape restante : `progress`, puis `anchor` ;
-7. le jeton outbound, déposé comme *network secret* ;
+7. le jeton outbound, déposé comme *network secret*, puis retiré après usage ;
 8. `teardown`.
 
-Au total, 2 ou 3 jetons, jamais dans une conversation, et plus aucun jeton relais.
+Au total, 2 jetons, jamais dans une conversation, et plus aucun jeton relais.
 
 ## Ce que vous ne faites jamais
 
