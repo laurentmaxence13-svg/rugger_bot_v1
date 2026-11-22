@@ -70,6 +70,7 @@ publiques.
 
 1. R02 a audité landslip 0.1 : PASS.
 2. R03 a exécuté `landslip.measure` UNE fois sur W1 ancré (A2, descriptif) ; R02 a ancré la sortie (8ae58251) :
-   (ii) est informative (≈ 60 % des achats d'autrui à ≤ 3 slots du signal, 63,8 % à ≤ 4) ; (i) ne l'est pas. N-4 reste
-   NON MESURÉ.
+   (ii) est informative : 60,4 % des achats suivent un autre trade du pool à ≤ 3 slots, 63,8 % à ≤ 4. C'est une densité
+   d'activité, PAS un rang face au signal, et PAS notre glissement (erratum de R02, 22:45Z, repris ici). (i) ne l'est
+   pas. N-4 reste NON MESURÉ.
 3. La garde est intégrée au moteur « coûts complets » (P3-c), dans un paquet nouveau.
