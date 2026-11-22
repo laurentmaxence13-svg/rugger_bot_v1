@@ -1,0 +1,66 @@
+[
+ {
+  "mutant": "duplicates_pushed",
+  "detected": true
+ },
+ {
+  "mutant": "no_chain_ordering",
+  "detected": true
+ },
+ {
+  "mutant": "mid_curve_start_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "late_after_flush_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "late_in_buffer_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "slot_never_flushed_before_close",
+  "detected": true
+ },
+ {
+  "mutant": "other_pool_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "violations_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "delivery_continues_after_failure",
+  "detected": true
+ },
+ {
+  "mutant": "declared_gap_at_end_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "open_position_not_flagged",
+  "detected": true
+ },
+ {
+  "mutant": "any_source_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "incomplete_result_exposed",
+  "detected": true
+ },
+ {
+  "mutant": "creditable",
+  "detected": true
+ },
+ {
+  "mutant": "engine_sha_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "delivery_after_close_accepted",
+  "detected": true
+ }
+]
