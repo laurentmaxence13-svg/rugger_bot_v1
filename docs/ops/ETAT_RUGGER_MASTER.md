@@ -50,7 +50,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | P1 | Terminer le run 0.5.1 sur W1, sans modification | R03 | A5 | **Fait** : de 15:29:53Z à 22:00:48Z, sans coupure, rc 0 |
 | P1 | Lire le verdict 0.5.1 une seule fois avec ps051verdict 0.2, puis audit sans ajustement des critères | R03 puis R02 | A5 | **VERIFIED** (14/14). Ancrage R02 en attente |
 | P1 | Profil technique d'un pool, puis vérification de la 0.5.2.1 sur W1 (ps0521verdict 0.1) | R03, après GO de R02 | A5 | **0.5.2.1 VERIFIED** (14/14) |
-| P1 | landslip 0.1 measure sur W1 ancré ebe1959d (comptes seulement) | R03, après GO de R02 | A2 | En attente du GO de R02 |
+| P1 | landslip 0.1 measure sur W1 ancré ebe1959d (comptes seulement) | R03, après GO de R02 | A2 | Exécutée sur les 2 273 pools, sans erreur (déclaré R03, 22:42Z). Sortie brute envoyée à R02 pour ancrage avant toute lecture. |
 | P2 | Préparer hors ligne la chaîne verdict W1, puis HW1, puis C-B : scripts, critères gelés, tests | R01 ; audit R02 | A1 | w1chain 0.1 livrée (5a87ea8, vérifié). Audit R02 : **CORRECTIONS REQUISES** (c6629433). K-1, bloquant : le critère (viii) est exigé à tort pour l'admission, et la condition de sensibilité au payeur manque. w1chain 0.2 (a49f398, MANIFEST eff1d847) corrige K-1. **PASS R02** (déclaré). |
 | P2 | Audit complet du modèle de coûts | R02 | A1 | **Fait** (voir § 4) |
 | P3 | Plan de mesure hors ligne de l'atterrissage (N-4) et du glissement (N-5) sur les tx déjà collectées ; garde de glissement pour le moteur PAPER (préparation seulement) | R01 ; audit R02 | A1 | À faire |
