@@ -74,6 +74,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
+- 22/11 20:28Z : un message de R02 à R01 a été perdu. Il demandait le plan de mesure N-4/N-5 et la garde de glissement ; il est absent du journal de R01 (2e perte de la journée). R01 demande le texte exact à R02. Ces travaux deviennent la tâche P3-b, placée avant P3-c.
 - 22/11, 15:36–15:41Z : des messages de R02 adressés à R04 ont été perdus. Ils ont été rattrapés à 17:43Z.
 - 22/11, entre 04:30Z et 15:33Z : le conteneur de R03 a redémarré 2 fois (epoch 195 → 197). W1 complet n'existe que dans ce conteneur ; la copie externe en couvre environ 71 %.
 - Les sessions s'arrêtent dès qu'elles n'ont plus de tâche. La relance se fait par send_message de R04 au contrôle horaire, et R03 entretient une tâche de fond.
