@@ -1,4 +1,4 @@
-"""rtgate 0.1 -- a fail-shut FRONT GATE between a live-like delivery of LaunchLab events and the audited streaming engine
+"""rtgate 0.2 (0.1, PASS R02, + ``retract`` for a rolled-back event and a ``work`` counter; the 5 remaining P3 tests) -- a fail-shut FRONT GATE between a live-like delivery of LaunchLab events and the audited streaming engine
 (paperstream 0.4 ``StreamTrade``, imported unchanged). Task P3 of docs/ops/ETAT_RUGGER_MASTER.md (62c4525): obstacles
 to a real-time streaming PAPER BUY/SELL, tested OFFLINE. HISTORICAL_REPLAY only: the only accepted source is a replay
 of recorded events; a live source is refused (not wired, not authorized). Nothing is sent, signed or read from the
@@ -27,7 +27,7 @@ from pathlib import Path
 
 from paperstream import engine as PS
 
-SCHEMA = 'rtgate-v0.1'
+SCHEMA = 'rtgate-v0.2'
 SOURCES = ('HISTORICAL_REPLAY',)
 COMPLETE, INCOMPLETE = 'COMPLETE', 'INCOMPLETE'
 
@@ -65,6 +65,7 @@ class FrontGate:
         self.last, self.delivered_slot = None, None
         self.status, self.reasons, self.duplicates = COMPLETE, [], 0
         self.declared_gap, self.closed = None, False
+        self.pushed, self.work = set(), 0           # keys pushed to the engine; reserve-chain comparisons made
 
     # -- delivery ------------------------------------------------------------------------------------------------
     def deliver(self, event):
@@ -91,6 +92,21 @@ class FrontGate:
         self.slot = event.slot
         self.buffer.append(event)
 
+    def retract(self, key):
+        """A delivered event was rolled back (fork of a 'confirmed' notification). Not yet pushed: forgotten, and
+        the chain decides on the rest. Already pushed to the engine, which has no undo: the pool is INCOMPLETE."""
+        if self.closed:
+            raise GateError('retract_after_close')
+        if self.status == INCOMPLETE:
+            return
+        if key in self.pushed:
+            return self._fail('rollback_of_a_pushed_event')
+        before = len(self.buffer)
+        self.buffer = [e for e in self.buffer if e.key != key]
+        if len(self.buffer) == before:
+            return self._fail('rollback_of_an_unknown_event')
+        return None
+
     def declare_gap(self, slot_from, slot_to):
         """The observer lost its connection between these slots: unknown unless the next event chains exactly."""
         if self.status == COMPLETE:
@@ -110,11 +126,13 @@ class FrontGate:
         self.buffer = []
         while pending and self.status == COMPLETE:
             if self.last is None:
+                self.work += len(pending)
                 heads = [e for e in pending if _before(e) == (0, 0)]
                 if len(heads) != 1:
                     return self._fail('history_starts_mid_curve' if not heads else 'ambiguous_curve_start')
                 pick = heads[0]
             else:
+                self.work += len(pending)
                 matches = [e for e in pending if _before(e) == _after(self.last)]
                 if len(matches) != 1:
                     return self._fail(('reserve_chain_break' if not matches else 'ambiguous_chain')
@@ -130,6 +148,7 @@ class FrontGate:
     def _push(self, event):
         if self.trade.phase != 'stopped':
             self.trade.push(event)
+        self.pushed.add(event.key)
         self.last, self.delivered_slot = event, event.slot
 
     def _fail(self, reason):
@@ -150,15 +169,18 @@ class FrontGate:
             flags.append('stream_gap_with_open_position')
         return dict(schema=SCHEMA, pool=self.pool, source=self.source, label='HISTORICAL_REPLAY', status=self.status,
                     reasons=list(self.reasons), duplicates_dropped=self.duplicates, flags=flags, result=result,
+                    chain_comparisons=self.work,
                     journal=list(self.trade.journal), creditable=False, counts_for_operational_master=False)
 
 
 def run(pool, deliveries, strategy, model, *, quote_mint, source='HISTORICAL_REPLAY'):
-    """``deliveries``: events, or ('gap', slot_from, slot_to) markers, in the order they arrive."""
+    """``deliveries``: events, ('gap', slot_from, slot_to) or ('retract', key) markers, in the order they arrive."""
     gate = FrontGate(pool, strategy, model, quote_mint=quote_mint, source=source)
     for item in deliveries:
         if type(item) is tuple and item and item[0] == 'gap':
             gate.declare_gap(item[1], item[2])
+        elif type(item) is tuple and item and item[0] == 'retract':
+            gate.retract(item[1])
         else:
             gate.deliver(item)
     return gate.close()

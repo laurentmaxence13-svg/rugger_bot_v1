@@ -19,6 +19,13 @@ MUT = [
  ("                    journal=list(self.trade.journal), creditable=False,", "                    journal=list(self.trade.journal), creditable=True,", 'creditable'),
  ("    if found != PAPERSTREAM_ENGINE_SHA256:", "    if False:", 'engine_sha_unchecked'),
  ("        if self.closed:\n            raise GateError('delivery_after_close')", "        if False:\n            raise GateError('delivery_after_close')", 'delivery_after_close_accepted'),
+ ("        if key in self.pushed:", "        if False:", 'rollback_of_pushed_ignored'),
+ ("        if len(self.buffer) == before:", "        if False:", 'unknown_rollback_ignored'),
+ ("        self.buffer = [e for e in self.buffer if e.key != key]", "        self.buffer = list(self.buffer)", 'retract_does_not_remove'),
+ ("        self.pushed.add(event.key)", "        pass", 'pushed_not_recorded'),
+ ("                self.work += len(pending)\n                matches", "                matches", 'work_not_counted'),
+ ("        elif type(item) is tuple and item and item[0] == 'retract':\n            gate.retract(item[1])", "        elif type(item) is tuple and item and item[0] == 'retract':\n            pass", 'retract_marker_ignored'),
+ ("            raise GateError('retract_after_close')", "            return None", 'retract_after_close_accepted'),
 ]
 out = []
 for old, new, name in MUT:

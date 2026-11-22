@@ -62,5 +62,33 @@
  {
   "mutant": "delivery_after_close_accepted",
   "detected": true
+ },
+ {
+  "mutant": "rollback_of_pushed_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "unknown_rollback_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "retract_does_not_remove",
+  "detected": true
+ },
+ {
+  "mutant": "pushed_not_recorded",
+  "detected": true
+ },
+ {
+  "mutant": "work_not_counted",
+  "detected": true
+ },
+ {
+  "mutant": "retract_marker_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "retract_after_close_accepted",
+  "detected": true
  }
 ]
