@@ -1,0 +1,42 @@
+[
+ {
+  "mutant": "buy_front_run_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "returns_the_failing_front_run",
+  "detected": true
+ },
+ {
+  "mutant": "guard_band_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "search_inverted",
+  "detected": true
+ },
+ {
+  "mutant": "sale_front_run_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "probability_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "tip_once_only",
+  "detected": true
+ },
+ {
+  "mutant": "scenario_buy_front_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "any_scenario_accepted",
+  "detected": true
+ },
+ {
+  "mutant": "scenario_sale_front_ignored",
+  "detected": true
+ }
+]
