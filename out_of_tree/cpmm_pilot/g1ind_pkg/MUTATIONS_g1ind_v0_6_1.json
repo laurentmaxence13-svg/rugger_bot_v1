@@ -1,0 +1,208 @@
+{
+ "cpmmpilot": "STAND-IN: R03 b0e5b37 with zero_sale_net_lamports corrected per R02 erratum 22:06Z (-102 669 280 for (0,0,3)); to be replayed on the real cpmmpilot 0.1.6",
+ "detected": 50,
+ "mutants": [
+  {
+   "detected": true,
+   "mutant": "meaning_kept"
+  },
+  {
+   "detected": true,
+   "mutant": "primary_raw_excluded"
+  },
+  {
+   "detected": true,
+   "mutant": "stop_publishes_numbers"
+  },
+  {
+   "detected": true,
+   "mutant": "target_non_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_is_a_win"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_not_a_loss"
+  },
+  {
+   "detected": true,
+   "mutant": "pf_counts"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_entry_order"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_sol_in_stakes"
+  },
+  {
+   "detected": true,
+   "mutant": "exit_no_latency"
+  },
+  {
+   "detected": true,
+   "mutant": "exit_slot_not_shifted"
+  },
+  {
+   "detected": true,
+   "mutant": "refusal_time_zero"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_unpaired_pools"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_alpha"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_seed"
+  },
+  {
+   "detected": true,
+   "mutant": "sensitivity_any_decisions"
+  },
+  {
+   "detected": true,
+   "mutant": "sensitivity_parameter_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "latency_4_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "rent_lost_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "guard_any"
+  },
+  {
+   "detected": true,
+   "mutant": "unknown_sensitivity_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "best_4_pools"
+  },
+  {
+   "detected": true,
+   "mutant": "worst_pools_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "half_boundary"
+  },
+  {
+   "detected": true,
+   "mutant": "halves_swapped"
+  },
+  {
+   "detected": true,
+   "mutant": "halves_without_zero_sale"
+  },
+  {
+   "detected": true,
+   "mutant": "halves_pool_skipped"
+  },
+  {
+   "detected": true,
+   "mutant": "halves_lines_not_passed"
+  },
+  {
+   "detected": true,
+   "mutant": "word_missing"
+  },
+  {
+   "detected": true,
+   "mutant": "document_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "mev_reason_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "draws_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "any_hypothesis"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_rows_in_fee_split"
+  },
+  {
+   "detected": true,
+   "mutant": "refusals_in_fee_split"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_never_computed"
+  },
+  {
+   "detected": true,
+   "mutant": "raw_unpriced_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "raw_unpriced_excluded"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_sale_entry_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "reasons_not_counted"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_exit_at_decision"
+  },
+  {
+   "detected": true,
+   "mutant": "placebo_raw_excluded"
+  },
+  {
+   "detected": true,
+   "mutant": "k2_at_least_one"
+  },
+  {
+   "detected": true,
+   "mutant": "sensitivity_raw_excluded"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_failures_of_run_ignored"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_rent_lost"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_return_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_value_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_run_failures_ignored"
+  },
+  {
+   "detected": true,
+   "mutant": "rent_lost_with_frozen_failures"
+  }
+ ],
+ "schema": "g1ind-mutations-v0.6.1",
+ "total": 50
+}

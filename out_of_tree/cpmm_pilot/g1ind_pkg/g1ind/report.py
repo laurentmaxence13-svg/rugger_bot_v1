@@ -1,4 +1,4 @@
-"""g1ind 0.6 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
+"""g1ind 0.6.1 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
 decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1.1; nothing here is a verdict.
 
 (1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on every primary row (zero-sale rows of the runner included, K01); only its English
@@ -29,7 +29,7 @@ from cpmmpilot import step1 as PILOT                         # R03 cpmmpilot >= 
 from cpmmprereg import rule as R
 from w2arms import ce as W
 
-SCHEMA = 'g1ind-v0.6'
+SCHEMA = 'g1ind-v0.6.1'
 STAMP = 'DESCRIPTIF — PILOTE CPMM — SEUL LE MOT G-1 DE cpmmcost.pilot_verdict EST UNE DÉCISION'
 NM = 'NON MESURÉ'
 HYPOTHESES = ('RCP1', 'B1')
@@ -56,7 +56,8 @@ ZERO_STATUS = 'unpriced_zero_sale'                          # cpmmpilot.step1.ze
 ZERO_RULE = ('K01 (R02 f41c6cb0, 34309238, 21:44Z) : position entrée non valorisable comptée à une vente nulle en compte '
              'fermé cpmmcost 0.3 : -(mise + (4 + échecs de la série) x 105 000) lamports')
 # failures of each run (the zero-sale value depends on them; the other runs use the frozen 0 failures)
-RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)
+RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES,
+                    rent_lost_vs_closed_account=CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS))     # R02 22:07Z
 # the frozen MEV grid (mevsens) is a LaunchLab sandwich model: no audited CPMM adaptation exists, so it stays NON MESURÉ
 # (R02 34309238: confirmed, a declared gap to be filled by an audited CPMM model before any confirmation)
 MEV_NOT_MEASURED = dict(value=NM, reason='grille MEV gelée sans adaptation CPMM auditée')

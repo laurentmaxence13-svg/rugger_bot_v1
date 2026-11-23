@@ -1,0 +1,7 @@
+222656f57078820351f58039ed88858548631c39f8e30f12ddfa674ad9ea799e  ./MUTATIONS_g1ind_v0_6_1.json
+36c21585ab5333463d6b4aaf87f611116bd4c9da8e1e2fdb23640c66eed48bed  ./README_G1IND_v0_6_1.md
+95c0ef156e8207e41e8a4d870995ec2ad16e721bc72ae9a7cd69ebc0850c0159  ./g1ind/__init__.py
+ecffb66aa0d9988eb0545af16d7752a0aa6cdc0619b7a4d4dbc3a80f030a75a7  ./g1ind/report.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./g1ind/tests/__init__.py
+786cf1c428e46d1077f108ac3d3e0ebf1ca6a97ea3e3f6dfe1e6408aace2169d  ./g1ind/tests/test_report.py
+c275dcd95bdb444a72e2c2ae0097e6b8503276a0f431ebab9495171166599f9f  ./mutations_g1ind_runner.py

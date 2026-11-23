@@ -51,7 +51,8 @@ MUT = [
  ("    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))", "    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES)) - CC.TOKEN_ACCOUNT_RENT_LAMPORTS", 'zero_rent_lost'),
  ("            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:", "            if p['net_lamports'] != expected:", 'zero_return_unchecked'),
  ("            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:", "            if False:", 'zero_value_unchecked'),
- ("RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)", "RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES)", 'zero_run_failures_ignored'),
+ ("RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES,", "RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES,", 'zero_run_failures_ignored'),
+ ("                    rent_lost_vs_closed_account=CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS))     # R02 22:07Z", "                    rent_lost_vs_closed_account=CC.FROZEN_FAILURES)", 'rent_lost_with_frozen_failures'),
 ]
 def run(work):
     return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'g1ind' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],

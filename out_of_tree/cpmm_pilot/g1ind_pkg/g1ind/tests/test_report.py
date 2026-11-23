@@ -98,6 +98,20 @@ def test_the_zero_sale_value_is_the_closed_account_rule_of_cpmmcost():
                                                                                 decision_index=p[-1]['decision_index']))]))
 
 
+def test_the_rent_lost_run_charges_its_own_failures():
+    # R02 22:07Z: Failures(0, 0, 3), the account left open and the rent lost: -102 669 280 (cpmmpilot >= 0.1.6)
+    lost = CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS)
+    assert PILOT.zero_sale_net_lamports(lost) == -102_669_280
+    p, pl = arms(40, 20, lambda i: 0.01)
+    raw = dict(pool=p[-1]['pool'], decision_index=p[-1]['decision_index'], decision_time=0, unpriced='x')
+    rows = [dict(x, failures=dict(buy=0, sell=0, cleanup=CA.MAX_CLEANUP_ATTEMPTS)) for x in p[:-1]]
+    ok = run(p, pl, sensitivities=dict(rent_lost_vs_closed_account=rows + [zero_sale(raw, failures=lost)]))
+    assert ok['robustness']['rent_lost_vs_closed_account']['zero_sale']['count'] == 1
+    for wrong in (-100_735_000, -100_420_000):
+        with pytest.raises(G.ReportError, match='zero_sale_value.*rent_lost'):
+            run(p, pl, sensitivities=dict(rent_lost_vs_closed_account=rows + [zero_sale(raw, wrong, failures=lost)]))
+
+
 def test_zero_sale_rows_of_the_runner_are_counted_and_raw_unpriced_rows_are_refused():
     # K01 (R02 f41c6cb0, audit 34309238): the runner's zero-sale rows count everywhere; g1ind never recomputes them
     p, pl = arms(40, 20, lambda i: 0.01)
