@@ -38,6 +38,13 @@ Légende des preuves :
 - Procédure de déblocage, en trois autorisations distinctes, écrites dans la session R03 (textes exacts produits par R02) :
   1. **U-2** : autoriser les appels à l'API publique Raydium (hôte et requêtes précisés) pour l'instantané des candidats.
   2. **Étape 0** : « GO étape 0, ≤ 100 crédits Helius ». Contrôle du quota, qualification U-2 et comptage des déclencheurs avant T0. Si moins de 20 pools : STOP, sans essai consommé.
+  - Méthode U-2 (R03, a14580a4, sans réseau) :
+    - A. API Raydium list-v2, 0 crédit, instantané brut haché ;
+    - B. comptes de pool et AmmConfig (taux 0,25 %) ;
+    - C. vaults WSOL ≥ 100 SOL à T0 ;
+    - D. transaction de création (âge ≥ 7 j, non LaunchLab), ≈ 10 crédits par pool.
+    L'étape 0 couvre A à C (≈ 24 crédits) et 1 ou 2 contrôles D. D et la collecte relèvent de l'étape 1.
+  - Quota : dernier solde ancré, 637 612 crédits Free (relevé du 14/11, remise à zéro le 07/12/2026). R03 n'a fait aucune requête depuis. Vérification fraîche : lecture du tableau de bord **par le propriétaire**, à 0 crédit, AVANT puis APRÈS l'étape 0. Tout écart = STOP.
   3. **Étape 1** : « GO étape 1, ≤ 50 000 crédits », après lecture du résultat de l'étape 0. Pilote R-CP1 + B1, puis verdict G-1.
 - Résultats publiés après le pilote, pour chaque hypothèse : n, net coûts complets et net gelé, win rate, gain et perte moyens, profit factor, IC (bootstrap groupé), écart au placebo, 7 sensibilités. Mot maximal : GO_PILOTE. Une confirmation ultérieure sur données nouvelles est requise.
 
