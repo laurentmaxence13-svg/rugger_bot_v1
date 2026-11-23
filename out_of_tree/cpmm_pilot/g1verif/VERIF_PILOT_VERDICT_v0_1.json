@@ -1,0 +1,215 @@
+{
+ "checks": [
+  {
+   "clause": "G-0 not passed -> STOP, no number published",
+   "conforme": true,
+   "expected": [
+    "STOP",
+    false
+   ],
+   "id": "C01",
+   "observed": [
+    "STOP",
+    false
+   ]
+  },
+  {
+   "clause": "G-0 must be exactly True (1 or \"True\" -> STOP)",
+   "conforme": true,
+   "expected": [
+    "STOP",
+    "STOP"
+   ],
+   "id": "C02",
+   "observed": [
+    "STOP",
+    "STOP"
+   ]
+  },
+  {
+   "clause": "freeze sheet sha required (64 hex) else error",
+   "conforme": true,
+   "expected": true,
+   "id": "C03",
+   "observed": true
+  },
+  {
+   "clause": "n < 30 entered -> INCONCLUSIF (29 entries, 20 pools)",
+   "conforme": true,
+   "expected": "INCONCLUSIF",
+   "id": "C04",
+   "observed": "INCONCLUSIF"
+  },
+  {
+   "clause": "fewer than 20 pools -> INCONCLUSIF (30 entries, 19 pools)",
+   "conforme": true,
+   "expected": "INCONCLUSIF",
+   "id": "C05",
+   "observed": "INCONCLUSIF"
+  },
+  {
+   "clause": "INCONCLUSIF before NO-GO (R-0.1 order): 29 entries all strongly negative",
+   "conforme": true,
+   "expected": "INCONCLUSIF",
+   "id": "C06",
+   "observed": "INCONCLUSIF"
+  },
+  {
+   "clause": "upper bound < 0 -> NO-GO (30 entries, 20 pools, mean -5 %)",
+   "conforme": true,
+   "expected": "NO-GO",
+   "id": "C07",
+   "observed": "NO-GO"
+  },
+  {
+   "clause": "otherwise GO_PILOTE, the maximal word (mean +1 %)",
+   "conforme": true,
+   "expected": "GO_PILOTE",
+   "id": "C08",
+   "observed": "GO_PILOTE"
+  },
+  {
+   "clause": "boundary: upper bound exactly 0 is not \"< 0\" -> GO_PILOTE",
+   "conforme": true,
+   "expected": [
+    "GO_PILOTE",
+    0.0
+   ],
+   "id": "C09",
+   "observed": [
+    "GO_PILOTE",
+    0.0
+   ]
+  },
+  {
+   "clause": "floors count ENTERED only: 29 entered + 10 guard-failed -> INCONCLUSIF, n = 39",
+   "conforme": true,
+   "expected": [
+    "INCONCLUSIF",
+    39,
+    29,
+    10
+   ],
+   "id": "C10",
+   "observed": [
+    "INCONCLUSIF",
+    39,
+    29,
+    10
+   ]
+  },
+  {
+   "clause": "mean and bound include guard-failed fees (30 x 0 + 10 x -1.05 %) / 40",
+   "conforme": true,
+   "expected": -0.002625,
+   "id": "C11",
+   "observed": -0.002625
+  },
+  {
+   "clause": "bound = one-sided 95 % of the mean, cluster bootstrap BY POOL, 10 000 draws, seed int(sheet[:8], 16)",
+   "conforme": true,
+   "expected": [
+    -0.00196875,
+    10000,
+    2863311530
+   ],
+   "id": "C12",
+   "observed": [
+    -0.00196875,
+    10000,
+    2863311530
+   ]
+  },
+  {
+   "clause": "reproducible bit for bit (same input, same sheet)",
+   "conforme": true,
+   "expected": true,
+   "id": "C13",
+   "observed": true
+  },
+  {
+   "clause": "labels research only, never an operational Master trade",
+   "conforme": true,
+   "expected": [
+    [
+     "MASTER_RESEARCH_PAPER",
+     "HISTORICAL_REPLAY"
+    ],
+    false
+   ],
+   "id": "C14",
+   "observed": [
+    [
+     "MASTER_RESEARCH_PAPER",
+     "HISTORICAL_REPLAY"
+    ],
+    false
+   ]
+  },
+  {
+   "clause": "an UNPRICED row (cpmmprereg.positions on CostError) is not accepted: caller passes priced rows only",
+   "conforme": true,
+   "expected": "KeyError",
+   "id": "K01",
+   "observed": "KeyError"
+  },
+  {
+   "clause": "the output passes the closed-vocabulary check (plbench.assert_closed_vocabulary); the word found is withheld (closed vocabulary)",
+   "conforme": false,
+   "expected": null,
+   "id": "K02",
+   "observed": "BenchError: forbidden_word_in_output"
+  },
+  {
+   "clause": "step1 looks up pilot_verdict on the RULE modules: it must find the frozen function",
+   "conforme": false,
+   "expected": [
+    true,
+    true
+   ],
+   "id": "S01",
+   "observed": [
+    false,
+    false
+   ]
+  },
+  {
+   "clause": "step1 call verdict_fn(primary, placebo_=placebo, freeze_sheet_sha256=...) is accepted",
+   "conforme": false,
+   "expected": null,
+   "id": "S02",
+   "observed": "TypeError: pilot_verdict() got an unexpected keyword argument 'placebo_'"
+  }
+ ],
+ "conforme": [
+  "C01",
+  "C02",
+  "C03",
+  "C04",
+  "C05",
+  "C06",
+  "C07",
+  "C08",
+  "C09",
+  "C10",
+  "C11",
+  "C12",
+  "C13",
+  "C14",
+  "K01"
+ ],
+ "ecarts": [
+  "K02",
+  "S01",
+  "S02"
+ ],
+ "frozen_check": {
+  "closedacct": "c6b4d78cc985933115cb68a67e9266efc0f7b0f52da2473601a90b99b9b982ed",
+  "curve": "5836f2fbac3bb8f01a3c8e91ccc8520db8e158cd21fb082d9e067128d865d899",
+  "events": "2178f3fd2e1715a33d836ce0636c630d75af5e3d23baa4109a75979aee3b0c36",
+  "timeline": "13d339170dfbd4fe6d57c3658163254fab46edb8c702229794e77a8c5bc9bf36"
+ },
+ "frozen_function": "cpmmcost.model.pilot_verdict",
+ "schema": "g1verif-v0.1",
+ "signature": "(positions, *, g0_passed, freeze_sheet_sha256, draws=10000)"
+}
