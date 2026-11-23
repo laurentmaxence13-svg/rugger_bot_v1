@@ -62,8 +62,23 @@ MUTANTS = [
     ('sheet_cut_not_middle', 'step1.py', "int(d_days * DAY) // 2,", "int(d_days * DAY) // 3,"),
     ('decision_slot_missing', 'step1.py', "zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures)", "zero_sale(r, failures)"),
     ('latency_sensitivity_4_slots', 'step1.py', 'latency_10_slots=dict(latency_slots=CC.SENSITIVITY_LATENCY_SLOTS)', 'latency_10_slots=dict(latency_slots=CC.LATENCY_SLOTS)'),
-    # live RPC
-    ('live_allowed', 'rpc.py', "        raise RpcError('live_rpc_disabled_in_cpmmpilot_0_1')", '        pass'),
+    # 0.2: live transport (R02 note fb28705b) -- gated, no host or key read, no retry, nothing echoed
+    ('release_authorizes_a_sha', 'rpc.py', 'AUTHORIZED_TEXT_SHA256 = frozenset()', "AUTHORIZED_TEXT_SHA256 = frozenset({'0' * 64})"),
+    ('authorization_not_checked', 'rpc.py', "        if digest not in AUTHORIZED_TEXT_SHA256:\n            raise RpcError('authorization_not_anchored')\n", ''),
+    ('authorization_file_optional', 'rpc.py', "        if authorization_file is None:\n            raise RpcError('live_rpc_needs_an_anchored_authorization')\n", ''),
+    ('http_allowed', 'rpc.py', "if u.scheme != 'https' or not u.hostname:", 'if not u.hostname:'),
+    ('query_allowed', 'rpc.py', 'if u.username or u.password or u.query or u.fragment:', 'if u.username or u.password or u.fragment:'),
+    ('key_path_allowed', 'rpc.py', "    if any(w in u.path.lower() for w in ('key', 'token', 'secret')):\n        raise RpcError('endpoint_must_not_carry_credentials')\n", ''),
+    ('method_unchecked', 'rpc.py', "        if method not in PILOT_METHODS:\n            raise RpcError('method_not_in_pilot')\n", ''),
+    ('size_unbounded', 'rpc.py', "        if len(raw) > MAX_RESPONSE_BYTES:\n            raise RpcError('response_too_large')\n", ''),
+    ('id_unchecked', 'rpc.py', " or payload.get('id') != rid:", ':'),
+    ('refusal_not_mapped', 'rpc.py', 'if code == METHOD_NOT_FOUND or any(w in text for w in REFUSAL_WORDS):', 'if False:'),
+    ('message_echoed', 'rpc.py', "raise RpcError('rpc_error:' + tag)", "raise RpcError('rpc_error:' + text)"),
+    ('network_detail_echoed', 'rpc.py', "        except (urllib.error.URLError, OSError, ValueError):\n            raise RpcError('network_error') from None",
+     "        except (urllib.error.URLError, OSError, ValueError) as exc:\n            raise RpcError('network_error:%s' % exc) from None"),
+    ('cause_kept', 'rpc.py', "raise RpcError('http_%d' % exc.code) from None", "raise RpcError('http_%d' % exc.code) from exc"),
+    ('repr_leaks_endpoint', 'rpc.py', "return 'LiveRpc(authorization_sha256=%s)' % self.authorization_sha256", "return 'LiveRpc(%s)' % self._endpoint"),
+    ('rate_limit_not_mapped', 'rpc.py', "            if exc.code == 429:\n                raise RpcError('rate_limited_429') from None\n", ''),
 ]
 
 
@@ -98,7 +113,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.1.6', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

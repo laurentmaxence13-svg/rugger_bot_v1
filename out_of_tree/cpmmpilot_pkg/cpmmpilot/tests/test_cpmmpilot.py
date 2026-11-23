@@ -63,8 +63,145 @@ def test_point2_and_dmax():
 
 
 def test_live_rpc_refused():
-    with pytest.raises(rpc.RpcError):
+    with pytest.raises(rpc.RpcError, match='needs_an_anchored_authorization'):
         rpc.LiveRpc('https://example.invalid')
+
+
+# -- 0.2: the live transport (R02 note fb28705b), tested with an injected opener: no socket is ever opened ---------
+ENDPOINT = 'https://rpc.example.invalid/v1'
+
+
+class _Resp:
+    def __init__(self, raw):
+        self.raw = raw
+
+    def read(self, n=-1):
+        return self.raw if n < 0 else self.raw[:n]
+
+
+class _Opener:
+    def __init__(self, answer):
+        self.answer, self.seen = answer, []
+
+    def __call__(self, req, timeout):
+        self.seen.append((req, timeout))
+        body = json.loads(req.data)
+        out = self.answer(body) if callable(self.answer) else self.answer
+        if isinstance(out, BaseException):
+            raise out
+        return _Resp(out if isinstance(out, bytes) else json.dumps(out).encode())
+
+
+def _authorized(tmp_path, monkeypatch, text=b'texte A ancre (synthetique)'):
+    f = tmp_path / 'AUTORISATION.txt'
+    f.write_bytes(text)
+    monkeypatch.setattr(rpc, 'AUTHORIZED_TEXT_SHA256', frozenset({hashlib.sha256(text).hexdigest()}))
+    return f
+
+
+def test_live_rpc_release_authorizes_nothing_and_unanchored_text_is_refused(tmp_path):
+    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset()                     # 0.2: no network call is possible
+    f = tmp_path / 'a.txt'
+    f.write_bytes(b'any text')
+    with pytest.raises(rpc.RpcError, match='authorization_not_anchored'):
+        rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener({}))
+    with pytest.raises(rpc.RpcError, match='authorization_file_unreadable'):
+        rpc.LiveRpc(ENDPOINT, authorization_file=tmp_path / 'missing.txt', opener=_Opener({}))
+
+
+def test_live_rpc_reads_no_host_and_no_key_and_refuses_credentials_in_the_endpoint(tmp_path, monkeypatch):
+    import ast
+    import inspect
+    f = _authorized(tmp_path, monkeypatch)
+    tree = ast.parse(inspect.getsource(rpc))
+    docs = {id(n.body[0].value) for n in ast.walk(tree) if isinstance(n, (ast.Module, ast.ClassDef, ast.FunctionDef))
+            and n.body and isinstance(n.body[0], ast.Expr) and isinstance(n.body[0].value, ast.Constant)}
+    code = set()
+    for n in ast.walk(tree):                              # every name, attribute, import and string of the CODE
+        if isinstance(n, ast.Name):
+            code.add(n.id)
+        elif isinstance(n, ast.Attribute):
+            code.add(n.attr)
+        elif isinstance(n, (ast.Import, ast.ImportFrom)):
+            code.update(a.name for a in n.names)
+            code.add(getattr(n, 'module', None) or '')
+        elif isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) not in docs:
+            code.add(n.value)
+    text = ' '.join(code).lower()
+    for forbidden in ('environ', 'getenv', 'dotenv', '.env', 'helius', 'api-key', 'api_key', 'open('):
+        assert forbidden not in text, forbidden
+    assert 'os' not in code and 'environ' not in code
+    for bad in ('http://rpc.example.invalid', 'https://rpc.example.invalid/?api-key=SECRET',
+                'https://u:p@rpc.example.invalid', 'https://rpc.example.invalid/key/SECRET', 'https://x/#f', None):
+        with pytest.raises(rpc.RpcError):
+            rpc.LiveRpc(bad, authorization_file=f, opener=_Opener({}))
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener({}))
+    assert 'example' not in repr(live)
+
+
+def test_live_rpc_json_rpc_round_trip_and_charge_before_send(tmp_path, monkeypatch):
+    f = _authorized(tmp_path, monkeypatch)
+    op = _Opener(lambda b: dict(jsonrpc='2.0', id=b['id'], result=dict(context=dict(slot=7), value=[b['method']])))
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=op, timeout_s=30)
+    client = _client(live, tmp_path, 'step0', B.STEP0_CAP)
+    assert client.call('getSlot', [{'commitment': 'finalized'}])['value'] == ['getSlot']
+    req, timeout = op.seen[0]
+    assert req.full_url == ENDPOINT and req.get_method() == 'POST' and timeout == 30
+    assert req.get_header('Content-type') == 'application/json'
+    assert json.loads(req.data) == dict(jsonrpc='2.0', id=1, method='getSlot', params=[{'commitment': 'finalized'}])
+    assert client.budget.credits == 1
+    with pytest.raises(rpc.RpcError, match='method_not_in_pilot'):
+        live.request('sendTransaction', [])
+    assert set(rpc.PILOT_METHODS) == set(B.COSTS)
+
+
+def test_live_rpc_failures_stop_without_retry_and_never_echo_endpoint_or_message(tmp_path, monkeypatch):
+    import urllib.error
+    f = _authorized(tmp_path, monkeypatch)
+    secret_msg = 'quota for https://rpc.example.invalid/v1 exceeded'
+    cases = [
+        (urllib.error.HTTPError(ENDPOINT, 429, 'Too Many', {}, None), rpc.RpcError, 'rate_limited_429'),
+        (urllib.error.HTTPError(ENDPOINT, 401, 'no', {}, None), rpc.RpcError, 'unauthorized_401'),
+        (urllib.error.HTTPError(ENDPOINT, 500, 'x', {}, None), rpc.RpcError, 'http_500'),
+        (urllib.error.URLError('dns rpc.example.invalid'), rpc.RpcError, 'network_error'),
+        (b'{"jsonrpc":"2.0","id":1,"res', rpc.RpcError, 'response_truncated'),
+        (dict(jsonrpc='2.0', id=99, result=1), rpc.RpcError, 'response_id_mismatch'),
+        (dict(jsonrpc='2.0', id=1), rpc.RpcError, 'response_without_result'),
+        (dict(jsonrpc='2.0', id=1, error=dict(code=-32601, message='Method not found')), rpc.MethodRefused, 'method_refused'),
+        (dict(jsonrpc='2.0', id=1, error=dict(code=-32603, message='not available on your plan, upgrade')),
+         rpc.MethodRefused, 'method_refused'),
+        (dict(jsonrpc='2.0', id=1, error=dict(code=-32000, message=secret_msg)), rpc.RpcError, 'rpc_error'),
+    ]
+    for answer, exc, tag in cases:
+        op = _Opener(answer)
+        live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=op)
+        with pytest.raises(exc, match=tag) as info:
+            live.request('getTransactionsForAddress', ['P', dict(limit=1)])
+        assert len(op.seen) == 1, tag                                        # no retry inside the transport
+        assert 'example' not in str(info.value) and 'quota' not in str(info.value), tag
+        assert info.value.__cause__ is None, tag
+
+
+def test_live_rpc_response_size_is_bounded(tmp_path, monkeypatch):
+    f = _authorized(tmp_path, monkeypatch)
+    monkeypatch.setattr(rpc, 'MAX_RESPONSE_BYTES', 10)
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener(dict(jsonrpc='2.0', id=1, result='x' * 50)))
+    with pytest.raises(rpc.RpcError, match='response_too_large'):
+        live.request('getSlot', [])
+
+
+def test_live_rpc_gtfa_refusal_stops_u2_without_fallback(tmp_path, monkeypatch):
+    f = _authorized(tmp_path, monkeypatch)
+    chain, spec = fixtures.build(n_pools=24)
+    chain.slot = spec['t0_slot']
+
+    def answer(b):
+        if b['method'] == 'getTransactionsForAddress':
+            return dict(jsonrpc='2.0', id=b['id'], error=dict(code=-32603, message='requires a paid plan'))
+        return dict(jsonrpc='2.0', id=b['id'], result=json.loads(json.dumps(chain.request(b['method'], b['params']))))
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener(answer))
+    with pytest.raises(u2.U2Stop, match='gtfa_refused_no_fallback'):
+        u2.run(_client(live, tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=spec['t0_time'])
 
 
 def test_permutation_is_deterministic_and_seeded_by_sha_l():

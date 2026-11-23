@@ -1,9 +1,18 @@
 """RPC of the pilot. ``Client`` charges the budget BEFORE every call and logs every call (method, params sha, result
-sha). ``FakeChain`` answers the six methods of the pilot from an in-memory chain (fixtures). ``LiveRpc`` is REFUSED in
-0.1: nothing in this package can reach the network."""
+sha). ``FakeChain`` answers the six methods of the pilot from an in-memory chain (fixtures). ``LiveRpc`` (0.2) is the
+JSON-RPC transport over HTTPS, written under R02 note fb28705b: it REFUSES to open unless the caller hands the file of an
+authorization text whose sha256 is in ``AUTHORIZED_TEXT_SHA256`` -- EMPTY in 0.2, so no network call is possible from
+this release; only a later audited release adds the sha anchored by R02 after the owner's texts A/B/C. The code reads no
+host and no key (no environment variable, no file, no .env): the endpoint is an explicit argument, refused if it carries
+credentials (user info, query, key-like path); the key is injected by the environment's proxy. No retry inside the
+transport (every attempt is charged by ``Client`` before it leaves); every failure is an ``RpcError`` that never echoes
+the endpoint or the provider's message."""
 import base64
 import hashlib
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from . import layout as L
 
@@ -24,9 +33,94 @@ def sha(obj):
     return hashlib.sha256(canonical(obj).encode()).hexdigest()
 
 
+# sha256 of the authorization texts ANCHORED by R02 (owner's texts A/B/C, verified at the source). EMPTY in 0.2: LiveRpc
+# cannot open. Filled only by an audited release, never at run time.
+AUTHORIZED_TEXT_SHA256 = frozenset()
+PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSignaturesForAddress', 'getTransaction',
+                 'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
+MAX_RESPONSE_BYTES = 256 * 1024 ** 2
+REFUSAL_WORDS = ('plan', 'upgrade', 'not available', 'not supported', 'paid')
+METHOD_NOT_FOUND = -32601
+
+
+def _file_sha(path):
+    with open(path, 'rb') as handle:
+        return hashlib.sha256(handle.read()).hexdigest()
+
+
+def check_endpoint(endpoint):
+    """https only; no user info, query, fragment or key-like path (a key in the URL would land in logs)."""
+    if type(endpoint) is not str:
+        raise RpcError('endpoint_must_be_a_string')
+    u = urllib.parse.urlsplit(endpoint)
+    if u.scheme != 'https' or not u.hostname:
+        raise RpcError('endpoint_must_be_https')
+    if u.username or u.password or u.query or u.fragment:
+        raise RpcError('endpoint_must_not_carry_credentials')
+    if any(w in u.path.lower() for w in ('key', 'token', 'secret')):
+        raise RpcError('endpoint_must_not_carry_credentials')
+    return endpoint
+
+
 class LiveRpc:
-    def __init__(self, *args, **kwargs):
-        raise RpcError('live_rpc_disabled_in_cpmmpilot_0_1')
+    """JSON-RPC 2.0 over HTTPS. ``opener`` (tests): a callable (request, timeout) -> response with ``read(n)``."""
+
+    def __init__(self, endpoint=None, *, authorization_file=None, timeout_s=60, opener=None):
+        if authorization_file is None:
+            raise RpcError('live_rpc_needs_an_anchored_authorization')
+        try:
+            digest = _file_sha(authorization_file)
+        except OSError as exc:
+            raise RpcError('authorization_file_unreadable') from exc
+        if digest not in AUTHORIZED_TEXT_SHA256:
+            raise RpcError('authorization_not_anchored')
+        self._endpoint = check_endpoint(endpoint)
+        self.authorization_sha256 = digest
+        self.timeout_s = timeout_s
+        self._open = opener if opener is not None else urllib.request.build_opener().open
+        self.requests = 0
+
+    def __repr__(self):
+        return 'LiveRpc(authorization_sha256=%s)' % self.authorization_sha256       # never the endpoint
+
+    def request(self, method, params):
+        if method not in PILOT_METHODS:
+            raise RpcError('method_not_in_pilot')
+        self.requests += 1
+        rid = self.requests
+        body = json.dumps(dict(jsonrpc='2.0', id=rid, method=method, params=params)).encode()
+        req = urllib.request.Request(self._endpoint, data=body, method='POST',
+                                     headers={'Content-Type': 'application/json'})
+        try:
+            response = self._open(req, timeout=self.timeout_s)
+            raw = response.read(MAX_RESPONSE_BYTES + 1)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 429:
+                raise RpcError('rate_limited_429') from None
+            if exc.code in (401, 403):
+                raise RpcError('unauthorized_%d' % exc.code) from None
+            raise RpcError('http_%d' % exc.code) from None
+        except (urllib.error.URLError, OSError, ValueError):
+            raise RpcError('network_error') from None                         # no detail: it may name the host
+        if len(raw) > MAX_RESPONSE_BYTES:
+            raise RpcError('response_too_large')
+        try:
+            payload = json.loads(raw)
+        except ValueError:
+            raise RpcError('response_truncated') from None
+        if not isinstance(payload, dict) or payload.get('id') != rid:
+            raise RpcError('response_id_mismatch')
+        if payload.get('error') is not None:
+            err = payload['error'] if isinstance(payload['error'], dict) else {}
+            code = err.get('code')
+            text = str(err.get('message', '')).lower()
+            tag = '%s:%s' % (code, hashlib.sha256(text.encode()).hexdigest()[:12])   # the message is hashed, never echoed
+            if code == METHOD_NOT_FOUND or any(w in text for w in REFUSAL_WORDS):
+                raise MethodRefused('method_refused:' + tag)
+            raise RpcError('rpc_error:' + tag)
+        if 'result' not in payload:
+            raise RpcError('response_without_result')
+        return payload['result']
 
 
 class Client:
