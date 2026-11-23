@@ -55,7 +55,7 @@ Légende des preuves :
   - **G2-1** chute non routée : la baisse vient de ventes directes des détenteurs (test du mécanisme R-CP1) ;
   - **G2-2** épuisement vendeur : entrée après l'arrêt des ventes ;
   - **G2-3** pools peu disputés : faible compétition des robots, ce qui teste si la perte vient de l'exécution.
-  Audit R02 (ca690ac3) : RECEVABLE SOUS CONDITIONS. La même collecte que R-CP1/B1 est **REFUSÉE** (K = 5 sur une seule fenêtre) : il faut une fenêtre SUIVANTE, ≤ 50 000 crédits. Les 3 hypothèses dépendent du déclencheur R-CP1 et seraient retirées si R-CP1 et B1 échouent toutes deux ; R02 demande au moins une hypothèse indépendante. Essais 171 à 173 : au-delà du plafond.
+  Audit R02 (ca690ac3) : RECEVABLE SOUS CONDITIONS. La même collecte que R-CP1/B1 est **REFUSÉE** (K = 5 sur une seule fenêtre) : il faut une fenêtre SUIVANTE, ≤ 50 000 crédits. Les 3 hypothèses dépendent du déclencheur R-CP1 et seraient retirées si R-CP1 et B1 échouent toutes deux ; R02 demande au moins une hypothèse indépendante. v0.3 (ba7173b, sha 2e618be0) : G2-1 18/24, G2-2 17/24, G2-3 « élargissement de la demande » 16/24 (indépendante de la famille 10 min) ; audit R02 en cours. Pour lancer : +3 essais (170 → 173), crédits d'une fenêtre nouvelle (≤ 50 000) et choix de la confirmation (Holm, 262 entrées, recommandé ; ou 0,05/3, 221 entrées).
 - R02 gèle les critères de sélection AVANT tout résultat du pilote.
 - R03 chiffre les besoins en données.
 - Lancement : il faut une autorisation chiffrée d'essais au-delà de 170 et le choix de la règle α.
