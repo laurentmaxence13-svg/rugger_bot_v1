@@ -12,7 +12,8 @@ Légende des preuves :
 **B. Classement des pistes** (potentiel, pas performance) :
 1. CPMM R-CP1 (mean reversion sur pools établis) : préenregistrée, 0 $, 1 essai, GO_PILOTE au mieux. BLOQUÉE : choix U-2 et GO de l'étape 0.
 2. LaunchLab C-B : ≤ 66 $ TTC, 5 essais (HW1). Peut s'arrêter sans candidat. BLOQUÉE : signature A2.
-3. Familles B à H (momentum, breakout, liquidité, participants, volatilité, sélection, combinaisons) : catalogue en cours (R01, R-1).
+3. CPMM B1 (momentum, miroir de R-CP1 : hausse ≥ 3 % en 10 min) : même collecte, 0 crédit de plus, essai n° 170, fiche séparée ancrée avant T0. Retenue par R04 le 23/11 ; R02 la juge admissible.
+4. Autres familles (E2, E3, A2, F1, H1…) : catalogue R-1 (8fd8cf84, PASS R02 sous corrections). Budget d'essais épuisé après B1 : autorisation chiffrée du propriétaire requise.
 
 **C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable.
 
