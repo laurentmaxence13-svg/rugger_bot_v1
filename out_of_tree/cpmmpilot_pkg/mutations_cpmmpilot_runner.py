@@ -42,12 +42,22 @@ MUTANTS = [
     ('g0_forced_true', 'step1.py', 'g0_passed=g0_passed, freeze_sheet_sha256', 'g0_passed=True, freeze_sheet_sha256'),
     ('count_window_wide', 'step1.py', 'if t0_time - DAY <= (s.get(\'blockTime\') or 0) < t0_time', 'if t0_time - 2 * DAY <= (s.get(\'blockTime\') or 0) < t0_time'),
     # 0.1.2: K01 / K02
-    ('unpriced_dropped', 'step1.py', "counted = [zero_sale(p) if 'net_return' not in p else p for p in primary]", "counted = [p for p in primary if 'net_return' in p]"),
+    ('unpriced_dropped', 'step1.py', "    return [r if 'net_return' in r else\n            zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures) for r in rows]\n",
+     "    return [r for r in rows if 'net_return' in r]\n"),
     ('zero_sale_without_tx', 'step1.py', 'ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS', 'ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 0 * CC.TX_FEE_LAMPORTS'),
-    ('meaning_kept', 'step1.py', "        verdict.pop('meaning', None)                                                  # K02 (R02)\n", ''),
     ('vocabulary_unchecked', 'step1.py', "        raise Step1Stop('forbidden_word_in_output:%s' % ','.join(found))", '        pass'),
     # 0.1.4: zero sale with the failures of a series
     ('zero_sale_failures_ignored', 'step1.py', "    return ZERO_SALE_NET_LAMPORTS - (failures.buy + failures.sell + failures.cleanup) * CC.TX_FEE_LAMPORTS", "    return ZERO_SALE_NET_LAMPORTS"),
+    # 0.1.5: g1ind 0.3 (R01, PASS R02) fed with converted rows, the four sensitivities and the cut of the sheet
+    ('sensitivity_failures_ignored', 'step1.py', "_converted(line, rule.positions(line, cfg, idx, **kw), kw.get('failures', CC.FROZEN_FAILURES))",
+     "_converted(line, rule.positions(line, cfg, idx, **kw))"),
+    ('placebo_not_converted', 'step1.py', "placebo += _converted(line, rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name])))",
+     "placebo += rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name]))"),
+    ('sensitivities_not_passed', 'step1.py', 'cut_time=cut_time, sensitivities=sens, lines=admitted', 'cut_time=cut_time, lines=admitted'),
+    ('cut_time_not_passed', 'step1.py', 'cut_time=cut_time, sensitivities=sens', 'cut_time=None, sensitivities=sens'),
+    ('sheet_cut_not_middle', 'step1.py', "int(d_days * DAY) // 2,", "int(d_days * DAY) // 3,"),
+    ('decision_slot_missing', 'step1.py', "zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures)", "zero_sale(r, failures)"),
+    ('latency_sensitivity_4_slots', 'step1.py', 'latency_10_slots=dict(latency_slots=CC.SENSITIVITY_LATENCY_SLOTS)', 'latency_10_slots=dict(latency_slots=CC.LATENCY_SLOTS)'),
     # live RPC
     ('live_allowed', 'rpc.py', "        raise RpcError('live_rpc_disabled_in_cpmmpilot_0_1')", '        pass'),
 ]
@@ -84,7 +94,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.1.4', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.1.5', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

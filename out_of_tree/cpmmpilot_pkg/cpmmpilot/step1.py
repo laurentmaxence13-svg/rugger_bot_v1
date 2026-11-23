@@ -15,6 +15,8 @@ from cpmmprereg import rule as RCP1
 from cpmmb1 import rule as B1
 from cpmmx import timeline as TL
 from cpmmcost import model as CC
+from closedacct import model as CA
+from g1ind import report as G1IND
 
 from . import budget as B
 from .rpc import canonical, sha
@@ -115,6 +117,7 @@ def freeze_sheets(out, *, u2_doc, count_doc, triggers, d_days, code_sha):
     common = dict(schema=SCHEMA, t0_slot=u2_doc['t0_slot'], t0_time=u2_doc['t0_time'], sha_l=u2_doc['sha_l'],
                   pools=[r['pool'] for r in u2_doc['selected']], d_days=d_days,
                   window=[u2_doc['t0_time'], u2_doc['t0_time'] + int(d_days * DAY)],
+                  cut_time=u2_doc['t0_time'] + int(d_days * DAY) // 2,      # halves of g1ind: middle of the window
                   r_hat=count_doc['r_hat'], code=code_sha, frozen_rules=CC.frozen_check())
     sheets = {}
     for name, rule, trial in (('RCP1', 'cpmmprereg 0.2', 169), ('B1', 'cpmmb1 0.1.1', 170)):
@@ -134,9 +137,27 @@ def check_anchor(out, anchored):
 
 
 # -- (5) ---------------------------------------------------------------------------------------------------------------
-def g1(out, selected, *, t0_slot, sheets, g0_passed):
-    """U-4 / G-0 per pool by the frozen cpmmcost.pool_gate, then G-1 by the frozen cpmmcost.pilot_verdict on the
-    positions of the admitted pools; the placebo and its paired difference are published APART (no decision)."""
+SENSITIVITIES = dict(                       # keys IDENTICAL to g1ind.report.SUPPLIED (R01 g1ind 0.3, PASS R02)
+    latency_10_slots=dict(latency_slots=CC.SENSITIVITY_LATENCY_SLOTS),
+    one_failure_per_tx=dict(failures=CC.SENSITIVITY_FAILURES),
+    rent_lost_vs_closed_account=dict(failures=CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS)),
+    guard_5_percent=dict(buy_guard_ppm=CC.BUY_GUARD_SENSITIVITY_PPM),
+)
+
+
+def _converted(line, rows, failures=CC.FROZEN_FAILURES):
+    """K01: every raw unpriced row of the frozen rule becomes a zero-sale row (failures of ITS series). The frozen
+    unpriced row has no decision_slot (cpmmprereg.positions); it is copied from the timeline -- an identifier used by
+    g1ind for the exit order of the drawdown, never a value."""
+    return [r if 'net_return' in r else
+            zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures) for r in rows]
+
+
+def g1(out, selected, *, t0_slot, sheets, g0_passed, cut_time):
+    """U-4 / G-0 per pool by the frozen cpmmcost.pool_gate; then, per hypothesis, the rows of the admitted pools
+    (primary, placebo and the four sensitivities on the SAME decisions) converted by zero_sale (K01, single source) and
+    handed to g1ind.report (R01, PASS R02), which calls the frozen cpmmcost.pilot_verdict (G-1) and computes the paired
+    gap, the metrics and the halves. cpmmpilot publishes no number of its own."""
     lines = timelines(out, 'window', selected)
     cfg = amm_config_for_rules(selected, t0_slot)
     gates = {line.pool: CC.pool_gate(line, cfg) for line in lines}
@@ -148,25 +169,16 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed):
     result = dict(pools=len(lines), pools_admitted=len(admitted), u4_g0_reasons=reasons)
     for name, rule in (('RCP1', RCP1), ('B1', B1)):
         primary, placebo = [], []
+        sens = {k: [] for k in SENSITIVITIES}
         for line in admitted:
             idx = rule.decisions(line, cfg)
-            primary += rule.positions(line, cfg, idx)
-            placebo += rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name]))
-        counted = [zero_sale(p) if 'net_return' not in p else p for p in primary]     # K01 (R02)
-        unpriced_reasons = {}
-        for p in primary:
-            if 'net_return' not in p:
-                unpriced_reasons[p['unpriced']] = unpriced_reasons.get(p['unpriced'], 0) + 1
-        verdict = CC.pilot_verdict(counted, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
-        verdict.pop('meaning', None)                                                  # K02 (R02)
-        verdict['sheet_sentence'] = SHEET_SENTENCE
-        # R02 (21:41Z): no placebo difference is published by cpmmpilot; it will come from g1ind once it has its PASS
-        result[name] = dict(verdict=verdict, positions=len(primary), unpriced_counted_at_zero_sale=sum(unpriced_reasons.values()),
-                            unpriced_reasons=unpriced_reasons,
-                            placebo=dict(positions=len(placebo),
-                                         unpriced=sum('net_return' not in p for p in placebo),
-                                         difference='NOT PUBLISHED by cpmmpilot (R02): computed by g1ind after its PASS'))
-        write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo))
+            primary += _converted(line, rule.positions(line, cfg, idx))
+            placebo += _converted(line, rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name])))
+            for key, kw in SENSITIVITIES.items():
+                sens[key] += _converted(line, rule.positions(line, cfg, idx, **kw), kw.get('failures', CC.FROZEN_FAILURES))
+        write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo, sensitivities=sens))
+        result[name] = G1IND.report(name, primary, placebo, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name],
+                                    cut_time=cut_time, sensitivities=sens, lines=admitted)
     assert_closed_vocabulary(result)
     write_json(Path(out) / 'G1.json', result)
     return result
@@ -193,8 +205,7 @@ def zero_sale(row, failures=CC.FROZEN_FAILURES):
 
 # K02 (R02): closed vocabulary of every published document (same words as plbench.bench.FORBIDDEN_WORDS, test)
 FORBIDDEN_WORDS = ('rentable', 'profitable', 'gagnant')
-SHEET_SENTENCE = ('GO_PILOTE autorise seulement à PROPOSER la confirmation. Il ne qualifie jamais la stratégie '
-                  'au-delà de ce verdict.')
+# the sentence of the sheet (K02) is owned by g1ind.report.SHEET_MEANING: single source, not repeated here
 
 
 def assert_closed_vocabulary(document):

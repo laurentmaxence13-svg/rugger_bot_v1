@@ -228,9 +228,8 @@ def test_token2022_pools_stay_in_l(tmp_path):
     assert t22 in {r['pool'] for r in lst}
 
 
-def test_g1_uses_the_frozen_pilot_verdict(tmp_path):
-    from cpmmcost import model as CC
-    chain, spec = fixtures.build(n_pools=26, window_days=1)
+def _window(tmp_path, n_pools=26):
+    chain, spec = fixtures.build(n_pools=n_pools, window_days=1)
     chain.slot = spec['t0_slot']
     t0 = spec['t0_time']
     doc = u2.run(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=t0)
@@ -238,14 +237,38 @@ def test_g1_uses_the_frozen_pilot_verdict(tmp_path):
     chain.slot = 10 ** 12
     step1.collect(_client(chain, tmp_path, 'step1', B.STEP1_HARD_STOP), tmp_path / 's', [r['pool'] for r in sel],
                   start_time=t0, end_time=t0 + 86_400, phase='window')
+    return doc, sel, t0
+
+
+def test_g1_uses_the_frozen_pilot_verdict_through_g1ind(tmp_path):
+    from cpmmcost import model as CC
+    from g1ind import report as G
+    doc, sel, t0 = _window(tmp_path)
     sheets = dict(RCP1='a' * 64, B1='b' * 64)
-    stop = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=sheets, g0_passed=False)
-    assert stop['RCP1']['verdict']['decision'] == 'STOP' and stop['B1']['verdict']['decision'] == 'STOP'
-    go = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=sheets, g0_passed=True)
-    assert go['RCP1']['verdict']['decision'] in ('INCONCLUSIF', 'NO-GO', 'GO_PILOTE')
-    assert go['RCP1']['verdict']['seed'] == int('a' * 8, 16)
-    assert set(go['RCP1']['verdict']) >= {'n_entered', 'pools_entered', 'upper_bound_95_one_sided'}
+    cut = t0 + 43_200
+    stop = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=sheets, g0_passed=False, cut_time=cut)
+    assert stop['RCP1']['g1']['decision'] == 'STOP' and stop['B1']['g1']['decision'] == 'STOP'
+    assert stop['RCP1']['descriptive'] == G.NM and 'robustness' not in stop['RCP1']
+    go = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=sheets, g0_passed=True, cut_time=cut)
+    r = go['RCP1']
+    assert r['schema'] == G.SCHEMA and r['g1']['decision'] in ('INCONCLUSIF', 'NO-GO', 'GO_PILOTE')
+    assert r['g1']['seed'] == int('a' * 8, 16) and go['B1']['g1']['seed'] == int('b' * 8, 16)
+    assert r['g1']['meaning'] == G.SHEET_MEANING and not hasattr(step1, 'SHEET_SENTENCE')
+    assert r['robustness']['half_1_half_2']['cut_time'] == cut
+    for key in step1.SENSITIVITIES:                      # all four supplied, none left NON MESURÉ
+        assert isinstance(r['robustness'][key], dict) and r['robustness'][key]['positions'] == r['g1']['n']
+    assert set(step1.SENSITIVITIES) == set(G.SUPPLIED)
+    assert r['metrics_b31a3c47'] is not None and r['paired_gap']['status'].startswith('DESCRIPTIF')
     assert CC.pilot_verdict is not None
+
+
+def test_freeze_sheet_holds_the_cut_time_in_the_middle_of_the_window(tmp_path):
+    u2_doc = dict(t0_slot=5, t0_time=1_000_000, sha_l='c' * 64, selected=[dict(pool='P')])
+    step1.freeze_sheets(tmp_path, u2_doc=u2_doc, count_doc=dict(r_hat=3.0), triggers=dict(rcp1=1, b1=2), d_days=7,
+                        code_sha={})
+    sheet = json.loads((tmp_path / 'FICHE_GEL_RCP1.json').read_text())
+    assert sheet['cut_time'] == 1_000_000 + 7 * 86_400 // 2 and type(sheet['cut_time']) is int
+    assert sheet['window'] == [1_000_000, 1_000_000 + 7 * 86_400]
 
 
 def test_resume_does_not_refetch_finished_pages(tmp_path):
@@ -313,16 +336,9 @@ def test_closed_vocabulary_k02_and_parity_with_plbench():
         step1.assert_closed_vocabulary(dict(meaning='it never means profitable'))
 
 
-def test_g1_k01_counts_unpriced_and_k02_removes_meaning(tmp_path, monkeypatch):
+def test_g1_k01_every_series_is_converted_by_zero_sale_with_its_failures(tmp_path, monkeypatch):
     from cpmmcost import model as CC
-    chain, spec = fixtures.build(n_pools=26, window_days=1)
-    chain.slot = spec['t0_slot']
-    t0 = spec['t0_time']
-    doc = u2.run(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=t0)
-    sel = doc['selected']
-    chain.slot = 10 ** 12
-    step1.collect(_client(chain, tmp_path, 'step1', B.STEP1_HARD_STOP), tmp_path / 's', [r['pool'] for r in sel],
-                  start_time=t0, end_time=t0 + 86_400, phase='window')
+    doc, sel, t0 = _window(tmp_path)
     real = CC.position
     calls = dict(n=0)
 
@@ -340,12 +356,28 @@ def test_g1_k01_counts_unpriced_and_k02_removes_meaning(tmp_path, monkeypatch):
         seen.setdefault('zero', []).append(sum(p.get('status') == 'unpriced_zero_sale' for p in positions))
         return real_verdict(positions, **k)
     monkeypatch.setattr(CC, 'pilot_verdict', spy)
-    out = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=dict(RCP1='a' * 64, B1='b' * 64), g0_passed=True)
+    out = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=dict(RCP1='a' * 64, B1='b' * 64),
+                   g0_passed=True, cut_time=t0 + 43_200)
     r = out['RCP1']
-    assert r['unpriced_counted_at_zero_sale'] > 0 and r['unpriced_reasons'] == {'synthetic_unpriced': r['unpriced_counted_at_zero_sale']}
-    assert seen['n'][0] == r['positions'] and seen['zero'][0] == r['unpriced_counted_at_zero_sale']
-    assert 'meaning' not in r['verdict'] and r['verdict']['sheet_sentence'].startswith('GO_PILOTE autorise seulement')
-
+    assert r['unpriced']['count'] > 0 and r['unpriced']['reasons'] == {'synthetic_unpriced': r['unpriced']['count']}
+    inputs = json.loads((tmp_path / 's' / 'G1_INPUTS_RCP1.json').read_text())
+    assert seen['n'][0] == r['g1']['n'] == len(inputs['primary']) and seen['zero'][0] == r['unpriced']['count']
+    assert set(inputs) == {'primary', 'placebo', 'sensitivities'} and set(inputs['sensitivities']) == set(step1.SENSITIVITIES)
+    series = dict(inputs['sensitivities'], primary=inputs['primary'], placebo=inputs['placebo'])
+    assert any(p.get('status') == 'unpriced_zero_sale' for p in inputs['placebo'])
+    for name, rows in series.items():
+        assert all('net_return' in p for p in rows), name           # no raw unpriced row is ever written
+        f = step1.SENSITIVITIES.get(name, {}).get('failures', CC.FROZEN_FAILURES)
+        for p in rows:
+            if p.get('status') == 'unpriced_zero_sale':
+                assert p['net_lamports'] == step1.zero_sale_net_lamports(f), name
+                assert p['failures'] == dict(buy=f.buy, sell=f.sell, cleanup=f.cleanup), name
+                assert type(p['decision_slot']) is int and 'unpriced_reason' in p, name
+    zs = [p for p in inputs['sensitivities']['one_failure_per_tx'] if p.get('status') == 'unpriced_zero_sale']
+    assert zs and all(p['net_lamports'] == -100_735_000 for p in zs)
+    keys = sorted((p['pool'], p['decision_index']) for p in inputs['primary'])
+    for name, rows in inputs['sensitivities'].items():
+        assert sorted((p['pool'], p['decision_index']) for p in rows) == keys, name
 
 
 def test_zero_sale_with_sensitivity_failures_and_no_placebo_difference():
