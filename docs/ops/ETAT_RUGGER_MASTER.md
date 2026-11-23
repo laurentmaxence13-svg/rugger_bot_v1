@@ -15,7 +15,7 @@ Légende des preuves :
 3. CPMM B1 (momentum, miroir de R-CP1 : hausse ≥ 3 % en 10 min) : même collecte, 0 crédit de plus, essai n° 170, fiche séparée ancrée avant T0. Retenue par R04 le 23/11 (confirmé par écrit à R02). Fiche B1 7c26497f **ancrée avant T0** ; code cpmmb1 0.1 (b630ea3b) PASS conditionnel (il manque un test de frontière).
 4. Autres familles (E2, E3, A2, F1, H1…) : catalogue R-1 (8fd8cf84, PASS R02 sous corrections). Budget d'essais épuisé après B1 : autorisation chiffrée du propriétaire requise.
 
-**C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable.
+**C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable. Décomposition des pertes W1 : la perte vient des coûts (courbe 60 %, loyer 37 %), sans avantage brut. Tableau de bord MASTER : win rate 30,5 %, profit factor 0,42.
 
 **D. Prochains tests décisifs** :
 - R-CP1, étape 0 : ≤ 100 crédits, gratuit. Elle dit si l'univers CPMM suffit (STOP si moins de 20 pools).
@@ -126,6 +126,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | 23/11 13:57Z | R02 : (1) note HW1 / plafond (8a9c8f84) : pas d'incohérence. Plafond exploratoire : 168/170. HW1 : 5 hypothèses gelées avant W1, correction de Holm, publiées à part. (2) Cadre multi-générations (b4edc143) : générations de 3 hypothèses au plus, sur fenêtres disjointes ; W1 non clos tant que A2 n'est pas fait, donc seules les analyses descriptives sont permises. (3) Définitions gelées des indicateurs (b31a3c47) : l'expectancy est le chiffre de décision ; drawdown descriptif ; 7 sensibilités. | registre R02 | déclaré (R02) |
 
 | 23/11 14:17Z | **Décomposition des pertes W1** (w1decomp 0.2, DESCRIPTIVE, exploratoire ; sortie df0d9cbb reproduite par R02). La perte MASTER vient des coûts : frais de courbe 59,8 %, loyer 36,5 %, tx 3,8 %. Brut −0,72 % [−3,11 ; +1,65] : aucun avantage de prix avant frais. Net −4,26 % ; −6,29 % avec loyer perdu. Après l'entrée : pic médian à 5 slots, 1er passage sous l'entrée à 17 slots en médiane. Cellules D3 légèrement positives (n 16 et 17) : NON INTERPRÉTABLES, bruit sur 24 cellules. | vérification R02 ee86eee4 | déclaré (R02) |
+
+| 23/11 14:22Z | **Tableau de bord étendu** (dashx 0.2, sortie ef6b5b44 reproduite par R02). MASTER W1 (n 128) : win rate 30,5 % ; gain moyen +10,3 % ; perte moyenne −10,6 % ; profit factor 0,42 ; espérance −4,26 % ; drawdown 0,546 SOL (5,45 mises, la courbe ne dépasse jamais son départ). Sans les 5 meilleures : −5,33 %. Compte fermé : −4,36 %. Loyer perdu : −6,29 %. Écart au placebo +1,23 % [−2,23 ; +4,82], non significatif. Placebo W1 −4,59 %, PF 0,22. Verdicts inchangés. | vérification R02 595025c3 | déclaré (R02) |
 
 ## 5. Incidents
 
