@@ -47,7 +47,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 - A2 : paquet v2.6.6 au PASS R02 ; chaîne w1chain 0.2 au PASS (verdict → HW1 → C-B).
 - CPMM : cpmmfmt CONFORME, cpmmcost 0.3, cpmmprereg 0.2 (R-CP1 figée) ; règles de lecture gelées par R02.
 - PAPER_LIVE : protocole v0.2 conforme ; plbench 0.2 ; rtgate 0.2 ; papercost 0.1 ; landslip ; DX v0.2. Seul l'adaptateur d'acquisition reste à écrire, après le choix de D-2.
-- Preuves : intégrité W1 sans écart ; remise au propriétaire des preuves de moins de 100 Mo confiée à R03.
+- Preuves : intégrité W1 sans écart ; archive de preuves remise au propriétaire le 23/11 vers 10:40Z (PREUVES_W1_R03_20261123.tar.gz, 1 049 141 o, sha 91ddb11e, 34 fichiers, scan de secrets 0, sans données brutes) ; écart avec l'annonce de 10:37Z (35 fichiers, 3be6210e) en cours d'explication.
 
 ## 3. Tâches priorisées (autorisées, en parallèle)
 
