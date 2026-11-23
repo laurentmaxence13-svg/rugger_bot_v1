@@ -66,11 +66,11 @@ Légende des preuves :
 
 | ID | Resp. | Livrable | Réussite | État |
 |---|---|---|---|---|
-| T-R01-1 | R01 | Code de règle et de témoin, plus fiches de gel complètes, pour G2-1, G2-2 et G2-3 | PASS R02 ; ancrables dès la signature du texte D | cpmmgen2 0.1 : PASS CONDITIONNEL (3199ea74). Restent K-1 (Holm anti-conservateur si une hypothèse n'a pas de p) et K-2 (essais comptés au début de la collecte). |
+| T-R01-1 | R01 | Code de règle et de témoin, plus fiches de gel complètes, pour G2-1, G2-2 et G2-3 | PASS R02 ; ancrables dès la signature du texte D | cpmmgen2 0.2 : **PASS R02** (fiches v0.2 prêtes, non gelées). Historique : la 0.1 avait un PASS conditionnel (3199ea74). Restent K-1 (Holm anti-conservateur si une hypothèse n'a pas de p) et K-2 (essais comptés au début de la collecte). |
 | T-R01-2 | R01 | Carte du seuil de rentabilité : avantage brut minimal selon le palier de frais, la taille rapportée à la réserve, la priorité, le loyer, les échecs (0 à 60 %) et la latence | PASS R02 ; 3 leviers principaux chiffrés | **barmap 0.1 PASS** (9a0b4e72). Barrière CPMM 0,25 % à 100 SOL : 1,12 % (bornes plausibles 0,59 à 4,01 %). Leviers, par ordre : palier de frais, priorité, lieu, puis réserve ≈ loyer. |
-| T-R01-3 | R01 | Génération 3 : 2 ou 3 fiches PROJET hors famille « 10 min », notées sur a21f90f3 | recevabilité R02 | livrée (f14b464) : G3-1 « écart inter-pools » (loi du prix unique), 17/24 ; G3-2 « approfondissement de liquidité », 17/24. Il faudrait les essais 174 et 175 et une fenêtre propre. Audit R02 en cours. |
+| T-R01-3 | R01 | Génération 3 : 2 ou 3 fiches PROJET hors famille « 10 min », notées sur a21f90f3 | recevabilité R02 | livrée (f14b464) : G3-1 « écart inter-pools » (loi du prix unique), 17/24 ; G3-2 « approfondissement de liquidité », 17/24. Il faudrait les essais 174 et 175 et une fenêtre propre. Audit R02 : RECEVABLE EN PROJET (a3f194dc). |
 | T-R01-4 | R01 | Paquet g1verdict : calcul G-1 gelé (net, win rate, PF, IC groupé, écart apparié, 7 sensibilités, vocabulaire fermé, « sous la cible ») ; interface avec cpmmpilot | PASS R02 | confié 21:22Z, prioritaire. **FAIT** (071bb01) : pilot_verdict est CONFORME aux fiches, 14/14 clauses, sans doublon. K01 et K02 sont à trancher par R02. S01 et S02 (appel et signature dans cpmmpilot) sont à corriger par R03. |
-| T-R01-5 | R01 | Module pilotreport : métriques b31a3c47, écart apparié, 7 sensibilités, « sous la cible ». Il n'altère pas le code gelé et cpmmpilot l'appelle. | PASS R02 | confié 21:30Z |
+| T-R01-5 | R01 | Module g1ind 0.1 (ex-« pilotreport ») : métriques b31a3c47, écart apparié, 7 sensibilités, « sous la cible ». Il n'altère pas le code gelé et cpmmpilot l'appelle. | PASS R02 | confié 21:30Z |
 | T-R02-1 | R02 | Audits de T-R01-1 à T-R01-3 | verdict écrit et sha pour chacun | au fil de l'eau |
 | T-R02-2 | R02 | Puissance réaliste de la génération 2 (σ plausibles, effet net) → durée et crédits pour n = 155 et 262 | table chiffrée pour le texte de crédits | **FAIT** (b237941d) : n pilote = 155, 303 ou 619 pour σ = 2,5, 3,5 ou 5 %. Le pilote atteint la pleine puissance avec 50 000 crédits seulement si R̂ ≤ ≈ 967 tx par pool et par jour ; sinon, résultat publié « sous la cible », remédiable par C-bis. Génération 2 : ≈ 100 000 crédits Free par fenêtre, à fixer après la mesure de R̂. |
 | T-R03-0 | R03 | Paquet cpmmpilot : runner étape 0 → U-2 → étape 1, faux RPC, compteur de crédits, arrêts, gel, reprise, sortie gz. Réutilise sans modification les règles gelées de R01. | PASS R02 | **écrit** : cpmmpilot 0.1 (9169b10, vérifié en tête de claude/admiring-curie-r2gl1p ; MANIFEST b987e697), 14/14 tests. PASS CONDITIONNEL R02 (0b3a3033). À corriger : runner de mutants et 4 tests manquants ; G-1 via la fonction gelée cpmmcost.pilot_verdict ; exclusion des Token-2022 REFUSÉE (univers gelé). Liste V-1′ à ancrer avant l'étape 0. |
@@ -181,7 +181,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
-- 23/11 21:23Z : R02 n'a pas reçu T-R01-3 de R01 (perte de message possible, la 3e) ; renvoi demandé.
+- 23/11 21:23Z : fausse alerte. R02 avait bien reçu T-R01-3 ; son audit (a3f194dc) est arrivé à 21:24Z.
 - 23/11 21:11Z : erreur d identifiant du programme CPMM dans le texte B(b) v1.2, déjà présenté au propriétaire ; corrigée en v1.3 (443bbfb9).
 - 23/11 21:04:29Z : redémarrage du conteneur de R03 (5e observé) ; intégrité W1 à 0 écart.
 - 23/11 08:47:44Z : le conteneur de R03 a redémarré ; les données ont survécu (0 écart d'intégrité). Seuls ≈ 71 % de W1 sont copiés à l'extérieur, le reste serait perdu à la fin de la session.
