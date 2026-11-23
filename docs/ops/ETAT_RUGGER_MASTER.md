@@ -7,7 +7,7 @@ Légende des preuves :
 
 ## 1. Autorisations vérifiées à la source
 
-Référence : REGISTRE_AUTORISATIONS_VERIFIEES_R02_v1_0.md, sha256 a4b9d467…69e2 (registre R02 0dbe0572). Couverture partielle : session R04 avec deux trous, R01 en cours d'extraction.
+Référence : REGISTRE_AUTORISATIONS_VERIFIEES_R02_v1_0.md, sha256 a4b9d467…69e2 (registre R02 0dbe0572). Amendement 1 : sha256 d784ef31…5715 (R02 b8195721). R01 est lu du 14/11 au 23/11 : on n'y trouve ni B1, ni GCP, ni Helius, ni étage 0, ni U-2, ni PAPER_LIVE. ed672cdb (20/11) valide le choix TECHNIQUE C1-b + D2 du ledger, et non le volet financier de B1.
 
 | Autorisation | Source | Couvre | NE couvre PAS |
 |---|---|---|---|
