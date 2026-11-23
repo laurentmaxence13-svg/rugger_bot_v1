@@ -1,0 +1,135 @@
+{
+ "detected": 32,
+ "mutants": [
+  {
+   "detected": true,
+   "mutant": "meaning_kept"
+  },
+  {
+   "detected": true,
+   "mutant": "unpriced_passed_to_g1"
+  },
+  {
+   "detected": true,
+   "mutant": "stop_publishes_numbers"
+  },
+  {
+   "detected": true,
+   "mutant": "target_non_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_is_a_win"
+  },
+  {
+   "detected": true,
+   "mutant": "zero_not_a_loss"
+  },
+  {
+   "detected": true,
+   "mutant": "pf_counts"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_entry_order"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_sol_in_stakes"
+  },
+  {
+   "detected": true,
+   "mutant": "exit_no_latency"
+  },
+  {
+   "detected": true,
+   "mutant": "exit_slot_not_shifted"
+  },
+  {
+   "detected": true,
+   "mutant": "refusal_time_zero"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_unpaired_pools"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_alpha"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_seed"
+  },
+  {
+   "detected": true,
+   "mutant": "sensitivity_any_decisions"
+  },
+  {
+   "detected": true,
+   "mutant": "sensitivity_parameter_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "latency_4_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "one_failure_either_leg"
+  },
+  {
+   "detected": true,
+   "mutant": "rent_lost_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "guard_any"
+  },
+  {
+   "detected": true,
+   "mutant": "unknown_sensitivity_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "best_4_pools"
+  },
+  {
+   "detected": true,
+   "mutant": "worst_pools_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "half_boundary"
+  },
+  {
+   "detected": true,
+   "mutant": "word_missing"
+  },
+  {
+   "detected": true,
+   "mutant": "document_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "mev_reason_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "draws_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "any_hypothesis"
+  },
+  {
+   "detected": true,
+   "mutant": "refusals_in_fee_split"
+  },
+  {
+   "detected": true,
+   "mutant": "dd_never_computed"
+  }
+ ],
+ "schema": "g1ind-mutations-v0.1",
+ "total": 32
+}
