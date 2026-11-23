@@ -12,7 +12,7 @@ Légende des preuves :
 **B. Classement des pistes** (potentiel, pas performance) :
 1. CPMM R-CP1 (mean reversion sur pools établis) : préenregistrée, 0 $, 1 essai, GO_PILOTE au mieux. BLOQUÉE : choix U-2 et GO de l'étape 0.
 2. LaunchLab C-B : ≤ 66 $ TTC, 5 essais (HW1). Peut s'arrêter sans candidat. BLOQUÉE : signature A2.
-3. CPMM B1 (momentum, miroir de R-CP1 : hausse ≥ 3 % en 10 min) : même collecte, 0 crédit de plus, essai n° 170, fiche séparée ancrée avant T0. Retenue par R04 le 23/11 ; R02 la juge admissible.
+3. CPMM B1 (momentum, miroir de R-CP1 : hausse ≥ 3 % en 10 min) : même collecte, 0 crédit de plus, essai n° 170, fiche séparée ancrée avant T0. Retenue par R04 le 23/11 (confirmé par écrit à R02). Fiche B1 7c26497f **ancrée avant T0** ; code cpmmb1 0.1 (b630ea3b) PASS conditionnel (il manque un test de frontière).
 4. Autres familles (E2, E3, A2, F1, H1…) : catalogue R-1 (8fd8cf84, PASS R02 sous corrections). Budget d'essais épuisé après B1 : autorisation chiffrée du propriétaire requise.
 
 **C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable.
@@ -28,6 +28,7 @@ Légende des preuves :
 **Travaux en cours (23/11, après-midi)** :
 - R01 : R-1 catalogue A à H, R-2 décomposition des pertes W1 (descriptive), R-3 tableau de bord étendu.
 - R02 : note HW1 / plafond d'essais, cadre multi-générations, définitions des indicateurs, audits.
+- R-2 w1decomp 0.2 : PASS R02 (29083bff), exécution unique par R03 autorisée. R-3 dashx : en attente d'une v0.2 alignée sur b31a3c47.
 - R03 : inventaire des champs de W1 **fait** (déclaré) : 57,7 % des 322 146 signatures sont des échecs, sans corps de transaction ; détenteurs partiels ; rien après la migration CPMM. P0 visible non scanné, faute d'autorisation. Exécutions uniques après PASS R02.
 
 ## 1. Autorisations vérifiées à la source
