@@ -9,6 +9,7 @@
 """
 import hashlib
 import json
+import random
 from pathlib import Path
 
 from cpmmprereg import rule as RCP1
@@ -160,13 +161,13 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed):
         verdict = CC.pilot_verdict(counted, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
         verdict.pop('meaning', None)                                                  # K02 (R02)
         verdict['sheet_sentence'] = SHEET_SENTENCE
-        pp = [p for p in placebo if 'net_return' in p]
-        mean = lambda rows: sum(r['net_return'] for r in rows) / len(rows) if rows else None
-        diff = (None if not counted or not pp else mean(counted) - mean(pp))
+        placebo_counted = [zero_sale(p) if 'net_return' not in p else p for p in placebo]
+        paired = paired_difference(counted, placebo_counted, sheets[name])
         result[name] = dict(verdict=verdict, positions=len(primary), unpriced_counted_at_zero_sale=sum(unpriced_reasons.values()),
                             unpriced_reasons=unpriced_reasons,
-                            placebo=dict(positions=len(placebo), unpriced=len(placebo) - len(pp),
-                                         paired_mean_difference=diff, label='published apart, no decision'))
+                            placebo=dict(positions=len(placebo),
+                                         unpriced_counted_at_zero_sale=sum('net_return' not in p for p in placebo),
+                                         paired_by_pool=paired, label='published apart, no decision'))
         write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo))
     assert_closed_vocabulary(result)
     write_json(Path(out) / 'G1.json', result)
@@ -196,3 +197,33 @@ def assert_closed_vocabulary(document):
     if found:
         raise Step1Stop('forbidden_word_in_output:%s' % ','.join(found))
     return document
+
+
+# K-6 (R02, certificate d34c2c4e): difference to the placebo PAIRED BY POOL, with a pool-clustered bootstrap CI
+# (10 000 draws, seed = int(freeze sheet sha[:8], 16)); published apart, no decision.
+PAIRED_DRAWS = 10_000
+PAIRED_ALPHA = 0.05                 # two-sided 95 %: quantiles 2.5 % and 97.5 %
+
+
+def paired_difference(primary, placebo, freeze_sheet_sha256, *, draws=PAIRED_DRAWS):
+    def by_pool(rows):
+        out = {}
+        for r in rows:
+            out.setdefault(r['pool'], []).append(r['net_return'])
+        return {k: sum(v) / len(v) for k, v in out.items()}
+    a, b = by_pool(primary), by_pool(placebo)
+    pools = sorted(set(a) & set(b))
+    d = {k: a[k] - b[k] for k in pools}
+    if not pools:
+        return dict(pools_paired=0, mean=None, ci95=None, draws=draws, seed=None)
+    seed = int(freeze_sheet_sha256[:8], 16)
+    rng, values = random.Random(seed), []
+    for _ in range(draws):
+        picked = [pools[rng.randrange(len(pools))] for _k in pools]
+        values.append(sum(d[k] for k in picked) / len(picked))
+    values.sort()
+    lo = values[max(0, int(PAIRED_ALPHA / 2 * draws) - 1)]
+    hi = values[min(draws - 1, int((1 - PAIRED_ALPHA / 2) * draws))]
+    return dict(pools_paired=len(pools), pools_primary_only=len(set(a) - set(b)), pools_placebo_only=len(set(b) - set(a)),
+                mean=sum(d.values()) / len(d), ci95=[lo, hi], draws=draws, seed=seed,
+                method='mean over pools of (mean rule net - mean placebo net) per pool; pool-clustered bootstrap')

@@ -345,3 +345,16 @@ def test_g1_k01_counts_unpriced_and_k02_removes_meaning(tmp_path, monkeypatch):
     assert r['unpriced_counted_at_zero_sale'] > 0 and r['unpriced_reasons'] == {'synthetic_unpriced': r['unpriced_counted_at_zero_sale']}
     assert seen['n'][0] == r['positions'] and seen['zero'][0] == r['unpriced_counted_at_zero_sale']
     assert 'meaning' not in r['verdict'] and r['verdict']['sheet_sentence'].startswith('GO_PILOTE autorise seulement')
+
+
+def test_paired_difference_is_by_pool_k6():
+    prim = [dict(pool='A', net_return=0.10), dict(pool='A', net_return=0.30), dict(pool='B', net_return=-0.2),
+            dict(pool='C', net_return=0.5)]
+    plac = [dict(pool='A', net_return=0.0), dict(pool='B', net_return=-0.1), dict(pool='B', net_return=-0.3)]
+    r = step1.paired_difference(prim, plac, 'c' * 64, draws=2000)
+    # per pool: A 0.2 - 0.0 = 0.2 ; B -0.2 - (-0.2) = 0.0 ; C unpaired -> mean over pools = 0.1 (global means would give
+    # 0.175 - (-0.1333) = 0.3083)
+    assert r['pools_paired'] == 2 and abs(r['mean'] - 0.1) < 1e-12 and r['pools_primary_only'] == 1
+    assert r['seed'] == int('c' * 8, 16) and r['ci95'][0] <= r['mean'] <= r['ci95'][1]
+    assert r == step1.paired_difference(prim, plac, 'c' * 64, draws=2000)
+    assert step1.paired_difference(prim, [], 'c' * 64)['pools_paired'] == 0
