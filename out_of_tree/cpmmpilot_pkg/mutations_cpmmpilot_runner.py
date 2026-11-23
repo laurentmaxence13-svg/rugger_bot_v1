@@ -44,10 +44,14 @@ MUTANTS = [
     # 0.1.2: K01 / K02
     ('unpriced_dropped', 'step1.py', "    return [r if 'net_return' in r else\n            zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures) for r in rows]\n",
      "    return [r for r in rows if 'net_return' in r]\n"),
-    ('zero_sale_without_tx', 'step1.py', 'ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS', 'ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 0 * CC.TX_FEE_LAMPORTS'),
+    ('zero_sale_without_wsol', 'step1.py', '    wsol_close = CC.TX_FEE_LAMPORTS if wsol_separate_close else 0\n', '    wsol_close = 0\n'),
     ('vocabulary_unchecked', 'step1.py', "        raise Step1Stop('forbidden_word_in_output:%s' % ','.join(found))", '        pass'),
     # 0.1.4: zero sale with the failures of a series
-    ('zero_sale_failures_ignored', 'step1.py', "    return ZERO_SALE_NET_LAMPORTS - (failures.buy + failures.sell + failures.cleanup) * CC.TX_FEE_LAMPORTS", "    return ZERO_SALE_NET_LAMPORTS"),
+    ('zero_sale_failures_ignored', 'step1.py', '    tx_buy = (1 + failures.buy) * CC.TX_FEE_LAMPORTS\n', '    tx_buy = CC.TX_FEE_LAMPORTS\n'),
+    # 0.1.6: erratum R02 (6f071c5a) -- three failed cleanups leave the account open
+    ('rent_forgotten_at_cleanup_3', 'step1.py', '        cleanup, rent_lost = failures.cleanup * CC.TX_FEE_LAMPORTS, CC.TOKEN_ACCOUNT_RENT_LAMPORTS\n',
+     '        cleanup, rent_lost = (failures.cleanup + 1) * CC.TX_FEE_LAMPORTS, 0\n'),
+    ('cleanup_branch_never', 'step1.py', '    if failures.cleanup == CA.MAX_CLEANUP_ATTEMPTS:\n', '    if False:\n'),
     # 0.1.5: g1ind 0.3 (R01, PASS R02) fed with converted rows, the four sensitivities and the cut of the sheet
     ('sensitivity_failures_ignored', 'step1.py', "_converted(line, rule.positions(line, cfg, idx, **kw), kw.get('failures', CC.FROZEN_FAILURES))",
      "_converted(line, rule.positions(line, cfg, idx, **kw))"),
@@ -94,7 +98,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.1.5', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.1.6', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

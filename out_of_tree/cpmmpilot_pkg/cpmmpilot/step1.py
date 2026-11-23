@@ -16,7 +16,6 @@ from cpmmb1 import rule as B1
 from cpmmx import timeline as TL
 from cpmmcost import model as CC
 from closedacct import model as CA
-from g1ind import report as G1IND
 
 from . import budget as B
 from .rpc import canonical, sha
@@ -117,7 +116,7 @@ def freeze_sheets(out, *, u2_doc, count_doc, triggers, d_days, code_sha):
     common = dict(schema=SCHEMA, t0_slot=u2_doc['t0_slot'], t0_time=u2_doc['t0_time'], sha_l=u2_doc['sha_l'],
                   pools=[r['pool'] for r in u2_doc['selected']], d_days=d_days,
                   window=[u2_doc['t0_time'], u2_doc['t0_time'] + int(d_days * DAY)],
-                  cut_time=u2_doc['t0_time'] + int(d_days * DAY) // 2,      # halves of g1ind: middle of the window
+                  cut_time=u2_doc['t0_time'] + int(d_days * DAY) // 2,      # R02 21:57Z: (D x 86 400) // 2, anchored with the sheet
                   r_hat=count_doc['r_hat'], code=code_sha, frozen_rules=CC.frozen_check())
     sheets = {}
     for name, rule, trial in (('RCP1', 'cpmmprereg 0.2', 169), ('B1', 'cpmmb1 0.1.1', 170)):
@@ -137,7 +136,7 @@ def check_anchor(out, anchored):
 
 
 # -- (5) ---------------------------------------------------------------------------------------------------------------
-SENSITIVITIES = dict(                       # keys IDENTICAL to g1ind.report.SUPPLIED (R01 g1ind 0.3, PASS R02)
+SENSITIVITIES = dict(                       # keys IDENTICAL to g1ind.report.SUPPLIED (R01 g1ind 0.6, PASS R02)
     latency_10_slots=dict(latency_slots=CC.SENSITIVITY_LATENCY_SLOTS),
     one_failure_per_tx=dict(failures=CC.SENSITIVITY_FAILURES),
     rent_lost_vs_closed_account=dict(failures=CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS)),
@@ -156,8 +155,9 @@ def _converted(line, rows, failures=CC.FROZEN_FAILURES):
 def g1(out, selected, *, t0_slot, sheets, g0_passed, cut_time):
     """U-4 / G-0 per pool by the frozen cpmmcost.pool_gate; then, per hypothesis, the rows of the admitted pools
     (primary, placebo and the four sensitivities on the SAME decisions) converted by zero_sale (K01, single source) and
-    handed to g1ind.report (R01, PASS R02), which calls the frozen cpmmcost.pilot_verdict (G-1) and computes the paired
+    handed to g1ind.report 0.6 (R01 3d9166d, MANIFEST cda05131, PASS R02), which calls the frozen cpmmcost.pilot_verdict (G-1) and computes the paired
     gap, the metrics and the halves. cpmmpilot publishes no number of its own."""
+    from g1ind import report as G1IND        # here, not at the top: g1ind imports cpmmpilot.step1 (R01, g1ind >= 0.5)
     lines = timelines(out, 'window', selected)
     cfg = amm_config_for_rules(selected, t0_slot)
     gates = {line.pool: CC.pool_gate(line, cfg) for line in lines}
@@ -185,15 +185,23 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed, cut_time):
 
 
 # K01 (R02): an ENTERED position of an admitted pool that cannot be priced takes a sale value of 0 and stays COUNTED;
-# costs as cpmmcost.position with 0 failures and the account closed: buy, sale, WSOL close, cleanup transactions.
-# R02 (21:44Z): with the failures of a sensitivity series, -(STAKE + (4 + buy + sell + cleanup) x 105 000);
-# Failures(1, 1, 1) -> -100 735 000. This function is the SINGLE source of the zero-sale value.
-ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS
-                           + (CC.TX_FEE_LAMPORTS if CC.WSOL_SEPARATE_CLOSE else 0))
+# K01 corrected by R02 (erratum 22:06Z, audit 6f071c5a): the zero sale is the FROZEN composition of cpmmcost.position
+# (l. 231-238) with received = 0 -- every attempt of the buy and the sale, the WSOL close, and the token-account cleanup:
+# MAX_CLEANUP_ATTEMPTS failed cleanups leave the account open (each attempt paid + rent lost), otherwise (cleanup + 1)
+# transactions and no rent. (0,0,0) -> -100 420 000 ; (1,1,1) -> -100 735 000 ; (0,0,3) -> -102 669 280.
+# This function is the SINGLE source of the zero-sale value (imported by g1ind >= 0.5).
+def zero_sale_net_lamports(failures=CC.FROZEN_FAILURES, *, wsol_separate_close=CC.WSOL_SEPARATE_CLOSE):
+    tx_buy = (1 + failures.buy) * CC.TX_FEE_LAMPORTS
+    tx_sell = (1 + failures.sell) * CC.TX_FEE_LAMPORTS
+    wsol_close = CC.TX_FEE_LAMPORTS if wsol_separate_close else 0
+    if failures.cleanup == CA.MAX_CLEANUP_ATTEMPTS:
+        cleanup, rent_lost = failures.cleanup * CC.TX_FEE_LAMPORTS, CC.TOKEN_ACCOUNT_RENT_LAMPORTS
+    else:
+        cleanup, rent_lost = (failures.cleanup + 1) * CC.TX_FEE_LAMPORTS, 0
+    return 0 - CC.STAKE_LAMPORTS - tx_buy - tx_sell - wsol_close - cleanup - rent_lost
 
 
-def zero_sale_net_lamports(failures=CC.FROZEN_FAILURES):
-    return ZERO_SALE_NET_LAMPORTS - (failures.buy + failures.sell + failures.cleanup) * CC.TX_FEE_LAMPORTS
+ZERO_SALE_NET_LAMPORTS = zero_sale_net_lamports()          # primary value, -100 420 000
 
 
 def zero_sale(row, failures=CC.FROZEN_FAILURES):

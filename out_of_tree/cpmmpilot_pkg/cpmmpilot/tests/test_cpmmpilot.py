@@ -359,6 +359,11 @@ def test_g1_k01_every_series_is_converted_by_zero_sale_with_its_failures(tmp_pat
     out = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=dict(RCP1='a' * 64, B1='b' * 64),
                    g0_passed=True, cut_time=t0 + 43_200)
     r = out['RCP1']
+    for h in ('RCP1', 'B1'):                             # end to end: g1ind accepted every converted series
+        assert out[h]['g1']['decision'] in ('STOP', 'INCONCLUSIF', 'NO-GO', 'GO_PILOTE')
+    assert r['robustness']['half_1_half_2']['cut_time'] == t0 + 43_200
+    assert r['robustness']['one_failure_per_tx']['zero_sale']['count'] > 0
+    assert r['placebo']['zero_sale']['count'] > 0
     assert r['unpriced']['count'] > 0 and r['unpriced']['reasons'] == {'synthetic_unpriced': r['unpriced']['count']}
     inputs = json.loads((tmp_path / 's' / 'G1_INPUTS_RCP1.json').read_text())
     assert seen['n'][0] == r['g1']['n'] == len(inputs['primary']) and seen['zero'][0] == r['unpriced']['count']
@@ -375,6 +380,8 @@ def test_g1_k01_every_series_is_converted_by_zero_sale_with_its_failures(tmp_pat
                 assert type(p['decision_slot']) is int and 'unpriced_reason' in p, name
     zs = [p for p in inputs['sensitivities']['one_failure_per_tx'] if p.get('status') == 'unpriced_zero_sale']
     assert zs and all(p['net_lamports'] == -100_735_000 for p in zs)
+    zr = [p for p in inputs['sensitivities']['rent_lost_vs_closed_account'] if p.get('status') == 'unpriced_zero_sale']
+    assert zr and all(p['net_lamports'] == -102_669_280 for p in zr)
     keys = sorted((p['pool'], p['decision_index']) for p in inputs['primary'])
     for name, rows in inputs['sensitivities'].items():
         assert sorted((p['pool'], p['decision_index']) for p in rows) == keys, name
@@ -387,3 +394,20 @@ def test_zero_sale_with_sensitivity_failures_and_no_placebo_difference():
     assert step1.zero_sale(row)['net_lamports'] == -100_420_000
     assert step1.zero_sale_net_lamports(CC.Failures(1, 1, 0)) == -100_630_000
     assert not hasattr(step1, 'paired_difference')
+
+
+def test_zero_sale_is_the_frozen_composition_with_received_zero_erratum_r02():
+    from closedacct import model as CA
+    from cpmmcost import model as CC
+    assert step1.zero_sale_net_lamports(CC.FROZEN_FAILURES) == step1.ZERO_SALE_NET_LAMPORTS == -100_420_000
+    assert step1.zero_sale_net_lamports(CC.SENSITIVITY_FAILURES) == -100_735_000
+    rent = CC.Failures(0, 0, CA.MAX_CLEANUP_ATTEMPTS)
+    assert step1.zero_sale_net_lamports(rent) == -102_669_280                 # 6 transactions + rent lost 2 039 280
+    assert step1.zero_sale_net_lamports(CC.Failures(0, 0, 2)) == -100_630_000  # 2 failed cleanups, closed: no rent
+    row = dict(pool='P', decision_index=1, unpriced='x', decision_time=1, decision_slot=5)
+    z = step1.zero_sale(row, rent)
+    assert z['net_lamports'] == -102_669_280 and z['net_return'] == -102_669_280 / CC.STAKE_LAMPORTS
+    # the closed-account module of the frozen chain gives the same value for a sale that received nothing
+    for f in (CC.FROZEN_FAILURES, CC.SENSITIVITY_FAILURES, rent):
+        outcome = dict(migrated=False, value=0, tokens=1, cost=CC.STAKE_LAMPORTS + (2 + f.buy + f.sell + 1) * CC.TX_FEE_LAMPORTS)
+        assert abs(CA.net_return_closed(outcome, failed_attempts=f.cleanup) - step1.zero_sale_net_lamports(f) / CC.STAKE_LAMPORTS) < 1e-12
