@@ -12,13 +12,14 @@ from w2arms import ce as W
 
 SHEET = '0123456789abcdef' * 4
 DRAWS = 400
-# fixture of cpmmpilot.step1.zero_sale (R03 a1881f4), the SINGLE source of the zero-sale value (R02 audit 34309238)
-ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 4 * CC.TX_FEE_LAMPORTS)
+# the value of cpmmpilot.step1.zero_sale at R03 a1881f4 (ZERO_SALE_NET_LAMPORTS), read in its source: -100 420 000
+RUNNER_ZERO_SALE_A1881F4 = -100_420_000
 
 
-def zero_sale(row):
-    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=ZERO_SALE_NET_LAMPORTS,
-                net_return=ZERO_SALE_NET_LAMPORTS / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'])
+def zero_sale(row, lamports=RUNNER_ZERO_SALE_A1881F4):
+    """Fixture shaped like cpmmpilot.step1.zero_sale (R03 a1881f4), with the value of the run."""
+    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=lamports,
+                net_return=lamports / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'])
 
 
 def row(i, pools, net, *, status='entered', **extra):
@@ -69,6 +70,29 @@ def test_g0_not_passed_publishes_no_number():
 
 
 # -- (2) unpriced rows -------------------------------------------------------------------------------------------------
+def test_the_zero_sale_value_is_the_closed_account_rule_of_cpmmcost():
+    # R02 21:44Z: -(STAKE + (4 + failures of the run) x 105 000), no rent lost; equal to the runner's value
+    assert G.zero_sale_lamports() == -100_420_000 == RUNNER_ZERO_SALE_A1881F4
+    assert G.zero_sale_lamports(CC.SENSITIVITY_FAILURES) == -100_735_000
+    assert G.zero_sale_lamports() / CC.STAKE_LAMPORTS == pytest.approx(-1.0042)
+    p, pl = arms(40, 20, lambda i: 0.01)
+    raw = dict(pool='p03', decision_index=999, decision_time=900, unpriced='x')
+    for wrong in (-102_354_280, -100_315_000, -100_735_000):         # rent lost, no WSOL close, failures at the primary
+        with pytest.raises(G.ReportError, match='zero_sale_value'):
+            run(p + [zero_sale(raw, wrong)], pl)
+    with pytest.raises(G.ReportError, match='zero_sale_value'):
+        run(p, pl + [zero_sale(dict(raw, decision_index=20_000), wrong)])
+    # under Failures(1, 1, 1) the zero sale charges the failed attempts too
+    one = [dict(x, failures=dict(buy=1, sell=1, cleanup=1)) for x in p[:-1]]
+    good = run(p, pl, sensitivities=dict(one_failure_per_tx=one + [zero_sale(dict(raw, pool=p[-1]['pool'],
+                                                                                  decision_index=p[-1]['decision_index']),
+                                                                             -100_735_000)]))
+    assert good['robustness']['one_failure_per_tx']['zero_sale']['count'] == 1
+    with pytest.raises(G.ReportError, match='zero_sale_value.*one_failure'):
+        run(p, pl, sensitivities=dict(one_failure_per_tx=one + [zero_sale(dict(raw, pool=p[-1]['pool'],
+                                                                                decision_index=p[-1]['decision_index']))]))
+
+
 def test_zero_sale_rows_of_the_runner_are_counted_and_raw_unpriced_rows_are_refused():
     # K01 (R02 f41c6cb0, audit 34309238): the runner's zero-sale rows count everywhere; g1ind never recomputes them
     p, pl = arms(40, 20, lambda i: 0.01)

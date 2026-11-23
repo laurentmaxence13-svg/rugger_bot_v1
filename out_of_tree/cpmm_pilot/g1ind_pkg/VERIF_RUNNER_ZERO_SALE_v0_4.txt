@@ -1,0 +1,2 @@
+a1881f4 {"runs": {"one_failure_per_tx": {"accepted": false, "rule": -100735000, "runner": -100420000}, "placebo": {"accepted": true, "rule": -100420000, "runner": -100420000}, "primary": {"accepted": true, "rule": -100420000, "runner": -100420000}}, "takes_failures": false}
+6190277 {"runs": {"one_failure_per_tx": {"accepted": true, "rule": -100735000, "runner": -100735000}, "placebo": {"accepted": true, "rule": -100420000, "runner": -100420000}, "primary": {"accepted": true, "rule": -100420000, "runner": -100420000}}, "takes_failures": true}

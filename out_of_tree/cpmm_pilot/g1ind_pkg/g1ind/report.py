@@ -1,13 +1,16 @@
-"""g1ind 0.3 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
+"""g1ind 0.4 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
 decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1.1; nothing here is a verdict.
 
 (1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on every primary row (zero-sale rows of the runner included, K01); only its English
     ``meaning`` field is replaced by the sentence of the sheet (K02 option a, R02 decision f41c6cb0).
-(2) K01, R02 decisions f41c6cb0 and the correction of audit 34309238: an ENTERED position that cannot be priced is
-    COUNTED at a zero sale. Its value is computed ONLY by the runner (cpmmpilot.step1.zero_sale, status
-    'unpriced_zero_sale', single source); g1ind never recomputes it, counts those rows everywhere (mean, bound, floors,
-    metrics, placebo, sensitivities) and publishes their count and reasons. A RAW unpriced row (no net_return) is an
-    ERROR: never an exclusion.
+(2) K01, R02 decisions f41c6cb0, 34309238 and 21:44Z: an ENTERED position that cannot be priced is COUNTED at a zero
+    sale in the CLOSED-account mode of cpmmcost 0.3 (C-a, the frozen CPMM model; closedacct is LaunchLab / W2):
+    r = -(STAKE + (4 + failures of the run) x 105 000) / STAKE (buy, sale, WSOL close, cleanup; no rent lost), i.e.
+    -100 420 000 lamports at the primary and -100 735 000 under Failures(1, 1, 1). The rows come from the runner
+    (cpmmpilot.step1.zero_sale, status 'unpriced_zero_sale'); g1ind CHECKS their value exactly against this rule
+    (cpmmcost constants), counts them everywhere (mean, bound, floors, metrics, placebo, sensitivities) and publishes
+    their count and reasons. A RAW unpriced row (no net_return) or a wrong zero-sale value is an ERROR: never an
+    exclusion.
 (3) b31a3c47 metrics on the same population as the G-1 mean (every row, guard refusals and zero-sale rows included): win r > 0, loss
     r <= 0, net PF sum(r+) / |sum(r-)|, expectancy identity, drawdown in EXIT order in stakes and in SOL, fees split.
 (4) paired gap primary - placebo, pool cluster bootstrap with the seed of the sheet (statistic of
@@ -24,7 +27,7 @@ from cpmmcost import model as CC
 from cpmmprereg import rule as R
 from w2arms import ce as W
 
-SCHEMA = 'g1ind-v0.3'
+SCHEMA = 'g1ind-v0.4'
 STAMP = 'DESCRIPTIF — PILOTE CPMM — SEUL LE MOT G-1 DE cpmmcost.pilot_verdict EST UNE DÉCISION'
 NM = 'NON MESURÉ'
 HYPOTHESES = ('RCP1', 'B1')
@@ -48,8 +51,10 @@ SUPPLIED = dict(
 )
 COMPUTED = ('without_5_best_pools', 'half_1_half_2')
 ZERO_STATUS = 'unpriced_zero_sale'                          # cpmmpilot.step1.zero_sale (R03), the single source
-ZERO_RULE = ('K01 (R02 f41c6cb0, audit 34309238) : position entrée non valorisable comptée à une vente nulle ; '
-             'valeur calculée par cpmmpilot.step1.zero_sale, source unique')
+ZERO_RULE = ('K01 (R02 f41c6cb0, 34309238, 21:44Z) : position entrée non valorisable comptée à une vente nulle en compte '
+             'fermé cpmmcost 0.3 : -(mise + (4 + échecs de la série) x 105 000) lamports')
+# failures of each run (the zero-sale value depends on them; the other runs use the frozen 0 failures)
+RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)
 # the frozen MEV grid (mevsens) is a LaunchLab sandwich model: no audited CPMM adaptation exists, so it stays NON MESURÉ
 # (R02 34309238: confirmed, a declared gap to be filled by an audited CPMM model before any confirmation)
 MEV_NOT_MEASURED = dict(value=NM, reason='grille MEV gelée sans adaptation CPMM auditée')
@@ -79,13 +84,25 @@ def check_vocabulary(document):
 
 
 # -- (2) K01 -----------------------------------------------------------------------------------------------------------
+def zero_sale_lamports(failures=CC.FROZEN_FAILURES):
+    """Closed-account zero sale of cpmmcost 0.3: the stake and the 4 transactions (buy, sale, WSOL close, cleanup) plus
+    every failed attempt of the run; no rent lost (the cleanup gets it back)."""
+    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup
+    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS)
+
+
 def counted(rows, run='primary'):
-    """Every row counts; a raw unpriced row (no net_return) is refused, a zero-sale row must be an entry."""
+    """Every row counts. A raw unpriced row (no net_return) is refused; a zero-sale row must be an entry whose value is
+    exactly the closed-account zero sale under the failures of its run."""
+    expected = zero_sale_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))
     for p in rows:
         if 'net_return' not in p:
             raise ReportError('raw_unpriced_row_needs_the_runner_zero_sale:' + run)
-        if p.get('status') == ZERO_STATUS and p.get('entered') is not True:
-            raise ReportError('zero_sale_row_must_be_an_entry:' + run)
+        if p.get('status') == ZERO_STATUS:
+            if p.get('entered') is not True:
+                raise ReportError('zero_sale_row_must_be_an_entry:' + run)
+            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:
+                raise ReportError('zero_sale_value_is_not_the_rule:' + run)
     return list(rows)
 
 

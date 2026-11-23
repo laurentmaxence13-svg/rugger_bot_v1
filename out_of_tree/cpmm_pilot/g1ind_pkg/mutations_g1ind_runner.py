@@ -37,12 +37,17 @@ MUT = [
  ("        dd = drawdown(rows, [exit_time(by_pool[p['pool']], p) for p in rows])", "        dd = NM", 'dd_never_computed'),
  ("        if 'net_return' not in p:\n            raise ReportError('raw_unpriced_row_needs_the_runner_zero_sale:' + run)\n", "", 'raw_unpriced_accepted'),
  ("            raise ReportError('raw_unpriced_row_needs_the_runner_zero_sale:' + run)\n", "            return [q for q in rows if 'net_return' in q]\n", 'raw_unpriced_excluded'),
- ("        if p.get('status') == ZERO_STATUS and p.get('entered') is not True:", "        if False:", 'zero_sale_entry_unchecked'),
+ ("            if p.get('entered') is not True:", "            if False:", 'zero_sale_entry_unchecked'),
  ("            out[reason] = out.get(reason, 0) + 1", "            out[reason] = 1", 'reasons_not_counted'),
  ("        return row['decision_time'] + R.CLOCK_S + hrr.clock_exit_latency_s(CC.LATENCY_SLOTS)", "        return row['decision_time']", 'zero_exit_at_decision'),
  ("    placebo_priced = counted(placebo, 'placebo')", "    placebo_priced = [p for p in placebo if 'net_return' in p]", 'placebo_raw_excluded'),
  ("                                  or p['failures'] == dict(buy=CC.SENSITIVITY_FAILURES.buy,", "                                  or p['failures']['buy'] >= 1 and p['failures']['sell'] >= 1 or dict(buy=CC.SENSITIVITY_FAILURES.buy,", 'k2_at_least_one'),
  ("        values = counted(rows, name)", "        values = [p for p in rows if 'net_return' in p]", 'sensitivity_raw_excluded'),
+ ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup\n    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS)", "    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup\n    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)", 'zero_rent_lost'),
+ ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup", "    transactions = 3 + failures.buy + failures.sell + failures.cleanup", 'zero_wsol_free'),
+ ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup", "    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0)", 'zero_failures_free'),
+ ("            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:", "            if False:", 'zero_value_unchecked'),
+ ("RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)", "RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES)", 'zero_run_failures_ignored'),
 ]
 def run(work):
     return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'g1ind' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],
