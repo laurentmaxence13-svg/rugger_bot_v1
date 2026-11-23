@@ -1,4 +1,5 @@
-"""w1decomp 0.1 -- R-2 of the owner's strategic directive (23/11): DESCRIPTIVE decomposition of the W1 losses, from
+"""w1decomp 0.2 (0.1 e4af0d1 + R02 audit 3e714683: K-1 tests, K-2 ledger sha in the README, K-3 the .md publishes D3 with
+the multiplicity warning and the label of D2 / D3c) -- w1decomp 0.1 -- R-2 of the owner's strategic directive (23/11): DESCRIPTIVE decomposition of the W1 losses, from
 the ANCHORED W1 outputs only. EXPLORATOIRE: no rule, no threshold and no parameter is drawn from W1; nothing here is
 a verdict; nothing changes a W1 figure. Run ONCE by RUGGER 03 under A2 (5aff3383 point 1), after the R02 audit.
 
@@ -39,7 +40,7 @@ from pathlib import Path
 
 from w1loss import analysis as A
 
-SCHEMA = 'rugger-w1-loss-decomposition-v0.1'
+SCHEMA = 'rugger-w1-loss-decomposition-v0.2'
 STAMP = "EXPLORATOIRE — DÉCOMPOSITION DESCRIPTIVE DE W1 — AUCUNE RÈGLE NI AUCUN PARAMÈTRE N'EST TIRÉ DE W1"
 RENT_LAMPORTS = 2_039_280                       # statelab.exits.SPL_RENT_LAMPORTS (checked in the tests)
 OFFSETS = (0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512)
@@ -47,6 +48,9 @@ TRADE_EDGES = (0, 10, 30, 100)
 HOUR_BLOCK = 4
 BREAKDOWNS = ('D1', 'D2', 'D3a', 'D3b', 'D3c')
 COST_ITEMS = ('impact', 'curve_fees', 'tx', 'failed', 'rent')
+AFTER_DECISION = 'postérieur à la décision : jamais une variable de décision'
+MULTIPLICITY = ('AVERTISSEMENT DE MULTIPLICITÉ : D3 publie environ 24 cellules ; leurs écarts sont attendus par le seul '
+                'hasard. Toute hypothèse inspirée de D2 ou de D3 compte N + 1 et se teste sur des données NOUVELLES.')
 
 
 class DecompError(RuntimeError):
@@ -142,7 +146,7 @@ def price_path(group, timelines):
                                  share_below_entry=(sum(1 for v in values if v < 0) / len(values)) if values else None)
     peaks = [x['peak_offset'] for x in paths]
     adverse = [x['first_adverse_offset'] for x in paths if x['first_adverse_offset'] is not None]
-    return dict(n=len(paths), relative_spot_by_slot_offset=by_offset,
+    return dict(label=AFTER_DECISION, n=len(paths), relative_spot_by_slot_offset=by_offset,
                 peak_offset_slots={f'p{int(q * 100)}': A.quantile(peaks, q) for q in A.QUANTILES},
                 first_adverse_offset_slots={f'p{int(q * 100)}': A.quantile(adverse, q) for q in A.QUANTILES},
                 share_without_adverse_crossing=(1 - len(adverse) / len(paths)) if paths else None)
@@ -176,9 +180,9 @@ def pool_types(group, timelines):
         return hours[h // HOUR_BLOCK]
     return dict(D3a_events_before_entry=_class_table(group, lambda p: trade_class(p['buy_index'] + 1), trades),
                 D3b_creation_hour_utc=_class_table(group, hour, hours),
-                D3c_reached_migration=_class_table(
+                D3c_reached_migration=dict(label=AFTER_DECISION, classes=_class_table(
                     group, lambda p: 'migration' if timelines[p['pool']]['migrated'] else 'no_migration',
-                    ['migration', 'no_migration']))
+                    ['migration', 'no_migration'])))
 
 
 # -- document -----------------------------------------------------------------------------------------------------------
@@ -191,7 +195,7 @@ def decompose(population, timelines):
         arms[arm] = dict(D1_costs=costs(group), D2_price_path_after_entry=price_path(group, timelines),
                          D3_pool_types=pool_types(group, timelines))
     return dict(schema=SCHEMA, stamp=STAMP, category='HISTORICAL_REPLAY', breakdowns=list(BREAKDOWNS),
-                E=len(BREAKDOWNS), arms=arms,
+                E=len(BREAKDOWNS), multiplicity_warning=MULTIPLICITY, arms=arms,
                 regimes=dict(SL='frozen engine, rent not modelled', LP='rent lost, added per position (additive)'),
                 flags=dict(rule_or_parameter_selected=False, official_w1_verdict=False, w1_figure_changed=False,
                            profitability_demonstrated=False, failed_attempts='0 in the frozen engine (not measured)'))
@@ -229,7 +233,7 @@ def _pct(value):
 
 
 def markdown(doc):
-    lines = [f'# Décomposition descriptive des pertes W1 — {doc["stamp"]}', '',
+    lines = [f'# Décomposition descriptive des pertes W1 — {doc["stamp"]}', '', f'**{doc["multiplicity_warning"]}**', '',
              'Régimes : [SL] moteur gelé sans loyer ; [LP] loyer perdu, ajout additif. Échecs : 0 (non mesurés).', '']
     for arm, part in doc['arms'].items():
         d1 = part['D1_costs']
@@ -242,11 +246,26 @@ def markdown(doc):
             lines += ['', f'Net [SL] {_pct(d1["mean_net_return_frozen_SL"])} ; net [LP] '
                           f'{_pct(d1["mean_net_return_rent_lost_LP_additive"])}', '']
         d2 = part['D2_price_path_after_entry']
-        lines += ['| Slots après l\'entrée | n | Moyenne | Médiane | Part sous l\'entrée |', '|---|---|---|---|---|']
+        lines += [f'### D2 — trajet du prix après l\'entrée ({d2["label"]})', '',
+                  '| Slots après l\'entrée | n | Moyenne | Médiane | Part sous l\'entrée |', '|---|---|---|---|---|']
         for k, row in d2['relative_spot_by_slot_offset'].items():
             lines.append(f'| {k} | {row["n"]} | {_pct(row["mean"])} | {_pct(row["median"])} | '
                          f'{_pct(row["share_below_entry"])} |')
         lines.append('')
+        d3 = part['D3_pool_types']
+        for title, table, label in (('D3a — événements avant l\'entrée', d3['D3a_events_before_entry'], None),
+                                    ('D3b — heure UTC de création', d3['D3b_creation_hour_utc'], None),
+                                    ('D3c — pool arrivé à la migration', d3['D3c_reached_migration']['classes'],
+                                     d3['D3c_reached_migration']['label'])):
+            lines += [f'### {title}' + (f' ({label})' if label else ''), '',
+                      '| Classe | n | Brut moyen | Net moyen [SL] | IC 95 % du net | Réussite | Interprétable |',
+                      '|---|---|---|---|---|---|---|']
+            for name, row in table.items():
+                ci = row['interval_95_mean_net_return']
+                lines.append(f'| {name} | {row["n"]} | {_pct(row["mean_gross_return"])} | {_pct(row["mean_net_return"])} | '
+                             f'[{_pct(ci["low"])} ; {_pct(ci["high"])}] | {_pct(row["win_rate"])} | '
+                             f'{"oui" if row["interpretable"] else "non"} |')
+            lines.append('')
     return '\n'.join(lines) + '\n'
 
 

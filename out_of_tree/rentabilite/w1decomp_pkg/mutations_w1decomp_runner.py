@@ -25,6 +25,10 @@ MUT = [
  ("    if manifest_sha != manifest_sha256:", "    if False:", 'manifest_unchecked'),
  ("    if set(wanted) - set(out):", "    if False:", 'missing_pool_accepted'),
  ("    if out.exists():", "    if False:", 'overwrite_allowed'),
+ ("lambda p: 'migration' if timelines[p['pool']]['migrated'] else 'no_migration'", "lambda p: 'no_migration' if timelines[p['pool']]['migrated'] else 'migration'", 'migration_inverted_R02'),
+ ("share_below_entry=(sum(1 for v in values if v < 0) / len(values))", "share_below_entry=(sum(1 for v in values if v <= 0) / len(values))", 'below_non_strict_R02'),
+ ("out[name] = dict(A._short(g), win_rate=sum(1 for p in g if p['pnl'] > 0) / len(g),", "out[name] = dict(A._short(g), win_rate=sum(1 for p in g if p['pnl'] >= 0) / len(g),", 'win_nonstrict_R02'),
+ ("    lines = [f'# Décomposition descriptive des pertes W1 — {doc[\"stamp\"]}', '', f'**{doc[\"multiplicity_warning\"]}**', '',", "    lines = [f'# Décomposition descriptive des pertes W1 — {doc[\"stamp\"]}', '',", 'md_warning_dropped'),
  ("        if missing:\n            raise DecompError('pool_without_timeline:%d' % len(missing))", "        if False:\n            pass", 'timeline_missing_accepted'),
 ]
 def run(work):

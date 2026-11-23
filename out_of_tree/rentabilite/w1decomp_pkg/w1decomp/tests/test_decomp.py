@@ -116,8 +116,9 @@ def test_d3_pool_types_fixed_classes():
     t = D.pool_types(_population()['master'], TIMELINES)
     assert set(t['D3a_events_before_entry']) == {'[0,10)'} and t['D3a_events_before_entry']['[0,10)']['n'] == 2
     assert set(t['D3b_creation_hour_utc']) == {'00-04h', '12-16h'}
-    assert t['D3c_reached_migration']['migration']['n'] == 1 and t['D3c_reached_migration']['no_migration']['n'] == 1
-    assert t['D3c_reached_migration']['migration']['interpretable'] is False
+    c = t['D3c_reached_migration']
+    assert c['label'] == D.AFTER_DECISION and c['classes']['migration']['n'] == 1 and c['classes']['no_migration']['n'] == 1
+    assert c['classes']['migration']['interpretable'] is False
     assert [D.trade_class(v) for v in (0, 9, 10, 29, 30, 99, 100, 5_000)] == [
         '[0,10)', '[0,10)', '[10,30)', '[10,30)', '[30,100)', '[30,100)', '>=100', '>=100']
 
@@ -200,3 +201,30 @@ def test_turning_points_ties_and_strictness_and_class_edges():
     assert t['D3b_creation_hour_utc']['00-04h']['n'] == 6
     t2 = D.pool_types(pos[:1], dict(z=dict(events=events, migrated=False, creation_block_time=4 * 3600 - 1)))
     assert set(t2['D3b_creation_hour_utc']) == {'00-04h'}
+
+
+def test_r02_survivors_migration_side_strict_below_and_strict_win():
+    events = [Ev(10, 100), Ev(11, 100), Ev(12, 90)]
+    pos = [dict(pool=n, buy_index=0, pnl=v, gross_return=0.0, net_return=0.0, cluster=n, buy_slot=10, sell_index=2,
+                sell_slot=12) for n, v in (('m1', 0), ('m2', 5), ('s1', -5))]
+    tl = dict(m1=dict(events=events, migrated=True, creation_block_time=0),
+              m2=dict(events=events, migrated=True, creation_block_time=0),
+              s1=dict(events=events, migrated=False, creation_block_time=0))
+    c = D.pool_types(pos, tl)['D3c_reached_migration']['classes']
+    assert (c['migration']['n'], c['no_migration']['n']) == (2, 1)
+    assert c['migration']['win_rate'] == 0.5                       # pnl 0 is not a win
+    agg = D.price_path(pos, tl)
+    assert agg['relative_spot_by_slot_offset']['0']['share_below_entry'] == 0     # equal to the entry: not below
+    assert agg['relative_spot_by_slot_offset']['1']['share_below_entry'] == 0
+    assert agg['relative_spot_by_slot_offset']['2']['share_below_entry'] == 1
+    assert agg['label'] == D.AFTER_DECISION
+
+
+def test_markdown_publishes_d3_with_the_warnings(tmp_path, monkeypatch):
+    ledger, sha, bundle = _files(tmp_path)
+    monkeypatch.setattr(D, 'load_timelines', lambda *_a: TIMELINES)
+    D.run(ledger, sha, bundle, 'pools', 'm' * 64, tmp_path / 'md', evaluation_min=START, evaluation_max=END)
+    md = (tmp_path / 'md' / 'DECOMPOSITION_W1.md').read_text()
+    assert 'AVERTISSEMENT DE MULTIPLICITÉ' in md and md.count(D.AFTER_DECISION) >= 4
+    for title in ('D3a', 'D3b', 'D3c', 'Interprétable', '00-04h', 'no_migration', '[0,10)'):
+        assert title in md
