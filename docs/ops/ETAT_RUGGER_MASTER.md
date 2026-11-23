@@ -70,7 +70,7 @@ Légende des preuves :
 | T-R01-2 | R01 | Carte du seuil de rentabilité : avantage brut minimal selon le palier de frais, la taille rapportée à la réserve, la priorité, le loyer, les échecs (0 à 60 %) et la latence | PASS R02 ; 3 leviers principaux chiffrés | confié 21:03Z |
 | T-R01-3 | R01 | Génération 3 : 2 ou 3 fiches PROJET hors famille « 10 min », notées sur a21f90f3 | recevabilité R02 | confié 21:03Z |
 | T-R02-1 | R02 | Audits de T-R01-1 à T-R01-3 | verdict écrit et sha pour chacun | au fil de l'eau |
-| T-R02-2 | R02 | Puissance réaliste de la génération 2 (σ plausibles, effet net) → durée et crédits pour n = 155 et 262 | table chiffrée pour le texte de crédits | confié 21:03Z |
+| T-R02-2 | R02 | Puissance réaliste de la génération 2 (σ plausibles, effet net) → durée et crédits pour n = 155 et 262 | table chiffrée pour le texte de crédits | **FAIT** (b237941d) : n pilote = 155, 303 ou 619 pour σ = 2,5, 3,5 ou 5 %. Le pilote atteint la pleine puissance avec 50 000 crédits seulement si R̂ ≤ ≈ 967 tx par pool et par jour ; sinon, résultat publié « sous la cible », remédiable par C-bis. Génération 2 : ≈ 100 000 crédits Free par fenêtre, à fixer après la mesure de R̂. |
 | T-R03-1 | R03 | Répétition hors ligne de toute la chaîne du pilote CPMM, avec faux RPC (crédits, arrêts, U-2, gel, reprise, G-1) | journal avec sha et audit R02 | confié 21:03Z |
 | T-R03-2 | R03 | Plan de ressources (disque, mémoire, durée, risques, sauvegardes) pour le pilote et la génération 2 | document avec sha | confié 21:03Z |
 | T-R03-3 | R03 | Contrôle d'intégrité W1, seulement s'il y a eu un redémarrage depuis 08:47Z | 0 écart | conditionnel |
