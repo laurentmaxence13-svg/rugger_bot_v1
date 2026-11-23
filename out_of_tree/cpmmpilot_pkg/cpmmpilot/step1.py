@@ -152,14 +152,47 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed):
             idx = rule.decisions(line, cfg)
             primary += rule.positions(line, cfg, idx)
             placebo += rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name]))
-        priced = [p for p in primary if 'net_return' in p]
-        verdict = CC.pilot_verdict(priced, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
+        counted = [zero_sale(p) if 'net_return' not in p else p for p in primary]     # K01 (R02)
+        unpriced_reasons = {}
+        for p in primary:
+            if 'net_return' not in p:
+                unpriced_reasons[p['unpriced']] = unpriced_reasons.get(p['unpriced'], 0) + 1
+        verdict = CC.pilot_verdict(counted, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
+        verdict.pop('meaning', None)                                                  # K02 (R02)
+        verdict['sheet_sentence'] = SHEET_SENTENCE
         pp = [p for p in placebo if 'net_return' in p]
         mean = lambda rows: sum(r['net_return'] for r in rows) / len(rows) if rows else None
-        diff = (None if not priced or not pp else mean(priced) - mean(pp))
-        result[name] = dict(verdict=verdict, positions=len(primary), unpriced=len(primary) - len(priced),
+        diff = (None if not counted or not pp else mean(counted) - mean(pp))
+        result[name] = dict(verdict=verdict, positions=len(primary), unpriced_counted_at_zero_sale=sum(unpriced_reasons.values()),
+                            unpriced_reasons=unpriced_reasons,
                             placebo=dict(positions=len(placebo), unpriced=len(placebo) - len(pp),
                                          paired_mean_difference=diff, label='published apart, no decision'))
         write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo))
+    assert_closed_vocabulary(result)
     write_json(Path(out) / 'G1.json', result)
     return result
+
+
+# K01 (R02): an ENTERED position of an admitted pool that cannot be priced takes a sale value of 0 and stays COUNTED;
+# costs as cpmmcost.position with 0 failures and the account closed: buy, sale, WSOL close, cleanup transactions.
+ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS
+                           + (CC.TX_FEE_LAMPORTS if CC.WSOL_SEPARATE_CLOSE else 0))
+
+
+def zero_sale(row):
+    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=ZERO_SALE_NET_LAMPORTS,
+                net_return=ZERO_SALE_NET_LAMPORTS / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'])
+
+
+# K02 (R02): closed vocabulary of every published document (same words as plbench.bench.FORBIDDEN_WORDS, test)
+FORBIDDEN_WORDS = ('rentable', 'profitable', 'gagnant')
+SHEET_SENTENCE = ('GO_PILOTE autorise seulement à PROPOSER la confirmation. Il ne qualifie jamais la stratégie '
+                  'au-delà de ce verdict.')
+
+
+def assert_closed_vocabulary(document):
+    text = json.dumps(document, ensure_ascii=False, default=str).lower()
+    found = [w for w in FORBIDDEN_WORDS if w in text]
+    if found:
+        raise Step1Stop('forbidden_word_in_output:%s' % ','.join(found))
+    return document

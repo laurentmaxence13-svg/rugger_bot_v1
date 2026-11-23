@@ -284,3 +284,64 @@ def test_count_24h_counts_exactly_the_24_hours_before_t0(tmp_path):
     for pool in pools:
         assert doc['per_pool'][pool] == sum(1 for t in chain.history[pool]
                                             if t0 - 86_400 <= t['blockTime'] < t0 and t['slot'] <= chain.slot)
+
+
+# -- 0.1.2: K01 / K02 of R02 (f41c6cb0) -------------------------------------------------------------------------------
+def test_zero_sale_conversion_k01():
+    from cpmmcost import model as CC
+    row = dict(pool='P', decision_index=3, unpriced='data_ends_before_exit', decision_time=1)
+    z = step1.zero_sale(row)
+    assert z['entered'] is True and z['received'] == 0 and z['unpriced_reason'] == 'data_ends_before_exit'
+    assert z['net_lamports'] == -(CC.STAKE_LAMPORTS + 4 * CC.TX_FEE_LAMPORTS) == -100_420_000
+    assert z['net_return'] == -1.0042
+
+
+def test_closed_vocabulary_k02_and_parity_with_plbench():
+    import ast
+    import os
+    src = None
+    for d in os.environ.get('PYTHONPATH', '').split(':'):
+        if d.endswith('plbench_pkg') and os.path.exists(os.path.join(d, 'plbench', 'bench.py')):
+            with open(os.path.join(d, 'plbench', 'bench.py')) as handle:
+                src = handle.read()
+    if src is not None:
+        node = next(n for n in ast.parse(src).body if isinstance(n, ast.Assign)
+                    and getattr(n.targets[0], 'id', '') == 'FORBIDDEN_WORDS')
+        assert tuple(ast.literal_eval(node.value)) == step1.FORBIDDEN_WORDS
+    step1.assert_closed_vocabulary(dict(a='NO-GO'))
+    with pytest.raises(step1.Step1Stop):
+        step1.assert_closed_vocabulary(dict(meaning='it never means profitable'))
+
+
+def test_g1_k01_counts_unpriced_and_k02_removes_meaning(tmp_path, monkeypatch):
+    from cpmmcost import model as CC
+    chain, spec = fixtures.build(n_pools=26, window_days=1)
+    chain.slot = spec['t0_slot']
+    t0 = spec['t0_time']
+    doc = u2.run(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=t0)
+    sel = doc['selected']
+    chain.slot = 10 ** 12
+    step1.collect(_client(chain, tmp_path, 'step1', B.STEP1_HARD_STOP), tmp_path / 's', [r['pool'] for r in sel],
+                  start_time=t0, end_time=t0 + 86_400, phase='window')
+    real = CC.position
+    calls = dict(n=0)
+
+    def flaky_position(*a, **k):
+        calls['n'] += 1
+        if calls['n'] % 5 == 0:
+            raise CC.CostError('synthetic_unpriced')
+        return real(*a, **k)
+    monkeypatch.setattr(CC, 'position', flaky_position)
+    seen = {}
+    real_verdict = CC.pilot_verdict
+
+    def spy(positions, **k):
+        seen.setdefault('n', []).append(len(positions))
+        seen.setdefault('zero', []).append(sum(p.get('status') == 'unpriced_zero_sale' for p in positions))
+        return real_verdict(positions, **k)
+    monkeypatch.setattr(CC, 'pilot_verdict', spy)
+    out = step1.g1(tmp_path / 's', sel, t0_slot=doc['t0_slot'], sheets=dict(RCP1='a' * 64, B1='b' * 64), g0_passed=True)
+    r = out['RCP1']
+    assert r['unpriced_counted_at_zero_sale'] > 0 and r['unpriced_reasons'] == {'synthetic_unpriced': r['unpriced_counted_at_zero_sale']}
+    assert seen['n'][0] == r['positions'] and seen['zero'][0] == r['unpriced_counted_at_zero_sale']
+    assert 'meaning' not in r['verdict'] and r['verdict']['sheet_sentence'].startswith('GO_PILOTE autorise seulement')
