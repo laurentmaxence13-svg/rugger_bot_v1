@@ -1,49 +1,53 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-23 à 07:00Z.
+Mis à jour le 2026-11-23 à 10:35Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
 
-## 1. Autorisations du propriétaire en vigueur
+## 1. Autorisations vérifiées à la source
 
-| # | Autorisation | Source | Périmètre / plafond / conditions |
+Référence : REGISTRE_AUTORISATIONS_VERIFIEES_R02_v1_0.md, sha256 a4b9d467…69e2 (registre R02 0dbe0572). Couverture partielle : session R04 avec deux trous, R01 en cours d'extraction.
+
+| Autorisation | Source | Couvre | NE couvre PAS |
 |---|---|---|---|
-| A1 | Travaux techniques hors ligne permanents | Directives « autonomie maximale » et « autonomie totale », événement 60283acd, 22/11 20:23:48Z | Recherche, code, tests, mutation, intégrité, audits, protocoles, documentation, commits, préparation. Aucune exécution sur les données protégées hors des autorisations A3 à A5. |
-| A2 | Analyses hors ligne gratuites sur W1 ancré | Directive 5aff3383 du 20/11 19:00Z, point 1 | Après PASS de R02. Une seule exécution par analyse. Les critères sont fixés avant l'exécution. |
-| A3 | Verdict technique PAPERSTREAM W1 | Décision de continuité du 22/11, point 1 | R02 documente 191/128 et rend un verdict distinct. L'échec initial de psverdict reste enregistré. Aucun recalcul qui remplacerait le premier résultat. |
-| A4 | cpmmfmt 0.1, une fois, sur P0 visible aca7de08 | 22/11, point 2 | Hors ligne, sans réseau, sans données réservées. Contrôle par R02. **Consommée** : autorisation écrite dans la session R03 (événement 7aec4137, 20:24:05Z, vérifié par R02) ; exécution unique de 20:24:20Z à 20:24:25Z. |
-| A6 | feeage 0.2 sur P0 visible | 5aff3383, point 2 ; 55678c09 (20/11 19:22Z), après contrôle du MANIFEST aca7de08 | **Consommée** (fait). |
-| A7 | Répartition des rôles : R02 fait l'audit statistique et le protocole W2, R03 les analyses économiques autorisées | 47308aed, 20/11 19:10Z | Précise aussi : « 66 $ n'est pas une autorisation de dépense ». |
-| A5 | Vérifications hors ligne de PAPERSTREAM 0.5.x sur W1 | 22/11, point 3 | Après validation de R02. Les résultats du run 0.4 ne sont jamais remplacés. Objectif : identité exacte avec W1 et respect des limites mémoire. |
+| Travaux techniques hors ligne permanents | R04 60283acd (22/11), 813ab515 (23/11) | code, tests, audits, protocoles, documentation | A2, Google Cloud, crédits Helius, collecte, dépense |
+| Analyses hors ligne W1 après PASS R02 | 5aff3383 point 1 (20/11) | landslip sur W1 (fait) | collecte, dépense |
+| Vérifications 0.5.x | R02 7350829b point 3 (22/11) | consommé (0.5.1 et 0.5.2.1 VERIFIED) | — |
+| cpmmfmt 0.1, une fois | R03 7aec4137 (22/11) | consommé | pilote CPMM, crédits Helius |
+| CPMM, source publique gratuite | R04 7ede3e39 (10/11) | exemples pour le décodeur | liste U-2, crédits |
+| Proposer Raydium U-2, préparer l'étage 0 | R04 2d49816b point 4 (23/11) | proposer, préparer | appel à l'API, exécution de l'étage 0 |
+| Sauvegarde W1 ≤ 1,00 $ cumulé | R03 fe5be941, 61008bcc, 576b1b1c, bf07ca21 (17–20/11) | sauvegarde seule | A2, VM, autre bucket |
+| **Suspension** de la sauvegarde | R03 52c8a431, R04 3cee6c73 (21/11) | — | exécution de la ligne précédente (SUSPENDUE) |
+| Plan de préservation W1 | R04 2d49816b point 2 (23/11) | un plan (fait : R03 8969e61a) | transfert des données brutes |
+| Principe Helius Developer ≤ 100 $ HT | R04 66e09996 (04/11) | principe | paiement |
+| Préparation technique LIVE | R04 10f2725b (04/11) | préparer | activer, payer, héberger |
+| Voie B Google Cloud 60 $ | R03 8cfead0e (15/11) | **caduque** (retirée par b9e596e3, 15/11) | — |
+| **B1 signé** | recherché | **aucun trouvé** | — |
 
-**Non autorisé** (le silence du propriétaire ne vaut jamais accord) :
-- trading réel ;
-- toute dépense (Google Cloud ou autre) ;
-- lancement d'A2 ;
-- transfert Google Cloud ;
-- nouvelle collecte ;
-- crédits Helius (pilote CPMM étapes 0 et 1, collecte W2) ;
-- lancement de W2 ;
-- fusion dans `main` ;
-- contournement des protections ;
-- jeton dans un chat ;
-- modification rétroactive des critères ;
-- dépassement du plafond d'essais.
+Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, soit 173 au total. R-CP1 porterait N à 169.
 
-Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilote CPMM R-CP1 porterait N à 169 sur 170 (note CPMM v0.2). Confirmé par R02 (Dossier B v1.9, 2c25a090, § 5) : le plafond de 170 s'entend hors HW1 ; HW1 ajoute 5 essais publiés à part, soit 173 au total, sans violation. Il reste 2 essais hors HW1. L'admission C-B coûte +0, car c'est une règle fermée.
+## 2. Opérations bloquées — clauses précises manquantes
 
-## 2. Opérations bloquées — la décision précise qui manque
+| Opération | Clause manquante, et elle seule | Où |
+|---|---|---|
+| A2, puis HW1, puis C-B | Recopier et signer le § 7 de la fiche v1.1 (e2a93ea8), avec v2.6.6 (490a28f1) : exception Google Cloud limitée à A2 ; B1 (C1/P1) ; 66 $ TTC avec alerte ; DEADLINE ≤ 49 h, puis DELETE ; jetons déposés par le propriétaire ; risque accepté | session du propriétaire |
+| Sauvegarde GCS des lots 6a, 6b et 7 | « Je lève la suspension », puis dépôt d'un jeton par le propriétaire lui-même | session R03, formulaire « network secret » |
+| Données brutes W1 hors conteneur | Choisir une option du plan R03 (8969e61a) : (a) GCS ou (d) archives dans l'app | session R03 |
+| Liste U-2 du pilote CPMM | « J'autorise un appel à l'API publique Raydium (hôte précisé) pour la liste des candidats U-2 », avec ouverture réseau. Raydium seul ne suffit pas : il faut aussi des lectures sur la chaîne (étage 1). | session R03 |
+| Pilote CPMM, étage 0 | « GO étape 0, ≤ 100 crédits Helius » | session R03 |
+| Pilote CPMM, étage 1 | « GO étape 1, ≤ 50 000 crédits », après l'étage 0 | session R03 |
+| Mesure des échecs N-4 | Collecte qui conserve les transactions échouées, avec un plafond | session R03 |
+| PAPER_LIVE | Choix A, B ou C face au facteur ≈ 16 de crédits (7,68 M getTransaction contre ≈ 467 k Free) ; puis D-1, D-3, D-5, D-6, D-7 (DX v0.2, 7f6c5f4, CONFORME selon R02) | session de l'exécutant |
+| W2 | Format, k, plafond, plan Helius, GO (après A2, HW1 et C-B) | session du propriétaire |
+| Hygiène | Retirer le secret Helius de R03 ; désactiver les 4 routines d'étiquette | paramètres |
 
-| Opération | Décision précise manquante | Où la poser | Prêt de notre côté |
-|---|---|---|---|
-| **A2** : verdict officiel W1, qui ouvre ensuite HW1 puis C-B | Recopier et signer le texte du § 7 de la fiche R02 v1.1, erratum v2.6.6 : exception Google Cloud limitée à A2, VM et bucket neufs, DEADLINE ≤ lancement + 49 h, plafond 66 $ TTC avec alerte, C1/P1 (B1), jetons déposés par le propriétaire lui-même, risque de sauvegarde accepté. **Aucune autorisation existante ne couvre Google Cloud, les transferts ou la dépense.** La mention de 66 $ dans 5aff3383 et 47308aed ne vaut pas autorisation (47308aed). | Session du propriétaire. Le dépôt de jetons se fait par le formulaire « network secret » de l'environnement R03, jamais dans un chat. | Paquet v2.6.6 au PASS de R02 (d0c2ccd, MANIFEST 490a28f1) ; w1chain 0.2 au PASS de R02 (a49f398) |
-| Pilote CPMM, étape 0 | (1) Choisir la source de la liste de pools (U-2). (2) Écrire « GO étape 0, ≤ 100 crédits Helius ». | Session R03 | Protocole v1.2 (a3a285a1), cpmmfmt CONFORME, cpmmcost 0.2 au PASS de R02 |
-| Pilote CPMM, étape 1 | Écrire « GO étape 1, ≤ 50 000 crédits », après le résultat de l'étape 0 | Session R03 | Idem |
-| PAPER_LIVE prospectif | Choisir D-1 à D-7 : hôte 24 h, source du flux, plafond de crédits, SOL/USD en direct, gestion du secret, interface unique, texte d'autorisation | Session de l'agent exécutant | Protocole PAPER_LIVE v0.2, conforme selon R02 (f9bd7816) ; rtgate 0.2 au PASS de R02 |
-| Mesure des échecs de transaction (N-4) | Autoriser une collecte qui conserve aussi les transactions échouées, avec un plafond de crédits | Session R03 | landslip 0.1 au PASS de R02 ; mesure d'activité sur W1 faite et ancrée (8ae58251) |
-| W2 | Fixer le format, k, le plafond et le plan Helius, puis donner le GO de lancement. Dépend de A2 → HW1 → C-B. | Session du propriétaire | Dossier B v1.9 |
-| Hygiène | Retirer le secret Helius de l'environnement R03 ; désactiver les 4 routines d'étiquette du 05/11 | Paramètres claude.ai | — |
+## 2 bis. Opérations prêtes (code audité, sans décision en attente côté agents)
+
+- A2 : paquet v2.6.6 au PASS R02 ; chaîne w1chain 0.2 au PASS (verdict → HW1 → C-B).
+- CPMM : cpmmfmt CONFORME, cpmmcost 0.3, cpmmprereg 0.2 (R-CP1 figée) ; règles de lecture gelées par R02.
+- PAPER_LIVE : protocole v0.2 conforme ; plbench 0.2 ; rtgate 0.2 ; papercost 0.1 ; landslip ; DX v0.2. Seul l'adaptateur d'acquisition reste à écrire, après le choix de D-2.
+- Preuves : intégrité W1 sans écart ; remise au propriétaire des preuves de moins de 100 Mo confiée à R03.
 
 ## 3. Tâches priorisées (autorisées, en parallèle)
 
