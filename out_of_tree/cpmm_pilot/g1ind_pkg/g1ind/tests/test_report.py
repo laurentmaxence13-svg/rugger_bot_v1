@@ -62,12 +62,34 @@ def test_g0_not_passed_publishes_no_number():
 
 
 # -- (2) unpriced rows -------------------------------------------------------------------------------------------------
-def test_unpriced_rows_are_excluded_from_g1_and_published():
+def test_an_unpriced_row_is_an_entered_position_sold_for_zero_and_counted():
+    # K01, R02 f41c6cb0: valued at 0 with the frozen closedacct zero-sale formula, COUNTED in the mean and the floors
+    z = G.zero_valued(dict(pool='p03', decision_index=999, decision_time=900, unpriced='data_ends'))
+    assert z['net_lamports'] == -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)
+    assert z['net_return'] == z['net_lamports'] / CC.STAKE_LAMPORTS and z['entered'] is True
+    assert z['status'] == G.ZERO_STATUS and z['unpriced'] == 'data_ends'
+    assert z['net_return'] == pytest.approx(CA.net_return_closed(dict(migrated=True, value=0, tokens=None,
+                                                                      cost=CC.STAKE_LAMPORTS + 315_000)))
+    one = G.zero_valued(dict(pool='p03', decision_index=999), CC.SENSITIVITY_FAILURES)
+    assert one['net_lamports'] == -(CC.STAKE_LAMPORTS + 5 * CC.TX_FEE_LAMPORTS + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)
     p, pl = arms(40, 20, lambda i: 0.01)
     holed = p + [dict(pool='p03', decision_index=999, decision_time=900, unpriced='data_ends_before_exit')]
     out = run(holed, pl)
     assert out['unpriced']['count'] == 1 and out['unpriced']['rows'][0]['reason'] == 'data_ends_before_exit'
-    assert out['g1']['n'] == 40
+    assert out['unpriced']['rule'] == G.ZERO_RULE
+    frozen = CC.pilot_verdict(p + [G.zero_valued(holed[-1])], g0_passed=True, freeze_sheet_sha256=SHEET, draws=DRAWS)
+    assert {k: v for k, v in out['g1'].items() if k != 'meaning'} == {k: v for k, v in frozen.items() if k != 'meaning'}
+    assert out['g1']['n'] == 41 and out['g1']['n_entered'] == 41
+    assert out['g1']['mean_net_return'] == pytest.approx((40 * 0.01 + z['net_return']) / 41)
+    assert out['metrics_b31a3c47']['population'] == 41
+    assert out['metrics_b31a3c47']['fees_share_of_stake_entered']['zero_valued_positions'] == 1
+    # it counts in the floors: 29 priced + 1 unpriced entries on 20 pools reach the 30-entry floor
+    p29, pl29 = arms(29, 20, lambda i: 0.01)
+    floor = run(p29 + [dict(pool='p05', decision_index=777, decision_time=50, unpriced='x')], pl29)
+    assert floor['g1']['n_entered'] == 30 and floor['g1']['decision'] != 'INCONCLUSIF'
+    # the placebo is valued under the same rule
+    pz = run(p, pl + [dict(pool='p01', decision_index=20_000, decision_time=1, unpriced='x')])
+    assert pz['placebo']['unpriced_valued_zero'] == 1 and pz['placebo']['positions'] == 41
 
 
 # -- (3) b31a3c47 ------------------------------------------------------------------------------------------------------
@@ -154,13 +176,20 @@ def test_supplied_sensitivities_must_be_the_same_decisions_with_the_declared_par
     with pytest.raises(G.ReportError, match='parameter'):
         run(p, pl, sensitivities=dict(rent_lost_vs_closed_account=p))
     wide = [dict(x, guard_ppm=CC.BUY_GUARD_SENSITIVITY_PPM) for x in p]
-    assert run(p, pl, sensitivities=dict(guard_5_percent=wide))['robustness']['guard_5_percent']['unpriced'] == 0
+    rob = run(p, pl, sensitivities=dict(guard_5_percent=wide))['robustness']['guard_5_percent']
+    assert rob['unpriced_valued_zero'] == 0
     with pytest.raises(G.ReportError, match='parameter'):
         run(p, pl, sensitivities=dict(guard_5_percent=p))
     # a row that becomes unpriced in a sensitivity keeps its decision and is counted apart
     holed = slow[:-1] + [dict(pool=slow[-1]['pool'], decision_index=slow[-1]['decision_index'], unpriced='data_ends')]
     r = run(p, pl, sensitivities=dict(latency_10_slots=holed))['robustness']['latency_10_slots']
-    assert (r['positions'], r['unpriced']) == (39, 1)
+    assert (r['positions'], r['unpriced_valued_zero']) == (40, 1)
+    assert r['mean_net_return'] == pytest.approx((39 * 0.007 + G.zero_valued(holed[-1])['net_return']) / 40)
+    # the zero value of a run is charged under that run's failures
+    one_holed = one[:-1] + [dict(pool=one[-1]['pool'], decision_index=one[-1]['decision_index'], unpriced='x')]
+    r1 = run(p, pl, sensitivities=dict(one_failure_per_tx=one_holed))['robustness']['one_failure_per_tx']
+    assert r1['mean_net_return'] == pytest.approx(
+        (39 * 0.01 + G.zero_valued(one_holed[-1], CC.SENSITIVITY_FAILURES)['net_return']) / 40)
 
 
 def test_without_the_5_best_pools_and_the_halves():
@@ -220,8 +249,7 @@ def test_end_to_end_on_a_synthetic_pool_with_the_frozen_rule():
     slow = R.positions(line, CONFIG, idx, latency_slots=10)
     again = G.report('RCP1', primary, placebo, g0_passed=True, freeze_sheet_sha256=SHEET, lines=[line], draws=DRAWS,
                      sensitivities=dict(latency_10_slots=slow))
-    assert again['robustness']['latency_10_slots']['positions'] + again['robustness']['latency_10_slots'][
-        'unpriced'] == len(primary)
+    assert again['robustness']['latency_10_slots']['positions'] == len(primary)
 
 
 def test_a_slot_exit_reads_the_block_time_of_the_firing_swap():
@@ -233,4 +261,6 @@ def test_a_slot_exit_reads_the_block_time_of_the_firing_swap():
         G.exit_time(line, dict(fake, exit=dict(rule='slot', declared=10 ** 9)))
     refused = dict(status='guard_failed', decision_index=40)
     assert G.exit_time(line, refused) == s.block_time
+    zero = G.zero_valued(dict(pool=line.pool, decision_index=40, decision_time=s.block_time, unpriced='x'))
+    assert G.exit_time(line, zero) == s.block_time + R.CLOCK_S + hrr.clock_exit_latency_s(4)
     assert G.exit_time(line, dict(status='entered', exit=dict(rule='clock', declared=4_321))) == 4_321

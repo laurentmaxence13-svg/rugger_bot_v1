@@ -4,7 +4,7 @@ D, V, W, M, PP = Path(sys.argv[1]), sys.argv[2], sys.argv[3], Path(sys.argv[4]),
 src = (D / 'g1ind' / 'report.py').read_text()
 MUT = [
  ("    g1 = dict(g1, meaning=SHEET_MEANING)", "    g1 = dict(g1)", 'meaning_kept'),
- ("    priced = [p for p in primary if 'net_return' in p]\n    unpriced", "    priced = list(primary)\n    unpriced", 'unpriced_passed_to_g1'),
+ ("    priced = valued(primary)                                  # K01: unpriced rows valued at 0 and COUNTED", "    priced = list(primary)", 'unpriced_passed_raw_to_g1'),
  ("    if not g1['published_numbers']:", "    if False:", 'stop_publishes_numbers'),
  ("flag=UNDER_TARGET if g1['n_entered'] < target else None", "flag=UNDER_TARGET if g1['n_entered'] <= target else None", 'target_non_strict'),
  ("    wins = [r for r in nets if r > 0]", "    wins = [r for r in nets if r >= 0]", 'zero_is_a_win'),
@@ -33,8 +33,16 @@ MUT = [
  ("    out['frozen_mev_grid'] = MEV_NOT_MEASURED\n", "", 'mev_reason_dropped'),
  ("    g1 = CC.pilot_verdict(priced, g0_passed=g0_passed, freeze_sheet_sha256=freeze_sheet_sha256, draws=draws)", "    g1 = CC.pilot_verdict(priced, g0_passed=g0_passed, freeze_sheet_sha256=freeze_sheet_sha256)", 'draws_dropped'),
  ("    if hypothesis not in HYPOTHESES:\n        raise ReportError('unknown_hypothesis')\n", "", 'any_hypothesis'),
- ("    entered = [p for p in rows if p.get('status') != 'guard_failed']", "    entered = list(rows)", 'refusals_in_fee_split'),
+ ("    entered = [p for p in rows if p.get('status') not in ('guard_failed', ZERO_STATUS)]", "    entered = [p for p in rows if p.get('status') != 'guard_failed']", 'zero_rows_in_fee_split'),
+ ("    entered = [p for p in rows if p.get('status') not in ('guard_failed', ZERO_STATUS)]", "    entered = [p for p in rows if p.get('status') != ZERO_STATUS]", 'refusals_in_fee_split'),
  ("        dd = drawdown(rows, [exit_time(by_pool[p['pool']], p) for p in rows])", "        dd = NM", 'dd_never_computed'),
+ ("    return [p if 'net_return' in p else zero_valued(p, failures) for p in rows]", "    return [p for p in rows if 'net_return' in p]", 'k01_unpriced_excluded'),
+ ("    lamports = -(cost + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)", "    lamports = -cost", 'k01_rent_not_lost'),
+ ("    tx = ((1 + failures.buy) + (1 + failures.sell) + (1 if CC.WSOL_SEPARATE_CLOSE else 0)) * CC.TX_FEE_LAMPORTS", "    tx = ((1 + failures.buy) + (1 if CC.WSOL_SEPARATE_CLOSE else 0)) * CC.TX_FEE_LAMPORTS", 'k01_sale_tx_free'),
+ ("    return dict(row, status=ZERO_STATUS, entered=True,", "    return dict(row, status=ZERO_STATUS, entered=False,", 'k01_not_an_entry'),
+ ("RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)", "RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES)", 'k01_run_failures_ignored'),
+ ("        return row['decision_time'] + R.CLOCK_S + hrr.clock_exit_latency_s(CC.LATENCY_SLOTS)", "        return row['decision_time']", 'k01_exit_at_decision'),
+ ("    placebo_priced = valued(placebo)", "    placebo_priced = [p for p in placebo if 'net_return' in p]", 'k01_placebo_excluded'),
 ]
 def run(work):
     return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'g1ind' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],

@@ -1,11 +1,14 @@
-"""g1ind 0.1 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
+"""g1ind 0.2 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
 decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1.1; nothing here is a verdict.
 
-(1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on the PRICED primary rows; only its English
-    ``meaning`` field is replaced by the sentence of the sheet (K02 option a, pending R02).
-(2) unpriced rows (cpmmprereg.positions on a CostError) are EXCLUDED from G-1 and PUBLISHED with their reason (K01,
-    pending R02).
-(3) b31a3c47 metrics on the same population as the G-1 mean (priced rows, guard refusals included): win r > 0, loss
+(1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on every primary row (unpriced ones valued at 0, K01); only its English
+    ``meaning`` field is replaced by the sentence of the sheet (K02 option a, R02 decision f41c6cb0).
+(2) K01, R02 decision f41c6cb0 (R-0.3 2792655a, b31a3c47, d34c2c4e): an unpriced row (cpmmprereg.positions on a
+    CostError) is an ENTERED position whose sale is worth 0; it is COUNTED in the mean and in the floors of G-1 and its
+    count and reasons are published. Its net is the frozen closedacct zero-sale formula (no sale, so no cleanup, rent
+    lost): r = (- cost - rent) / stake, cost = stake + buy + sale + WSOL close transactions at the run's failures --
+    the most unfavourable of the frozen zero-value readings (the closed-mode reading would add back rent - cleanup).
+(3) b31a3c47 metrics on the same population as the G-1 mean (every row, guard refusals and zero-valued rows included): win r > 0, loss
     r <= 0, net PF sum(r+) / |sum(r-)|, expectancy identity, drawdown in EXIT order in stakes and in SOL, fees split.
 (4) paired gap primary - placebo, pool cluster bootstrap with the seed of the sheet (statistic of
     cpmmprereg.confirmation_verdict c2), one-sided 95 % bounds: DESCRIPTIVE at the pilot (a condition only at the
@@ -21,7 +24,7 @@ from cpmmcost import model as CC
 from cpmmprereg import rule as R
 from w2arms import ce as W
 
-SCHEMA = 'g1ind-v0.1'
+SCHEMA = 'g1ind-v0.2'
 STAMP = 'DESCRIPTIF — PILOTE CPMM — SEUL LE MOT G-1 DE cpmmcost.pilot_verdict EST UNE DÉCISION'
 NM = 'NON MESURÉ'
 HYPOTHESES = ('RCP1', 'B1')
@@ -42,6 +45,11 @@ SUPPLIED = dict(
     guard_5_percent=lambda p: p.get('guard_ppm') == CC.BUY_GUARD_SENSITIVITY_PPM or p.get('unpriced') is not None,
 )
 COMPUTED = ('without_5_best_pools', 'half_1_half_2')
+# failures under which the zero-valued rows of each run are charged (the primary and the other runs: frozen 0)
+RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)
+ZERO_STATUS = 'unpriced_valued_zero'
+ZERO_RULE = ('K01 (R02 f41c6cb0) : position entrée non valorisable = vente à 0, comptée ; formule gelée closedacct '
+             'sans vente (rente perdue, pas de nettoyage)')
 # the frozen MEV grid (mevsens) is a LaunchLab sandwich model: no audited CPMM adaptation exists, so it stays NON MESURÉ
 MEV_NOT_MEASURED = dict(value=NM, reason='grille MEV gelée sans adaptation CPMM auditée')
 ROBUSTNESS = ('latency_10_slots', 'one_failure_per_tx', 'without_5_best_pools', 'rent_lost_vs_closed_account',
@@ -69,14 +77,34 @@ def check_vocabulary(document):
     return document
 
 
+# -- (2) K01 -----------------------------------------------------------------------------------------------------------
+def zero_valued(row, failures=CC.FROZEN_FAILURES):
+    """An unpriced row as an ENTERED position sold for 0 (closedacct: no sale, so no cleanup, rent lost)."""
+    tx = ((1 + failures.buy) + (1 + failures.sell) + (1 if CC.WSOL_SEPARATE_CLOSE else 0)) * CC.TX_FEE_LAMPORTS
+    cost = CC.STAKE_LAMPORTS + tx
+    lamports = -(cost + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)
+    r = CA.net_return_closed(dict(migrated=True, value=0, tokens=None, cost=cost))
+    if abs(r - lamports / CC.STAKE_LAMPORTS) > 1e-12:
+        raise ReportError('zero_value_differs_from_closedacct')
+    return dict(row, status=ZERO_STATUS, entered=True, net_lamports=lamports, net_return=lamports / CC.STAKE_LAMPORTS,
+                zero_value_rule=ZERO_RULE)
+
+
+def valued(rows, failures=CC.FROZEN_FAILURES):
+    return [p if 'net_return' in p else zero_valued(p, failures) for p in rows]
+
+
 # -- (3) b31a3c47 -----------------------------------------------------------------------------------------------------
 def exit_time(line, row):
     """Block time of the sale of a priced row, for the EXIT order of the drawdown. Clock exit: the declared time
     (deadline + clock latency, cpmmprereg.exit_point). Slot exit: block time of the swap that fired TP / SL (slot =
     declared - latency) + the same clock latency of the frozen replay (hrr.clock_exit_latency_s). A guard refusal has
-    no sale: its time is the decision time (the fee is paid then)."""
+    no sale: its time is the decision time (the fee is paid then). A zero-valued row has no known exit: its loss is
+    placed at the latest exit the rule allows (decision + 1 800 s clock + clock latency of the primary)."""
     if row.get('status') == 'guard_failed':
         return line.swaps[row['decision_index']].block_time
+    if row.get('status') == ZERO_STATUS:
+        return row['decision_time'] + R.CLOCK_S + hrr.clock_exit_latency_s(CC.LATENCY_SLOTS)
     ex = row['exit']
     if ex['rule'] == 'clock':
         return ex['declared']
@@ -113,11 +141,12 @@ def metrics(rows, *, lines=None):
     identity = win_rate * (mean_win or 0) + (1 - win_rate) * (mean_loss or 0)
     if abs(identity - expectancy) > 1e-12:
         raise ReportError('expectancy_identity_broken')
-    entered = [p for p in rows if p.get('status') != 'guard_failed']
+    entered = [p for p in rows if p.get('status') not in ('guard_failed', ZERO_STATUS)]
     keys = sorted({k for p in entered for k in p.get('decomposition_share_of_stake', {})})
     fees = {k: _mean([p['decomposition_share_of_stake'][k] for p in entered]) for k in keys}
     refused = [p for p in rows if p.get('status') == 'guard_failed']
     fees['guard_refusal_fee_per_position'] = _mean([p['net_return'] for p in refused]) if refused else NM
+    fees['zero_valued_positions'] = sum(1 for p in rows if p.get('status') == ZERO_STATUS)
     if lines is None:
         dd = NM
     else:
@@ -160,7 +189,7 @@ def paired_gap(primary, placebo, *, seed, draws):
 def robustness(primary, sensitivities, *, cut_time):
     """``primary``: every row of the primary run (priced or not); a supplied sensitivity must hold the SAME decisions."""
     keys = sorted(map(_key, primary))
-    primary_priced = [p for p in primary if 'net_return' in p]
+    primary_priced = valued(primary)                          # K01: the unpriced rows of every run are valued at 0
     out = {k: NM for k in ROBUSTNESS}
     out['frozen_mev_grid'] = MEV_NOT_MEASURED
     for name, rows in (sensitivities or {}).items():
@@ -170,9 +199,9 @@ def robustness(primary, sensitivities, *, cut_time):
             raise ReportError('sensitivity_is_not_the_same_decisions:' + name)
         if not all(SUPPLIED[name](p) for p in rows):
             raise ReportError('sensitivity_parameter_not_declared:' + name)
-        priced = [p for p in rows if 'net_return' in p]
-        out[name] = dict(mean_net_return=_mean([p['net_return'] for p in priced]), positions=len(priced),
-                         unpriced=len(rows) - len(priced))
+        values = valued(rows, RUN_FAILURES.get(name, CC.FROZEN_FAILURES))
+        out[name] = dict(mean_net_return=_mean([p['net_return'] for p in values]), positions=len(values),
+                         unpriced_valued_zero=sum(1 for p in rows if 'net_return' not in p))
     by_pool = {}
     for p in primary_priced:
         by_pool.setdefault(p['pool'], []).append(p['net_return'])
@@ -196,7 +225,7 @@ def report(hypothesis, primary, placebo, *, g0_passed, freeze_sheet_sha256, cut_
            lines=None, draws=CC.DRAWS):
     if hypothesis not in HYPOTHESES:
         raise ReportError('unknown_hypothesis')
-    priced = [p for p in primary if 'net_return' in p]
+    priced = valued(primary)                                  # K01: unpriced rows valued at 0 and COUNTED
     unpriced = [dict(pool=p['pool'], decision_index=p['decision_index'], reason=p.get('unpriced', NM))
                 for p in primary if 'net_return' not in p]
     g1 = CC.pilot_verdict(priced, g0_passed=g0_passed, freeze_sheet_sha256=freeze_sheet_sha256, draws=draws)
@@ -206,14 +235,14 @@ def report(hypothesis, primary, placebo, *, g0_passed, freeze_sheet_sha256, cut_
     if not g1['published_numbers']:
         return check_vocabulary(dict(doc, descriptive=NM, reason='G-0 non passé : aucun chiffre publié'))
     target = R.n_required()
-    placebo_priced = [p for p in placebo if 'net_return' in p]
+    placebo_priced = valued(placebo)                          # the comparator under the same rule
     doc.update(
-        unpriced=dict(count=len(unpriced), rows=unpriced, rule='exclues de G-1 et publiées (K01, en attente de R02)'),
+        unpriced=dict(count=len(unpriced), rows=unpriced, rule=ZERO_RULE),
         power=dict(n_entered=g1['n_entered'], n_required=target,
                    flag=UNDER_TARGET if g1['n_entered'] < target else None),
         metrics_b31a3c47=metrics(priced, lines=lines),
         paired_gap=paired_gap(priced, placebo_priced, seed=g1['seed'], draws=draws),
-        placebo=dict(positions=len(placebo_priced), unpriced=len(placebo) - len(placebo_priced),
+        placebo=dict(positions=len(placebo_priced), unpriced_valued_zero=sum(1 for p in placebo if 'net_return' not in p),
                      mean_net_return=_mean([p['net_return'] for p in placebo_priced]), verdict=None),
         robustness=robustness(primary, sensitivities, cut_time=cut_time))
     return check_vocabulary(doc)
