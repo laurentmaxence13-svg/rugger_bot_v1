@@ -1,0 +1,167 @@
+{
+ "detected": 40,
+ "mutants": [
+  {
+   "detected": true,
+   "mutant": "barrier_halved"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "gap_wrong_side"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_same_tx_unseen"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_lookahead"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_before_first_swap"
+  },
+  {
+   "detected": true,
+   "mutant": "g31_no_cooldown"
+  },
+  {
+   "detected": true,
+   "mutant": "g31_any_tier"
+  },
+  {
+   "detected": true,
+   "mutant": "g31_any_mint"
+  },
+  {
+   "detected": true,
+   "mutant": "g31_self_sibling"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_any_tier"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_config_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "reserve_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "pair_any_program"
+  },
+  {
+   "detected": true,
+   "mutant": "pair_any_quote"
+  },
+  {
+   "detected": true,
+   "mutant": "pair_a_any_tier"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_shallowest"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_tie_reversed"
+  },
+  {
+   "detected": true,
+   "mutant": "pairs_threshold_9"
+  },
+  {
+   "detected": true,
+   "mutant": "pairs_counted_directed"
+  },
+  {
+   "detected": true,
+   "mutant": "placebo_without_sibling_state"
+  },
+  {
+   "detected": true,
+   "mutant": "placebo_seed_without_pool"
+  },
+  {
+   "detected": true,
+   "mutant": "sibling_after_t0_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "g31_count_whole_history"
+  },
+  {
+   "detected": true,
+   "mutant": "quote_index_inverted"
+  },
+  {
+   "detected": true,
+   "mutant": "withdrawal_eligible"
+  },
+  {
+   "detected": true,
+   "mutant": "empty_reserve_eligible"
+  },
+  {
+   "detected": true,
+   "mutant": "doubling_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "depth_factor_1_999"
+  },
+  {
+   "detected": true,
+   "mutant": "amount_wrong_token"
+  },
+  {
+   "detected": true,
+   "mutant": "first_swap_same_slot_before"
+  },
+  {
+   "detected": true,
+   "mutant": "g32_no_cooldown"
+  },
+  {
+   "detected": true,
+   "mutant": "deposits_threshold_29"
+  },
+  {
+   "detected": true,
+   "mutant": "deposits_whole_history"
+  },
+  {
+   "detected": true,
+   "mutant": "trials_before_173"
+  },
+  {
+   "detected": true,
+   "mutant": "trial_cap_176"
+  },
+  {
+   "detected": true,
+   "mutant": "alpha_not_halved"
+  },
+  {
+   "detected": true,
+   "mutant": "holm_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "holm_drops_missing_p"
+  },
+  {
+   "detected": true,
+   "mutant": "sigma_floor_dropped"
+  }
+ ],
+ "schema": "cpmmgen3-mutations-v0.1",
+ "total": 40
+}
