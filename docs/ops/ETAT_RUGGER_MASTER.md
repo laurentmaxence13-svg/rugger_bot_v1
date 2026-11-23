@@ -62,6 +62,19 @@ Légende des preuves :
 
 **Interdits permanents** : les cellules positives D3 de W1 (n 16 et 17) ne sont pas une preuve ; aucun critère n'est modifié après observation.
 
+## 0 ter. File de travaux (relance du 23/11 soir) — responsable, livrable, critère de réussite
+
+| ID | Resp. | Livrable | Réussite | État |
+|---|---|---|---|---|
+| T-R01-1 | R01 | Code de règle et de témoin, plus fiches de gel complètes, pour G2-1, G2-2 et G2-3 | PASS R02 ; ancrables dès la signature du texte D | confié 21:03Z |
+| T-R01-2 | R01 | Carte du seuil de rentabilité : avantage brut minimal selon le palier de frais, la taille rapportée à la réserve, la priorité, le loyer, les échecs (0 à 60 %) et la latence | PASS R02 ; 3 leviers principaux chiffrés | confié 21:03Z |
+| T-R01-3 | R01 | Génération 3 : 2 ou 3 fiches PROJET hors famille « 10 min », notées sur a21f90f3 | recevabilité R02 | confié 21:03Z |
+| T-R02-1 | R02 | Audits de T-R01-1 à T-R01-3 | verdict écrit et sha pour chacun | au fil de l'eau |
+| T-R02-2 | R02 | Puissance réaliste de la génération 2 (σ plausibles, effet net) → durée et crédits pour n = 155 et 262 | table chiffrée pour le texte de crédits | confié 21:03Z |
+| T-R03-1 | R03 | Répétition hors ligne de toute la chaîne du pilote CPMM, avec faux RPC (crédits, arrêts, U-2, gel, reprise, G-1) | journal avec sha et audit R02 | confié 21:03Z |
+| T-R03-2 | R03 | Plan de ressources (disque, mémoire, durée, risques, sauvegardes) pour le pilote et la génération 2 | document avec sha | confié 21:03Z |
+| T-R03-3 | R03 | Contrôle d'intégrité W1, seulement s'il y a eu un redémarrage depuis 08:47Z | 0 écart | conditionnel |
+
 ## 1. Autorisations vérifiées à la source
 
 Référence : REGISTRE_AUTORISATIONS_VERIFIEES_R02_v1_0.md, sha256 a4b9d467…69e2 (registre R02 0dbe0572). Amendement 1 : sha256 d784ef31…5715 (R02 b8195721). R01 est lu du 14/11 au 23/11 : on n'y trouve ni B1, ni GCP, ni Helius, ni étage 0, ni U-2, ni PAPER_LIVE. ed672cdb (20/11) valide le choix TECHNIQUE C1-b + D2 du ledger, et non le volet financier de B1.
