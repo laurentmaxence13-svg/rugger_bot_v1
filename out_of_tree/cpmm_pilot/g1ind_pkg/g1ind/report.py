@@ -1,4 +1,4 @@
-"""g1ind 0.5 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
+"""g1ind 0.6 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
 decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1.1; nothing here is a verdict.
 
 (1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on every primary row (zero-sale rows of the runner included, K01); only its English
@@ -29,7 +29,7 @@ from cpmmpilot import step1 as PILOT                         # R03 cpmmpilot >= 
 from cpmmprereg import rule as R
 from w2arms import ce as W
 
-SCHEMA = 'g1ind-v0.5'
+SCHEMA = 'g1ind-v0.6'
 STAMP = 'DESCRIPTIF — PILOTE CPMM — SEUL LE MOT G-1 DE cpmmcost.pilot_verdict EST UNE DÉCISION'
 NM = 'NON MESURÉ'
 HYPOTHESES = ('RCP1', 'B1')
@@ -202,7 +202,7 @@ def paired_gap(primary, placebo, *, seed, draws):
 
 
 # -- (5) robustness ----------------------------------------------------------------------------------------------------
-def robustness(primary, sensitivities, *, cut_time):
+def robustness(primary, sensitivities, *, cut_time, lines=None):
     """``primary``: every row of the primary run; a supplied sensitivity must hold the SAME decisions; every run counts
     its zero-sale rows (K01) and refuses a raw unpriced row."""
     keys = sorted(map(_key, primary))
@@ -227,13 +227,22 @@ def robustness(primary, sensitivities, *, cut_time):
     out['without_5_best_pools'] = dict(
         mean_net_return=_mean([r for k, v in by_pool.items() if k not in best for r in v]) if len(by_pool) > 5 else NM,
         without_5_best_positions=_mean(sorted(nets)[:-5]) if len(nets) > 5 else NM)       # sheet c5 reading
+    # halves (c3): R02 21:57Z, cut_time = t0_time + (D x 86 400) // 2 written in each freeze sheet and anchored before
+    # the data; applied by the FROZEN cpmmprereg.halves on the block time of the decision (zero-sale rows included)
     if type(cut_time) is not int:
-        out['half_1_half_2'] = NM
+        out['half_1_half_2'] = dict(value=NM, reason='cut_time absent de la fiche de gel')
+    elif lines is None:
+        out['half_1_half_2'] = dict(value=NM, reason='timelines absentes (cpmmprereg.halves les lit)')
     else:
-        out['half_1_half_2'] = dict(cut_time=cut_time,
-                                    first=_mean([p['net_return'] for p in primary_priced if p['decision_time'] < cut_time]),
-                                    second=_mean([p['net_return'] for p in primary_priced
-                                                  if p['decision_time'] >= cut_time]))
+        by_line = {line.pool: line for line in lines}
+        first, second = [], []
+        for pool in sorted({p['pool'] for p in primary_priced}):
+            if pool not in by_line:
+                raise ReportError('timeline_missing_for_pool')
+            a, b = R.halves(by_line[pool], [p for p in primary_priced if p['pool'] == pool], cut_time)
+            first, second = first + a, second + b
+        out['half_1_half_2'] = dict(cut_time=cut_time, rule='t0_time + (D x 86 400) // 2 (R02)', first=_mean(first),
+                                    second=_mean(second), positions_first=len(first), positions_second=len(second))
     return out
 
 
@@ -259,5 +268,5 @@ def report(hypothesis, primary, placebo, *, g0_passed, freeze_sheet_sha256, cut_
         paired_gap=paired_gap(priced, placebo_priced, seed=g1['seed'], draws=draws),
         placebo=dict(positions=len(placebo_priced), zero_sale=zero_sale_reasons(placebo_priced),
                      mean_net_return=_mean([p['net_return'] for p in placebo_priced]), verdict=None),
-        robustness=robustness(primary, sensitivities, cut_time=cut_time))
+        robustness=robustness(primary, sensitivities, cut_time=cut_time, lines=lines))
     return check_vocabulary(doc)

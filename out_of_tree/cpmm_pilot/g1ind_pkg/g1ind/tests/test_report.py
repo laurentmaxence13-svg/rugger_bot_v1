@@ -1,5 +1,7 @@
 """g1ind 0.1 on fixtures only: synthetic rows shaped like cpmmcost 0.3 positions, and one end-to-end run of the frozen
 cpmmprereg / cpmmcost code on a synthetic CPMM pool (cpmmx simulator)."""
+from types import SimpleNamespace
+
 import pytest
 
 from bot.p4 import historical_research_replay as hrr
@@ -231,15 +233,37 @@ def test_supplied_sensitivities_must_be_the_same_decisions_with_the_declared_par
         run(p, pl, sensitivities=dict(latency_10_slots=slow[:-1] + [raw]))
 
 
-def test_without_the_5_best_pools_and_the_halves():
+def lines_for(rows, times=lambda i: 100 + i):
+    """Minimal timelines for cpmmprereg.halves: swap i of every pool has the block time ``times(i)``."""
+    top = max(p['decision_index'] for p in rows) + 1
+    return [SimpleNamespace(pool=pool, swaps=[SimpleNamespace(block_time=times(i)) for i in range(top)])
+            for pool in sorted({p['pool'] for p in rows})]
+
+
+def test_without_the_5_best_pools_and_the_halves_by_the_frozen_function():
     p = [row(i, 8, 0.10 if i % 8 < 5 else -0.01) for i in range(16)]          # pools p00..p04 carry every gain
-    rob = G.robustness(p, None, cut_time=108)
+    rob = G.robustness(p, None, cut_time=108, lines=lines_for(p))
     assert rob['without_5_best_pools']['mean_net_return'] == pytest.approx(-0.01)
     assert rob['without_5_best_pools']['without_5_best_positions'] == pytest.approx(
         G._mean(sorted(x['net_return'] for x in p)[:-5]))
-    assert rob['half_1_half_2']['first'] == pytest.approx(G._mean([x['net_return'] for x in p[:8]]))
-    assert rob['half_1_half_2']['second'] == pytest.approx(G._mean([x['net_return'] for x in p[8:]]))
-    assert G.robustness(p, None, cut_time=None)['half_1_half_2'] == G.NM
+    halves = rob['half_1_half_2']
+    assert halves['first'] == pytest.approx(G._mean([x['net_return'] for x in p[:8]]))
+    assert halves['second'] == pytest.approx(G._mean([x['net_return'] for x in p[8:]]))
+    assert (halves['positions_first'], halves['positions_second']) == (8, 8)
+    # the frozen function reads the BLOCK TIME of the decision swap in the timeline, not a field of the row
+    shifted = G.robustness(p, None, cut_time=108, lines=lines_for(p, times=lambda i: 100 + 2 * i))['half_1_half_2']
+    assert (shifted['positions_first'], shifted['positions_second']) == (4, 12)
+    # the R02 rule of the cut: the temporal middle of the window
+    t0, d = 1_700_000_000, 7
+    assert t0 + (d * 86_400) // 2 == 1_700_302_400
+    # zero-sale rows enter the halves (they carry a net_return)
+    z = zero_sale(dict(pool='p00', decision_index=15, unpriced='x'))
+    withz = G.robustness(p + [z], None, cut_time=108, lines=lines_for(p))['half_1_half_2']
+    assert withz['positions_second'] == 9
+    assert G.robustness(p, None, cut_time=None, lines=lines_for(p))['half_1_half_2']['value'] == G.NM
+    assert G.robustness(p, None, cut_time=108)['half_1_half_2']['value'] == G.NM
+    with pytest.raises(G.ReportError, match='timeline'):
+        G.robustness(p, None, cut_time=108, lines=lines_for(p)[1:])
     assert G.robustness(p[:5], None, cut_time=1)['without_5_best_pools']['mean_net_return'] == G.NM
 
 
@@ -289,6 +313,10 @@ def test_end_to_end_on_a_synthetic_pool_with_the_frozen_rule():
     again = G.report('RCP1', primary, placebo, g0_passed=True, freeze_sheet_sha256=SHEET, lines=[line], draws=DRAWS,
                      sensitivities=dict(latency_10_slots=slow))
     assert again['robustness']['latency_10_slots']['positions'] == len(primary)
+    # halves of the report = cpmmprereg.halves on the real timeline
+    first, second = R.halves(line, primary, 1_000)
+    assert out['robustness']['half_1_half_2']['first'] == G._mean(first)
+    assert out['robustness']['half_1_half_2']['second'] == G._mean(second)
 
 
 def test_a_slot_exit_reads_the_block_time_of_the_firing_swap():
