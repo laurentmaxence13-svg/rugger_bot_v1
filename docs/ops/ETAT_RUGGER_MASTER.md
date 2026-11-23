@@ -158,6 +158,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 23/11 14:22Z | **Tableau de bord étendu** (dashx 0.2, sortie ef6b5b44 reproduite par R02). MASTER W1 (n 128) : win rate 30,5 % ; gain moyen +10,3 % ; perte moyenne −10,6 % ; profit factor 0,42 ; espérance −4,26 % ; drawdown 0,546 SOL (5,45 mises, la courbe ne dépasse jamais son départ). Sans les 5 meilleures : −5,33 %. Compte fermé : −4,36 %. Loyer perdu : −6,29 %. Écart au placebo +1,23 % [−2,23 ; +4,82], non significatif. Placebo W1 −4,59 %, PF 0,22. Verdicts inchangés. | vérification R02 595025c3 | déclaré (R02) |
 
+| 23/11 17:24Z | R02 : **certificat d'enregistrement R-CP1 / B1 CONFORME** (d34c2c4e). R-CP1 : −3 % en 600 s ; B1 : +3 %. Les deux : ≥ 20 swaps, TP/SL ±2 %, 30 min, garde 2 %, α 0,05 puis 0,05/3, n 155, essais 169 et 170, témoins appariés par pool. Textes d'autorisation des étapes (b484d384), dont les champs sont à remplir par R03. Critères de sélection génération 2 (a21f90f3) : α_g = 0,025 × 2^(−(g−2)) pour g ≥ 2, risque total ≤ 0,10 ; demande de +3 essais (170 → 173). | registre R02 | déclaré (R02) |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
