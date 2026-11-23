@@ -40,6 +40,7 @@ la règle de PAPER_LIVE.
 - Sinon, NÉGATIF si la borne haute de l'IC est < 0.
 - Aucun verdict positif n'est possible ici (R-0.6 non remplie, aucune donnée indépendante).
 - Les IC viennent de 2 000 tirages, graine 20261120.
+- Le vocabulaire s'applique aux stratégies : un placebo est un comparateur et ne reçoit aucun verdict.
 
 **Régimes de coûts**, signalés dans chaque case de net :
 - **[SL]** : moteur gelé SANS loyer (le loyer est supposé rendu, non modélisé) ;
@@ -63,15 +64,16 @@ elles ne vont jamais en verdict et ne sont jamais présentées comme des gains.
 | **T3′ latesel** (crible, moitié 2) | 23 (23) | — (non mesuré) | **−10,62 %** [LP] | — (non mesuré) ; loyer récupéré −8,80 % | — (non mesuré) | 4 slots / 0 ; 60 s | [−18,03 ; −4,18] | Placebo de la moitié 2 : −10,41 % | EXPLORATOIRE | **INCONCLUSIF** (n < 30) | [NT] § 2 bis |
 | **C-C** (CPMM après migration) | **aucune position** | — | — | — | — | — | — | — | Emplacement VIDE : 12 pools migrés, porte inatteignable | Pas de verdict | [DA] § 3 ; d4a01934 |
 | **C-D** (tardif, palier ≤ 2 500 ppm) | 46 (41) | −1,94 % | **−4,59 %** [LP] | — (non mesuré) ; à 10 slots −4,70 % [LP] ; loyer récupéré −2,64 % | 0,49 % / 0,21 % | 4 slots (sensibilité 10) / 0 | [−7,40 ; −2,42] | Placebo au palier ≤ 2 500 : −1,82 % [LP], descriptif, non apparié | EXPLORATOIRE (porte W1) ; RETIRÉ | **NÉGATIF** | 2b173f10 ; [NT] § 2 ter |
-| **Placebo du palier bas** (comparateur de C-D) | 35 (34) | +0,89 % | **−1,82 %** [LP] | — (non mesuré) ; loyer récupéré +0,17 %, sans IC | 0,50 % / 0,21 % | 4 slots / 0 | [−3,29 ; −0,33] | C'est lui, le comparateur | Comparateur ; observé APRÈS regard | **NÉGATIF** (comparateur, pas une règle) | 2b173f10 ; [NT] § 2 ter |
+| **Placebo du palier bas** (comparateur de C-D) | 35 (34) | +0,89 % | **−1,82 %** [LP] | — (non mesuré) ; loyer récupéré +0,17 %, sans IC | 0,50 % / 0,21 % | 4 slots / 0 | [−3,29 ; −0,33] | C'est lui, le comparateur | Comparateur ; observé APRÈS regard | — (comparateur, pas de verdict ; borne haute < 0) | 2b173f10 ; [NT] § 2 ter |
 | **C-E** (précoce, palier ≤ 2 500 ppm, compte fermé) | **aucune position** (jamais évalué ; figé pour W2 seulement) | — | — | — | — | — | — | Seul effet cité : +0,17 % sur le placebo (loyer récupéré), sans IC | Recevable, NON recommandé | Pas de verdict. NO-GO ou INCONCLUSIF déclaré d'avance | [CE] ; 85d2e959 |
 | **C-B** (une hypothèse HW1 gelée) | **aucune position** | — | — | — | — | — | — | — | **SCELLÉ (HW1)** : HW1 non lue, B1 non signé | Pas de verdict | [DA] § 3 ; w1chain 0.2 |
 | **CPMM R-CP1** (pools établis) | **aucune position** | — | — | — | — | — | — | — | INDÉPENDANT (prévu : fenêtre neuve après T0) ; préenregistré | Pas de verdict | [PR] |
 
 **Lecture du tableau (constat, sans extrapolation).**
-- **9 lignes ont un IC**, et toutes ont un net moyen négatif :
-  - **8 sont NÉGATIVES** : MASTER, C-A, L1, L3, crible L1, T1, C-D et le placebo du palier bas (comparateur) ;
+- **8 lignes de stratégies ont un IC** :
+  - **7 sont NÉGATIVES** : MASTER, C-A, L1, L3, crible L1, T1 et C-D ;
   - **1 est INCONCLUSIVE** : T3′, avec n < 30.
+- Les placebos sont publiés comme comparateurs, sans verdict.
 - **Aucune démonstration de rentabilité nette n'existe aujourd'hui.** Les deux seules pistes qui peuvent encore en
   produire une, C-B et R-CP1, n'ont aucune position.
 
