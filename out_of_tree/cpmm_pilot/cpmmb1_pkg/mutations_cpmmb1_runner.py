@@ -14,6 +14,7 @@ MUT = [
  ("        per_pool[line.pool] = sum(1 for i in decisions(line, config) if line.swaps[i].block_time >= start)", "        per_pool[line.pool] = len(decisions(line, config))", 'count_before_7_days'),
  ("        if any(s.block_time >= t0 for s in line.swaps):", "        if False:", 'data_after_t0_accepted'),
  ("        if line.pool in per_pool:", "        if False:", 'duplicate_pool_accepted'),
+ ("        refs = [j for j in range(i) if line.swaps[j].block_time <= t - R.LOOKBACK_S]", "        refs = [j for j in range(i) if line.swaps[j].block_time < t - R.LOOKBACK_S]", 'ref_boundary_R02'),
  ("TRIALS_BEFORE = 169", "TRIALS_BEFORE = 168", 'trial_count_wrong'),
  ("    if type(n_before) is not int or n_before + 1 > R.TRIAL_CAP:", "    if type(n_before) is not int or n_before > R.TRIAL_CAP:", 'cap_off_by_one'),
 ]

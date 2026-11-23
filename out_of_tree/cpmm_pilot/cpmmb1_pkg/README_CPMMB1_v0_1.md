@@ -12,7 +12,7 @@ Ce que fait le paquet :
 - **Repris de R-CP1 à l'identique** : sorties, coûts (cpmmcost 0.3, garde active), témoin, scission, puissance (155,
   221) et confirmation.
 
-Preuves : 7 tests, sur des pools synthétiques seulement. 13/13 mutants détectés, avec la garde de base.
+Preuves : 8 tests, sur des pools synthétiques seulement (0.1.1 : frontière de la référence exactement à t − 600 s, K-1 de R02). 14/14 mutants détectés, avec la garde de base, dont `ref_boundary_R02`.
 
 Commande, depuis l'arbre gelé, SANS `-I` :
 

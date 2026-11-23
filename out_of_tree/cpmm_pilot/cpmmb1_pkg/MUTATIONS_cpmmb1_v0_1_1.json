@@ -1,0 +1,65 @@
+{
+ "package": "cpmmb1",
+ "version": "0.1.1",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "rise_2pct",
+   "detected": true
+  },
+  {
+   "mutant": "rise_strict",
+   "detected": true
+  },
+  {
+   "mutant": "oldest_reference",
+   "detected": true
+  },
+  {
+   "mutant": "drop_instead_of_rise",
+   "detected": true
+  },
+  {
+   "mutant": "activity_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "cooldown_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "no_reference_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "count_uses_r_cp1",
+   "detected": true
+  },
+  {
+   "mutant": "count_before_7_days",
+   "detected": true
+  },
+  {
+   "mutant": "data_after_t0_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "duplicate_pool_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "ref_boundary_R02",
+   "detected": true
+  },
+  {
+   "mutant": "trial_count_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "cap_off_by_one",
+   "detected": true
+  }
+ ],
+ "detected": 14,
+ "total": 14
+}

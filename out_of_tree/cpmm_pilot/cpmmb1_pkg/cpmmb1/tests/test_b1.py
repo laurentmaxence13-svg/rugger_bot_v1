@@ -103,3 +103,16 @@ def test_same_exits_costs_and_placebo_construction_r_cp1_untouched():
     rule_py = Path(R.__file__).read_bytes()
     assert hashlib.sha256(rule_py).hexdigest() == '9f46f052a588cdb5ab3c907aae04f26ec6b2b5ed40acc8e3d1874c275c679fdd'
     assert 'DROP' not in inspect.getsource(B.decisions)
+
+
+def test_a_swap_exactly_600_s_back_is_the_reference(monkeypatch):
+    line = market(calm(0, 700) + [(700, 'buy', SOL // 2)])           # swaps at 0, 20, ..., 680, then 700
+    i = len(line.swaps) - 1
+    at_boundary = next(j for j, s in enumerate(line.swaps) if s.block_time == 100)
+    before = at_boundary - 1
+    assert line.swaps[i].block_time - line.swaps[at_boundary].block_time == R.LOOKBACK_S
+    prices = {before: R.Fraction(90), at_boundary: R.Fraction(100), i: R.Fraction(102)}
+    monkeypatch.setattr(R, 'spot_after', lambda line_, index, fees: prices.get(index, R.Fraction(1)))
+    assert i not in B.decisions(line, CONFIG)        # +2 % against the swap exactly at t - 600 s (it IS the reference)
+    prices[i] = R.Fraction(103)
+    assert i in B.decisions(line, CONFIG)
