@@ -104,6 +104,6 @@ elles ne vont jamais en verdict et ne sont jamais présentées comme des gains.
 **Comparaison des deux chemins.**
 - **R-CP1** est le chemin le plus court et le moins cher vers un premier verdict indépendant (G-1). Il coûte 0 $ dans
   l'offre Free et 1 essai. Il demande deux décisions : la source U-2, puis le GO de l'étape 0.
-- **C-B** passe d'abord par une dépense cloud d'environ 64,7 $ TTC (plafond 66 $) et par 5 essais. Il peut aussi s'arrêter sans aucun
+- **C-B** passe d'abord par une dépense cloud ≤ 66 $ TTC (≈ 64,7 estimés) et par 5 essais. Il peut aussi s'arrêter sans aucun
   verdict, si aucune hypothèse HW1 n'est positive.
 - **Ni l'un ni l'autre ne produira de verdict positif avant une confirmation sur données neuves.**
