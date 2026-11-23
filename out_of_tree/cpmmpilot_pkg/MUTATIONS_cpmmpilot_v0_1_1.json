@@ -1,0 +1,30 @@
+{
+ "base_guard": "PASS",
+ "killed": 22,
+ "mutants": 22,
+ "results": {
+  "age_6_days": "KILLED",
+  "anchor_not_checked": "KILLED",
+  "charge_after": "KILLED",
+  "count_window_wide": "KILLED",
+  "depth_ignored": "KILLED",
+  "floor_ignored": "KILLED",
+  "g0_forced_true": "KILLED",
+  "gtfa_cost_1": "KILLED",
+  "gtfa_fallback": "KILLED",
+  "gtfa_limit_unchecked": "KILLED",
+  "hard_stop_50000": "KILLED",
+  "launchlab_ignored": "KILLED",
+  "ledger_not_resumed": "KILLED",
+  "live_allowed": "KILLED",
+  "point2_ge": "KILLED",
+  "reserve_50": "KILLED",
+  "reserve_strict": "KILLED",
+  "resume_from_zero": "KILLED",
+  "seed_changed": "KILLED",
+  "status_not_checked": "KILLED",
+  "target_25": "KILLED",
+  "token2022_excluded_again": "KILLED"
+ },
+ "schema": "cpmmpilot-mutations-v0.1.1"
+}

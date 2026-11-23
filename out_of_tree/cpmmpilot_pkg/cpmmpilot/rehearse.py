@@ -99,7 +99,7 @@ def main_chain(out, journal):
             credits_at_cut=credits_at_cut, credits_after_resume=resumed.budget.credits,
             ledger_monotone=resumed.budget.credits >= credits_at_cut, all_done=all(s['done'] for s in states.values()),
             window_transactions=sum(s['transactions'] for s in states.values()))))
-    g1 = step1.g1_inputs(out / 'step1', selected, t0_slot=doc['t0_slot'], sheets=sheets)
+    g1 = step1.g1(out / 'step1', selected, t0_slot=doc['t0_slot'], sheets=sheets, g0_passed=True)  # G-0 anchored by R02
     journal.append(('step1.5_g1', g1))
     journal.append(('budgets', dict(step0=c0.budget.snapshot(), u2=cu.budget.snapshot(),
                                     step1=B.PilotBudget(out / 'ledger_step1.json', stage='step1',

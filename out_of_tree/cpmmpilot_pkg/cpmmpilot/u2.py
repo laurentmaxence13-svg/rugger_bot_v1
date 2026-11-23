@@ -1,10 +1,11 @@
 """U-2 of the CPMM pilot, exactly as owner text B(b) of R02 v1.2 and method U-2 v0.2.1 (D-a..D-c):
 getSlot; getProgramAccounts AmmConfig (trade_fee_rate = 2 500, PDA checked); getProgramAccounts pools of each config with
-WSOL as token_0 then token_1 (dataSlice 0..413); exclusions (status & 4, lp_supply = 0, Token-2022, anchored P0 / W1
-lists); getMultipleAccounts of the WSOL vaults (PDA checked) -> reserve >= 100 SOL at T0 -> list L, hashed; permutation
+WSOL as token_0 then token_1 (dataSlice 0..413); exclusions (status & 4, lp_supply = 0 -- technical eligibility, counted; anchored P0 visible / W1
+lists; Token-2022 stays in L, U-4 is applied by cpmmcost.pool_gate at step 1); getMultipleAccounts of the WSOL vaults (PDA checked) -> reserve >= 100 SOL at T0 -> list L, hashed; permutation
 seeded by int(sha_L[:8], 16); creation transaction by GTFA (asc, limit 1, full) in that order until 24 valid pools
 (age >= 7 days, CPMM initialize at depth 1, no LaunchLab anywhere); < 20 valid after L is exhausted = INCONCLUSIF.
 GTFA refused = STOP (no fallback). A truncated answer = STOP."""
+import hashlib
 import random
 
 from cpmmx.events import CPMM_PROGRAM
@@ -39,11 +40,12 @@ def snapshot(client, out, *, exclude=frozenset()):
         raise U2Stop('program_accounts_failed:%s' % exc) from exc
     write_gz_page(raw_dir / 'gpa_configs.json.gz', configs)
     counts = dict(configs_seen=0, configs_u1=0, pools_seen=0, excluded_status=0, excluded_lp_zero=0,
-                  excluded_token2022=0, excluded_anchored_lists=0, excluded_vault_pda=0, below_100_sol=0, list_l=0)
+                  excluded_anchored_lists=0, excluded_vault_pda=0, below_100_sol=0, list_l=0)
     keep_configs = []
     for row in _value(configs):
         counts['configs_seen'] += 1
-        c = L.decode_config(L.raw(row['account']['data']))
+        raw_bytes = L.raw(row['account']['data'])
+        c = dict(L.decode_config(raw_bytes), raw_sha256=hashlib.sha256(raw_bytes).hexdigest())
         if c['trade_fee_rate'] != L.TRADE_FEE_RATE_U1 or L.config_pda(c['index']) != row['pubkey']:
             continue
         counts['configs_u1'] += 1
@@ -66,8 +68,6 @@ def snapshot(client, out, *, exclude=frozenset()):
                     counts['excluded_status'] += 1
                 elif p['lp_supply'] == 0:
                     counts['excluded_lp_zero'] += 1
-                elif L.TOKEN_2022 in (p['token_0_program'], p['token_1_program']):
-                    counts['excluded_token2022'] += 1
                 elif pool in exclude:
                     counts['excluded_anchored_lists'] += 1
                 else:

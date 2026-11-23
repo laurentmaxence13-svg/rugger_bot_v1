@@ -99,7 +99,7 @@ def amm_config_for_rules(selected, t0_slot):
     if len(configs) != 1:
         raise Step1Stop('selected_pools_use_several_amm_configs')
     cfg = json.loads(configs.pop())
-    return dict(cfg, sha256=hashlib.sha256(canonical(cfg).encode()).hexdigest(), slot=t0_slot)
+    return dict(cfg, sha256=cfg['raw_sha256'], slot=t0_slot)     # R02: sha of the RAW account bytes
 
 
 # -- (2) ---------------------------------------------------------------------------------------------------------------
@@ -134,23 +134,32 @@ def check_anchor(out, anchored):
 
 
 # -- (5) ---------------------------------------------------------------------------------------------------------------
-def g1_inputs(out, selected, *, t0_slot, sheets):
+def g1(out, selected, *, t0_slot, sheets, g0_passed):
+    """U-4 / G-0 per pool by the frozen cpmmcost.pool_gate, then G-1 by the frozen cpmmcost.pilot_verdict on the
+    positions of the admitted pools; the placebo and its paired difference are published APART (no decision)."""
     lines = timelines(out, 'window', selected)
     cfg = amm_config_for_rules(selected, t0_slot)
-    result = {}
+    gates = {line.pool: CC.pool_gate(line, cfg) for line in lines}
+    admitted = [line for line in lines if gates[line.pool]['admitted']]
+    reasons = {}
+    for g in gates.values():
+        for r in g['reasons']:
+            reasons[r] = reasons.get(r, 0) + 1
+    result = dict(pools=len(lines), pools_admitted=len(admitted), u4_g0_reasons=reasons)
     for name, rule in (('RCP1', RCP1), ('B1', B1)):
         primary, placebo = [], []
-        for line in lines:
+        for line in admitted:
             idx = rule.decisions(line, cfg)
             primary += rule.positions(line, cfg, idx)
             placebo += rule.positions(line, cfg, rule.placebo(line, len(idx), sheets[name]))
-        entered = [p for p in primary if 'net_return' in p and p.get('entered', True)]
-        verdict_fn = getattr(rule, 'pilot_verdict', None)
-        result[name] = dict(
-            positions=len(primary), entered=len(entered), pools_with_entries=len({p['pool'] for p in entered}),
-            unpriced=sum('net_return' not in p for p in primary), placebo_positions=len(placebo),
-            g1=(verdict_fn(primary, placebo_=placebo, freeze_sheet_sha256=sheets[name]) if verdict_fn
-                else 'G1_RULE_NOT_FROZEN: no pilot_verdict function in the frozen rule; G-1 is computed by R02 '
-                     'from the published positions'))
+        priced = [p for p in primary if 'net_return' in p]
+        verdict = CC.pilot_verdict(priced, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
+        pp = [p for p in placebo if 'net_return' in p]
+        mean = lambda rows: sum(r['net_return'] for r in rows) / len(rows) if rows else None
+        diff = (None if not priced or not pp else mean(priced) - mean(pp))
+        result[name] = dict(verdict=verdict, positions=len(primary), unpriced=len(primary) - len(priced),
+                            placebo=dict(positions=len(placebo), unpriced=len(placebo) - len(pp),
+                                         paired_mean_difference=diff, label='published apart, no decision'))
         write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo))
+    write_json(Path(out) / 'G1.json', result)
     return result
