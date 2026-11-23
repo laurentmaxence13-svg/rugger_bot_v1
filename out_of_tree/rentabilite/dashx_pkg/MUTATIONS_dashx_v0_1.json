@@ -1,0 +1,97 @@
+{
+ "package": "dashx",
+ "version": "0.1",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "min_n_20",
+   "detected": true
+  },
+  {
+   "mutant": "interpretable_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "high_bound_non_strict",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_gets_a_verdict",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_unsorted",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_from_zero",
+   "detected": true
+  },
+  {
+   "mutant": "profit_factor_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "losses_empty",
+   "detected": true
+  },
+  {
+   "mutant": "halves_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "without_best_on_small_n",
+   "detected": true
+  },
+  {
+   "mutant": "c_a_wrong_tier",
+   "detected": true
+  },
+  {
+   "mutant": "aggregate_interpretable_forced",
+   "detected": true
+  },
+  {
+   "mutant": "c_a_fees_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "low_tier_placebo_verdict",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "bundle_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "overwrite_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "no_position_rows_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "latency10_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "ledger_tx_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "latency_hardcoded",
+   "detected": true
+  }
+ ],
+ "detected": 22,
+ "total": 22
+}
