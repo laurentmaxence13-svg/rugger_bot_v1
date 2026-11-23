@@ -1,4 +1,6 @@
-"""cpmmcost 0.2 (0.1 + R02 audit of 6cd08e6: a failed attempt lands LATER, +4 slots per failure, with H-1; seed of G-1 =
+"""cpmmcost 0.3 (0.2 PASS R02 + the CPMM BUY SLIPPAGE GUARD of R02 amendment A1 (c), R-0.3: minimum tokens = exact output at
+the DECISION state x (1 - 20 000 ppm); a worse H-1 fill fails: charged, no entry, no retry; sensitivity 50 000 ppm; the sale
+keeps no guard; a declared latency sensitivity of 10 slots, A1 (a), the sale and every resend shifted alike) -- cpmmcost 0.2 (0.1 + R02 audit of 6cd08e6: a failed attempt lands LATER, +4 slots per failure, with H-1; seed of G-1 =
 the pilot FREEZE SHEET) -- the full cost model of one position of the CPMM pilot on ESTABLISHED Raydium CPMM pools (task P2-b of
 docs/ops/ETAT_RUGGER_MASTER.md 62c4525; pilot note v0.2 b4c6562c, sections 2.1 to 2.5; protocol CPMM v1.2 a3a285a1).
 Nothing here reads collected data, selects a pool or tunes anything: there is no CPMM data yet (C-1 not passed).
@@ -50,6 +52,11 @@ CLOSED_THRESHOLD = Fraction(82, 10_000)            # C-a: 0.82 %
 MIN_ENTRIES, MIN_POOLS, DRAWS, ALPHA_UPPER = 30, 20, 10_000, 0.05
 TRIAL_CAP_OUTSIDE_HW1 = 170
 LABELS = ('MASTER_RESEARCH_PAPER', 'HISTORICAL_REPLAY')
+BUY_GUARD_PPM = 20_000                             # R02 amendment A1 (c), R-0.3
+BUY_GUARD_SENSITIVITY_PPM = 50_000
+ALLOWED_BUY_GUARDS = (None, BUY_GUARD_PPM, BUY_GUARD_SENSITIVITY_PPM)
+SENSITIVITY_LATENCY_SLOTS = 10                     # A1 (a): CONFIRMÉ also needs a net > 0 at 10 slots
+ALLOWED_LATENCIES = (LATENCY_SLOTS, SENSITIVITY_LATENCY_SLOTS)
 
 
 FROZEN_CODE = dict(curve='5836f2fbac3bb8f01a3c8e91ccc8520db8e158cd21fb082d9e067128d865d899',      # cpmmx 0.1, 99c6688
@@ -161,8 +168,15 @@ def _fee_value(result, spot, *, input_is_quote):
 
 
 def position(line, decision_index, config, *, exit_slot=None, exit_time=None, failures=FROZEN_FAILURES,
-             wsol_separate_close=WSOL_SEPARATE_CLOSE):
-    """One round trip: buy 0.1 SOL after the decision swap, sale of every token at the exit, then the cleanup."""
+             wsol_separate_close=WSOL_SEPARATE_CLOSE, buy_guard_ppm=BUY_GUARD_PPM, latency_slots=LATENCY_SLOTS):
+    """One round trip: buy 0.1 SOL after the decision swap, sale of every token at the exit, then the cleanup.
+
+    With the buy guard (primary 20 000 ppm): if the H-1 fill is below the exact output at the decision state x (1 - ppm),
+    the buy transaction fails: (failed attempts + 1) x 105 000 are charged, no account is created, no entry, no retry."""
+    if buy_guard_ppm not in ALLOWED_BUY_GUARDS:
+        raise CostError('buy_guard_not_a_declared_threshold')
+    if type(latency_slots) is not int or latency_slots not in ALLOWED_LATENCIES:
+        raise CostError('latency_not_a_declared_value')
     if (exit_slot is None) == (exit_time is None):
         raise CostError('exactly_one_exit_point')
     if type(decision_index) is not int or not 0 <= decision_index < len(line.swaps):
@@ -170,13 +184,13 @@ def position(line, decision_index, config, *, exit_slot=None, exit_time=None, fa
     fees = fees_from_amm_config(config)
     frozen_check()
     decision = line.swaps[decision_index]
-    land = decision.slot + LATENCY_SLOTS * (1 + failures.buy)
+    land = decision.slot + latency_slots * (1 + failures.buy)
     # H-1 at the buy: the state before and after the real swaps of the landing slot; the FEWER tokens are kept
     states = [_state(line, fees, slot_limit=land - 1), _state(line, fees, slot_limit=land)]
     if exit_slot is not None:
         if type(exit_slot) is not int or exit_slot <= land:
             raise CostError('exit_before_the_buy_landed')
-        sale_slot = exit_slot + LATENCY_SLOTS * failures.sell
+        sale_slot = exit_slot + latency_slots * failures.sell
         limits = [dict(slot_limit=sale_slot - 1), dict(slot_limit=sale_slot)]
         done = TL.executed(line, slot_limit=sale_slot)
     else:
@@ -189,13 +203,23 @@ def position(line, decision_index, config, *, exit_slot=None, exit_time=None, fa
         done = TL.executed(line, time_limit=exit_time)
         if failures.sell:                                            # the resent sale: slots after the clock landing
             base_slot = max([s.slot for s in done] + [land])
-            sale_slot = base_slot + LATENCY_SLOTS * failures.sell
+            sale_slot = base_slot + latency_slots * failures.sell
             limits = [dict(slot_limit=sale_slot - 1), dict(slot_limit=sale_slot)]
             done = TL.executed(line, slot_limit=sale_slot)
     on_input = creator_side(line, len(done) - 1)
     buys = [(_buy_on(s, fees, on_input), s) for s in states]
     bought, buy_state = min(buys, key=lambda pair: pair[0].output_amount)
     tokens = bought.output_amount
+    if buy_guard_ppm is not None:
+        decision_state = TL.after_swap(decision, fees.protocol_fee_rate, fees.fund_fee_rate)
+        expected = _buy_on(decision_state, fees, on_input).output_amount
+        if tokens < expected * (1_000_000 - buy_guard_ppm) // 1_000_000:
+            charged = (1 + failures.buy) * TX_FEE_LAMPORTS
+            return dict(pool=line.pool, decision_index=decision_index, decision_slot=decision.slot, status='guard_failed',
+                        entered=False, tokens=0, received=0, net_lamports=-charged, net_return=-charged / STAKE_LAMPORTS,
+                        guard_ppm=buy_guard_ppm, latency_slots=latency_slots, expected_tokens=expected, fill_tokens=tokens,
+                        failures=dict(buy=failures.buy, sell=failures.sell, cleanup=failures.cleanup),
+                        amm_config_sha256=config['sha256'], labels=list(LABELS), counts_for_operational_master=False)
     candidates = []
     for limit in limits:
         real = _state(line, fees, **limit)
@@ -232,7 +256,8 @@ def position(line, decision_index, config, *, exit_slot=None, exit_time=None, fa
     closed = CA.net_return_closed(outcome, failed_attempts=failures.cleanup)
     if abs(closed - net / STAKE_LAMPORTS) > 1e-12:
         raise CostError('net_differs_from_closedacct')
-    return dict(pool=line.pool, decision_index=decision_index, decision_slot=decision.slot, buy_landing_slot=land,
+    return dict(pool=line.pool, decision_index=decision_index, decision_slot=decision.slot, status='entered',
+                entered=True, guard_ppm=buy_guard_ppm, latency_slots=latency_slots, buy_landing_slot=land,
                 exit=dict(rule='slot' if exit_slot is not None else 'clock', declared=exit_slot if exit_slot is not None
                           else exit_time, state_kept=limit), tokens=tokens, received=received,
                 net_lamports=net, net_return=net / STAKE_LAMPORTS, sale_state=kind,
@@ -292,6 +317,10 @@ def pilot_verdict(positions, *, g0_passed, freeze_sheet_sha256, draws=DRAWS):
     for p in positions:
         groups.setdefault(p['pool'], []).append(p)
     n, pools = len(positions), len(groups)
+    # amendment A1 (c): a guard-failed attempt stays in the mean (its fee is charged) but is NOT an entry; the floors of
+    # G-1 (30 entries, 20 pools) count ENTERED positions only (stricter, never lower)
+    entered = [p for p in positions if p.get('entered', True)]
+    n_entered, pools_entered = len(entered), len({p['pool'] for p in entered})
     nets = [p['net_return'] for p in positions]
     mean = sum(nets) / n if n else None
 
@@ -301,13 +330,14 @@ def pilot_verdict(positions, *, g0_passed, freeze_sheet_sha256, draws=DRAWS):
     if n:
         low = W.lower_bound(groups, neg_mean, seed=int(freeze_sheet_sha256[:8], 16), draws=draws, alpha=ALPHA_UPPER)
         upper = None if low is None else -low
-    if n < MIN_ENTRIES or pools < MIN_POOLS:
+    if n_entered < MIN_ENTRIES or pools_entered < MIN_POOLS:
         decision = 'INCONCLUSIF'
     elif upper is None or upper < 0:
         decision = 'NO-GO'
     else:
         decision = 'GO_PILOTE'
-    return dict(base, decision=decision, n=n, pools=pools, mean_net_return=mean, upper_bound_95_one_sided=upper,
+    return dict(base, decision=decision, n=n, pools=pools, n_entered=n_entered, pools_entered=pools_entered,
+                guard_failed=n - n_entered, mean_net_return=mean, upper_bound_95_one_sided=upper,
                 draws=draws, seed=int(freeze_sheet_sha256[:8], 16), published_numbers=True,
                 meaning='GO_PILOTE only allows PROPOSING a pre-registered confirmation on a NEW window with the dossier '
                         'B criteria c1-c5; it never means profitable')

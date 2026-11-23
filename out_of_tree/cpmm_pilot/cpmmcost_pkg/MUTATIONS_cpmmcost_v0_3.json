@@ -1,0 +1,197 @@
+{
+ "package": "cpmmcost",
+ "version": "0.3",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "latency_zero",
+   "detected": true
+  },
+  {
+   "mutant": "buy_failure_delay_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "sale_failure_delay_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "clock_sale_failure_delay_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "seed_not_the_sheet_prefix",
+   "detected": true
+  },
+  {
+   "mutant": "h1_buy_best_case",
+   "detected": true
+  },
+  {
+   "mutant": "h1_sale_best_case",
+   "detected": true
+  },
+  {
+   "mutant": "sale_before_slot_only",
+   "detected": true
+  },
+  {
+   "mutant": "buy_before_slot_only",
+   "detected": true
+  },
+  {
+   "mutant": "sale_only_with_our_buy",
+   "detected": true
+  },
+  {
+   "mutant": "fees_zero",
+   "detected": true
+  },
+  {
+   "mutant": "tx_fees_forgotten",
+   "detected": true
+  },
+  {
+   "mutant": "sale_failures_free",
+   "detected": true
+  },
+  {
+   "mutant": "wsol_close_free",
+   "detected": true
+  },
+  {
+   "mutant": "cleanup_free",
+   "detected": true
+  },
+  {
+   "mutant": "left_open_rent_kept",
+   "detected": true
+  },
+  {
+   "mutant": "universe_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "config_not_hashed_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "exit_in_landing_slot",
+   "detected": true
+  },
+  {
+   "mutant": "clock_guard_removed",
+   "detected": true
+  },
+  {
+   "mutant": "gate_reproduction_skipped",
+   "detected": true
+  },
+  {
+   "mutant": "gate_continuity_skipped",
+   "detected": true
+  },
+  {
+   "mutant": "gate_transfer_fee_skipped",
+   "detected": true
+  },
+  {
+   "mutant": "gate_skipped_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "min_entries_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "min_pools_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "mean_instead_of_upper_bound",
+   "detected": true
+  },
+  {
+   "mutant": "bound_sign_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "g0_none_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "trial_cap_off_by_one",
+   "detected": true
+  },
+  {
+   "mutant": "creator_fee_in_tokens_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_removed",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_doubled",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_always_sensitivity",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_reference_is_the_fill_state",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_failure_free",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_earlier_failures_free",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_threshold_changed",
+   "detected": true
+  },
+  {
+   "mutant": "buy_guard_any_threshold",
+   "detected": true
+  },
+  {
+   "mutant": "guard_failed_counted_as_entries",
+   "detected": true
+  },
+  {
+   "mutant": "guard_failed_left_out_of_the_mean",
+   "detected": true
+  },
+  {
+   "mutant": "latency_sensitivity_ignored_at_the_buy",
+   "detected": true
+  },
+  {
+   "mutant": "latency_sensitivity_ignored_at_a_resent_sale",
+   "detected": true
+  },
+  {
+   "mutant": "latency_sensitivity_ignored_at_a_resent_clock_sale",
+   "detected": true
+  },
+  {
+   "mutant": "latency_any_value",
+   "detected": true
+  },
+  {
+   "mutant": "latency_sensitivity_changed",
+   "detected": true
+  },
+  {
+   "mutant": "frozen_code_unchecked",
+   "detected": true
+  }
+ ],
+ "detected": 47,
+ "total": 47
+}

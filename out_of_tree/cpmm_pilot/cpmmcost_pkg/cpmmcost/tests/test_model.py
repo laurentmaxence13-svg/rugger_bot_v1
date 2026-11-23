@@ -72,16 +72,16 @@ def test_h1_keeps_the_fewer_tokens_at_the_buy_and_the_lower_value_at_the_sale():
     quiet, _ = market([(1000, 'buy', 10 ** 6), (1100, 'buy', 10 ** 6)])
     # a big real buy inside the buy landing slot (1004) raises the price before or after our buy: the worse is kept
     busy, _ = market([(1000, 'buy', 10 ** 6), (1004, 'buy', 20 * SOL), (1100, 'buy', 10 ** 6)])
-    calm = M.position(quiet, 0, CONFIG, exit_slot=2000)
-    hit = M.position(busy, 0, CONFIG, exit_slot=2000)
+    calm = M.position(quiet, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
+    hit = M.position(busy, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
     assert hit['tokens'] < calm['tokens']
     line_before = M._state(busy, FEES, slot_limit=1003)
     assert hit['tokens'] == M._buy_on(M._state(busy, FEES, slot_limit=1004), FEES, True).output_amount
     assert hit['tokens'] < M._buy_on(line_before, FEES, True).output_amount
     # a big real sale inside the exit slot (2000): the value after it is kept
     dump, _ = market([(1000, 'buy', 10 ** 6), (2000, 'sell', 2 * 10 ** 14)])
-    low = M.position(dump, 0, CONFIG, exit_slot=2000)
-    high = M.position(dump, 0, CONFIG, exit_slot=1999)
+    low = M.position(dump, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
+    high = M.position(dump, 0, CONFIG, exit_slot=1999, buy_guard_ppm=None)
     assert low['received'] < high['received'] and low['exit']['state_kept'] == dict(slot_limit=2000)
     assert low['decomposition_share_of_stake']['price_move'] < 0
 
@@ -216,25 +216,25 @@ def test_the_decoder_and_closedacct_are_the_audited_files(monkeypatch):
 def test_a_failed_attempt_lands_4_slots_later_on_another_state_with_h1():
     # a big real buy at slot 1006: after the first landing (1004), before the resent one (1008)
     line, _ = market([(1000, 'buy', 10 ** 6), (1006, 'buy', 20 * SOL)])
-    first = M.position(line, 0, CONFIG, exit_slot=2000)
-    late = M.position(line, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1))
+    first = M.position(line, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
+    late = M.position(line, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1), buy_guard_ppm=None)
     assert first['buy_landing_slot'] == 1004 and late['buy_landing_slot'] == 1008
     assert late['tokens'] < first['tokens']
     # H-1 on the delayed slot: a real buy INSIDE slot 1008 is taken against us too
     inside, _ = market([(1000, 'buy', 10 ** 6), (1008, 'buy', 20 * SOL)])
-    assert M.position(inside, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1))['tokens'] <         M.position(inside, 0, CONFIG, exit_slot=2000)['tokens']
+    assert M.position(inside, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1), buy_guard_ppm=None)['tokens'] <         M.position(inside, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)['tokens']
     # the sale: a big real sale at slot 2002, after the first sale landing (2000), before the resent one (2004)
     dump, _ = market([(1000, 'buy', 10 ** 6), (2002, 'sell', 2 * 10 ** 14)])
-    sale = M.position(dump, 0, CONFIG, exit_slot=2000)
-    resent = M.position(dump, 0, CONFIG, exit_slot=2000, failures=M.Failures(sell=1))
+    sale = M.position(dump, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
+    resent = M.position(dump, 0, CONFIG, exit_slot=2000, failures=M.Failures(sell=1), buy_guard_ppm=None)
     assert resent['received'] < sale['received'] and resent['exit']['state_kept']['slot_limit'] in (2003, 2004)
     # a delayed buy that lands after the exit point is refused
     with pytest.raises(M.CostError, match='exit_before_the_buy_landed'):
-        M.position(line, 0, CONFIG, exit_slot=1006, failures=M.Failures(buy=1))
+        M.position(line, 0, CONFIG, exit_slot=1006, failures=M.Failures(buy=1), buy_guard_ppm=None)
     # the clock exit: a resent sale lands 4 slots after the slot of the last swap at the clock time
     clock_line, _ = market([(1000, 'buy', 10 ** 6), (2800, 'buy', 10 ** 6), (2803, 'sell', 2 * 10 ** 14)])
-    on_time = M.position(clock_line, 0, CONFIG, exit_time=2800)
-    resent = M.position(clock_line, 0, CONFIG, exit_time=2800, failures=M.Failures(sell=1))
+    on_time = M.position(clock_line, 0, CONFIG, exit_time=2800, buy_guard_ppm=None)
+    resent = M.position(clock_line, 0, CONFIG, exit_time=2800, failures=M.Failures(sell=1), buy_guard_ppm=None)
     assert resent['exit']['state_kept']['slot_limit'] in (2803, 2804) and resent['received'] < on_time['received']
 
 
@@ -251,3 +251,116 @@ def test_the_g1_seed_is_the_freeze_sheet():
     assert a['upper_bound_95_one_sided'] == -W.lower_bound(groups, neg, seed=42, draws=300, alpha=0.05)
     other = M.pilot_verdict(rows, g0_passed=True, freeze_sheet_sha256='0000002b' + 'f' * 56, draws=300)
     assert other['upper_bound_95_one_sided'] == -W.lower_bound(groups, neg, seed=43, draws=300, alpha=0.05)
+
+
+def test_the_cpmm_buy_guard_of_amendment_a1():
+    assert (M.BUY_GUARD_PPM, M.BUY_GUARD_SENSITIVITY_PPM) == (20_000, 50_000)
+    # a 20 SOL real buy inside the landing slot: the fill is far below the decision quote
+    busy, _ = market([(1000, 'buy', 10 ** 6), (1004, 'buy', 20 * SOL)])
+    refused = M.position(busy, 0, CONFIG, exit_slot=2000)
+    assert refused['status'] == 'guard_failed' and refused['entered'] is False and refused['received'] == 0
+    assert refused['net_lamports'] == -105_000 and refused['fill_tokens'] < refused['expected_tokens']
+    assert refused['counts_for_operational_master'] is False
+    twice = M.position(busy, 0, CONFIG, exit_slot=2000, failures=M.Failures(buy=1))
+    assert twice['status'] == 'guard_failed' and twice['net_lamports'] == -210_000
+    assert twice['net_return'] == -210_000 / M.STAKE_LAMPORTS
+    # the same pool without the guard enters (the frozen 0.2 behaviour)
+    assert M.position(busy, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)['status'] == 'entered'
+    # a small move inside the band: entered under the guard
+    calm, _ = market([(1000, 'buy', 10 ** 6), (1004, 'buy', SOL // 10)])
+    assert M.position(calm, 0, CONFIG, exit_slot=2000)['status'] == 'entered'
+    # a move between 2 % and 5 %: refused at 20 000 ppm, entered at the 50 000 ppm sensitivity
+    found = None
+    for lamports in range(SOL // 2, 40 * SOL, SOL // 2):
+        line, _ = market([(1000, 'buy', 10 ** 6), (1004, 'buy', lamports)])
+        primary = M.position(line, 0, CONFIG, exit_slot=2000)
+        wide = M.position(line, 0, CONFIG, exit_slot=2000, buy_guard_ppm=M.BUY_GUARD_SENSITIVITY_PPM)
+        if primary['status'] == 'guard_failed' and wide['status'] == 'entered':
+            found = lamports
+            break
+    assert found is not None
+    with pytest.raises(M.CostError, match='buy_guard_not_a_declared_threshold'):
+        M.position(calm, 0, CONFIG, exit_slot=2000, buy_guard_ppm=10_000)
+
+
+def test_the_guard_compares_with_the_state_right_after_the_decision_swap():
+    line, _ = market([(1000, 'buy', 10 ** 6), (1001, 'buy', 20 * SOL)])        # a big buy BEFORE the landing slot
+    out = M.position(line, 0, CONFIG, exit_slot=2000)
+    fees = M.fees_from_amm_config(CONFIG)
+    decision_state = TL.after_swap(line.swaps[0], fees.protocol_fee_rate, fees.fund_fee_rate)
+    expected = M._buy_on(decision_state, fees, True).output_amount
+    assert out['status'] == 'guard_failed' and out['expected_tokens'] == expected
+
+
+def test_the_sale_keeps_no_guard():
+    dump, _ = market([(1000, 'buy', 10 ** 6), (2000, 'sell', 2 * 10 ** 14)])
+    out = M.position(dump, 0, CONFIG, exit_slot=2000)
+    assert out['status'] == 'entered' and out['received'] > 0 and out['net_return'] < -0.05
+
+
+def test_guard_failed_attempts_are_charged_in_the_mean_but_are_not_entries():
+    def row(i, pools, value, entered=True):
+        return dict(pool='p%d' % (i % pools), net_return=value, entered=entered,
+                    status='entered' if entered else 'guard_failed')
+    refused = [row(i, 24, -0.00105, entered=False) for i in range(20)]
+    kept = [row(i, 24, 0.05) for i in range(29)]
+    out = M.pilot_verdict(kept + refused, g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=300)
+    assert (out['n'], out['n_entered'], out['guard_failed']) == (49, 29, 20) and out['decision'] == 'INCONCLUSIF'
+    assert abs(out['mean_net_return'] - (29 * 0.05 - 20 * 0.00105) / 49) < 1e-12
+    few_pools = [row(i, 19, 0.05) for i in range(40)] + [dict(row(0, 1, -0.00105, False), pool='px%d' % i) for i in range(5)]
+    out = M.pilot_verdict(few_pools, g0_passed=True, freeze_sheet_sha256=ANCHOR, draws=300)
+    assert (out['pools'], out['pools_entered'], out['decision']) == (24, 19, 'INCONCLUSIF')
+    enough = M.pilot_verdict([row(i, 24, 0.05) for i in range(30)] + refused, g0_passed=True,
+                             freeze_sheet_sha256=ANCHOR, draws=300)
+    assert enough['decision'] == 'GO_PILOTE' and enough['guard_failed'] == 20
+
+
+def test_the_guard_boundary_is_exact_for_both_declared_thresholds():
+    fees = M.fees_from_amm_config(CONFIG)
+    seen = {20_000: set(), 50_000: set()}
+    for lamports in range(SOL // 4, 12 * SOL, SOL // 4):
+        line, _ = market([(1000, 'buy', 10 ** 6), (1004, 'buy', lamports)])
+        free = M.position(line, 0, CONFIG, exit_slot=2000, buy_guard_ppm=None)
+        expected = M._buy_on(TL.after_swap(line.swaps[0], fees.protocol_fee_rate, fees.fund_fee_rate), fees,
+                             M.creator_side(line, len(line.swaps) - 1)).output_amount
+        for ppm in seen:
+            out = M.position(line, 0, CONFIG, exit_slot=2000, buy_guard_ppm=ppm)
+            refused = free['tokens'] < expected * (1_000_000 - ppm) // 1_000_000
+            assert out['status'] == ('guard_failed' if refused else 'entered')
+            seen[ppm].add(out['status'])
+            if refused:
+                assert (out['expected_tokens'], out['fill_tokens']) == (expected, free['tokens'])
+            else:
+                assert out['tokens'] == free['tokens'] and out['net_lamports'] == free['net_lamports']
+    assert seen == {20_000: {'entered', 'guard_failed'}, 50_000: {'entered', 'guard_failed'}}
+
+
+def test_the_declared_10_slot_latency_sensitivity():
+    assert (M.LATENCY_SLOTS, M.SENSITIVITY_LATENCY_SLOTS, M.ALLOWED_LATENCIES) == (4, 10, (4, 10))
+    # a real buy between slot 1004 and slot 1010: the 4-slot buy is before it, the 10-slot buy after it
+    line, _ = market([(1000, 'buy', 10 ** 6), (1007, 'buy', SOL // 20), (1500, 'buy', 10 ** 6)])
+    fast = M.position(line, 0, CONFIG, exit_slot=2000)
+    slow = M.position(line, 0, CONFIG, exit_slot=2000, latency_slots=10)
+    assert fast == M.position(line, 0, CONFIG, exit_slot=2000, latency_slots=4)
+    assert (fast['buy_landing_slot'], slow['buy_landing_slot']) == (1004, 1010)
+    assert (fast['latency_slots'], slow['latency_slots']) == (4, 10)
+    assert slow['tokens'] < fast['tokens'] and slow['status'] == fast['status'] == 'entered'
+    late = M.position(line, 0, CONFIG, exit_slot=2000, latency_slots=10, failures=M.Failures(buy=1))
+    assert late['buy_landing_slot'] == 1020
+    # a resent sale is shifted by the declared latency too
+    dump, _ = market([(1000, 'buy', 10 ** 6), (2003, 'sell', 2 * 10 ** 14)])
+    assert (M.position(dump, 0, CONFIG, exit_slot=2000, latency_slots=4, failures=M.Failures(sell=1))['received'] <
+            M.position(dump, 0, CONFIG, exit_slot=2000, latency_slots=4)['received'])
+    assert (M.position(dump, 0, CONFIG, exit_slot=1996, latency_slots=10, failures=M.Failures(sell=1))['received'] <
+            M.position(dump, 0, CONFIG, exit_slot=1996, latency_slots=4, failures=M.Failures(sell=1))['received'])
+    for bad in (0, 5, 8, 4.0, None):
+        with pytest.raises(M.CostError, match='latency_not_a_declared_value'):
+            M.position(line, 0, CONFIG, exit_slot=2000, latency_slots=bad)
+
+
+def test_a_resent_clock_sale_is_shifted_by_the_declared_latency():
+    line, _ = market([(1000, 'buy', 10 ** 6), (1500, 'buy', 10 ** 6), (1507, 'sell', 2 * 10 ** 14)])
+    fast = M.position(line, 0, CONFIG, exit_time=1502, failures=M.Failures(sell=1))           # resent at 1504
+    slow = M.position(line, 0, CONFIG, exit_time=1502, failures=M.Failures(sell=1), latency_slots=10)   # at 1510
+    assert slow['received'] < fast['received'] and slow['exit']['state_kept'] in (dict(slot_limit=1509), dict(slot_limit=1510))
+    assert fast['exit']['state_kept'] in (dict(slot_limit=1503), dict(slot_limit=1504))
