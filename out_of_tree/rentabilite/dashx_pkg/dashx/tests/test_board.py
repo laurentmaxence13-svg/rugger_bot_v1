@@ -9,15 +9,16 @@ from dashx import board as B
 
 SPENT, TX = 100_000_000, 210_000
 START, END = 1_000, 2_000
+SLIP = 300_000
 
 
-def _row(pool, arm, gross, buy_slot, sell_slot, fees=(1_000_000, 1_000_000), trial='L1'):
-    pnl = gross - sum(fees) - TX
+def _row(pool, arm, gross, buy_slot, sell_slot, fees=(1_000_000, 1_000_000), trial='L1', slippage=SLIP):
+    pnl = gross - slippage - sum(fees) - TX
     return dict(trial=trial, arm=arm, pool=pool, outcome='closed', verified=True, pnl_lamports=pnl,
                 net_return=pnl / (SPENT + TX),
                 buy=dict(index=1, slot=buy_slot, block_time=10_000, spent_lamports=SPENT, fee_rate_ppm=10_000),
                 sell=dict(index=2, slot=sell_slot, block_time=10_030, trigger=dict(reason='stop_loss')),
-                decomposition=dict(market_move=gross, slippage=0, launchlab_buy_fee=fees[0], launchlab_sell_fee=fees[1],
+                decomposition=dict(market_move=gross, slippage=slippage, launchlab_buy_fee=fees[0], launchlab_sell_fee=fees[1],
                                    tx_costs=TX, failed_attempt_costs=0, pnl=pnl))
 
 
@@ -69,32 +70,63 @@ def test_ledger_rows_full_metrics_with_known_answers():
     ledger, bundle = _docs()
     rows = _rows(B.board(ledger=ledger, bundle=bundle, evaluation_min=START, evaluation_max=END))
     m = rows['MASTER W1']
-    pnl = [g - 2_210_000 for _p, g, _b, _s in MASTER]
+    pnl = [g - 2_210_000 - SLIP for _p, g, _b, _s in MASTER]
     nets = [v / (SPENT + TX) for v in pnl]
-    assert m['positions'] == 4 and m['pools'] == dict(distinct_pools=4) and m['win_rate'] == 0.5
-    assert m['mean_net_return'] == pytest.approx(sum(nets) / 4) and m['expectancy'] == m['mean_net_return']
+    assert m['positions'] == dict(counted=4, open_not_valued=0, guard_refusals=B.NM)
+    assert m['pools'] == dict(distinct_pools=4, share_first_pool=0.25, share_5_first_pools=1.0)
+    assert m['win_rate'] == 0.5 and m['mean_net_return'] == pytest.approx(sum(nets) / 4) == m['expectancy']
     assert m['mean_winning_return'] == pytest.approx((nets[0] + nets[2]) / 2)
     assert m['mean_losing_return'] == pytest.approx((nets[1] + nets[3]) / 2)
-    assert m['profit_factor'] == pytest.approx((pnl[0] + pnl[2]) / -(pnl[1] + pnl[3]))
-    # cumulative in sale order: n0, n0+n1 (fall n1), +n2, +n3: worst fall = max(-n1, -n1-n3 + ... )
-    cum, peak, worst = 0, 0, 0
+    assert m['profit_factor'] == pytest.approx((nets[0] + nets[2]) / -(nets[1] + nets[3]))      # NET returns
+    assert m['profit_factor_lamports'] == pytest.approx((pnl[0] + pnl[2]) / -(pnl[1] + pnl[3]))
+    cum = peak = worst = 0
     for v in nets:
         cum += v
         peak = max(peak, cum)
         worst = max(worst, peak - cum)
-    assert m['max_drawdown'] == pytest.approx(worst) and worst == pytest.approx(-(nets[1] + nets[2] + nets[3]))
+    assert m['max_drawdown']['stakes'] == pytest.approx(worst) == pytest.approx(-(nets[1] + nets[2] + nets[3]))
+    assert m['max_drawdown']['sol'] == pytest.approx(-(pnl[1] + pnl[2] + pnl[3]) / 1e9)
+    assert m['mean_gross_return'] == pytest.approx(sum(g - SLIP for _p, g, _b, _s in MASTER) / 4 / SPENT)
+    assert m['mean_market_move_excluding_own_impact'] == pytest.approx(sum(g for _p, g, _b, _s in MASTER) / 4 / SPENT)
     assert m['mean_curve_fees'] == pytest.approx(0.02) and m['mean_tx'] == pytest.approx(0.0021)
+    assert m['fees']['pool_fees_lamports'] == 2_000_000 and m['fees']['rent']['in_r_i'] is False
     assert m['latency_slots'] == 4 and m['failed_attempts'] == dict(modelled_fee_lamports=0, measured=False)
-    assert m['robustness']['first_half_mean'] == pytest.approx((nets[0] + nets[1]) / 2)
-    assert m['robustness']['mean_without_5_best'] == B.NM and m['robustness']['net_at_10_slots'] == B.NM
+    r = m['robustness']
+    assert set(r) == set(B.ROBUSTNESS) and r['latency_10_slots'] == B.NM and r['guard_5_percent'] == B.NM
+    assert r['half_1_half_2']['first'] == pytest.approx((nets[0] + nets[1]) / 2)
+    assert r['without_5_best_pools'] == B.NM                          # 4 pools: nothing left without the 5 best
+    assert r['rent_lost_vs_closed_account']['rent_lost_LP_additive'] == pytest.approx(
+        sum(v - 2_039_280 for v in pnl) / 4 / (SPENT + TX))
+    assert m['interval_95']['anchored_reading'] == B.MASTER_READING_INTERVAL
+    assert m['interval_95']['agreement'] == 'DISCORDANTS'                  # synthetic data, not the W1 reading
     assert m['placebo']['paired_pools'] == 2 and m['verdict'] == 'INCONCLUSIF'          # n = 4 < 30
-    assert rows['Placebo W1']['verdict'] is None and rows['Placebo W1']['positions'] == 2
+    assert rows['Placebo W1']['verdict'] is None and rows['Placebo W1']['positions']['counted'] == 2
 
 
-def test_drawdown_orders_positions_by_sale():
-    ps = [dict(net_return=r, sell_slot=s, slot=0, pool=str(s)) for r, s in ((-0.5, 3), (1.0, 1), (-0.2, 2))]
-    assert B.drawdown(ps) == pytest.approx(0.7)                 # +1.0, then -0.2, -0.5: fall of 0.7
-    assert B.drawdown([dict(net_return=-0.1, sell_slot=1, slot=0, pool='x')]) == pytest.approx(0.1)
+def test_drawdown_orders_positions_by_sale_not_by_entry():
+    ps = [dict(net_return=r, pnl=int(r * 1e8), sell_slot=s, slot=e, pool=str(s))
+          for r, s, e in ((-0.5, 1, 3), (1.0, 2, 1), (-0.3, 3, 2))]
+    assert B.drawdown(ps)['stakes'] == pytest.approx(0.5)            # sale order: -0.5, +1.0, -0.3 (entry order: 0.8)
+    assert B.drawdown(ps)['sol'] == pytest.approx(0.05)
+    assert B.drawdown([dict(net_return=-0.1, pnl=-10, sell_slot=1, slot=0, pool='x')])['stakes'] == pytest.approx(0.1)
+
+
+def test_a_zero_return_is_a_loss_not_a_win_and_pf_needs_a_negative():
+    ps = [dict(pool=str(i), pnl=v, net_return=v / c, cost=c, gross=0, slippage=0, spent=c, gross_return=0.0,
+               fee_return=0.0, tx_return=0.0, fees=0, tx=0, failed=0, slot=i, sell_slot=i, cluster=str(i))
+          for i, (v, c) in enumerate(((1_000_000, 1e8), (0, 1e8), (-2_000_000, 4e8)))]
+    row = B.ledger_row('x', ps, placebo=False, latency=4, failed_fee=0)
+    assert row['win_rate'] == pytest.approx(1 / 3) and row['mean_losing_return'] == pytest.approx(-0.0025)
+    assert row['profit_factor'] == pytest.approx(2.0) and row['profit_factor_lamports'] == pytest.approx(0.5)
+    only_wins = B.ledger_row('y', ps[:2], placebo=False, latency=4, failed_fee=0)
+    assert only_wins['profit_factor'] == B.NM and only_wins['mean_losing_return'] == 0
+
+
+def test_master_intervals_both_published_with_concordance():
+    assert B.concordance(dict(low=-0.06692, high=-0.01948)) == 'concordants'
+    assert B.concordance(dict(low=-0.0675, high=-0.0195)) == 'DISCORDANTS'
+    assert B.concordance(dict(low=None, high=None)) == 'DISCORDANTS'
+    assert B.concordance(dict(low=-0.0669, high=-0.0150)) == 'DISCORDANTS'      # low agrees, high does not
 
 
 def test_aggregate_rows_keep_only_what_the_documents_hold():
@@ -107,7 +139,8 @@ def test_aggregate_rows_keep_only_what_the_documents_hold():
             assert r[col] == B.NM
     assert rows["latesel T3'"]['verdict'] == 'INCONCLUSIF'                       # n = 23 < 30
     assert rows['placebo du palier bas']['verdict'] is None and rows['placebo latelab (moitié 1)']['verdict'] is None
-    assert rows['C-D']['mean_gross_return'] == -0.0194 and rows['C-D']['robustness']['net_at_10_slots'] == -0.047
+    assert rows['C-D']['mean_gross_return'] == -0.0194 and rows['C-D']['robustness']['latency_10_slots'] == -0.047
+    assert set(rows['C-D']['robustness']) >= set(B.ROBUSTNESS) and rows['C-D']['robustness']['guard_5_percent'] == B.NM
     assert rows['C-D']['placebo']['mean_net_return'] == -0.0182
     assert rows['latelab L1 (moitié 1)']['mean_gross_return'] == B.NM and rows['latelab L1 (moitié 1)']['latency_slots'] == 4
     ca = rows['C-A (MASTER, palier 12 500 ppm)']
@@ -132,18 +165,23 @@ def _write(tmp_path, name, doc):
     return path, hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_run_checks_every_sha_and_hides_pools(tmp_path):
+def test_run_checks_every_sha_and_hides_pools(tmp_path, monkeypatch):
     ledger, bundle = _docs()
     raw_bundle = gzip.compress(json.dumps(bundle).encode(), mtime=0)
     (tmp_path / 'L1.json.gz').write_bytes(raw_bundle)
     ledger['bundles_sha256'] = dict(L1=hashlib.sha256(raw_bundle).hexdigest())
     lp = _write(tmp_path, 'ledger.json', ledger)
     others = {k: _write(tmp_path, k + '.json', v) for k, v in _others().items()}
+    # K-3: a file whose sha is consistent with what is given, but which is not the anchored one, is refused
+    with pytest.raises(B.DashError, match='sha256_is_not_the_expected_one:cdgate'):
+        B.run(tmp_path / 'o0', cdgate=others['cdgate'])
+    with pytest.raises(B.DashError, match='sha256_is_not_the_expected_one:ledger'):
+        B.run(tmp_path / 'o0', ledger=lp, bundle=tmp_path / 'L1.json.gz', evaluation_min=START, evaluation_max=END)
+    assert B.EXPECTED_SHA256['ledger'].startswith('4da5fbfb') and B.EXPECTED_SHA256['cdgate'].startswith('2b173f10')
+    monkeypatch.setattr(B, 'EXPECTED_SHA256', dict({k: v[1] for k, v in others.items()}, ledger=lp[1]))
+    # the expected sha is given but the file on disk differs: refused
     with pytest.raises(B.DashError, match='input_is_not_the_anchored_one'):
-        B.run(tmp_path / 'o1', ledger=(lp[0], '0' * 64), bundle=tmp_path / 'L1.json.gz', evaluation_min=START,
-              evaluation_max=END)
-    with pytest.raises(B.DashError, match='input_is_not_the_anchored_one'):
-        B.run(tmp_path / 'o1', cdgate=(others['cdgate'][0], '1' * 64))
+        B.run(tmp_path / 'o1', cdgate=(tmp_path / 'ledger.json', others['cdgate'][1]))
     (tmp_path / 'x.gz').write_bytes(b'x')
     with pytest.raises(B.DashError, match='bundle_is_not_the_one'):
         B.run(tmp_path / 'o1', ledger=lp, bundle=tmp_path / 'x.gz', evaluation_min=START, evaluation_max=END)
@@ -153,7 +191,8 @@ def test_run_checks_every_sha_and_hides_pools(tmp_path):
     text = (tmp_path / 'out' / 'TABLEAU_DE_BORD.json').read_text() + (tmp_path / 'out' / 'TABLEAU_DE_BORD.md').read_text()
     for name in ('"a"', 'Ca', 'Cb'):
         assert name not in text
-    assert 'NON MESURÉ' in text and 'EXPLORATOIRE' in text
+    md = (tmp_path / 'out' / 'TABLEAU_DE_BORD.md').read_text()
+    assert md.splitlines()[2] == f'**{B.WARNING}**' and 'NON MESURÉ' in text
     with pytest.raises(B.DashError, match='output_exists'):
         B.run(tmp_path / 'out', cdgate=others['cdgate'])
     only = B.run(tmp_path / 'only', cdgate=others['cdgate'])

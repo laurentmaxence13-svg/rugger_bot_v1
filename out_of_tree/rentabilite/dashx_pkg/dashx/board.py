@@ -1,4 +1,6 @@
-"""dashx 0.1 -- R-3 of the owner's strategic directive (23/11): the EXTENDED DASHBOARD of every evaluated strategy,
+"""dashx 0.2 (0.1 d673e9d + R02 audit 5c5d666c K-1..K-4 + frozen definitions DEFINITIONS_INDICATEURS_GELEES_R02_v1_0
+b31a3c47: profit factor on NET returns, losses r <= 0, drawdown in stakes AND SOL by exit order, fees split, the closed
+robustness list, both MASTER intervals with their concordance, expected input sha256 fixed, warning header) -- dashx 0.1 -- R-3 of the owner's strategic directive (23/11): the EXTENDED DASHBOARD of every evaluated strategy,
 computed ONLY on the ANCHORED outputs already produced (no replay, no new evaluation, no pool data). EXPLORATOIRE.
 Run ONCE by RUGGER 03 after the R02 audit. Every input sha256 is checked before it is read.
 
@@ -31,11 +33,26 @@ from pathlib import Path
 
 from w1loss import analysis as A
 
-SCHEMA = 'rugger-extended-dashboard-v0.1'
+SCHEMA = 'rugger-extended-dashboard-v0.2'
 STAMP = 'EXPLORATOIRE — TABLEAU DE BORD SUR SORTIES ANCRÉES — AUCUNE NOUVELLE ÉVALUATION'
 NM = 'NON MESURÉ'
 VERDICTS = ('NÉGATIF', 'INCONCLUSIF')
 NO_POSITION = ('C-B', 'C-C', 'C-E', 'CPMM R-CP1')
+WARNING = ('EXPLORATOIRE ; données W1 ; régimes [SL]/[LP] non comparables entre lignes ; NON MESURÉ = non calculable '
+           'sans nouveau rejeu')
+# K-3 (R02 5c5d666c): the ONLY accepted inputs; any other sha256 blocks the run
+EXPECTED_SHA256 = dict(
+    ledger='4da5fbfb2339ee0bbaf46df66d0aed5d11ea0aa6002f11d00a97e0d1b83c3528',
+    ventilation='da1e575890ae19fd512e17f43283c5f32d5887f71e5d8c9e8e915bce2488873e',
+    latelab_discovery='7351512d84916e64923b5292e1e51d1563d0a35e7865fa0f5a513ca6d217ec8f',
+    latelab_screen='20aba3f5712ee442cfbbcd67d90398e7ae0e010683d0042d11c07cf61d8bd0f0',
+    latesel='f3c6c9e38336029388d88713388984e2c0a52fbec27b9f3a6ae3a575ee7fbf64',
+    cdgate='2b173f104b6ca83cc1867f8abaa8dd3cd31a13d213b85772470edd1b75153cfa')
+# the anchored preliminary reading of the MASTER (ea152a32, synthesis 3aa36aa3), published NEXT to the w1loss interval
+MASTER_READING_INTERVAL = dict(low=-0.0669, high=-0.0195, source='ea152a32 / 3aa36aa3', rounding=0.00005)
+RENT_LAMPORTS, CLEANUP_LAMPORTS, LAMPORTS_PER_SOL = 2_039_280, 105_000, 10 ** 9
+ROBUSTNESS = ('latency_10_slots', 'one_failure_per_tx', 'without_5_best_pools', 'rent_lost_vs_closed_account',
+              'guard_5_percent', 'frozen_mev_grid', 'half_1_half_2')
 COLUMNS = ('positions', 'pools', 'mean_gross_return', 'mean_net_return', 'regime', 'win_rate', 'mean_winning_return',
            'mean_losing_return', 'profit_factor', 'expectancy', 'max_drawdown', 'mean_curve_fees', 'mean_tx',
            'latency_slots', 'failed_attempts', 'interval_95', 'placebo', 'robustness', 'status', 'verdict')
@@ -49,7 +66,9 @@ def _sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def _load(path, sha256):
+def _load(path, sha256, name=None):
+    if name is not None and sha256 != EXPECTED_SHA256[name]:
+        raise DashError('sha256_is_not_the_expected_one:' + name)
     if _sha(path) != sha256:
         raise DashError('input_is_not_the_anchored_one:' + Path(path).name)
     return json.loads(Path(path).read_bytes())
@@ -73,43 +92,77 @@ def blank(name, **known):
 
 # -- per-position rows (the ledger) ---------------------------------------------------------------------------------
 def drawdown(positions):
-    """Largest peak-to-trough fall of the cumulative net return, positions in sale order; in units of one stake."""
-    cumulative, peak, worst = 0.0, 0.0, 0.0
+    """Fixed-stake capital curve, positions ordered by EXIT (sale slot, then entry slot, then pool, accepted by R02 for the
+    missing signature); largest peak-to-trough fall of the cumulative net, in stakes (sum of r_i) and in SOL (P&L)."""
+    stakes = sol = peak_s = peak_l = worst_s = worst_l = 0
     for p in sorted(positions, key=lambda q: (q['sell_slot'], q['slot'], q['pool'])):
-        cumulative += p['net_return']
-        peak = max(peak, cumulative)
-        worst = max(worst, peak - cumulative)
-    return worst
+        stakes += p['net_return']
+        sol += p['pnl']
+        peak_s, peak_l = max(peak_s, stakes), max(peak_l, sol)
+        worst_s, worst_l = max(worst_s, peak_s - stakes), max(worst_l, peak_l - sol)
+    return dict(stakes=worst_s, sol=worst_l / LAMPORTS_PER_SOL)
 
 
-def ledger_row(name, positions, *, placebo, latency, failed_fee, paired=None):
+def concordance(interval, reading=None):
+    reading = MASTER_READING_INTERVAL if reading is None else reading
+    same = (interval.get('low') is not None and interval.get('high') is not None
+            and abs(interval['low'] - reading['low']) <= reading['rounding']
+            and abs(interval['high'] - reading['high']) <= reading['rounding'])
+    return 'concordants' if same else 'DISCORDANTS'
+
+
+def ledger_row(name, positions, *, placebo, latency, failed_fee, paired=None, open_rows=0, reading=None):
     n = len(positions)
     if not n:
         return blank(name, positions=0)
     nets = [p['net_return'] for p in positions]
-    wins = [p['net_return'] for p in positions if p['pnl'] > 0]
-    losses = [p['net_return'] for p in positions if p['pnl'] <= 0]
-    gain, loss = sum(p['pnl'] for p in positions if p['pnl'] > 0), -sum(p['pnl'] for p in positions if p['pnl'] < 0)
+    wins = [r for r in nets if r > 0]
+    losses = [r for r in nets if r <= 0]                         # r = 0 is not a win (b31a3c47)
+    negative = -sum(r for r in nets if r < 0)
+    win_rate = len(wins) / n
+    mean_win, mean_loss = A._mean(wins), A._mean(losses)
+    expectancy = A._mean(nets)
+    identity = win_rate * (mean_win or 0) + (1 - win_rate) * (mean_loss or 0)
+    if abs(identity - expectancy) > 1e-9:
+        raise DashError('expectancy_identity_broken')
+    gain_l, loss_l = sum(p['pnl'] for p in positions if p['pnl'] > 0), -sum(p['pnl'] for p in positions if p['pnl'] < 0)
     ordered = sorted(positions, key=lambda p: (p['slot'], p['pool']))
     half = n // 2
-    best = sorted(nets, reverse=True)
-    positive = sorted((p['pnl'] for p in positions if p['pnl'] > 0), reverse=True)
+    by_pool = {}
+    for p in positions:
+        by_pool.setdefault(p['pool'], []).append(p)
+    best_pools = sorted(by_pool, key=lambda k: (-sum(q['net_return'] for q in by_pool[k]), k))[:5]
+    sizes = sorted((len(v) for v in by_pool.values()), reverse=True)
     interval = A._interval(positions)
+    intervals = dict(w1loss=dict(interval, method='w1loss 0.3: creator clusters, 2 000 draws, seed 20261120'))
+    if reading is not None:
+        intervals.update(anchored_reading=reading, agreement=concordance(interval, reading))
+    rent_lost = [(p['pnl'] - RENT_LAMPORTS) / p['cost'] for p in positions]
+    closed = [(p['pnl'] - CLEANUP_LAMPORTS) / p['cost'] for p in positions]
+    robustness = {k: NM for k in ROBUSTNESS}
+    robustness.update(
+        without_5_best_pools=A._mean([p['net_return'] for k, v in by_pool.items() if k not in best_pools for p in v]) or NM,
+        rent_lost_vs_closed_account=dict(rent_lost_LP_additive=A._mean(rent_lost), closed_account_additive=A._mean(closed)),
+        half_1_half_2=dict(first=A._mean([p['net_return'] for p in ordered[:half]]),
+                           second=A._mean([p['net_return'] for p in ordered[half:]])))
     return dict(
-        strategy=name, positions=n, pools=dict(distinct_pools=len({p['pool'] for p in positions})),
-        mean_gross_return=A._mean([p['gross_return'] for p in positions]), mean_net_return=A._mean(nets),
-        regime='SL (frozen engine, rent not modelled)', win_rate=len(wins) / n,
-        mean_winning_return=A._mean(wins) if wins else NM, mean_losing_return=A._mean(losses) if losses else NM,
-        profit_factor=(gain / loss) if loss else NM, expectancy=A._mean(nets), max_drawdown=drawdown(positions),
+        strategy=name, positions=dict(counted=n, open_not_valued=open_rows, guard_refusals=NM),
+        pools=dict(distinct_pools=len(by_pool), share_first_pool=sizes[0] / n, share_5_first_pools=sum(sizes[:5]) / n),
+        mean_gross_return=A._mean([(p['gross'] - p['slippage']) / p['spent'] for p in positions]),
+        mean_market_move_excluding_own_impact=A._mean([p['gross_return'] for p in positions]),
+        mean_net_return=expectancy, regime='SL (frozen engine, rent not modelled)', win_rate=win_rate,
+        mean_winning_return=mean_win if wins else NM, mean_losing_return=mean_loss if losses else NM,
+        profit_factor=(sum(wins) / negative) if negative else NM,
+        profit_factor_lamports=(gain_l / loss_l) if loss_l else NM,
+        expectancy=expectancy, max_drawdown=drawdown(positions),
         mean_curve_fees=A._mean([p['fee_return'] for p in positions]), mean_tx=A._mean([p['tx_return'] for p in positions]),
+        fees=dict(pool_fees_lamports=A._mean([p['fees'] for p in positions]),
+                  base_priority_lamports=A._mean([p['tx'] for p in positions]),
+                  rent=dict(lamports=RENT_LAMPORTS, in_r_i=False, note='not modelled in [SL]: see robustness'),
+                  wsol=NM, failed_lamports=A._mean([p['failed'] for p in positions])),
         latency_slots=latency if latency is not None else NM,
         failed_attempts=dict(modelled_fee_lamports=failed_fee, measured=False),
-        interval_95=interval, placebo=paired if paired is not None else NM,
-        robustness=dict(first_half_mean=A._mean([p['net_return'] for p in ordered[:half]]),
-                        second_half_mean=A._mean([p['net_return'] for p in ordered[half:]]),
-                        mean_without_5_best=A._mean(best[5:]) if n > 5 else NM,
-                        share_of_5_best_in_positive=(sum(positive[:5]) / sum(positive)) if positive else NM,
-                        net_at_10_slots=NM),
+        interval_95=intervals, placebo=paired if paired is not None else NM, robustness=robustness,
         status='EXPLORATOIRE', verdict=verdict(n, interval['high'], interval['interpretable'], placebo))
 
 
@@ -137,9 +190,13 @@ def ledger_rows(ledger, bundle, *, evaluation_min, evaluation_max):
     t6 = doc['T6_paired_master_minus_placebo']
     paired = dict(paired_pools=t6['n'], mean_diff_net_return=t6['mean_diff_net_return'],
                   interval_95=t6['interval_95_mean_diff_net_return'], label='descriptif (T6 de w1loss)')
+    open_rows = {arm: sum(1 for row in ledger['entries'] if row.get('trial') == A.TRIAL and row.get('arm') == arm
+                          and row.get('outcome') != 'closed' and row['pool'] in pools
+                          and evaluation_min <= pools[row['pool']]['creation_slot'] < evaluation_max) for arm in A.ARMS}
     return [ledger_row('MASTER W1', positions['master'], placebo=False, latency=latency, failed_fee=failed,
-                       paired=paired),
-            ledger_row('Placebo W1', positions['placebo_random'], placebo=True, latency=latency, failed_fee=failed)]
+                       paired=paired, open_rows=open_rows['master'], reading=MASTER_READING_INTERVAL),
+            ledger_row('Placebo W1', positions['placebo_random'], placebo=True, latency=latency, failed_fee=failed,
+                       open_rows=open_rows['placebo_random'])]
 
 
 # -- aggregate rows (latelab / latesel / cdgate / w1loss ventilation) -------------------------------------------------
@@ -162,9 +219,11 @@ def aggregate_row(name, s, *, placebo, latency, regime, comparator=NM, extra=Non
         row['mean_curve_fees'] = s['mean_fee_return']
     if 'mean_tx_return' in s:
         row['mean_tx'] = s['mean_tx_return']
-    robustness = dict(share_of_5_best_in_positive=s.get('share_of_the_5_best_in_positive', NM),
-                      mean_net_return_rent_recovered=s.get('mean_net_return_rent_recovered', NM),
-                      net_at_10_slots=s.get('mean_net_return_latency_10_slots', NM))
+    robustness = {k: NM for k in ROBUSTNESS}
+    robustness.update(latency_10_slots=s.get('mean_net_return_latency_10_slots', NM),
+                      rent_lost_vs_closed_account=dict(rent_recovered=s['mean_net_return_rent_recovered'])
+                      if 'mean_net_return_rent_recovered' in s else NM,
+                      share_of_5_best_in_positive=s.get('share_of_the_5_best_in_positive', NM))
     row['robustness'] = robustness
     if extra:
         row.update(extra)
@@ -225,7 +284,8 @@ def board(*, ledger=None, bundle=None, ventilation=None, latelab_discovery=None,
     for row in rows:
         if row['verdict'] not in VERDICTS + (None,):
             raise DashError('verdict_outside_the_closed_vocabulary')
-    return dict(schema=SCHEMA, stamp=STAMP, category='HISTORICAL_REPLAY', columns=list(COLUMNS), rows=rows,
+    return dict(schema=SCHEMA, stamp=STAMP, warning=WARNING, category='HISTORICAL_REPLAY', columns=list(COLUMNS),
+                definitions='DEFINITIONS_INDICATEURS_GELEES_R02_v1_0.md b31a3c47', rows=rows,
                 not_measured=NM, flags=dict(new_evaluation=False, rule_or_parameter_selected=False,
                                             profitability_demonstrated=False, counts_for_operational_master=False))
 
@@ -242,7 +302,7 @@ def _cell(value):
 
 def markdown(doc):
     head = ('strategy',) + COLUMNS
-    lines = [f'# Tableau de bord étendu — {doc["stamp"]}', '', '| ' + ' | '.join(head) + ' |',
+    lines = [f'# Tableau de bord étendu — {doc["stamp"]}', '', f'**{doc["warning"]}**', '', '| ' + ' | '.join(head) + ' |',
              '|' + '---|' * len(head)]
     for row in doc['rows']:
         lines.append('| ' + ' | '.join(_cell(row.get(c)) for c in head) + ' |')
@@ -254,14 +314,14 @@ def run(out_dir, *, ledger=None, bundle=None, ventilation=None, latelab_discover
     """Each input is a (path, sha256) pair or None."""
     docs = {}
     if ledger is not None:
-        docs['ledger'] = _load(*ledger)
+        docs['ledger'] = _load(*ledger, name='ledger')
         if bundle is None or _sha(bundle) != (docs['ledger'].get('bundles_sha256') or {}).get('L1'):
             raise DashError('bundle_is_not_the_one_the_ledger_recorded')
         docs['bundle'] = json.loads(gzip.decompress(Path(bundle).read_bytes()))
     for key, value in dict(ventilation=ventilation, latelab_discovery=latelab_discovery, latelab_screen=latelab_screen,
                            latesel=latesel, cdgate=cdgate).items():
         if value is not None:
-            docs[key] = _load(*value)
+            docs[key] = _load(*value, name=key)
     doc = board(**docs, evaluation_min=evaluation_min, evaluation_max=evaluation_max)
     out = Path(out_dir)
     if out.exists():

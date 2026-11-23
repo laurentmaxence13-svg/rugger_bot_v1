@@ -1,0 +1,120 @@
+{
+ "package": "dashx",
+ "version": "0.2",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "min_n_20",
+   "detected": true
+  },
+  {
+   "mutant": "interpretable_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "high_bound_non_strict",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_gets_a_verdict",
+   "detected": true
+  },
+  {
+   "mutant": "dd_entry_order_R02",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_from_zero",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_sol_units",
+   "detected": true
+  },
+  {
+   "mutant": "zero_not_loss_R02",
+   "detected": true
+  },
+  {
+   "mutant": "zero_is_a_win",
+   "detected": true
+  },
+  {
+   "mutant": "pf_in_lamports",
+   "detected": true
+  },
+  {
+   "mutant": "pf_no_loss_zero",
+   "detected": true
+  },
+  {
+   "mutant": "gross_without_own_impact",
+   "detected": true
+  },
+  {
+   "mutant": "halves_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "rent_not_subtracted",
+   "detected": true
+  },
+  {
+   "mutant": "concordance_always",
+   "detected": true
+  },
+  {
+   "mutant": "concordance_high_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "c_a_wrong_tier",
+   "detected": true
+  },
+  {
+   "mutant": "aggregate_interpretable_forced",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "expected_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "file_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "bundle_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "overwrite_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "no_position_rows_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "latency10_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "latency_hardcoded",
+   "detected": true
+  },
+  {
+   "mutant": "md_warning_dropped",
+   "detected": true
+  }
+ ],
+ "detected": 27,
+ "total": 27,
+ "equivalent_removed": [
+  "identity_unchecked: WR x gain + (1 - WR) x loss equals the mean by construction"
+ ]
+}
