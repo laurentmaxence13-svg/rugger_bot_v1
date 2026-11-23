@@ -125,6 +125,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 23/11 13:57Z | R02 : (1) note HW1 / plafond (8a9c8f84) : pas d'incohérence. Plafond exploratoire : 168/170. HW1 : 5 hypothèses gelées avant W1, correction de Holm, publiées à part. (2) Cadre multi-générations (b4edc143) : générations de 3 hypothèses au plus, sur fenêtres disjointes ; W1 non clos tant que A2 n'est pas fait, donc seules les analyses descriptives sont permises. (3) Définitions gelées des indicateurs (b31a3c47) : l'expectancy est le chiffre de décision ; drawdown descriptif ; 7 sensibilités. | registre R02 | déclaré (R02) |
 
+| 23/11 14:17Z | **Décomposition des pertes W1** (w1decomp 0.2, DESCRIPTIVE, exploratoire ; sortie df0d9cbb reproduite par R02). La perte MASTER vient des coûts : frais de courbe 59,8 %, loyer 36,5 %, tx 3,8 %. Brut −0,72 % [−3,11 ; +1,65] : aucun avantage de prix avant frais. Net −4,26 % ; −6,29 % avec loyer perdu. Après l'entrée : pic médian à 5 slots, 1er passage sous l'entrée à 17 slots en médiane. Cellules D3 légèrement positives (n 16 et 17) : NON INTERPRÉTABLES, bruit sur 24 cellules. | vérification R02 ee86eee4 | déclaré (R02) |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
