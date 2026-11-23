@@ -1,6 +1,6 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-22 à 20:30Z (corrections R02 appliquées).
+Mis à jour le 2026-11-23 à 07:00Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
@@ -33,16 +33,17 @@ Légende des preuves :
 
 Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilote CPMM R-CP1 porterait N à 169 sur 170 (note CPMM v0.2). Confirmé par R02 (Dossier B v1.9, 2c25a090, § 5) : le plafond de 170 s'entend hors HW1 ; HW1 ajoute 5 essais publiés à part, soit 173 au total, sans violation. Il reste 2 essais hors HW1. L'admission C-B coûte +0, car c'est une règle fermée.
 
-## 2. Décisions réellement réservées au propriétaire — BLOQUÉ PAR LE PROPRIÉTAIRE
+## 2. Opérations bloquées — la décision précise qui manque
 
-| Décision | Ce qui est prêt | Débloque |
-|---|---|---|
-| Signer l'exception A2 : fiche R02 v1.1 (e2a93ea8) avec son erratum v2.6.6, B1, C1/P1, ≤ 66 $ TTC, risque de sauvegarde | Paquet v2.6.6 au PASS de R02 (d0c2ccd, MANIFEST 490a28f1) ; texte du § 7 transmis à 17:43Z | Verdict officiel W1, puis HW1, puis C-B |
-| Pilote CPMM : source U-2, puis GO étape 0 (≤ 100 crédits), puis GO étape 1 (≤ 50 k) | Protocole v1.2 (a3a285a1) | Données CPMM réelles |
-| Variables W2 : format, k, plafond, plan Helius | Dossier B v1.9 | Lancement W2 |
-| Mesurer les échecs de transaction (N-4) : demande une nouvelle collecte qui conserve aussi les transactions échouées | landslip 0.1 (8e432a5) | Coût réel des échecs |
-| Prérequis PAPER_LIVE D-1 à D-7 (hôte 24 h, source, crédits, SOL/USD, secret, interface, texte d'autorisation) | Protocole PAPER_LIVE v0.1 (a94a660), en audit | PAPER prospectif en flux réel |
-| Retrait du secret Helius de l'environnement R03 ; désactivation des 4 routines d'étiquette du 05/11 | — | Hygiène |
+| Opération | Décision précise manquante | Où la poser | Prêt de notre côté |
+|---|---|---|---|
+| **A2** : verdict officiel W1, qui ouvre ensuite HW1 puis C-B | Recopier et signer le texte du § 7 de la fiche R02 v1.1, erratum v2.6.6 : exception Google Cloud limitée à A2, VM et bucket neufs, DEADLINE ≤ lancement + 49 h, plafond 66 $ TTC avec alerte, C1/P1 (B1), jetons déposés par le propriétaire lui-même, risque de sauvegarde accepté. **Aucune autorisation existante ne couvre Google Cloud, les transferts ou la dépense.** | Session du propriétaire. Le dépôt de jetons se fait par le formulaire « network secret » de l'environnement R03, jamais dans un chat. | Paquet v2.6.6 au PASS de R02 (d0c2ccd, MANIFEST 490a28f1) ; w1chain 0.2 au PASS de R02 (a49f398) |
+| Pilote CPMM, étape 0 | (1) Choisir la source de la liste de pools (U-2). (2) Écrire « GO étape 0, ≤ 100 crédits Helius ». | Session R03 | Protocole v1.2 (a3a285a1), cpmmfmt CONFORME, cpmmcost 0.2 au PASS de R02 |
+| Pilote CPMM, étape 1 | Écrire « GO étape 1, ≤ 50 000 crédits », après le résultat de l'étape 0 | Session R03 | Idem |
+| PAPER_LIVE prospectif | Choisir D-1 à D-7 : hôte 24 h, source du flux, plafond de crédits, SOL/USD en direct, gestion du secret, interface unique, texte d'autorisation | Session de l'agent exécutant | Protocole PAPER_LIVE v0.2, conforme selon R02 (f9bd7816) ; rtgate 0.2 au PASS de R02 |
+| Mesure des échecs de transaction (N-4) | Autoriser une collecte qui conserve aussi les transactions échouées, avec un plafond de crédits | Session R03 | landslip 0.1 au PASS de R02 |
+| W2 | Fixer le format, k, le plafond et le plan Helius, puis donner le GO de lancement. Dépend de A2 → HW1 → C-B. | Session du propriétaire | Dossier B v1.9 |
+| Hygiène | Retirer le secret Helius de l'environnement R03 ; désactiver les 4 routines d'étiquette du 05/11 | Paramètres claude.ai | — |
 
 ## 3. Tâches priorisées (autorisées, en parallèle)
 
