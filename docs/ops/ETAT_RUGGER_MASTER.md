@@ -66,7 +66,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 | E-1 | PL-1 : banc d'essai PAPER_LIVE de bout en bout sur fixtures (rtgate, papercost, journal, rapprochement, S-1 à S-6), étiqueté SIMULATED_FEED ; liste des valeurs attendues pour D-1 à D-7 | R01 ; audit R02 | A1 | Confié le 23/11 à 07:00Z |
 | E-1 | CPMM-2 : préenregistrement de l'hypothèse CPMM (règle de décision, effet minimal net, puissance, témoin, essais 169/170, arrêt) | R01 ; audit R02 | A1 | Confié le 23/11 à 07:00Z |
 | E-1 | Gel des règles de lecture statistique : pilote CPMM et PAPER_LIVE, critères économiques en coûts complets | R02 | A1 | **Fait** : REGLES_LECTURE_GELEES_CPMM_PAPERLIVE_R02_v1_0.md (registre R02). Vocabulaire fermé : STOP / INCONCLUSIF / NÉGATIF / GO_PILOTE / CONFIRMÉ / RENTABLE. « Rentable » n'est permis que si R-0.6 est remplie : CONFIRMÉ sur des données indépendantes en coûts complets, net > 0 avec 1 échec et 10 slots, PAPER_LIVE POSITIF avec les reçus de cycle, audit écrit de R02. Bootstrap groupé de 10 000 tirages, sans arrêt anticipé. Étape 0 CPMM sans chiffre économique ; étape 1 plafonnée à GO_PILOTE. Pour le MASTER gelé en PAPER_LIVE, le résultat attendu déclaré est NÉGATIF. |
-| E-0 | Contrôle d'intégrité local des preuves W1 (sha contre registre R02) et inventaire des risques de perte | R03 | A1 | Confié le 23/11 à 07:00Z |
+| E-0 | Contrôle d'intégrité local des preuves W1 (sha contre registre R02) et inventaire des risques de perte | R03 | A1 | **Fait, 0 écart** (déclaré). Vérifiés : 26 sha ancrés, 2 273 archives, 2 294 sorties préliminaires, 29 549 .pkl, 3 × 2 273 checkpoints, 26 fichiers inbound, arbre gelé. Disque : 21 Go utilisés, 6,7 Go libres. |
 
 ## 4. Résultats
 
@@ -91,6 +91,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. La lecture HW1 ajoute +5. Le pilot
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
+- 23/11 08:47:44Z : le conteneur de R03 a redémarré ; les données ont survécu (0 écart d'intégrité). Seuls ≈ 71 % de W1 sont copiés à l'extérieur, le reste serait perdu à la fin de la session.
 - 22/11 21:43Z : R01 a d'abord signalé une « décision δ » à prendre par le propriétaire, puis l'a retirée à 21:44Z après l'avis de R02. R04 l'avait transmise entre-temps et l'a corrigée.
 - 22/11 20:28Z : un message de R02 à R01 a été perdu. Il demandait le plan de mesure N-4/N-5 et la garde de glissement ; il est absent du journal de R01 (2e perte de la journée). R01 demande le texte exact à R02. Ces travaux deviennent la tâche P3-b, placée avant P3-c.
 - 22/11, 15:36–15:41Z : des messages de R02 adressés à R04 ont été perdus. Ils ont été rattrapés à 17:43Z.
