@@ -1,0 +1,69 @@
+{
+ "package": "barmap",
+ "version": "0.1",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "rent_changed",
+   "detected": true
+  },
+  {
+   "mutant": "base_fee_zero",
+   "detected": true
+  },
+  {
+   "mutant": "failure_linear",
+   "detected": true
+  },
+  {
+   "mutant": "cleanup_free",
+   "detected": true
+  },
+  {
+   "mutant": "wsol_free",
+   "detected": true
+  },
+  {
+   "mutant": "rent_never_lost",
+   "detected": true
+  },
+  {
+   "mutant": "move_not_constant_k",
+   "detected": true
+  },
+  {
+   "mutant": "sale_fee_free",
+   "detected": true
+  },
+  {
+   "mutant": "buy_fee_free",
+   "detected": true
+  },
+  {
+   "mutant": "reference_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "launchlab_one_fee",
+   "detected": true
+  },
+  {
+   "mutant": "bisection_short",
+   "detected": true
+  },
+  {
+   "mutant": "bisection_inverted",
+   "detected": true
+  },
+  {
+   "mutant": "levers_unsorted",
+   "detected": true
+  },
+  {
+   "mutant": "failure_one_accepted",
+   "detected": true
+  }
+ ],
+ "detected": 15,
+ "total": 15
+}

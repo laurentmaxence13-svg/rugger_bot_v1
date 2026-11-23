@@ -1,0 +1,222 @@
+{
+ "baseline": {
+  "failure": 0,
+  "priority": 100000,
+  "rent": "closed",
+  "reserve_sol": 100,
+  "tier": 2500,
+  "wsol_separate": true
+ },
+ "data_read": false,
+ "declared": {
+  "external_move": "constant k, the other traders' fees ignored",
+  "launchlab_impact": "curve impact NOT included (needs the curve state)",
+  "tiers": "Raydium CPMM tiers other than 0.25 % are DECLARED, to be confirmed on read AmmConfig"
+ },
+ "levers": [
+  {
+   "lever": "fee_tier_ppm",
+   "span": 0.07675157604424773
+  },
+  {
+   "lever": "priority_lamports",
+   "span": 0.04016086310160129
+  },
+  {
+   "lever": "venue_launchlab_w1_mean_vs_cpmm_025",
+   "span": 0.02533288563606015
+  },
+  {
+   "lever": "reserve_sol",
+   "span": 0.019714840383877268
+  },
+  {
+   "lever": "rent_mode",
+   "span": 0.019420497813976513
+  },
+  {
+   "lever": "failure_rate",
+   "span": 0.006325275734167577
+  },
+  {
+   "lever": "wsol_separate_close",
+   "span": 0.0010542097345530247
+  }
+ ],
+ "rows": {
+  "baseline": {
+   "failure": 0.0,
+   "gross_required": 0.011217114363939852,
+   "priority": 100000,
+   "rent": "closed",
+   "reserve_sol": 100,
+   "tier": 2500,
+   "wsol_separate": true
+  },
+  "failure_rate": [
+   {
+    "gross_required": 0.011217114363939852,
+    "value": 0
+   },
+   {
+    "gross_required": 0.011685655635386899,
+    "value": 0.1
+   },
+   {
+    "gross_required": 0.013024332971782399,
+    "value": 0.3
+   },
+   {
+    "gross_required": 0.0154339615601295,
+    "value": 0.5
+   },
+   {
+    "gross_required": 0.01754239009810743,
+    "value": 0.6
+   }
+  ],
+  "fee_tier_ppm": [
+   {
+    "gross_required": 0.011217114363939852,
+    "value": 2500
+   },
+   {
+    "gross_required": 0.026328872669086213,
+    "value": 10000
+   },
+   {
+    "gross_required": 0.046659644932912615,
+    "value": 20000
+   },
+   {
+    "gross_required": 0.08796869040818758,
+    "value": 40000
+   }
+  ],
+  "latency": {
+   "reason": "not a fee: adverse drift over the latency needs price data (S-3, H-1)",
+   "value": "NON MESUR\u00c9"
+  },
+  "launchlab": [
+   {
+    "gross_required": 0.00815,
+    "rate_ppm": 2500,
+    "rent": "closed"
+   },
+   {
+    "gross_required": 0.0274928,
+    "rate_ppm": 2500,
+    "rent": "rent_lost"
+   },
+   {
+    "gross_required": 0.02815,
+    "rate_ppm": 12500,
+    "rent": "closed"
+   },
+   {
+    "gross_required": 0.0474928,
+    "rate_ppm": 12500,
+    "rent": "rent_lost"
+   },
+   {
+    "gross_required": 0.03655,
+    "rate_ppm": 16700,
+    "rent": "closed"
+   },
+   {
+    "gross_required": 0.0558928,
+    "rate_ppm": 16700,
+    "rent": "rent_lost"
+   },
+   {
+    "gross_required": 0.03815,
+    "rate_ppm": 17500,
+    "rent": "closed"
+   },
+   {
+    "gross_required": 0.0574928,
+    "rate_ppm": 17500,
+    "rent": "rent_lost"
+   },
+   {
+    "gross_required": 0.07815,
+    "rate_ppm": 37500,
+    "rent": "closed"
+   },
+   {
+    "gross_required": 0.0974928,
+    "rate_ppm": 37500,
+    "rent": "rent_lost"
+   }
+  ],
+  "priority_lamports": [
+   {
+    "gross_required": 0.007201081703222892,
+    "value": 0
+   },
+   {
+    "gross_required": 0.007602684434704633,
+    "value": 10000
+   },
+   {
+    "gross_required": 0.011217114363939852,
+    "value": 100000
+   },
+   {
+    "gross_required": 0.02728136461740205,
+    "value": 500000
+   },
+   {
+    "gross_required": 0.04736194480482418,
+    "value": 1000000
+   }
+  ],
+  "rent_mode": [
+   {
+    "gross_required": 0.011217114363939852,
+    "value": "closed"
+   },
+   {
+    "gross_required": 0.030637612177916367,
+    "value": "rent_lost"
+   }
+  ],
+  "reserve_sol": [
+   {
+    "gross_required": 0.02913175373634927,
+    "value": 10
+   },
+   {
+    "gross_required": 0.019198692710969332,
+    "value": 20
+   },
+   {
+    "gross_required": 0.013215459737876599,
+    "value": 50
+   },
+   {
+    "gross_required": 0.011217114363939852,
+    "value": 100
+   },
+   {
+    "gross_required": 0.009617014904019124,
+    "value": 500
+   },
+   {
+    "gross_required": 0.009416913352472004,
+    "value": 1000
+   }
+  ],
+  "wsol_separate_close": [
+   {
+    "gross_required": 0.011217114363939852,
+    "value": true
+   },
+   {
+    "gross_required": 0.010162904629386828,
+    "value": false
+   }
+  ]
+ },
+ "schema": "barmap-v0.1"
+}
