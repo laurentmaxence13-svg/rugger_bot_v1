@@ -31,6 +31,24 @@ Légende des preuves :
 - R-2 w1decomp 0.2 : PASS R02 (29083bff), exécution unique par R03 autorisée. R-3 dashx : en attente d'une v0.2 alignée sur b31a3c47.
 - R03 : inventaire des champs de W1 **fait** (déclaré) : 57,7 % des 322 146 signatures sont des échecs, sans corps de transaction ; détenteurs partiels ; rien après la migration CPMM. P0 visible non scanné, faute d'autorisation. Exécutions uniques après PASS R02.
 
+## 0 bis. Programme de recherche (piloté par R04)
+
+**Génération 1 : CPMM établi** (pilote commun, données indépendantes, essais n° 169 et 170)
+- A1 R-CP1 : mean reversion. B1 : momentum miroir. Toutes deux préenregistrées et ancrées avant T0.
+- Procédure de déblocage, en trois autorisations distinctes, écrites dans la session R03 (textes exacts produits par R02) :
+  1. **U-2** : autoriser les appels à l'API publique Raydium (hôte et requêtes précisés) pour l'instantané des candidats.
+  2. **Étape 0** : « GO étape 0, ≤ 100 crédits Helius ». Contrôle du quota, qualification U-2 et comptage des déclencheurs avant T0. Si moins de 20 pools : STOP, sans essai consommé.
+  3. **Étape 1** : « GO étape 1, ≤ 50 000 crédits », après lecture du résultat de l'étape 0. Pilote R-CP1 + B1, puis verdict G-1.
+- Résultats publiés après le pilote, pour chaque hypothèse : n, net coûts complets et net gelé, win rate, gain et perte moyens, profit factor, IC (bootstrap groupé), écart au placebo, 7 sensibilités. Mot maximal : GO_PILOTE. Une confirmation ultérieure sur données nouvelles est requise.
+
+**Génération 2** (en préparation, sans essai consommé)
+- R01 rédige jusqu'à 3 fiches PROJET, reliées aux conclusions mesurées (coûts, liquidité, pression vendeuse, participants, échecs).
+- R02 gèle les critères de sélection AVANT tout résultat du pilote.
+- R03 chiffre les besoins en données.
+- Lancement : il faut une autorisation chiffrée d'essais au-delà de 170 et le choix de la règle α.
+
+**Interdits permanents** : les cellules positives D3 de W1 (n 16 et 17) ne sont pas une preuve ; aucun critère n'est modifié après observation.
+
 ## 1. Autorisations vérifiées à la source
 
 Référence : REGISTRE_AUTORISATIONS_VERIFIEES_R02_v1_0.md, sha256 a4b9d467…69e2 (registre R02 0dbe0572). Amendement 1 : sha256 d784ef31…5715 (R02 b8195721). R01 est lu du 14/11 au 23/11 : on n'y trouve ni B1, ni GCP, ni Helius, ni étage 0, ni U-2, ni PAPER_LIVE. ed672cdb (20/11) valide le choix TECHNIQUE C1-b + D2 du ledger, et non le volet financier de B1.
