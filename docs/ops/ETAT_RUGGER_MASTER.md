@@ -49,7 +49,11 @@ Légende des preuves :
 - Résultats publiés après le pilote, pour chaque hypothèse : n, net coûts complets et net gelé, win rate, gain et perte moyens, profit factor, IC (bootstrap groupé), écart au placebo, 7 sensibilités. Mot maximal : GO_PILOTE. Une confirmation ultérieure sur données nouvelles est requise.
 
 **Génération 2** (en préparation, sans essai consommé)
-- R01 rédige jusqu'à 3 fiches PROJET, reliées aux conclusions mesurées (coûts, liquidité, pression vendeuse, participants, échecs).
+- R01 a livré 3 fiches PROJET (6e000c8, sha e3f6b6eb), en CPMM établi, avec les sorties et les coûts de R-CP1 :
+  - **G2-1** chute non routée : la baisse vient de ventes directes des détenteurs (test du mécanisme R-CP1) ;
+  - **G2-2** épuisement vendeur : entrée après l'arrêt des ventes ;
+  - **G2-3** pools peu disputés : faible compétition des robots, ce qui teste si la perte vient de l'exécution.
+  Si elles sont ancrées AVANT T0, elles tournent sur la même collecte que R-CP1 et B1, à 0 crédit de plus. Sinon, ≤ 50 000 crédits par fenêtre. Essais 171 à 173 : au-delà du plafond. Audit R02 en cours.
 - R02 gèle les critères de sélection AVANT tout résultat du pilote.
 - R03 chiffre les besoins en données.
 - Lancement : il faut une autorisation chiffrée d'essais au-delà de 170 et le choix de la règle α.
@@ -93,7 +97,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | W2 | Format, k, plafond, plan Helius, GO (après A2, HW1 et C-B) | session du propriétaire |
 | Inventaire des champs sur P0 visible | « J'autorise R03 à exécuter une seule fois l'inventaire de couverture des champs (fieldinv, comptes seulement) hors ligne sur le pack P0 visible aca7de08. » | session R03 |
 | Contrôle global des tests entre générations | Choisir : (a) dépense d'α, α_g = 0,05 × 2^(−g), avec un risque total de faux CONFIRMÉ ≤ 5 % (recommandé par R02) ; ou (b) α = 0,05 par génération, avec publication du nombre de générations. Cadre R02 b4edc143. | session du propriétaire |
-| Dépasser le plafond de 170 essais exploratoires (il en reste 2 ; R-CP1 → 169) | Autorisation écrite et chiffrée du nombre d'essais supplémentaires, ET règle de correction ancrée avant les données. Sinon, veto de R02 (note 8a9c8f84). | session du propriétaire |
+| Dépasser le plafond de 170 essais exploratoires (il en reste 2 ; R-CP1 → 169, B1 → 170). Cas concret : G2-1 à G2-3 = essais 171 à 173, à 0 crédit si l'autorisation arrive AVANT T0 du pilote | Autorisation écrite et chiffrée du nombre d'essais supplémentaires, ET règle de correction ancrée avant les données. Sinon, veto de R02 (note 8a9c8f84). | session du propriétaire |
 | Hygiène | Retirer le secret Helius de R03 ; désactiver les 4 routines d'étiquette | paramètres |
 
 ## 2 bis. Opérations prêtes (code audité, sans décision en attente côté agents)
