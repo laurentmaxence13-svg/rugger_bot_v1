@@ -1,0 +1,181 @@
+{
+ "package": "cpmmprereg",
+ "version": "0.2",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "drop_threshold_1pct",
+   "detected": true
+  },
+  {
+   "mutant": "activity_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "cooldown_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "no_reference_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "oldest_reference",
+   "detected": true
+  },
+  {
+   "mutant": "stop_loss_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "take_profit_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "exit_latency_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "clock_latency_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "exit_latency_sensitivity_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "clock_latency_sensitivity_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "exit_buy_failure_delay_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "guard_off_by_default",
+   "detected": true
+  },
+  {
+   "mutant": "guard_sensitivity_not_passed",
+   "detected": true
+  },
+  {
+   "mutant": "failures_not_passed",
+   "detected": true
+  },
+  {
+   "mutant": "data_after_t0_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "count_before_the_7_days",
+   "detected": true
+  },
+  {
+   "mutant": "count_start_excluded",
+   "detected": true
+  },
+  {
+   "mutant": "duplicate_pool_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "expected_not_scaled",
+   "detected": true
+  },
+  {
+   "mutant": "expected_rounded_up",
+   "detected": true
+  },
+  {
+   "mutant": "expected_from_anything",
+   "detected": true
+  },
+  {
+   "mutant": "sigma_pilot_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "sigma_floor_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "confirmation_alpha_not_bonferroni",
+   "detected": true
+  },
+  {
+   "mutant": "c1_alpha_005",
+   "detected": true
+  },
+  {
+   "mutant": "c2_not_a_difference",
+   "detected": true
+  },
+  {
+   "mutant": "c3_one_half_enough",
+   "detected": true
+  },
+  {
+   "mutant": "c4_unpriced_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "c5_10_slots_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "a1_one_failure_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "a1_point_difference_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "guard_failed_counted_as_entries",
+   "detected": true
+  },
+  {
+   "mutant": "sensitivities_unpaired",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_pools_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "seed_not_the_sheet_prefix",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_cooldown_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_without_reference",
+   "detected": true
+  },
+  {
+   "mutant": "eligibility_floor_10",
+   "detected": true
+  },
+  {
+   "mutant": "power_floor_10",
+   "detected": true
+  },
+  {
+   "mutant": "trial_cap_off_by_one",
+   "detected": true
+  },
+  {
+   "mutant": "sigma_changed",
+   "detected": true
+  },
+  {
+   "mutant": "halves_not_split",
+   "detected": true
+  }
+ ],
+ "detected": 43,
+ "total": 43
+}
