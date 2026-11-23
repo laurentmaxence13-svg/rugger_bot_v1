@@ -1,0 +1,113 @@
+{
+ "package": "plbench",
+ "version": "0.2",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "incomplete_pool_priced",
+   "detected": true
+  },
+  {
+   "mutant": "incomplete_position_not_zeroed",
+   "detected": true
+  },
+  {
+   "mutant": "costs_not_behind_the_gate",
+   "detected": true
+  },
+  {
+   "mutant": "s1_threshold",
+   "detected": true
+  },
+  {
+   "mutant": "s2_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "s3_median",
+   "detected": true
+  },
+  {
+   "mutant": "s3_not_fail_closed",
+   "detected": true
+  },
+  {
+   "mutant": "s4_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "s5_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "success_ignores_s1",
+   "detected": true
+  },
+  {
+   "mutant": "stop0_removed",
+   "detected": true
+  },
+  {
+   "mutant": "stop1_at_100_percent",
+   "detected": true
+  },
+  {
+   "mutant": "stop3_removed",
+   "detected": true
+  },
+  {
+   "mutant": "stop4_removed",
+   "detected": true
+  },
+  {
+   "mutant": "stop6_one_sided",
+   "detected": true
+  },
+  {
+   "mutant": "secret_markers_missing",
+   "detected": true
+  },
+  {
+   "mutant": "drop_fault_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "negative_on_the_mean",
+   "detected": true
+  },
+  {
+   "mutant": "cycles_floor_40",
+   "detected": true
+  },
+  {
+   "mutant": "creators_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "one_failure_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "receipt_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "alpha_changed",
+   "detected": true
+  },
+  {
+   "mutant": "seed_not_the_sheet_prefix",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_incomplete",
+   "detected": true
+  },
+  {
+   "mutant": "grouped_by_pool",
+   "detected": true
+  }
+ ],
+ "detected": 26,
+ "total": 26
+}

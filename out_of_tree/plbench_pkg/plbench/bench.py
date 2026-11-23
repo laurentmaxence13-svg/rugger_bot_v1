@@ -1,4 +1,5 @@
-"""plbench 0.1 -- end-to-end PAPER_LIVE TEST BENCH on fixtures (task PL-1, owner directive of 23/11 relayed by R04).
+"""plbench 0.2 (0.1 PASS R02 + the economic verdict of R02's frozen rules section 3.2, REGLES_LECTURE_GELEES_CPMM_PAPERLIVE_R02_v1_0.md
+sha 2792655a, and the closed vocabulary R-0.1 / R-0.2) -- end-to-end PAPER_LIVE TEST BENCH on fixtures (task PL-1, owner directive of 23/11 relayed by R04).
 Label SIMULATED_FEED, never PAPER_LIVE: the feed is the recorded fixture events delivered one by one (with injectable
 delivery faults); nothing is connected, sent or signed; no cycle can count for 50/20 (no cycle_receipt can exist).
 
@@ -28,7 +29,7 @@ from papercost import engine as PC
 from paperstream import engine as PS
 from rtgate import gate as RT
 
-SCHEMA = 'plbench-v0.1'
+SCHEMA = 'plbench-v0.2'
 LABEL = 'SIMULATED_FEED'
 S1_MIN_COMPLETE = 0.95
 S3_P95_MAX_SLOTS = 4
@@ -45,6 +46,11 @@ FROZEN_FILES = dict(paperstream=(PS, 'e86f66b009444c0ed97af11ae89a1e965e9437674a
 FORBIDDEN_MODULES = ('bot.live.engine', 'bot.live.route', 'bot.live.route_dispatch', 'bot.live.cleanup',
                      'bot.live.safety', 'bot.live.journal', 'bot.live.cpmm_swap', 'bot.live.cpmm_exit',
                      'bot.live.helius_readonly_rpc', 'bot.live.signer', 'bot.live.runtime')
+ECONOMIC_DRAWS = 10_000
+ECONOMIC_ALPHA = 0.05
+MIN_QUALIFIED_CYCLES, MIN_CREATORS = 50, 20
+VERDICTS = ('NÉGATIF', 'POSITIF EN PAPER', 'INCONCLUSIF')
+FORBIDDEN_WORDS = ('rentable', 'profitable', 'gagnant')         # closed vocabulary (R02 R-0.1, R-0.2)
 SECRET_MARKERS = ('api-key=', 'api_key=', 'apikey=', 'authorization:', 'bearer ', 'private_key', 'secret_key',
                   'mnemonic')
 
@@ -164,7 +170,8 @@ def _once(pack, series, options, faults):
             for c in list(costs.values()) + [frozen]:
                 if sum(c['parts'].values()) != c['net_lamports']:
                     raise BenchError('reconciliation_residual')
-            rows.append(dict(arm=arm, outcome=row['outcome'], entered=row.get('entry_index') is not None,
+            rows.append(dict(pool=pool['pool'], creator=pool.get('creator'), arm=arm, outcome=row['outcome'],
+                             entered=row.get('entry_index') is not None,
                              costs=costs, frozen_net=frozen['net_lamports'],
                              incomplete=any(n.startswith('rtgate:INCOMPLETE') for n in row['notes'])))
     return bundle, records, rows
@@ -177,7 +184,8 @@ def percentile(values, q):
     return ordered[min(len(ordered) - 1, max(0, -(-q * len(ordered) // 100) - 1))]
 
 
-def run_bench(pack, series, *, options=None, faults=None, latency_slots=None):
+def run_bench(pack, series, *, options=None, faults=None, latency_slots=None, freeze_sheet_sha256='0' * 64,
+              receipts=()):
     """One bench run; S-2 replays the same feed a second time and compares the bytes."""
     start = frozen_check()
     options = PC.Options.primary() if options is None else options
@@ -205,10 +213,67 @@ def run_bench(pack, series, *, options=None, faults=None, latency_slots=None):
         S6_costs_published=dict(passed=all(m in summary for m in PC.MODES + ('frozen',)), summary=summary))
     passed = all(checks[k]['passed'] for k in ('S1_coverage', 'S2_rerun_identical', 'S3_latency', 'S4_no_signer',
                                                'S5_sol_usd_fresh'))
-    return dict(schema=SCHEMA, label=LABEL, counts_for_operational_master=False, cycle_receipts=0,
-                fingerprint=start, pools=len(pools), incomplete_pools=len(incomplete_pools), checks=checks,
-                technical_success=passed, economic_claim=None,
-                records_sha256=_sha(records), rows_sha256=_sha(rows))
+    _b3, _r3, rows_1 = _once(pack, series, replace(options, buy_failures=1, sell_failures=1, fail_ppm=0), faults)
+    one = {(r['pool'], r['arm']): r for r in rows_1}
+    cycles = [dict(pool=r['pool'], creator=r['creator'], net_return=r['costs']['rent_lost']['net_return'],
+                   net_return_1_failure=one[(r['pool'], r['arm'])]['costs']['rent_lost']['net_return'],
+                   cycle_receipt=(r['pool'], r['arm']) in set(receipts))
+              for r in rows if r['arm'] == 'master' and r['entered']]
+    economic = economic_verdict(cycles, freeze_sheet_sha256)
+    return assert_closed_vocabulary(dict(
+        schema=SCHEMA, label=LABEL, counts_for_operational_master=False, cycle_receipts=len(set(receipts)),
+        fingerprint=start, pools=len(pools), incomplete_pools=len(incomplete_pools), checks=checks,
+        technical_success=passed, economic_claim=None, economic_verdict=economic,
+        records_sha256=_sha(records), rows_sha256=_sha(rows)))
+
+
+# -- economic verdict (R02 frozen rules, section 3.2) ------------------------------------------------------------
+def economic_verdict(cycles, freeze_sheet_sha256, *, draws=ECONOMIC_DRAWS):
+    """NÉGATIF if the one-sided 95 % UPPER bound of the mean net < 0; POSITIF EN PAPER if the LOWER bound > 0 with at
+    least 50 qualified cycles, 20 creators and a mean net > 0 at 1 failure per transaction; INCONCLUSIF otherwise.
+
+    Population: the cycles that carry R02's cycle_receipt only; a cycle of a pool that ended INCOMPLETE is valued at 0
+    (its net_return is the zero-value one). Creator-cluster bootstrap, seed int(freeze sheet sha[:8], 16)."""
+    from w2arms import ce as W
+    if (type(freeze_sheet_sha256) is not str or len(freeze_sheet_sha256) != 64
+            or any(c not in '0123456789abcdef' for c in freeze_sheet_sha256)):
+        raise BenchError('freeze_sheet_sha256_required')
+    population = [c for c in cycles if c.get('cycle_receipt') is True]
+    groups = {}
+    for c in population:
+        groups.setdefault(c['creator'] or ('pool:' + c['pool']), []).append(c)
+    seed = int(freeze_sheet_sha256[:8], 16)
+    n = len(population)
+
+    def mean(rows):
+        return sum(r['net_return'] for r in rows) / len(rows) if rows else None
+
+    def neg_mean(rows):
+        return -sum(r['net_return'] for r in rows) / len(rows) if rows else None
+    lower = upper = None
+    if n:
+        lower = W.lower_bound(groups, mean, seed=seed, draws=draws, alpha=ECONOMIC_ALPHA)
+        low_neg = W.lower_bound(groups, neg_mean, seed=seed, draws=draws, alpha=ECONOMIC_ALPHA)
+        upper = None if low_neg is None else -low_neg
+    mean_1 = (sum(c['net_return_1_failure'] for c in population) / n) if n else None
+    if n and upper is not None and upper < 0:
+        verdict = 'NÉGATIF'
+    elif (n and lower is not None and lower > 0 and n >= MIN_QUALIFIED_CYCLES and len(groups) >= MIN_CREATORS
+          and mean_1 is not None and mean_1 > 0):
+        verdict = 'POSITIF EN PAPER'
+    else:
+        verdict = 'INCONCLUSIF'
+    return dict(verdict=verdict, population=n, creators=len(groups), mean_net_return=mean(population),
+                lower_bound_95=lower, upper_bound_95=upper, mean_net_return_1_failure=mean_1, draws=draws, seed=seed,
+                excluded_without_receipt=len(cycles) - n)
+
+
+def assert_closed_vocabulary(document):
+    text = json.dumps(document, ensure_ascii=False, default=str).lower()
+    found = [w for w in FORBIDDEN_WORDS if w in text]
+    if found:
+        raise BenchError('forbidden_word_in_output:%s' % ','.join(found))
+    return document
 
 
 # -- hard stops of the protocol (section 7, with addition a of R02) -----------------------------------------------
