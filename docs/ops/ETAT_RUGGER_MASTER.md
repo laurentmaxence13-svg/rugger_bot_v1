@@ -62,7 +62,7 @@ Légende des preuves :
 
 **Interdits permanents** : les cellules positives D3 de W1 (n 16 et 17) ne sont pas une preuve ; aucun critère n'est modifié après observation.
 
-**Chaîne hors ligne du pilote CPMM : PASS R02 (3b28ff5e, 22:32Z)** : cpmmpilot 0.1.6 f934bd2 + g1ind 0.6.1 f31269e. R02 a rejoué 28/28 tests et 35/35 + 50/50 mutants. Reste le transport réel 0.2 (confié à R03, sans aucun appel réseau, LiveRpc désactivé jusqu'au texte A et au PASS R02), puis la liste V-1′.
+**Chaîne hors ligne du pilote CPMM : PASS R02 (3b28ff5e, 22:32Z)** : cpmmpilot 0.1.6 f934bd2 + g1ind 0.6.1 f31269e. R02 a rejoué 28/28 tests et 35/35 + 50/50 mutants. Ordre fixé par R02 (3b28ff5e) : (1) textes A, B, C écrits par le propriétaire et vérifiés par R02 ; (2) ensuite seulement, transport réel 0.2 de R03, audité avant tout appel ; (3) liste V-1′ ancrée ; (4) fiches de gel. R04 avait demandé à R03 d'écrire le transport tout de suite ; R03 a refusé à juste titre, la demande est retirée.
 
 **Priorité (R02 et R04, 23/11 22:20Z)** : le code est en avance sur les autorisations. Les générations 2 et 3 sont exécutables, mais elles sont au-delà du budget de 170 essais. Aucun nouveau chantier de code n'est ouvert tant que le propriétaire n'a pas décidé : A, B, C (v1.3), puis D, puis la tranche 174-175.
 
