@@ -32,6 +32,8 @@ MUT = [
  ("    if type(n_before) is not int or n_before < TRIALS_BEFORE_GEN2 or n_before + 1 > TRIAL_CAP_GEN2:", "    if type(n_before) is not int or n_before + 1 > TRIAL_CAP_GEN2:", 'trials_before_170_accepted'),
  ("CONFIRMATION = dict(holm=dict(alpha_family=0.025, first_step=0.025 / 3)", "CONFIRMATION = dict(holm=dict(alpha_family=0.025, first_step=0.025 / 2)", 'holm_first_step_wrong'),
  ("        if p > alpha / (k - rank):\n            break", "        if p > alpha / (k - rank):\n            continue", 'holm_no_stop'),
+ ("    full = {name: (1.0 if p is None else p) for name, p in p_values.items()}", "    full = {name: p for name, p in p_values.items() if p is not None}", 'holm_drops_missing_p_R02'),
+ ("        return {name: p <= alpha / max(k, 1) for name, p in full.items()}", "        return {name: p <= alpha for name, p in full.items()}", 'bonferroni_uncorrected'),
  ("        low += (sum(rows) / len(rows)) <= 0", "        low += (sum(rows) / len(rows)) < 0", 'p_strict'),
  ("    if r_cp1_verdict == 'NO-GO' and b1_verdict == 'NO-GO':", "    if r_cp1_verdict == 'NO-GO' or b1_verdict == 'NO-GO':", 'elimination_or'),
 ]

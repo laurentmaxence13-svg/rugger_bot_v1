@@ -1,0 +1,141 @@
+{
+ "package": "cpmmgen2",
+ "version": "0.2",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "ref_boundary",
+   "detected": true
+  },
+  {
+   "mutant": "activity_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "oldest_reference",
+   "detected": true
+  },
+  {
+   "mutant": "drop_1_5pct",
+   "detected": true
+  },
+  {
+   "mutant": "routed_all",
+   "detected": true
+  },
+  {
+   "mutant": "routed_share_counts_buys",
+   "detected": true
+  },
+  {
+   "mutant": "m1_strict",
+   "detected": true
+  },
+  {
+   "mutant": "m1_inverted",
+   "detected": true
+  },
+  {
+   "mutant": "g21_cooldown_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "m1_before_the_7_days",
+   "detected": true
+  },
+  {
+   "mutant": "m1_default_when_empty",
+   "detected": true
+  },
+  {
+   "mutant": "wait_doubled",
+   "detected": true
+  },
+  {
+   "mutant": "flow_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "new_low_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "g22_cooldown_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "last_empty_wait_uncounted",
+   "detected": true
+  },
+  {
+   "mutant": "flow_sign",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_anywhere",
+   "detected": true
+  },
+  {
+   "mutant": "payer_dict_form_lost",
+   "detected": true
+  },
+  {
+   "mutant": "sellers_counted_as_buyers",
+   "detected": true
+  },
+  {
+   "mutant": "b3_not_distinct",
+   "detected": true
+  },
+  {
+   "mutant": "b3_mean",
+   "detected": true
+  },
+  {
+   "mutant": "b3_zero_entered",
+   "detected": true
+  },
+  {
+   "mutant": "multiplier_strict",
+   "detected": true
+  },
+  {
+   "mutant": "multiplier_3",
+   "detected": true
+  },
+  {
+   "mutant": "count_before_7_days",
+   "detected": true
+  },
+  {
+   "mutant": "trials_before_170_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "holm_first_step_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "holm_no_stop",
+   "detected": true
+  },
+  {
+   "mutant": "holm_drops_missing_p_R02",
+   "detected": true
+  },
+  {
+   "mutant": "bonferroni_uncorrected",
+   "detected": true
+  },
+  {
+   "mutant": "p_strict",
+   "detected": true
+  },
+  {
+   "mutant": "elimination_or",
+   "detected": true
+  }
+ ],
+ "detected": 33,
+ "total": 33
+}

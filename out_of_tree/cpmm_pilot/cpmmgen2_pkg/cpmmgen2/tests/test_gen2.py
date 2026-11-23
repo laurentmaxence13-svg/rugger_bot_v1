@@ -170,6 +170,7 @@ def test_trigger_count_trials_and_confirmation():
     with pytest.raises(G.PreregError, match='pool_given_twice'):
         G.trigger_count(lambda ln: [], [line, line], t0)
     assert G.trials('G2-1', 170)['n_after'] == 171 and G.trials('G2-3', 172)['n_after'] == 173
+    assert 'START of the collection' in G.trials('G2-2', 170)['rule']
     for bad in (169, 173):
         with pytest.raises(G.PreregError, match='trial_cap'):
             G.trials('G2-2', bad)
@@ -187,7 +188,11 @@ def test_holm_step_down_and_bonferroni():
     assert G.holm(dict(a=0.0084, b=0.001, c=0.5)) == dict(a=True, b=True, c=False)
     assert G.holm(dict(a=0.009, b=0.02, c=0.03)) == dict(a=False, b=False, c=False)   # 0.009 > 0.025/3
     assert G.holm(dict(a=0.01, b=0.02, c=0.03), 'bonferroni') == dict(a=True, b=False, c=False)
-    assert G.holm(dict(a=None, b=0.001)) == dict(a=False, b=True)
+    # K-1: a hypothesis without p stays in the family (p = 1): k = 3, not 2
+    assert G.holm(dict(a=None, b=0.001, c=0.012)) == dict(a=False, b=True, c=True)       # 0.001 <= 0.025/3; 0.012 <= 0.025/2
+    assert G.holm(dict(a=None, b=0.009, c=0.02)) == dict(a=False, b=False, c=False)      # 0.009 > 0.025/3 (k = 3)
+    assert G.holm(dict(a=None, b=0.012), 'bonferroni') == dict(a=False, b=True)         # 0.012 <= 0.05/2
+    assert G.holm(dict(a=None, b=0.03), 'bonferroni') == dict(a=False, b=False)         # 0.03 > 0.05/2
 
 
 def test_bootstrap_p_and_the_elimination_rule():

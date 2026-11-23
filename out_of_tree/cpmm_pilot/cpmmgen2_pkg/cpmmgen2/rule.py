@@ -1,4 +1,5 @@
-"""cpmmgen2 0.1 -- EXECUTABLE PROTOCOLS of generation 2 (GEN-2 v0.3, table anchored by R02 f4027134; owner relaunch of
+"""cpmmgen2 0.2 (R02 audit 3199ea74: K-1 Holm over ALL kept hypotheses, a missing p counted as 1; K-2 a trial is
+counted at the START of the window collection) -- cpmmgen2 0.1 -- EXECUTABLE PROTOCOLS of generation 2 (GEN-2 v0.3, table anchored by R02 f4027134; owner relaunch of
 23/11 relayed by R04, task T-R01-1), frozen as code BEFORE any datum of their window. Synthetic pools only.
 
 Three hypotheses on ESTABLISHED Raydium CPMM pools, each one trial (170 -> 173, under the owner's text D), on a window
@@ -29,7 +30,7 @@ import statistics
 from cpmmcost import model as CC
 from cpmmprereg import rule as R
 
-SCHEMA = 'cpmmgen2-v0.1'
+SCHEMA = 'cpmmgen2-v0.2'
 HYPOTHESES = ('G2-1', 'G2-2', 'G2-3')
 WAIT_S, CALM_S = 1_800, 300
 BUYERS_MULTIPLIER = 2
@@ -225,7 +226,8 @@ def trials(hypothesis, n_before):
     if type(n_before) is not int or n_before < TRIALS_BEFORE_GEN2 or n_before + 1 > TRIAL_CAP_GEN2:
         raise PreregError('trial_cap_exceeded_or_not_authorised')
     return dict(hypothesis=hypothesis, n_before=n_before, n_after=n_before + 1, cap=TRIAL_CAP_GEN2,
-                rule='one trial per hypothesis, counted when its window is evaluated; cap 173 only under the text D')
+                rule='one trial per hypothesis, counted at the START of the collection of its window (as generation 1, '
+                     'certificate d34c2c4e); cap 173 only under the text D')
 
 
 def confirmation_n(sigma_pilot, choice='holm'):
@@ -251,12 +253,14 @@ def bootstrap_p(groups, *, seed, draws=R.CONFIRMATION_DRAWS):
 
 
 def holm(p_values, choice='holm'):
-    """Holm step-down over the hypotheses of the generation: {name: True if rejected (mean > 0 retained)}."""
+    """Holm step-down over ALL the hypotheses KEPT after the elimination rule ({name: p}); a hypothesis without p
+    (INCONCLUSIF) stays in the family with p = 1, never rejected (R02 K-1). {name: True if rejected}."""
     alpha = CONFIRMATION[choice]['alpha_family']
-    order = sorted((p, name) for name, p in p_values.items() if p is not None)
-    k, out = len(order), {name: False for name in p_values}
+    full = {name: (1.0 if p is None else p) for name, p in p_values.items()}
+    k, out = len(full), {name: False for name in full}
     if choice == 'bonferroni':
-        return {name: p is not None and p <= alpha / max(len(p_values), 1) for name, p in p_values.items()}
+        return {name: p <= alpha / max(k, 1) for name, p in full.items()}
+    order = sorted((p, name) for name, p in full.items())
     for rank, (p, name) in enumerate(order):
         if p > alpha / (k - rank):
             break
