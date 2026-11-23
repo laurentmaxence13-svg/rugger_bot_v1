@@ -1,0 +1,101 @@
+{
+ "package": "w1decomp",
+ "version": "0.1",
+ "baseline_guard": true,
+ "mutants": [
+  {
+   "mutant": "rent_changed",
+   "detected": true
+  },
+  {
+   "mutant": "rent_not_subtracted",
+   "detected": true
+  },
+  {
+   "mutant": "impact_left_out_of_total",
+   "detected": true
+  },
+  {
+   "mutant": "impact_zero",
+   "detected": true
+  },
+  {
+   "mutant": "range_widened",
+   "detected": true
+  },
+  {
+   "mutant": "any_trial",
+   "detected": true
+  },
+  {
+   "mutant": "unverified_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "ledger_verdict_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "profile_after_sale",
+   "detected": true
+  },
+  {
+   "mutant": "profile_looks_ahead",
+   "detected": true
+  },
+  {
+   "mutant": "reference_before_landing",
+   "detected": true
+  },
+  {
+   "mutant": "adverse_non_strict",
+   "detected": true
+  },
+  {
+   "mutant": "peak_latest_tie",
+   "detected": true
+  },
+  {
+   "mutant": "held_past_sale",
+   "detected": true
+  },
+  {
+   "mutant": "indices_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "events_before_entry_off_by_one",
+   "detected": true
+  },
+  {
+   "mutant": "hour_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "ledger_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "bundle_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "manifest_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "missing_pool_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "overwrite_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "timeline_missing_accepted",
+   "detected": true
+  }
+ ],
+ "detected": 23,
+ "total": 23
+}
