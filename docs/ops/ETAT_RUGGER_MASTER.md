@@ -27,7 +27,7 @@ Légende des preuves :
 **Travaux en cours (23/11, après-midi)** :
 - R01 : R-1 catalogue A à H, R-2 décomposition des pertes W1 (descriptive), R-3 tableau de bord étendu.
 - R02 : note HW1 / plafond d'essais, cadre multi-générations, définitions des indicateurs, audits.
-- R03 : inventaire des champs disponibles au moment de la décision ; exécutions uniques après PASS R02.
+- R03 : inventaire des champs de W1 **fait** (déclaré) : 57,7 % des 322 146 signatures sont des échecs, sans corps de transaction ; détenteurs partiels ; rien après la migration CPMM. P0 visible non scanné, faute d'autorisation. Exécutions uniques après PASS R02.
 
 ## 1. Autorisations vérifiées à la source
 
@@ -64,6 +64,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | Mesure des échecs N-4 | Collecte qui conserve les transactions échouées, avec un plafond | session R03 |
 | PAPER_LIVE | Choix A, B ou C face au facteur ≈ 16 de crédits. Option A chiffrée par R03 sur la grille archivée du 08/11 (b6794b16, fa152d54) : offre Helius Developer à 49 $ HT par mois (58,80 $ TTC), soit 10 M crédits et 50 req/s. Plafond prudent ≈ 61 $ TTC avec une marge ×1,3 et le WebSocket (volume non mesuré, hypothèse ≈ 0,3 M crédits). Grille à relire en ligne avant décision. Le principe Developer ≤ 100 $ HT (66e09996, 04/11) existe, mais ce n'est pas une autorisation de paiement. Coût de l'hôte (D-1) en plus (7,68 M getTransaction contre ≈ 467 k Free) ; puis D-1, D-3, D-5, D-6, D-7 (DX v0.2, 7f6c5f4, CONFORME selon R02) | session de l'exécutant |
 | W2 | Format, k, plafond, plan Helius, GO (après A2, HW1 et C-B) | session du propriétaire |
+| Inventaire des champs sur P0 visible | « J'autorise R03 à exécuter une seule fois l'inventaire de couverture des champs (fieldinv, comptes seulement) hors ligne sur le pack P0 visible aca7de08. » | session R03 |
 | Hygiène | Retirer le secret Helius de R03 ; désactiver les 4 routines d'étiquette | paramètres |
 
 ## 2 bis. Opérations prêtes (code audité, sans décision en attente côté agents)
