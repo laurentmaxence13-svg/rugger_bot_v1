@@ -1,9 +1,33 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-23 à 10:35Z.
+Mis à jour le 2026-11-23 à 14:00Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
+
+## 0. Rapport de direction (programme de recherche de rentabilité, directive du 23/11)
+
+**A. Meilleure stratégie actuelle** : AUCUNE n'est confirmée. Aucune n'a même un rendement net positif mesuré. La moins mauvaise mesurée est MASTER, à −4,26 % net [−6,69 ; −1,95], n 128, sur W1, EXPLORATOIRE, verdict NÉGATIF. Le placebo du palier bas fait −1,82 % (comparateur).
+
+**B. Classement des pistes** (potentiel, pas performance) :
+1. CPMM R-CP1 (mean reversion sur pools établis) : préenregistrée, 0 $, 1 essai, GO_PILOTE au mieux. BLOQUÉE : choix U-2 et GO de l'étape 0.
+2. LaunchLab C-B : ≤ 66 $ TTC, 5 essais (HW1). Peut s'arrêter sans candidat. BLOQUÉE : signature A2.
+3. Familles B à H (momentum, breakout, liquidité, participants, volatilité, sélection, combinaisons) : catalogue en cours (R01, R-1).
+
+**C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable.
+
+**D. Prochains tests décisifs** :
+- R-CP1, étape 0 : ≤ 100 crédits, gratuit. Elle dit si l'univers CPMM suffit (STOP si moins de 20 pools).
+- Étape 1 : ≤ 50 k crédits, gratuit dans l'offre Free. Premier verdict indépendant (G-1).
+
+**E. Décisions** : STOP pour les 7 stratégies NÉGATIVES dans leur forme testée. INCONCLUSIF pour T3′. Autorisations demandées : U-2 et étape 0 (R-CP1) ; § 7 A2 (C-B).
+
+**F. Trajectoire PAPER** : protocole PAPER_LIVE v0.2 et banc prêts. Il manque le choix A, B ou C (crédits ×16), puis D-1, D-3, D-5, D-6 et D-7. Aucune stratégie n'est encore candidate au PAPER prospectif.
+
+**Travaux en cours (23/11, après-midi)** :
+- R01 : R-1 catalogue A à H, R-2 décomposition des pertes W1 (descriptive), R-3 tableau de bord étendu.
+- R02 : note HW1 / plafond d'essais, cadre multi-générations, définitions des indicateurs, audits.
+- R03 : inventaire des champs disponibles au moment de la décision ; exécutions uniques après PASS R02.
 
 ## 1. Autorisations vérifiées à la source
 
