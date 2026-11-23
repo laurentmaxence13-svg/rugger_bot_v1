@@ -1,4 +1,4 @@
-"""g1ind 0.4 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
+"""g1ind 0.5 -- DESCRIPTIVE report of the CPMM pilot (R-CP1 or B1) around the FROZEN G-1 function (T-R01-4, R04
 decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1.1; nothing here is a verdict.
 
 (1) G-1 = cpmmcost.model.pilot_verdict, called ONCE, unchanged, on every primary row (zero-sale rows of the runner included, K01); only its English
@@ -7,8 +7,9 @@ decision of 23/11 21:30Z; note g1verif 071bb01). R03 calls it from cpmmpilot 0.1
     sale in the CLOSED-account mode of cpmmcost 0.3 (C-a, the frozen CPMM model; closedacct is LaunchLab / W2):
     r = -(STAKE + (4 + failures of the run) x 105 000) / STAKE (buy, sale, WSOL close, cleanup; no rent lost), i.e.
     -100 420 000 lamports at the primary and -100 735 000 under Failures(1, 1, 1). The rows come from the runner
-    (cpmmpilot.step1.zero_sale, status 'unpriced_zero_sale'); g1ind CHECKS their value exactly against this rule
-    (cpmmcost constants), counts them everywhere (mean, bound, floors, metrics, placebo, sensitivities) and publishes
+    (cpmmpilot.step1.zero_sale, status 'unpriced_zero_sale'); g1ind CHECKS their value exactly against
+    cpmmpilot.step1.zero_sale_net_lamports(failures of the run), IMPORTED and never retyped (R02 21:53Z), counts them
+    everywhere (mean, bound, floors, metrics, placebo, sensitivities) and publishes
     their count and reasons. A RAW unpriced row (no net_return) or a wrong zero-sale value is an ERROR: never an
     exclusion.
 (3) b31a3c47 metrics on the same population as the G-1 mean (every row, guard refusals and zero-sale rows included): win r > 0, loss
@@ -24,10 +25,11 @@ If G-0 is not passed (G-1 = STOP), NO number at all is published.
 from bot.p4 import historical_research_replay as hrr
 from closedacct import model as CA
 from cpmmcost import model as CC
+from cpmmpilot import step1 as PILOT                         # R03 cpmmpilot >= 0.1.4 (6190277): the zero-sale source
 from cpmmprereg import rule as R
 from w2arms import ce as W
 
-SCHEMA = 'g1ind-v0.4'
+SCHEMA = 'g1ind-v0.5'
 STAMP = 'DESCRIPTIF — PILOTE CPMM — SEUL LE MOT G-1 DE cpmmcost.pilot_verdict EST UNE DÉCISION'
 NM = 'NON MESURÉ'
 HYPOTHESES = ('RCP1', 'B1')
@@ -84,17 +86,10 @@ def check_vocabulary(document):
 
 
 # -- (2) K01 -----------------------------------------------------------------------------------------------------------
-def zero_sale_lamports(failures=CC.FROZEN_FAILURES):
-    """Closed-account zero sale of cpmmcost 0.3: the stake and the 4 transactions (buy, sale, WSOL close, cleanup) plus
-    every failed attempt of the run; no rent lost (the cleanup gets it back)."""
-    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup
-    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS)
-
-
 def counted(rows, run='primary'):
     """Every row counts. A raw unpriced row (no net_return) is refused; a zero-sale row must be an entry whose value is
     exactly the closed-account zero sale under the failures of its run."""
-    expected = zero_sale_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))
+    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))      # the single source
     for p in rows:
         if 'net_return' not in p:
             raise ReportError('raw_unpriced_row_needs_the_runner_zero_sale:' + run)

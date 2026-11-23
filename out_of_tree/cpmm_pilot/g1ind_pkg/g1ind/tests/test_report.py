@@ -5,6 +5,7 @@ import pytest
 from bot.p4 import historical_research_replay as hrr
 from closedacct import model as CA
 from cpmmcost import model as CC
+from cpmmpilot import step1 as PILOT
 from cpmmprereg import rule as R
 from cpmmprereg.tests.test_rule import CONFIG, calm, drop_then, market
 from g1ind import report as G
@@ -12,14 +13,12 @@ from w2arms import ce as W
 
 SHEET = '0123456789abcdef' * 4
 DRAWS = 400
-# the value of cpmmpilot.step1.zero_sale at R03 a1881f4 (ZERO_SALE_NET_LAMPORTS), read in its source: -100 420 000
-RUNNER_ZERO_SALE_A1881F4 = -100_420_000
 
 
-def zero_sale(row, lamports=RUNNER_ZERO_SALE_A1881F4):
-    """Fixture shaped like cpmmpilot.step1.zero_sale (R03 a1881f4), with the value of the run."""
-    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=lamports,
-                net_return=lamports / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'])
+def zero_sale(row, lamports=None, failures=CC.FROZEN_FAILURES):
+    """The REAL runner row (cpmmpilot.step1.zero_sale, R03 6190277); ``lamports`` forces a wrong value for the tests."""
+    z = PILOT.zero_sale(row, failures)
+    return z if lamports is None else dict(z, net_lamports=lamports, net_return=lamports / CC.STAKE_LAMPORTS)
 
 
 def row(i, pools, net, *, status='entered', **extra):
@@ -72,9 +71,11 @@ def test_g0_not_passed_publishes_no_number():
 # -- (2) unpriced rows -------------------------------------------------------------------------------------------------
 def test_the_zero_sale_value_is_the_closed_account_rule_of_cpmmcost():
     # R02 21:44Z: -(STAKE + (4 + failures of the run) x 105 000), no rent lost; equal to the runner's value
-    assert G.zero_sale_lamports() == -100_420_000 == RUNNER_ZERO_SALE_A1881F4
-    assert G.zero_sale_lamports(CC.SENSITIVITY_FAILURES) == -100_735_000
-    assert G.zero_sale_lamports() / CC.STAKE_LAMPORTS == pytest.approx(-1.0042)
+    # the imported single source (R02 21:53Z), pinned to the values R02 gave so a drift of the runner is seen here
+    assert not hasattr(G, 'zero_sale_lamports')                                   # never retyped in g1ind
+    assert PILOT.zero_sale_net_lamports() == -100_420_000
+    assert PILOT.zero_sale_net_lamports(CC.SENSITIVITY_FAILURES) == -100_735_000
+    assert PILOT.zero_sale_net_lamports() / CC.STAKE_LAMPORTS == pytest.approx(-1.0042)
     p, pl = arms(40, 20, lambda i: 0.01)
     raw = dict(pool='p03', decision_index=999, decision_time=900, unpriced='x')
     for wrong in (-102_354_280, -100_315_000, -100_735_000):         # rent lost, no WSOL close, failures at the primary
@@ -82,11 +83,13 @@ def test_the_zero_sale_value_is_the_closed_account_rule_of_cpmmcost():
             run(p + [zero_sale(raw, wrong)], pl)
     with pytest.raises(G.ReportError, match='zero_sale_value'):
         run(p, pl + [zero_sale(dict(raw, decision_index=20_000), wrong)])
+    with pytest.raises(G.ReportError, match='zero_sale_value'):
+        run(p + [dict(zero_sale(raw), net_return=-1.0)], pl)                   # lamports right, return wrong
     # under Failures(1, 1, 1) the zero sale charges the failed attempts too
     one = [dict(x, failures=dict(buy=1, sell=1, cleanup=1)) for x in p[:-1]]
     good = run(p, pl, sensitivities=dict(one_failure_per_tx=one + [zero_sale(dict(raw, pool=p[-1]['pool'],
                                                                                   decision_index=p[-1]['decision_index']),
-                                                                             -100_735_000)]))
+                                                                             failures=CC.SENSITIVITY_FAILURES)]))
     assert good['robustness']['one_failure_per_tx']['zero_sale']['count'] == 1
     with pytest.raises(G.ReportError, match='zero_sale_value.*one_failure'):
         run(p, pl, sensitivities=dict(one_failure_per_tx=one + [zero_sale(dict(raw, pool=p[-1]['pool'],

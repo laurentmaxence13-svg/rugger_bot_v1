@@ -43,9 +43,9 @@ MUT = [
  ("    placebo_priced = counted(placebo, 'placebo')", "    placebo_priced = [p for p in placebo if 'net_return' in p]", 'placebo_raw_excluded'),
  ("                                  or p['failures'] == dict(buy=CC.SENSITIVITY_FAILURES.buy,", "                                  or p['failures']['buy'] >= 1 and p['failures']['sell'] >= 1 or dict(buy=CC.SENSITIVITY_FAILURES.buy,", 'k2_at_least_one'),
  ("        values = counted(rows, name)", "        values = [p for p in rows if 'net_return' in p]", 'sensitivity_raw_excluded'),
- ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup\n    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS)", "    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup\n    return -(CC.STAKE_LAMPORTS + transactions * CC.TX_FEE_LAMPORTS + CC.TOKEN_ACCOUNT_RENT_LAMPORTS)", 'zero_rent_lost'),
- ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup", "    transactions = 3 + failures.buy + failures.sell + failures.cleanup", 'zero_wsol_free'),
- ("    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0) + failures.buy + failures.sell + failures.cleanup", "    transactions = 3 + (1 if CC.WSOL_SEPARATE_CLOSE else 0)", 'zero_failures_free'),
+ ("    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))", "    expected = PILOT.zero_sale_net_lamports()", 'zero_failures_of_run_ignored'),
+ ("    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES))", "    expected = PILOT.zero_sale_net_lamports(RUN_FAILURES.get(run, CC.FROZEN_FAILURES)) - CC.TOKEN_ACCOUNT_RENT_LAMPORTS", 'zero_rent_lost'),
+ ("            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:", "            if p['net_lamports'] != expected:", 'zero_return_unchecked'),
  ("            if p['net_lamports'] != expected or p['net_return'] != expected / CC.STAKE_LAMPORTS:", "            if False:", 'zero_value_unchecked'),
  ("RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES, one_failure_per_tx=CC.SENSITIVITY_FAILURES)", "RUN_FAILURES = dict(primary=CC.FROZEN_FAILURES, placebo=CC.FROZEN_FAILURES)", 'zero_run_failures_ignored'),
 ]
