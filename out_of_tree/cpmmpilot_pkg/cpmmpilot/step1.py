@@ -9,7 +9,6 @@
 """
 import hashlib
 import json
-import random
 from pathlib import Path
 
 from cpmmprereg import rule as RCP1
@@ -161,13 +160,12 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed):
         verdict = CC.pilot_verdict(counted, g0_passed=g0_passed, freeze_sheet_sha256=sheets[name])
         verdict.pop('meaning', None)                                                  # K02 (R02)
         verdict['sheet_sentence'] = SHEET_SENTENCE
-        placebo_counted = [zero_sale(p) if 'net_return' not in p else p for p in placebo]
-        paired = paired_difference(counted, placebo_counted, sheets[name])
+        # R02 (21:41Z): no placebo difference is published by cpmmpilot; it will come from g1ind once it has its PASS
         result[name] = dict(verdict=verdict, positions=len(primary), unpriced_counted_at_zero_sale=sum(unpriced_reasons.values()),
                             unpriced_reasons=unpriced_reasons,
                             placebo=dict(positions=len(placebo),
-                                         unpriced_counted_at_zero_sale=sum('net_return' not in p for p in placebo),
-                                         paired_by_pool=paired, label='published apart, no decision'))
+                                         unpriced=sum('net_return' not in p for p in placebo),
+                                         difference='NOT PUBLISHED by cpmmpilot (R02): computed by g1ind after its PASS'))
         write_json(Path(out) / ('G1_INPUTS_%s.json' % name), dict(primary=primary, placebo=placebo))
     assert_closed_vocabulary(result)
     write_json(Path(out) / 'G1.json', result)
@@ -176,13 +174,21 @@ def g1(out, selected, *, t0_slot, sheets, g0_passed):
 
 # K01 (R02): an ENTERED position of an admitted pool that cannot be priced takes a sale value of 0 and stays COUNTED;
 # costs as cpmmcost.position with 0 failures and the account closed: buy, sale, WSOL close, cleanup transactions.
+# R02 (21:44Z): with the failures of a sensitivity series, -(STAKE + (4 + buy + sell + cleanup) x 105 000);
+# Failures(1, 1, 1) -> -100 735 000. This function is the SINGLE source of the zero-sale value.
 ZERO_SALE_NET_LAMPORTS = -(CC.STAKE_LAMPORTS + 3 * CC.TX_FEE_LAMPORTS
                            + (CC.TX_FEE_LAMPORTS if CC.WSOL_SEPARATE_CLOSE else 0))
 
 
-def zero_sale(row):
-    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=ZERO_SALE_NET_LAMPORTS,
-                net_return=ZERO_SALE_NET_LAMPORTS / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'])
+def zero_sale_net_lamports(failures=CC.FROZEN_FAILURES):
+    return ZERO_SALE_NET_LAMPORTS - (failures.buy + failures.sell + failures.cleanup) * CC.TX_FEE_LAMPORTS
+
+
+def zero_sale(row, failures=CC.FROZEN_FAILURES):
+    net = zero_sale_net_lamports(failures)
+    return dict(row, status='unpriced_zero_sale', entered=True, received=0, net_lamports=net,
+                net_return=net / CC.STAKE_LAMPORTS, unpriced_reason=row['unpriced'],
+                failures=dict(buy=failures.buy, sell=failures.sell, cleanup=failures.cleanup))
 
 
 # K02 (R02): closed vocabulary of every published document (same words as plbench.bench.FORBIDDEN_WORDS, test)
@@ -198,32 +204,3 @@ def assert_closed_vocabulary(document):
         raise Step1Stop('forbidden_word_in_output:%s' % ','.join(found))
     return document
 
-
-# K-6 (R02, certificate d34c2c4e): difference to the placebo PAIRED BY POOL, with a pool-clustered bootstrap CI
-# (10 000 draws, seed = int(freeze sheet sha[:8], 16)); published apart, no decision.
-PAIRED_DRAWS = 10_000
-PAIRED_ALPHA = 0.05                 # two-sided 95 %: quantiles 2.5 % and 97.5 %
-
-
-def paired_difference(primary, placebo, freeze_sheet_sha256, *, draws=PAIRED_DRAWS):
-    def by_pool(rows):
-        out = {}
-        for r in rows:
-            out.setdefault(r['pool'], []).append(r['net_return'])
-        return {k: sum(v) / len(v) for k, v in out.items()}
-    a, b = by_pool(primary), by_pool(placebo)
-    pools = sorted(set(a) & set(b))
-    d = {k: a[k] - b[k] for k in pools}
-    if not pools:
-        return dict(pools_paired=0, mean=None, ci95=None, draws=draws, seed=None)
-    seed = int(freeze_sheet_sha256[:8], 16)
-    rng, values = random.Random(seed), []
-    for _ in range(draws):
-        picked = [pools[rng.randrange(len(pools))] for _k in pools]
-        values.append(sum(d[k] for k in picked) / len(picked))
-    values.sort()
-    lo = values[max(0, int(PAIRED_ALPHA / 2 * draws) - 1)]
-    hi = values[min(draws - 1, int((1 - PAIRED_ALPHA / 2) * draws))]
-    return dict(pools_paired=len(pools), pools_primary_only=len(set(a) - set(b)), pools_placebo_only=len(set(b) - set(a)),
-                mean=sum(d.values()) / len(d), ci95=[lo, hi], draws=draws, seed=seed,
-                method='mean over pools of (mean rule net - mean placebo net) per pool; pool-clustered bootstrap')

@@ -347,14 +347,11 @@ def test_g1_k01_counts_unpriced_and_k02_removes_meaning(tmp_path, monkeypatch):
     assert 'meaning' not in r['verdict'] and r['verdict']['sheet_sentence'].startswith('GO_PILOTE autorise seulement')
 
 
-def test_paired_difference_is_by_pool_k6():
-    prim = [dict(pool='A', net_return=0.10), dict(pool='A', net_return=0.30), dict(pool='B', net_return=-0.2),
-            dict(pool='C', net_return=0.5)]
-    plac = [dict(pool='A', net_return=0.0), dict(pool='B', net_return=-0.1), dict(pool='B', net_return=-0.3)]
-    r = step1.paired_difference(prim, plac, 'c' * 64, draws=2000)
-    # per pool: A 0.2 - 0.0 = 0.2 ; B -0.2 - (-0.2) = 0.0 ; C unpaired -> mean over pools = 0.1 (global means would give
-    # 0.175 - (-0.1333) = 0.3083)
-    assert r['pools_paired'] == 2 and abs(r['mean'] - 0.1) < 1e-12 and r['pools_primary_only'] == 1
-    assert r['seed'] == int('c' * 8, 16) and r['ci95'][0] <= r['mean'] <= r['ci95'][1]
-    assert r == step1.paired_difference(prim, plac, 'c' * 64, draws=2000)
-    assert step1.paired_difference(prim, [], 'c' * 64)['pools_paired'] == 0
+
+def test_zero_sale_with_sensitivity_failures_and_no_placebo_difference():
+    from cpmmcost import model as CC
+    row = dict(pool='P', decision_index=1, unpriced='x', decision_time=1)
+    assert step1.zero_sale(row, CC.Failures(1, 1, 1))['net_lamports'] == -100_735_000
+    assert step1.zero_sale(row)['net_lamports'] == -100_420_000
+    assert step1.zero_sale_net_lamports(CC.Failures(1, 1, 0)) == -100_630_000
+    assert not hasattr(step1, 'paired_difference')
