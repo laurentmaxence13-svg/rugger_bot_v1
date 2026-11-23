@@ -32,7 +32,7 @@ Quatre cases en viennent :
 **Méthode d'IC commune** (latelab, latesel, cdgate, w1loss) : intervalle à 95 % bilatéral de la moyenne, par
 bootstrap de grappes de créateurs (le pool si le créateur est absent), 2 000 tirages, graine 20261120.
 
-**Vocabulaire du verdict** : NÉGATIF / INCONCLUSIF uniquement. « RENTABLE » est exclu partout (R-0.6 non remplie,
+**Vocabulaire du verdict** : NÉGATIF / INCONCLUSIF uniquement. tout verdict positif est exclu partout (R-0.6 non remplie,
 aucune donnée indépendante).
 - NÉGATIF : la borne haute est < 0, avec n ≥ 30.
 - INCONCLUSIF : n < 30, ou bien la borne haute est ≥ 0.
