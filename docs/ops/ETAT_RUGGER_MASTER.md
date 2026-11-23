@@ -71,9 +71,10 @@ Légende des preuves :
 | T-R01-3 | R01 | Génération 3 : 2 ou 3 fiches PROJET hors famille « 10 min », notées sur a21f90f3 | recevabilité R02 | confié 21:03Z |
 | T-R02-1 | R02 | Audits de T-R01-1 à T-R01-3 | verdict écrit et sha pour chacun | au fil de l'eau |
 | T-R02-2 | R02 | Puissance réaliste de la génération 2 (σ plausibles, effet net) → durée et crédits pour n = 155 et 262 | table chiffrée pour le texte de crédits | **FAIT** (b237941d) : n pilote = 155, 303 ou 619 pour σ = 2,5, 3,5 ou 5 %. Le pilote atteint la pleine puissance avec 50 000 crédits seulement si R̂ ≤ ≈ 967 tx par pool et par jour ; sinon, résultat publié « sous la cible », remédiable par C-bis. Génération 2 : ≈ 100 000 crédits Free par fenêtre, à fixer après la mesure de R̂. |
-| T-R03-1 | R03 | Répétition hors ligne de toute la chaîne du pilote CPMM, avec faux RPC (crédits, arrêts, U-2, gel, reprise, G-1) | journal avec sha et audit R02 | confié 21:03Z |
-| T-R03-2 | R03 | Plan de ressources (disque, mémoire, durée, risques, sauvegardes) pour le pilote et la génération 2 | document avec sha | confié 21:03Z |
-| T-R03-3 | R03 | Contrôle d'intégrité W1, seulement s'il y a eu un redémarrage depuis 08:47Z | 0 écart | conditionnel |
+| T-R03-0 | R03 | Paquet cpmmpilot : runner étape 0 → U-2 → étape 1, faux RPC, compteur de crédits, arrêts, gel, reprise, sortie gz. Réutilise sans modification les règles gelées de R01. | PASS R02 | décidé par R04 à 21:10Z (option 1, pas de doublon avec R01) |
+| T-R03-1 | R03 | Répétition hors ligne de toute la chaîne du pilote CPMM, avec faux RPC (crédits, arrêts, U-2, gel, reprise, G-1) | journal avec sha et audit R02 | après T-R03-0 |
+| T-R03-2 | R03 | Plan de ressources (disque, mémoire, durée, risques, sauvegardes) pour le pilote et la génération 2 | document avec sha | **FAIT** (67e6cb78) : pilote ≤ ≈ 325 000 tx, ≈ 0,6 Go en gz, collecte rétrospective de ≈ 10 min après T0 + D. Seul risque grave : la fin de session (archive remise en 7 parties de 90 Mo). Génération 2 et PAPER_LIVE : le disque bloque (6,7 Go libres), il faut une sauvegarde externe ou un autre environnement. |
+| T-R03-3 | R03 | Contrôle d'intégrité W1, seulement s'il y a eu un redémarrage depuis 08:47Z | 0 écart | **FAIT, 0 écart** (redémarrage à 21:04:29Z ; 13 sha recalculés) |
 
 ## 1. Autorisations vérifiées à la source
 
@@ -178,6 +179,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
+- 23/11 21:04:29Z : redémarrage du conteneur de R03 (5e observé) ; intégrité W1 à 0 écart.
 - 23/11 08:47:44Z : le conteneur de R03 a redémarré ; les données ont survécu (0 écart d'intégrité). Seuls ≈ 71 % de W1 sont copiés à l'extérieur, le reste serait perdu à la fin de la session.
 - 22/11 21:43Z : R01 a d'abord signalé une « décision δ » à prendre par le propriétaire, puis l'a retirée à 21:44Z après l'avis de R02. R04 l'avait transmise entre-temps et l'a corrigée.
 - 22/11 20:28Z : un message de R02 à R01 a été perdu. Il demandait le plan de mesure N-4/N-5 et la garde de glissement ; il est absent du journal de R01 (2e perte de la journée). R01 demande le texte exact à R02. Ces travaux deviennent la tâche P3-b, placée avant P3-c.
