@@ -38,7 +38,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | Pilote CPMM, étage 0 | « GO étape 0, ≤ 100 crédits Helius » | session R03 |
 | Pilote CPMM, étage 1 | « GO étape 1, ≤ 50 000 crédits », après l'étage 0 | session R03 |
 | Mesure des échecs N-4 | Collecte qui conserve les transactions échouées, avec un plafond | session R03 |
-| PAPER_LIVE | Choix A, B ou C face au facteur ≈ 16 de crédits (7,68 M getTransaction contre ≈ 467 k Free) ; puis D-1, D-3, D-5, D-6, D-7 (DX v0.2, 7f6c5f4, CONFORME selon R02) | session de l'exécutant |
+| PAPER_LIVE | Choix A, B ou C face au facteur ≈ 16 de crédits. Option A chiffrée par R03 sur la grille archivée du 08/11 (b6794b16, fa152d54) : offre Helius Developer à 49 $ HT par mois (58,80 $ TTC), soit 10 M crédits et 50 req/s. Plafond prudent ≈ 61 $ TTC avec une marge ×1,3 et le WebSocket (volume non mesuré, hypothèse ≈ 0,3 M crédits). Grille à relire en ligne avant décision. Le principe Developer ≤ 100 $ HT (66e09996, 04/11) existe, mais ce n'est pas une autorisation de paiement. Coût de l'hôte (D-1) en plus (7,68 M getTransaction contre ≈ 467 k Free) ; puis D-1, D-3, D-5, D-6, D-7 (DX v0.2, 7f6c5f4, CONFORME selon R02) | session de l'exécutant |
 | W2 | Format, k, plafond, plan Helius, GO (après A2, HW1 et C-B) | session du propriétaire |
 | Hygiène | Retirer le secret Helius de R03 ; désactiver les 4 routines d'étiquette | paramètres |
 
