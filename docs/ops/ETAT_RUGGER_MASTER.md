@@ -37,7 +37,7 @@ Légende des preuves :
 - A1 R-CP1 : mean reversion. B1 : momentum miroir. Toutes deux préenregistrées et ancrées avant T0.
 - Procédure de déblocage, en trois autorisations distinctes, écrites dans la session R03 (textes exacts produits par R02) :
   Ordre recommandé par R02 : étape 0, puis U-2, puis étape 1.
-  **Textes intégraux prêts à signer** : AUTORISATIONS_CPMM_TEXTES_INTEGRAUX_R02_v1_2.md (sha 5c6e8fc1 ; remplace la v1.1 468fe2ad, déjà présentée puis corrigée). B : permutation déterministe, GTFA sans repli. C : arrêt au point (2) si le coût prévu dépasse 32 900 crédits ; C-bis optionnel pour un plafond plus élevé dans l offre Free.. A étape 0 (≤ 100 crédits) ; B U-2, option (b) recommandée : getProgramAccounts, ≤ 5 000 crédits, sans hôte tiers ; C étape 1 (≤ 50 000 crédits, arrêt dur à 49 000, D de 1,4 à 27,4 j selon le débit) ; D génération 2 (+3 essais, choix α). Quota : relevé par le propriétaire avant et après chaque étape ; STOP si le disponible est inférieur à plafond × 1,5, ou si l'écart dépasse 10 % du plafond.
+  **Textes intégraux prêts à signer** : AUTORISATIONS_CPMM_TEXTES_INTEGRAUX_R02_v1_3.md (sha 443bbfb9 ; remplace la v1.2 5c6e8fc1, dont l identifiant du programme CPMM dans B(b) était faux : « …KP8C » au lieu de « …KP1C », valeur vérifiée par R04 dans le code, 15 occurrences ; la v1.2 remplaçait déjà la v1.1 468fe2ad). B : permutation déterministe, GTFA sans repli. C : arrêt au point (2) si le coût prévu dépasse 32 900 crédits ; C-bis optionnel pour un plafond plus élevé dans l offre Free.. A étape 0 (≤ 100 crédits) ; B U-2, option (b) recommandée : getProgramAccounts, ≤ 5 000 crédits, sans hôte tiers ; C étape 1 (≤ 50 000 crédits, arrêt dur à 49 000, D de 1,4 à 27,4 j selon le débit) ; D génération 2 (+3 essais, choix α). Quota : relevé par le propriétaire avant et après chaque étape ; STOP si le disponible est inférieur à plafond × 1,5, ou si l'écart dépasse 10 % du plafond.
   1. **Étape 0** (≤ 100 crédits) : vecteurs de test publics V-1′ (50 à 100 transactions CPMM) pour certifier le décodeur (porte G-0). Aucune liste, aucun rendement. En cas d'échec, tout s'arrête sans aucun essai consommé.
   2. **U-2** : autoriser l'API publique Raydium (hôte et requêtes), plus les lectures on-chain de qualification. Liste hachée à T0, juste avant la fenêtre ; moins de 20 pools = STOP.
   - Méthode U-2 (R03, a14580a4, sans réseau) :
@@ -179,6 +179,7 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
+- 23/11 21:11Z : erreur d identifiant du programme CPMM dans le texte B(b) v1.2, déjà présenté au propriétaire ; corrigée en v1.3 (443bbfb9).
 - 23/11 21:04:29Z : redémarrage du conteneur de R03 (5e observé) ; intégrité W1 à 0 écart.
 - 23/11 08:47:44Z : le conteneur de R03 a redémarré ; les données ont survécu (0 écart d'intégrité). Seuls ≈ 71 % de W1 sont copiés à l'extérieur, le reste serait perdu à la fin de la session.
 - 22/11 21:43Z : R01 a d'abord signalé une « décision δ » à prendre par le propriétaire, puis l'a retirée à 21:44Z après l'avis de R02. R04 l'avait transmise entre-temps et l'a corrigée.
