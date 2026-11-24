@@ -228,3 +228,37 @@ def test_end_to_end_frozen_rule_positions_and_verdict():
     out = V.report(primary, [], pools=[line.pool, 'x', 'y'], g0_passed=True, freeze_sheet_sha256=SHEET, t0=0,
                    d_days=D, draws=DRAWS)
     assert out['decision'] == 'INCONCLUSIF' and out['floors']['pools_with_entry'] == 1
+
+
+# -- 0.1.1: the gap to the placebo, descriptive (R02 audit of 0.1, choice (a)) ----------------------------------------
+def test_gap_to_placebo_bounds_match_a_direct_computation_and_never_decide():
+    noisy = grid(lambda p, d, k: 0.01 * ((d * 5 + k + POOLS.index(p) * 2) % 7 - 3) + 0.004)
+    plac = grid(lambda p, d, k: 0.01 * ((d * 3 + k * 2 + POOLS.index(p)) % 5 - 2), per_day=1, days=range(10))
+    pb, qb = V.blocks(noisy, T0, D), V.blocks(plac, T0, D)
+
+    def one(bm, rng):
+        picked = []
+        for p in sorted(bm):
+            days = sorted(bm[p])
+            for _k in days:
+                picked += bm[p][days[rng.randrange(len(days))]]
+        return sum(r['net_return'] for r in picked) / len(picked)
+    rng, diffs = random.Random(int(SHEET[:8], 16)), []
+    for _ in range(DRAWS):
+        a = one(pb, rng)
+        diffs.append(a - one(qb, rng))
+    k = int(0.05 * DRAWS) - 1
+    out = run(noisy, plac)
+    gap = out['placebo']['difference_bounds_95']
+    assert (gap['lower'], gap['upper']) == (sorted(diffs)[k], sorted(diffs, reverse=True)[k])
+    assert gap['lower'] < out['placebo']['difference'] < gap['upper']
+    assert out['placebo']['verdict'] is None and 'non décisionnel' in gap['role']
+    # never decisional: the word and the primary bounds are the same with or without a placebo
+    alone = run(noisy)
+    assert alone['placebo']['difference_bounds_95']['lower'] == V.NM
+    for key in ('decision', 'lower_bound_95', 'upper_bound_95', 'without_top_pool'):
+        assert out[key] == alone[key]
+    # a placebo identical to the primary gives a gap distribution centred on 0, and both sides are resampled
+    same = run(noisy, noisy)['placebo']['difference_bounds_95']
+    assert same['lower'] < 0 < same['upper']
+    assert V.difference_bounds({}, qb, seed=1) == (None, None) == V.difference_bounds(pb, {}, seed=1)

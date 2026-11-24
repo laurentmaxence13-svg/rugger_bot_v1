@@ -36,6 +36,14 @@ MUT = [
  ("    if type(d_days) is not int or not MIN_D <= d_days <= MAX_D:", "    if type(d_days) is not int:", 'd_unchecked'),
  ("               power=dict(n_entered=len(entries(rows)), n_required=target,\n                          flag=G1.UNDER_TARGET if len(entries(rows)) < target else None),", "               power=dict(n_entered=len(entries(rows)), n_required=target, flag=None),", 'power_flag_dropped'),
  ("    return G1.check_vocabulary(doc)\n", "    return doc\n", 'vocabulary_unchecked'),
+ # 0.1.1: the gap to the placebo (descriptive)
+ ("        diffs.append(_resampled_mean(primary_blocks, rng) - _resampled_mean(placebo_blocks, rng))", "        diffs.append(_resampled_mean(primary_blocks, rng) - _mean([r for p in placebo_blocks for d in placebo_blocks[p] for r in placebo_blocks[p][d]]))", 'gap_placebo_not_resampled'),
+ ("        diffs.append(_resampled_mean(primary_blocks, rng) - _resampled_mean(placebo_blocks, rng))", "        diffs.append(_resampled_mean(placebo_blocks, rng) - _resampled_mean(primary_blocks, rng))", 'gap_sign_reversed'),
+ ("        for _d in days:\n", "        for _d in days[:1]:\n", 'gap_one_block_per_pool'),
+ ("    tail = max(0, int(ALPHA * draws) - 1)", "    tail = max(0, int(ALPHA * draws))", 'gap_quantile_shift'),
+ ("    return sorted(diffs)[tail], sorted(diffs, reverse=True)[tail]", "    return sorted(diffs)[tail], sorted(diffs)[-1]", 'gap_upper_is_max'),
+ ("blocks(plac, t0, d_days), seed=seed, draws=draws)", "blocks(plac, t0, d_days), seed=seed + 1, draws=draws)", 'gap_seed_not_from_sheet'),
+ ("blocks(plac, t0, d_days), seed=seed, draws=draws)", "blocks(rows, t0, d_days), seed=seed, draws=draws)", 'gap_placebo_is_primary'),
 ]
 def run(work):
     return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'g23five' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],

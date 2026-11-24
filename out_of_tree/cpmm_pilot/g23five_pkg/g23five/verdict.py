@@ -1,4 +1,4 @@
-"""g23five 0.1 -- verdict of the G2-3 pilot on POOLS NAMED BEFORE T0 (R02 notes 23f02580, 835d648e, D confirmed
+"""g23five 0.1.1 -- verdict of the G2-3 pilot on POOLS NAMED BEFORE T0 (R02 notes 23f02580, 835d648e, D confirmed
 c301e993; decision R04-1 of 24/11 20:38Z). The G2-3 rule is cpmmgen2.decisions_g23 (0.2, PASS R02), unchanged; order,
 exits, costs and placebo are R-CP1's (cpmmprereg 0.2, cpmmcost 0.3); unpriced rows follow K01 (cpmmpilot.step1.zero_sale,
 checked by g1ind.report.counted). Nothing here is modified upstream; nothing reads the window.
@@ -12,6 +12,10 @@ FLOORS (else INCONCLUSIF): >= 30 pool-days with an entry; >= 3 pools with an ent
      on the entries; no pool above 50 % of the entries.
 WORD: INCONCLUSIF before NO-GO (R-0.1). NO-GO if the upper bound < 0. GO_PILOTE only if the lower bound > 0 on all the
      pools AND without the pool with the most entries. Otherwise INCONCLUSIF. Results are published pool by pool.
+0.1.1 (R02 audit of 0.1, PASS TECHNIQUE, choice (a)): the gap to the placebo is published with one-sided 95 % bounds
+     at the SAME stratified bootstrap (primary and placebo each resampled by pool-day blocks, the distribution of the
+     difference of the two means). DESCRIPTIVE ONLY: it never enters the word of the pilot; it is the base of c2 at
+     the confirmation.
 """
 import hashlib
 import random
@@ -21,7 +25,7 @@ from cpmmgen2 import rule as G2
 from cpmmprereg import rule as R
 from g1ind import report as G1
 
-SCHEMA = 'g23five-v0.1'
+SCHEMA = 'g23five-v0.1.1'
 MIN_TRIGGERS, TOP_POOLS, MIN_SELECTED = 3, 5, 3
 MIN_POOL_DAYS, MIN_POOLS, MIN_KISH, MAX_SHARE = 30, 3, 2.5, 0.5
 ALPHA, DRAWS = 0.05, 10_000
@@ -99,6 +103,28 @@ def stratified_bounds(block_map, *, seed, draws=DRAWS):
     return sorted(means)[k], sorted(means, reverse=True)[k]
 
 
+def _resampled_mean(block_map, rng):
+    rows = []
+    for p in sorted(block_map):
+        days = sorted(block_map[p])
+        for _d in days:
+            rows += block_map[p][days[rng.randrange(len(days))]]
+    return _mean(rows)
+
+
+def difference_bounds(primary_blocks, placebo_blocks, *, seed, draws=DRAWS):
+    """DESCRIPTIVE (never decisional): one-sided 95 % bounds of mean(primary) - mean(placebo). In each draw the
+    primary and then the placebo are EACH resampled by pool-day blocks stratified by pool (independent draws from one
+    generator seeded by the sheet), and the difference of the two means is kept."""
+    if not primary_blocks or not placebo_blocks:
+        return None, None
+    rng, diffs = random.Random(seed), []
+    for _ in range(draws):
+        diffs.append(_resampled_mean(primary_blocks, rng) - _resampled_mean(placebo_blocks, rng))
+    tail = max(0, int(ALPHA * draws) - 1)
+    return sorted(diffs)[tail], sorted(diffs, reverse=True)[tail]
+
+
 # -- floors ------------------------------------------------------------------------------------------------------------
 def entries(rows):
     """Entered positions (zero-sale rows included, K01); guard refusals are positions but not entries."""
@@ -165,6 +191,7 @@ def report(primary, placebo, *, pools, g0_passed, freeze_sheet_sha256, t0, d_day
                            pool_days_with_entry=len({day_of(r, t0, d_days) for r in entries(mine)}),
                            mean_net_return=_mean(mine) if mine else NM)
     target = R.n_required()
+    d_low, d_high = difference_bounds(blocks(rows, t0, d_days), blocks(plac, t0, d_days), seed=seed, draws=draws)
     doc.update(decision=decision, published_numbers=True, n=len(rows), n_entered=len(entries(rows)), floors=fl,
                mean_net_return=_mean(rows), lower_bound_95=low, upper_bound_95=high,
                without_top_pool=dict(pool=top, lower_bound_95=low_wo, upper_bound_95=high_wo),
@@ -173,7 +200,11 @@ def report(primary, placebo, *, pools, g0_passed, freeze_sheet_sha256, t0, d_day
                           flag=G1.UNDER_TARGET if len(entries(rows)) < target else None),
                zero_sale=G1.zero_sale_reasons(rows),
                placebo=dict(positions=len(plac), mean_net_return=_mean(plac),
-                            difference=(_mean(rows) - _mean(plac)) if rows and plac else NM, verdict=None))
+                            difference=(_mean(rows) - _mean(plac)) if rows and plac else NM,
+                            difference_bounds_95=dict(lower=NM if d_low is None else d_low,
+                                                      upper=NM if d_high is None else d_high,
+                                                      role='descriptif, non décisionnel ; base de c2'),
+                            verdict=None))
     return G1.check_vocabulary(doc)
 
 
