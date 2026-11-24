@@ -61,7 +61,7 @@ RUGGER 01, 24/11/2026.
 
 ## Validation
 
-- 14 tests : 8 sur `verdict.py` et 6 sur `lines.py`. Ceux de `verdict.py` couvrent :
+- 13 tests : 8 sur `verdict.py` et 5 sur `lines.py`. Ceux de `verdict.py` couvrent :
   - la perte totale par jour ;
   - des pool-jours égaux aux valeurs journalières de `continuous_position` sur un pool synthétique réel ;
   - un événement LP au point d'atterrissage d'entrée, qui donne une perte totale sur les 8 jours, y compris sous la
