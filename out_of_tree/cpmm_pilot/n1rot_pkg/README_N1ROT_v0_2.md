@@ -1,9 +1,33 @@
-# n1rot 0.1 — règle de rotation N1, fixée avant toute mesure, et script de mesure pré-T0
+# n1rot 0.2 — règle de rotation N1, fixée avant toute mesure, et script de mesure pré-T0
 
 RUGGER 01, 24/11/2026.
 - Décision R04-4 (24/11, 20:55Z) ; note R02 0b64abd6 (N1 RECEVABLE sur la fenêtre G2-3).
 - **Code hors ligne, NON exécuté.** R03 ne l'exécute qu'après l'audit de R02 et son choix du seuil.
 - Aucun rendement LP n'est calculé ; aucune donnée de la fenêtre n'est lue.
+
+## 0.2 — le seuil R04-6, recalculé pool par pool (décision R04-6, 21:29Z)
+
+- n1rot 0.1 avait le PASS de R02 (MANIFEST 00971584, commit 9c89d73). La 0.2 ajoute un seuil `r04_6_break_even` ;
+  les seuils de 0.1 restent déclarés, inchangés.
+- **Configuration R04-6** : une position de 0,5 % de la réserve WSOL, tenue 12 jours, avec un seul aller-retour amorti
+  sur 12 jours.
+- **Seuil du pool**, calculé EN CODE (`break_even_rotation_r04_6`) :
+
+  rot* = (6 transactions + coût de l'échange d'entrée + coût de la vente de sortie) / (12 × mise × taux de palier ×
+  (1 − parts protocole et fonds))
+
+  - La mise vaut 0,5 % de la réserve WSOL du DERNIER état pré-T0 du pool (limite T0 − 1).
+  - L'échange d'entrée porte sur mise // 2, sur cet état, avec frais, frais créateur et impact.
+  - La vente de sortie revend les jetons achetés sur le même état, donc à prix constant.
+  - Les frais perçus sont approchés par mise × taux LP × rotation journalière × 12, notre part étant d'environ
+    mise / TVL.
+- **C'est une condition NÉCESSAIRE seulement.** Sous ce seuil, la part LP des frais ne paie pas les coûts, même à prix
+  constant. La perte face au rééquilibrage (LVR) n'y est pas comptée.
+- Ordre de grandeur sur un pool synthétique de 100 SOL : environ 25 % par jour (20 % à 1 000 SOL, 45 % à 20 SOL ; +2 points avec 500 ppm de frais créateur). Le seuil baisse quand la réserve
+  grandit, car les transactions y pèsent moins, et monte avec le frais créateur.
+- `select_n1(..., threshold='r04_6_break_even')` publie le seuil de CHAQUE pool (`threshold_exact`) et
+  `threshold_per_pool=True`.
+- Validation 0.2 : 9 tests ; 30 mutants sur 30, dont 9 nouveaux (`MUTATIONS_n1rot_v0_2.json`).
 
 ## Ce qui est mesuré
 

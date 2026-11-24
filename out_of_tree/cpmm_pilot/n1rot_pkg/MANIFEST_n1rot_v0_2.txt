@@ -1,0 +1,7 @@
+5fe7fbe210bf3c1b43c110e4872584e491f9464e94e17088fe295ebc82375061  ./MUTATIONS_n1rot_v0_2.json
+93e5f2e0148ed4da8d4772870c92b6b2f12fd56a9bd33d2ea1f8d6094c9f8f4b  ./README_N1ROT_v0_2.md
+9a5b51ff9e48ca76c9baa22d3c7fe94c196c5bfdcc3d24d14e1a83842be50415  ./mutations_n1rot_runner.py
+dd2506474dbefe8c20adde2fdcae3b498c4ee2983d30666a5c450cfa9567acfe  ./n1rot/__init__.py
+ae57b86a1dabea2c98b9e805b65f4df69a91411735e0cc6b234a2591a6920f2a  ./n1rot/rotation.py
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ./n1rot/tests/__init__.py
+8bc93206a878d30a01f413ca626aba411a85b7f299c804be3abafa049e64faa3  ./n1rot/tests/test_rotation.py

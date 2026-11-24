@@ -1,4 +1,4 @@
-"""n1rot 0.1 on synthetic timelines only: daily volume / TVL, median of 7 days, T0 boundaries, declared thresholds,
+"""n1rot 0.2 on synthetic timelines only: daily volume / TVL, median of 7 days, T0 boundaries, declared thresholds,
 the 4 named pools, NON ÉVALUABLE under 3 pools, and the CLI wiring (pages reading mocked)."""
 import hashlib
 import json
@@ -137,3 +137,72 @@ def test_cli_reads_the_pre_pages_of_the_named_pools_only(tmp_path, monkeypatch):
     (tmp_path / 'u2.json').write_text(json.dumps(dict(selected=[dict(pool=p) for p in N.NAMED_POOLS[:3]])))
     with pytest.raises(N.RotationError, match='missing'):
         N.main([str(tmp_path / 'out'), str(tmp_path / 'u2.json'), str(T0), '1', 'dossier_15', str(tmp_path / 'r.json')])
+
+
+# -- 0.2: the R04-6 break-even, pool by pool ---------------------------------------------------------------------------
+def test_r04_6_break_even_is_recomputed_pool_by_pool_from_the_last_pre_t0_state():
+    from cpmmx import curve
+    line = steady(N.NAMED_POOLS[0], Fraction(1, 2))
+    fees = N.CC.fees_from_amm_config(CONFIG)
+    base, quote = N.CC._state(line, fees, time_limit=T0 - 1)
+    stake = quote * 5_000 // 1_000_000
+    tokens = curve.swap_base_input(stake // 2, quote, base, fees, True).output_amount
+    back = curve.swap_base_input(tokens, base, quote, fees, True).output_amount
+    costs = 6 * 105_000 + (stake // 2 - back)                       # entry + exit at zero price move = half - back
+    expected = Fraction(costs) / (12 * stake * Fraction(2_500, 10 ** 6) * Fraction(840_000, 10 ** 6))
+    got = N.break_even_rotation_r04_6(line, CONFIG, T0)
+    assert got == expected and Fraction(15, 100) < got < Fraction(40, 100)          # ~ 24 % / day at 100 SOL
+    bigger = N.break_even_rotation_r04_6(steady(N.NAMED_POOLS[0], Fraction(1, 2), reserve=1_000 * SOL), CONFIG, T0)
+    assert bigger < got                                                              # transactions weigh less
+    with_creator = N.break_even_rotation_r04_6(line, dict(CONFIG, creator_fee_rate=500), T0)
+    assert with_creator > got
+    with pytest.raises(N.RotationError, match='after_t0'):
+        N.break_even_rotation_r04_6(line, CONFIG, T0 - DAY)
+
+
+def test_selection_with_the_r04_6_threshold_publishes_each_pool_bar():
+    out = N.select_n1(named([1, Fraction(1, 2), Fraction(1, 10), Fraction(1, 5)]), CONFIG, T0,
+                      threshold='r04_6_break_even')
+    assert out['kept'] == list(N.NAMED_POOLS[:2]) and out['evaluable'] is False
+    assert out['threshold_per_pool'] is True and out['threshold_value'] == N.NM
+    lines = named([1, Fraction(1, 2), Fraction(1, 10), Fraction(1, 5)])
+    for row, line in zip(out['pools'], lines):
+        bar = N.break_even_rotation_r04_6(line, CONFIG, T0)
+        assert row['threshold_exact'] == str(bar) and row['kept'] == (Fraction(row['median_rotation_exact']) >= bar)
+    three = N.select_n1(named([1, 1, 1, Fraction(1, 10)]), CONFIG, T0, threshold='r04_6_break_even')
+    assert three['evaluable'] is True and three['kept'] == list(N.NAMED_POOLS[:3])
+    old = N.select_n1(named([1, 1, 1, 1]), CONFIG, T0, threshold='dossier_15')
+    assert old['threshold_per_pool'] is False and old['pools'][0]['threshold_exact'] == '3/20'
+
+
+def test_r04_6_bar_uses_the_last_pre_t0_state_and_each_pool_its_own():
+    # reserves that grow day by day: the bar is read on day -1's last state, not on an earlier day
+    grow = []
+    for j in range(7):
+        t, reserve = T0 - (7 - j) * DAY + 100, (100 + 50 * j) * SOL
+        grow += [swap(t, 'buy', SOL, reserve), swap(t + 10, 'sell', (1 + 20 * j) * SOL, reserve + SOL, 1)]
+    line_g = Timeline(N.NAMED_POOLS[0], 'mint', 'wsol', tuple(grow), (), ())
+    fees = N.CC.fees_from_amm_config(CONFIG)
+    last = N.CC._state(line_g, fees, time_limit=T0 - 1)
+    earlier = N.CC._state(line_g, fees, time_limit=T0 - DAY)
+    assert last[1] != earlier[1]                                                    # the SOL reserves differ
+    got = N.break_even_rotation_r04_6(line_g, CONFIG, T0)
+    from cpmmx import curve
+    base, quote = last
+    stake = quote * 5_000 // 1_000_000
+    back = curve.swap_base_input(curve.swap_base_input(stake // 2, quote, base, fees, True).output_amount, base, quote,
+                                 fees, True).output_amount
+    assert got == Fraction(6 * 105_000 + stake // 2 - back) / (12 * stake * Fraction(2_100, 10 ** 6))
+    shifted = N.break_even_rotation_r04_6(
+        Timeline(line_g.pool, 'mint', 'wsol', tuple(s for s in grow if s.block_time < T0 - DAY), (), ()), CONFIG,
+        T0 - DAY)
+    assert got != shifted
+    # two pools with different reserves get different bars; a rotation between them keeps only the deeper pool
+    deep, shallow = steady(N.NAMED_POOLS[0], 0, reserve=10_000 * SOL), steady(N.NAMED_POOLS[1], 0, reserve=20 * SOL)
+    b_deep, b_shallow = (N.break_even_rotation_r04_6(x, CONFIG, T0) for x in (deep, shallow))
+    assert b_deep < b_shallow
+    mid = (b_deep + b_shallow) / 2
+    lines = [steady(N.NAMED_POOLS[0], mid, reserve=10_000 * SOL), steady(N.NAMED_POOLS[1], mid, reserve=20 * SOL),
+             steady(N.NAMED_POOLS[2], 1), steady(N.NAMED_POOLS[3], 1)]
+    out = N.select_n1(lines, CONFIG, T0, threshold='r04_6_break_even')
+    assert [p['kept'] for p in out['pools']] == [True, False, True, True]

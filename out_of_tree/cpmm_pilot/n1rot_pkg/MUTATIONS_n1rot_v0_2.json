@@ -1,12 +1,12 @@
 {
- "schema": "n1rot-mutations-v0.1",
- "mutants": 21,
- "detected": 21,
- "total": 21,
+ "schema": "n1rot-mutations-v0.2",
+ "mutants": 30,
+ "detected": 30,
+ "total": 30,
  "equivalent_removed": [
   {
    "mutant": "threshold_unchecked",
-   "reason": "threshold_value refuse aussi un seuil non déclaré ('threshold_not_declared') : le contrôle d'entrée de select_n1 n'est qu'un refus précoce, avant toute lecture"
+   "reason": "threshold_value refuse aussi un seuil non déclaré (0.1)"
   }
  ],
  "results": [
@@ -92,6 +92,42 @@
   },
   {
    "mutant": "t0_type_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "r046_state_a_day_earlier",
+   "detected": true
+  },
+  {
+   "mutant": "r046_stake_fixed",
+   "detected": true
+  },
+  {
+   "mutant": "r046_exit_cost_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "r046_entry_cost_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "r046_without_transactions",
+   "detected": true
+  },
+  {
+   "mutant": "r046_one_day",
+   "detected": true
+  },
+  {
+   "mutant": "r046_lp_keeps_protocol_share",
+   "detected": true
+  },
+  {
+   "mutant": "r046_first_pool_bar_for_all",
+   "detected": true
+  },
+  {
+   "mutant": "r046_after_t0_unchecked",
    "detected": true
   }
  ]

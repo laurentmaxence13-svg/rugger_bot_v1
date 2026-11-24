@@ -1,4 +1,4 @@
-"""n1rot 0.1 -- ROTATION RULE of N1, FIXED BEFORE ANY MEASUREMENT (decision R04-4, 24/11; R02 note 0b64abd6), and the
+"""n1rot 0.2 -- ROTATION RULE of N1, FIXED BEFORE ANY MEASUREMENT (decision R04-4, 24/11; R02 note 0b64abd6), and the
 script that measures it on the PRE-T0 pages of A2r only. Offline code; it is executed by R03 only after R02's audit.
 
 WHAT IS MEASURED (descriptive market activity, NO LP return): for each of the 4 pools named by G2-3 and each of the 7
@@ -18,6 +18,13 @@ Declared thresholds (R02 chooses ONE before execution; no change after the measu
       / (STAKE x trade rate x (1 - protocol - fund shares)); 88 / 21 = 419 % / day with the U-1 rates and no creator
       fee; 31 / 7 = 443 % / day with a creator fee of 500 ppm. Rates from the AmmConfig as read and hashed.
   'dossier_15' : 15 % / day (dossier N1 b7d5d9c § 5: LP fees = sigma^2 / 8 at sigma = 5 % / day, fixed costs ignored).
+0.2 (decision R04-6, 24/11 21:29Z): threshold 'r04_6_break_even', computed IN CODE and POOL BY POOL for the R04-6
+  configuration (one position of 0.5 % of the WSOL reserve, held 12 days, one round trip amortised over 12 days):
+      rot* = (6 transactions + entry swap cost + exit swap cost) / (12 x stake x trade rate x (1 - protocol - fund))
+  with stake = 0.5 % of the WSOL reserve of the pool's LAST PRE-T0 state (time limit T0 - 1), the entry swap of
+  stake // 2 on that state (fee, creator fee, impact) and the sale of the bought tokens back on the same state (zero
+  price move). It is a NECESSARY condition only: below it the LP part of the fees cannot pay the costs even at a
+  constant price. Fees earned are approximated by stake x LP rate x daily rotation x 12 (our fraction ~ stake / TVL).
 """
 import hashlib
 import json
@@ -27,13 +34,14 @@ from cpmmcost import model as CC
 from cpmmx import curve
 from lpcost import model as LP
 
-SCHEMA = 'n1rot-v0.1'
+SCHEMA = 'n1rot-v0.2'
 DAY_S, DAYS, MIN_POOLS = 86_400, 7, 3
 NM = 'NON MESURÉ'
 NAMED_POOLS = ('AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca', 'Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr',
                'G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh', 'GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A')
 NAMED_LIST_SHA256 = '812d311b152b7127eedd4146508fdbdb5fc305c15d412e2d4f95e0ab690aca80'   # G2-3 sheet v0.5
-THRESHOLDS = ('cost_break_even', 'dossier_15')
+THRESHOLDS = ('cost_break_even', 'dossier_15', 'r04_6_break_even')
+R046_DAYS, R046_STAKE_PPM = 12, 5_000
 
 
 class RotationError(ValueError):
@@ -48,6 +56,25 @@ def break_even_rotation(config):
     lp_rate = Fraction(fees.trade_fee_rate, curve.FEE_DENOMINATOR) * Fraction(
         curve.FEE_DENOMINATOR - fees.protocol_fee_rate - fees.fund_fee_rate, curve.FEE_DENOMINATOR)
     return (tx + swap_fees) / (LP.STAKE * lp_rate)
+
+
+def break_even_rotation_r04_6(line, config, t0):
+    """R04-6 rotation break-even of ONE pool, from its last pre-T0 state (see the module docstring)."""
+    fees = CC.fees_from_amm_config(config)
+    if any(t0 <= s.block_time for s in line.swaps):
+        raise RotationError('data_at_or_after_t0_refused')
+    base, quote = CC._state(line, fees, time_limit=t0 - 1)
+    on_input = CC.creator_side(line, len(line.swaps) - 1)
+    stake = quote * R046_STAKE_PPM // 1_000_000
+    half = stake // 2
+    tokens = curve.swap_base_input(half, quote, base, fees, on_input).output_amount
+    spot = Fraction(quote, base)
+    entry = half - tokens * spot
+    exit_ = tokens * spot - curve.swap_base_input(tokens, base, quote, fees, on_input).output_amount
+    tx, _rent = LP.transactions()
+    lp_rate = Fraction(fees.trade_fee_rate, curve.FEE_DENOMINATOR) * Fraction(
+        curve.FEE_DENOMINATOR - fees.protocol_fee_rate - fees.fund_fee_rate, curve.FEE_DENOMINATOR)
+    return (tx + entry + exit_) / (R046_DAYS * stake * lp_rate)
 
 
 def threshold_value(name, config):
@@ -100,20 +127,23 @@ def select_n1(lines, config, t0, *, threshold):
         raise RotationError('exactly_the_4_pools_named_by_g2_3')
     if hashlib.sha256('\n'.join(NAMED_POOLS).encode()).hexdigest() != NAMED_LIST_SHA256:
         raise RotationError('named_list_altered')
-    bar = threshold_value(threshold, config)
+    bar = None if threshold == 'r04_6_break_even' else threshold_value(threshold, config)
     by_pool = {line.pool: line for line in lines}
     rows, kept = [], []
     for pool in NAMED_POOLS:                                   # the sheet's order
         days = daily_rotation(by_pool[pool], t0)
         med = median_rotation(days)
-        ok = med >= bar
+        pool_bar = break_even_rotation_r04_6(by_pool[pool], config, t0) if bar is None else bar
+        ok = med >= pool_bar
         if ok:
             kept.append(pool)
         rows.append(dict(pool=pool, median_rotation=float(med), median_rotation_exact=str(med), kept=ok,
+                         threshold_value=float(pool_bar), threshold_exact=str(pool_bar),
                          days=[dict(d, rotation=float(d['rotation'])) for d in days]))
     evaluable = len(kept) >= MIN_POOLS
     return dict(schema=SCHEMA, t0=t0, window=[t0 - DAYS * DAY_S, t0], threshold=threshold,
-                threshold_value=float(bar), threshold_exact=str(bar), amm_config_sha256=config['sha256'],
+                threshold_value=NM if bar is None else float(bar), threshold_exact=NM if bar is None else str(bar),
+                threshold_per_pool=bar is None, amm_config_sha256=config['sha256'],
                 pools=rows, kept=kept, list_sha256=hashlib.sha256('\n'.join(kept).encode()).hexdigest(),
                 evaluable=evaluable,
                 conduct=None if evaluable else 'NON ÉVALUABLE : aucune fiche N1, essai 170 non consommé',

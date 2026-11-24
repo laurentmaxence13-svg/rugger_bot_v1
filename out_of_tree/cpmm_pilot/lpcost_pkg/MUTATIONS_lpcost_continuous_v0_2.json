@@ -1,0 +1,115 @@
+{
+ "schema": "lpcost-continuous-mutations-v0.2",
+ "target": "lpcost/continuous.py",
+ "mutants": 24,
+ "detected": 24,
+ "total": 24,
+ "equivalent_removed": [
+  {
+   "mutant": "mark_includes_same_key",
+   "reason": "un événement LP n'a jamais la clé (slot, tx, ordre) d'un swap : « strictement avant » et « jusqu'à la clé du swap » sélectionnent les mêmes événements"
+  },
+  {
+   "mutant": "hold_move_deposited_only",
+   "reason": "dep_base = tokens toujours : la part vaut tokens / B (l'achat paie le frais, donc tokens / B < moitié gardée / Q), et le plafond de ceil(part × B) est tokens ; le reste en jeton de base est nul (même raison que le mutant équivalent de lpcost 0.1)"
+  }
+ ],
+ "results": [
+  {
+   "mutant": "stake_fixed",
+   "detected": true
+  },
+  {
+   "mutant": "stake_read_earlier",
+   "detected": true
+  },
+  {
+   "mutant": "stake_cap_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "stake_0_4_percent",
+   "detected": true
+  },
+  {
+   "mutant": "entry_best_state",
+   "detected": true
+  },
+  {
+   "mutant": "guard_doubled",
+   "detected": true
+  },
+  {
+   "mutant": "guard_ignores_failures",
+   "detected": true
+  },
+  {
+   "mutant": "deposit_rounded_down",
+   "detected": true
+  },
+  {
+   "mutant": "entry_cost_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "exit_cost_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "rent_not_a_cost",
+   "detected": true
+  },
+  {
+   "mutant": "withdraw_on_best_state",
+   "detected": true
+  },
+  {
+   "mutant": "withdrawal_rounded_up",
+   "detected": true
+  },
+  {
+   "mutant": "sale_best_candidate",
+   "detected": true
+  },
+  {
+   "mutant": "others_ignored_at_exit",
+   "detected": true
+  },
+  {
+   "mutant": "others_ignored_at_marks",
+   "detected": true
+  },
+  {
+   "mutant": "mark_before_the_boundary",
+   "detected": true
+  },
+  {
+   "mutant": "lp_value_not_doubled",
+   "detected": true
+  },
+  {
+   "mutant": "costs_on_day_0",
+   "detected": true
+  },
+  {
+   "mutant": "gap_without_start_mark",
+   "detected": true
+  },
+  {
+   "mutant": "net_without_rent",
+   "detected": true
+  },
+  {
+   "mutant": "partial_days",
+   "detected": true
+  },
+  {
+   "mutant": "third_swapped",
+   "detected": true
+  },
+  {
+   "mutant": "marks_shifted",
+   "detected": true
+  }
+ ]
+}
