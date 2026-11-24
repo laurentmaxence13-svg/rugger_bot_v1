@@ -1,6 +1,6 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-24 à 12:59Z.
+Mis à jour le 2026-11-24 à 14:44Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
@@ -17,6 +17,7 @@ Légende des preuves :
 | Hypothèses éliminées | 0 par un test ; **1 écartée pour infaisabilité** (G3-1, voir § 4, 24/11 12:55Z) | 7, dans leur forme testée |
 | Hypothèses en test indépendant | 2 (R-CP1, B1) : fenêtre ouverte à T0 = 24/11 10:21:26Z sur 24 pools ; aucune position encore lue | — |
 
+**Alerte 14:52Z** : le refus d'A2 (−32015) est très probablement une erreur de VERSION DE TRANSACTION (transactions v1, client réglé sur maxSupportedTransactionVersion 0), pas un refus du filtre par date ; A2r est suspendue à la décision de R02 sur ce point (voir § 4).
 **Prochain obstacle concret** : la relance unique A2r (comptage des déclenchements sur les 7 jours avant T0, calcul de la durée D, gel des fiches). Responsable : R03 (cpmmpilot 0.2.4), puis R02 (audit), puis R03 (lancement).
 **Obstacle suivant** : attendre la fin de la fenêtre, collecter une fois, lire le verdict. D = 3 jours (R02, 24/11 12:52Z : D_max ancré à 3,334 j) : fenêtre [24/11 10:21:26Z ; 27/11 10:21:26Z). Aucun verdict indépendant n'est possible avant le 27/11 10:21Z.
 **Risques sur ce premier verdict** : (1) moins de 70 déclenchements R-CP1 sur les 7 jours avant T0 (soit moins de 30 entrées attendues en 3 jours) = ARRÊT pour puissance insuffisante et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
@@ -222,8 +223,13 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 12:56Z | **Texte D + enveloppe de crédits de la génération 2, en un seul bloc** (R02, fichier 07acdbd1, registre 50720155) : essais 171 (G2-3), 172 (G2-1), 173 (G2-2) ; exploration en parallèle du pilote sur 24 pools disjoints tirés par la suite de la permutation ancrée ; au plus 50 000 crédits Free, arrêt dur à 49 000 ; même T0 que le pilote ; mot maximal GO_PILOTE. À présenter au propriétaire SEULEMENT si A2r réussit et que les fiches du pilote sont ancrées. Le code de cette exploration reste à écrire puis à auditer. Note R01 v0.2 (sha f521c4ae, commit a33cd2b) : provenance CONFORME (registre R02 104c9a24). | messages R02 et R01 | déclaré |
 
+| 24/11 14:52Z | **Diagnostic d'A2 remis en cause** (documentation Helius lue le 24/11, copies dans le scratchpad R04). Helius définit −32015 comme « Transaction version (1) is not supported by the requesting client. Please use "maxSupportedTransactionVersion" in your request » : une requête getTransactionsForAddress complète réglée sur la version 0 échoue dès qu'elle touche une transaction v1 (Agave 4.2). Le pilote envoie 0 et classe « not supported » en refus de méthode ; le filtre par date est documenté. Les 44 appels de création (transactions anciennes) ont réussi, le premier appel sur la semaine récente a échoué. Le hachage du message (61294f25e789) ne correspond à aucune variante testée du texte documenté : hypothèse forte, non prouvée. Si elle est juste, 0.2.4 (filtre par slot, version 0) échouerait pareil et l'unique relance A2r serait perdue. R02 et R03 saisis : version 1 + enregistrement du texte d'erreur, couverture par la note d9b63ddf et le texte C à trancher par R02 avant tout lancement. | pages helius.dev transaction-v1, getTransactionsForAddress ; rpc.py:45 et 124-131 (branche R03 58f10f2) | vérifié (documentation, code) ; cause non prouvée |
+
+| 24/11 14:52Z | **Exigence des sorties gelées (calcul R04, non audité)**. Le test TP/SL porte sur la valeur de revente, frais de pool et impact des deux jambes inclus ; les 0,42 % de frais fixes sont en dehors. Juste après l'achat, la valeur de revente part de ≈ −0,7 % (2 × 0,25 % de frais + 0,2 % d'impact). Sans avantage : probabilité de toucher +2 % avant −2 % ≈ 1,3 / 4,0 = 32,5 % (horloge de 30 min ignorée) ; net si TP ≈ +1,58 %, net si SL ≈ −2,42 % ; taux de réussite requis : 60,5 % pour un net nul, 73 % pour +0,5 %. Ce n'est PAS un obstacle de plus : c'est la même barre de 1,12 % (mouvement favorable moyen requis) exprimée en taux de réussite. Élargir les sorties ne baisse pas cette barre, cela augmente la dispersion, donc le nombre de positions nécessaires. Aucune modification des fiches de génération 2 n'est justifiée par ce seul calcul. | cpmmcost model.py:238, cpmmprereg rule.py:108-128 (branche R01) | calcul R04, non audité |
+
 ## 5. Incidents
 
+- 24/11 13:24Z–14:44Z : la limite d'usage de 5 heures du compte a été atteinte. Les deux recherches lancées par R04 (≈ 1,7 M jetons de sous-agents) y ont fortement contribué ; R03 s'est arrêté à 13:24Z en pleine préparation de 0.2.4, et 11 des 17 sous-agents de R04 ont échoué. Relance de R03 à 14:44Z. Leçon : R04 ne lance plus de recherche lourde pendant que le chemin critique (R03, R02) travaille.
 - 24/11 11:46Z : Helius refuse un filtre par date sur getTransactionsForAddress (−32015) ; STOP de la partie A2 (10 crédits).
 - 24/11 12:45Z : constat R04 : R02 et R03 inactifs depuis 11:49Z et 11:52Z, cpmmpilot 0.2.4 non poussé ; R01 inactif depuis le 23/11 22:23Z. Relancés à 12:51Z.
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
