@@ -14,7 +14,7 @@ Légende des preuves :
 | Rendement net moyen après tous frais | NON MESURÉ | MASTER −4,26 % [−6,69 ; −1,95] ; les autres de −4,59 % à −10,29 % |
 | Profit factor, drawdown | NON MESURÉ | MASTER : 0,42 ; 5,45 mises |
 | Intervalle de confiance, écart au témoin | NON MESURÉ | écart au placebo +1,23 % [−2,23 ; +4,82], non significatif |
-| Hypothèses éliminées | 0 | 7, dans leur forme testée |
+| Hypothèses éliminées | 0 par un test ; **1 écartée pour infaisabilité** (G3-1, voir § 4, 24/11 12:55Z) | 7, dans leur forme testée |
 | Hypothèses en test indépendant | 2 (R-CP1, B1) : fenêtre ouverte à T0 = 24/11 10:21:26Z sur 24 pools ; aucune position encore lue | — |
 
 **Prochain obstacle concret** : la relance unique A2r (comptage des déclenchements sur les 7 jours avant T0, calcul de la durée D, gel des fiches). Responsable : R03 (cpmmpilot 0.2.4), puis R02 (audit), puis R03 (lancement).
@@ -217,6 +217,10 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | 24/11 12:54Z | **Note R01 « causes des pertes et hypothèses »** (T-R01-7, v0.1 sha 276bc716, commit d9fb838 ; v0.2 en a33cd2b après deux précisions de provenance de R02). Aucun résultat économique nouveau ; lecture des chiffres déjà audités : (1) le brut de W1 est nul ou négatif (MASTER −0,72 % [−3,11 ; +1,65]) et les coûts font 83 % de la perte (≈ 89 % avec le loyer perdu) : cause dominante = coût d'exécution sur la courbe LaunchLab ; (2) barre à franchir : 3,65 % sur LaunchLab, 1,12 % sur CPMM 0,25 % à 100 SOL (0,76 % avec une priorité de 10 000 lamports ; 2,63 % dès le palier 1 %) ; (3) il faudrait observer ≈ 1,6 % brut par position sur CPMM ; (4) familles écartées PAR LE CALCUL de la barre, sans essai : B2, E1, D3/C-E, H3, H2, tout pool CPMM ≥ 1 % ; (5) une hypothèse nouvelle, N1 : fournir la liquidité pour toucher le frais au lieu de le payer — aucun modèle de coût audité, change la nature de l'activité, décision du propriétaire requise. | branche R01 d9fb838 / a33cd2b, sha recalculé par R04 | vérifié (existence, sha) ; contenu déclaré R01 |
 
 | 24/11 12:54Z | **Inventaire des données détenues par R03** (commit bfffe5e, sha 489e76da). W1 : 2 273 pools, 322 146 signatures dont 185 861 échecs sans corps, 136 285 corps complets (frais, statut, soldes, logs ; 48 448 avec prix de priorité) ; brut sur GCS, dérivés (0,93 Go) seulement dans le conteneur. Données CPMM des étages a et b : seulement dans le conteneur. Pilote du 24/11 : U2, liste L, 44 pages de création, registres et comptage dans le dépôt ; pages de l'instantané et des coffres (46 Mo) seulement dans le conteneur. | branche R03 bfffe5e, sha recalculé par R04 | vérifié (existence, sha) ; contenu déclaré R03 |
+
+| 24/11 12:55Z | **G3-1 (écart entre pools frères) : infaisable avec la source actuelle.** Dans l'instantané U-2 de 10:21Z (0 crédit) : 73 mints ont au moins 2 pools CPMM appariés à WSOL, sur 152 026 mints ; 0 mint a 2 pools dans la liste L des 259 pools ≥ 100 SOL ; 0 des 24 pools du pilote a un pool frère. Il en fallait au moins 10. Limite : les pools frères sur d'autres DEX ou appariés à USDC ne sont pas visibles sans nouvelle collecte. Aucun essai consommé. | message R03 12:55Z ; détail chez R02 | déclaré (R03) |
+
+| 24/11 12:56Z | **Texte D + enveloppe de crédits de la génération 2, en un seul bloc** (R02, fichier 07acdbd1, registre 50720155) : essais 171 (G2-3), 172 (G2-1), 173 (G2-2) ; exploration en parallèle du pilote sur 24 pools disjoints tirés par la suite de la permutation ancrée ; au plus 50 000 crédits Free, arrêt dur à 49 000 ; même T0 que le pilote ; mot maximal GO_PILOTE. À présenter au propriétaire SEULEMENT si A2r réussit et que les fiches du pilote sont ancrées. Le code de cette exploration reste à écrire puis à auditer. Note R01 v0.2 (sha f521c4ae, commit a33cd2b) : provenance CONFORME (registre R02 104c9a24). | messages R02 et R01 | déclaré |
 
 ## 5. Incidents
 
