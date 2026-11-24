@@ -191,6 +191,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 10:32Z | **Liste U-2 finale ANCRÉE** (U2.json 3ca0260a, registre 0e79511d) : 24 pools, T0 24/11 10:21:26Z. R02 a rejoué les 44 vérifications de création à l'identique. Étape 1, partie A, autorisée : comptage sur 24 h, contrôle du point (2), puis arrêt. Règle de D fixée avant comptage (e294655a) : D = min(max(D_155, 7), ⌊D_max⌋, 60) ; si l'attendu est < 30 entrées, ARRÊT et décision du propriétaire. | registre R02 | déclaré |
 
+| 24/11 11:46Z | Étape 1 : points (1) et (2) franchis (déclaré ; feu vert R02 pour la suite). cpmmpilot 0.2.3 et driver A2 au PASS (registre 9b26fc7a). Feu vert pour les points (3) et (4) : comptage des déclencheurs sur 7 jours (≈ 22 000 crédits estimés), calcul de D, contrôle du budget < 49 000, fiches de gel, puis arrêt. Essais 169 et 170 non encore consommés. | registre R02 | déclaré |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
