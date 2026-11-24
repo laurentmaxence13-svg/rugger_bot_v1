@@ -274,6 +274,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 18:56Z | **Le propriétaire signe la seconde et dernière mesure T2** (texte (b) mot pour mot, session R04, 18:56:59Z) : plafond cumulé 1 500 crédits Free (186 consommés), une relecture unique par réponse tronquée, arrêt définitif sur tout autre incident, publication des comptes obtenus. Relayé à R02 (vérification à la source, audit de 0.2.7, GO) et à R03. Le texte du pilote G2-3 n'est pas encore présenté : la durée D attend la table par pool et par jour (règle R02 4e08d2a2). | journal de session R04 | vérifié (source) |
 
+| 24/11 19:01Z | **Durée du pilote G2-3 fixée : D = 12 jours** (règle R02 4e08d2a2 appliquée à la table par pool et par jour, R03 aa5a168 : les 4 pools retenus déclenchent chaque jour, 28 pool-jours sur 28 ; r = 4,0 ; 48 pool-jours attendus ≥ 45 ; P(≥ 30) = 1,00). Pools : AEZjoU, Gms3Ma, G8kgi7, GdxFyc (2yLFom exclu, 2 déclenchements). Fenêtre [24/11 10:21:26Z ; 06/12 10:21:26Z) ; essai 169 ; ≤ 33 000 crédits Free (≈ 21 800 estimés). Texte corrigé présenté au propriétaire. | registre R02 ; branche R03 aa5a168 | déclaré (R02) |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
