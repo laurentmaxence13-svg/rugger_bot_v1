@@ -290,6 +290,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 21:56Z | **N1 ÉVALUABLE sur 3 pools** (n1rot 0.2 exécuté une fois hors ligne, 0 crédit, feu vert R02 ; R03 98156b7, sortie 6b9b02a9). Rotation médiane sur 7 jours pré-T0 contre le seuil du pool : AEZjoU 26,5 % / 21,9 % (retenu), Gms3Ma 0,19 % / 21,9 % (exclu), G8kgi7 128,5 % / 21,9 % (retenu), GdxFyc 29,1 % / 23,2 % (retenu) ; liste c72bd586. Condition nécessaire seulement : la LVR n'est pas comptée ; deux pools passent avec une marge faible (× 1,2). Aucun rendement LP calculé. Audits R02 : PASS g23five 0.2, lpcost 0.2, n1rot 0.2 ; n1verdict 0.2.1 corrigé (97170b9). Prochaine étape : ancrage des fiches N1 v0.5 et G2-3 v0.6 avant le 06/12 10:21:26Z. | branche R03 98156b7 | vérifié (commit) ; chiffres déclarés |
 
+| 24/11 22:29Z | **Texte G2-3 du propriétaire collé dans la session R03** (22:29:08Z, event b7b839b2 ; AUTORISATION_G23.txt sha 3d6999ec, commit R03 ba45cf8). Bloqueur levé. Suite : ancrage du texte par R02, cpmmpilot 0.2.8.1 avec ce sha, audit, ancrage des fiches G2-3 et N1, collecte unique après le 06/12 10:21:26Z. | message R03 | déclaré |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
