@@ -667,3 +667,56 @@ def test_live_rpc_429_is_a_stop_without_retry_even_with_spacing(tmp_path, monkey
     with pytest.raises(rpc.RpcError, match='rate_limited_429'):
         u2.run_list(_client(live, tmp_path / 'x', 'u2', B.U2_CAP), tmp_path / 'x' / 'u2', t0_time=spec['t0_time'])
     assert not (tmp_path / 'x' / 'u2' / 'LIST_L.json').exists()
+
+
+# -- 0.2.3: the D rule of R02 (note e294655a) and the count that never writes a signature ---------------------------
+def _count(t):
+    return dict(triggers=t, days=7, outcomes_computed=False)
+
+
+def test_d_rule_of_r02():
+    r = step1.d_rule(_count(70), 30.5)                 # D_155 = 16 (floor(70 x 16 / 7) = 160 >= 155; 15 -> 150)
+    assert (r['d_155'], r['d_days'], r['expected_entries']) == (16, 16, 160)
+    assert r['power_stop'] == 'POWERED'
+    assert step1.d_rule(_count(70), 12.9)['d_days'] == 12                 # floor(D_max)
+    assert step1.d_rule(_count(1000), 30)['d_days'] == 7                  # at least 7 days
+    assert step1.d_rule(_count(5), 100)['d_days'] == 60                   # capped at 60
+    z = step1.d_rule(_count(0), 20.2)
+    assert z['d_155'] == 'inf' and z['d_days'] == 20 and z['expected_entries'] == 0
+    assert z['power_stop'] == 'UNDERPOWERED_DECLARED_OWNER_DECIDES'
+    low = step1.d_rule(_count(20), 40)                 # 20 x 40 / 7 = 114 -> below 155, still >= 30
+    assert low['d_days'] == 40 and low['power_stop'] == 'BELOW_POWER_TARGET_PUBLISHED_AS_SUCH'
+    for t in (1, 3, 22, 31, 155, 156, 1085):
+        d = step1.d_rule(_count(t), 1000)['d_155']
+        assert (t * d) // 7 >= 155 and (d == 1 or (t * (d - 1)) // 7 < 155)
+    with pytest.raises(step1.Step1Stop, match='d_below_one_day'):
+        step1.d_rule(_count(70), 0.9)
+
+
+def test_freeze_sheets_carry_the_d_rule(tmp_path):
+    u2_doc = dict(t0_slot=5, t0_time=1_000_000, sha_l='c' * 64, selected=[dict(pool='P')])
+    rule = step1.d_rule(_count(70), 30.5)
+    step1.freeze_sheets(tmp_path, u2_doc=u2_doc, count_doc=dict(r_hat=3.0), triggers=dict(rcp1=_count(70), b1=_count(9)),
+                        d_days=rule['d_days'], code_sha={}, d_rule=rule)
+    for name in ('RCP1', 'B1'):
+        sheet = json.loads((tmp_path / ('FICHE_GEL_%s.json' % name)).read_text())
+        assert sheet['d_rule'] == rule and sheet['d_days'] == 16
+        assert sheet['cut_time'] == 1_000_000 + 16 * 86_400 // 2
+    with pytest.raises(step1.Step1Stop, match='d_rule_differs'):
+        step1.freeze_sheets(tmp_path / 'x', u2_doc=u2_doc, count_doc=dict(r_hat=3.0),
+                            triggers=dict(rcp1=_count(70), b1=_count(9)), d_days=15, code_sha={}, d_rule=rule)
+
+
+def test_count_24h_ignores_and_never_writes_signatures_after_t0(tmp_path):
+    chain, spec = fixtures.build(n_pools=3, specials=False)
+    t0 = spec['t0_time']
+    chain.slot = 10 ** 12                              # the chain goes on after T0 (paginated, then ignored)
+    pools = [p['pool'] for p in spec['pools']]
+    after = [t for p in pools for t in chain.history[p] if t['blockTime'] >= t0]
+    assert after
+    doc = step1.count_24h(_client(chain, tmp_path, 'step1', 10_000), pools, t0_time=t0)
+    for pool in pools:
+        assert doc['per_pool'][pool] == sum(1 for t in chain.history[pool] if t0 - 86_400 <= t['blockTime'] < t0)
+    text = json.dumps(doc)
+    assert not any(t['transaction']['signatures'][0] in text for p in pools for t in chain.history[p])
+    assert set(doc) == {'per_pool', 'r_hat', 'statistic', 'point2', 'd_max_days'}

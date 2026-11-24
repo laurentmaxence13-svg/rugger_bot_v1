@@ -9,6 +9,7 @@
 """
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from cpmmprereg import rule as RCP1
@@ -112,12 +113,36 @@ def trigger_counts(out, selected, *, t0_time, t0_slot):
 
 
 # -- (3) ---------------------------------------------------------------------------------------------------------------
-def freeze_sheets(out, *, u2_doc, count_doc, triggers, d_days, code_sha):
+D_TARGET_ENTRIES, D_MIN, D_CAP = 155, 7, 60          # R02 note e294655a (24/11), fixed before any step-1 call
+
+
+def d_rule(trigger_count_rcp1, d_max_days):
+    """R02 note e294655a. T = R-CP1 triggers over [T0 - 7 d ; T0). D_155 = smallest integer D with floor(T x D / 7) >= 155
+    (infinite if T = 0). D = min(max(D_155, 7), floor(D_max), 60). expected = cpmmprereg.expected_entries(count, D);
+    power_stop from cpmmprereg. UNDERPOWERED -> the caller STOPS before the sheets (no trial, owner referred)."""
+    t = trigger_count_rcp1['triggers']
+    if t > 0:
+        d155 = -(-D_TARGET_ENTRIES * 7 // t)       # ceil(155 x 7 / T): floor(T x D / 7) >= 155 <=> T x D >= 1 085
+        lower = max(d155, D_MIN)
+    else:
+        d155, lower = None, D_CAP
+    d = min(lower, math.floor(d_max_days), D_CAP)
+    if d < 1:
+        raise Step1Stop('d_below_one_day')
+    expected = RCP1.expected_entries(trigger_count_rcp1, d)
+    return dict(rule='R02 e294655a: D = min(max(D_155, 7), floor(D_max), 60)', t_rcp1=t,
+                d_155='inf' if d155 is None else d155, d_max_days=d_max_days, d_days=d, expected_entries=expected,
+                power_stop=RCP1.power_stop(expected))
+
+
+def freeze_sheets(out, *, u2_doc, count_doc, triggers, d_days, code_sha, d_rule=None):
     common = dict(schema=SCHEMA, t0_slot=u2_doc['t0_slot'], t0_time=u2_doc['t0_time'], sha_l=u2_doc['sha_l'],
                   pools=[r['pool'] for r in u2_doc['selected']], d_days=d_days,
                   window=[u2_doc['t0_time'], u2_doc['t0_time'] + int(d_days * DAY)],
                   cut_time=u2_doc['t0_time'] + int(d_days * DAY) // 2,      # R02 21:57Z: (D x 86 400) // 2, anchored with the sheet
-                  r_hat=count_doc['r_hat'], code=code_sha, frozen_rules=CC.frozen_check())
+                  r_hat=count_doc['r_hat'], code=code_sha, frozen_rules=CC.frozen_check(), d_rule=d_rule)
+    if d_rule is not None and d_rule['d_days'] != d_days:
+        raise Step1Stop('d_rule_differs_from_d_days')
     sheets = {}
     for name, rule, trial in (('RCP1', 'cpmmprereg 0.2', 169), ('B1', 'cpmmb1 0.1.1', 170)):
         doc = dict(common, hypothesis=name, rule=rule, trial=trial,

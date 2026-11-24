@@ -62,6 +62,14 @@ MUTANTS = [
     ('sheet_cut_not_middle', 'step1.py', "int(d_days * DAY) // 2,", "int(d_days * DAY) // 3,"),
     ('decision_slot_missing', 'step1.py', "zero_sale(dict(r, decision_slot=line.swaps[r['decision_index']].slot), failures)", "zero_sale(r, failures)"),
     ('latency_sensitivity_4_slots', 'step1.py', 'latency_10_slots=dict(latency_slots=CC.SENSITIVITY_LATENCY_SLOTS)', 'latency_10_slots=dict(latency_slots=CC.LATENCY_SLOTS)'),
+    # 0.2.3: D rule (R02 e294655a)
+    ('d_min_7_ignored', 'step1.py', '        lower = max(d155, D_MIN)\n', '        lower = d155\n'),
+    ('d_cap_60_ignored', 'step1.py', '    d = min(lower, math.floor(d_max_days), D_CAP)\n', '    d = min(lower, math.floor(d_max_days))\n'),
+    ('d_max_ignored', 'step1.py', '    d = min(lower, math.floor(d_max_days), D_CAP)\n', '    d = min(lower, D_CAP)\n'),
+    ('d155_floor_not_ceil', 'step1.py', '        d155 = -(-D_TARGET_ENTRIES * 7 // t)', '        d155 = D_TARGET_ENTRIES * 7 // t'),
+    ('d155_target_150', 'step1.py', 'D_TARGET_ENTRIES, D_MIN, D_CAP = 155, 7, 60', 'D_TARGET_ENTRIES, D_MIN, D_CAP = 150, 7, 60'),
+    ('d_rule_not_in_sheets', 'step1.py', 'frozen_rules=CC.frozen_check(), d_rule=d_rule)', 'frozen_rules=CC.frozen_check())'),
+    ('d_rule_mismatch_unchecked', 'step1.py', "        raise Step1Stop('d_rule_differs_from_d_days')\n", '        pass\n'),
     # 0.2: live transport (R02 note fb28705b) -- gated, no host or key read, no retry, nothing echoed
     ('release_authorizes_another_sha', 'rpc.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})",
      "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1', '0' * 64})"),
@@ -122,7 +130,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.2', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.3', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))
