@@ -116,6 +116,7 @@ def test_stop_on_429_and_no_signature_in_the_output(tmp_path, monkeypatch, capsy
 
 def test_truncated_response_stops_and_publishes_the_partial(tmp_path, monkeypatch):
     import http.client
+    monkeypatch.setattr(A, 'RETRY_ON_TRUNCATED', 0)
     n = dict(k=0)
 
     def answer(b):
@@ -214,7 +215,22 @@ def test_retry_never_on_429(tmp_path, monkeypatch):
 
 
 def test_retry_0_stops_at_the_first_truncation(tmp_path, monkeypatch):
-    assert A.RETRY_ON_TRUNCATED == 0                          # the shipped default, fixed by the signed text
+    assert A.RETRY_ON_TRUNCATED == 1                          # fixed by the owner's signed text (b)
+    monkeypatch.setattr(A, 'RETRY_ON_TRUNCATED', 0)
     answer, n = _seq({3: 'T'})
     out, res = _run(tmp_path, monkeypatch, answer)
     assert res['verdict_run'] == 'STOP' and n['k'] == 3 and res['retries'] == 0 and res['partial']['pools_done'] == 2
+
+
+def test_t2bis_text_is_the_anchored_one():
+    raw = (HERE / 'AUTORISATION_T2_BIS.txt').read_bytes()
+    import hashlib
+    assert hashlib.sha256(raw).hexdigest() == A.T2BIS_TEXT_SHA256 and len(raw) == 533
+    assert 'relue une seule fois' in raw.decode('utf-8')
+
+
+def test_run_refused_if_the_t2bis_text_is_not_the_anchored_one(tmp_path, monkeypatch):
+    monkeypatch.setattr(A, 'T2BIS_TEXT_SHA256', '0' * 64)
+    with pytest.raises(SystemExit, match='t2bis_text_not_anchored'):
+        _run(tmp_path, monkeypatch, lambda b: dict(jsonrpc='2.0', id=b['id'], result=[]))
+    assert not (tmp_path / 'out').exists()

@@ -1,0 +1,94 @@
+{
+ "day_rule": "R02 4e08d2a2: k = (t - (T0 - 7 x 86 400)) // 86 400, k = 0..6 (7 complete days aligned on T0)",
+ "note": "2yLFom included for information only (excluded by the rule: 2 < 3)",
+ "per_pool": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "b3": 1.0,
+   "per_day_k": [
+    0,
+    0,
+    2,
+    0,
+    0,
+    0,
+    0
+   ],
+   "total": 2
+  },
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "b3": 2.0,
+   "per_day_k": [
+    18,
+    19,
+    20,
+    19,
+    18,
+    17,
+    17
+   ],
+   "total": 128
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "b3": 6.0,
+   "per_day_k": [
+    9,
+    11,
+    18,
+    20,
+    12,
+    8,
+    17
+   ],
+   "total": 95
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "b3": 1.0,
+   "per_day_k": [
+    1,
+    5,
+    2,
+    2,
+    3,
+    4,
+    4
+   ],
+   "total": 21
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "b3": 1.0,
+   "per_day_k": [
+    17,
+    16,
+    15,
+    15,
+    15,
+    14,
+    13
+   ],
+   "total": 105
+  }
+ },
+ "schema": "g2-3-daily-v2",
+ "stamp": "COMPTAGE SEUL - aucun rendement, aucun essai",
+ "t0": 1795515686,
+ "total_per_day_k": [
+  45,
+  51,
+  57,
+  56,
+  48,
+  43,
+  51
+ ],
+ "totals_equal_f53f79f": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": true,
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": true,
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": true,
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": true,
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": true
+ },
+ "window": [
+  1794910886,
+  1795515686
+ ]
+}

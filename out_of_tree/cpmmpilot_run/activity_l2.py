@@ -28,9 +28,11 @@ RESULT = 'ACTIVITY_RESULT.json'
 PARTIAL = 'PARTIAL_COUNTS.json'
 # Option (b) of 24/11 (R02 1d903d5a): 1 = at most ONE re-read of the SAME call after RpcError('response_truncated'),
 # charged and logged; 0 = STOP at the first truncation. FIXED by the owner's signed text before the run.
-RETRY_ON_TRUNCATED = 0
+RETRY_ON_TRUNCATED = 1                                   # owner's signed text (b), 24/11 18:56:59Z
 PRIOR_RESULT_SHA256 = '1773d01f615792a8c485746b167e0c1db5c90a0da544e1fac1cb7171b7814635'    # v1 STOP of 18:22:22Z
 PRIOR_LEDGER_SHA256 = '06533afb9023157342d6266bebda222719e6d3a047123aedbe3e13236ee027e8'    # 186 credits
+T2BIS_TEXT_SHA256 = 'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d'      # owner (b), R02 f63275d2
+T2BIS_TEXT = 'AUTORISATION_T2_BIS.txt'
 N50_THRESHOLD = 50
 P_POINT, P_LOW, P_HIGH = (24, 44), 0.388, 0.696
 VERDICT_LIMIT = 80
@@ -116,6 +118,8 @@ def main():
         raise SystemExit('inputs_not_anchored')
     if sha_of(a.prior_result) != PRIOR_RESULT_SHA256 or sha_of(a.prior_ledger) != PRIOR_LEDGER_SHA256:
         raise SystemExit('prior_t2_not_the_anchored_stop')
+    if sha_of(Path(__file__).resolve().parent / T2BIS_TEXT) != T2BIS_TEXT_SHA256:
+        raise SystemExit('t2bis_text_not_anchored')
     prior_credits = json.loads(a.prior_ledger.read_bytes())['credits']
     cap = B.T2_CAP - prior_credits
     ldoc = json.loads(a.list_l.read_bytes())
@@ -134,7 +138,7 @@ def main():
     res = dict(schema='t2-activity-v1', t0_prime=t0p, window=[t0p - step1.DAY, t0p], list_l_sha256=LIST_L_SHA256,
                sha_l=SHA_L, u2_sha256=U2_SHA256, driver_sha256=sha_of(__file__),
                groups=dict(valid=len(valid), invalid=len(invalid), untested=len(untested)),
-               prior_credits=prior_credits, cap_this_run=cap)
+               prior_credits=prior_credits, cap_this_run=cap, t2bis_text_sha256=T2BIS_TEXT_SHA256)
     try:
         cnt = step1.count_24h(client, pools, t0_time=t0p, checkpoint=a.out / PARTIAL)
         per_pool = cnt['per_pool']

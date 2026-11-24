@@ -30,7 +30,8 @@ M = [
     ('retry_on_429', "            if self.retry != 1 or str(exc) != 'response_truncated':", "            if self.retry != 1:"),
     ('retry_not_charged', "            return self.client.call(method, params)          # a second truncation propagates: STOP",
      "            return self.client.transport.request(method, params)          # re-read NOT charged"),
-    ('retry_default_1', "RETRY_ON_TRUNCATED = 0\n", "RETRY_ON_TRUNCATED = 1\n"),
+    ('retry_set_0', "RETRY_ON_TRUNCATED = 1  ", "RETRY_ON_TRUNCATED = 0  "),
+    ('t2bis_not_checked', "        raise SystemExit('t2bis_text_not_anchored')", "        pass"),
     ('verdict_from_180', "                   n50=n_eff(per_pool, valid, invalid, untested),", "                   n50=n_eff(per_pool, valid, invalid, untested, threshold=180),"),
     ('descriptive_verdict_kept', "        d.pop('verdict')\n", ""),
     ('descriptive_missing', "                   descriptive_thresholds=descriptive_thresholds(per_pool, valid, invalid, untested),\n", ""),
@@ -47,7 +48,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, old, new in [('_base', None, None)] + M:
         d = Path(tmp) / name
         d.mkdir()
-        for f in ('activity_l2.py', 'test_activity_l2.py'):
+        for f in ('activity_l2.py', 'test_activity_l2.py', 'AUTORISATION_T2_BIS.txt'):
             shutil.copy(HERE / f, d / f)
         for sub in ('TIME1R_20261124T102126Z', 'TIME2_20261124T102839Z', 'T2_20261124T182222Z'):
             (d / sub).symlink_to(HERE / sub)

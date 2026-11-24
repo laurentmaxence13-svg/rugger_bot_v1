@@ -1,7 +1,7 @@
 {
  "base_guard": "PASS",
- "mutants": 22,
- "killed": 22,
+ "mutants": 23,
+ "killed": 23,
  "results": {
   "threshold_49": "KILLED",
   "p_low_0_5": "KILLED",
@@ -21,7 +21,8 @@
   "retry_twice": "KILLED",
   "retry_on_429": "KILLED",
   "retry_not_charged": "KILLED",
-  "retry_default_1": "KILLED",
+  "retry_set_0": "KILLED",
+  "t2bis_not_checked": "KILLED",
   "verdict_from_180": "KILLED",
   "descriptive_verdict_kept": "KILLED",
   "descriptive_missing": "KILLED"
