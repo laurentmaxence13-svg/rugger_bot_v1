@@ -286,6 +286,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 21:27Z | **Décision R04-6 arrêtée (N1)**, sous conditions R02 : position LP notionnelle de 0,5 % de la réserve WSOL (10 SOL refusé par R02 : ≈ 5 % d'impact), ouverte une fois au début et fermée une fois à la fin des 12 jours, par pool ; mot sur l'écart à la détention net de tous les coûts (C1), coûts répartis sur les 12 pools-jours (C2) ; bootstrap par blocs de 2 jours consécutifs (g23five 0.2) ; seuil de rotation recalculé en code pour cette configuration avant toute mesure. Portée déclarée : condition nécessaire de rentabilité, taille notionnelle, aucun capital. Raison : à 0,1 SOL renouvelé chaque jour, le point mort exige ≈ 419 % de rotation par jour (frais fixes), et ≈ 150-200 % à 0,5 % de la réserve renouvelé chaque jour. Travail R01 ≈ 1 jour avec audits. | avis R02 ancré | déclaré (R02), décision R04 |
 
+| 24/11 21:45Z | **Code N1 et G2-3 livrés hors ligne par R01** (en audit R02, rien d'exécuté) : g23five 0.2 (blocs de 2 jours ; 0.1.1 de G2-3 intact) f5a3edc ; lpcost 0.2 (position continue de 0,5 % de la réserve, écart à la détention net) et n1rot 0.2 (seuil R04-6 calculé en code : ≈ 25 %/j de rotation à 100 SOL, 22 % à 200 SOL, synthétique) 14d36e0 ; n1verdict 0.2 1f451f0 ; fiche N1 v0.4 (c18dd6a2). R03 : cpmmpilot 0.2.8 et driver G2-3 poussés (472ed76, plafond 32 340), en attente du texte du propriétaire dans sa session. | branches R01 1f451f0, R03 472ed76 | vérifié (commits) ; contenu déclaré |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
