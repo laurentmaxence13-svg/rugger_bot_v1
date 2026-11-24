@@ -606,3 +606,64 @@ def test_u2_second_time_needs_the_anchored_sha_and_equals_the_one_shot_run(tmp_p
     assert two['anchored_sha_l'] == second['sha_l'] == one['sha_l']
     ledger = json.loads((tmp_path / 'b' / 'l_u2.json').read_text())        # both times on ONE ledger, resumed
     assert ledger['credits'] == two['budget']['credits'] > second['budget']['credits']
+
+
+# -- 0.2.2: spacing of the live transport (R02 note 41c20a16), simulated clock -----------------------------------------
+class _Clock:
+    def __init__(self):
+        self.now, self.slept = 1000.0, []
+
+    def __call__(self):
+        return self.now
+
+    def sleep(self, s):
+        self.slept.append(s)
+        self.now += s
+
+
+def test_live_rpc_spaces_every_send_by_at_least_0_2_s(tmp_path, monkeypatch):
+    f = _authorized(tmp_path, monkeypatch)
+    clock = _Clock()
+    sent = []
+
+    def answer(b):
+        sent.append(clock.now)
+        return dict(jsonrpc='2.0', id=b['id'], result=1)
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener(answer), clock=clock, sleep=clock.sleep)
+    assert rpc.MIN_INTERVAL_S == 0.2
+    live.request('getSlot', [])                                          # first send: no wait
+    assert clock.slept == []
+    for _ in range(5):                                                   # back-to-back calls are spaced
+        live.request('getMultipleAccounts', [[], {}])
+    clock.now += 1.0                                                     # a slow caller is not slowed further
+    live.request('getSlot', [])
+    gaps = [b - a for a, b in zip(sent, sent[1:])]
+    assert all(g >= 0.2 - 1e-9 for g in gaps) and len(sent) == 7
+    assert len(clock.slept) == 5 and all(abs(s - 0.2) < 1e-9 for s in clock.slept)
+    assert gaps[-1] >= 1.0
+
+
+def test_live_rpc_429_is_a_stop_without_retry_even_with_spacing(tmp_path, monkeypatch):
+    import urllib.error
+    f = _authorized(tmp_path, monkeypatch)
+    clock = _Clock()
+    op = _Opener(urllib.error.HTTPError(ENDPOINT, 429, 'Too Many', {}, None))
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=op, clock=clock, sleep=clock.sleep)
+    client = _client(live, tmp_path, 'u2', B.U2_CAP)
+    with pytest.raises(rpc.RpcError, match='rate_limited_429'):
+        client.call('getMultipleAccounts', [[], {}])
+    assert len(op.seen) == 1 and client.budget.credits == 1             # charged once, sent once, never resent
+    chain, spec = fixtures.build(n_pools=24)
+    chain.slot = spec['t0_slot']
+    n = dict(k=0)
+
+    def answer(b):
+        n['k'] += 1
+        if b['method'] == 'getMultipleAccounts':
+            raise urllib.error.HTTPError(ENDPOINT, 429, 'Too Many', {}, None)
+        return dict(jsonrpc='2.0', id=b['id'], result=json.loads(json.dumps(chain.request(b['method'], b['params']))))
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=_Opener(answer), clock=clock, sleep=clock.sleep)
+    (tmp_path / 'x').mkdir()
+    with pytest.raises(rpc.RpcError, match='rate_limited_429'):
+        u2.run_list(_client(live, tmp_path / 'x', 'u2', B.U2_CAP), tmp_path / 'x' / 'u2', t0_time=spec['t0_time'])
+    assert not (tmp_path / 'x' / 'u2' / 'LIST_L.json').exists()

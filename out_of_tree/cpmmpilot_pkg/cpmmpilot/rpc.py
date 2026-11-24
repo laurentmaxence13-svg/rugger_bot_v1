@@ -10,6 +10,7 @@ the endpoint or the provider's message."""
 import base64
 import hashlib
 import json
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -40,6 +41,7 @@ AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453
 PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSignaturesForAddress', 'getTransaction',
                  'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
 MAX_RESPONSE_BYTES = 256 * 1024 ** 2
+MIN_INTERVAL_S = 0.2           # 0.2.2 (R02 note 41c20a16): <= 5 requests/s, within Free's 10 req/s and 5 gPA/s
 REFUSAL_WORDS = ('plan', 'upgrade', 'not available', 'not supported', 'paid')
 METHOD_NOT_FOUND = -32601
 
@@ -66,7 +68,7 @@ def check_endpoint(endpoint):
 class LiveRpc:
     """JSON-RPC 2.0 over HTTPS. ``opener`` (tests): a callable (request, timeout) -> response with ``read(n)``."""
 
-    def __init__(self, endpoint=None, *, authorization_file=None, timeout_s=60, opener=None):
+    def __init__(self, endpoint=None, *, authorization_file=None, timeout_s=60, opener=None, clock=None, sleep=None):
         if authorization_file is None:
             raise RpcError('live_rpc_needs_an_anchored_authorization')
         try:
@@ -79,6 +81,9 @@ class LiveRpc:
         self.authorization_sha256 = digest
         self.timeout_s = timeout_s
         self._open = opener if opener is not None else urllib.request.build_opener().open
+        self._clock = clock if clock is not None else time.monotonic
+        self._sleep = sleep if sleep is not None else time.sleep
+        self._last_sent = None
         self.requests = 0
 
     def __repr__(self):
@@ -87,6 +92,11 @@ class LiveRpc:
     def request(self, method, params):
         if method not in PILOT_METHODS:
             raise RpcError('method_not_in_pilot')
+        if self._last_sent is not None:                                       # spacing: never two sends < 0.2 s apart
+            wait = self._last_sent + MIN_INTERVAL_S - self._clock()
+            if wait > 0:
+                self._sleep(wait)
+        self._last_sent = self._clock()
         self.requests += 1
         rid = self.requests
         body = json.dumps(dict(jsonrpc='2.0', id=rid, method=method, params=params)).encode()
