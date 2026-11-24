@@ -26,6 +26,9 @@ U2_SHA256 = '3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963'
 AUTH_FILE = 'AUTORISATION_T1_T2.txt'
 RESULT = 'ACTIVITY_RESULT.json'
 PARTIAL = 'PARTIAL_COUNTS.json'
+# Option (b) of 24/11 (R02 1d903d5a): 1 = at most ONE re-read of the SAME call after RpcError('response_truncated'),
+# charged and logged; 0 = STOP at the first truncation. FIXED by the owner's signed text before the run.
+RETRY_ON_TRUNCATED = 0
 PRIOR_RESULT_SHA256 = '1773d01f615792a8c485746b167e0c1db5c90a0da544e1fac1cb7171b7814635'    # v1 STOP of 18:22:22Z
 PRIOR_LEDGER_SHA256 = '06533afb9023157342d6266bebda222719e6d3a047123aedbe3e13236ee027e8'    # 186 credits
 N50_THRESHOLD = 50
@@ -80,6 +83,26 @@ def descriptive_thresholds(per_pool, valid, invalid, untested):
     return out
 
 
+class RetryOnceClient:
+    """Wraps rpc.Client: re-reads the SAME call once, only on 'response_truncated' and only if RETRY_ON_TRUNCATED == 1.
+    The re-read is charged by the same PilotBudget (Client.call charges before sending) and logged (retry=True)."""
+
+    def __init__(self, client, retry):
+        self.client, self.retry, self.budget, self.retries = client, retry, client.budget, 0
+
+    def call(self, method, params):
+        try:
+            return self.client.call(method, params)
+        except rpc.RpcError as exc:
+            if self.retry != 1 or str(exc) != 'response_truncated':
+                raise
+            self.retries += 1
+            with open(self.client.calls_log, 'a') as handle:
+                handle.write(rpc.canonical(dict(method=method, params_sha256=rpc.sha(params), retry=True,
+                                                after='response_truncated')) + '\n')
+            return self.client.call(method, params)          # a second truncation propagates: STOP
+
+
 def main():
     p = argparse.ArgumentParser()
     for k in ('--pkg', '--list-l', '--u2', '--gtfa-dir', '--out', '--prior-result', '--prior-ledger'):
@@ -105,8 +128,8 @@ def main():
     a.out.mkdir(parents=True)
     pools = [r['pool'] for r in lst]                      # exactly the 259 of L, in the order of L
     live = rpc.LiveRpc(ENDPOINT, authorization_file=a.pkg / AUTH_FILE, timeout_s=120)
-    client = rpc.Client(live, B.PilotBudget(a.out / 'ledger_t2.json', stage='t2', max_credits=cap),
-                        a.out / 'calls_t2.jsonl')
+    client = RetryOnceClient(rpc.Client(live, B.PilotBudget(a.out / 'ledger_t2.json', stage='t2', max_credits=cap),
+                                        a.out / 'calls_t2.jsonl'), RETRY_ON_TRUNCATED)
     t0p = int(time.time())
     res = dict(schema='t2-activity-v1', t0_prime=t0p, window=[t0p - step1.DAY, t0p], list_l_sha256=LIST_L_SHA256,
                sha_l=SHA_L, u2_sha256=U2_SHA256, driver_sha256=sha_of(__file__),
@@ -127,7 +150,7 @@ def main():
             part = json.loads((a.out / PARTIAL).read_text())
             res.update(partial=dict(per_pool=part['per_pool'], pools_done=part['pools_done'],
                                     pools_total=part['pools_total'], non_decisionnel=True))
-    res.update(budget=client.budget.snapshot())
+    res.update(budget=client.budget.snapshot(), retry_on_truncated=RETRY_ON_TRUNCATED, retries=client.retries)
     (a.out / RESULT).write_text(json.dumps(res, indent=1, sort_keys=True, default=str) + '\n')
     print(json.dumps({k: res.get(k) for k in ('verdict_run', 'n50', 'budget', 'error', 'tag', 't0_prime')}, default=str))
 

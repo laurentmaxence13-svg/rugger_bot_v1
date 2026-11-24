@@ -169,3 +169,52 @@ def test_prior_stop_must_be_the_anchored_one(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match='prior_t2_not_the_anchored_stop'):
         A.main()
     assert not (tmp_path / 'o').exists()
+
+
+# -- option (b): at most one re-read after a truncated response (R02 1d903d5a) --------------------------------------
+def _seq(script):
+    """answer() following a script per call number: 'T' truncated, '429', or a page of 1 signature."""
+    import http.client
+    n = dict(k=0)
+
+    def answer(b):
+        n['k'] += 1
+        step = script.get(n['k'])
+        if step == 'T':
+            return http.client.IncompleteRead(b'x', 9)
+        if step == '429':
+            return urllib.error.HTTPError('https://x', 429, 'Too Many', {}, None)
+        return dict(jsonrpc='2.0', id=b['id'], result=[dict(signature='Z', slot=1, blockTime=2_000_000_000 - 10, err=None)])
+    return answer, n
+
+
+def test_retry_one_truncation_then_success_counts_exactly(tmp_path, monkeypatch):
+    monkeypatch.setattr(A, 'RETRY_ON_TRUNCATED', 1)
+    answer, n = _seq({3: 'T'})
+    out, res = _run(tmp_path, monkeypatch, answer)
+    assert res['verdict_run'] == 'DONE' and res['retries'] == 1 and n['k'] == 260
+    assert res['budget']['credits'] == 260                   # the re-read is charged: 259 + 1
+    calls = [json.loads(l) for l in (out / 'calls_t2.jsonl').read_text().splitlines()]
+    assert sum(1 for c in calls if c.get('retry')) == 1 and len(res['per_pool']) == 259
+
+
+def test_retry_two_truncations_of_the_same_call_stop_with_partial(tmp_path, monkeypatch):
+    monkeypatch.setattr(A, 'RETRY_ON_TRUNCATED', 1)
+    answer, n = _seq({3: 'T', 4: 'T'})
+    out, res = _run(tmp_path, monkeypatch, answer)
+    assert res['verdict_run'] == 'STOP' and res['tag'] == 'response_truncated' and n['k'] == 4
+    assert res['partial']['pools_done'] == 2 and res['retries'] == 1
+
+
+def test_retry_never_on_429(tmp_path, monkeypatch):
+    monkeypatch.setattr(A, 'RETRY_ON_TRUNCATED', 1)
+    answer, n = _seq({3: '429'})
+    out, res = _run(tmp_path, monkeypatch, answer)
+    assert res['verdict_run'] == 'STOP' and res['tag'] == 'rate_limited_429' and n['k'] == 3 and res['retries'] == 0
+
+
+def test_retry_0_stops_at_the_first_truncation(tmp_path, monkeypatch):
+    assert A.RETRY_ON_TRUNCATED == 0                          # the shipped default, fixed by the signed text
+    answer, n = _seq({3: 'T'})
+    out, res = _run(tmp_path, monkeypatch, answer)
+    assert res['verdict_run'] == 'STOP' and n['k'] == 3 and res['retries'] == 0 and res['partial']['pools_done'] == 2
