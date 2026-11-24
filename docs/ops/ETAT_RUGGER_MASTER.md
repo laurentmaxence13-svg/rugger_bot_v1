@@ -264,6 +264,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 18:27Z | R02 : STOP de T2 vérifié (sha recalculés, registre 822d5edf) et conforme au texte du propriétaire. Erratum R02 : son audit n'a vu ni la non-conversion d'IncompleteRead ni l'absence d'écriture partielle des comptes. Recommandation (a) : seconde et dernière mesure T2 avec cpmmpilot 0.2.7 (troncature HTTP reconnue, comptes écrits après chaque pool, testés), dans le plafond cumulé de 1 500 (186 consommés + ≈ 570), sans nouvel essai automatique ; texte présenté au propriétaire. Le comptage G2 hors ligne déjà autorisé peut tourner. | registre R02 822d5edf | déclaré (R02) |
 
+| 24/11 18:28Z | R02 RÉVISE sa recommandation (registre 1d903d5a) : (b) plutôt que (a). Au taux d'incident observé (1 sur 186 appels), une seconde mesure d'≈ 570 appels sans reprise n'aboutirait qu'à ≈ 5 % ; avec une relecture par appel tronqué, ≈ 98 % (incidents supposés indépendants ; arithmétique recalculée par R04 : 4,7 % et 98,4 %). Effet sur la validité nul (relecture idempotente d'un comptage de signatures, crédit compté). Besoin ≈ 800 crédits, dans le plafond cumulé de 1 500. Correctif 0.2.7 ≈ 1 h audit compris. Recommandation corrigée transmise au propriétaire. | registre R02 1d903d5a | déclaré (R02), arithmétique vérifiée |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
