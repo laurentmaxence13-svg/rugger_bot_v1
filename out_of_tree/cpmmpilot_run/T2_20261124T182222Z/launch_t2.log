@@ -1,0 +1,18 @@
+start 2026-11-24T18:22:22Z out=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/pilot_run/T2_20261124T182222Z
+cpmmpilot/__init__.py: OK
+cpmmpilot/budget.py: OK
+cpmmpilot/fixtures.py: OK
+cpmmpilot/layout.py: OK
+cpmmpilot/rehearse.py: OK
+cpmmpilot/rpc.py: OK
+cpmmpilot/step0.py: OK
+cpmmpilot/step1.py: OK
+cpmmpilot/store.py: OK
+cpmmpilot/tests/__init__.py: OK
+cpmmpilot/tests/test_cpmmpilot.py: OK
+cpmmpilot/u2.py: OK
+AUTORISATION_B_C_v1_3.txt: OK
+AUTORISATION_T1_T2.txt: OK
+pin_rc=0 driver=6b51b6188f53569185a2cfbdd1c70081776b17603ee8eeaeeee58c1c5c5fb9e3 list_l=c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3 u2=3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963 gtfa_pages=44 out_exists=no
+{"verdict_run": "STOP", "n50": null, "budget": {"stage": "t2", "requests": 186, "credits": 186, "max_credits": 1470, "by_method": {"getSignaturesForAddress": 186}}, "error": "IncompleteRead", "tag": "IncompleteRead(226640 bytes read)", "t0_prime": 1795544543}
+rc=0 end 2026-11-24T18:24:36Z
