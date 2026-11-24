@@ -31,6 +31,11 @@ def test_partition_of_the_real_anchored_inputs():
     assert not (set(valid) & set(invalid)) and not (set(untested) & (set(valid) | set(invalid)))
     with pytest.raises(SystemExit, match='tested_set_mismatch'):
         A.partition(lst, u2, names[:-1] + ['X'])
+    bad = dict(u2, selected=u2['selected'][:-1] + [dict(u2['selected'][-1], pool='NOT_TESTED')])
+    with pytest.raises(SystemExit, match='valid_not_in_tested'):
+        A.partition(lst, bad, names)
+    with pytest.raises(SystemExit, match='valid_not_in_tested'):
+        A.partition(lst, dict(u2, selected=u2['selected'][:-1]), names)
 
 
 def test_n_eff_and_bounds_on_a_synthetic_case():
