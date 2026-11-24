@@ -296,6 +296,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 22:47Z | **FICHES DE GEL G2-3 (v0.6, e2f8411d) et N1 (v0.7, 9eb19fb7) ANCRÉES par R02** (registre f0129441), avant toute lecture de la fenêtre [24/11 10:21:26Z ; 06/12 10:21:26Z) ; codes (g23five 0.1.1 / 0.2, lpcost 0.2, n1verdict 0.2.2) et cpmmpilot 0.2.8 inscrits. Jalon 3 : confirmations à ancrer avant le 06/12, Holm à 0,025 ; code 0.3 autorisé. Reste : cpmmpilot 0.2.8.1 (texte du propriétaire), puis la collecte unique après le 06/12 10:21:26Z sur GO de R02. Premiers verdicts indépendants attendus le 06/12. | registre R02 f0129441 | déclaré (R02) |
 
+| 24/11 23:13Z | **Jalon 3 ancré par R02** : g23five 0.3 et n1verdict 0.3 PASS ; fiches de confirmation C-169 (ccf6ac75) et C-170 (56776cf8) ancrées avant le 06/12. Driver de confirmation de R03 écrit, non exécuté (2353bc7) ; il refuse tout appel sans verdict pilote GO_PILOTE audité et sans texte du propriétaire propre à la confirmation. Décision R04-8 : plafond de 33 000 crédits Free pour la confirmation, quel que soit le nombre d'hypothèses retenues. Reste avant les verdicts : cpmmpilot 0.2.8.1 (R03, vérification R02) ; collecte après le 06/12 10:21:26Z sur GO R02 (rappel R04 programmé à 10:35Z). | registre R02 | déclaré (R02) |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
