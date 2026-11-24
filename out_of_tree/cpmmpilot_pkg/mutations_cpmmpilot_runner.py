@@ -83,8 +83,9 @@ MUTANTS = [
     ('format_meta_unchecked', 'step1.py', "    if not isinstance(meta, dict) or (meta.get('logMessages') is None and meta.get('err') is None):", "    if not isinstance(meta, dict):"),
     ('format_blocktime_unchecked', 'step1.py', "    for key in ('slot', 'transactionIndex', 'blockTime'):", "    for key in ('slot', 'transactionIndex'):"),
     # 0.2: live transport (R02 note fb28705b) -- gated, no host or key read, no retry, nothing echoed
-    ('release_authorizes_another_sha', 'rpc.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})",
-     "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1', '0' * 64})"),
+    ('release_authorizes_another_sha', 'rpc.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',",
+     "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1', '0' * 64,"),
+    ('t2_cap_1500', 'budget.py', 'T2_CAP = 1_470 ', 'T2_CAP = 1_500 '),
     # 0.2.1: U-2 in two times
     ('u2_anchor_not_checked', 'u2.py', "    if sha(lst) != doc['sha256'] or doc['sha256'] != anchored_sha_l:\n        raise U2Stop('list_l_not_anchored')\n", ''),
     ('u2_list_not_rehashed', 'u2.py', "if sha(lst) != doc['sha256'] or doc['sha256'] != anchored_sha_l:", "if doc['sha256'] != anchored_sha_l:"),
@@ -142,7 +143,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.5', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.6', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

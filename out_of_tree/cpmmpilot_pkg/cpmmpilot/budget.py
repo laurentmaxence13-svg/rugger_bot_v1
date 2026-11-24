@@ -19,6 +19,7 @@ GTFA_MAX_LIMIT = 100
 # caps of the owner texts (R02 v1.2)
 STEP0_CAP = 100
 U2_CAP = 5_000
+T2_CAP = 1_470                     # 0.2.6: owner T2 (1 500) at 98 % (R02 18:01Z)
 STEP1_CAP = 50_000
 STEP1_HARD_STOP = 49_000            # 98 % of 50 000
 POINT2_LIMIT = 32_900               # text C (ii): 24 x R x 8 x c_tx + 400 > 32 900 -> STOP before the count
@@ -45,7 +46,7 @@ def _write_atomic(path, data):
 
 class PilotBudget:
     def __init__(self, ledger, *, stage, max_credits):
-        if stage not in ('step0', 'u2', 'step1'):
+        if stage not in ('step0', 'u2', 'step1', 't2'):
             raise BudgetError('unknown_stage')
         if type(max_credits) is not int or max_credits <= 0:
             raise BudgetError('cap_must_be_a_positive_integer')

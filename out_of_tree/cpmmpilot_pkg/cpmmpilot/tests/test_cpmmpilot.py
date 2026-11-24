@@ -104,8 +104,11 @@ def test_live_rpc_release_authorizes_only_the_owner_text_b_c_and_unanchored_text
     owner = Path(__file__).resolve().parents[2] / 'AUTORISATION_B_C_v1_3.txt'
     raw = owner.read_bytes()
     assert len(raw) == 2175 and not raw.endswith(b'\n')                    # R02: exact bytes, no final newline
-    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(raw).hexdigest()}) == frozenset(
-        {'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})
+    t2 = (Path(__file__).resolve().parents[2] / 'AUTORISATION_T1_T2.txt').read_bytes()
+    assert len(t2) == 1183 and not t2.endswith(b'\n') and 'J\'autorise T2' in t2.decode('utf-8')
+    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(raw).hexdigest(), hashlib.sha256(t2).hexdigest()}) == frozenset(
+        {'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
+         'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9'})
     text = raw.decode('utf-8')
     for clause in ('au plus 5 000 crédits', 'au plus 50 000 crédits', 'arrêt dur à 49 000 crédits',
                    'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C', 'hachée et ancrée par R02 ; puis'):
@@ -854,3 +857,13 @@ def test_format_guard_accepts_a_failed_tx_without_logs(tmp_path):
     page.unlink()
     step1.write_gz_page(page, doc)
     assert step1.require_tx_format(tmp_path / 's', 'pre', sel)['transactions_by_version']
+
+
+# -- 0.2.6: T2 (owner 24/11 18:00:36Z) ----------------------------------------------------------------------------------
+def test_t2_ledger_stage_and_cap(tmp_path):
+    assert B.T2_CAP == 1_470
+    b = B.PilotBudget(tmp_path / 'l.json', stage='t2', max_credits=B.T2_CAP)
+    b.credits = B.T2_CAP - 1
+    b.charge('getSignaturesForAddress', ['P', dict(limit=1000)])
+    with pytest.raises(B.BudgetExhausted):
+        b.charge('getSignaturesForAddress', ['P', dict(limit=1000)])
