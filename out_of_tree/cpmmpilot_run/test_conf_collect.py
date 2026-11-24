@@ -32,7 +32,7 @@ def _verdicts(tmp_path, **pilots):
     return out
 
 
-def _setup(tmp_path, monkeypatch, answer, mode='both', **pilots):
+def _setup(tmp_path, monkeypatch, answer, mode='both', d_days=None, **pilots):
     pilots = pilots or dict(C_169='GO_PILOTE', C_170='GO_PILOTE')
     auth = tmp_path / 'AUTH_CONF_TEST.txt'
     auth.write_text('test text, not an owner text\n')
@@ -64,7 +64,8 @@ def _setup(tmp_path, monkeypatch, answer, mode='both', **pilots):
         real(self, endpoint, **kw)
     monkeypatch.setattr(rpc.LiveRpc, '__init__', init)
     out = tmp_path / 'out'
-    argv = ['--mode', mode, '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--u2', str(U2J), '--out', str(out),
+    d_days = d_days if d_days is not None else 12
+    argv = ['--mode', mode, '--d-days', str(d_days), '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--u2', str(U2J), '--out', str(out),
             '--authorization', str(auth), '--sheet-sha', SHA, '--verdict-code-sha', SHA] + _verdicts(tmp_path, **pilots)
     return argv, out, seen
 
@@ -239,3 +240,25 @@ def test_bad_tx_format_stops(tmp_path, monkeypatch):
     argv, out, seen = _setup(tmp_path, monkeypatch, answer)
     C.main(argv, now=END)
     assert _result(out)['tag'] == 'STOP_TX_FORMAT:slot'
+
+
+@pytest.mark.parametrize('mode, d, ok', [('c170', 12, True), ('c170', 13, False), ('c169', 11, False), ('c169', 12, True),
+                                         ('c169', 30, True), ('c169', 31, False), ('both', 20, True), ('both', 31, False)])
+def test_duration_rules(tmp_path, monkeypatch, mode, d, ok):
+    end = C.T1 + d * 86_400
+
+    def answer(body, n):
+        assert body['params'][1]['filters'] == dict(blockTime=dict(gte=C.T1, lt=end))
+        return dict(data=[], paginationToken=None)
+    pilots = dict(C_169='GO_PILOTE', C_170='GO_PILOTE')
+    argv, out, seen = _setup(tmp_path, monkeypatch, answer, mode, d, **pilots)
+    if ok:
+        with pytest.raises(SystemExit, match='window_not_closed'):
+            C.main(argv, now=end - 1)
+        C.main(argv, now=end)
+        res = _result(out)
+        assert res['d_days'] == d and res['window'] == [C.T1, end] and res['verdict_run'] == 'DONE'
+    else:
+        with pytest.raises(SystemExit, match='c170_window_is_12_days|d_c_out_of_12_30'):
+            C.main(argv, now=C.T1 + 40 * 86_400)
+        assert seen == [] and not out.exists()

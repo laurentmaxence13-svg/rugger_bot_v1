@@ -2,11 +2,13 @@
 Runs ONLY if at least one pilot (C-169 G2-3 or C-170 N1) returns GO_PILOTE on 06/12, ONLY after the confirmation window
 is closed (now >= T1 + 12 d), and ONLY with an owner text for this collection anchored by R02 (CONF_TEXT_SHA256, None
 until then; the G2-3 text 3d6999ec covers the pilot window only and is refused here).
-Mode: c169 -> the 4 G2-3 pools; c170 -> the 3 N1 pools; both -> their union (the 4 G2-3 pools). One cap for the whole
+Mode: c169 -> the 4 G2-3 pools; c170 -> the 3 N1 pools; both -> their union (the 4 G2-3 pools). Duration (R02 23:13Z):
+12 days for C-170; D_c for C-169 (formula of sheet ccf6ac75, 12 <= D_c <= 30), passed as --d-days and published; with
+'both' the 4 pools are collected over D_c, which covers C-170's 12 days (the verdict code trims). One cap for the whole
 collection, whatever the mode: 33 000 credits at 98 % (stage 'g23' of 0.2.8, NEW ledger). Raw GTFA pages over
-[T1 ; T1 + 12 d), T1 = end of the pilot window; a truncated response may be re-read ONCE; any other incident = STOP,
+[T1 ; T1 + D), T1 = end of the pilot window; a truncated response may be re-read ONCE; any other incident = STOP,
 pages kept and counts published. No decision, position or return is computed here.
-Usage: python -B conf_collect.py --mode c169|c170|both --u2 <U2.json> --out <NEW DIR> --sheet-sha <hex> [--sheet-sha <hex>]
+Usage: python -B conf_collect.py --mode c169|c170|both --d-days <D> --u2 <U2.json> --out <NEW DIR> --sheet-sha <hex> [--sheet-sha <hex>]
        --verdict-code-sha <hex> [--verdict-code-sha <hex>] --pilot-result <GO result json> [...] --authorization <file>"""
 import argparse
 import hashlib
@@ -28,7 +30,8 @@ N1_POOLS = ('AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca', 'G8kgi7aUpeX8EVR8VMk
 G23_POOLS_SHA256 = '812d311b152b7127eedd4146508fdbdb5fc305c15d412e2d4f95e0ab690aca80'
 N1_LIST_SHA256 = 'c72bd586c0de5c8441c321707a2df2019d8541bc1b0df9e24c4616ee3832a9da'   # = n1rot list_sha256 (6b9b02a9)
 T0 = 1795515686                                      # 24/11/2026 10:21:26Z
-D_DAYS = 12
+D_DAYS = 12                                          # pilot window, and C-170's confirmation window
+DC_MIN, DC_MAX = 12, 30                              # C-169's D_c bounds (R02 23:13Z, sheet ccf6ac75)
 T1 = T0 + D_DAYS * 86_400                            # 06/12/2026 10:21:26Z, end of the pilot window
 CAP = 32_340                                         # 98 % of 33 000 for the WHOLE confirmation collection (R04-8 (2))
 RETRY_ON_TRUNCATED = 1
@@ -72,13 +75,18 @@ def go_pilots(paths):
 def main(argv=None, now=None):
     p = argparse.ArgumentParser()
     p.add_argument('--mode', choices=sorted(MODES), required=True)
+    p.add_argument('--d-days', type=int, required=True)
     for k in ('--pkg', '--u2', '--out', '--authorization'):
         p.add_argument(k, type=Path, required=True)
     p.add_argument('--pilot-result', type=Path, action='append', required=True)
     p.add_argument('--sheet-sha', action='append', required=True)
     p.add_argument('--verdict-code-sha', action='append', required=True)
     a = p.parse_args(argv)
-    end = T1 + D_DAYS * step1.DAY
+    if a.mode == 'c170' and a.d_days != D_DAYS:
+        raise SystemExit('c170_window_is_12_days')
+    if a.mode != 'c170' and not DC_MIN <= a.d_days <= DC_MAX:
+        raise SystemExit('d_c_out_of_12_30')
+    end = T1 + a.d_days * step1.DAY
     now = int(time.time()) if now is None else now
     if B.G23_CAP != CAP:
         raise SystemExit('package_without_g23_stage')
@@ -109,7 +117,7 @@ def main(argv=None, now=None):
     inner = rpc.Client(live, B.PilotBudget(a.out / 'ledger_conf.json', stage='g23', max_credits=CAP),
                        a.out / 'calls_conf.jsonl')
     client = _retry_client()(inner, RETRY_ON_TRUNCATED)
-    res = dict(schema='conf-collect-v1', mode=a.mode, t1=T1, window=[T1, end], pools=list(pools), cap=CAP,
+    res = dict(schema='conf-collect-v1', mode=a.mode, d_days=a.d_days, t1=T1, window=[T1, end], pools=list(pools), cap=CAP,
                sheet_sha256=a.sheet_sha, verdict_code_sha256=a.verdict_code_sha, driver_sha256=sha_of(__file__),
                pilot_results_sha256=[sha_of(x) for x in a.pilot_result], authorization_sha256=live.authorization_sha256)
     try:
