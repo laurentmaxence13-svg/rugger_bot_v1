@@ -279,3 +279,12 @@ def test_cap_out_of_range_refused(tmp_path, monkeypatch, cap):
     with pytest.raises(SystemExit, match='cap_out_of_range'):
         C.main(argv, now=END)
     assert seen == [] and not out.exists()
+
+
+def test_g23_list_swapped_outside_n1_is_refused(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _one_page)
+    swapped = tuple('4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv' if p.startswith('Gms3Ma') else p for p in C.G23_POOLS)
+    monkeypatch.setattr(C, 'G23_POOLS', swapped)
+    with pytest.raises(SystemExit, match='pools_mismatch'):
+        C.main(argv, now=END)
+    assert seen == [] and not out.exists()
