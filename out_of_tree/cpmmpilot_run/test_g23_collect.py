@@ -75,7 +75,11 @@ def _result(out):
 
 def test_constants_match_r04_1_and_r02():
     assert G.T0 == 1795515686 and G.D_DAYS == 12 and G.CAP == 32_340 == int(33_000 * 0.98)
-    assert G.RETRY_ON_TRUNCATED == 1 and G.G23_TEXT_SHA256 is None
+    assert G.RETRY_ON_TRUNCATED == 1
+    text = HERE / 'AUTORISATION_G23.txt'
+    assert G.G23_TEXT_SHA256 == hashlib.sha256(text.read_bytes()).hexdigest() == \
+        '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b'
+    assert G.G23_TEXT_SHA256 not in G.NOT_COVERING and G.G23_TEXT_SHA256 in rpc.AUTHORIZED_TEXT_SHA256
     assert len(G.POOLS) == 4 and len(set(G.POOLS)) == 4
     assert {p[:6] for p in G.POOLS} == {'AEZjoU', 'Gms3Ma', 'G8kgi7', 'GdxFyc'}
     assert hashlib.sha256(U2J.read_bytes()).hexdigest() == G.U2_SHA256

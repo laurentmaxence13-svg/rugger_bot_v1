@@ -96,6 +96,7 @@ MUTANTS = [
     ('u2_anchor_not_checked', 'u2.py', "    if sha(lst) != doc['sha256'] or doc['sha256'] != anchored_sha_l:\n        raise U2Stop('list_l_not_anchored')\n", ''),
     ('u2_list_not_rehashed', 'u2.py', "if sha(lst) != doc['sha256'] or doc['sha256'] != anchored_sha_l:", "if doc['sha256'] != anchored_sha_l:"),
     ('u2_first_time_continues', 'u2.py', "    return dict(schema=SCHEMA, verdict='LIST_L_AWAITS_R02_ANCHOR',", "    return run_qualify(client, out, anchored_sha_l=sha_l) or dict(schema=SCHEMA, verdict='LIST_L_AWAITS_R02_ANCHOR',"),
+    ('g23_text_not_authorized', 'rpc.py', "                                    '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b'})", "                                    })"),
     ('authorization_not_checked', 'rpc.py', "        if digest not in AUTHORIZED_TEXT_SHA256:\n            raise RpcError('authorization_not_anchored')\n", ''),
     ('authorization_file_optional', 'rpc.py', "        if authorization_file is None:\n            raise RpcError('live_rpc_needs_an_anchored_authorization')\n", ''),
     ('http_allowed', 'rpc.py', "if u.scheme != 'https' or not u.hostname:", 'if not u.hostname:'),
@@ -149,7 +150,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.8', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.8.1', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

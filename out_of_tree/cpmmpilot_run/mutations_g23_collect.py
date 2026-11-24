@@ -16,6 +16,7 @@ M = [
     ('time_guard_one_day_early', D, "    if now < end:", "    if now < end - 86_400:"),
     # owner-text guard
     ('text_guard_removed', D, "    if G23_TEXT_SHA256 is None or auth in NOT_COVERING or auth != G23_TEXT_SHA256:", "    if False:"),
+    ('text_sha_changed', D, "G23_TEXT_SHA256 = '3d6999ec", "G23_TEXT_SHA256 = '3d6999ed"),
     ('text_none_accepted', D, "G23_TEXT_SHA256 is None or auth in NOT_COVERING or auth != G23_TEXT_SHA256", "auth in NOT_COVERING or (G23_TEXT_SHA256 is not None and auth != G23_TEXT_SHA256)"),
     ('text_wrong_accepted', D, "G23_TEXT_SHA256 is None or auth in NOT_COVERING or auth != G23_TEXT_SHA256", "G23_TEXT_SHA256 is None or auth in NOT_COVERING"),
     ('old_texts_accepted', D, "G23_TEXT_SHA256 is None or auth in NOT_COVERING or auth != G23_TEXT_SHA256", "G23_TEXT_SHA256 is None or auth != G23_TEXT_SHA256"),
@@ -65,7 +66,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, f, old, new in [('_base', None, None, None)] + M:
         d = Path(tmp) / name
         d.mkdir()
-        for g in (D, A, 'test_g23_collect.py', 'AUTORISATION_T1_T2.txt', 'AUTORISATION_T2_BIS.txt'):
+        for g in (D, A, 'test_g23_collect.py', 'AUTORISATION_T1_T2.txt', 'AUTORISATION_T2_BIS.txt', 'AUTORISATION_G23.txt'):
             shutil.copy(HERE / g, d / g)
         (d / 'TIME2_20261124T102839Z').symlink_to(HERE / 'TIME2_20261124T102839Z')
         (Path(tmp) / 'cpmmpilot_pkg').exists() or (Path(tmp) / 'cpmmpilot_pkg').symlink_to(HERE.parent / 'cpmmpilot_pkg')

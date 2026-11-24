@@ -1,12 +1,13 @@
 {
  "base_guard": "PASS",
- "mutants": 31,
- "killed": 31,
+ "mutants": 32,
+ "killed": 32,
  "results": {
   "time_guard_removed": "KILLED",
   "time_guard_le": "KILLED",
   "time_guard_one_day_early": "KILLED",
   "text_guard_removed": "KILLED",
+  "text_sha_changed": "KILLED",
   "text_none_accepted": "KILLED",
   "text_wrong_accepted": "KILLED",
   "old_texts_accepted": "KILLED",
