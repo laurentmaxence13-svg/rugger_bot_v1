@@ -1,0 +1,129 @@
+{
+ "detected": 29,
+ "equivalent_removed": [
+  {
+   "mutant": "leftover_base_lost",
+   "reason": "the deposit share is computed on the pre-buy reserves (our trades are not replayed): tokens/b0 < HALF/q0 always, so the base leftover is always 0 and dropping it changes nothing"
+  }
+ ],
+ "mutants": [
+  {
+   "detected": true,
+   "mutant": "not_half"
+  },
+  {
+   "detected": true,
+   "mutant": "no_latency"
+  },
+  {
+   "detected": true,
+   "mutant": "entry_best_state"
+  },
+  {
+   "detected": true,
+   "mutant": "guard_on_landing_state"
+  },
+  {
+   "detected": true,
+   "mutant": "guard_doubled"
+  },
+  {
+   "detected": true,
+   "mutant": "refusal_failures_free"
+  },
+  {
+   "detected": true,
+   "mutant": "deposit_rounded_down"
+  },
+  {
+   "detected": true,
+   "mutant": "withdrawal_rounded_up"
+  },
+  {
+   "detected": true,
+   "mutant": "deposit_rescale_inverted"
+  },
+  {
+   "detected": true,
+   "mutant": "withdrawal_not_rescaled"
+  },
+  {
+   "detected": true,
+   "mutant": "window_low_inclusive"
+  },
+  {
+   "detected": true,
+   "mutant": "withdraw_on_best_state"
+  },
+  {
+   "detected": true,
+   "mutant": "sale_best_state"
+  },
+  {
+   "detected": true,
+   "mutant": "sale_without_our_withdrawal"
+  },
+  {
+   "detected": true,
+   "mutant": "leftover_quote_lost"
+  },
+  {
+   "detected": true,
+   "mutant": "hold_shifted"
+  },
+  {
+   "detected": true,
+   "mutant": "lp_tx_free"
+  },
+  {
+   "detected": true,
+   "mutant": "buy_failures_free"
+  },
+  {
+   "detected": true,
+   "mutant": "one_rent"
+  },
+  {
+   "detected": true,
+   "mutant": "left_open_extra_tx"
+  },
+  {
+   "detected": true,
+   "mutant": "rent_not_charged"
+  },
+  {
+   "detected": true,
+   "mutant": "fee_estimate_all_fee"
+  },
+  {
+   "detected": true,
+   "mutant": "fee_estimate_unvalued"
+  },
+  {
+   "detected": true,
+   "mutant": "fee_window_open"
+  },
+  {
+   "detected": true,
+   "mutant": "period_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "guard_any_value"
+  },
+  {
+   "detected": true,
+   "mutant": "empty_vault_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "drain_accepted"
+  },
+  {
+   "detected": true,
+   "mutant": "counts_for_master"
+  }
+ ],
+ "schema": "lpcost-mutations-v0.1",
+ "total": 29
+}
