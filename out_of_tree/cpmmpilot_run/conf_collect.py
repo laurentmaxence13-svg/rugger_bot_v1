@@ -35,6 +35,7 @@ D_DAYS = 12                                          # pilot window, and C-170's
 DC_MIN, DC_MAX = 12, 30                              # C-169's D_c bounds (R02 23:13Z, sheet ccf6ac75)
 T1 = T0 + D_DAYS * 86_400                            # 06/12/2026 10:21:26Z, end of the pilot window
 G23_CAP = 32_340                                     # 0.2.8 stage constant, checked as a package guard only
+CAP_MAX = 60_000                                     # R04-9 (erratum C-169): P > 60 000 -> C-169 NON EVALUABLE
 HARD_STOP_PCT = 98                                   # hard stop at 98 % of the owner's cap P (floor)
 RETRY_ON_TRUNCATED = 1
 RESULT = 'CONF_COLLECT_RESULT.json'
@@ -89,7 +90,7 @@ def main(argv=None, now=None):
         raise SystemExit('c170_window_is_12_days')
     if a.mode != 'c170' and not DC_MIN <= a.d_days <= DC_MAX:
         raise SystemExit('d_c_out_of_12_30')
-    if not 1_000 <= a.cap <= 1_000_000:
+    if not 1_000 <= a.cap <= CAP_MAX:
         raise SystemExit('cap_out_of_range')
     cap = a.cap * HARD_STOP_PCT // 100
     end = T1 + a.d_days * step1.DAY

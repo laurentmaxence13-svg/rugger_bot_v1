@@ -82,7 +82,7 @@ def _result(out):
 
 def test_constants_match_r04_8():
     assert C.T1 == 1796552486 and END == 1797589286 and C.G23_CAP == 32_340 and C.HARD_STOP_PCT == 98
-    assert C.RETRY_ON_TRUNCATED == 1
+    assert C.RETRY_ON_TRUNCATED == 1 and C.CAP_MAX == 60_000
     assert C.CONF_TEXT_SHA256 is None and '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b' in C.NOT_COVERING
     n1 = json.loads((HERE / 'N1ROT_20261124T215521Z' / 'N1ROT_RESULT.json').read_bytes())
     assert list(C.N1_POOLS) == n1['kept'] and C.N1_LIST_SHA256 == n1['list_sha256']
@@ -265,7 +265,7 @@ def test_duration_rules(tmp_path, monkeypatch, mode, d, ok):
         assert seen == [] and not out.exists()
 
 
-@pytest.mark.parametrize('cap, stop', [(53_190, 52_126), (41_001, 40_180)])
+@pytest.mark.parametrize('cap, stop', [(53_190, 52_126), (41_001, 40_180), (60_000, 58_800), (1_000, 980)])
 def test_owner_cap_p_drives_the_hard_stop(tmp_path, monkeypatch, cap, stop):
     argv, out, seen = _setup(tmp_path, monkeypatch, _one_page, cap=cap)
     C.main(argv, now=END)
@@ -273,7 +273,7 @@ def test_owner_cap_p_drives_the_hard_stop(tmp_path, monkeypatch, cap, stop):
     assert json.loads((out / 'ledger_conf.json').read_text())['max_credits'] == stop
 
 
-@pytest.mark.parametrize('cap', [999, 1_000_001, 0])
+@pytest.mark.parametrize('cap', [999, 60_001, 1_000_000, 0])
 def test_cap_out_of_range_refused(tmp_path, monkeypatch, cap):
     argv, out, seen = _setup(tmp_path, monkeypatch, _one_page, cap=cap)
     with pytest.raises(SystemExit, match='cap_out_of_range'):
