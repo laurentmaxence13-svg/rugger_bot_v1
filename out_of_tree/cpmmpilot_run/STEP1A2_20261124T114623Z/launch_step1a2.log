@@ -1,0 +1,5 @@
+start 2026-11-24T11:46:23Z run=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/pilot_run/STEP1A_20261124T103356Z
+manifest_check_rc=0 bad=0 manifest_sha=e1b55b1d15a6124dff0e85e93d6f258daec3b120c00252baa55089f529ea8381
+driver_sha=21cff5e5e7f8f449fab2973753ea8214bea6faacb2c370c28ef793f6a3435ee6 u2_sha=3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963 count_sha=c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5 ledger_credits=53
+{"u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963", "count_sha256": "c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5", "t0_time": 1795515686, "credits_before": 53, "verdict": "STOP", "error": "MethodRefused", "tag": "method_refused:-32015:61294f25e789", "budget": {"stage": "step1", "requests": 54, "credits": 63, "max_credits": 49000, "by_method": {"getSignaturesForAddress": 53, "getTransactionsForAddress": 10}}}
+rc=0 end 2026-11-24T11:46:24Z
