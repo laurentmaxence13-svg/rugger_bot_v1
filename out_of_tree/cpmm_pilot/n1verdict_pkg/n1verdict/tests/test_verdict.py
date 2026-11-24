@@ -1,5 +1,7 @@
-"""n1verdict 0.1: pool-days on synthetic CPMM pools (real lpcost), the total-loss rule for unpriced pool-days, and the
-word of g23five on controlled nets (lpcost replaced by a stub in those tests only)."""
+"""n1verdict 0.2 (R04-6): one continuous position per pool (real lpcost 0.2 on synthetic CPMM pools), the total-loss
+rule for an unpriced position, and the word of g23five 0.2 with 2-day blocks on controlled gaps (lpcost replaced by a
+stub in those tests only)."""
+from fractions import Fraction
 from types import SimpleNamespace
 
 import pytest
@@ -7,85 +9,92 @@ import pytest
 from cpmmcost import model as CC
 from cpmmgen3.tests.test_gen3 import CONFIG_A, CONFIG_B, POOL_A, calm, line_of
 from g23five import verdict as G
-from lpcost import model as LP
+from lpcost import continuous as K, model as LP
 from n1verdict import verdict as N
 
 DAY = 86_400
 T0 = 10 * DAY
-SHEET = '13579bdf' + '02468ace' * 7                 # head and tail differ
+SHEET = '13579bdf' + '02468ace' * 7
 DRAWS = 300
 POOLS = ['pA', 'pB', 'pC', 'pD']
+D = 12
 
 
-def test_total_loss_is_the_stake_and_the_round_trip():
-    assert N.total_loss_lamports() == -100_630_000                           # 0.1 SOL + 6 x 105 000
-    for f in (CC.SENSITIVITY_FAILURES, CC.Failures(0, 0, LP.CA.MAX_CLEANUP_ATTEMPTS)):
-        tx, rent = LP.transactions(f)
-        assert N.total_loss_lamports(f) == -(LP.STAKE + tx + rent)
-    assert N.total_loss_lamports(CC.Failures(0, 0, LP.CA.MAX_CLEANUP_ATTEMPTS)) < -100_630_000 - 2 * LP.RENT + 1
+def test_total_loss_per_day_is_the_stake_and_the_round_trip_over_d():
+    assert N.total_loss_per_day(10 ** 9, 12) == -(1 + Fraction(630_000, 10 ** 9)) / 12
+    tx, rent = LP.transactions(CC.Failures(0, 0, LP.CA.MAX_CLEANUP_ATTEMPTS))
+    assert N.total_loss_per_day(10 ** 9, 12, CC.Failures(0, 0, LP.CA.MAX_CLEANUP_ATTEMPTS)) == \
+        -(1 + Fraction(tx + rent, 10 ** 9)) / 12
 
 
-# -- real lpcost on a synthetic pool -----------------------------------------------------------------------------------
-def real_line(extra=(), days=7):
+# -- real lpcost 0.2 on a synthetic pool -------------------------------------------------------------------------------
+def real_line(extra=(), days=8):
     return line_of(POOL_A, sorted(calm(T0 - 600, T0 + days * DAY + 600, every=1_800) + list(extra)))
 
 
-def test_pool_days_are_aligned_on_t0_and_priced_by_lpcost():
+def test_the_pool_days_are_the_daily_values_of_one_position():
     line = real_line()
-    rows = N.pool_days(line, CONFIG_A, t0=T0, d_days=7)
-    assert [r['day'] for r in rows] == list(range(7))
-    assert [r['decision_time'] for r in rows] == [T0 + k * DAY for k in range(7)]
-    for k, r in enumerate(rows):
-        direct = LP.lp_position(line, CONFIG_A, start_time=T0 + k * DAY, end_time=T0 + (k + 1) * DAY)
-        assert r['status'] == 'entered' and r['net_lamports'] == direct['net_lamports']
-        assert r['end_time'] == T0 + (k + 1) * DAY
+    rows, pos = N.pool_days(line, CONFIG_A, t0=T0, d_days=8)
+    direct = K.continuous_position(line, CONFIG_A, start_time=T0, end_time=T0 + 8 * DAY)
+    assert [r['day'] for r in rows] == list(range(8)) and [r['decision_time'] for r in rows] == [T0 + k * DAY
+                                                                                                 for k in range(8)]
+    assert [r['net_return'] for r in rows] == [float(d['gap_lamports'] / direct['stake_lamports'])
+                                               for d in direct['days']]
+    assert pos['gap_lamports'] == direct['gap_lamports'] and all(r['status'] == 'entered' for r in rows)
 
 
-def test_an_unpriced_pool_day_is_a_total_loss_and_other_errors_stop():
-    lp_at = T0 + 2 * DAY + 100                                    # between the last swap before day 2 and the next
-    rows = N.pool_days(real_line([(lp_at, 'lp', (1, 10))]), CONFIG_A, t0=T0, d_days=7)
-    lost = [r for r in rows if r['status'] == 'unpriced_total_loss']
-    assert [r['day'] for r in lost] == [1, 2]                                # day 1 exit and day 2 entry
-    assert all(r['unpriced'] == 'lp_change_at_the_landing_point' for r in lost)
-    assert all(r['net_lamports'] == -100_630_000 and r['entered'] is True for r in lost)
-    assert all(r['counts_for_operational_master'] is False for r in lost)
-    sens = N.pool_days(real_line([(lp_at, 'lp', (1, 10))]), CONFIG_A, t0=T0, d_days=7,
-                       failures=CC.SENSITIVITY_FAILURES)
-    assert {r['net_lamports'] for r in sens if r['status'] == 'unpriced_total_loss'} == {
-        N.total_loss_lamports(CC.SENSITIVITY_FAILURES)} != {-100_630_000}
+def test_an_unpriced_position_is_a_total_loss_and_other_errors_stop():
+    rows, pos = N.pool_days(real_line([(T0 + 100, 'lp', (1, 10))]), CONFIG_A, t0=T0, d_days=8)
+    assert pos is None and len(rows) == 8
+    assert all(r['status'] == 'unpriced_total_loss' and r['unpriced'] == 'lp_change_at_the_landing_point'
+               and r['entered'] is True for r in rows)
+    line = real_line()
+    stake0 = [s for s in line.swaps if s.block_time < T0][-1].quote_before * 5_000 // 1_000_000
+    assert N.unpriced_stake(line, T0) == stake0
+    assert rows[0]['net_return'] == float(N.total_loss_per_day(stake0, 8)) and rows[0]['stake_lamports'] == stake0
+    sens, _p = N.pool_days(real_line([(T0 + 100, 'lp', (1, 10))]), CONFIG_A, t0=T0, d_days=8,
+                           failures=CC.SENSITIVITY_FAILURES)
+    assert sens[0]['net_return'] == float(N.total_loss_per_day(stake0, 8, CC.SENSITIVITY_FAILURES)) != rows[0]['net_return']
+    # the stake of an unpriced position is read before the LAST pre-T0 swap
+    early = line_of(POOL_A, [(t, 'buy', 5 * 10 ** 9) for t in range(T0 - 5_400, T0, 1_800)]
+                    + calm(T0 + 60, T0 + 9 * DAY, every=1_800))
+    pre = [s for s in early.swaps if s.block_time < T0]
+    assert pre[0].quote_before != pre[-1].quote_before
+    assert N.unpriced_stake(early, T0) == pre[-1].quote_before * 5_000 // 1_000_000
     with pytest.raises(CC.CostError, match='outside_universe'):
-        N.pool_days(real_line(), CONFIG_B, t0=T0, d_days=7)                 # a code / input defect, never a loss
+        N.pool_days(real_line(), CONFIG_B, t0=T0, d_days=8)
     with pytest.raises(N.N1Error, match='pre_t0'):
-        N.pool_days(line_of(POOL_A, calm(T0 + 60, T0 + 8 * DAY, every=1_800)), CONFIG_A, t0=T0, d_days=7)
-    assert N._unpriced(LP.LpCostError('exit_state_empty')) and not N._unpriced(LP.LpCostError('invalid_period'))
-    assert N._unpriced(N.TL.TimelineError('no_pool_state_at_the_landing_point'))
-    assert not N._unpriced(CC.CostError('exit_state_empty'))                # the kind must match too
+        N.pool_days(line_of(POOL_A, calm(T0 + 60, T0 + 9 * DAY, every=1_800)), CONFIG_A, t0=T0, d_days=8)
+    assert N._unpriced(LP.LpCostError('exit_state_empty')) and not N._unpriced(LP.LpCostError('period_must_be_whole_days'))
+    assert not N._unpriced(CC.CostError('exit_state_empty'))
 
 
-# -- the word on controlled nets ---------------------------------------------------------------------------------------
+# -- the word on controlled gaps ---------------------------------------------------------------------------------------
 def fake_lines(pools=POOLS):
-    return [SimpleNamespace(pool=p, swaps=[SimpleNamespace(block_time=T0 - 5)]) for p in pools]
+    return [SimpleNamespace(pool=p, swaps=[SimpleNamespace(block_time=T0 - 5, quote_before=200 * 10 ** 9)])
+            for p in pools]
 
 
 @pytest.fixture
 def stub(monkeypatch):
     calls = []
 
-    def install(value, unpriced=()):
-        def lp_position(line, config, *, start_time, end_time, failures=CC.FROZEN_FAILURES,
-                        buy_guard_ppm=CC.BUY_GUARD_PPM):
-            day = (start_time - T0) // DAY
-            calls.append((line.pool, day, failures, buy_guard_ppm))
-            if (line.pool, day) in unpriced:
+    def install(value, unpriced=(), refused=()):
+        def continuous_position(line, config, *, start_time, end_time, failures=CC.FROZEN_FAILURES,
+                                buy_guard_ppm=CC.BUY_GUARD_PPM):
+            calls.append((line.pool, failures, buy_guard_ppm))
+            if line.pool in unpriced:
                 raise CC.CostError('lp_change_at_the_landing_point')
-            v = value(line.pool, day)
-            if failures != CC.FROZEN_FAILURES:
-                v -= 0.003
-            return dict(pool=line.pool, start_time=start_time, end_time=end_time, status='entered', entered=True,
-                        net_return=v, net_lamports=round(v * LP.STAKE),
-                        decomposition_lamports=dict(hold_pnl=round(0.5 * v * LP.STAKE), lp_vs_hold=round(0.002 * LP.STAKE)),
-                        fees_earned_estimate=1_000.0, inventory_loss_estimate=400.0)
-        monkeypatch.setattr(LP, 'lp_position', lp_position)
+            n, stake = (end_time - start_time) // DAY, 10 ** 9
+            shift = Fraction(-3, 1000) if failures != CC.FROZEN_FAILURES else 0
+            days = [dict(day=k, gap_lamports=Fraction(value(line.pool, k)) * stake + shift * stake) for k in range(n)]
+            status = 'guard_failed' if line.pool in refused else 'entered'
+            gap = sum(d['gap_lamports'] for d in days)
+            return dict(pool=line.pool, status=status, entered=status == 'entered', stake_lamports=stake, days=days,
+                        gap_lamports=gap, net_lamports=int(gap) + 7, fees_earned_estimate=1_000.0,
+                        decomposition_lamports=dict(hold_price_move=Fraction(5), mark_change=gap + 9, entry=-3, exit=-2,
+                                                    transactions=-3, rent_lost=-1))
+        monkeypatch.setattr(K, 'continuous_position', continuous_position)
         return calls
     return install
 
@@ -95,82 +104,84 @@ def run(**kw):
     kw.setdefault('g0_passed', True)
     kw.setdefault('freeze_sheet_sha256', SHEET)
     kw.setdefault('t0', T0)
-    kw.setdefault('d_days', 12)
+    kw.setdefault('d_days', D)
     kw.setdefault('draws', DRAWS)
     lines = kw.pop('lines', None) or fake_lines(kw['pools'])
     return N.report(lines, CONFIG_A, **kw)
 
 
-def test_go_needs_both_bounds_and_the_seed_is_the_sheet(stub):
-    stub(lambda p, d: 0.01 + 0.002 * (d % 3))
+def test_go_uses_two_day_blocks_and_the_sheet_seed(stub):
+    stub(lambda p, d: Fraction(1, 100) + Fraction(2, 1000) * (d % 3))
     out = run()
-    assert out['decision'] == 'GO_PILOTE' and out['n'] == 48 and out['seed'] == int(SHEET[:8], 16)
-    rows = N.positions(fake_lines(), CONFIG_A, pools=POOLS, t0=T0, d_days=12)
-    assert (out['lower_bound_95'], out['upper_bound_95']) == G.stratified_bounds(G.blocks(rows, T0, 12),
-                                                                                  seed=int(SHEET[:8], 16), draws=DRAWS)
-    assert out['floors']['passed'] is True and out['power']['flag'] == G.G1.UNDER_TARGET   # 48 < 155
-    d = out['descriptive']
-    assert d['lp_vs_hold']['mean'] == pytest.approx(0.002) and d['verdict'] is None
-    assert d['hold_pnl']['mean'] == pytest.approx(0.5 * out['mean_net_return'], rel=1e-6)
-    assert d['fees_earned_estimate_lamports'] == 1_000.0 and d['inventory_loss_estimate_lamports'] == 400.0
-    assert out['limits'] == N.LIMITS and set(out['limits']) == {'L1', 'L2', 'L3'}
-    assert out['labels'] == list(LP.LABELS) and out['counts_for_operational_master'] is False
+    assert out['decision'] == 'GO_PILOTE' and out['n'] == 48 and out['block_days'] == 2
+    rows, _w = N.positions(fake_lines(), CONFIG_A, pools=POOLS, t0=T0, d_days=D)
+    seed = int(SHEET[:8], 16)
+    assert out['seed'] == seed
+    assert (out['lower_bound_95'], out['upper_bound_95']) == G.stratified_bounds(G.blocks(rows, T0, D, 2), seed=seed,
+                                                                                  draws=DRAWS)
+    assert out['lower_bound_95'] != G.stratified_bounds(G.blocks(rows, T0, D, 1), seed=seed, draws=DRAWS)[0]
+    rest = [r for r in rows if r['pool'] != out['without_top_pool']['pool']]
+    assert out['without_top_pool']['lower_bound_95'] == G.stratified_bounds(G.blocks(rest, T0, D, 2), seed=seed,
+                                                                             draws=DRAWS)[0]
+    assert out['power']['flag'] == G.G1.UNDER_TARGET and out['stake_ppm'] == 5_000
+    pa = out['per_pool']['pA']
+    assert pa['gap_return'] == pytest.approx(sum(0.01 + 0.002 * (d % 3) for d in range(D)))
+    assert pa['net_return_absolute'] == pytest.approx(pa['gap_return'] + 7e-9, abs=1e-9) and pa['verdict'] is None
+    assert pa['costs_return'] == pytest.approx(9e-9) and pa['entries'] == 12
+    assert out['limits'] == N.LIMITS and out['scope'] == N.SCOPE and out['counts_for_operational_master'] is False
 
 
-def test_leave_top_out_no_go_and_floors(stub):
-    # pool pA carries the gain; an unpriced day is still an entry: 12 entries everywhere, tie -> pA by id
-    stub(lambda p, d: (0.5 if p == 'pA' else -0.004) + 0.001 * (d % 3), unpriced={('pB', 0)})
+def test_leave_top_out_no_go_floors_refusals_and_unpriced(stub):
+    stub(lambda p, d: (Fraction(1, 2) if p == 'pA' else Fraction(-4, 1000)) + Fraction(1, 1000) * (d % 3),
+         unpriced={'pB'})
     c = run()
     assert c['lower_bound_95'] > 0 and c['without_top_pool']['pool'] == 'pA'
     assert c['without_top_pool']['lower_bound_95'] <= 0 and c['decision'] == 'INCONCLUSIF'
-    assert c['unpriced'] == dict(count=1, value_lamports=-100_630_000, reasons=['lp_change_at_the_landing_point'])
-    assert c['per_pool']['pB']['unpriced_total_loss'] == 1 and c['per_pool']['pB']['entries'] == 12
-    stub(lambda p, d: -0.02 + 0.002 * (d % 3))
+    assert c['unpriced'] == dict(pools=['pB'], reasons=['lp_change_at_the_landing_point'])
+    loss = float(N.total_loss_per_day(200 * 10 ** 9 * 5_000 // 1_000_000, D))
+    assert c['per_pool']['pB']['mean_gap_return'] == pytest.approx(loss) and c['per_pool']['pB']['entries'] == 12
+    stub(lambda p, d: Fraction(-2, 100) + Fraction(2, 1000) * (d % 3))
     assert run()['decision'] == 'NO-GO'
-    stub(lambda p, d: -0.05)
-    short = run(d_days=7)                                                     # 28 pool-days < 30: before NO-GO
-    assert short['decision'] == 'INCONCLUSIF' and short['upper_bound_95'] < 0
-    stub(lambda p, d: 0.01 * ((d + POOLS.index(p)) % 3 - 1))
+    stub(lambda p, d: Fraction(-5, 100), refused={'pD'})
+    refused = run(d_days=8)                                                   # 3 pools x 8 = 24 pool-days < 30
+    assert refused['decision'] == 'INCONCLUSIF' and refused['upper_bound_95'] < 0
+    assert refused['per_pool']['pD']['entries'] == 0 and refused['per_pool']['pD']['status'] == 'guard_failed'
+    stub(lambda p, d: Fraction(1, 100) * ((d + POOLS.index(p)) % 3 - 1))
     assert run()['decision'] == 'INCONCLUSIF'
 
 
 def test_sensitivities_are_descriptive_and_use_the_declared_variants(stub):
-    calls = stub(lambda p, d: 0.01)
+    calls = stub(lambda p, d: Fraction(1, 100))
     out = run()
     s = out['sensitivities']
     assert set(s) == {'one_failure_per_tx', 'guard_50000', 'rent_lost'}
-    assert s['one_failure_per_tx']['mean_net_return'] == pytest.approx(0.007) and s['guard_50000']['verdict'] is None
-    assert s['guard_50000']['mean_net_return'] == pytest.approx(0.01)
-    assert {(f, g) for _p, _d, f, g in calls} == {
+    assert s['one_failure_per_tx']['mean_gap_return'] == pytest.approx(0.007) and s['guard_50000']['verdict'] is None
+    assert s['guard_50000']['mean_gap_return'] == pytest.approx(0.01)
+    assert {(f, g) for _p, f, g in calls} == {
         (CC.FROZEN_FAILURES, CC.BUY_GUARD_PPM), (CC.SENSITIVITY_FAILURES, CC.BUY_GUARD_PPM),
         (CC.FROZEN_FAILURES, CC.BUY_GUARD_SENSITIVITY_PPM),
         (CC.Failures(0, 0, LP.CA.MAX_CLEANUP_ATTEMPTS), CC.BUY_GUARD_PPM)}
-    assert out['decision'] == 'GO_PILOTE'                                      # the word is the frozen run's only
+    assert out['decision'] == 'GO_PILOTE'
 
 
 def test_stop_and_inputs(stub):
-    stub(lambda p, d: 0.01)
+    stub(lambda p, d: Fraction(1, 100))
     stop = run(g0_passed=False)
     assert stop['decision'] == 'STOP' and stop['published_numbers'] is False and 'floors' not in stop
     assert run(g0_passed=1)['decision'] == 'STOP'
     with pytest.raises(N.N1Error, match='sheet_order'):
         run(lines=fake_lines(list(reversed(POOLS))))
-    with pytest.raises(N.N1Error, match='sheet_order'):
-        run(lines=fake_lines(POOLS[:3]))
-    for d in (6, 31, 12.0):
+    for d in (6, 9, 31, 12.0):
         with pytest.raises(N.N1Error, match='d_days'):
             run(d_days=d)
     with pytest.raises(N.N1Error, match='t0'):
         run(t0=float(T0))
-    with pytest.raises(N.N1Error, match='3_distinct'):
-        run(pools=['pA', 'pB'])
-    with pytest.raises(N.N1Error, match='3_distinct'):
-        run(pools=['pA', 'pA', 'pB'])
+    for pools in (['pA', 'pB'], ['pA', 'pA', 'pB']):
+        with pytest.raises(N.N1Error, match='3_distinct'):
+            run(pools=pools)
     with pytest.raises(G.VerdictError, match='sheet'):
         run(freeze_sheet_sha256='A' * 64)
     out = run()
     assert out['meaning'] == N.MEANING and 'Holm' in out['multiplicity']
-    G.G1.check_vocabulary(out)
-    leaked = ['pA', 'pB', 'pC', 'pool ' + G.G1.FORBIDDEN_WORDS[1]]
     with pytest.raises(G.G1.ReportError, match='forbidden'):
-        run(pools=leaked)                                                      # the whole document is checked
+        run(pools=['pA', 'pB', 'pC', 'pool ' + G.G1.FORBIDDEN_WORDS[1]])

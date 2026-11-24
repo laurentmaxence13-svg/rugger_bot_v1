@@ -1,0 +1,130 @@
+{
+ "schema": "n1verdict-mutations-v0.2",
+ "mutants": 29,
+ "detected": 29,
+ "total": 29,
+ "equivalent_removed": [
+  {
+   "mutant": "refusals_are_entries",
+   "reason": "g23five.entries exclut déjà status == 'guard_failed' : forcer entered=True sur un refus ne change pas les entrées"
+  }
+ ],
+ "results": [
+  {
+   "mutant": "rent_not_lost",
+   "detected": true
+  },
+  {
+   "mutant": "loss_without_transactions",
+   "detected": true
+  },
+  {
+   "mutant": "loss_not_spread",
+   "detected": true
+  },
+  {
+   "mutant": "loss_ignores_failures",
+   "detected": true
+  },
+  {
+   "mutant": "unpriced_stake_first_swap",
+   "detected": true
+  },
+  {
+   "mutant": "unpriced_days_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "unpriced_not_entries",
+   "detected": true
+  },
+  {
+   "mutant": "every_error_is_a_loss",
+   "detected": true
+  },
+  {
+   "mutant": "kind_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "exit_state_empty_not_unpriced",
+   "detected": true
+  },
+  {
+   "mutant": "pre_t0_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "gap_not_per_stake",
+   "detected": true
+  },
+  {
+   "mutant": "position_one_day_short",
+   "detected": true
+  },
+  {
+   "mutant": "order_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "one_day_blocks",
+   "detected": true
+  },
+  {
+   "mutant": "guard_one_day_blocks",
+   "detected": true
+  },
+  {
+   "mutant": "no_go_never",
+   "detected": true
+  },
+  {
+   "mutant": "no_leave_top_out",
+   "detected": true
+  },
+  {
+   "mutant": "no_go_before_floors",
+   "detected": true
+  },
+  {
+   "mutant": "seed_not_the_sheet_head",
+   "detected": true
+  },
+  {
+   "mutant": "g0_truthy",
+   "detected": true
+  },
+  {
+   "mutant": "odd_d_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "duplicate_pools",
+   "detected": true
+  },
+  {
+   "mutant": "guard_sensitivity_frozen",
+   "detected": true
+  },
+  {
+   "mutant": "rent_lost_one_cleanup",
+   "detected": true
+  },
+  {
+   "mutant": "power_flag_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "scope_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "costs_without_rent",
+   "detected": true
+  }
+ ]
+}
