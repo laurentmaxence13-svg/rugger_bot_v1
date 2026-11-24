@@ -1,0 +1,237 @@
+{
+ "cpmmgen2": "cpmmgen2-v0.2",
+ "m1": 0.9948023415877982,
+ "outcomes_computed": false,
+ "per_pool": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 2,
+   "g2_3_b3": 1.0,
+   "g2_3_excluded_b3_zero": false,
+   "swaps": 1600
+  },
+  "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 5
+  },
+  "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 1
+  },
+  "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 1
+  },
+  "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 17
+  },
+  "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "g2_1": 0,
+   "g2_2": 2,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 724
+  },
+  "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 2
+  },
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 128,
+   "g2_3_b3": 2.0,
+   "g2_3_excluded_b3_zero": false,
+   "swaps": 37690
+  },
+  "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 84
+  },
+  "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 446
+  },
+  "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 29
+  },
+  "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 83
+  },
+  "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 0
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "g2_1": 33,
+   "g2_2": 51,
+   "g2_2_waits_without_entry": 3,
+   "g2_3": 95,
+   "g2_3_b3": 6.0,
+   "g2_3_excluded_b3_zero": false,
+   "swaps": 37396
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 21,
+   "g2_3_b3": 1.0,
+   "g2_3_excluded_b3_zero": false,
+   "swaps": 8157
+  },
+  "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 202
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 105,
+   "g2_3_b3": 1.0,
+   "g2_3_excluded_b3_zero": false,
+   "swaps": 804
+  },
+  "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+   "g2_1": 0,
+   "g2_2": 0,
+   "g2_2_waits_without_entry": 0,
+   "g2_3": 0,
+   "g2_3_b3": 0.0,
+   "g2_3_excluded_b3_zero": true,
+   "swaps": 8
+  }
+ },
+ "schema": "g2-trigger-count-v1",
+ "stamp": "COMPTAGE SEUL - aucun rendement, aucun essai",
+ "t0": 1795515686,
+ "total": {
+  "g2_1": 33,
+  "g2_2": 53,
+  "g2_2_waits_without_entry": 3,
+  "g2_3": 351,
+  "g2_3_pools_excluded_b3_zero": 19
+ },
+ "window": [
+  1794910886,
+  1795515686
+ ]
+}
