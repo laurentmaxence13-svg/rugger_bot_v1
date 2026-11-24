@@ -1,6 +1,6 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-24 à 13:00Z.
+Mis à jour le 2026-11-24 à 12:59Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
@@ -22,7 +22,7 @@ Légende des preuves :
 **Risques sur ce premier verdict** : (1) moins de 70 déclenchements R-CP1 sur les 7 jours avant T0 (soit moins de 30 entrées attendues en 3 jours) = ARRÊT pour puissance insuffisante et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
 Activité réelle des agents : voir § 3. Une session inactive n'est jamais comptée comme du travail.
 
-## 0. Rapport de direction (état au 24/11, 13:00Z)
+## 0. Rapport de direction (état au 24/11, 12:59Z)
 
 **A. Meilleure stratégie actuelle** : AUCUNE. Aucune stratégie n'a de rendement net positif mesuré, ni sur W1 ni ailleurs. La moins mauvaise mesurée reste MASTER : −4,26 % net [−6,69 ; −1,95], n 128, W1, EXPLORATOIRE, verdict NÉGATIF.
 
@@ -213,6 +213,10 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | 24/11 12:52Z | **Décisions groupées de R02** (directive ancrée 4112505f, 12:40:57Z à la source). Q1 : D = 3 jours, fenêtre [24/11 10:21:26Z ; 27/11 10:21:26Z), coupure des moitiés 25/11 22:21:26Z ; collecte seulement après le 27/11 10:21:26Z et après l'ancrage des fiches. Q2 : une génération 2 sur des pools DISJOINTS pendant la même période est recevable comme EXPLORATION (pas comme confirmation), sous réserve du texte D du propriétaire et d'une enveloppe de crédits propre ; la fenêtre suivante peut aussi s'ouvrir avant G-1 sous conditions. Q3 : mesures descriptives à 0 crédit permises (frais réels et part d'échecs sur les pages pré-T0 après ancrage des fiches ; dénombrement des mints à plusieurs pools dès maintenant). Q4 : un nouveau refus arrête TOUTE l'étape 1 sous le texte C ; repli (a) par getSignaturesForAddress + getTransaction ≈ 315 000 crédits Free, repli (b) autre source, chacun avec une clause du propriétaire. Q5 : tâche T-R01-7 sans objection. Décompte du tableau de bord confirmé exact. | message R02 12:52Z | déclaré (R02) |
 
 | 24/11 12:52Z | R03 : cpmmpilot 0.2.4 écrit, non poussé ; 45 tests sur 45 ; driver A2r écrit (b1b5a58c). Les 74 mutants n'avaient PAS tourné (conteneur redémarré vers 12:51Z) ; relancés en tâche de fond, 25 à 30 minutes annoncées. R01 : T-R01-7 commencée à 12:52Z. | messages R03 et R01 | déclaré |
+
+| 24/11 12:54Z | **Note R01 « causes des pertes et hypothèses »** (T-R01-7, v0.1 sha 276bc716, commit d9fb838 ; v0.2 en a33cd2b après deux précisions de provenance de R02). Aucun résultat économique nouveau ; lecture des chiffres déjà audités : (1) le brut de W1 est nul ou négatif (MASTER −0,72 % [−3,11 ; +1,65]) et les coûts font 83 % de la perte (≈ 89 % avec le loyer perdu) : cause dominante = coût d'exécution sur la courbe LaunchLab ; (2) barre à franchir : 3,65 % sur LaunchLab, 1,12 % sur CPMM 0,25 % à 100 SOL (0,76 % avec une priorité de 10 000 lamports ; 2,63 % dès le palier 1 %) ; (3) il faudrait observer ≈ 1,6 % brut par position sur CPMM ; (4) familles écartées PAR LE CALCUL de la barre, sans essai : B2, E1, D3/C-E, H3, H2, tout pool CPMM ≥ 1 % ; (5) une hypothèse nouvelle, N1 : fournir la liquidité pour toucher le frais au lieu de le payer — aucun modèle de coût audité, change la nature de l'activité, décision du propriétaire requise. | branche R01 d9fb838 / a33cd2b, sha recalculé par R04 | vérifié (existence, sha) ; contenu déclaré R01 |
+
+| 24/11 12:54Z | **Inventaire des données détenues par R03** (commit bfffe5e, sha 489e76da). W1 : 2 273 pools, 322 146 signatures dont 185 861 échecs sans corps, 136 285 corps complets (frais, statut, soldes, logs ; 48 448 avec prix de priorité) ; brut sur GCS, dérivés (0,93 Go) seulement dans le conteneur. Données CPMM des étages a et b : seulement dans le conteneur. Pilote du 24/11 : U2, liste L, 44 pages de création, registres et comptage dans le dépôt ; pages de l'instantané et des coffres (46 Mo) seulement dans le conteneur. | branche R03 bfffe5e, sha recalculé par R04 | vérifié (existence, sha) ; contenu déclaré R03 |
 
 ## 5. Incidents
 
