@@ -99,8 +99,19 @@ def _authorized(tmp_path, monkeypatch, text=b'texte A ancre (synthetique)'):
     return f
 
 
-def test_live_rpc_release_authorizes_nothing_and_unanchored_text_is_refused(tmp_path):
-    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset()                     # 0.2: no network call is possible
+def test_live_rpc_release_authorizes_only_the_owner_text_b_c_and_unanchored_text_is_refused(tmp_path):
+    from pathlib import Path
+    owner = Path(__file__).resolve().parents[2] / 'AUTORISATION_B_C_v1_3.txt'
+    raw = owner.read_bytes()
+    assert len(raw) == 2175 and not raw.endswith(b'\n')                    # R02: exact bytes, no final newline
+    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(raw).hexdigest()}) == frozenset(
+        {'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})
+    text = raw.decode('utf-8')
+    for clause in ('au plus 5 000 crédits', 'au plus 50 000 crédits', 'arrêt dur à 49 000 crédits',
+                   'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C', 'hachée et ancrée par R02 ; puis'):
+        assert clause in text, clause
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=owner, opener=_Opener({}))
+    assert live.authorization_sha256 == hashlib.sha256(raw).hexdigest()
     f = tmp_path / 'a.txt'
     f.write_bytes(b'any text')
     with pytest.raises(rpc.RpcError, match='authorization_not_anchored'):
@@ -548,3 +559,50 @@ def test_zero_sale_is_the_frozen_composition_with_received_zero_erratum_r02():
     for f in (CC.FROZEN_FAILURES, CC.SENSITIVITY_FAILURES, rent):
         outcome = dict(migrated=False, value=0, tokens=1, cost=CC.STAKE_LAMPORTS + (2 + f.buy + f.sell + 1) * CC.TX_FEE_LAMPORTS)
         assert abs(CA.net_return_closed(outcome, failed_attempts=f.cleanup) - step1.zero_sale_net_lamports(f) / CC.STAKE_LAMPORTS) < 1e-12
+
+
+# -- 0.2.1: U-2 in TWO times (owner text B + R02 07:01Z): L hashed and anchored by R02, THEN the permutation ----------
+def test_u2_first_time_sends_no_gtfa_and_stops_with_list_l(tmp_path):
+    chain, spec = fixtures.build(n_pools=26)
+    chain.slot = spec['t0_slot']
+    seen = []
+
+    class Spy:
+        def request(self, m, p):
+            seen.append(m)
+            return chain.request(m, p)
+    first = u2.run_list(_client(Spy(), tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=spec['t0_time'])
+    assert first['verdict'] == 'LIST_L_AWAITS_R02_ANCHOR'
+    assert set(seen) <= {'getSlot', 'getProgramAccounts', 'getMultipleAccounts'} and 'getSlot' in seen
+    assert not (tmp_path / 'u2' / 'U2.json').exists()
+    doc = json.loads((tmp_path / 'u2' / 'LIST_L.json').read_text())
+    assert doc['sha256'] == first['sha_l'] == rpc.sha(doc['list'])
+    assert first['list_l_file_sha256'] == hashlib.sha256((tmp_path / 'u2' / 'LIST_L.json').read_bytes()).hexdigest()
+
+
+def test_u2_second_time_needs_the_anchored_sha_and_equals_the_one_shot_run(tmp_path):
+    chain, spec = fixtures.build(n_pools=26)
+    chain.slot = spec['t0_slot']
+    first = u2.run_list(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'a', t0_time=spec['t0_time'])
+    before = chain.requests
+    with pytest.raises(u2.U2Stop, match='list_l_not_anchored'):
+        u2.run_qualify(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'a', anchored_sha_l='0' * 64)
+    assert chain.requests == before                                       # refused BEFORE any call
+    path = tmp_path / 'a' / 'LIST_L.json'
+    doc = json.loads(path.read_text())
+    doc['list'] = doc['list'][1:]                                         # an edited L, even with its sha anchored
+    path.write_text(json.dumps(doc))
+    with pytest.raises(u2.U2Stop, match='list_l_not_anchored'):
+        u2.run_qualify(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'a', anchored_sha_l=first['sha_l'])
+    assert chain.requests == before
+    (tmp_path / 'b').mkdir()
+    (tmp_path / 'c').mkdir()
+    second = u2.run_list(_client(chain, tmp_path / 'b', 'u2', B.U2_CAP), tmp_path / 'b', t0_time=spec['t0_time'])
+    two = u2.run_qualify(_client(chain, tmp_path / 'b', 'u2', B.U2_CAP), tmp_path / 'b', anchored_sha_l=second['sha_l'])
+    chain2, spec2 = fixtures.build(n_pools=26)
+    chain2.slot = spec2['t0_slot']
+    one = u2.run(_client(chain2, tmp_path / 'c', 'u2', B.U2_CAP), tmp_path / 'c', t0_time=spec2['t0_time'])
+    assert two['verdict'] == one['verdict'] == 'U2_OK' and two['selected'] == one['selected']
+    assert two['anchored_sha_l'] == second['sha_l'] == one['sha_l']
+    ledger = json.loads((tmp_path / 'b' / 'l_u2.json').read_text())        # both times on ONE ledger, resumed
+    assert ledger['credits'] == two['budget']['credits'] > second['budget']['credits']

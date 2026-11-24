@@ -12,7 +12,7 @@ from cpmmx.events import CPMM_PROGRAM
 
 from . import layout as L
 from .rpc import MethodRefused, RpcError, canonical, sha
-from .store import write_gz_page, write_json
+from .store import file_sha, read_json, write_gz_page, write_json
 
 LAUNCHLAB_PROGRAM = 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'     # bot.market.launchlab_events (frozen tree)
 MIN_RESERVE_LAMPORTS = 100 * 10 ** 9
@@ -158,24 +158,49 @@ def qualify(client, out, lst, sha_l, *, t0_time):
                 tested_rows=tested)
 
 
-def run(client, out, *, t0_time, exclude=frozenset()):
+def run_list(client, out, *, t0_time, exclude=frozenset()):
+    """U-2, FIRST time (owner text B: L is "hachée et ancrée par R02 ; puis" the permutation): getSlot, getProgramAccounts,
+    WSOL vaults -> list L and its sha written, then STOP. No getTransactionsForAddress is ever sent here."""
     out.mkdir(parents=True, exist_ok=True)
     lst, counts, t0_slot, configs = snapshot(client, out, exclude=exclude)
     sha_l = sha(lst)
-    write_json(out / 'LIST_L.json', dict(schema=SCHEMA, t0_slot=t0_slot, t0_time=t0_time, list=lst, sha256=sha_l))
+    write_json(out / 'LIST_L.json', dict(schema=SCHEMA, t0_slot=t0_slot, t0_time=t0_time, list=lst, sha256=sha_l,
+                                         counts=counts, configs=configs))
     if len(lst) < FLOOR:
         doc = dict(schema=SCHEMA, verdict='INCONCLUSIF', reason='list_l_below_20', counts=counts, sha_l=sha_l)
         write_json(out / 'U2.json', doc)
         return doc
+    return dict(schema=SCHEMA, verdict='LIST_L_AWAITS_R02_ANCHOR', t0_slot=t0_slot, t0_time=t0_time, counts=counts,
+                sha_l=sha_l, list_l_file_sha256=file_sha(out / 'LIST_L.json'), budget=client.budget.snapshot())
+
+
+def run_qualify(client, out, *, anchored_sha_l):
+    """U-2, SECOND time, only with the sha of L anchored by R02: the file is re-read and re-hashed BEFORE any call."""
+    doc = read_json(out / 'LIST_L.json')
+    lst = doc['list']
+    if sha(lst) != doc['sha256'] or doc['sha256'] != anchored_sha_l:
+        raise U2Stop('list_l_not_anchored')
+    if len(lst) < FLOOR:
+        raise U2Stop('list_l_below_20_no_second_time')
+    sha_l, configs, t0_time = doc['sha256'], doc['configs'], doc['t0_time']
     q = qualify(client, out, lst, sha_l, t0_time=t0_time)
     by_pool = {r['pool']: r for r in lst}
     selected = [dict(by_pool[p], amm_config=dict(configs[by_pool[p]['config']], address=by_pool[p]['config']))
                 for p in q['valid']]
-    doc = dict(schema=SCHEMA, t0_slot=t0_slot, t0_time=t0_time, counts=counts, sha_l=sha_l,
-               permutation_seed=q['order_seed'], tested=q['tested'], creation_reasons=q['reasons'],
-               verdict=q['verdict'], selected=selected, budget=client.budget.snapshot())
-    write_json(out / 'U2.json', doc)
-    return doc
+    out_doc = dict(schema=SCHEMA, t0_slot=doc['t0_slot'], t0_time=t0_time, counts=doc['counts'], sha_l=sha_l,
+                   anchored_sha_l=anchored_sha_l, permutation_seed=q['order_seed'], tested=q['tested'],
+                   creation_reasons=q['reasons'], verdict=q['verdict'], selected=selected,
+                   budget=client.budget.snapshot())
+    write_json(out / 'U2.json', out_doc)
+    return out_doc
 
 
-__all__ = ['run', 'snapshot', 'permutation', 'creation_check', 'qualify', 'U2Stop', 'canonical']
+def run(client, out, *, t0_time, exclude=frozenset()):
+    """Both times in a row: OFFLINE rehearsal and tests only (the rehearsal's own sha stands for R02's anchor)."""
+    first = run_list(client, out, t0_time=t0_time, exclude=exclude)
+    if first['verdict'] != 'LIST_L_AWAITS_R02_ANCHOR':
+        return first
+    return run_qualify(client, out, anchored_sha_l=first['sha_l'])
+
+
+__all__ = ['run', 'run_list', 'run_qualify', 'snapshot', 'permutation', 'creation_check', 'qualify', 'U2Stop', 'canonical']

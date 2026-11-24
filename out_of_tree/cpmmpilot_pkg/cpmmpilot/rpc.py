@@ -33,9 +33,10 @@ def sha(obj):
     return hashlib.sha256(canonical(obj).encode()).hexdigest()
 
 
-# sha256 of the authorization texts ANCHORED by R02 (owner's texts A/B/C, verified at the source). EMPTY in 0.2: LiveRpc
-# cannot open. Filled only by an audited release, never at run time.
-AUTHORIZED_TEXT_SHA256 = frozenset()
+# sha256 of the authorization texts ANCHORED by R02 (owner's texts, verified at the source). 0.2 was EMPTY. 0.2.1: the
+# owner's texts B and C of v1.3 (event b1f263a6, 24/11 07:00:22Z, verified VALID by R02), canonical file = the exact
+# UTF-8 bytes of message.content, no final newline, 2 175 bytes (AUTORISATION_B_C_v1_3.txt). Never modified at run time.
+AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})
 PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSignaturesForAddress', 'getTransaction',
                  'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
 MAX_RESPONSE_BYTES = 256 * 1024 ** 2
