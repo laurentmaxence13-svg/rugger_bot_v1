@@ -292,6 +292,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 22:29Z | **Texte G2-3 du propriétaire collé dans la session R03** (22:29:08Z, event b7b839b2 ; AUTORISATION_G23.txt sha 3d6999ec, commit R03 ba45cf8). Bloqueur levé. Suite : ancrage du texte par R02, cpmmpilot 0.2.8.1 avec ce sha, audit, ancrage des fiches G2-3 et N1, collecte unique après le 06/12 10:21:26Z. | message R03 | déclaré |
 
+| 24/11 22:50Z | Préparation du jalon 3 (R01 be4c76b, sha 446b02cf) : projets de fiches de confirmation G2-3 et N1 sur les mêmes pools, fenêtre [06/12 ; 18/12), lues seulement si le pilote correspondant est GO_PILOTE, α₂ 0,025 avec Holm ; n_c G2-3 197 (238 si les deux sont retenues). **Décision R04-7** (sous veto R02) : confirmations numérotées C-169 (G2-3) et C-170 (N1), hors du plafond exploratoire, consommées seulement si lues ; accord pour g23five 0.3 et n1verdict 0.3 (α paramétré, valeur p pour Holm) en paquets séparés, après l'ancrage des fiches pilotes ; fiches de confirmation à ancrer avant le 06/12 sous réserve de l'avis R02. cpmmpilot 0.2.8 livré par R03 (8c4a022, MANIFEST 7251d4fe, 78/78 mutants déclarés) ; texte G2-3 du propriétaire ancré par R02 (a5e8f770). | branches R01 be4c76b, R03 8c4a022 | déclaré ; décision R04 |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
