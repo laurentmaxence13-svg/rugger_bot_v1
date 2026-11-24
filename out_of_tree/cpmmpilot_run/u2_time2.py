@@ -21,6 +21,8 @@ p.add_argument('--run', type=Path, required=True)
 p.add_argument('--anchored-sha-l', required=True)
 p.add_argument('--prior-ledger', type=Path, required=True)
 a = p.parse_args()
+if (a.run / 'TIME2_RESULT.json').exists():                 # K-1 (R02): one run, even after a STOP
+    raise SystemExit('time2_already_run')
 if not re.fullmatch('[0-9a-f]{64}', a.anchored_sha_l):
     raise SystemExit('anchored_sha_l_must_be_64_hex')
 prior_raw = a.prior_ledger.read_bytes()
