@@ -1,0 +1,19 @@
+{
+ "authorization_sha256": "e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1",
+ "budget": {
+  "by_method": {
+   "getMultipleAccounts": 156,
+   "getProgramAccounts": 130,
+   "getSlot": 1
+  },
+  "credits": 287,
+  "max_credits": 5000,
+  "requests": 170,
+  "stage": "u2"
+ },
+ "error": "RpcError",
+ "exclude_n": 0,
+ "exclude_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "tag": "rate_limited_429",
+ "verdict": "STOP"
+}
