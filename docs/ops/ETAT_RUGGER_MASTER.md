@@ -183,10 +183,14 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 23/11 17:24Z | R02 : **certificat d'enregistrement R-CP1 / B1 CONFORME** (d34c2c4e). R-CP1 : −3 % en 600 s ; B1 : +3 %. Les deux : ≥ 20 swaps, TP/SL ±2 %, 30 min, garde 2 %, α 0,05 puis 0,05/3, n 155, essais 169 et 170, témoins appariés par pool. Textes d'autorisation des étapes (b484d384), dont les champs sont à remplir par R03. Critères de sélection génération 2 (a21f90f3) : α_g = 0,025 × 2^(−(g−2)) pour g ≥ 2, risque total ≤ 0,10 ; demande de +3 essais (170 → 173). | registre R02 | déclaré (R02) |
 
+| 24/11 09:23Z | **Pilote CPMM, U-2 temps 1** : lancé après l'autorisation écrite par le propriétaire dans la session R03. STOP à 09:24:21Z sur une limite de débit HTTP 429 : 287 crédits sur 5 000, pas de liste L, aucun essai consommé. R02 (41c20a16) : relance non couverte par « UNE FOIS ». Correctif 0.2.2 (≥ 0,2 s entre requêtes, branche R03 en 3af7334) en audit. Il faut une ligne du propriétaire dans la session R03. | registre R02 | déclaré (R03, R02) |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
 - 23/11 21:23Z : fausse alerte. R02 avait bien reçu T-R01-3 ; son audit (a3f194dc) est arrivé à 21:24Z.
+- 24/11 09:17Z : le classifieur de R03 a refusé le premier lancement (texte écrit en session R04). Accepté à 09:23Z après le recollage par le propriétaire dans la session R03.
+- 24/11 09:24Z : HTTP 429 de Helius, STOP du temps 1 de U-2 (287 crédits).
 - 23/11 21:11Z : erreur d identifiant du programme CPMM dans le texte B(b) v1.2, déjà présenté au propriétaire ; corrigée en v1.3 (443bbfb9).
 - 23/11 21:04:29Z : redémarrage du conteneur de R03 (5e observé) ; intégrité W1 à 0 écart.
 - 23/11 08:47:44Z : le conteneur de R03 a redémarré ; les données ont survécu (0 écart d'intégrité). Seuls ≈ 71 % de W1 sont copiés à l'extérieur, le reste serait perdu à la fin de la session.
