@@ -157,3 +157,15 @@ def test_verdict_comes_from_the_threshold_50_only():
     assert set(d) == {'180', '360', '1000'} and all('verdict' not in v for v in d.values())
     assert A.n_eff(per, valid, invalid, untested)['verdict'] == 'U2BIS_A_PROPOSER'
     assert d['180']['n_eff_high'] == 0
+
+
+def test_prior_stop_must_be_the_anchored_one(tmp_path, monkeypatch):
+    bad = tmp_path / 'fake_prior.json'
+    bad.write_text('{}')
+    argv = ['activity_l2.py', '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--list-l', str(LIST_L), '--u2', str(U2J),
+            '--gtfa-dir', str(GTFA), '--out', str(tmp_path / 'o'), '--prior-result', str(bad),
+            '--prior-ledger', str(HERE / 'T2_20261124T182222Z' / 'ledger_t2.json')]
+    monkeypatch.setattr(sys, 'argv', argv)
+    with pytest.raises(SystemExit, match='prior_t2_not_the_anchored_stop'):
+        A.main()
+    assert not (tmp_path / 'o').exists()

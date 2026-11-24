@@ -1,7 +1,7 @@
 {
  "base_guard": "PASS",
  "mutants": 18,
- "killed": 17,
+ "killed": 18,
  "results": {
   "threshold_49": "KILLED",
   "p_low_0_5": "KILLED",
@@ -17,7 +17,7 @@
   "cap_not_cumulative": "KILLED",
   "partial_not_published": "KILLED",
   "checkpoint_not_passed": "KILLED",
-  "prior_not_checked": "SURVIVED",
+  "prior_not_checked": "KILLED",
   "verdict_from_180": "KILLED",
   "descriptive_verdict_kept": "KILLED",
   "descriptive_missing": "KILLED"
