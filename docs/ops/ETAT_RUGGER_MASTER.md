@@ -189,6 +189,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 10:30Z | **U-2 temps 2 : U2_OK** (déclaré R03, contrôles hors ligne de R02 conformes). 44 pools testés, 24 retenus ; écartés : 16 LaunchLab, 3 pour profondeur, 1 de moins de 7 jours. Cumul U-2 : 2 380/5 000 crédits. Ancrage R02 en attente des 44 réponses GTFA brutes, qu'il rejoue. Puis étape 1 (drivers A et B audités par R02). | registre R02 | déclaré |
 
+| 24/11 10:32Z | **Liste U-2 finale ANCRÉE** (U2.json 3ca0260a, registre 0e79511d) : 24 pools, T0 24/11 10:21:26Z. R02 a rejoué les 44 vérifications de création à l'identique. Étape 1, partie A, autorisée : comptage sur 24 h, contrôle du point (2), puis arrêt. Règle de D fixée avant comptage (e294655a) : D = min(max(D_155, 7), ⌊D_max⌋, 60) ; si l'attendu est < 30 entrées, ARRÊT et décision du propriétaire. | registre R02 | déclaré |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
