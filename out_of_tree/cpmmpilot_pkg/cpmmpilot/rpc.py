@@ -9,6 +9,7 @@ transport (every attempt is charged by ``Client`` before it leaves); every failu
 the endpoint or the provider's message."""
 import base64
 import hashlib
+import http.client
 import json
 import time
 import urllib.error
@@ -126,6 +127,8 @@ class LiveRpc:
             if exc.code in (401, 403):
                 raise RpcError('unauthorized_%d' % exc.code) from None
             raise RpcError('http_%d' % exc.code) from None
+        except http.client.HTTPException:                                    # 0.2.7: IncompleteRead and kin (R02 822d5edf)
+            raise RpcError('response_truncated') from None
         except (urllib.error.URLError, OSError, ValueError):
             raise RpcError('network_error') from None                         # no detail: it may name the host
         if len(raw) > MAX_RESPONSE_BYTES:

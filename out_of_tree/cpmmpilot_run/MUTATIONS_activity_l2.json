@@ -1,0 +1,25 @@
+{
+ "base_guard": "PASS",
+ "mutants": 18,
+ "killed": 17,
+ "results": {
+  "threshold_49": "KILLED",
+  "p_low_0_5": "KILLED",
+  "p_high_0_8": "KILLED",
+  "point_ratio_1": "KILLED",
+  "invalid_counted": "KILLED",
+  "verdict_high_le": "KILLED",
+  "verdict_low_gt": "KILLED",
+  "tested_not_crosschecked": "KILLED",
+  "valid_not_checked": "KILLED",
+  "single_run_guard_removed": "KILLED",
+  "stop_swallowed": "KILLED",
+  "cap_not_cumulative": "KILLED",
+  "partial_not_published": "KILLED",
+  "checkpoint_not_passed": "KILLED",
+  "prior_not_checked": "SURVIVED",
+  "verdict_from_180": "KILLED",
+  "descriptive_verdict_kept": "KILLED",
+  "descriptive_missing": "KILLED"
+ }
+}

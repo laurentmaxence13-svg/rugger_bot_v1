@@ -867,3 +867,44 @@ def test_t2_ledger_stage_and_cap(tmp_path):
     b.charge('getSignaturesForAddress', ['P', dict(limit=1000)])
     with pytest.raises(B.BudgetExhausted):
         b.charge('getSignaturesForAddress', ['P', dict(limit=1000)])
+
+
+# -- 0.2.7: truncated HTTP responses and per-pool checkpoints (R02 822d5edf) --------------------------------------------
+def test_incomplete_read_is_a_truncated_response(tmp_path, monkeypatch):
+    import http.client
+    f = _authorized(tmp_path, monkeypatch)
+    for exc in (http.client.IncompleteRead(b'x' * 10, 99), http.client.RemoteDisconnected('closed'),
+                http.client.BadStatusLine('x')):
+        op = _Opener(exc)
+        live = rpc.LiveRpc(ENDPOINT, authorization_file=f, opener=op)
+        with pytest.raises(rpc.RpcError) as info:
+            live.request('getSignaturesForAddress', ['P', dict(limit=1000)])
+        assert str(info.value) == 'response_truncated'
+        assert 'bytes read' not in str(info.value) and info.value.__cause__ is None
+
+
+def test_count_24h_checkpoints_after_each_pool_and_keeps_them_on_a_stop(tmp_path):
+    chain, spec = fixtures.build(n_pools=4, specials=False)
+    chain.slot = spec['t0_slot']
+    t0 = spec['t0_time']
+    pools = [p['pool'] for p in spec['pools']]
+    ck = tmp_path / 'PARTIAL.json'
+    full = step1.count_24h(_client(chain, tmp_path / 'a', 'step1', 10_000), pools, t0_time=t0, checkpoint=ck)
+    part = json.loads(ck.read_text())
+    assert part['per_pool'] == full['per_pool'] and part['pools_done'] == part['pools_total'] == 4
+    seen = []
+
+    class DiesOnThird:
+        def request(self, m, p):
+            if p[0] == pools[2]:
+                raise rpc.RpcError('response_truncated')
+            seen.append(p[0])
+            return chain.request(m, p)
+    ck2 = tmp_path / 'PARTIAL2.json'
+    (tmp_path / 'b').mkdir()
+    with pytest.raises(rpc.RpcError, match='response_truncated'):
+        step1.count_24h(_client(DiesOnThird(), tmp_path / 'b', 'step1', 10_000), pools, t0_time=t0, checkpoint=ck2)
+    part2 = json.loads(ck2.read_text())
+    assert part2['pools_done'] == 2 and part2['per_pool'] == {p: full['per_pool'][p] for p in pools[:2]}
+    text = ck.read_text() + ck2.read_text()
+    assert not any(t['transaction']['signatures'][0] in text for p in pools for t in chain.history[p])

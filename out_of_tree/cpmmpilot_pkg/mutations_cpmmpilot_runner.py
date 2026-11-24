@@ -82,6 +82,9 @@ MUTANTS = [
     ('format_guard_removed', 'step1.py', "                    raise TxFormatStop('STOP_TX_FORMAT:%s' % problem)\n", "                    pass\n"),
     ('format_meta_unchecked', 'step1.py', "    if not isinstance(meta, dict) or (meta.get('logMessages') is None and meta.get('err') is None):", "    if not isinstance(meta, dict):"),
     ('format_blocktime_unchecked', 'step1.py', "    for key in ('slot', 'transactionIndex', 'blockTime'):", "    for key in ('slot', 'transactionIndex'):"),
+    # 0.2.7: truncated HTTP responses, per-pool checkpoints (R02 822d5edf)
+    ('http_exception_uncaught', 'rpc.py', "        except http.client.HTTPException:                                    # 0.2.7: IncompleteRead and kin (R02 822d5edf)\n            raise RpcError('response_truncated') from None\n", ''),
+    ('checkpoint_not_written', 'step1.py', "        if checkpoint is not None:                    # 0.2.7: counts written after EACH pool, so a STOP keeps them\n", "        if False:\n"),
     # 0.2: live transport (R02 note fb28705b) -- gated, no host or key read, no retry, nothing echoed
     ('release_authorizes_another_sha', 'rpc.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',",
      "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1', '0' * 64,"),
@@ -143,7 +146,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.6', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.7', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

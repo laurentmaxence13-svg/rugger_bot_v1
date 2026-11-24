@@ -32,7 +32,7 @@ class Step1Stop(RuntimeError):
 
 
 # -- (1) -----------------------------------------------------------------------------------------------------------
-def count_24h(client, pools, *, t0_time):
+def count_24h(client, pools, *, t0_time, checkpoint=None):
     per_pool = {}
     for pool in pools:
         n, before = 0, None
@@ -48,6 +48,9 @@ def count_24h(client, pools, *, t0_time):
             if (page[-1].get('blockTime') or 0) < t0_time - DAY or len(page) < 1000:
                 break
         per_pool[pool] = n
+        if checkpoint is not None:                    # 0.2.7: counts written after EACH pool, so a STOP keeps them
+            write_json(checkpoint, dict(per_pool=per_pool, pools_done=len(per_pool), pools_total=len(pools),
+                                        t0_time=t0_time))
     r_hat = sum(per_pool.values()) / len(per_pool) if per_pool else 0.0
     return dict(per_pool=per_pool, r_hat=r_hat, statistic='mean signatures per pool over the 24 h before T0',
                 point2=B.point2_stop(r_hat), d_max_days=B.d_max_days(r_hat))
