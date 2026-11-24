@@ -262,6 +262,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 18:24Z | **T2 : STOP au premier incident**, aucune nouvelle tentative (règle du propriétaire). Réponse HTTP tronquée (IncompleteRead, 226 640 octets) au 186e appel ; 186 crédits sur 1 470 ; 155 pools sur 259 commencés. Le driver ne conservait les comptes qu'en fin d'exécution : aucun N50 publiable. Défaut secondaire : cette exception échappait à la classification « réponse tronquée ». Options soumises à R02 pour un texte unique au propriétaire : (a) seconde mesure avec enregistrement au fil de l'eau, (b) idem avec une reprise automatique par appel tronqué, (c) rien. | branche R03 2df4d3f (ACTIVITY_RESULT.json) | vérifié |
 
+| 24/11 18:27Z | R02 : STOP de T2 vérifié (sha recalculés, registre 822d5edf) et conforme au texte du propriétaire. Erratum R02 : son audit n'a vu ni la non-conversion d'IncompleteRead ni l'absence d'écriture partielle des comptes. Recommandation (a) : seconde et dernière mesure T2 avec cpmmpilot 0.2.7 (troncature HTTP reconnue, comptes écrits après chaque pool, testés), dans le plafond cumulé de 1 500 (186 consommés + ≈ 570), sans nouvel essai automatique ; texte présenté au propriétaire. Le comptage G2 hors ligne déjà autorisé peut tourner. | registre R02 822d5edf | déclaré (R02) |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
