@@ -49,7 +49,9 @@ def sha(obj):
 # UTF-8 bytes of message.content, no final newline, 2 175 bytes (AUTORISATION_B_C_v1_3.txt). Never modified at run time.
 AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
                                     # 0.2.6: owner's T1/T2 text (R03 session, 24/11 18:00:36Z, R02 anchor 077b4822)
-                                    'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9'})
+                                    'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',
+                                    # 0.2.7: owner's T2-bis text (b), 24/11 18:56:59Z (R02 anchor f63275d2)
+                                    'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d'})
 PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSignaturesForAddress', 'getTransaction',
                  'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
 MAX_RESPONSE_BYTES = 256 * 1024 ** 2

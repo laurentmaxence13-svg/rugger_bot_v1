@@ -23,7 +23,7 @@ ENDPOINT = 'https://beta.helius-rpc.com/'          # admitted by R02 (07:20Z); t
 LIST_L_SHA256 = 'c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3'
 SHA_L = '110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd'
 U2_SHA256 = '3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963'
-AUTH_FILE = 'AUTORISATION_T1_T2.txt'
+AUTH_FILE = 'AUTORISATION_T2_BIS.txt'                    # T2 bis: LiveRpc opens with the owner's text (b)
 RESULT = 'ACTIVITY_RESULT.json'
 PARTIAL = 'PARTIAL_COUNTS.json'
 # Option (b) of 24/11 (R02 1d903d5a): 1 = at most ONE re-read of the SAME call after RpcError('response_truncated'),
@@ -118,7 +118,8 @@ def main():
         raise SystemExit('inputs_not_anchored')
     if sha_of(a.prior_result) != PRIOR_RESULT_SHA256 or sha_of(a.prior_ledger) != PRIOR_LEDGER_SHA256:
         raise SystemExit('prior_t2_not_the_anchored_stop')
-    if sha_of(Path(__file__).resolve().parent / T2BIS_TEXT) != T2BIS_TEXT_SHA256:
+    if sha_of(Path(__file__).resolve().parent / T2BIS_TEXT) != T2BIS_TEXT_SHA256 or \
+            sha_of(a.pkg / AUTH_FILE) != T2BIS_TEXT_SHA256:
         raise SystemExit('t2bis_text_not_anchored')
     prior_credits = json.loads(a.prior_ledger.read_bytes())['credits']
     cap = B.T2_CAP - prior_credits

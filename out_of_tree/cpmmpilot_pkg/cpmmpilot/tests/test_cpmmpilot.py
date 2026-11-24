@@ -106,9 +106,12 @@ def test_live_rpc_release_authorizes_only_the_owner_text_b_c_and_unanchored_text
     assert len(raw) == 2175 and not raw.endswith(b'\n')                    # R02: exact bytes, no final newline
     t2 = (Path(__file__).resolve().parents[2] / 'AUTORISATION_T1_T2.txt').read_bytes()
     assert len(t2) == 1183 and not t2.endswith(b'\n') and 'J\'autorise T2' in t2.decode('utf-8')
-    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(raw).hexdigest(), hashlib.sha256(t2).hexdigest()}) == frozenset(
+    t2b = (Path(__file__).resolve().parents[2] / 'AUTORISATION_T2_BIS.txt').read_bytes()
+    assert len(t2b) == 533 and not t2b.endswith(b'\n') and 'relue une seule fois' in t2b.decode('utf-8')
+    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(x).hexdigest() for x in (raw, t2, t2b)}) == frozenset(
         {'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
-         'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9'})
+         'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',
+         'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d'})
     text = raw.decode('utf-8')
     for clause in ('au plus 5 000 crédits', 'au plus 50 000 crédits', 'arrêt dur à 49 000 crédits',
                    'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C', 'hachée et ancrée par R02 ; puis'):
