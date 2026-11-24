@@ -911,3 +911,15 @@ def test_count_24h_checkpoints_after_each_pool_and_keeps_them_on_a_stop(tmp_path
     assert part2['pools_done'] == 2 and part2['per_pool'] == {p: full['per_pool'][p] for p in pools[:2]}
     text = ck.read_text() + ck2.read_text()
     assert not any(t['transaction']['signatures'][0] in text for p in pools for t in chain.history[p])
+
+
+def test_g23_stage_and_cap_0_2_8(tmp_path):
+    assert B.G23_CAP == 32_340 == 33_000 * 98 // 100
+    b = B.PilotBudget(tmp_path / 'g.json', stage='g23', max_credits=B.G23_CAP)
+    b.credits = B.G23_CAP - B.COSTS['getTransactionsForAddress']
+    b.charge('getTransactionsForAddress', [None, dict(limit=100)])
+    assert b.credits == B.G23_CAP
+    with pytest.raises(B.BudgetExhausted):
+        b.charge('getTransactionsForAddress', [None, dict(limit=100)])
+    with pytest.raises(B.BudgetError, match='ledger_of_another_stage'):
+        B.PilotBudget(tmp_path / 'g.json', stage='step1', max_credits=B.G23_CAP)

@@ -145,7 +145,8 @@ def test_full_run_collects_the_4_pools_and_checks_format(tmp_path, monkeypatch):
     assert res['tx_format']['transactions_by_version'] == {'1': 8}
     assert [b['params'][0] for b in seen[::2]] == list(G.POOLS)
     assert res['sheet_sha256'] == res['verdict_code_sha256'] == SHA
-    assert json.loads((out / 'ledger_g23.json').read_text())['max_credits'] == 32_340
+    ledger = json.loads((out / 'ledger_g23.json').read_text())
+    assert ledger['max_credits'] == 32_340 and ledger['stage'] == 'g23'
 
 
 def test_one_truncation_is_reread_once_and_charged(tmp_path, monkeypatch):
@@ -194,6 +195,7 @@ def test_rpc_error_message_is_not_echoed(tmp_path, monkeypatch, capsys):
 
 def test_cap_reached_stops_at_98_percent(tmp_path, monkeypatch):
     monkeypatch.setattr(G, 'CAP', 3 * step1.B.COSTS['getTransactionsForAddress'])
+    monkeypatch.setattr(step1.B, 'G23_CAP', G.CAP)
     argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
     G.main(argv, now=END)
     res = _result(out)
@@ -210,3 +212,65 @@ def test_bad_tx_format_stops_after_collection(tmp_path, monkeypatch):
     G.main(argv, now=END)
     res = _result(out)
     assert res['verdict_run'] == 'STOP' and res['tag'] == 'STOP_TX_FORMAT:blockTime' and len(seen) == 8
+
+
+def test_window_bounds_are_exact_to_the_second(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
+    with pytest.raises(SystemExit, match='window_not_closed'):
+        G.main(argv, now=G.T0 + 12 * 86_400 - 1)
+    G.main(argv, now=G.T0 + 12 * 86_400)
+    assert {tuple(b['params'][1]['filters']['blockTime'].items()) for b in seen} == {(('gte', G.T0), ('lt', END))}
+
+
+def test_package_without_g23_cap_is_refused(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
+    monkeypatch.setattr(step1.B, 'G23_CAP', 33_000)
+    with pytest.raises(SystemExit, match='package_without_g23_stage'):
+        G.main(argv, now=END)
+    assert seen == [] and not out.exists()
+
+
+def test_extra_pool_is_refused(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
+    monkeypatch.setattr(G, 'POOLS', G.POOLS + ('4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv',))
+    with pytest.raises(SystemExit, match='pools_or_t0_mismatch'):
+        G.main(argv, now=END)
+    assert seen == []
+
+
+def test_partial_is_published_for_every_pool(tmp_path, monkeypatch):
+    def answer(body, n):
+        return OSError('x') if n == 1 else _two_pages(body, n)
+    argv, out, seen = _setup(tmp_path, monkeypatch, answer)
+    G.main(argv, now=END)
+    res = _result(out)
+    assert set(res['states']) == set(G.POOLS) and res['verdict_run'] == 'STOP'
+    assert all(s == dict(pages=0, transactions=0, done=False) for s in res['states'].values())
+    assert res['budget']['requests'] == 1
+
+
+def test_other_text_than_the_anchored_g23_one_is_refused(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
+    other = tmp_path / 'OTHER.txt'
+    other.write_text('another text\n')
+    od = hashlib.sha256(other.read_bytes()).hexdigest()
+    monkeypatch.setattr(rpc, 'AUTHORIZED_TEXT_SHA256', rpc.AUTHORIZED_TEXT_SHA256 | {od})
+    a = list(argv)
+    a[a.index('--authorization') + 1] = str(other)
+    with pytest.raises(SystemExit, match='g23_owner_text_not_anchored'):
+        G.main(a, now=END)
+    assert seen == [] and not out.exists()
+
+
+def test_u2_without_one_of_the_pools_is_refused(tmp_path, monkeypatch):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _two_pages)
+    doc = json.loads(U2J.read_bytes())
+    doc['selected'] = [r for r in doc['selected'] if r['pool'] != G.POOLS[3]]
+    bad = tmp_path / 'U2_minus_one.json'
+    bad.write_text(json.dumps(doc))
+    monkeypatch.setattr(G, 'U2_SHA256', hashlib.sha256(bad.read_bytes()).hexdigest())
+    a = list(argv)
+    a[a.index('--u2') + 1] = str(bad)
+    with pytest.raises(SystemExit, match='pools_or_t0_mismatch'):
+        G.main(a, now=END)
+    assert seen == [] and not out.exists()

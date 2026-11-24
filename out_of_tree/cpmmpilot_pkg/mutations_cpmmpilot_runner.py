@@ -23,6 +23,9 @@ MUTANTS = [
     # budget and stop rules
     ('reserve_strict', 'u2.py', 'amount < MIN_RESERVE_LAMPORTS', 'amount <= MIN_RESERVE_LAMPORTS'),
     ('hard_stop_50000', 'budget.py', 'STEP1_HARD_STOP = 49_000', 'STEP1_HARD_STOP = 50_000'),
+    # 0.2.8: G2-3 stage
+    ('g23_cap_33000', 'budget.py', 'G23_CAP = 32_340', 'G23_CAP = 33_000'),
+    ('g23_stage_missing', 'budget.py', "('step0', 'u2', 'step1', 't2', 'g23')", "('step0', 'u2', 'step1', 't2')"),
     ('point2_ge', 'budget.py', 'stop=need > POINT2_LIMIT', 'stop=need >= POINT2_LIMIT + 100'),
     ('gtfa_cost_1', 'budget.py', "'getTransactionsForAddress': 10}", "'getTransactionsForAddress': 1}"),
     ('ledger_not_resumed', 'budget.py', "            self.requests, self.credits = data['requests'], data['credits']\n", ''),
