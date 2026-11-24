@@ -1,7 +1,7 @@
 {
  "base_guard": "PASS",
- "mutants": 12,
- "killed": 12,
+ "mutants": 15,
+ "killed": 15,
  "results": {
   "threshold_49": "KILLED",
   "p_low_0_5": "KILLED",
@@ -14,6 +14,9 @@
   "valid_not_checked": "KILLED",
   "single_run_guard_removed": "KILLED",
   "stop_swallowed": "KILLED",
-  "cap_1500": "KILLED"
+  "cap_1500": "KILLED",
+  "verdict_from_180": "KILLED",
+  "descriptive_verdict_kept": "KILLED",
+  "descriptive_missing": "KILLED"
  }
 }

@@ -60,6 +60,19 @@ def n_eff(per_pool, valid, invalid, untested, threshold=N50_THRESHOLD):
                 verdict=verdict, verdict_limit=VERDICT_LIMIT)
 
 
+DESCRIPTIVE_THRESHOLDS = (180, 360, 1000)              # R02 18:05Z (asked by R04): DESCRIPTIVE ONLY, never a verdict
+
+
+def descriptive_thresholds(per_pool, valid, invalid, untested):
+    out = {}
+    for t in DESCRIPTIVE_THRESHOLDS:
+        d = n_eff(per_pool, valid, invalid, untested, threshold=t)
+        d.pop('verdict')
+        d['non_decisionnel'] = True
+        out[str(t)] = d
+    return out
+
+
 def main():
     p = argparse.ArgumentParser()
     for k in ('--pkg', '--list-l', '--u2', '--gtfa-dir', '--out'):
@@ -92,6 +105,7 @@ def main():
         per_pool = cnt['per_pool']
         res.update(verdict_run='DONE', per_pool=per_pool, mean_signatures=cnt['r_hat'],
                    n50=n_eff(per_pool, valid, invalid, untested),
+                   descriptive_thresholds=descriptive_thresholds(per_pool, valid, invalid, untested),
                    group_of={pl: ('valid' if pl in set(valid) else 'invalid' if pl in set(invalid) else 'untested')
                              for pl in pools})
     except Exception as exc:                               # first incident: STOP, no retry, partial published

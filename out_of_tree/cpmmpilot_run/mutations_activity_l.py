@@ -22,6 +22,9 @@ M = [
     ('stop_swallowed', "        res.update(verdict_run='STOP', error=type(exc).__name__, tag=str(exc)[:120],",
      "        res.update(verdict_run='DONE', error=type(exc).__name__, tag=str(exc)[:120],"),
     ('cap_1500', "max_credits=B.T2_CAP)", "max_credits=1500)"),
+    ('verdict_from_180', "                   n50=n_eff(per_pool, valid, invalid, untested),", "                   n50=n_eff(per_pool, valid, invalid, untested, threshold=180),"),
+    ('descriptive_verdict_kept', "        d.pop('verdict')\n", ""),
+    ('descriptive_missing', "                   descriptive_thresholds=descriptive_thresholds(per_pool, valid, invalid, untested),\n", ""),
 ]
 
 

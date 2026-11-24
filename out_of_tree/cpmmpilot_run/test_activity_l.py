@@ -122,3 +122,18 @@ def test_full_run_counts_only_and_publishes_n50(tmp_path, monkeypatch):
     assert all(v == 60 for v in res['per_pool'].values()) and res['n50']['n50_raw'] == 259
     assert res['budget']['credits'] == 259 and res['budget']['stage'] == 't2' and res['budget']['max_credits'] == 1470
     assert '"S1"' not in (out / A.RESULT).read_text()
+    assert res['n50']['threshold'] == 50 and res['n50']['verdict'] == 'U2BIS_A_PROPOSER'   # 259 active at 50
+    for t in ('180', '360', '1000'):                          # DESCRIPTIVE: no verdict, 0 active at 60 signatures
+        d = res['descriptive_thresholds'][t]
+        assert 'verdict' not in d and d['non_decisionnel'] is True and d['n50_raw'] == 0 and d['threshold'] == int(t)
+
+
+def test_verdict_comes_from_the_threshold_50_only():
+    valid = ['v%d' % i for i in range(24)]
+    invalid = ['i%d' % i for i in range(20)]
+    untested = ['u%d' % i for i in range(215)]
+    per = {p: 100 for p in valid + invalid + untested}       # all active at 50, none at 180
+    d = A.descriptive_thresholds(per, valid, invalid, untested)
+    assert set(d) == {'180', '360', '1000'} and all('verdict' not in v for v in d.values())
+    assert A.n_eff(per, valid, invalid, untested)['verdict'] == 'U2BIS_A_PROPOSER'
+    assert d['180']['n_eff_high'] == 0
