@@ -288,6 +288,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 21:45Z | **Code N1 et G2-3 livrés hors ligne par R01** (en audit R02, rien d'exécuté) : g23five 0.2 (blocs de 2 jours ; 0.1.1 de G2-3 intact) f5a3edc ; lpcost 0.2 (position continue de 0,5 % de la réserve, écart à la détention net) et n1rot 0.2 (seuil R04-6 calculé en code : ≈ 25 %/j de rotation à 100 SOL, 22 % à 200 SOL, synthétique) 14d36e0 ; n1verdict 0.2 1f451f0 ; fiche N1 v0.4 (c18dd6a2). R03 : cpmmpilot 0.2.8 et driver G2-3 poussés (472ed76, plafond 32 340), en attente du texte du propriétaire dans sa session. | branches R01 1f451f0, R03 472ed76 | vérifié (commits) ; contenu déclaré |
 
+| 24/11 21:56Z | **N1 ÉVALUABLE sur 3 pools** (n1rot 0.2 exécuté une fois hors ligne, 0 crédit, feu vert R02 ; R03 98156b7, sortie 6b9b02a9). Rotation médiane sur 7 jours pré-T0 contre le seuil du pool : AEZjoU 26,5 % / 21,9 % (retenu), Gms3Ma 0,19 % / 21,9 % (exclu), G8kgi7 128,5 % / 21,9 % (retenu), GdxFyc 29,1 % / 23,2 % (retenu) ; liste c72bd586. Condition nécessaire seulement : la LVR n'est pas comptée ; deux pools passent avec une marge faible (× 1,2). Aucun rendement LP calculé. Audits R02 : PASS g23five 0.2, lpcost 0.2, n1rot 0.2 ; n1verdict 0.2.1 corrigé (97170b9). Prochaine étape : ancrage des fiches N1 v0.5 et G2-3 v0.6 avant le 06/12 10:21:26Z. | branche R03 98156b7 | vérifié (commit) ; chiffres déclarés |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
