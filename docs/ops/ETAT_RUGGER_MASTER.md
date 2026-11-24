@@ -28,7 +28,7 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 | Jalon | Définition (propriétaire) | État au 24/11 | Prochaine action, responsable |
 |---|---|---|---|
 | 1 | Un premier pilote CPMM effectivement exploitable | **NON ATTEINT. R-CP1/B1 : univers infaisable (T2 bis, N_eff 28 [22 ; 33] < 80). Pilote G2-3 sur 4 pools nommés DÉCIDÉ (R04-1, 24/11 20:38Z) : D = 12 j, verdict au plus tôt le 06/12.** Liste du 24/11 : R-CP1/B1 infaisables (déclenchements sur 2-3 pools, plancher 20). | T2 : mesure d'activité des 259 pools (R03, après PASS R02) → N_eff ; note T-R01-8 sur les expériences à verdict rapide (R01). |
-| 2 | Une hypothèse positive après frais, avec une incertitude suffisamment faible | Non commencé (0 position indépendante). | Dépend du jalon 1. |
+| 2 | Une hypothèse positive après frais, avec une incertitude suffisamment faible | 2 hypothèses gelées (G2-3, N1) sur une fenêtre prospective qui court jusqu'au 06/12 ; 0 position lue. | Collecte et verdicts le 06/12 (R03, R02). |
 | 3 | Une confirmation indépendante qui reproduit l'avantage | Non commencé. | Fenêtre nouvelle, n de confirmation (≥ 221 pour R-CP1). |
 | 4 | Une validation prospective en conditions réelles d'exécution | Non commencé. | PAPER_LIVE (protocole v0.2 prêt ; choix A/B/C et D-1 à D-7 du propriétaire). |
 
@@ -293,6 +293,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 | 24/11 22:29Z | **Texte G2-3 du propriétaire collé dans la session R03** (22:29:08Z, event b7b839b2 ; AUTORISATION_G23.txt sha 3d6999ec, commit R03 ba45cf8). Bloqueur levé. Suite : ancrage du texte par R02, cpmmpilot 0.2.8.1 avec ce sha, audit, ancrage des fiches G2-3 et N1, collecte unique après le 06/12 10:21:26Z. | message R03 | déclaré |
 
 | 24/11 22:50Z | Préparation du jalon 3 (R01 be4c76b, sha 446b02cf) : projets de fiches de confirmation G2-3 et N1 sur les mêmes pools, fenêtre [06/12 ; 18/12), lues seulement si le pilote correspondant est GO_PILOTE, α₂ 0,025 avec Holm ; n_c G2-3 197 (238 si les deux sont retenues). **Décision R04-7** (sous veto R02) : confirmations numérotées C-169 (G2-3) et C-170 (N1), hors du plafond exploratoire, consommées seulement si lues ; accord pour g23five 0.3 et n1verdict 0.3 (α paramétré, valeur p pour Holm) en paquets séparés, après l'ancrage des fiches pilotes ; fiches de confirmation à ancrer avant le 06/12 sous réserve de l'avis R02. cpmmpilot 0.2.8 livré par R03 (8c4a022, MANIFEST 7251d4fe, 78/78 mutants déclarés) ; texte G2-3 du propriétaire ancré par R02 (a5e8f770). | branches R01 be4c76b, R03 8c4a022 | déclaré ; décision R04 |
+
+| 24/11 22:47Z | **FICHES DE GEL G2-3 (v0.6, e2f8411d) et N1 (v0.7, 9eb19fb7) ANCRÉES par R02** (registre f0129441), avant toute lecture de la fenêtre [24/11 10:21:26Z ; 06/12 10:21:26Z) ; codes (g23five 0.1.1 / 0.2, lpcost 0.2, n1verdict 0.2.2) et cpmmpilot 0.2.8 inscrits. Jalon 3 : confirmations à ancrer avant le 06/12, Holm à 0,025 ; code 0.3 autorisé. Reste : cpmmpilot 0.2.8.1 (texte du propriétaire), puis la collecte unique après le 06/12 10:21:26Z sur GO de R02. Premiers verdicts indépendants attendus le 06/12. | registre R02 f0129441 | déclaré (R02) |
 
 ## 5. Incidents
 
