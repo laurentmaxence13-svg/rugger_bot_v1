@@ -1,0 +1,140 @@
+{
+ "cpmmpilot": "f934bd2 (0.1.6)",
+ "detected": 33,
+ "mutants": [
+  {
+   "detected": true,
+   "mutant": "not_stratified"
+  },
+  {
+   "detected": true,
+   "mutant": "one_block_per_pool"
+  },
+  {
+   "detected": true,
+   "mutant": "alpha_10"
+  },
+  {
+   "detected": true,
+   "mutant": "quantile_shift"
+  },
+  {
+   "detected": true,
+   "mutant": "upper_is_max"
+  },
+  {
+   "detected": true,
+   "mutant": "seed_not_from_sheet"
+  },
+  {
+   "detected": true,
+   "mutant": "pool_days_29"
+  },
+  {
+   "detected": true,
+   "mutant": "pools_2"
+  },
+  {
+   "detected": true,
+   "mutant": "kish_2_4"
+  },
+  {
+   "detected": true,
+   "mutant": "share_0_6"
+  },
+  {
+   "detected": true,
+   "mutant": "kish_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "share_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "pool_days_are_rows"
+  },
+  {
+   "detected": true,
+   "mutant": "refusals_are_entries"
+  },
+  {
+   "detected": true,
+   "mutant": "top_is_smallest"
+  },
+  {
+   "detected": true,
+   "mutant": "top_tie_reversed"
+  },
+  {
+   "detected": true,
+   "mutant": "no_leave_top_out"
+  },
+  {
+   "detected": true,
+   "mutant": "top_pool_kept"
+  },
+  {
+   "detected": true,
+   "mutant": "no_go_before_floors"
+  },
+  {
+   "detected": true,
+   "mutant": "no_go_never"
+  },
+  {
+   "detected": true,
+   "mutant": "g0_truthy"
+  },
+  {
+   "detected": true,
+   "mutant": "primary_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "placebo_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "window_end_included"
+  },
+  {
+   "detected": true,
+   "mutant": "placebo_pools_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "select_strict"
+  },
+  {
+   "detected": true,
+   "mutant": "top_4"
+  },
+  {
+   "detected": true,
+   "mutant": "min_selected_2"
+  },
+  {
+   "detected": true,
+   "mutant": "select_tie_reversed"
+  },
+  {
+   "detected": true,
+   "mutant": "b3_constant"
+  },
+  {
+   "detected": true,
+   "mutant": "d_unchecked"
+  },
+  {
+   "detected": true,
+   "mutant": "power_flag_dropped"
+  },
+  {
+   "detected": true,
+   "mutant": "vocabulary_unchecked"
+  }
+ ],
+ "schema": "g23five-mutations-v0.1",
+ "total": 33
+}
