@@ -185,6 +185,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 09:23Z | **Pilote CPMM, U-2 temps 1** : lancé après l'autorisation écrite par le propriétaire dans la session R03. STOP à 09:24:21Z sur une limite de débit HTTP 429 : 287 crédits sur 5 000, pas de liste L, aucun essai consommé. R02 (41c20a16) : relance non couverte par « UNE FOIS ». Correctif 0.2.2 (≥ 0,2 s entre requêtes, branche R03 en 3af7334) en audit. Il faut une ligne du propriétaire dans la session R03. | registre R02 | déclaré (R03, R02) |
 
+| 24/11 10:28Z | **U-2 temps 1 réussi** (relance autorisée à 10:20:41Z, ancrée 27931d8e). Liste L : 259 pools ≥ 100 SOL de réserve WSOL, sur 152 106 vus ; sha_L 110dabe1 ; T0 24/11 10:21:26Z, slot 473309024. Crédits : 1 653 pour ce run, 1 940/5 000 en cumul U-2. Temps 2 autorisé par R02. | registre R02 56493103 | déclaré (R02) |
+
 ## 5. Incidents
 
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
