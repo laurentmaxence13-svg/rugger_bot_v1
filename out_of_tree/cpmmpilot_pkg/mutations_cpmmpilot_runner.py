@@ -70,6 +70,18 @@ MUTANTS = [
     ('d155_target_150', 'step1.py', 'D_TARGET_ENTRIES, D_MIN, D_CAP = 155, 7, 60', 'D_TARGET_ENTRIES, D_MIN, D_CAP = 150, 7, 60'),
     ('d_rule_not_in_sheets', 'step1.py', 'frozen_rules=CC.frozen_check(), d_rule=d_rule)', 'frozen_rules=CC.frozen_check())'),
     ('d_rule_mismatch_unchecked', 'step1.py', "        raise Step1Stop('d_rule_differs_from_d_days')\n", '        pass\n'),
+    # 0.2.5: v1 transactions, version error, redacted text (R02 f2e62c72)
+    ('max_version_0', 'rpc.py', 'MAX_TX_VERSION = 1 ', 'MAX_TX_VERSION = 0 '),
+    ('collect_version_literal_0', 'step1.py', 'maxSupportedTransactionVersion=MAX_TX_VERSION, filters', 'maxSupportedTransactionVersion=0, filters'),
+    ('u2_version_literal_0', 'u2.py', '                maxSupportedTransactionVersion=MAX_TX_VERSION)])', '                maxSupportedTransactionVersion=0)])'),
+    ('version_error_as_refusal', 'rpc.py', "            if TX_VERSION_WORDS in text:", "            if False:"),
+    ('error_text_not_recorded', 'rpc.py', "            exc.error_text = redact_error_text(text)\n", ''),
+    ('error_text_not_redacted', 'rpc.py', "        out.append(REDACT_MARK if ('http' in seg or 'api' in seg or 'key' in seg or len(seg) > 32) else seg)", "        out.append(seg)"),
+    ('redact_long_40', 'rpc.py', "or len(seg) > 32) else seg)", "or len(seg) > 40) else seg)"),
+    ('error_text_not_cut', 'rpc.py', "    return ' '.join(out)[:ERROR_TEXT_MAX]", "    return ' '.join(out)"),
+    ('format_guard_removed', 'step1.py', "                    raise TxFormatStop('STOP_TX_FORMAT:%s' % problem)\n", "                    pass\n"),
+    ('format_meta_unchecked', 'step1.py', "    if not isinstance(meta, dict) or (meta.get('logMessages') is None and meta.get('err') is None):", "    if not isinstance(meta, dict):"),
+    ('format_blocktime_unchecked', 'step1.py', "    for key in ('slot', 'transactionIndex', 'blockTime'):", "    for key in ('slot', 'transactionIndex'):"),
     # 0.2: live transport (R02 note fb28705b) -- gated, no host or key read, no retry, nothing echoed
     ('release_authorizes_another_sha', 'rpc.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1'})",
      "AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1', '0' * 64})"),
@@ -86,7 +98,7 @@ MUTANTS = [
     ('size_unbounded', 'rpc.py', "        if len(raw) > MAX_RESPONSE_BYTES:\n            raise RpcError('response_too_large')\n", ''),
     ('id_unchecked', 'rpc.py', " or payload.get('id') != rid:", ':'),
     ('refusal_not_mapped', 'rpc.py', 'if code == METHOD_NOT_FOUND or any(w in text for w in REFUSAL_WORDS):', 'if False:'),
-    ('message_echoed', 'rpc.py', "raise RpcError('rpc_error:' + tag)", "raise RpcError('rpc_error:' + text)"),
+    ('message_echoed', 'rpc.py', "                exc = RpcError('rpc_error:' + tag)", "                exc = RpcError('rpc_error:' + text)"),
     ('network_detail_echoed', 'rpc.py', "        except (urllib.error.URLError, OSError, ValueError):\n            raise RpcError('network_error') from None",
      "        except (urllib.error.URLError, OSError, ValueError) as exc:\n            raise RpcError('network_error:%s' % exc) from None"),
     ('cause_kept', 'rpc.py', "raise RpcError('http_%d' % exc.code) from None", "raise RpcError('http_%d' % exc.code) from exc"),
@@ -130,7 +142,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.3', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.5', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))

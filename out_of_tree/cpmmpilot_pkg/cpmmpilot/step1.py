@@ -19,7 +19,7 @@ from cpmmcost import model as CC
 from closedacct import model as CA
 
 from . import budget as B
-from .rpc import canonical, sha
+from .rpc import MAX_TX_VERSION, canonical, sha
 from .store import disk_free_ok, file_sha, read_gz_page, read_json, write_gz_page, write_json
 
 DAY = 86_400
@@ -70,7 +70,7 @@ def collect(client, out, pools, *, start_time, end_time, phase, min_free=MIN_FRE
             if not disk_free_ok(Path(out), min_free):
                 raise Step1Stop('disk_below_minimum')
             opts = dict(transactionDetails='full', sortOrder='asc', limit=B.GTFA_MAX_LIMIT, encoding='json',
-                        maxSupportedTransactionVersion=0, filters=dict(blockTime=dict(gte=start_time, lt=end_time)))
+                        maxSupportedTransactionVersion=MAX_TX_VERSION, filters=dict(blockTime=dict(gte=start_time, lt=end_time)))
             if state['token']:
                 opts['paginationToken'] = state['token']
             page = client.call('getTransactionsForAddress', [pool, opts])
@@ -93,6 +93,53 @@ def transactions_of(out, phase, pool):
 def timelines(out, phase, selected):
     return [TL.build(r['pool'], transactions_of(out, phase, r['pool']), base_mint=r['base_mint'])
             for r in selected]
+
+
+# 0.2.5 (R02 caf86646 (d)): local format guard on EVERY transaction of EVERY page, before the timelines
+class TxFormatStop(Step1Stop):
+    pass
+
+
+def _version(tx):
+    v = tx.get('version', 'legacy')
+    return 'legacy' if v in (None, 'legacy') else str(v)
+
+
+def tx_format_problem(tx):
+    """None if the frozen decoder has every field it reads, else the first missing one."""
+    sigs = (tx.get('transaction') or {}).get('signatures') or []
+    if not sigs or not isinstance(sigs[0], str):
+        return 'signatures[0]'
+    for key in ('slot', 'transactionIndex', 'blockTime'):
+        if type(tx.get(key)) is not int:
+            return key
+    meta = tx.get('meta')
+    if not isinstance(meta, dict) or (meta.get('logMessages') is None and meta.get('err') is None):
+        return 'meta.logMessages_or_err'
+    return None
+
+
+def require_tx_format(out, phase, selected):
+    """Raises TxFormatStop('STOP_TX_FORMAT:...') on the first malformed transaction; otherwise returns the counts by
+    version (legacy, 0, 1, ...) and the decoder's skipped transactions by version and reason."""
+    by_version, bad = {}, {}
+    versions = {}
+    for r in selected:
+        for p in sorted((Path(out) / 'collect' / phase / r['pool']).glob('page_*.json.gz')):
+            for tx in read_gz_page(p).get('data') or []:
+                problem = tx_format_problem(tx)
+                if problem is not None:
+                    raise TxFormatStop('STOP_TX_FORMAT:%s' % problem)
+                v = _version(tx)
+                by_version[v] = by_version.get(v, 0) + 1
+                versions[tx['transaction']['signatures'][0]] = v
+    skipped = {}
+    for line in timelines(out, phase, selected):
+        for signature, reason in line.skipped:
+            key = '%s|%s' % (versions.get(signature, 'unknown'), reason)
+            skipped[key] = skipped.get(key, 0) + 1
+    return dict(transactions_by_version=dict(sorted(by_version.items())),
+                skipped_by_version_and_reason=dict(sorted(skipped.items())))
 
 
 def amm_config_for_rules(selected, t0_slot):

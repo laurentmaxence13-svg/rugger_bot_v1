@@ -19,7 +19,16 @@ from . import layout as L
 
 
 class RpcError(RuntimeError):
-    pass
+    error_text = None             # 0.2.5: the provider's message, lower-cased and REDACTED (redact_error_text), or None
+
+
+def redact_error_text(text):
+    """R02 f2e62c72 (c): lower case; any whitespace-free segment containing 'http', 'api' or 'key', or longer than 32
+    characters, is masked; then cut to 200 characters. Only this redacted text is ever recorded."""
+    out = []
+    for seg in str(text).lower().split():
+        out.append(REDACT_MARK if ('http' in seg or 'api' in seg or 'key' in seg or len(seg) > 32) else seg)
+    return ' '.join(out)[:ERROR_TEXT_MAX]
 
 
 class MethodRefused(RpcError):
@@ -42,6 +51,10 @@ PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSig
                  'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
 MAX_RESPONSE_BYTES = 256 * 1024 ** 2
 MIN_INTERVAL_S = 0.2           # 0.2.2 (R02 note 41c20a16): <= 5 requests/s, within Free's 10 req/s and 5 gPA/s
+MAX_TX_VERSION = 1             # 0.2.5 (R02 erratum f2e62c72): v1 transactions (Agave 4.2) are returned, not refused
+TX_VERSION_WORDS = 'transaction version'
+REDACT_MARK = '[masque]'
+ERROR_TEXT_MAX = 200
 REFUSAL_WORDS = ('plan', 'upgrade', 'not available', 'not supported', 'paid')
 METHOD_NOT_FOUND = -32601
 
@@ -126,9 +139,14 @@ class LiveRpc:
             code = err.get('code')
             text = str(err.get('message', '')).lower()
             tag = '%s:%s' % (code, hashlib.sha256(text.encode()).hexdigest()[:12])   # the message is hashed, never echoed
-            if code == METHOD_NOT_FOUND or any(w in text for w in REFUSAL_WORDS):
-                raise MethodRefused('method_refused:' + tag)
-            raise RpcError('rpc_error:' + tag)
+            if TX_VERSION_WORDS in text:                                    # never a method refusal (R02 f2e62c72)
+                exc = RpcError('tx_version_unsupported:' + tag)
+            elif code == METHOD_NOT_FOUND or any(w in text for w in REFUSAL_WORDS):
+                exc = MethodRefused('method_refused:' + tag)
+            else:
+                exc = RpcError('rpc_error:' + tag)
+            exc.error_text = redact_error_text(text)
+            raise exc
         if 'result' not in payload:
             raise RpcError('response_without_result')
         return payload['result']

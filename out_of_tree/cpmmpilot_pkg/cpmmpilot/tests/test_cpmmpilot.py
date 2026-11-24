@@ -720,3 +720,137 @@ def test_count_24h_ignores_and_never_writes_signatures_after_t0(tmp_path):
     text = json.dumps(doc)
     assert not any(t['transaction']['signatures'][0] in text for p in pools for t in chain.history[p])
     assert set(doc) == {'per_pool', 'r_hat', 'statistic', 'point2', 'd_max_days'}
+
+
+# -- 0.2.5: v1 transactions (R02 erratum f2e62c72) -------------------------------------------------------------------
+def test_every_full_data_call_asks_for_version_1(tmp_path):
+    import inspect
+    from cpmmpilot import step0
+    assert rpc.MAX_TX_VERSION == 1
+    for mod in (step0, u2, step1):
+        src = inspect.getsource(mod)
+        assert 'maxSupportedTransactionVersion=MAX_TX_VERSION' in src and 'maxSupportedTransactionVersion=0' not in src
+    chain, spec = fixtures.build(n_pools=3, specials=False)
+    chain.slot = 10 ** 12
+    t0 = spec['t0_time']
+    sent = []
+
+    class Spy:
+        def request(self, m, p):
+            sent.append(p[-1])
+            return chain.request(m, p)
+    step1.collect(_client(Spy(), tmp_path, 'step1', 10_000), tmp_path / 'o', [spec['pools'][0]['pool']],
+                  start_time=t0 - 7 * 86_400, end_time=t0, phase='pre')
+    assert sent and all(o['maxSupportedTransactionVersion'] == 1 for o in sent)
+
+
+def test_a_v1_transaction_goes_through_collect_timeline_and_trigger_count(tmp_path):
+    from cpmmprereg import rule as R
+    results = []
+    for version in (0, 1):
+        chain, spec = fixtures.build(n_pools=26, window_days=1)
+        if version == 1:                                      # same chain, every transaction turned into a v1 one
+            for txs in chain.history.values():
+                for t in txs:
+                    t['version'] = 1
+                    t['transaction']['message'] = dict(t['transaction'].get('message') or {},
+                                                       transactionConfig=dict(computeUnitPrice=5000, computeUnitLimit=200000))
+        chain.slot = spec['t0_slot']
+        t0 = spec['t0_time']
+        d = tmp_path / ('v%d' % version)
+        doc = u2.run(_client(chain, d, 'u2', B.U2_CAP), d / 'u2', t0_time=t0)
+        sel = doc['selected']
+        chain.slot = 10 ** 12
+        step1.collect(_client(chain, d, 'step1', B.STEP1_HARD_STOP), d / 's', [r['pool'] for r in sel],
+                      start_time=t0 - 7 * 86_400, end_time=t0, phase='pre')
+        lines = step1.timelines(d / 's', 'pre', sel)
+        trig = step1.trigger_counts(d / 's', sel, t0_time=t0, t0_slot=doc['t0_slot'])
+        results.append((doc['selected'], [len(l.swaps) for l in lines], sum(len(l.skipped) for l in lines),
+                        trig['rcp1']['triggers'], trig['b1']['triggers']))
+    assert results[1] == results[0]                           # v1 is neither dropped nor decoded differently
+    assert sum(results[1][1]) > 0 and results[1][2] == results[0][2]
+
+
+def test_tx_version_error_is_not_a_method_refusal_and_its_text_is_redacted(tmp_path, monkeypatch):
+    f = _authorized(tmp_path, monkeypatch)
+    msg = ('Transaction version (1) is not supported by the requesting client. Please try the request again with '
+           'the following configuration parameter: "maxSupportedTransactionVersion": 1')
+    live = rpc.LiveRpc(ENDPOINT, authorization_file=f,
+                       opener=_Opener(dict(jsonrpc='2.0', id=1, error=dict(code=-32015, message=msg))))
+    with pytest.raises(rpc.RpcError) as info:
+        live.request('getTransactionsForAddress', ['P', dict(limit=1)])
+    assert not isinstance(info.value, rpc.MethodRefused)
+    assert str(info.value) == 'tx_version_unsupported:-32015:61294f25e789'
+    assert info.value.error_text.startswith('transaction version (1) is not supported by the requesting client.')
+    assert '[masque]' in info.value.error_text                             # "maxsupportedtransactionversion": is > 32
+
+
+def test_redaction_masks_urls_keys_and_long_segments():
+    secretish = 'a' * 40
+    t = rpc.redact_error_text('Quota for https://x.example/v1 exceeded, api-key=' + secretish + ' token ' + secretish
+                              + ' see KeyVault and RapidAPI ' + 'word ' * 80)
+    assert 'http' not in t and 'api' not in t and 'key' not in t and secretish not in t
+    assert t.startswith('quota for [masque] exceeded, [masque] token [masque] see [masque] and [masque] word')
+    assert len(t) <= 200
+    assert rpc.redact_error_text('Method not found') == 'method not found'
+    live_refusal = rpc.redact_error_text('requires a paid plan')
+    assert live_refusal == 'requires a paid plan'
+
+
+def _pre_collected(tmp_path, n_pools=26, mutate=None):
+    chain, spec = fixtures.build(n_pools=n_pools, window_days=1)
+    if mutate:
+        for txs in chain.history.values():
+            for t in txs:
+                mutate(t)
+    chain.slot = spec['t0_slot']
+    t0 = spec['t0_time']
+    doc = u2.run(_client(chain, tmp_path, 'u2', B.U2_CAP), tmp_path / 'u2', t0_time=t0)
+    sel = doc['selected']
+    chain.slot = 10 ** 12
+    step1.collect(_client(chain, tmp_path, 'step1', B.STEP1_HARD_STOP), tmp_path / 's', [r['pool'] for r in sel],
+                  start_time=t0 - 7 * 86_400, end_time=t0, phase='pre')
+    return sel
+
+
+def test_format_guard_counts_versions_and_skipped(tmp_path):
+    def mixed(t):
+        h = int(t['transaction']['signatures'][0][:2], 16) % 3
+        t['version'] = ('legacy', 0, 1)[h]
+    sel = _pre_collected(tmp_path, mutate=mixed)
+    fc = step1.require_tx_format(tmp_path / 's', 'pre', sel)
+    by = fc['transactions_by_version']
+    assert set(by) == {'legacy', '0', '1'} and all(n > 0 for n in by.values())
+    lines = step1.timelines(tmp_path / 's', 'pre', sel)
+    assert sum(fc['skipped_by_version_and_reason'].values()) == sum(len(l.skipped) for l in lines)
+    assert all(k.split('|')[0] in ('legacy', '0', '1') for k in fc['skipped_by_version_and_reason'])
+
+
+@pytest.mark.parametrize('field', ['signatures', 'slot', 'transactionIndex', 'blockTime', 'meta'])
+def test_format_guard_stops_on_any_missing_field(tmp_path, field):
+    sel = _pre_collected(tmp_path)
+    pool = sel[0]['pool']
+    page = sorted((tmp_path / 's' / 'collect' / 'pre' / pool).glob('page_*.json.gz'))[0]
+    doc = step1.read_gz_page(page)
+    tx = doc['data'][0]
+    if field == 'signatures':
+        tx['transaction']['signatures'] = []
+    elif field == 'meta':
+        tx['meta'] = dict(err=None)                          # neither logMessages nor a non-null err
+    else:
+        tx.pop(field)
+    page.unlink()
+    step1.write_gz_page(page, doc)
+    with pytest.raises(step1.TxFormatStop, match='STOP_TX_FORMAT'):
+        step1.require_tx_format(tmp_path / 's', 'pre', sel)
+
+
+def test_format_guard_accepts_a_failed_tx_without_logs(tmp_path):
+    sel = _pre_collected(tmp_path)
+    pool = sel[0]['pool']
+    page = sorted((tmp_path / 's' / 'collect' / 'pre' / pool).glob('page_*.json.gz'))[0]
+    doc = step1.read_gz_page(page)
+    doc['data'][0]['meta'] = dict(err={'InstructionError': [0, 'Custom']}, logMessages=None)
+    page.unlink()
+    step1.write_gz_page(page, doc)
+    assert step1.require_tx_format(tmp_path / 's', 'pre', sel)['transactions_by_version']

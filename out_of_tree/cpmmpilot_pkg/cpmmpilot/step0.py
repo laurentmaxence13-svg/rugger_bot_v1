@@ -2,7 +2,7 @@
 pinned by its sha) with getTransaction, at most 100 credits; raw results written gz; then R02 audits the decoder."""
 from pathlib import Path
 
-from .rpc import sha
+from .rpc import MAX_TX_VERSION, sha
 from .store import file_sha, write_gz_page, write_json
 
 
@@ -19,7 +19,7 @@ def run(client, out, vectors_file, vectors_sha256):
         raise Step0Stop('vector_list_must_hold_50_to_100_distinct_signatures')
     missing = 0
     for k, signature in enumerate(signatures):
-        tx = client.call('getTransaction', [signature, dict(encoding='json', maxSupportedTransactionVersion=0)])
+        tx = client.call('getTransaction', [signature, dict(encoding='json', maxSupportedTransactionVersion=MAX_TX_VERSION)])
         missing += tx is None
         write_gz_page(Path(out) / 'vectors' / ('%03d.json.gz' % k), dict(signature=signature, result=tx))
     doc = dict(schema='cpmmpilot-step0-v0.1', vectors=len(signatures), missing=missing,

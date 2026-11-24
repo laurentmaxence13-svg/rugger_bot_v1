@@ -11,7 +11,7 @@ import random
 from cpmmx.events import CPMM_PROGRAM
 
 from . import layout as L
-from .rpc import MethodRefused, RpcError, canonical, sha
+from .rpc import MAX_TX_VERSION, MethodRefused, RpcError, canonical, sha
 from .store import file_sha, read_json, write_gz_page, write_json
 
 LAUNCHLAB_PROGRAM = 'LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj'     # bot.market.launchlab_events (frozen tree)
@@ -143,7 +143,7 @@ def qualify(client, out, lst, sha_l, *, t0_time):
         try:
             page = client.call('getTransactionsForAddress', [pool, dict(
                 transactionDetails='full', sortOrder='asc', limit=1, encoding='json',
-                maxSupportedTransactionVersion=0)])
+                maxSupportedTransactionVersion=MAX_TX_VERSION)])
         except MethodRefused as exc:
             raise U2Stop('gtfa_refused_no_fallback:%s' % exc) from exc
         write_gz_page(out / 'raw' / ('creation_%s.json.gz' % pool), page)
