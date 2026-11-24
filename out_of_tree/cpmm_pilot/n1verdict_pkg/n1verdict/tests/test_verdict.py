@@ -1,4 +1,4 @@
-"""n1verdict 0.2 (R04-6): one continuous position per pool (real lpcost 0.2 on synthetic CPMM pools), the total-loss
+"""n1verdict 0.2.1 (R04-6, K-1): one continuous position per pool (real lpcost 0.2 on synthetic CPMM pools), the total-loss
 rule for an unpriced position, and the word of g23five 0.2 with 2-day blocks on controlled gaps (lpcost replaced by a
 stub in those tests only)."""
 from fractions import Fraction
@@ -185,3 +185,22 @@ def test_stop_and_inputs(stub):
     assert out['meaning'] == N.MEANING and 'Holm' in out['multiplicity']
     with pytest.raises(G.G1.ReportError, match='forbidden'):
         run(pools=['pA', 'pB', 'pC', 'pool ' + G.G1.FORBIDDEN_WORDS[1]])
+
+
+# -- 0.2.1: K-1, the guard removes the pool that carries the result ---------------------------------------------------
+def test_k1_the_guard_removes_the_pool_with_the_largest_sum_of_gaps(stub):
+    # pC carries the whole gain; all pools have 12 pool-days: "most entries" would pick pA (by id) and say GO
+    stub(lambda p, d: (Fraction(1, 2) if p == 'pC' else Fraction(-4, 1000)) + Fraction(1, 1000) * (d % 3))
+    out = run()
+    assert out['lower_bound_95'] > 0 and out['without_top_pool']['pool'] == 'pC'
+    assert out['without_top_pool']['lower_bound_95'] <= 0 and out['decision'] == 'INCONCLUSIF'
+    assert 'K-1' in out['without_top_pool']['rule']
+    rows, _w = N.positions(fake_lines(), CONFIG_A, pools=POOLS, t0=T0, d_days=D)
+    assert G.top_pool(rows) == 'pA' and N.top_gap_pool(rows) == 'pC'
+    rest = [r for r in rows if r['pool'] != 'pA']
+    assert G.stratified_bounds(G.blocks(rest, T0, D, 2), seed=int(SHEET[:8], 16), draws=DRAWS)[0] > 0   # old rule: GO
+    # ties by id; empty
+    tie = [dict(pool=p, net_return=0.1) for p in ('pB', 'pA')]
+    assert N.top_gap_pool(tie) == 'pA' and N.top_gap_pool([]) is None
+    assert N.top_gap_pool([dict(pool='pA', net_return=0.2), dict(pool='pB', net_return=0.3),
+                           dict(pool='pA', net_return=0.2)]) == 'pA'                      # sums, not the best day

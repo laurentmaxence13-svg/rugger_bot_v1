@@ -1,4 +1,4 @@
-"""n1verdict 0.2 -- verdict of the N1 pilot (trial 170) in the R04-6 design (24/11 21:27Z; R02 opinion anchored:
+"""n1verdict 0.2.1 -- verdict of the N1 pilot (trial 170) in the R04-6 design (24/11 21:27Z; R02 opinion anchored:
 receivable under C1 and C2): ONE notional liquidity-provider position per pool of 0.5 % of the WSOL reserve read at
 the opening (decision state at T0), opened at the start of day 0 and withdrawn at the end of day D-1 of the G2-3
 window (lpcost.continuous_position). lpcost 0.2, cpmmcost, cpmmx and g23five 0.2 are imported UNCHANGED.
@@ -14,7 +14,10 @@ Any other error stops the verdict. A guard refusal opens no position: its D days
 INFERENCE (g23five 0.2): block bootstrap of 2 CONSECUTIVE days per pool (block_days = 2), stratified by pool, 10 000
 draws, seed int(sha of the N1 sheet[:8], 16); floors (>= 30 pool-days entered, >= 3 pools, Kish >= 2.5, no pool
 > 50 %) else INCONCLUSIF before NO-GO; NO-GO if the upper one-sided 95 % bound < 0; GO_PILOTE only if the lower bound
-> 0 on all the pools AND without the pool with the most entries; otherwise INCONCLUSIF. G-0 not passed -> STOP.
+> 0 on all the pools AND without the pool that CARRIES the result; otherwise INCONCLUSIF. G-0 not passed -> STOP.
+0.2.1 (R02 reserve K-1): every pool has the same D pool-days, so "the pool with the most entries" would be a tie
+broken by id (arbitrary); the guard removes instead the pool with the LARGEST SUM OF GAPS over its pool-days (ties by
+id) -- the one that carries the result.
 Multiplicity: alpha 0.05 one-sided per hypothesis at the pilot ("2 hypotheses on the same window"); Holm at the
 confirmation.
 """
@@ -25,7 +28,7 @@ from cpmmx import timeline as TL
 from g23five import verdict as V
 from lpcost import continuous as K, model as LP
 
-SCHEMA = 'n1verdict-v0.2'
+SCHEMA = 'n1verdict-v0.2.1'
 DAY_S = 86_400
 BLOCK_DAYS = 2
 NM = 'NON MESURÉ'
@@ -107,10 +110,18 @@ def positions(lines, config, *, pools, t0, d_days, **kw):
     return rows, whole
 
 
+def top_gap_pool(rows):
+    """K-1: the pool with the largest sum of gaps over its pool-days; ties by pool id."""
+    sums = {}
+    for r in rows:
+        sums[r['pool']] = sums.get(r['pool'], 0) + r['net_return']
+    return sorted(sums, key=lambda p: (-sums[p], p))[0] if sums else None
+
+
 def word(rows, *, t0, d_days, seed, draws):
     fl = V.floors(rows, t0, d_days)
     low, high = V.stratified_bounds(V.blocks(rows, t0, d_days, BLOCK_DAYS), seed=seed, draws=draws)
-    top = V.top_pool(rows)
+    top = top_gap_pool(rows)
     low_wo, high_wo = V.stratified_bounds(V.blocks([r for r in rows if r['pool'] != top], t0, d_days, BLOCK_DAYS),
                                           seed=seed, draws=draws)
     if not fl['passed']:
@@ -122,7 +133,8 @@ def word(rows, *, t0, d_days, seed, draws):
     else:
         decision = 'INCONCLUSIF'
     return dict(decision=decision, floors=fl, lower_bound_95=low, upper_bound_95=high,
-                without_top_pool=dict(pool=top, lower_bound_95=low_wo, upper_bound_95=high_wo))
+                without_top_pool=dict(pool=top, rule='plus grande somme d\'écarts (K-1)', lower_bound_95=low_wo,
+                                      upper_bound_95=high_wo))
 
 
 def _descriptive(pos):

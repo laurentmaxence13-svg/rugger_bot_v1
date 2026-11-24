@@ -1,8 +1,8 @@
 {
- "schema": "n1verdict-mutations-v0.2",
- "mutants": 29,
- "detected": 29,
- "total": 29,
+ "schema": "n1verdict-mutations-v0.2.1",
+ "mutants": 33,
+ "detected": 33,
+ "total": 33,
  "equivalent_removed": [
   {
    "mutant": "refusals_are_entries",
@@ -76,6 +76,22 @@
   },
   {
    "mutant": "no_go_never",
+   "detected": true
+  },
+  {
+   "mutant": "k1_most_entries",
+   "detected": true
+  },
+  {
+   "mutant": "k1_smallest_sum",
+   "detected": true
+  },
+  {
+   "mutant": "k1_tie_reversed",
+   "detected": true
+  },
+  {
+   "mutant": "k1_best_day_not_sum",
    "detected": true
   },
   {
