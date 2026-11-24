@@ -1,35 +1,46 @@
 # RUGGER MASTER — État unique (tenu par R04)
 
-Mis à jour le 2026-11-23 à 14:00Z.
+Mis à jour le 2026-11-24 à 13:00Z.
 Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
 
-## 0. Rapport de direction (programme de recherche de rentabilité, directive du 23/11)
+## Tableau de bord du progrès réel (directive du propriétaire du 24/11, 12:40:59Z)
 
-**A. Meilleure stratégie actuelle** : AUCUNE n'est confirmée. Aucune n'a même un rendement net positif mesuré. La moins mauvaise mesurée est MASTER, à −4,26 % net [−6,69 ; −1,95], n 128, sur W1, EXPLORATOIRE, verdict NÉGATIF. Le placebo du palier bas fait −1,82 % (comparateur).
+| Indicateur | Sur données INDÉPENDANTES | Sur W1 (exploratoire, ne prouve rien) |
+|---|---|---|
+| Stratégies évaluées | **0** | 8 : 7 NÉGATIVES, 1 INCONCLUSIVE |
+| Positions exploitables analysées | **0** | 128 pour MASTER ; détail par stratégie au tableau consolidé v0.2 (4b369cf) |
+| Rendement net moyen après tous frais | NON MESURÉ | MASTER −4,26 % [−6,69 ; −1,95] ; les autres de −4,59 % à −10,29 % |
+| Profit factor, drawdown | NON MESURÉ | MASTER : 0,42 ; 5,45 mises |
+| Intervalle de confiance, écart au témoin | NON MESURÉ | écart au placebo +1,23 % [−2,23 ; +4,82], non significatif |
+| Hypothèses éliminées | 0 | 7, dans leur forme testée |
+| Hypothèses en test indépendant | 2 (R-CP1, B1) : fenêtre ouverte à T0 = 24/11 10:21:26Z sur 24 pools ; aucune position encore lue | — |
+
+**Prochain obstacle concret** : la relance unique A2r (comptage des déclenchements sur les 7 jours avant T0, calcul de la durée D, gel des fiches). Responsable : R03 (cpmmpilot 0.2.4), puis R02 (audit), puis R03 (lancement).
+**Obstacle suivant** : attendre la fin de la fenêtre T0 + D, collecter une fois, lire le verdict. Si D = 3 jours (lecture de la règle ancrée avec D_max 3,33 j, à confirmer par R02), la fenêtre se ferme le 27/11 vers 10:21Z. Aucun verdict indépendant n'est possible avant.
+**Risques sur ce premier verdict** : (1) moins de 30 entrées attendues = ARRÊT et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
+Activité réelle des agents : voir § 3. Une session inactive n'est jamais comptée comme du travail.
+
+## 0. Rapport de direction (état au 24/11, 13:00Z)
+
+**A. Meilleure stratégie actuelle** : AUCUNE. Aucune stratégie n'a de rendement net positif mesuré, ni sur W1 ni ailleurs. La moins mauvaise mesurée reste MASTER : −4,26 % net [−6,69 ; −1,95], n 128, W1, EXPLORATOIRE, verdict NÉGATIF.
 
 **B. Classement des pistes** (potentiel, pas performance) :
-1. CPMM R-CP1 (mean reversion sur pools établis) : préenregistrée, 0 $, 1 essai, GO_PILOTE au mieux. BLOQUÉE : choix U-2 et GO de l'étape 0.
-2. LaunchLab C-B : ≤ 66 $ TTC, 5 essais (HW1). Peut s'arrêter sans candidat. BLOQUÉE : signature A2.
-3. CPMM B1 (momentum, miroir de R-CP1 : hausse ≥ 3 % en 10 min) : même collecte, 0 crédit de plus, essai n° 170, fiche séparée ancrée avant T0. Retenue par R04 le 23/11 (confirmé par écrit à R02). Fiche B1 7c26497f **ancrée avant T0** ; code cpmmb1 0.1 (b630ea3b) PASS conditionnel (il manque un test de frontière).
-4. Autres familles (E2, E3, A2, F1, H1…) : catalogue R-1 (8fd8cf84, PASS R02 sous corrections). Budget d'essais épuisé après B1 : autorisation chiffrée du propriétaire requise.
+1. CPMM établi, R-CP1 (retour à la moyenne) et B1 (momentum miroir) : pilote EN COURS, fenêtre prospective ouverte. Barre de coût à franchir : 1,12 % par position à 100 SOL, contre 3,5 à 5,5 % sur LaunchLab.
+2. Génération 2 (G2-1, G2-2, G2-3) : protocoles exécutables au PASS, fiches non gelées. Il manque le texte D du propriétaire (+3 essais, choix de l'α) et les crédits d'une fenêtre distincte.
+3. Génération 3 (G3-1 écart entre pools, G3-2 approfondissement de liquidité) : protocoles au PASS ; il manque une tranche d'essais 174–175.
+4. LaunchLab C-B : dépend du verdict officiel W1 (A2, ≤ 66 $ TTC), non signé.
 
-**C. Nouveaux résultats** : tableau consolidé v0.2 (4b369cf) : 7 NÉGATIVES, 1 INCONCLUSIVE, 0 rentable. Décomposition des pertes W1 : la perte vient des coûts (courbe 60 %, loyer 37 %), sans avantage brut. Tableau de bord MASTER : win rate 30,5 %, profit factor 0,42.
+**C. Nouveaux résultats (24/11)** : aucun résultat économique. Mesures préparatoires seulement : 24 pools qualifiés sur 152 106 vus ; activité 1 310 transactions par pool et par jour ; collecte prévue à 25 559 crédits pour un plafond de 32 900. La première tentative de comptage sur 7 jours (A2) a été refusée par Helius (erreur −32015 sur un filtre par date) : 10 crédits, aucun essai consommé.
 
 **D. Prochains tests décisifs** :
-- R-CP1, étape 0 : ≤ 100 crédits, gratuit. Elle dit si l'univers CPMM suffit (STOP si moins de 20 pools).
-- Étape 1 : ≤ 50 k crédits, gratuit dans l'offre Free. Premier verdict indépendant (G-1).
+- A2r (gratuit, ≈ 22 000 crédits estimés) : dit combien d'entrées attendre, donc si le pilote a la puissance de conclure, et fixe D.
+- Collecte unique après T0 + D, puis verdict G-1 pour R-CP1 et pour B1 : premier résultat sur données indépendantes. Mot maximal : GO_PILOTE (une confirmation sur données nouvelles reste requise).
 
-**E. Décisions** : STOP pour les 7 stratégies NÉGATIVES dans leur forme testée. INCONCLUSIF pour T3′. Autorisations demandées : U-2 et étape 0 (R-CP1) ; § 7 A2 (C-B).
+**E. Décisions** : STOP maintenu pour les 7 stratégies NÉGATIVES de W1. Aucune décision nouvelle demandée au propriétaire à cette heure. Décisions ouvertes, déjà présentées, non relancées : texte D (génération 2), tranche 174–175 (génération 3), § 7 A2, choix A/B/C et D-1 à D-7 (PAPER_LIVE), levée de la suspension de la sauvegarde W1.
 
-**F. Trajectoire PAPER** : protocole PAPER_LIVE v0.2 et banc prêts. Il manque le choix A, B ou C (crédits ×16), puis D-1, D-3, D-5, D-6 et D-7. Aucune stratégie n'est encore candidate au PAPER prospectif.
-
-**Travaux en cours (23/11, après-midi)** :
-- R01 : R-1 catalogue A à H, R-2 décomposition des pertes W1 (descriptive), R-3 tableau de bord étendu.
-- R02 : note HW1 / plafond d'essais, cadre multi-générations, définitions des indicateurs, audits.
-- R-2 w1decomp 0.2 : PASS R02 (29083bff), exécution unique par R03 autorisée. R-3 dashx : en attente d'une v0.2 alignée sur b31a3c47.
-- R03 : inventaire des champs de W1 **fait** (déclaré) : 57,7 % des 322 146 signatures sont des échecs, sans corps de transaction ; détenteurs partiels ; rien après la migration CPMM. P0 visible non scanné, faute d'autorisation. Exécutions uniques après PASS R02.
+**F. Trajectoire PAPER** : inchangée. Aucune stratégie n'est candidate au PAPER prospectif tant qu'aucune n'a passé le pilote puis la confirmation.
 
 ## 0 bis. Programme de recherche (piloté par R04)
 
@@ -193,8 +204,16 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 11:46Z | Étape 1 : points (1) et (2) franchis (déclaré ; feu vert R02 pour la suite). cpmmpilot 0.2.3 et driver A2 au PASS (registre 9b26fc7a). Feu vert pour les points (3) et (4) : comptage des déclencheurs sur 7 jours (≈ 22 000 crédits estimés), calcul de D, contrôle du budget < 49 000, fiches de gel, puis arrêt. Essais 169 et 170 non encore consommés. | registre R02 | déclaré |
 
+| 24/11 10:33Z | **Étape 1, partie A** : R̂ = 1 310,375 transactions par pool et par jour ; point (2) : besoin 25 559,2 ≤ 32 900 (franchi) ; D_max 3,33 j ; 53 crédits. | branche R03 71f15c9, STEP1A_RESULT.json | vérifié |
+
+| 24/11 11:46Z | **Étape 1, partie A2 : STOP** au premier appel de pré-collecte. Helius refuse getTransactionsForAddress avec un filtre par date (erreur −32015). 10 crédits ; registre de l'étape 1 : 63/49 000. Aucune page, aucun comptage, aucune fiche, aucun essai consommé. Note R02 d9b63ddf : UNE nouvelle exécution (« A2r ») est couverte par le texte C, avec la forme d'appel déjà prouvée sur W1 (filtre par slot) et après audit de cpmmpilot 0.2.4 ; un nouveau refus = arrêt définitif de l'étape 1. | branche R03 58f10f2 (vérifié) ; note R02 (déclaré) | vérifié / déclaré |
+
+| 24/11 12:51Z | Directive « PRIORITÉ ABSOLUE AUX RÉSULTATS » (12:40:59Z) relayée à R01, R02 et R03. R03 : finir 0.2.4, lancer A2r une fois après le PASS de R02, inventaire des données détenues. R02 : audit limité au changement, décision groupée (calendrier, génération 2 plus tôt, mesures descriptives, clause de reprise). R01 : tâche T-R01-7, « causes des pertes → hypothèses plausibles ». Dossier de repli Helius en préparation par R04. | messages R04 « delivered » | vérifié (envoi) |
+
 ## 5. Incidents
 
+- 24/11 11:46Z : Helius refuse un filtre par date sur getTransactionsForAddress (−32015) ; STOP de la partie A2 (10 crédits).
+- 24/11 12:45Z : constat R04 : R02 et R03 inactifs depuis 11:49Z et 11:52Z, cpmmpilot 0.2.4 non poussé ; R01 inactif depuis le 23/11 22:23Z. Relancés à 12:51Z.
 - 22/11 : R04 avait daté par erreur la directive d'autonomie de « ~19:45Z » ; elle date de 20:23:48Z. Corrigé ici, à la demande de R02.
 - 23/11 21:23Z : fausse alerte. R02 avait bien reçu T-R01-3 ; son audit (a3f194dc) est arrivé à 21:24Z.
 - 24/11 09:17Z : le classifieur de R03 a refusé le premier lancement (texte écrit en session R04). Accepté à 09:23Z après le recollage par le propriétaire dans la session R03.
