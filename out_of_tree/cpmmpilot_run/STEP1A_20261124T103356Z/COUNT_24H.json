@@ -1,0 +1,37 @@
+{
+ "d_max_days": 3.334191866196063,
+ "per_pool": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": 223,
+  "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": 1,
+  "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": 1,
+  "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": 0,
+  "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": 4,
+  "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": 66,
+  "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": 0,
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": 2182,
+  "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": 0,
+  "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": 60,
+  "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": 0,
+  "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": 0,
+  "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": 0,
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": 950,
+  "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": 0,
+  "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": 0,
+  "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": 3,
+  "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": 42,
+  "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": 0,
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": 27490,
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": 280,
+  "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": 37,
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": 110,
+  "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": 0
+ },
+ "point2": {
+  "limit": 32900,
+  "need": 25559.2,
+  "r_hat": 1310.375,
+  "stop": false
+ },
+ "r_hat": 1310.375,
+ "statistic": "mean signatures per pool over the 24 h before T0"
+}
