@@ -298,6 +298,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 23:13Z | **Jalon 3 ancré par R02** : g23five 0.3 et n1verdict 0.3 PASS ; fiches de confirmation C-169 (ccf6ac75) et C-170 (56776cf8) ancrées avant le 06/12. Driver de confirmation de R03 écrit, non exécuté (2353bc7) ; il refuse tout appel sans verdict pilote GO_PILOTE audité et sans texte du propriétaire propre à la confirmation. Décision R04-8 : plafond de 33 000 crédits Free pour la confirmation, quel que soit le nombre d'hypothèses retenues. Reste avant les verdicts : cpmmpilot 0.2.8.1 (R03, vérification R02) ; collecte après le 06/12 10:21:26Z sur GO R02 (rappel R04 programmé à 10:35Z). | registre R02 | déclaré (R02) |
 
+| 24/11 23:18Z | Décision R04-9 (plafond de la confirmation = 1,25 × crédits projetés au coût mesuré, ≤ 60 000 Free, sinon NON ÉVALUABLE) jugée conforme et intégrée par R02 (erratum C-169 08b14a6b) ; réserve : remise à zéro du quota le 07/12 à confirmer par le propriétaire à la signature. Note R01 T-R01-11 « où chercher après le 06/12 » (85f3bd8) : classement PumpSwap, Raydium AMM v4 (même mathématique x·y = k, décodeur à écrire), CLMM/Whirlpool ≤ 0,05 % (barre la plus basse, modèle de liquidité concentrée à écrire), Meteora ; activités NON MESURÉES ; toute hypothèse nouvelle exige un essai au-delà de 170, donc une décision explicite. | registre R02 ; branche R01 85f3bd8 | déclaré |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
