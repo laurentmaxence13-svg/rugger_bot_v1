@@ -1,0 +1,98 @@
+{
+ "schema": "n1rot-mutations-v0.1",
+ "mutants": 21,
+ "detected": 21,
+ "total": 21,
+ "equivalent_removed": [
+  {
+   "mutant": "threshold_unchecked",
+   "reason": "threshold_value refuse aussi un seuil non déclaré ('threshold_not_declared') : le contrôle d'entrée de select_n1 n'est qu'un refus précoce, avant toute lecture"
+  }
+ ],
+ "results": [
+  {
+   "mutant": "tvl_from_last_swap",
+   "detected": true
+  },
+  {
+   "mutant": "tvl_not_doubled",
+   "detected": true
+  },
+  {
+   "mutant": "sell_counted_on_token_side",
+   "detected": true
+  },
+  {
+   "mutant": "day_end_included",
+   "detected": true
+  },
+  {
+   "mutant": "day_start_excluded",
+   "detected": true
+  },
+  {
+   "mutant": "median_lower",
+   "detected": true
+  },
+  {
+   "mutant": "mean_not_median",
+   "detected": true
+  },
+  {
+   "mutant": "threshold_strict",
+   "detected": true
+  },
+  {
+   "mutant": "min_pools_2",
+   "detected": true
+  },
+  {
+   "mutant": "after_t0_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "fewer_pools_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "twice_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "break_even_without_creator_fee",
+   "detected": true
+  },
+  {
+   "mutant": "break_even_one_swap_leg",
+   "detected": true
+  },
+  {
+   "mutant": "fund_share_kept_by_lp",
+   "detected": true
+  },
+  {
+   "mutant": "dossier_10",
+   "detected": true
+  },
+  {
+   "mutant": "cli_reads_every_pool",
+   "detected": true
+  },
+  {
+   "mutant": "cli_reads_the_window",
+   "detected": true
+  },
+  {
+   "mutant": "empty_day_not_zero",
+   "detected": true
+  },
+  {
+   "mutant": "order_not_the_sheet",
+   "detected": true
+  },
+  {
+   "mutant": "t0_type_unchecked",
+   "detected": true
+  }
+ ]
+}
