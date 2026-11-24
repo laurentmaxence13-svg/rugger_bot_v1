@@ -23,6 +23,15 @@ Légende des preuves :
 **Risques sur ce premier verdict** : (1) moins de 70 déclenchements R-CP1 sur les 7 jours avant T0 (soit moins de 30 entrées attendues en 3 jours) = ARRÊT pour puissance insuffisante et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
 Activité réelle des agents : voir § 3. Une session inactive n'est jamais comptée comme du travail.
 
+## Jalons fixés par le propriétaire (24/11, après 18:00Z)
+
+| Jalon | Définition (propriétaire) | État au 24/11 | Prochaine action, responsable |
+|---|---|---|---|
+| 1 | Un premier pilote CPMM effectivement exploitable | **NON ATTEINT.** Liste du 24/11 : R-CP1/B1 infaisables (déclenchements sur 2-3 pools, plancher 20). | T2 : mesure d'activité des 259 pools (R03, après PASS R02) → N_eff ; note T-R01-8 sur les expériences à verdict rapide (R01). |
+| 2 | Une hypothèse positive après frais, avec une incertitude suffisamment faible | Non commencé (0 position indépendante). | Dépend du jalon 1. |
+| 3 | Une confirmation indépendante qui reproduit l'avantage | Non commencé. | Fenêtre nouvelle, n de confirmation (≥ 221 pour R-CP1). |
+| 4 | Une validation prospective en conditions réelles d'exécution | Non commencé. | PAPER_LIVE (protocole v0.2 prêt ; choix A/B/C et D-1 à D-7 du propriétaire). |
+
 ## 0. Rapport de direction (état au 24/11, 12:59Z)
 
 **A. Meilleure stratégie actuelle** : AUCUNE. Aucune stratégie n'a de rendement net positif mesuré, ni sur W1 ni ailleurs. La moins mauvaise mesurée reste MASTER : −4,26 % net [−6,69 ; −1,95], n 128, W1, EXPLORATOIRE, verdict NÉGATIF.
