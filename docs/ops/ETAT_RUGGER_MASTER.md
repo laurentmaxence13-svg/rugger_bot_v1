@@ -5,7 +5,7 @@ Légende des preuves :
 - « vérifié » : R04 l'a constaté lui-même (ref git, statut de session) ;
 - « déclaré » : affirmé par l'agent, ancré à son registre ou dans son message.
 
-## Tableau de bord du progrès réel (directive du propriétaire du 24/11, 12:40:59Z)
+## Tableau de bord du progrès réel (directive du propriétaire du 24/11, 12:40:57Z)
 
 | Indicateur | Sur données INDÉPENDANTES | Sur W1 (exploratoire, ne prouve rien) |
 |---|---|---|
@@ -18,8 +18,8 @@ Légende des preuves :
 | Hypothèses en test indépendant | 2 (R-CP1, B1) : fenêtre ouverte à T0 = 24/11 10:21:26Z sur 24 pools ; aucune position encore lue | — |
 
 **Prochain obstacle concret** : la relance unique A2r (comptage des déclenchements sur les 7 jours avant T0, calcul de la durée D, gel des fiches). Responsable : R03 (cpmmpilot 0.2.4), puis R02 (audit), puis R03 (lancement).
-**Obstacle suivant** : attendre la fin de la fenêtre T0 + D, collecter une fois, lire le verdict. Si D = 3 jours (lecture de la règle ancrée avec D_max 3,33 j, à confirmer par R02), la fenêtre se ferme le 27/11 vers 10:21Z. Aucun verdict indépendant n'est possible avant.
-**Risques sur ce premier verdict** : (1) moins de 30 entrées attendues = ARRÊT et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
+**Obstacle suivant** : attendre la fin de la fenêtre, collecter une fois, lire le verdict. D = 3 jours (R02, 24/11 12:52Z : D_max ancré à 3,334 j) : fenêtre [24/11 10:21:26Z ; 27/11 10:21:26Z). Aucun verdict indépendant n'est possible avant le 27/11 10:21Z.
+**Risques sur ce premier verdict** : (1) moins de 70 déclenchements R-CP1 sur les 7 jours avant T0 (soit moins de 30 entrées attendues en 3 jours) = ARRÊT pour puissance insuffisante et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
 Activité réelle des agents : voir § 3. Une session inactive n'est jamais comptée comme du travail.
 
 ## 0. Rapport de direction (état au 24/11, 13:00Z)
@@ -208,7 +208,11 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 11:46Z | **Étape 1, partie A2 : STOP** au premier appel de pré-collecte. Helius refuse getTransactionsForAddress avec un filtre par date (erreur −32015). 10 crédits ; registre de l'étape 1 : 63/49 000. Aucune page, aucun comptage, aucune fiche, aucun essai consommé. Note R02 d9b63ddf : UNE nouvelle exécution (« A2r ») est couverte par le texte C, avec la forme d'appel déjà prouvée sur W1 (filtre par slot) et après audit de cpmmpilot 0.2.4 ; un nouveau refus = arrêt définitif de l'étape 1. | branche R03 58f10f2 (vérifié) ; note R02 (déclaré) | vérifié / déclaré |
 
-| 24/11 12:51Z | Directive « PRIORITÉ ABSOLUE AUX RÉSULTATS » (12:40:59Z) relayée à R01, R02 et R03. R03 : finir 0.2.4, lancer A2r une fois après le PASS de R02, inventaire des données détenues. R02 : audit limité au changement, décision groupée (calendrier, génération 2 plus tôt, mesures descriptives, clause de reprise). R01 : tâche T-R01-7, « causes des pertes → hypothèses plausibles ». Dossier de repli Helius en préparation par R04. | messages R04 « delivered » | vérifié (envoi) |
+| 24/11 12:51Z | Directive « PRIORITÉ ABSOLUE AUX RÉSULTATS » (12:40:57Z) relayée à R01, R02 et R03. R03 : finir 0.2.4, lancer A2r une fois après le PASS de R02, inventaire des données détenues. R02 : audit limité au changement, décision groupée (calendrier, génération 2 plus tôt, mesures descriptives, clause de reprise). R01 : tâche T-R01-7, « causes des pertes → hypothèses plausibles ». Dossier de repli Helius en préparation par R04. | messages R04 « delivered » | vérifié (envoi) |
+
+| 24/11 12:52Z | **Décisions groupées de R02** (directive ancrée 4112505f, 12:40:57Z à la source). Q1 : D = 3 jours, fenêtre [24/11 10:21:26Z ; 27/11 10:21:26Z), coupure des moitiés 25/11 22:21:26Z ; collecte seulement après le 27/11 10:21:26Z et après l'ancrage des fiches. Q2 : une génération 2 sur des pools DISJOINTS pendant la même période est recevable comme EXPLORATION (pas comme confirmation), sous réserve du texte D du propriétaire et d'une enveloppe de crédits propre ; la fenêtre suivante peut aussi s'ouvrir avant G-1 sous conditions. Q3 : mesures descriptives à 0 crédit permises (frais réels et part d'échecs sur les pages pré-T0 après ancrage des fiches ; dénombrement des mints à plusieurs pools dès maintenant). Q4 : un nouveau refus arrête TOUTE l'étape 1 sous le texte C ; repli (a) par getSignaturesForAddress + getTransaction ≈ 315 000 crédits Free, repli (b) autre source, chacun avec une clause du propriétaire. Q5 : tâche T-R01-7 sans objection. Décompte du tableau de bord confirmé exact. | message R02 12:52Z | déclaré (R02) |
+
+| 24/11 12:52Z | R03 : cpmmpilot 0.2.4 écrit, non poussé ; 45 tests sur 45 ; driver A2r écrit (b1b5a58c). Les 74 mutants n'avaient PAS tourné (conteneur redémarré vers 12:51Z) ; relancés en tâche de fond, 25 à 30 minutes annoncées. R01 : T-R01-7 commencée à 12:52Z. | messages R03 et R01 | déclaré |
 
 ## 5. Incidents
 
