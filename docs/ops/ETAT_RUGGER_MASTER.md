@@ -266,6 +266,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 18:28Z | R02 RÉVISE sa recommandation (registre 1d903d5a) : (b) plutôt que (a). Au taux d'incident observé (1 sur 186 appels), une seconde mesure d'≈ 570 appels sans reprise n'aboutirait qu'à ≈ 5 % ; avec une relecture par appel tronqué, ≈ 98 % (incidents supposés indépendants ; arithmétique recalculée par R04 : 4,7 % et 98,4 %). Effet sur la validité nul (relecture idempotente d'un comptage de signatures, crédit compté). Besoin ≈ 800 crédits, dans le plafond cumulé de 1 500. Correctif 0.2.7 ≈ 1 h audit compris. Recommandation corrigée transmise au propriétaire. | registre R02 1d903d5a | déclaré (R02), arithmétique vérifiée |
 
+| 24/11 18:40Z | **Comptage seul des déclenchements de la génération 2** (7 jours pré-T0, 24 pools, cpmmgen2 0.2 audité, 0 crédit, aucun rendement, aucun essai). G2-1 = 33 (tous sur G8kgi7) ; G2-2 = 53 (51 sur G8kgi7) ; **G2-3 = 351, ≈ 50 par jour, sur 5 pools** (AEZjoU 128, Gms3Ma 105, G8kgi7 95, GdxFyc 21, 2yLFom 2 ; 19 pools exclus faute de demande de référence). Lecture : G2-3 aurait le débit pour 155 entrées en ≈ 3 jours, mais sur 5 pools seulement — sous le plancher G-1 de 20 pools, donc INFAISABLE sur cette liste avec la règle actuelle, comme R-CP1/B1. Le plancher de 20 pools est le verrou commun ; une génération future devra soit un univers bien plus large, soit une règle statistique groupée adaptée (proposition R01 T-R01-8, à statuer par R02). | branche R03 f53f79f (G2_TRIGGERS_PER_POOL.json) | vérifié |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
