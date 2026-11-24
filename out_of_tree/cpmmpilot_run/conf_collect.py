@@ -102,7 +102,7 @@ def main(argv=None, now=None):
     for h in a.sheet_sha + a.verdict_code_sha:
         if not re.fullmatch('[0-9a-f]{64}', h):
             raise SystemExit('anchor_sha_must_be_64_hex')
-    if PILOT_OF_MODE[a.mode] - go_pilots(a.pilot_result):
+    if PILOT_OF_MODE[a.mode] != go_pilots(a.pilot_result):      # R02 23:55Z: the mode must be EXACTLY the set of GO
         raise SystemExit('mode_needs_a_go_pilote_for_each_confirmed_pilot')
     auth = sha_of(a.authorization)
     if CONF_TEXT_SHA256 is None or auth in NOT_COVERING or auth != CONF_TEXT_SHA256:

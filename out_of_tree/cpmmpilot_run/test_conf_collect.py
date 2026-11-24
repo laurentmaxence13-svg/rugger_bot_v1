@@ -97,7 +97,9 @@ def test_constants_match_r04_8():
     ('c169', dict(C_169='GO_PILOTE'), True), ('c169', dict(C_169='NO_GO'), False),
     ('c169', dict(C_170='GO_PILOTE'), False), ('c170', dict(C_170='GO_PILOTE'), True),
     ('c170', dict(C_169='GO_PILOTE', C_170='NO_GO'), False), ('both', dict(C_169='GO_PILOTE', C_170='GO_PILOTE'), True),
-    ('both', dict(C_169='GO_PILOTE', C_170='NO_GO'), False)])
+    ('both', dict(C_169='GO_PILOTE', C_170='NO_GO'), False), ('c169', dict(C_169='GO_PILOTE', C_170='GO_PILOTE'), False),
+    ('c170', dict(C_169='GO_PILOTE', C_170='GO_PILOTE'), False), ('c169', dict(C_169='GO_PILOTE', C_170='NO_GO'), True),
+    ('both', dict(C_169='NO_GO', C_170='NO_GO'), False)])
 def test_mode_requires_go_pilote_of_each_confirmed_pilot(tmp_path, monkeypatch, mode, pilots, ok):
     argv, out, seen = _setup(tmp_path, monkeypatch, _one_page, mode, **pilots)
     if ok:
@@ -251,7 +253,8 @@ def test_duration_rules(tmp_path, monkeypatch, mode, d, ok):
     def answer(body, n):
         assert body['params'][1]['filters'] == dict(blockTime=dict(gte=C.T1, lt=end))
         return dict(data=[], paginationToken=None)
-    pilots = dict(C_169='GO_PILOTE', C_170='GO_PILOTE')
+    pilots = {'c169': dict(C_169='GO_PILOTE'), 'c170': dict(C_170='GO_PILOTE'),
+              'both': dict(C_169='GO_PILOTE', C_170='GO_PILOTE')}[mode]
     argv, out, seen = _setup(tmp_path, monkeypatch, answer, mode, d, **pilots)
     if ok:
         with pytest.raises(SystemExit, match='window_not_closed'):

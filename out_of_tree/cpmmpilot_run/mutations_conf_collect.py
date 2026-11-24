@@ -30,7 +30,8 @@ M = [
     ('cap_not_used', D, "stage='g23', max_credits=cap)", "stage='g23', max_credits=a.cap)"),
     ('package_guard_removed', D, "    if B.G23_CAP != G23_CAP:", "    if False:"),
     # GO requirement
-    ('go_check_removed', D, "    if PILOT_OF_MODE[a.mode] - go_pilots(a.pilot_result):", "    if False:"),
+    ('go_check_removed', D, "    if PILOT_OF_MODE[a.mode] != go_pilots(a.pilot_result):", "    if False:"),
+    ('go_subset_only', D, "    if PILOT_OF_MODE[a.mode] != go_pilots(a.pilot_result):", "    if PILOT_OF_MODE[a.mode] - go_pilots(a.pilot_result):"),
     ('both_needs_one', D, "'both': {'C-169', 'C-170'}}", "'both': {'C-169'}}"),
     ('c170_needs_169', D, "'c170': {'C-170'},", "'c170': {'C-169'},"),
     ('any_verdict_is_go', D, "        if doc.get('verdict') == 'GO_PILOTE':", "        if True:"),

@@ -1,7 +1,7 @@
 {
  "base_guard": "PASS",
- "mutants": 36,
- "killed": 36,
+ "mutants": 37,
+ "killed": 37,
  "results": {
   "time_guard_removed": "KILLED",
   "time_guard_minus_1": "KILLED",
@@ -20,6 +20,7 @@
   "cap_not_used": "KILLED",
   "package_guard_removed": "KILLED",
   "go_check_removed": "KILLED",
+  "go_subset_only": "KILLED",
   "both_needs_one": "KILLED",
   "c170_needs_169": "KILLED",
   "any_verdict_is_go": "KILLED",
