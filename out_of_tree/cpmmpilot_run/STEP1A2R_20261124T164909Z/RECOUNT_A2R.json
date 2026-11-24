@@ -1,0 +1,309 @@
+{
+ "per_pool": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 1600,
+   "transactions": 1600,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 5,
+   "transactions": 5,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 1
+   },
+   "swaps": 1,
+   "transactions": 2,
+   "truncated": 1,
+   "truncated_cpmm_in_logs": 1,
+   "truncated_cpmm_in_message": 1
+  },
+  "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 1,
+   "transactions": 1,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 1
+   },
+   "swaps": 17,
+   "transactions": 18,
+   "truncated": 1,
+   "truncated_cpmm_in_logs": 1,
+   "truncated_cpmm_in_message": 1
+  },
+  "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "b1": 1,
+   "lp_changes": 0,
+   "rcp1": 2,
+   "skipped_by_reason": {
+    "log_truncated": 53
+   },
+   "swaps": 724,
+   "transactions": 1660,
+   "truncated": 53,
+   "truncated_cpmm_in_logs": 52,
+   "truncated_cpmm_in_message": 53
+  },
+  "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 2,
+   "transactions": 2,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "b1": 0,
+   "lp_changes": 6,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 79
+   },
+   "swaps": 37690,
+   "transactions": 13963,
+   "truncated": 79,
+   "truncated_cpmm_in_logs": 70,
+   "truncated_cpmm_in_message": 79
+  },
+  "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 7
+   },
+   "swaps": 84,
+   "transactions": 332,
+   "truncated": 7,
+   "truncated_cpmm_in_logs": 7,
+   "truncated_cpmm_in_message": 7
+  },
+  "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 20
+   },
+   "swaps": 446,
+   "transactions": 1584,
+   "truncated": 20,
+   "truncated_cpmm_in_logs": 18,
+   "truncated_cpmm_in_message": 20
+  },
+  "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 4
+   },
+   "swaps": 29,
+   "transactions": 34,
+   "truncated": 4,
+   "truncated_cpmm_in_logs": 4,
+   "truncated_cpmm_in_message": 4
+  },
+  "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 50
+   },
+   "swaps": 83,
+   "transactions": 140,
+   "truncated": 50,
+   "truncated_cpmm_in_logs": 37,
+   "truncated_cpmm_in_message": 50
+  },
+  "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 0,
+   "transactions": 0,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "b1": 57,
+   "lp_changes": 4,
+   "rcp1": 59,
+   "skipped_by_reason": {
+    "log_truncated": 1282
+   },
+   "swaps": 37396,
+   "transactions": 105364,
+   "truncated": 1282,
+   "truncated_cpmm_in_logs": 1101,
+   "truncated_cpmm_in_message": 1282
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "b1": 1,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 24
+   },
+   "swaps": 8157,
+   "transactions": 3375,
+   "truncated": 24,
+   "truncated_cpmm_in_logs": 20,
+   "truncated_cpmm_in_message": 24
+  },
+  "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {
+    "log_truncated": 20
+   },
+   "swaps": 202,
+   "transactions": 276,
+   "truncated": 20,
+   "truncated_cpmm_in_logs": 18,
+   "truncated_cpmm_in_message": 20
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 804,
+   "transactions": 805,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  },
+  "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+   "b1": 0,
+   "lp_changes": 0,
+   "rcp1": 0,
+   "skipped_by_reason": {},
+   "swaps": 8,
+   "transactions": 8,
+   "truncated": 0,
+   "truncated_cpmm_in_logs": 0,
+   "truncated_cpmm_in_message": 0
+  }
+ },
+ "schema": "a2r-recount-v1",
+ "sha256sums_check": {
+  "bad": 0,
+  "rc": 0
+ },
+ "total": {
+  "b1": 59,
+  "lp_changes": 10,
+  "rcp1": 61,
+  "skipped": 1541,
+  "swaps": 87249,
+  "truncated": 1541,
+  "truncated_cpmm_in_logs": 1329,
+  "truncated_cpmm_in_message": 1541
+ },
+ "total_rules_on_all_lines": {
+  "b1": 59,
+  "rcp1": 61
+ }
+}
