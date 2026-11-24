@@ -32,7 +32,7 @@ def _verdicts(tmp_path, **pilots):
     return out
 
 
-def _setup(tmp_path, monkeypatch, answer, mode='both', d_days=None, **pilots):
+def _setup(tmp_path, monkeypatch, answer, mode='both', d_days=None, cap=33_000, **pilots):
     pilots = pilots or dict(C_169='GO_PILOTE', C_170='GO_PILOTE')
     auth = tmp_path / 'AUTH_CONF_TEST.txt'
     auth.write_text('test text, not an owner text\n')
@@ -65,7 +65,7 @@ def _setup(tmp_path, monkeypatch, answer, mode='both', d_days=None, **pilots):
     monkeypatch.setattr(rpc.LiveRpc, '__init__', init)
     out = tmp_path / 'out'
     d_days = d_days if d_days is not None else 12
-    argv = ['--mode', mode, '--d-days', str(d_days), '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--u2', str(U2J), '--out', str(out),
+    argv = ['--mode', mode, '--d-days', str(d_days), '--cap', str(cap), '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--u2', str(U2J), '--out', str(out),
             '--authorization', str(auth), '--sheet-sha', SHA, '--verdict-code-sha', SHA] + _verdicts(tmp_path, **pilots)
     return argv, out, seen
 
@@ -81,7 +81,8 @@ def _result(out):
 
 
 def test_constants_match_r04_8():
-    assert C.T1 == 1796552486 and END == 1797589286 and C.CAP == 32_340 and C.RETRY_ON_TRUNCATED == 1
+    assert C.T1 == 1796552486 and END == 1797589286 and C.G23_CAP == 32_340 and C.HARD_STOP_PCT == 98
+    assert C.RETRY_ON_TRUNCATED == 1
     assert C.CONF_TEXT_SHA256 is None and '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b' in C.NOT_COVERING
     n1 = json.loads((HERE / 'N1ROT_20261124T215521Z' / 'N1ROT_RESULT.json').read_bytes())
     assert list(C.N1_POOLS) == n1['kept'] and C.N1_LIST_SHA256 == n1['list_sha256']
@@ -133,7 +134,7 @@ def test_c170_collects_only_the_3_n1_pools(tmp_path, monkeypatch):
     assert [b['params'][0] for b in seen] == list(C.N1_POOLS) and set(res['states']) == set(C.N1_POOLS)
     assert res['budget']['requests'] == 3 and res['mode'] == 'c170' and res['window'] == [C.T1, END]
     ledger = json.loads((out / 'ledger_conf.json').read_text())
-    assert ledger['stage'] == 'g23' and ledger['max_credits'] == 32_340
+    assert ledger['stage'] == 'g23' and ledger['max_credits'] == 32_340 == 33_000 * 98 // 100
 
 
 def test_both_collects_the_4_pools_once(tmp_path, monkeypatch):
@@ -223,12 +224,12 @@ def test_other_incident_stops_without_retry(tmp_path, monkeypatch, exc, tag):
 
 
 def test_cap_reached_stops(tmp_path, monkeypatch):
-    monkeypatch.setattr(C, 'CAP', 2 * step1.B.COSTS['getTransactionsForAddress'])
-    monkeypatch.setattr(step1.B, 'G23_CAP', C.CAP)
-    argv, out, seen = _setup(tmp_path, monkeypatch, _one_page)
+    argv, out, seen = _setup(tmp_path, monkeypatch, lambda b, n: dict(data=[_tx(n, b['params'][0])], paginationToken='t%d' % n),
+                             cap=1_000)
     C.main(argv, now=END)
     res = _result(out)
-    assert res['verdict_run'] == 'STOP' and res['tag'].startswith('credit_cap_reached') and len(seen) == 2
+    assert res['cap'] == 980 and res['owner_cap'] == 1_000 and res['budget']['max_credits'] == 980
+    assert res['verdict_run'] == 'STOP' and res['tag'].startswith('credit_cap_reached') and len(seen) == 98
 
 
 def test_bad_tx_format_stops(tmp_path, monkeypatch):
@@ -262,3 +263,19 @@ def test_duration_rules(tmp_path, monkeypatch, mode, d, ok):
         with pytest.raises(SystemExit, match='c170_window_is_12_days|d_c_out_of_12_30'):
             C.main(argv, now=C.T1 + 40 * 86_400)
         assert seen == [] and not out.exists()
+
+
+@pytest.mark.parametrize('cap, stop', [(53_190, 52_126), (41_001, 40_180)])
+def test_owner_cap_p_drives_the_hard_stop(tmp_path, monkeypatch, cap, stop):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _one_page, cap=cap)
+    C.main(argv, now=END)
+    assert _result(out)['cap'] == stop == cap * 98 // 100
+    assert json.loads((out / 'ledger_conf.json').read_text())['max_credits'] == stop
+
+
+@pytest.mark.parametrize('cap', [999, 1_000_001, 0])
+def test_cap_out_of_range_refused(tmp_path, monkeypatch, cap):
+    argv, out, seen = _setup(tmp_path, monkeypatch, _one_page, cap=cap)
+    with pytest.raises(SystemExit, match='cap_out_of_range'):
+        C.main(argv, now=END)
+    assert seen == [] and not out.exists()
