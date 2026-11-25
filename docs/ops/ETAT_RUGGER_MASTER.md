@@ -312,6 +312,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 25/11 12:45Z | **cpmmrecon 0.1 PASS de code** (R01 49ccd25, vérifié indépendamment par R02 sur les pages pré-T0) : toutes les transactions à journal tronqué des 3 pools pilotes reconstituées (AEZjoU 79, G8kgi7 1 282 dont une à 4 swaps, GdxFyc 24), 0 rupture ; G-0 inchangé admet AEZjoU, G8kgi7, GdxFyc ; Gms3Ma exclu (Token-2022). Fenêtre : proportion reconstituable NON MESURÉE. **Texte définitif du propriétaire présenté** (sha cda64700, ancré comme projet par R02 à 12:31:38Z) : correction du frais créateur, module de reconstitution audité, G-0 de N1 = G-0 de G2-3, position N1 touchée = perte totale ; sans lui, G2-3 INCONCLUSIF et N1 STOP déclarés d'avance. Proposé à R02 (R04-15) : relancer la démonstration livesim avec 0.3.1 et cpmmrecon, à 0 crédit pour l'éligibilité. | registre R02 ; R01 49ccd25 | déclaré |
 
+| 25/11 13:51Z | **Tout le code est audité (PASS R02)** : pour les pilotes, g23run 0.1.2, g23run011 0.1.2, n1verdict 0.2.3 (branchement de cpmmrecon) ; pour la démonstration, livesim 0.3.1 (variante A, cpmmcost 0.3.1 seul) et 0.3.2 (variante B, avec cpmmrecon, en attente). Le code des pilotes ne devient la chaîne de verdict qu'après la signature du texte cda64700 par le propriétaire et sa vérification à la source par R02. **Seul blocage : cette signature** (échéance 06/12 10:21:26Z). Contrôle R04 espacé à 3 h. | registre R02 | déclaré |
+
 ## 5. Incidents
 
 - 25/11 11:51Z : défaut du code gelé cpmmcost 0.3 (frais créateur de 500 ppm appliqué alors que les pools prélèvent 0) ; non détecté par les audits ni par les tests synthétiques ; il aurait rendu le pilote du 06/12 non évaluable. Corrigé par 0.3.1 avant toute lecture de la fenêtre.
