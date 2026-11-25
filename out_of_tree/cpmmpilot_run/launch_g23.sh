@@ -25,6 +25,8 @@ h(){ sha256sum "$1" | cut -d' ' -f1; }
      || [ "$(h $RUNREPO/activity_l2.py)" != 9b2c0487e8156609af434a19128e20f4871892bfe62755ae9a4535409fe1a952 ] \
      || [ "$(h $U2)" != 3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963 ] \
      || [ "$(h $AUTH)" != 3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b ] || [ -e $OUT ]; then echo "INTEGRITY_FAIL: no call"; exit 3; fi
+  CX=$S/cpmmdeps/out_of_tree/cpmmx_pkg; CC=$S/cpmmdeps/out_of_tree/cpmm_pilot/cpmmcost_pkg
+  echo "deps: pythonpath=$(h $S/cpmmpilot_pythonpath_016_final.txt) cpmmcost_v0_3=$(h $CC/MANIFEST_cpmmcost_v0_3.txt) cpmmcost_check_bad=$( (cd $CC && sha256sum -c MANIFEST_cpmmcost_v0_3.txt 2>&1) | grep -vc ': OK$') cpmmx_tree=$( (cd $CX && find cpmmx -name '*.py' -print0 | sort -z | xargs -0 sha256sum) | sha256sum | cut -d' ' -f1) (no cpmmx MANIFEST exists)"
   cd $S/w1frz/tree && env -i PATH=/usr/bin:/bin RUGGER_NO_DOTENV=1 HTTPS_PROXY="$HTTPS_PROXY" SSL_CERT_FILE=/root/.ccr/ca-bundle.crt \
      PYTHONPATH=$DEPS:$PKG $PY -B $DRV --pkg $PKG --u2 $U2 --out $OUT --sheet-sha $SHEET --verdict-code-sha $VCODE --authorization $AUTH
   echo "rc=$? end $(date -u +%FT%TZ)"
