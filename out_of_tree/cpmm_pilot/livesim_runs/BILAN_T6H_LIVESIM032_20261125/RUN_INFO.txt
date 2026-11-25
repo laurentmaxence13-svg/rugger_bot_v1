@@ -1,0 +1,8 @@
+livesim 0.3.2 (variant B, livesim032_pkg 6a98206, PASS R02) bilan at T+6 h, offline (unshare -rn), 0 credit, after R02 anchoring of R03 d285ff5.
+Data: git archive d285ff5 out_of_tree/cpmmpilot_run/LIVESIM_20261125T113851Z (SHA256SUMS_LIVE_PAGES_T6H fdaecb95, SHA256SUMS_LIVE_STATES_T6H a33b193b: all files checked), LIST_L c96353b9.
+ELIGIBLE: R03 373b369 LIVESIM_ELIGIBLE032_20261125T144635Z/ELIGIBLE.json sha 184576ea0358e8b619d1cb1d107eb82a93a94e67d5d87d204a8831c2b45b34a9.
+Command: python -B -m livesim.sim bilan --collect <LIVESIM_dir> --list-l <LIST_L> --eligible ELIGIBLE.json --eligible-sha 184576ea… --now 1795628331 --out DIR
+LIVESIM.json d586e1709a3582be6efe1293bf23e7084b655b6cd1468c988b5a22bec232014f
+LIVESIM.md   eac5c63bdaaeb48b5cd14c50fee78640e23ca003fd0990d3a99d71600b58fbe3
+Identical byte for byte to R02's reference bilan (17:45Z). Descriptive demonstration, never a Master trade, never counted for 50/20.
+Credits of the collection (ledger_livesim.json at d285ff5): 10 380 / 16 170.

@@ -1,0 +1,1130 @@
+{
+ "amm_config_sha256": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1"
+ },
+ "b3_by_pool": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": 1.0,
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": 1.0,
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": 4.0
+ },
+ "chunks": [
+  "live_000",
+  "live_001",
+  "live_002"
+ ],
+ "counts_for_operational_master": false,
+ "eligible": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "frozen_code": {
+  "manifests": {
+   "cpmmcost": {
+    "files_checked": 22,
+    "manifest": "MANIFEST_cpmmcost_v0_3_1.txt",
+    "manifest_sha256": "f635684cb7ad652a44ceeae898fa61cc4d8a0bbdf3d9b3030ca74582d19c8832"
+   },
+   "cpmmgen2": {
+    "files_checked": 15,
+    "manifest": "MANIFEST_cpmmgen2_v0_2.txt",
+    "manifest_sha256": "70ef9a9b46145436b160ce2907c433df9532f39942124a81ce11a7a3e314fcf5"
+   },
+   "cpmmpilot": {
+    "files_checked": 18,
+    "manifest": "MANIFEST_cpmmpilot_v0_2_8.txt",
+    "manifest_sha256": "7251d4fe27355d066d33e08f0c9e42dffa04f890646cc50de07e2a0acc442058"
+   },
+   "cpmmprereg": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_cpmmprereg_v0_2.txt",
+    "manifest_sha256": "9d8ebde62b4a05ce64a86f526d5f729d97f49bcdfee0589a0b5a46899089e5bf"
+   },
+   "cpmmrecon": {
+    "files_checked": 13,
+    "manifest": "MANIFEST_cpmmrecon_v0_1.txt",
+    "manifest_sha256": "bfeae9a3259ab62993eff4b522444f1246f6444a2f58782e69848ddd9e1e6164"
+   },
+   "g1ind": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g1ind_v0_6_1.txt",
+    "manifest_sha256": "12a2e66170918aee1bb859ec4c6639c263ad3587f491c9143d024bb816ae117a"
+   },
+   "g23run": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g23run_v0_1.txt",
+    "manifest_sha256": "3e3cb1053b0b7a792e480460e53b14f771e1d9fdd13be81e17daf02b4054747a"
+   },
+   "lpcost": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_lpcost_v0_2.txt",
+    "manifest_sha256": "ee9c144ca85f3de9489c60e0c74edf8ee685ed1e851d8d74aa392863313849eb"
+   },
+   "n1rot": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_n1rot_v0_2.txt",
+    "manifest_sha256": "2a17791d1098c6a4b1ec155cb5dd8dcfcf067bd445e4467e2ce3a0020cc53fba"
+   }
+  },
+  "trees": {
+   "cpmmx": {
+    "git_tree": "e103437142c74830e6ddc293d84529501f6b1162"
+   }
+  }
+ },
+ "g23": {
+  "capital_rule": "somme cumulée des P&L nets des positions fermées, par heure de sortie, depuis 0",
+  "placebo": {
+   "capital_by_hour": [
+    {
+     "capital_sol": 0.0,
+     "time": 1795610331
+    },
+    {
+     "capital_sol": -0.000891932,
+     "time": 1795613931
+    },
+    {
+     "capital_sol": -0.001887078,
+     "time": 1795617531
+    },
+    {
+     "capital_sol": -0.002755282,
+     "time": 1795621131
+    },
+    {
+     "capital_sol": -0.003340515,
+     "time": 1795624731
+    },
+    {
+     "capital_sol": -0.004369424,
+     "time": 1795628331
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.000891932,
+     "time": 1795610503
+    },
+    {
+     "capital_sol": -0.001887078,
+     "time": 1795614755
+    },
+    {
+     "capital_sol": -0.002755282,
+     "time": 1795620244
+    },
+    {
+     "capital_sol": -0.003340515,
+     "time": 1795621704
+    },
+    {
+     "capital_sol": -0.004369424,
+     "time": 1795626613
+    }
+   ],
+   "capital_end_sol": -0.004369424,
+   "costs_sol": 0.004904377263430727,
+   "entries": 5,
+   "exits": 5,
+   "gross_pnl_sol": 0.0005349532634307273,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.004369424,
+   "max_drawdown_stakes": 0.04369424,
+   "n_insufficient": true,
+   "net_pnl_sol": -0.004369424,
+   "net_return_per_position": -0.008738848,
+   "open_positions": 0,
+   "signals": 5,
+   "win_rate": 0.0,
+   "wins": 0
+  },
+  "placebo_merged": false,
+  "primary": {
+   "capital_by_hour": [
+    {
+     "capital_sol": -0.001065659,
+     "time": 1795610331
+    },
+    {
+     "capital_sol": -0.002623888,
+     "time": 1795613931
+    },
+    {
+     "capital_sol": -0.003721561,
+     "time": 1795617531
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795621131
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795624731
+    },
+    {
+     "capital_sol": -0.006841598,
+     "time": 1795628331
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.001065659,
+     "time": 1795609089
+    },
+    {
+     "capital_sol": -0.002623888,
+     "time": 1795613106
+    },
+    {
+     "capital_sol": -0.003721561,
+     "time": 1795616992
+    },
+    {
+     "capital_sol": -0.004193413,
+     "time": 1795619168
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795620923
+    },
+    {
+     "capital_sol": -0.006841598,
+     "time": 1795624909
+    }
+   ],
+   "capital_end_sol": -0.006841598,
+   "costs_sol": 0.0058715902164339015,
+   "entries": 6,
+   "exits": 6,
+   "gross_pnl_sol": -0.0009700077835660996,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.006841598,
+   "max_drawdown_stakes": 0.06841598,
+   "n_insufficient": true,
+   "net_pnl_sol": -0.006841598,
+   "net_return_per_position": -0.011402663333333334,
+   "open_positions": 1,
+   "signals": 7,
+   "win_rate": 0.0,
+   "wins": 0
+  },
+  "stake_sol": 0.1
+ },
+ "hours": 6.0,
+ "journal": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "placebo": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473787030,
+      "counts_for_operational_master": false,
+      "decision_index": 6,
+      "decision_slot": 473787026,
+      "decision_time": 1795618443,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0009713064298593433,
+       "price_move": 0.001485513991362143,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049962475615028,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795620244,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795620243
+       }
+      },
+      "exit_time": 1795620244,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -868204,
+      "net_return": -0.00868204,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 99551796,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1153122719,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 1
+   },
+   "primary": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473782038,
+      "counts_for_operational_master": false,
+      "decision_index": 5,
+      "decision_slot": 473782034,
+      "decision_time": 1795617367,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0009761360194996365,
+       "price_move": 0.00546380681020534,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005006190790705704,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795619168,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795619167
+       }
+      },
+      "exit_time": 1795619168,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -471852,
+      "net_return": -0.00471852,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 99948148,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1157715956,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 1
+   }
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "placebo": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473741802,
+      "counts_for_operational_master": false,
+      "decision_index": 9,
+      "decision_slot": 473741798,
+      "decision_time": 1795608702,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005233777759745965,
+       "price_move": 0.0007991504061330494,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004995092630158453,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795610503,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795610502
+       }
+      },
+      "exit_time": 1795610503,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -891932,
+      "net_return": -0.00891932,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99528068,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510835919,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473761525,
+      "counts_for_operational_master": false,
+      "decision_index": 31,
+      "decision_slot": 473761521,
+      "decision_time": 1795612954,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005233189695591586,
+       "price_move": -0.00023563558762381394,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004992505442817027,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795614755,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795614754
+       }
+      },
+      "exit_time": 1795614755,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -995146,
+      "net_return": -0.00995146,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99424854,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 511522276,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473793812,
+      "counts_for_operational_master": false,
+      "decision_index": 72,
+      "decision_slot": 473793808,
+      "decision_time": 1795619903,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005246300494082239,
+       "price_move": 0.0038750830006067127,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005002782951198489,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795621704,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795621703
+       }
+      },
+      "exit_time": 1795621704,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -585233,
+      "net_return": -0.00585233,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99834767,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510948210,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473816673,
+      "counts_for_operational_master": false,
+      "decision_index": 96,
+      "decision_slot": 473816669,
+      "decision_time": 1795624812,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005228513317874309,
+       "price_move": -0.0005745791761708174,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004991659492041752,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795626613,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795626612
+       }
+      },
+      "exit_time": 1795626613,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1028909,
+      "net_return": -0.01028909,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99391091,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510916073,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 4
+   },
+   "primary": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473735198,
+      "counts_for_operational_master": false,
+      "decision_index": 1,
+      "decision_slot": 473735194,
+      "decision_time": 1795607288,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005223527016873617,
+       "price_move": -0.0009435010375414748,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004990736260771163,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795609089,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795609088
+       }
+      },
+      "exit_time": 1795609089,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1065659,
+      "net_return": -0.01065659,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99354341,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510144356,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473753863,
+      "counts_for_operational_master": false,
+      "decision_index": 24,
+      "decision_slot": 473753859,
+      "decision_time": 1795611305,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005195694655491232,
+       "price_move": -0.005884335347210237,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004978385187240639,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795613106,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795613105
+       }
+      },
+      "exit_time": 1795613106,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1558229,
+      "net_return": -0.01558229,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98861771,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508504367,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473771912,
+      "counts_for_operational_master": false,
+      "decision_index": 47,
+      "decision_slot": 473771908,
+      "decision_time": 1795615191,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005224147474460948,
+       "price_move": -0.001264379756818124,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049899354957357814,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795616992,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795616991
+       }
+      },
+      "exit_time": 1795616992,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1097673,
+      "net_return": -0.01097673,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99322327,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510544014,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473790188,
+      "counts_for_operational_master": false,
+      "decision_index": 62,
+      "decision_slot": 473790184,
+      "decision_time": 1795619122,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005215872943908629,
+       "price_move": -0.00253003269400605,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004986770011603087,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795620923,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795620922
+       }
+      },
+      "exit_time": 1795620923,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1223839,
+      "net_return": -0.01223839,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99196161,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 509906376,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473808743,
+      "counts_for_operational_master": false,
+      "decision_index": 84,
+      "decision_slot": 473808739,
+      "decision_time": 1795623108,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005200813281634025,
+       "price_move": -0.004541635810290449,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004981742861546149,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795624909,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795624908
+       }
+      },
+      "exit_time": 1795624909,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1424346,
+      "net_return": -0.01424346,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98995654,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508525380,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [
+     {
+      "decision_index": 107,
+      "decision_time": 1795627011,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "status": "open"
+     }
+    ],
+    "signals": 6
+   }
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "placebo": {
+    "closed": [],
+    "open": [],
+    "signals": 0
+   },
+   "primary": {
+    "closed": [],
+    "open": [],
+    "signals": 0
+   }
+  }
+ },
+ "labels": [
+  "PAPER_SIMULATION",
+  "DESCRIPTIVE_DEMONSTRATION",
+  "NOT_A_TRIAL"
+ ],
+ "limits": [
+  "L1 : démonstration descriptive. Aucun essai, aucun test ni verdict, jamais un trade du Master. Le résultat ne peut servir ni à choisir ni à modifier une stratégie.",
+  "L2 : pools différents de ceux des pilotes, choisis par la règle ancrée par R02 avant toute lecture (registre 08:42:17Z et 08:45:05Z ; liste 5c4fefb6…). Aucune généralisation.",
+  "L3 : horizon de 6 h et de 24 h, au lieu des 12 jours. Le n est faible ; « n insuffisant » est publié quand il le faut.",
+  "L4 : collecte rétrospective par blocs de 2 h, donc une latence de 2 h au plus. Données tronquées à now. L-FIN. Seules les positions fermées sont valorisées.",
+  "L5 : même période de marché que la fenêtre pilote, donc une corrélation possible. Cela ne dit rien des verdicts du 6 décembre.",
+  "L6 : au départ, l'historique des acheteurs sur 600 s est tronqué et le délai de 3 600 s repart à zéro. Le témoin est retiré à chaque bilan. La config de chaque pool est celle lue à U-1, à un slot antérieur.",
+  "L7 : N1 en marques intermédiaires seulement ; le résultat à 12 jours est NON MESURÉ. Coûts du modèle gelé : pas de MEV, latence gelée. PAPER seulement."
+ ],
+ "min_eligible": 3,
+ "n1": {
+  "n_insufficient": true,
+  "note": "marques intermédiaires seulement : valeur liquidative si retrait à la marque ; le résultat 12 jours est NON MESURÉ",
+  "observations": {},
+  "pool_days": 0,
+  "pools": [
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+  ],
+  "result_12_days": "NON MESURÉ",
+  "stake_ppm": 5000,
+  "status": "NON ÉVALUABLE",
+  "universe": {
+   "kept": [
+    "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+   ],
+   "list_sha256": "d008e0c4d816c0d08d6829436c6b424c1e7af3b16e7b8d9467a41ccff1e99002",
+   "min_pools": 3,
+   "min_pools_met": false,
+   "pools": [
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.03588599527791796,
+       "swaps": 2273,
+       "tvl_lamports": 365384976826,
+       "volume_lamports": 13112203553
+      },
+      {
+       "day": -6,
+       "rotation": 0.04112868726562278,
+       "swaps": 2703,
+       "tvl_lamports": 365553137106,
+       "volume_lamports": 15034720655
+      },
+      {
+       "day": -5,
+       "rotation": 0.03866657674082081,
+       "swaps": 2531,
+       "tvl_lamports": 365244226368,
+       "volume_lamports": 14122743908
+      },
+      {
+       "day": -4,
+       "rotation": 0.04137518686389199,
+       "swaps": 2702,
+       "tvl_lamports": 364843873930,
+       "volume_lamports": 15095483460
+      },
+      {
+       "day": -3,
+       "rotation": 0.042445003477149156,
+       "swaps": 2652,
+       "tvl_lamports": 365187598850,
+       "volume_lamports": 15500388903
+      },
+      {
+       "day": -2,
+       "rotation": 0.05651606380637298,
+       "swaps": 3441,
+       "tvl_lamports": 364117290024,
+       "volume_lamports": 20578475996
+      },
+      {
+       "day": -1,
+       "rotation": 0.06121592464837279,
+       "swaps": 2896,
+       "tvl_lamports": 363975973768,
+       "volume_lamports": 22281125784
+      }
+     ],
+     "kept": false,
+     "median_rotation": 0.04137518686389199,
+     "median_rotation_exact": "1509548346/36484387393",
+     "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+     "threshold_exact": "4288465000/19110086961",
+     "threshold_value": 0.22440845029914985
+    },
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.2241492898951354,
+       "swaps": 641,
+       "tvl_lamports": 762470361338,
+       "volume_lamports": 170907190060
+      },
+      {
+       "day": -6,
+       "rotation": 0.2233338018427386,
+       "swaps": 579,
+       "tvl_lamports": 763730793846,
+       "volume_lamports": 170566901774
+      },
+      {
+       "day": -5,
+       "rotation": 0.20622994193701724,
+       "swaps": 575,
+       "tvl_lamports": 755283683824,
+       "volume_lamports": 155762110261
+      },
+      {
+       "day": -4,
+       "rotation": 0.21970133723584098,
+       "swaps": 556,
+       "tvl_lamports": 756046255434,
+       "volume_lamports": 166104373331
+      },
+      {
+       "day": -3,
+       "rotation": 0.19111561532313354,
+       "swaps": 458,
+       "tvl_lamports": 755347325952,
+       "volume_lamports": 144358668982
+      },
+      {
+       "day": -2,
+       "rotation": 0.1839891294044526,
+       "swaps": 1468,
+       "tvl_lamports": 758093184138,
+       "volume_lamports": 139480904957
+      },
+      {
+       "day": -1,
+       "rotation": 0.1666797793919317,
+       "swaps": 1509,
+       "tvl_lamports": 759416175158,
+       "volume_lamports": 126579320542
+      }
+     ],
+     "kept": false,
+     "median_rotation": 0.20622994193701724,
+     "median_rotation_exact": "155762110261/755283683824",
+     "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+     "threshold_exact": "25085642500/119382137721",
+     "threshold_value": 0.21012894373382704
+    },
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.5369569166850421,
+       "swaps": 988,
+       "tvl_lamports": 353796129218,
+       "volume_lamports": 189973278680
+      },
+      {
+       "day": -6,
+       "rotation": 1.632850782513046,
+       "swaps": 1442,
+       "tvl_lamports": 453245526906,
+       "volume_lamports": 740082313279
+      },
+      {
+       "day": -5,
+       "rotation": 0.6396257110449258,
+       "swaps": 1017,
+       "tvl_lamports": 384365175220,
+       "volume_lamports": 245849848501
+      },
+      {
+       "day": -4,
+       "rotation": 0.3399335297304476,
+       "swaps": 447,
+       "tvl_lamports": 443134251724,
+       "volume_lamports": 150636190333
+      },
+      {
+       "day": -3,
+       "rotation": 0.09881017691143573,
+       "swaps": 89,
+       "tvl_lamports": 398259171262,
+       "volume_lamports": 39352059169
+      },
+      {
+       "day": -2,
+       "rotation": 0.07770085931141099,
+       "swaps": 23,
+       "tvl_lamports": 421183945622,
+       "volume_lamports": 32726354503
+      },
+      {
+       "day": -1,
+       "rotation": 0.21580753868896924,
+       "swaps": 219,
+       "tvl_lamports": 395377980252,
+       "volume_lamports": 85325548770
+      }
+     ],
+     "kept": true,
+     "median_rotation": 0.3399335297304476,
+     "median_rotation_exact": "150636190333/443134251724",
+     "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+     "threshold_exact": "396897500/1793209173",
+     "threshold_value": 0.22133363244846618
+    }
+   ],
+   "rule": "n1rot 0.2, seuil r04_6_break_even",
+   "window": [
+    1795001931,
+    1795606731
+   ]
+  }
+ },
+ "now": 1795628331,
+ "pages_sha256": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "live": {
+    "live_000": "acdab35f3c037134dd36b2eb9ce864fc2bc542b6c32288a6fed1f27546a3daaf",
+    "live_001": "dd4f58f9a255d452548d3901307ed48a485ae1d4567309b35d3a7b31b5f66b0a",
+    "live_002": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf"
+   },
+   "pre": "04a7bd0eb13b08442471fb5017a5e1b16b6e6f5d1f15b29675df2be9e9cbf789"
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "live": {
+    "live_000": "a3004c44ae1b1c7580c850e65143975a196a6e6287fc05bd986b88a8677fd227",
+    "live_001": "abce18d1ab4734f385a967f06d869e60ae49c1718cad446ee44d69cc1bdc2e22",
+    "live_002": "4b576b4f0005909ec09456ea3038ad6428c0deef5ecb68119a5811a3e1027ae1"
+   },
+   "pre": "8f13f7fcf68201bdecce365020b4683dafb27095abb6d113e3ffc776bc2afb4a"
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "live": {
+    "live_000": "421709d9a884fb473fd91fa9595327132fa75bf4e0073d2ffd3330b68cdfec43",
+    "live_001": "c41e14d6bd95f969deb9065848ba6a22682f096735aed384d80d5a5c1a583601",
+    "live_002": "bb3d16ccecfffc65ee8aa9071365786b70904d1d78cff377cae22a6dedf5d0fe"
+   },
+   "pre": "b151925bd38eca1cf350bc0252e65cd84dd58ac21e50baa80b7105295070a453"
+  }
+ },
+ "placebo_note": "témoin retiré à chaque « now », autant que de signaux connus ; ses positions peuvent changer entre deux bilans",
+ "placebo_seed_sha256": "7741262633519404e3b602c149e07b4e8b99d62fe79d976444b0c1b190abe046",
+ "pool_gate": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "admitted": true,
+   "reasons": []
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "admitted": true,
+   "reasons": []
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "admitted": true,
+   "reasons": []
+  }
+ },
+ "pools": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "reconstruction": {
+  "live": {
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   },
+   "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   },
+   "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   }
+  },
+  "pre": {
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+    "kept": {},
+    "rebuilt": 39,
+    "rebuilt_swaps": 39,
+    "skipped": 39,
+    "transactions": {
+     "26EVbYeTXRQEJcp5ZeiG5LEYdFQTznzQjhfwTEB64tqYYqDc9PQMbEu73UjB854WjUAcUgcXa3xuVCjERHuhvSAs": "rebuilt:1",
+     "27pgh2W4JVLg6arUpDDu8onj5Hi2x743MM48YL9abgQ23DjM7N3zyButFGuzXry5jdKwe7YjGzKQhFX14Pm8neXQ": "rebuilt:1",
+     "2KsNavjDzeTZdtKTAUUYKDvMBHwxM7nHi5U5h9y8zdEJqZi2stwwVnd6wXxGhD2Mcbwt9L3RhJGakNejQZXGh2Va": "rebuilt:1",
+     "2U46PnWgPG1RRhrAQJ1KLKEiAfPW23CLXtbfrjNynaGRwkVJ6CUP2RLwKFKJwaaX5ncouFCHcpxnKDDR4XSHxQGt": "rebuilt:1",
+     "2UVKoYDimMkNgeLMjgJodmr3H81SqGDosjNRzNciEEKMD7BxmjFm2n6gMHq1LbTBJJcEZjyNB4mifXmuuBhuz2Ay": "rebuilt:1",
+     "2erZjaC9gAvqC8FgtrkfbdC7dY6u1DwvQkQQ4ktm9D1aWRUXVihjuP88fbD5jLhA29LAM2WLKBRvF3Qz121M7fKq": "rebuilt:1",
+     "2yhkMujUYuvaZHxVW29mtRrDhUBTm7RxaZseuJRnb1C1P58wwVEw13AqtCtiyu5Cg1iNtAeyyyFpNW8VJnmmzvCh": "rebuilt:1",
+     "36DMZmQ7CNXGPJ5sxt9UZNfs89D4QGT61JgVezcqW9yXpxWtqJ32yNoamAmEV9oA6VJqgtUijgr1fHvBtShDsFDA": "rebuilt:1",
+     "3718w4nSUZ2jc92RhuJaQyPF2QUhCftCR7KMAsdq9X6tV2qJcRM2daW6x8C4hpdyDAhvS5XJBBWxRUKLH9tLLaLK": "rebuilt:1",
+     "3Q4sLSFJrpfXSJxxy9oyNtziZr21SLMwVde1s1ZHwbo6N1W7bdCdVgmX5SixNafyFB9eaM6Tdsd8mcVJU1BM1Ura": "rebuilt:1",
+     "3VP9QUfcjYoMtzEJpzdUwx6AT6XtHpa2RhXPbsUkRdWA3Kr7YAbfBraUDJbd98pG89DViiV5WUgdv3Xetp4NMo5P": "rebuilt:1",
+     "3keWKdwsQ7C6CcNiceE7y4Mvod3838p6M7B4DBNPGnyZ4PSmB4F1mTD8tsCz35zH4xWKRkMPT1LeqGSTyJBzZY3f": "rebuilt:1",
+     "41vSqH2vFaFdu3pKYw2Q6kn2biqHTramcksPFfgUgC5Pz9JE7jF6SZiDVxThGgeKLHzqf26KwA6kscdtMZkMYCRS": "rebuilt:1",
+     "4BQsygkYVqbbf6AghdD3C57TbwD21dTd1g4heudgJWwPmdXX43U1c1aEnBW4LP213p4hbySX4QRnzokeyEbUUUuK": "rebuilt:1",
+     "4CQg4TXNSxm2ybsn3DKWNB62y3jGtw3f7hXHNZVScKJUByqxmB1u6mSZYhpQoxQvE1QLhFHiSw3BciGs3fv4d9a2": "rebuilt:1",
+     "4Pqq42rXduide2HzJih5g76WrW4jHWqmHzkoZFPb6nshzCARBPJsW6RMnd8AuL89by81kpvcDNXx8vLzZMsbPNZ7": "rebuilt:1",
+     "4SqjsvAqkDJNgjFJuimq6duiPcVoBvhPUsMtvmea6hN8a5Sfw9KhkwnYARLbqYZmryEHtHK1btmn6UnPQyEx8vZf": "rebuilt:1",
+     "4XwHvjaBD5GPfz4zvDQAt4pzEVuTd7Cdq1DhX8sjKUt7KCR297QcM3rzA1PPQZb9Qke4BRWpjxWrsBo7kncsP7EF": "rebuilt:1",
+     "4i7HwfWFwh4sKg8pNpKyQqiiJew3iTJzfB5BRjFyfC5X9Vd6HCF1zKiQya5DiMHEhkXBeDGpkGPUoJZ1fwtcmKYA": "rebuilt:1",
+     "4xBrqk7J3yMH2eB3JPptbSQNC4mCAXKtn21FCLDHz6J8Apemcw7wB4cz8y4wkkiuMc6RW3oUb8e6MK6bNY5djmB4": "rebuilt:1",
+     "56uQqC3GzCngcrE8hNUrLsx6y6x5yjYcxbiREaFhuhfHEMsexv9jm3drp4tHiyxgF8DY4dNhs3WkBuW64s8hHPVz": "rebuilt:1",
+     "574VNSKi9y7cw2P4AXwnpxaKEBGRdBZVWCzFqVf4JAWQ3K2ouJkNG3Vma31qTwu4XgNLHUkWKt9mzcocuQM7fk7H": "rebuilt:1",
+     "58jTBo3CUvS8C7dieF7E31QYs6LzQLHL9WyU9rxsryyCpA66QF6D4V2F2Svj4DUR5yiytyY8b4JnLYMbusv2fYJq": "rebuilt:1",
+     "5CyjbKDsMgApUVz9Q2GnbvW56HuE7ApeWUpTFzuJgoY432TqeGyH68CpqSWU7scEzrH8vxDpA4XNooYx3y92TjP8": "rebuilt:1",
+     "5YrCHkGBGSMzS1tBKaeNv5xFDZ2zUfrxCzta969h23w5fm6ZKhMkMwnX84qNEaM7EJRptEEVddF24fymnyPw7erp": "rebuilt:1",
+     "5hVnngZvDtiCoPjTm9afnf9958g17Dhu2T3zwFEaiU9sEzXXTQhVKU2M6hbSateTcR9iiHkvWoc7GW9Zjy3AG7gm": "rebuilt:1",
+     "5n8Zb4JrMkV2gm3CLbyx1iecEhRg6qQzHo3YNzmZqhr4Kw2zuuUCjqLfwPEdWznGZSTET5HCdk7TyUmsTYsaAb4N": "rebuilt:1",
+     "5saDexGWBUbcvYfFAJTp1PwrT47Tdi1tRAAtNVDFEfeKrkvhjTFAhpQbqYnq2NGgshpqA4Av6i3JSGmhMdcQ8zRd": "rebuilt:1",
+     "5wzPH9UiZmJKe4jKHsdVBrvVxacRpLJ5x8XaCEZRk2gjsUaKGrc5pxSwZ995vSkybRjc7565ceWVMdoxPswE6LRK": "rebuilt:1",
+     "7B8r1YFgoZnDjHLhxKqJEsTYi4eVcuZodaoWH26jDP23ZSX2PueKA3ztwcbMX8hrFVjHF5uPSvSuXWca9sk6DEs": "rebuilt:1",
+     "7cHJDoaEawSB1KjusihhFXpou8WewRwQt7zXZXZh3zQnaGu96rhiAJ1qfNufa2vQkvgwL3J3mMUGPgrC5QWpcYM": "rebuilt:1",
+     "GETibWadjQVEovgQrmSJ9UjxGVM3PaSreWJba5nmTFrM5d8LoUuWgGs94EbjAx5SM4hWiCdvWW212ctk3ETgcQH": "rebuilt:1",
+     "KhcWhF688bup4VCt3HwEzqjwppqpUK7c1BhsHwu9AQNTQVPQuRnwuKG9Gnqe1s7FCSkEtgVciYcPdr622rTcvYH": "rebuilt:1",
+     "XK8pv1Kc3TxK5qnRkohN74M9k2gAEu6FeAdduP8RVAb3BiPgz5Ck6dF81SMj1Kn5SCWSfNmALkdFqJ7WzmpdgyA": "rebuilt:1",
+     "ZXCxYYmHpFy2cXtforyQczB7s6ppRaCMLhwqUQ6BHK8EdLzbQgAL8GU3bpbe8tyMWiWcKWSFFeh1FnUqEivCe9P": "rebuilt:1",
+     "e5qWEA7UeQKuoHjf2NGf61PU5YoSkqHDX8GiPnqRFkDUP5pEdcH3YrjXRziwBUsBXyBvifg3nzuobWWAaP9QozM": "rebuilt:1",
+     "efxubWAyrMZ2ap48xZdsGL6isgAkQMBweKkUrrYfGnNeZhNyYLpDnpf7T1eKkLBeeQxsAELKdZ9vFb6fTUjQSyy": "rebuilt:1",
+     "j65GbEcqhCcHTQodsC8srf5zzKKEzVrqb6MeMuB3waJtHSf8E3CopooGiCjcGEYHuHR3wpdg2MhyGzYBk6YDrLZ": "rebuilt:1",
+     "jsUTNVg36vYrDzwghzW71j9A19QLw7Q1ShkGYmdej283jxtqVjUFGpU1uATh1qKM46uDL3S76ikvafoTBENFdNV": "rebuilt:1"
+    }
+   },
+   "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+    "kept": {},
+    "rebuilt": 1,
+    "rebuilt_swaps": 1,
+    "skipped": 1,
+    "transactions": {
+     "2XHNZVrQ26g9p6SqPZ26JtmbQGaRxVu6r2mzdDKJLt14bu5bjAEZMEfRC2HE29TpcdEVCUpE4G7L6N5cv98tyZyC": "rebuilt:1"
+    }
+   },
+   "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   }
+  }
+ },
+ "schema": "livesim-v0.3.2",
+ "start": 1795606731,
+ "status": "ÉVALUABLE (démonstration descriptive)",
+ "trial": null
+}
