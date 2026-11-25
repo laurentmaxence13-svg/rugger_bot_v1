@@ -31,18 +31,21 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 
 | Défaut | Cause racine | Correction | Prévention |
 |---|---|---|---|
-| A2 refusé (−32015, 24/11) | client réglé sur la version de transaction 0 ; erreur classée « refus de méthode » sur un mot du message | cpmmpilot 0.2.5 (version 1), texte d'erreur expurgé conservé | toute erreur RPC enregistre son texte expurgé ; diagnostic par hachage avant toute conclusion |
+| A2 refusé (−32015, 24/11) | client réglé sur la version de transaction 0 ; erreur classée « refus de méthode » sur un mot du message ; diagnostic initial de R02 erroné (filtre par date), erratum f2e62c72 | cpmmpilot 0.2.5 (version 1), texte d'erreur expurgé conservé | toute erreur RPC enregistre son texte expurgé ; diagnostic par hachage avant toute conclusion |
 | Pilote R-CP1/B1 infaisable (24/11) | univers choisi sur la réserve, pas sur l'activité réelle ; plancher de 20 pools jamais confronté aux données | clôture INFAISABLE, sans essai | mesurer l'activité et le débit de déclenchement AVANT de fixer un univers |
-| T2 perdu (24/11) | comptes écrits seulement en fin d'exécution ; réponse HTTP tronquée non classée | 0.2.7 : écriture après chaque pool, troncature reconnue, une relecture | tout driver réseau écrit ses résultats au fil de l'eau ; test de coupure obligatoire |
-| Frais créateur appliqués à tort (cpmmcost 0.3, 25/11) | paramètre de config pris pour un prélèvement réel ; tests seulement synthétiques | cpmmcost 0.3.1 (taux effectif, drapeau du pool) | tout modèle de coût est testé sur des swaps RÉELS avant gel (reproduction exacte) |
-| Journaux tronqués bloquant G-0 (25/11) | le nœud tronque les journaux de certaines transactions v1 | cpmmrecon 0.1 (reconstitution exacte, sinon refus) | publier la part de transactions reconstituées par pool à chaque verdict |
-| Seuil « 2 % » proposé après avoir vu les données (25/11) | règle dérivée des chiffres connus | texte retiré, voie sans seuil retenue | toute règle d'admission est fixée par principe et déclarée « en connaissance de » si des chiffres étaient connus |
+| T2 perdu (24/11) | comptes écrits seulement en fin d'exécution ; réponse HTTP tronquée non classée ; non détecté par l'audit R02 (erratum 822d5edf) | 0.2.7 : écriture après chaque pool, troncature reconnue, une relecture | tout driver réseau écrit ses résultats au fil de l'eau ; test de coupure obligatoire |
+| Frais créateur appliqués à tort (cpmmcost 0.3, 25/11) | paramètre de config pris pour un prélèvement réel ; tests seulement synthétiques ; non détecté par les audits R02 | cpmmcost 0.3.1 (taux effectif, drapeau du pool) | tout modèle de coût est testé sur des swaps RÉELS avant gel (reproduction exacte) |
+| Journaux tronqués bloquant G-0 (25/11) | limite de taille des journaux de l'exécution Solana ; surtout des v1, mais aussi des v0 (77 sur G8kgi7, 14 sur la démonstration) | cpmmrecon 0.1 (reconstitution exacte, sinon refus) | mesurer la part de transactions non décodées sur données réelles AVANT de geler une règle G-0 ; publier la part reconstituée par pool à chaque verdict |
+| Seuil « 2 % » proposé par R02 après avoir vu les données (25/11) | règle dérivée des chiffres connus | texte retiré, voie sans seuil retenue | toute règle d'admission est fixée par principe et déclarée « en connaissance de » si des chiffres étaient connus |
 | Limite d'usage épuisée (24/11) | recherches lourdes de R04 pendant le travail des agents | arrêt des workflows lourds | R04 ne lance pas de recherche lourde quand le chemin critique tourne |
 | Lanceur pilote cassé (R03, 25/11, repéré par R02) | paquet cpmmpilot versionné sur place (0.2.8.1 → 0.2.9) : le MANIFEST ne passait plus | exécution depuis une extraction du commit audité 7ce025c | tout code figé s'exécute depuis une extraction du commit audité, jamais depuis le dossier de travail |
 | sha recopié de mémoire (R03) | valeur non recalculée | erratum | chaque sha est recalculé sur le fichier avant envoi |
 | Deux départs échoués à l'import (R03, sans effet sur les données) | chemin Python incomplet | chemin complété et publié | essai sec des imports et du contrôle des MANIFEST avant toute exécution réelle |
 | Mauvais dossier de paquet sélectionné (R03, détecté avant lancement) | sélection par « ls \| tail -1 » | MANIFEST vérifié | dossier désigné par son nom exact ; le sha du MANIFEST fait foi |
 | Commit vide (R03) | commande git avec un argument vide | commit refait | aucune commande git dont l'argument peut être vide |
+| Erreurs de conception R02 du 24/11, corrigées avant les données | D = 10 ignorait le plancher de 20 pools (erratum a74e2579) ; calcul de Poisson ignorant les rafales ; 5 pools sur 7 jours sous 30 pool-jours (erratum 835d648e) | errata avant toute lecture | confronter chaque paramètre de conception à toutes les règles gelées et aux données d'activité réelles |
+| Fichier d'autorisation de livepaper ignoré par .gitignore « data/ » (25/11) | règle d'exclusion trop large | ajout forcé (1a626c8) | vérifier chaque livraison sur une extraction propre |
+| Tests dépendant de l'environnement (livesim 0.3, livepaper 0.1) | présence ou version d'un paquet local supposée | corrigés en 0.1.1 | un test ne dépend ni de la présence ni de la version d'un paquet local |
 
 ## Jalons fixés par le propriétaire (24/11, après 18:00Z)
 
