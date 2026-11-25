@@ -33,3 +33,20 @@ touchée) : AEZjoU, G8kgi7 et GdxFyc seraient admis par G-0, soit 3 pools, exact
 le serait pas.
 
 Tout cela vaut pour les pages PRÉ-T0. Le même constat est NM sur la fenêtre, qui n'est pas lue.
+
+## ERRATUM 1 (R01, même jour) — le dénominateur de la part « ≤ 2 % » n'est pas fixé, et il change le résultat
+
+- La colonne « Part des tx du pool » ci-dessus divise par TOUTES les transactions des pages du pool. Ces
+  transactions incluent les transactions en échec et celles sans aucun swap.
+- D'autres dénominateurs sont possibles. Ils sont calculés dans `eg0_denominators.py` → `EG0_DENOMINATORS.json` :
+
+| Pool | Non décodées | / toutes les tx | / tx réussies | / tx portant un swap (+ non décodées) | / swaps (+ non décodées) |
+|---|---|---|---|---|---|
+| AEZjoU | 79 | 0,57 % | 0,77 % | 0,81 % | 0,21 % |
+| G8kgi7 | 1 282 | 1,22 % | 1,60 % | **3,32 %** | **3,31 %** |
+| GdxFyc | 24 | 0,71 % | 1,36 % | 1,37 % | 0,29 % |
+
+- Avec un dénominateur « transactions portant un swap » ou « swaps », G8kgi7 dépasse 2 %. Seuls AEZjoU et GdxFyc
+  seraient alors admis : 2 pools, donc G2-3 resterait INCONCLUSIF (plancher de 3 pools).
+- Ce choix appartient au texte E-G0 du propriétaire et à R02. Je ne propose aucun dénominateur.
+- Le projet cpmmcost 0.3.2 prend le dénominateur en ENTRÉE (`transactions`), sans le choisir.
