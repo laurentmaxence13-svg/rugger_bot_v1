@@ -23,6 +23,22 @@ Légende des preuves :
 **Risques sur ce premier verdict** : (1) moins de 70 déclenchements R-CP1 sur les 7 jours avant T0 (soit moins de 30 entrées attendues en 3 jours) = ARRÊT pour puissance insuffisante et décision du propriétaire ; (2) porte G-0 non satisfaite sur les swaps du pilote = STOP sans verdict économique ; (3) nouveau refus Helius à A2r = arrêt définitif de l'étape 1, dossier de repli présenté aussitôt.
 Activité réelle des agents : voir § 3. Une session inactive n'est jamais comptée comme du travail.
 
+## Charte du propriétaire (25/11, ≈ 19:45Z)
+
+« Être brillant dans l'analyse, rigoureux dans les méthodes et discipliné dans l'exécution. » Chaque échec doit apprendre quelque chose, chaque perte être comprise, chaque anomalie étudiée, chaque amélioration mesurée et vérifiée. Ni optimisme artificiel, ni résultats arrangés, ni stratégies validées trop vite. « Notre exigence ne doit jamais diminuer, même lorsque les résultats sont négatifs. »
+
+**Pratique retenue par R04** : un registre des défauts (cause racine → correction → prévention), tenu ci-dessous ; un défaut ne se ferme que lorsque sa prévention est en place.
+
+| Défaut | Cause racine | Correction | Prévention |
+|---|---|---|---|
+| A2 refusé (−32015, 24/11) | client réglé sur la version de transaction 0 ; erreur classée « refus de méthode » sur un mot du message | cpmmpilot 0.2.5 (version 1), texte d'erreur expurgé conservé | toute erreur RPC enregistre son texte expurgé ; diagnostic par hachage avant toute conclusion |
+| Pilote R-CP1/B1 infaisable (24/11) | univers choisi sur la réserve, pas sur l'activité réelle ; plancher de 20 pools jamais confronté aux données | clôture INFAISABLE, sans essai | mesurer l'activité et le débit de déclenchement AVANT de fixer un univers |
+| T2 perdu (24/11) | comptes écrits seulement en fin d'exécution ; réponse HTTP tronquée non classée | 0.2.7 : écriture après chaque pool, troncature reconnue, une relecture | tout driver réseau écrit ses résultats au fil de l'eau ; test de coupure obligatoire |
+| Frais créateur appliqués à tort (cpmmcost 0.3, 25/11) | paramètre de config pris pour un prélèvement réel ; tests seulement synthétiques | cpmmcost 0.3.1 (taux effectif, drapeau du pool) | tout modèle de coût est testé sur des swaps RÉELS avant gel (reproduction exacte) |
+| Journaux tronqués bloquant G-0 (25/11) | le nœud tronque les journaux de certaines transactions v1 | cpmmrecon 0.1 (reconstitution exacte, sinon refus) | publier la part de transactions reconstituées par pool à chaque verdict |
+| Seuil « 2 % » proposé après avoir vu les données (25/11) | règle dérivée des chiffres connus | texte retiré, voie sans seuil retenue | toute règle d'admission est fixée par principe et déclarée « en connaissance de » si des chiffres étaient connus |
+| Limite d'usage épuisée (24/11) | recherches lourdes de R04 pendant le travail des agents | arrêt des workflows lourds | R04 ne lance pas de recherche lourde quand le chemin critique tourne |
+
 ## Jalons fixés par le propriétaire (24/11, après 18:00Z)
 
 | Jalon | Définition (propriétaire) | État au 24/11 | Prochaine action, responsable |
