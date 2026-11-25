@@ -1,0 +1,14 @@
+LIVESIM (t_start - 7 d)
+GaPTvX {'swaps': 19198, 'exact': 0, 'skipped': 0, 'breaks': 0, 'gate': ['swaps_not_reproduced_with_the_amm_config']}
+6CQSpR {'swaps': 5785, 'exact': 0, 'skipped': 1, 'breaks': 1, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+7SJ5UK {'swaps': 857, 'exact': 1, 'skipped': 103, 'breaks': 82, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+5zk4vh {'swaps': 4186, 'exact': 23, 'skipped': 39, 'breaks': 35, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+CXgcuE {'swaps': 445, 'exact': 0, 'skipped': 19, 'breaks': 17, 'gate': ['undecoded_transactions', 'token_transfer_fee', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+FAn5gz {'swaps': 3472, 'exact': 16, 'skipped': 156, 'breaks': 136, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+A3URwh {'swaps': 1534, 'exact': 0, 'skipped': 0, 'breaks': 0, 'gate': ['token_transfer_fee', 'swaps_not_reproduced_with_the_amm_config']}
+4D17GN {'swaps': 2796, 'exact': 0, 'skipped': 55, 'breaks': 50, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+PILOT pools, A2r pre-T0 pages (technical diagnostic)
+G8kgi7 {'swaps': 37396, 'exact': 130, 'skipped': 1282, 'breaks': 1142, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+GdxFyc {'swaps': 8157, 'exact': 0, 'skipped': 24, 'breaks': 20, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+AEZjoU {'swaps': 37690, 'exact': 0, 'skipped': 79, 'breaks': 77, 'gate': ['undecoded_transactions', 'swaps_not_reproduced_with_the_amm_config', 'reserves_chain_broken']}
+Gms3Ma {'swaps': 804, 'exact': 0, 'skipped': 0, 'breaks': 0, 'gate': ['token_transfer_fee', 'swaps_not_reproduced_with_the_amm_config']}

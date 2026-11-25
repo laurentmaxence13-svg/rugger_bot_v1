@@ -1,0 +1,165 @@
+{
+ "conduct": "NON ÉVALUABLE : moins de 3 pools éligibles, aucun relevé de 24 h",
+ "config_sha256": "31f04ec8ae2516d4a9126635a40da9104fe7773e2bb67b1a0ae93e1f05c9887d",
+ "evaluable": false,
+ "frozen_code": {
+  "manifests": {
+   "cpmmcost": {
+    "files_checked": 9,
+    "manifest": "MANIFEST_cpmmcost_v0_3.txt",
+    "manifest_sha256": "a0bd2adbfaeaa5b14b79c200b066f9a14bb1408c57469e319d6e1db9b92de547"
+   },
+   "cpmmgen2": {
+    "files_checked": 15,
+    "manifest": "MANIFEST_cpmmgen2_v0_2.txt",
+    "manifest_sha256": "70ef9a9b46145436b160ce2907c433df9532f39942124a81ce11a7a3e314fcf5"
+   },
+   "cpmmpilot": {
+    "files_checked": 18,
+    "manifest": "MANIFEST_cpmmpilot_v0_2_8.txt",
+    "manifest_sha256": "7251d4fe27355d066d33e08f0c9e42dffa04f890646cc50de07e2a0acc442058"
+   },
+   "cpmmprereg": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_cpmmprereg_v0_2.txt",
+    "manifest_sha256": "9d8ebde62b4a05ce64a86f526d5f729d97f49bcdfee0589a0b5a46899089e5bf"
+   },
+   "g1ind": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g1ind_v0_6_1.txt",
+    "manifest_sha256": "12a2e66170918aee1bb859ec4c6639c263ad3587f491c9143d024bb816ae117a"
+   },
+   "g23run": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g23run_v0_1.txt",
+    "manifest_sha256": "3e3cb1053b0b7a792e480460e53b14f771e1d9fdd13be81e17daf02b4054747a"
+   },
+   "lpcost": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_lpcost_v0_2.txt",
+    "manifest_sha256": "ee9c144ca85f3de9489c60e0c74edf8ee685ed1e851d8d74aa392863313849eb"
+   },
+   "n1rot": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_n1rot_v0_2.txt",
+    "manifest_sha256": "2a17791d1098c6a4b1ec155cb5dd8dcfcf067bd445e4467e2ce3a0020cc53fba"
+   }
+  },
+  "trees": {
+   "cpmmx": {
+    "git_tree": "e103437142c74830e6ddc293d84529501f6b1162"
+   }
+  }
+ },
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "list_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "min_eligible": 3,
+ "pools": [],
+ "qualified_sha256": "a0a95e6831809b8c820ea9845436419ddd48a72f138cc471821bbc6961c8fc9c",
+ "rows": [
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 4.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "swaps_not_reproduced_with_the_amm_config"
+   ],
+   "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+   "pre_pages_sha256": "b151925bd38eca1cf350bc0252e65cd84dd58ac21e50baa80b7105295070a453"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 1.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "pre_pages_sha256": "8f13f7fcf68201bdecce365020b4683dafb27095abb6d113e3ffc776bc2afb4a"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 0.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
+   "pre_pages_sha256": "3667175cebf76a3ccf11246e5fe90953a3f88a486ab12bee405eafd1aa58829f"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 1.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "pre_pages_sha256": "04a7bd0eb13b08442471fb5017a5e1b16b6e6f5d1f15b29675df2be9e9cbf789"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 0.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+   "pre_pages_sha256": "beb4404859f05900cfe507e883c837f49d10150a7515aaba6cf4d28d8171cf2b"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 0.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
+   "pre_pages_sha256": "7a630c0ec631eacdbe2eb32231b1f188f0bf29b82a4ae49d0d8591b6bc9c9126"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 0.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "token_transfer_fee",
+    "swaps_not_reproduced_with_the_amm_config"
+   ],
+   "pool": "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
+   "pre_pages_sha256": "5dc7e652a39c83264f8976725e42f5ae43b586ebb478870e2a3c8867037580bd"
+  },
+  {
+   "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+   "b3": 0.0,
+   "eligible": false,
+   "g0_admitted": false,
+   "g0_reasons": [
+    "undecoded_transactions",
+    "swaps_not_reproduced_with_the_amm_config",
+    "reserves_chain_broken"
+   ],
+   "pool": "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o",
+   "pre_pages_sha256": "7405cbbd0449a2936b2d0eff08f10d79a232afe5b7ef60da5f662b6b865ba8ef"
+  }
+ ],
+ "schema": "livesim-v0.3",
+ "t_start": 1795606731
+}
