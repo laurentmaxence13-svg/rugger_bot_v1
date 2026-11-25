@@ -100,7 +100,10 @@ def _setup(tmp_path, monkeypatch, chain, cap=15_000):
 
 def test_constants_and_universe():
     assert L.K == 8 and L.HISTORY_S == 7 * 86_400 and L.LIVE_S == 86_400 and L.HARD_STOP_PCT == 98
-    assert L.CAP_MAX == 20_000 and L.RETRY_ON_TRUNCATED == 1 and L.LIVESIM_TEXT_SHA256 is None and L.MARGIN_S == 120
+    assert L.CAP_MAX == 20_000 and L.RETRY_ON_TRUNCATED == 1 and L.MARGIN_S == 120
+    go = HERE / 'AUTORISATION_LIVESIM_GO.txt'
+    assert L.LIVESIM_TEXT_SHA256 == hashlib.sha256(go.read_bytes()).hexdigest() == 'eba73e3f97ffc31a8a8a6efa8b896005dded0f4b1ec29e8efbe825e9190890bf'
+    assert L.LIVESIM_TEXT_SHA256 in rpc.AUTHORIZED_TEXT_SHA256 and L.LIVESIM_TEXT_SHA256 not in L.NOT_COVERING
     assert '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b' in L.NOT_COVERING
     assert len(L.FORBIDDEN) == 5 and not L.FORBIDDEN & {r['pool'] for r in ROWS}
     assert L.list_sha([r['pool'] for r in ROWS]) == L.UNIVERSE_LIST_SHA256 and len(ROWS) == 10

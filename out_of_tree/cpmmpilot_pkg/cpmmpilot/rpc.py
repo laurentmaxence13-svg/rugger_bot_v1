@@ -53,7 +53,9 @@ AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453
                                     # 0.2.7: owner's T2-bis text (b), 24/11 18:56:59Z (R02 anchor f63275d2)
                                     'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d',
                                     # 0.2.8.1: owner's G2-3 text, 24/11 22:29:08Z (event b7b839b2, R02 anchor a5e8f770)
-                                    '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b'})
+                                    '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b',
+                                    # 0.2.9.1: owner's GO RUGGER text, 25/11 10:35:25Z (event e73505b1, R02 anchor 10:37Z)
+                                    'eba73e3f97ffc31a8a8a6efa8b896005dded0f4b1ec29e8efbe825e9190890bf'})
 PILOT_METHODS = ('getSlot', 'getProgramAccounts', 'getMultipleAccounts', 'getSignaturesForAddress', 'getTransaction',
                  'getTransactionsForAddress')                              # the priced methods of budget.COSTS (test)
 MAX_RESPONSE_BYTES = 256 * 1024 ** 2

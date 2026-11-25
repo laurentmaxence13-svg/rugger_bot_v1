@@ -41,7 +41,7 @@ MARGIN_S = 120
 CAP_MAX = 20_000
 HARD_STOP_PCT = 98
 RETRY_ON_TRUNCATED = 1
-LIVESIM_TEXT_SHA256 = None                           # owner text for this collection, written in the R03 session, anchored
+LIVESIM_TEXT_SHA256 = 'eba73e3f97ffc31a8a8a6efa8b896005dded0f4b1ec29e8efbe825e9190890bf'   # owner GO RUGGER, 25/11 10:35:25Z, R02 anchor 10:37Z
 NOT_COVERING = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
                           'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',
                           'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d',

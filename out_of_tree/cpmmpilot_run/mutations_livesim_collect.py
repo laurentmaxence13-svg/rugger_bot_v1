@@ -41,6 +41,7 @@ M = [
     ('hard_stop_100', D, "HARD_STOP_PCT = 98", "HARD_STOP_PCT = 100"),
     ('stage_g23', D, "stage='livesim', max_credits=cap)", "stage='g23', max_credits=cap)"),
     ('package_guard_removed', D, "    if 'livesim' not in B.STAGES:", "    if False:"),
+    ('text_sha_changed', D, "LIVESIM_TEXT_SHA256 = 'eba73e3f", "LIVESIM_TEXT_SHA256 = 'eba73e3e"),
     ('text_guard_removed', D, "    if LIVESIM_TEXT_SHA256 is None or auth in NOT_COVERING or auth != LIVESIM_TEXT_SHA256:", "    if False:"),
     ('old_texts_accepted', D, "LIVESIM_TEXT_SHA256 is None or auth in NOT_COVERING or auth != LIVESIM_TEXT_SHA256", "LIVESIM_TEXT_SHA256 is None or auth != LIVESIM_TEXT_SHA256"),
     ('wrong_text_accepted', D, "LIVESIM_TEXT_SHA256 is None or auth in NOT_COVERING or auth != LIVESIM_TEXT_SHA256", "LIVESIM_TEXT_SHA256 is None or auth in NOT_COVERING"),
@@ -62,7 +63,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for name, f, old, new in [('_base', None, None, None)] + M:
         d = Path(tmp) / name
         d.mkdir()
-        for g in (D, A, 'test_livesim_collect.py', 'AUTORISATION_G23.txt', 'LIVESIM_UNIVERSE.json'):
+        for g in (D, A, 'test_livesim_collect.py', 'AUTORISATION_G23.txt', 'AUTORISATION_LIVESIM_GO.txt', 'LIVESIM_UNIVERSE.json'):
             shutil.copy(HERE / g, d / g)
         for sub in ('TIME1R_20261124T102126Z',):
             (d / sub).symlink_to(HERE / sub)

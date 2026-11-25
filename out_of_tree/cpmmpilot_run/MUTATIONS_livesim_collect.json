@@ -1,7 +1,7 @@
 {
  "base_guard": "PASS",
- "mutants": 39,
- "killed": 39,
+ "mutants": 40,
+ "killed": 40,
  "results": {
   "forbidden_unchecked": "KILLED",
   "universe_file_unchecked": "KILLED",
@@ -34,6 +34,7 @@
   "hard_stop_100": "KILLED",
   "stage_g23": "KILLED",
   "package_guard_removed": "KILLED",
+  "text_sha_changed": "KILLED",
   "text_guard_removed": "KILLED",
   "old_texts_accepted": "KILLED",
   "wrong_text_accepted": "KILLED",

@@ -110,11 +110,14 @@ def test_live_rpc_release_authorizes_only_the_owner_text_b_c_and_unanchored_text
     assert len(t2b) == 533 and not t2b.endswith(b'\n') and 'relue une seule fois' in t2b.decode('utf-8')
     g23 = (Path(__file__).resolve().parents[2] / 'AUTORISATION_G23.txt').read_bytes()     # 0.2.8.1 (R02 a5e8f770)
     assert len(g23) == 1257 and not g23.endswith(b'\n') and 'au plus 33 000 crédits' in g23.decode('utf-8')
-    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(x).hexdigest() for x in (raw, t2, t2b, g23)}) == frozenset(
+    go = (Path(__file__).resolve().parents[2] / 'AUTORISATION_LIVESIM_GO.txt').read_bytes()   # 0.2.9.1 (R02 10:37Z)
+    assert len(go) == 1261 and not go.endswith(b'\n') and 'dépassement du quota gratuit' in go.decode('utf-8')
+    assert rpc.AUTHORIZED_TEXT_SHA256 == frozenset({hashlib.sha256(x).hexdigest() for x in (raw, t2, t2b, g23, go)}) == frozenset(
         {'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
          'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',
          'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d',
-         '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b'})
+         '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b',
+         'eba73e3f97ffc31a8a8a6efa8b896005dded0f4b1ec29e8efbe825e9190890bf'})
     text = raw.decode('utf-8')
     for clause in ('au plus 5 000 crédits', 'au plus 50 000 crédits', 'arrêt dur à 49 000 crédits',
                    'CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C', 'hachée et ancrée par R02 ; puis'):
