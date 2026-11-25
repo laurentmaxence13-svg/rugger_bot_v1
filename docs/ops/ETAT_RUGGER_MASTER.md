@@ -38,6 +38,11 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 | Journaux tronqués bloquant G-0 (25/11) | le nœud tronque les journaux de certaines transactions v1 | cpmmrecon 0.1 (reconstitution exacte, sinon refus) | publier la part de transactions reconstituées par pool à chaque verdict |
 | Seuil « 2 % » proposé après avoir vu les données (25/11) | règle dérivée des chiffres connus | texte retiré, voie sans seuil retenue | toute règle d'admission est fixée par principe et déclarée « en connaissance de » si des chiffres étaient connus |
 | Limite d'usage épuisée (24/11) | recherches lourdes de R04 pendant le travail des agents | arrêt des workflows lourds | R04 ne lance pas de recherche lourde quand le chemin critique tourne |
+| Lanceur pilote cassé (R03, 25/11, repéré par R02) | paquet cpmmpilot versionné sur place (0.2.8.1 → 0.2.9) : le MANIFEST ne passait plus | exécution depuis une extraction du commit audité 7ce025c | tout code figé s'exécute depuis une extraction du commit audité, jamais depuis le dossier de travail |
+| sha recopié de mémoire (R03) | valeur non recalculée | erratum | chaque sha est recalculé sur le fichier avant envoi |
+| Deux départs échoués à l'import (R03, sans effet sur les données) | chemin Python incomplet | chemin complété et publié | essai sec des imports et du contrôle des MANIFEST avant toute exécution réelle |
+| Mauvais dossier de paquet sélectionné (R03, détecté avant lancement) | sélection par « ls \| tail -1 » | MANIFEST vérifié | dossier désigné par son nom exact ; le sha du MANIFEST fait foi |
+| Commit vide (R03) | commande git avec un argument vide | commit refait | aucune commande git dont l'argument peut être vide |
 
 ## Jalons fixés par le propriétaire (24/11, après 18:00Z)
 
