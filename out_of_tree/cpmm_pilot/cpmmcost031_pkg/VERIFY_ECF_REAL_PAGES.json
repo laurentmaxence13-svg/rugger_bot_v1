@@ -1,0 +1,385 @@
+{
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "pools": {
+  "STEP1A2R_20261124T164909Z/2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 1600,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 1600,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 5,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 5,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 1,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions"
+   ],
+   "root": "pre_pages",
+   "skipped": 1,
+   "swaps": 1,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 1,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 1,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 17,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 1,
+   "swaps": 17,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 724,
+   "exact_creator_charged": 6,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 53,
+   "swaps": 724,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 2,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 2,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 37690,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 79,
+   "swaps": 37690,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 84,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 7,
+   "swaps": 84,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 446,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 20,
+   "swaps": 446,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 29,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 4,
+   "swaps": 29,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 83,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 50,
+   "swaps": 83,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "g0_reasons_0_3_1": [
+    "no_swap"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 0,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 37396,
+   "exact_creator_charged": 130,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 1282,
+   "swaps": 37396,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 8157,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 24,
+   "swaps": 8157,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 202,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre_pages",
+   "skipped": 20,
+   "swaps": 202,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 804,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 804,
+   "swaps_logging_creator_fee": 0
+  },
+  "STEP1A2R_20261124T164909Z/HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 8,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [],
+   "root": "pre_pages",
+   "skipped": 0,
+   "swaps": 8,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 2796,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 55,
+   "swaps": 2796,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 4186,
+   "exact_creator_charged": 23,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 39,
+   "swaps": 4186,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 5785,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 1,
+   "swaps": 5785,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 857,
+   "exact_creator_charged": 1,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 103,
+   "swaps": 857,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 1534,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "root": "pre",
+   "skipped": 0,
+   "swaps": 1534,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 445,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 19,
+   "swaps": 445,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 3472,
+   "exact_creator_charged": 16,
+   "g0_reasons_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "root": "pre",
+   "skipped": 156,
+   "swaps": 3472,
+   "swaps_logging_creator_fee": 0
+  },
+  "collect/GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "exact_0_3_1": 19198,
+   "exact_creator_charged": 0,
+   "g0_reasons_0_3_1": [],
+   "root": "pre",
+   "skipped": 0,
+   "swaps": 19198,
+   "swaps_logging_creator_fee": 0
+  }
+ }
+}

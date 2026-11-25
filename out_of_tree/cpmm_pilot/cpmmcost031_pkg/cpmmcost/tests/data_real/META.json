@@ -1,0 +1,105 @@
+{
+ "amm_config": {
+  "bump": 255,
+  "creator_fee_rate": 500,
+  "creator_fee_share_rate": 50000,
+  "disabled": 0,
+  "fund_fee_rate": 40000,
+  "index": 0,
+  "protocol_fee_rate": 120000,
+  "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "slot": 473309024,
+  "trade_fee_rate": 2500
+ },
+ "pools": {
+  "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+   "base_mint": "motN8Tg6xBp7ZnHuqdBPxqCBhQTjzKrWaauqb8pBizt",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "7292f38a3dcfaf4f54ef2939f28d88c024fb3e9ae3f77c1b4a9fa236620bc017"
+  },
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "base_mint": "D5KojYsUGd53bFiGVpKnGEyCLQcnPPVr4mgco44Mo6fk",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "a21c36962aeca587be17d89e9fab3808a15919224cc14105662dc5a8f2063e4e"
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "base_mint": "BKzTtgn5th95fAF6m6XcDq211kzaUqwCnsqtWrE2gFWX",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "98abec6ce1820859e9880ba3740d2375844a24a39f5ea23699850896bd2fa0a2"
+  },
+  "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+   "base_mint": "3vgopg7xm3EWkXfxmWPUpcf7g939hecfqg18sLuXDzVt",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00045.json.gz",
+   "page_sha256": "66399bec6f737cc80188cece4c982adfd095d620708bdc4e4040ae237fed267f"
+  },
+  "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+   "base_mint": "VzUPBWqREGVggS27kiFuSVZFUVFt1f9VrMfecjT8888",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "aa3952f598c36c6a6257730ea05a013a4e7327a6cbe7a16fb9bd1ffd5d6d8bbc"
+  },
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "base_mint": "BjcRmwm8e25RgjkyaFE56fc7bxRgGPw96JUkXRJFEroT",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "pilot",
+   "page": "page_00000.json.gz",
+   "page_sha256": "8650adb8e8659d6d6bfa0f4f70f2b6cfe2779ee2a1f39b50e45622d3e50543d8"
+  },
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "base_mint": "znv3FZt2HFAvzYf5LxzVyryh3mBXWuTRRng25gEZAjh",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "ff4ea2cfa827a4f33b5549111974b1b59fd76b5b9c360677ae1a417c6a15467c"
+  },
+  "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+   "base_mint": "BeGY8KqKxboEwRbJd1q9H2K829jS4Rc5dEyNMYXCbV5p",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "a9c71d3ed4d26a1fa6d3b88d41d763ff6c7af7470a504429272f67127b20117d"
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "base_mint": "ApZuxdpzMrbEYTGEzeY9afh5pj9d6qPRJCTgQYiipbKg",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "pilot",
+   "page": "page_00000.json.gz",
+   "page_sha256": "601a5469565e9cd0e17530d231309546411efe4baeb97060f3e388b396613785"
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "base_mint": "9NiHcbT8EohKJid1RdU3232tATmM1CvYemTeCP5iwro",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "livesim",
+   "page": "page_00000.json.gz",
+   "page_sha256": "c4433aef70cf653807aa81b184de7f38a7874fd81455b3c4c1fb69ed987800f9"
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "base_mint": "8XBLvrhz2mnFSq7koFdkgRSeATb3cJ38GofTQmhf2QRi",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "pilot",
+   "page": "page_00000.json.gz",
+   "page_sha256": "5db1eb93526096c5b8fe6c071723e1bfe34b8b0182ff0bd968a2bb17ac042582"
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "base_mint": "AY2sSqL3wWTfuevCoRBqkvMoawArCunRfpnPzVmuxXoi",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "pilot",
+   "page": "page_00000.json.gz",
+   "page_sha256": "c6ad1894ca1227b074808c30d725442da437822256939e53e133fbe0d5fd8bec"
+  }
+ },
+ "source": {
+  "list_l": "LIST_L c96353b9",
+  "livesim": "R03 c581e9f LIVESIM_20261125T113851Z/collect/pre (pre-start)",
+  "pilots": "R03 ecd1098 STEP1A2R_20261124T164909Z/pre_pages (A2r pre-T0)"
+ }
+}

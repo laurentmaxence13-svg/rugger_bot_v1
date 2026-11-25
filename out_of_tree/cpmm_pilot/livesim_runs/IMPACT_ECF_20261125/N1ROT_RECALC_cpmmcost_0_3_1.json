@@ -1,0 +1,267 @@
+{
+ "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+ "conduct": null,
+ "counts_for_operational_master": false,
+ "evaluable": true,
+ "kept": [
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A"
+ ],
+ "labels": [
+  "MASTER_RESEARCH_PAPER",
+  "HISTORICAL_REPLAY",
+  "LP_SIDE_RESEARCH"
+ ],
+ "list_sha256": "c72bd586c0de5c8441c321707a2df2019d8541bc1b0df9e24c4616ee3832a9da",
+ "lp_returns_computed": false,
+ "pools": [
+  {
+   "days": [
+    {
+     "day": -7,
+     "rotation": 0.2795197542968496,
+     "swaps": 6082,
+     "tvl_lamports": 4002138559724,
+     "volume_lamports": 1118676786876
+    },
+    {
+     "day": -6,
+     "rotation": 0.2766874590935995,
+     "swaps": 5249,
+     "tvl_lamports": 3943293883146,
+     "volume_lamports": 1091059964987
+    },
+    {
+     "day": -5,
+     "rotation": 0.2651609500118522,
+     "swaps": 5599,
+     "tvl_lamports": 3933846518020,
+     "volume_lamports": 1043102479919
+    },
+    {
+     "day": -4,
+     "rotation": 0.2529358520633899,
+     "swaps": 4814,
+     "tvl_lamports": 3828403778296,
+     "volume_lamports": 968340571706
+    },
+    {
+     "day": -3,
+     "rotation": 0.20542034536370574,
+     "swaps": 4938,
+     "tvl_lamports": 3854074954242,
+     "volume_lamports": 791705408158
+    },
+    {
+     "day": -2,
+     "rotation": 0.26450347676583263,
+     "swaps": 6081,
+     "tvl_lamports": 3846499289772,
+     "volume_lamports": 1017412435522
+    },
+    {
+     "day": -1,
+     "rotation": 0.2574952882151142,
+     "swaps": 4927,
+     "tvl_lamports": 3839166251936,
+     "volume_lamports": 988567220548
+    }
+   ],
+   "kept": true,
+   "median_rotation": 0.26450347676583263,
+   "median_rotation_exact": "508706217761/1923249644886",
+   "pool": "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+   "threshold_exact": "2442148600/12240772047",
+   "threshold_value": 0.19950936024484894
+  },
+  {
+   "days": [
+    {
+     "day": -7,
+     "rotation": 0.0021160962209819125,
+     "swaps": 118,
+     "tvl_lamports": 4889351348210,
+     "volume_lamports": 10346337911
+    },
+    {
+     "day": -6,
+     "rotation": 0.0017289748560573072,
+     "swaps": 114,
+     "tvl_lamports": 4905699077858,
+     "volume_lamports": 8481830357
+    },
+    {
+     "day": -5,
+     "rotation": 0.0018987747906140887,
+     "swaps": 112,
+     "tvl_lamports": 4922655953304,
+     "volume_lamports": 9347015027
+    },
+    {
+     "day": -4,
+     "rotation": 0.0019819553107689666,
+     "swaps": 117,
+     "tvl_lamports": 4941342505952,
+     "volume_lamports": 9793520022
+    },
+    {
+     "day": -3,
+     "rotation": 0.0019094171539258914,
+     "swaps": 119,
+     "tvl_lamports": 4960921711384,
+     "volume_lamports": 9472469015
+    },
+    {
+     "day": -2,
+     "rotation": 0.0017008083447998983,
+     "swaps": 114,
+     "tvl_lamports": 4979859071656,
+     "volume_lamports": 8469785865
+    },
+    {
+     "day": -1,
+     "rotation": 0.002884417889609673,
+     "swaps": 110,
+     "tvl_lamports": 4996791867752,
+     "volume_lamports": 14412835854
+    }
+   ],
+   "kept": false,
+   "median_rotation": 0.0019094171539258914,
+   "median_rotation_exact": "9472469015/4960921711384",
+   "pool": "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr",
+   "threshold_exact": "157456322500/791532946449",
+   "threshold_value": 0.19892579734853175
+  },
+  {
+   "days": [
+    {
+     "day": -7,
+     "rotation": 0.9980147863191691,
+     "swaps": 3927,
+     "tvl_lamports": 5073762521012,
+     "volume_lamports": 5063690018242
+    },
+    {
+     "day": -6,
+     "rotation": 1.2847977377832502,
+     "swaps": 3946,
+     "tvl_lamports": 5446382411466,
+     "volume_lamports": 6997499801354
+    },
+    {
+     "day": -5,
+     "rotation": 4.132639482790703,
+     "swaps": 12106,
+     "tvl_lamports": 4466748650678,
+     "volume_lamports": 18459461833494
+    },
+    {
+     "day": -4,
+     "rotation": 1.5789793368227723,
+     "swaps": 7004,
+     "tvl_lamports": 6075239775420,
+     "volume_lamports": 9592678071632
+    },
+    {
+     "day": -3,
+     "rotation": 0.6189345641699857,
+     "swaps": 2542,
+     "tvl_lamports": 5300659408126,
+     "volume_lamports": 3280761320582
+    },
+    {
+     "day": -2,
+     "rotation": 0.6502446117843852,
+     "swaps": 2481,
+     "tvl_lamports": 4850652534514,
+     "volume_lamports": 3154110674206
+    },
+    {
+     "day": -1,
+     "rotation": 2.2098952488152586,
+     "swaps": 5390,
+     "tvl_lamports": 4589483888770,
+     "volume_lamports": 10142278640307
+    }
+   ],
+   "kept": true,
+   "median_rotation": 1.2847977377832502,
+   "median_rotation_exact": "3498749900677/2723191205733",
+   "pool": "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+   "threshold_exact": "23781400000/119424083079",
+   "threshold_value": 0.19913403885436082
+  },
+  {
+   "days": [
+    {
+     "day": -7,
+     "rotation": 0.2905277837063762,
+     "swaps": 1485,
+     "tvl_lamports": 635621703450,
+     "volume_lamports": 184665764779
+    },
+    {
+     "day": -6,
+     "rotation": 0.267040412934442,
+     "swaps": 1355,
+     "tvl_lamports": 635156246544,
+     "volume_lamports": 169612386355
+    },
+    {
+     "day": -5,
+     "rotation": 0.2007657374311108,
+     "swaps": 1114,
+     "tvl_lamports": 635779170536,
+     "volume_lamports": 127642674016
+    },
+    {
+     "day": -4,
+     "rotation": 0.33646489039279615,
+     "swaps": 1341,
+     "tvl_lamports": 635903842568,
+     "volume_lamports": 213959316690
+    },
+    {
+     "day": -3,
+     "rotation": 0.265458941910911,
+     "swaps": 813,
+     "tvl_lamports": 648441528034,
+     "volume_lamports": 172134601923
+    },
+    {
+     "day": -2,
+     "rotation": 0.30315357050804287,
+     "swaps": 931,
+     "tvl_lamports": 648418335910,
+     "volume_lamports": 196570333714
+    },
+    {
+     "day": -1,
+     "rotation": 0.2960001382677341,
+     "swaps": 1118,
+     "tvl_lamports": 648678772286,
+     "volume_lamports": 192009006288
+    }
+   ],
+   "kept": true,
+   "median_rotation": 0.2905277837063762,
+   "median_rotation_exact": "184665764779/635621703450",
+   "pool": "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+   "threshold_exact": "602938750/2839443873",
+   "threshold_value": 0.21234395781979945
+  }
+ ],
+ "schema": "n1rot-v0.2",
+ "skipped_transactions": 1385,
+ "t0": 1795515686,
+ "threshold": "r04_6_break_even",
+ "threshold_exact": "NON MESURÉ",
+ "threshold_per_pool": true,
+ "threshold_value": "NON MESURÉ",
+ "window": [
+  1794910886,
+  1795515686
+ ]
+}
