@@ -3,94 +3,114 @@
  "k": 8,
  "ordered": [
   {
+   "base_mint": "9NiHcbT8EohKJid1RdU3232tATmM1CvYemTeCP5iwro",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
    "rank": 1,
    "reserve_lamports": 182151895744,
    "role": "titulaire",
-   "sig24": 3973
+   "sig24": 3973,
+   "wsol_vault": "k9jPZksSk5sA5x8QnKAGSXyJ7RQwfH85CNY1WTmmRgN"
   },
   {
+   "base_mint": "7ymF66Z6VhgNiwadtVhjTtT6U7iQRpSxeiRrhfufhigh",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "CqvMZmWDvEufa5rzkubidyR4zMDqDPoLjAtsW6wGsPMu",
    "rank": 2,
    "reserve_lamports": 255221849424,
    "role": "titulaire",
-   "sig24": 3955
+   "sig24": 3955,
+   "wsol_vault": "8cGsmrpU5rkLszygFgaFfo8PaFBipm1zfqSLxTdytKmG"
   },
   {
+   "base_mint": "BKzTtgn5th95fAF6m6XcDq211kzaUqwCnsqtWrE2gFWX",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
    "rank": 3,
    "reserve_lamports": 379409091921,
    "role": "titulaire",
-   "sig24": 1503
+   "sig24": 1503,
+   "wsol_vault": "JAC7GYsSierG89GjfXPSnCCur5zqUsmvocyRQHNoRV8s"
   },
   {
+   "base_mint": "3vgopg7xm3EWkXfxmWPUpcf7g939hecfqg18sLuXDzVt",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
    "rank": 4,
    "reserve_lamports": 4118241627844,
    "role": "titulaire",
-   "sig24": 1277
+   "sig24": 1277,
+   "wsol_vault": "6fMAsLpREK9M5CBshWP5p2k7G59Znx76NvJTdVECvpMx"
   },
   {
+   "base_mint": "CyfdugHk3PT44hEUxpnU25CXAJsVQ9EdipKWCHEBKSdS",
    "config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
    "group": "untested",
    "pool": "AsVSzvh75VV5MqcQsxr3X4rqzVoUHfzdvpahpw61v2du",
    "rank": 5,
    "reserve_lamports": 266340321564,
    "role": "titulaire",
-   "sig24": 1189
+   "sig24": 1189,
+   "wsol_vault": "vqwEx3N5dVNJ6QsJhby7A4JcKqhqfR6W12bsfPBe5SH"
   },
   {
+   "base_mint": "D5KojYsUGd53bFiGVpKnGEyCLQcnPPVr4mgco44Mo6fk",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
    "rank": 6,
    "reserve_lamports": 200533810282,
    "role": "titulaire",
-   "sig24": 1150
+   "sig24": 1150,
+   "wsol_vault": "3xtQLgPMRaTp1N5dRN1kRoeq4gpr4W8rDpu3uN5hqUVC"
   },
   {
+   "base_mint": "znv3FZt2HFAvzYf5LxzVyryh3mBXWuTRRng25gEZAjh",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "valid",
    "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
    "rank": 7,
    "reserve_lamports": 559847920234,
    "role": "titulaire",
-   "sig24": 974
+   "sig24": 974,
+   "wsol_vault": "5exwzc4fcPvd1hrEEdNKMWqadaMLjNRtNDqg4Rj8Vvco"
   },
   {
+   "base_mint": "BeGY8KqKxboEwRbJd1q9H2K829jS4Rc5dEyNMYXCbV5p",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
    "rank": 8,
    "reserve_lamports": 3594734595923,
    "role": "titulaire",
-   "sig24": 731
+   "sig24": 731,
+   "wsol_vault": "Cm2d6cDafSNpC13CdwZSGvR2fzri1FmH76BKfZbMG34z"
   },
   {
+   "base_mint": "VzUPBWqREGVggS27kiFuSVZFUVFt1f9VrMfecjT8888",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
    "rank": 9,
    "reserve_lamports": 1111380694189,
    "role": "remplacant",
-   "sig24": 625
+   "sig24": 625,
+   "wsol_vault": "C9jsXuEAAhkS9MXwzpcVMHhDYBJBAWkRaAnTW76Wiw1k"
   },
   {
+   "base_mint": "motN8Tg6xBp7ZnHuqdBPxqCBhQTjzKrWaauqb8pBizt",
    "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
    "group": "untested",
    "pool": "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o",
    "rank": 10,
    "reserve_lamports": 723699229947,
    "role": "remplacant",
-   "sig24": 367
+   "sig24": 367,
+   "wsol_vault": "76XK8hDUxwsCEW1smtyAMxbYU5Vz77ZTPkUqmapA81WR"
   }
  ],
  "ordered_list_sha256": "5c4fefb670cf747b2af90d50bceb0ea4e50cd9573927f92fcd246056a5b7ea68",

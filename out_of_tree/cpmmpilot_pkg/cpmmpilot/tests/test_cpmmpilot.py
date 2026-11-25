@@ -926,3 +926,14 @@ def test_g23_stage_and_cap_0_2_8(tmp_path):
         b.charge('getTransactionsForAddress', [None, dict(limit=100)])
     with pytest.raises(B.BudgetError, match='ledger_of_another_stage'):
         B.PilotBudget(tmp_path / 'g.json', stage='step1', max_credits=B.G23_CAP)
+
+
+def test_livesim_stage_0_2_9(tmp_path):
+    assert B.STAGES == ('step0', 'u2', 'step1', 't2', 'g23', 'livesim')
+    b = B.PilotBudget(tmp_path / 'ls.json', stage='livesim', max_credits=14_700)
+    b.charge('getTransactionsForAddress', [None, dict(limit=100)])
+    assert json.loads((tmp_path / 'ls.json').read_text())['stage'] == 'livesim'
+    with pytest.raises(B.BudgetError, match='ledger_of_another_stage'):
+        B.PilotBudget(tmp_path / 'ls.json', stage='g23', max_credits=14_700)
+    with pytest.raises(B.BudgetError, match='unknown_stage'):
+        B.PilotBudget(tmp_path / 'x.json', stage='live', max_credits=10)

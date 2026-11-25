@@ -25,7 +25,10 @@ MUTANTS = [
     ('hard_stop_50000', 'budget.py', 'STEP1_HARD_STOP = 49_000', 'STEP1_HARD_STOP = 50_000'),
     # 0.2.8: G2-3 stage
     ('g23_cap_33000', 'budget.py', 'G23_CAP = 32_340', 'G23_CAP = 33_000'),
-    ('g23_stage_missing', 'budget.py', "('step0', 'u2', 'step1', 't2', 'g23')", "('step0', 'u2', 'step1', 't2')"),
+    ('g23_stage_missing', 'budget.py', "STAGES = ('step0', 'u2', 'step1', 't2', 'g23', 'livesim')", "STAGES = ('step0', 'u2', 'step1', 't2', 'livesim')"),
+    # 0.2.9: livesim stage (R04-10)
+    ('livesim_stage_missing', 'budget.py', "STAGES = ('step0', 'u2', 'step1', 't2', 'g23', 'livesim')", "STAGES = ('step0', 'u2', 'step1', 't2', 'g23')"),
+    ('stage_not_checked', 'budget.py', "        if stage not in STAGES:\n            raise BudgetError('unknown_stage')\n", ''),
     ('point2_ge', 'budget.py', 'stop=need > POINT2_LIMIT', 'stop=need >= POINT2_LIMIT + 100'),
     ('gtfa_cost_1', 'budget.py', "'getTransactionsForAddress': 10}", "'getTransactionsForAddress': 1}"),
     ('ledger_not_resumed', 'budget.py', "            self.requests, self.credits = data['requests'], data['credits']\n", ''),
@@ -150,7 +153,7 @@ def main():
             f.write_text(text.replace(old, new))
             results[name] = 'KILLED' if run_tests(d, a.deps_pythonpath) != 0 else 'SURVIVED'
     killed = sum(v == 'KILLED' for v in results.values())
-    doc = dict(schema='cpmmpilot-mutations-v0.2.8.1', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
+    doc = dict(schema='cpmmpilot-mutations-v0.2.9', base_guard=results.pop('_base_guard'), mutants=len(MUTANTS),
                killed=killed, results=results)
     a.out.write_text(json.dumps(doc, indent=1, sort_keys=True) + '\n')
     print(json.dumps(dict(killed=killed, mutants=len(MUTANTS), survived=[k for k, v in results.items() if v != 'KILLED'])))
