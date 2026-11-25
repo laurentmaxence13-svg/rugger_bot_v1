@@ -1,0 +1,50 @@
+{
+ "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+  "exact_with_creator_rate_0": 2796,
+  "skipped": 55,
+  "swaps": 2796,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+  "exact_with_creator_rate_0": 4186,
+  "skipped": 39,
+  "swaps": 4186,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+  "exact_with_creator_rate_0": 5785,
+  "skipped": 1,
+  "swaps": 5785,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+  "exact_with_creator_rate_0": 857,
+  "skipped": 103,
+  "swaps": 857,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+  "exact_with_creator_rate_0": 1534,
+  "skipped": 0,
+  "swaps": 1534,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+  "exact_with_creator_rate_0": 445,
+  "skipped": 19,
+  "swaps": 445,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+  "exact_with_creator_rate_0": 3472,
+  "skipped": 156,
+  "swaps": 3472,
+  "swaps_with_creator_fee_logged": 0
+ },
+ "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+  "exact_with_creator_rate_0": 19198,
+  "skipped": 0,
+  "swaps": 19198,
+  "swaps_with_creator_fee_logged": 0
+ }
+}

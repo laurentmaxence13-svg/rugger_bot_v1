@@ -1,0 +1,37 @@
+livesim 0.3 eligible — R01, 2026-11-25T11:50:20Z, offline (unshare -rn), 0 credit, 31 s
+code: livesim_pkg MANIFEST_livesim_v0_3.txt 305f40cde6e87aad21c513f027037b338e768f6f2146f1b611523238dae69334 (commit 0639332), sim.py 1cf700d828dbc2589953e4c15245f9ce692a7e4fbca81e46e51b8d5438d8e061
+cpmmpilot: git archive 8c4a022 out_of_tree/cpmmpilot_pkg (MANIFEST_cpmmpilot_v0_2_8.txt 7251d4fe...)
+python: Python 3.12.3
+data: git archive c581e9f (R03) LIVESIM_20261125T113851Z; CONFIG 31f04ec8ae2516d4a9126635a40da9104fe7773e2bb67b1a0ae93e1f05c9887d; QUALIFIED a0a95e6831809b8c820ea9845436419ddd48a72f138cc471821bbc6961c8fc9c; SHA256SUMS_PRE_PAGES 951b84798db5b4a433389b7b3c01c3a3e0a367168d443f6c3b5507497bbf61c0 (1007 pages, sha256sum -c OK); LIST_L c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3
+command: python -B -m livesim.sim eligible --collect <LIVESIM_20261125T113851Z> --list-l <LIST_L.json> --out ELIGIBLE.json
+PYTHONPATH (order):
+<scratchpad>/wt_w1
+<scratchpad>/wt_v3/out_of_tree/statelab_pkg
+<scratchpad>/wt_v3/out_of_tree/v3lab_pkg
+<scratchpad>/v4sim_ro/out_of_tree/v4sim_020/v4sim_pkg
+<scratchpad>/wt_tooling/out_of_tree/w1aux_v78
+<scratchpad>/wt_tooling/out_of_tree/latelab_pkg
+<scratchpad>/wt_tooling/out_of_tree/cdgate_pkg
+<scratchpad>/wt_tooling/out_of_tree/closedacct_pkg
+<scratchpad>/wt_tooling/out_of_tree/w2arms_pkg
+<scratchpad>/wt_v3/out_of_tree/cpmmx_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/cpmmcost_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/cpmmprereg_pkg
+<scratchpad>/wt_tooling/out_of_tree/paperstream_pkg
+<scratchpad>/wt_tooling/out_of_tree/landslip_pkg
+<scratchpad>/wt_tooling/out_of_tree/papercost_pkg
+<scratchpad>/wt_tooling/out_of_tree/rtgate_pkg
+<scratchpad>/wt_tooling/out_of_tree/mevsens_pkg
+<scratchpad>/wt_tooling/out_of_tree/plbench_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/cpmmgen2_pkg
+<scratchpad>/cpmmpilot_028/out_of_tree/cpmmpilot_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/g1ind_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/cpmmb1_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/cpmmgen3_pkg
+<scratchpad>/wt_tooling/out_of_tree/rentabilite/barmap_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/g23five03_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/g23run_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/lpcost_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/n1rot_pkg
+<scratchpad>/wt_tooling/out_of_tree/cpmm_pilot/livesim_pkg
+diagnostics (DESCRIPTIVE, not the anchored config, no P&L): diag_creator_fee.py, diag_g0_creator0.py

@@ -1,0 +1,71 @@
+{
+ "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+  "b3": 0.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+  "b3": 1.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+  "b3": 1.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+  "b3": 0.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+  "b3": 0.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "token_transfer_fee"
+  ],
+  "would_be_eligible": false
+ },
+ "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+  "b3": 0.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "token_transfer_fee",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+  "b3": 0.0,
+  "g0_admitted_if_creator_rate_0": false,
+  "reasons_if_creator_rate_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "would_be_eligible": false
+ },
+ "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+  "b3": 4.0,
+  "g0_admitted_if_creator_rate_0": true,
+  "reasons_if_creator_rate_0": [],
+  "would_be_eligible": true
+ }
+}
