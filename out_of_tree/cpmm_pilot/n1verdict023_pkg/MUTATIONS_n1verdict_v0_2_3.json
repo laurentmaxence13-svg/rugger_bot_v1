@@ -1,0 +1,374 @@
+{
+ "package": "n1verdict",
+ "version": "0.2.3",
+ "verdict": {
+  "detected": 47,
+  "total": 47,
+  "mutants": [
+   {
+    "mutant": "rent_not_lost",
+    "detected": true
+   },
+   {
+    "mutant": "loss_without_transactions",
+    "detected": true
+   },
+   {
+    "mutant": "loss_not_spread",
+    "detected": true
+   },
+   {
+    "mutant": "loss_ignores_failures",
+    "detected": true
+   },
+   {
+    "mutant": "unpriced_stake_first_swap",
+    "detected": true
+   },
+   {
+    "mutant": "unpriced_days_dropped",
+    "detected": true
+   },
+   {
+    "mutant": "unpriced_not_entries",
+    "detected": true
+   },
+   {
+    "mutant": "every_error_is_a_loss",
+    "detected": true
+   },
+   {
+    "mutant": "kind_ignored",
+    "detected": true
+   },
+   {
+    "mutant": "exit_state_empty_not_unpriced",
+    "detected": true
+   },
+   {
+    "mutant": "pre_t0_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "gap_not_per_stake",
+    "detected": true
+   },
+   {
+    "mutant": "position_one_day_short",
+    "detected": true
+   },
+   {
+    "mutant": "order_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "one_day_blocks",
+    "detected": true
+   },
+   {
+    "mutant": "guard_one_day_blocks",
+    "detected": true
+   },
+   {
+    "mutant": "no_go_never",
+    "detected": true
+   },
+   {
+    "mutant": "k1_most_entries",
+    "detected": true
+   },
+   {
+    "mutant": "k1_smallest_sum",
+    "detected": true
+   },
+   {
+    "mutant": "k1_tie_reversed",
+    "detected": true
+   },
+   {
+    "mutant": "k1_best_day_not_sum",
+    "detected": true
+   },
+   {
+    "mutant": "no_leave_top_out",
+    "detected": true
+   },
+   {
+    "mutant": "no_go_before_floors",
+    "detected": true
+   },
+   {
+    "mutant": "seed_not_the_sheet_head",
+    "detected": true
+   },
+   {
+    "mutant": "g0_truthy",
+    "detected": true
+   },
+   {
+    "mutant": "odd_d_allowed",
+    "detected": true
+   },
+   {
+    "mutant": "duplicate_pools",
+    "detected": true
+   },
+   {
+    "mutant": "guard_sensitivity_frozen",
+    "detected": true
+   },
+   {
+    "mutant": "rent_lost_one_cleanup",
+    "detected": true
+   },
+   {
+    "mutant": "power_flag_dropped",
+    "detected": true
+   },
+   {
+    "mutant": "vocabulary_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "scope_dropped",
+    "detected": true
+   },
+   {
+    "mutant": "costs_without_rent",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_entry_not_checked",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_exit_not_checked",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_span_unbounded",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_span_no_low",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_span_last_swap",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_low_first_swap",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_raises",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_not_passed",
+    "detected": true
+   },
+   {
+    "mutant": "sensitivities_ignore_undecoded",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_not_named_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_kept",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_not_in_per_pool",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_not_published",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_reasons_dropped",
+    "detected": true
+   }
+  ]
+ },
+ "lines": {
+  "detected": 42,
+  "total": 42,
+  "mutants": [
+   {
+    "mutant": "pre_t0_second_allowed",
+    "detected": true
+   },
+   {
+    "mutant": "window_end_included",
+    "detected": true
+   },
+   {
+    "mutant": "window_start_earlier",
+    "detected": true
+   },
+   {
+    "mutant": "both_sides_allowed",
+    "detected": true
+   },
+   {
+    "mutant": "both_sides_allowed_023",
+    "detected": true
+   },
+   {
+    "mutant": "empty_side_allowed",
+    "detected": true
+   },
+   {
+    "mutant": "missing_time_tolerated",
+    "detected": true
+   },
+   {
+    "mutant": "order_not_the_sheet",
+    "detected": true
+   },
+   {
+    "mutant": "missing_pool_tolerated",
+    "detected": true
+   },
+   {
+    "mutant": "result_overwritten",
+    "detected": true
+   },
+   {
+    "mutant": "reconstruction_overwritten",
+    "detected": true
+   },
+   {
+    "mutant": "t0_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "list_sha_unchecked",
+    "detected": true
+   },
+   {
+    "mutant": "g0_ignored",
+    "detected": true
+   },
+   {
+    "mutant": "window_length_wrong",
+    "detected": true
+   },
+   {
+    "mutant": "pre_t0_dropped",
+    "detected": true
+   },
+   {
+    "mutant": "printed_sha_wrong",
+    "detected": true
+   },
+   {
+    "mutant": "union_not_rebuilt",
+    "detected": true
+   },
+   {
+    "mutant": "window_not_rebuilt",
+    "detected": true
+   },
+   {
+    "mutant": "g0_on_the_union",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_before_rebuild",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_lines_kept",
+    "detected": true
+   },
+   {
+    "mutant": "integrity_failure_swallowed",
+    "detected": true
+   },
+   {
+    "mutant": "nothing_excluded",
+    "detected": true
+   },
+   {
+    "mutant": "creator_side_error_raises",
+    "detected": true
+   },
+   {
+    "mutant": "kept_not_counted",
+    "detected": true
+   },
+   {
+    "mutant": "rebuilt_counts_kept",
+    "detected": true
+   },
+   {
+    "mutant": "rebuilt_swaps_total",
+    "detected": true
+   },
+   {
+    "mutant": "wsol_vault_wrong",
+    "detected": true
+   },
+   {
+    "mutant": "creator_side_flipped",
+    "detected": true
+   },
+   {
+    "mutant": "fees_altered",
+    "detected": true
+   },
+   {
+    "mutant": "not_tried_unreported",
+    "detected": true
+   },
+   {
+    "mutant": "g0_not_in_reconstruction",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_count_dropped",
+    "detected": true
+   },
+   {
+    "mutant": "undecoded_not_to_the_verdict",
+    "detected": true
+   },
+   {
+    "mutant": "excluded_not_to_the_verdict",
+    "detected": true
+   },
+   {
+    "mutant": "reconstruction_empty",
+    "detected": true
+   },
+   {
+    "mutant": "reconstruction_g0_fixed",
+    "detected": true
+   },
+   {
+    "mutant": "marks_from_day_0",
+    "detected": true
+   },
+   {
+    "mutant": "marks_to_day_d",
+    "detected": true
+   },
+   {
+    "mutant": "marks_span_a_day",
+    "detected": true
+   },
+   {
+    "mutant": "marks_not_published",
+    "detected": true
+   }
+  ]
+ },
+ "detected": 89,
+ "total": 89
+}
