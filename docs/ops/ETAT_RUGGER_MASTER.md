@@ -302,6 +302,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 25/11 00:43Z | **Tout est prêt jusqu'aux verdicts** (déclaré) : lanceur pilote G2-3/N1 gelé et enregistré par R02 (empreinte 70d503a0), seul admis ; g23run 0.1.1, n1verdict 0.2.2 et 0.3 ancrés ; cpmmpilot 0.2.8.1 (MANIFEST ba38eba3) et driver de confirmation livrés (R03 842135e). Aucun travail restant avant la clôture de la fenêtre le 06/12 10:21:26Z. Contrôle R04 espacé à toutes les 3 h ; rappel programmé le 06/12 à 10:35Z pour lancer la collecte. | sessions R01-R03 | déclaré |
 
+| 25/11 08:41Z | **Directive du propriétaire : simulation PAPER en temps réel** de G2-3 et N1 (bilans à 6 h et 24 h), sur un univers DISTINCT des 4 pools du pilote, sans lecture de la fenêtre 24/11-06/12, règles et protocoles gelés inchangés, tous coûts, témoins, zéro opération si aucun signal, aucun trading ni dépense, plafond de crédits à faire approuver. Lancé : R02 (méthode, indépendance, statut « démonstration descriptive sans essai », texte du propriétaire), R03 (chiffrage des crédits sur 3 variantes d'univers tirées des comptes T2 bis, collecte rétrospective toutes les 1-2 h), R01 (module livesim et tableau de bord appelant le code gelé sans le modifier). Candidats hors pilote vus dans T2 bis : H4sb6c 37 294 sig/24 h, 6H9LwR 23 905, GaPTvX 3 973, CqvMZm 3 955, 6CQSpR, 7SJ5UK, AsVSzv, 5zk4vh, CXgcuE, FAn5gz, A3URwh. Contrôle R04 remis à toutes les heures. | messages R04 | vérifié (envoi) |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
