@@ -1,0 +1,102 @@
+{
+ "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+  "all_versions": {
+   "0": 2259,
+   "1": 7092,
+   "legacy": 4612
+  },
+  "breaks": 77,
+  "breaks_adjacent_to_undecoded": 77,
+  "breaks_not_adjacent": [],
+  "breaks_not_adjacent_count": 0,
+  "recovery_from_vault_balances": {
+   "vault_balances_present": 79
+  },
+  "skipped": 79,
+  "skipped_failed_tx": 0,
+  "skipped_reasons": {
+   "log_truncated": 79
+  },
+  "skipped_versions": {
+   "0": 1,
+   "1": 78
+  },
+  "swaps": 37690,
+  "undecoded_adjacent_to_a_break": 79,
+  "undecoded_not_adjacent": 0,
+  "undecoded_share_of_pool_tx": 0.005657809926233617
+ },
+ "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+  "all_versions": {
+   "0": 31254,
+   "1": 73824,
+   "legacy": 286
+  },
+  "breaks": 1142,
+  "breaks_adjacent_to_undecoded": 1142,
+  "breaks_not_adjacent": [],
+  "breaks_not_adjacent_count": 0,
+  "recovery_from_vault_balances": {
+   "vault_balances_present": 1282
+  },
+  "skipped": 1282,
+  "skipped_failed_tx": 0,
+  "skipped_reasons": {
+   "log_truncated": 1282
+  },
+  "skipped_versions": {
+   "0": 77,
+   "1": 1205
+  },
+  "swaps": 37396,
+  "undecoded_adjacent_to_a_break": 1282,
+  "undecoded_not_adjacent": 0,
+  "undecoded_share_of_pool_tx": 0.012167343684750009
+ },
+ "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+  "all_versions": {
+   "0": 50,
+   "1": 83,
+   "legacy": 3242
+  },
+  "breaks": 20,
+  "breaks_adjacent_to_undecoded": 20,
+  "breaks_not_adjacent": [],
+  "breaks_not_adjacent_count": 0,
+  "recovery_from_vault_balances": {
+   "vault_balances_present": 24
+  },
+  "skipped": 24,
+  "skipped_failed_tx": 0,
+  "skipped_reasons": {
+   "log_truncated": 24
+  },
+  "skipped_versions": {
+   "1": 24
+  },
+  "swaps": 8157,
+  "undecoded_adjacent_to_a_break": 24,
+  "undecoded_not_adjacent": 0,
+  "undecoded_share_of_pool_tx": 0.0071111111111111115
+ },
+ "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+  "all_versions": {
+   "0": 3,
+   "1": 1,
+   "legacy": 801
+  },
+  "breaks": 0,
+  "breaks_adjacent_to_undecoded": 0,
+  "breaks_not_adjacent": [],
+  "breaks_not_adjacent_count": 0,
+  "recovery_from_vault_balances": {},
+  "skipped": 0,
+  "skipped_failed_tx": 0,
+  "skipped_reasons": {},
+  "skipped_versions": {},
+  "swaps": 804,
+  "undecoded_adjacent_to_a_break": 0,
+  "undecoded_not_adjacent": 0,
+  "undecoded_share_of_pool_tx": 0.0
+ }
+}
