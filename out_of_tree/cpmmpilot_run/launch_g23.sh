@@ -27,6 +27,12 @@ h(){ sha256sum "$1" | cut -d' ' -f1; }
      || [ "$(h $AUTH)" != 3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b ] || [ -e $OUT ]; then echo "INTEGRITY_FAIL: no call"; exit 3; fi
   CX=$S/cpmmdeps/out_of_tree/cpmmx_pkg; CC=$S/cpmmdeps/out_of_tree/cpmm_pilot/cpmmcost_pkg
   echo "deps: pythonpath=$(h $S/cpmmpilot_pythonpath_016_final.txt) cpmmcost_v0_3=$(h $CC/MANIFEST_cpmmcost_v0_3.txt) cpmmcost_check_bad=$( (cd $CC && sha256sum -c MANIFEST_cpmmcost_v0_3.txt 2>&1) | grep -vc ': OK$') cpmmx_tree=$( (cd $CX && find cpmmx -name '*.py' -print0 | sort -z | xargs -0 sha256sum) | sha256sum | cut -d' ' -f1) (no cpmmx MANIFEST exists)"
+  PP=$(h $S/cpmmpilot_pythonpath_016_final.txt); CCM=$(h $CC/MANIFEST_cpmmcost_v0_3.txt)
+  CCB=$( (cd $CC && sha256sum -c MANIFEST_cpmmcost_v0_3.txt 2>&1) | grep -vc ': OK$')
+  CXT=$( (cd $CX && find cpmmx -name '*.py' -print0 | sort -z | xargs -0 sha256sum) | sha256sum | cut -d' ' -f1)
+  if [ "$PP" != 3cfa5e0dca3a0c2cc53683d02e94d02a2b709965b2f37fafa17f5d884d237d22 ] \
+     || [ "$CCM" != a0bd2adbfaeaa5b14b79c200b066f9a14bb1408c57469e319d6e1db9b92de547 ] || [ "$CCB" != 0 ] \
+     || [ "$CXT" != 9e64445e764a592841457b790f31f2c74bc9dcc28d0d1c65c661856111ed6205 ]; then echo "INTEGRITY_FAIL (deps): no call"; exit 3; fi
   cd $S/w1frz/tree && env -i PATH=/usr/bin:/bin RUGGER_NO_DOTENV=1 HTTPS_PROXY="$HTTPS_PROXY" SSL_CERT_FILE=/root/.ccr/ca-bundle.crt \
      PYTHONPATH=$DEPS:$PKG $PY -B $DRV --pkg $PKG --u2 $U2 --out $OUT --sheet-sha $SHEET --verdict-code-sha $VCODE --authorization $AUTH
   echo "rc=$? end $(date -u +%FT%TZ)"
