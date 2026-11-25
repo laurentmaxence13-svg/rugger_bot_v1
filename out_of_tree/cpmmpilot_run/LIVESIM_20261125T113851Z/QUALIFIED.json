@@ -1,0 +1,68 @@
+{
+ "complete": true,
+ "k": 8,
+ "k_target": 8,
+ "list_sha256": "f29ae01bbe767a0df08b7fb5245de5bcee79c1adf4ebab81e38f869b3e66c6b1",
+ "pools": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+  "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
+  "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
+  "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o"
+ ],
+ "tested": [
+  {
+   "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "CqvMZmWDvEufa5rzkubidyR4zMDqDPoLjAtsW6wGsPMu",
+   "reason": "launchlab_in_creation_transaction",
+   "valid": false
+  },
+  {
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "AsVSzvh75VV5MqcQsxr3X4rqzVoUHfzdvpahpw61v2du",
+   "reason": "launchlab_in_creation_transaction",
+   "valid": false
+  },
+  {
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+   "reason": "already_valid_u2",
+   "valid": true
+  },
+  {
+   "pool": "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
+   "reason": "ok",
+   "valid": true
+  },
+  {
+   "pool": "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o",
+   "reason": "ok",
+   "valid": true
+  }
+ ]
+}
