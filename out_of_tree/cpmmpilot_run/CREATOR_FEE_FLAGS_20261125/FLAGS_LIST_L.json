@@ -1,0 +1,1297 @@
+{
+ "1tTvXUgNtUT9u8b4BoybkrJ6Gv67nh3CwqrV7cR6Kns": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "28aMmPnmFx1K4f5wEc62t8bYZdDXLcimde2jSTBnyRit": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "29eHR8KfoE2ETePR2mqMn394HPsE7o1DPCHcFoGmqCJw": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2BCrFwVqAJqwurao7gLBs48PKw3GzFLj6QgncXZom5mE": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "2Ftuo2cJtvpge76jKsnfGBnoDT6nJku4HwcL94abTUc5": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2HF2ZtPHvnxQz2v9xPxS8p9ViBpyYsudSstTFRNUitiN": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2LqQzmDU6ceGodNPfF9igusmxgM9FmL1LmzWqZqJFB8c": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2PB1R5eTvviH5fvYzijkabJQM7nwX8gqLpFgqEzmMAYJ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2btKXn44Kej38f1mmy1p3MjyuCoJWc2vMhsn2SS8M7JV": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2kv6hkaAiJ9vC7XHL8PfZxELcFeKJW9o8zx3XL155gM3": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2pAUT3yacR5msp3HQt1cSjKbKh5YikoCR8nsspprTuXg": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2pcQTxbPDZJp5fvKtzWsA2KeVS2Zst3uBZMkwzkh4RGC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2tsj3yf94wPE83weh13V7WW7wJshgz6zP4ZSDkhzd82N": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2uZzRkccqJoZJvVGhzjmevnpbZPXoDC9GdgvT9hmRPcm": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2umXxGh6jY63wDHHQ4yDv8BJbjzLNnKgYDwRqas75nnt": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "31FEUqjqK4GVq18ziBhSpbtizzEpH89raY4s7EWs1esk": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "32bJjbHfHu55T2ERLF4bsE91VAtbxGMb8MJVwXNo7Js7": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3KoKNABvPRsvpmNRKwTwAHiBr42kCcRY3rcBxRZX7Vp8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3M2WXD3TkfephztZHV4CqHp7uvrpGzfx2jwkzgErivfh": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3RuVhEwCbcD8tuowgbC79wjoR5UZTb1c6zf9v76nWNRC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3ceKnrpPPUuz9FVsDJuYfTqbK5ia6KND7SQwcnRJ38KC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3gePaJMtkMV9Fx9fqZ2ob25ZpRgeLS3N7XkgeGPqKWmz": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3hSNMxPkAADPCD9HjALDesASr4k2a5UNADVWvsVTecDD": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3nZEiWVHKeSn72oLokpCqw9torTXRGkRwSsMscGTN89o": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3smJkRQBLGdpWn1HzMbtu9eYQLqpf7UgJRdh2eQUY66X": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "3tjEpppyDxxrSboGKR9psvLJmndXmvMeDi5YMM2w4cy1": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "3wEUjhLesDjHasbWWQng4rSqLHjAGvMLAcA7REspuWvy": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "3zwom6rGg3gCMQikhyrDxCEz6HRtDP3v6tQ9CKVy1kQ7": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "43xR8PF8FLmi8iAMgQeFFuV5eUzLeho688C67nLY6J6M": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "44WCpikTbEjtYV6BAFYmbQ2YM4R37rxyPp4ToFENFGZ8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "44goD5iUuiUK5xuGHDnW4jPHehADwtYnxr8qxGi2XYsR": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4Bn7ow3iYnaPGdhWhs8zLVw8YtUUTboQdn95rFEusR9D": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4K754Ja8bkyDGkw7ioiRbKeYvwcS7dS6k4kPYNUGSQDP": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4LxXw39mjELH3jwZgYJB8fBBCnTW1DK52jHUe9CmsJDm": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4MLuQhLNQGRiXaH9foehJZ19SPth7xnt2mNPJ7g99rt7": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4MXybVn82rBxjvANiMpmvYUQejRzwkiTnjDT8NQmHMRe": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4PoAsh3VoSGDBps6Nxpfs3XNscqf7kLaYQb1dxK4f8SA": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4UN6WPJhfB9eoQq4XUwWiDj7NguW4iw9rx4iGBUguXcT": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4X1BWwX5emoj7Dr2K4aAatoEmfXEpfZV4j9msCFcaijt": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4ZqcLAsHKpiQFGmKsJabYTYkZkDKZ3s73c6H6N7giSjr": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4c3YgBeCQ2CejQktBVUUg93XCsysMNpDEeMhwAPria6T": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4egoNZCTQT7Q14peVnjPC2PTa16MWZUahA49QPcsWAEC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4feuGCH11HoEjK19dZJFmotAKAYd1ZEG77aKz9gLWYuH": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4iGFHhqasgX8d5g6YrNaZqhmWXtxzMoL7N65ECdW3dHb": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4kNWhaFf3RHL4fz3nmUW24rmzmHVD8p3SHrJQAmmSg8C": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4okppApj9vkSSiWbacjhqK729reQANu7qXzHAo4fWh2s": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "4vQ2db4sADytW2mXvCy7nw9TmLDxQRf55mL3tbWwH7a8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "52Vhd46eXAVJc1KwHWn9ZhHtALycSMj1bjZVZkL8ug6q": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "58inxVBao4vmFWzDwEb27SXQhRjdR4fQd2pYZLXh3RiX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5DtuY1savUzrPYrHyqmtkBR5dqxasek8Luux57F6usyg": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5QJxqZbxr3J4SkkmR6Lcm3nztWAz5N7LY1m2m3nQGi9m": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5UqqH6ewo51TqvdQDFZCANUYUh3wACu7dDtFyLBngG3T": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5ZwUDk2H8RUDDwspu1rPo8rPUikmCorMeWk25LWYqGTR": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5aK4BtXqFNWQG3izD5PVUNxh4sadrb1gQwibfKuwTKj3": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5bsguj2UESRSDpJ1hEbXBKs1wa2pp9METMK3LNQME7Tw": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5j4h9Sbi9ZwJ6ofbPkuHWqgpG6nxdrzXX6Mzk1EXCTy8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5wu7eEb6eCRHGd3KztofFod8cnrSq3Y5dPuaPUEeY4c3": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5zV6azn61uJ73P1WySp35sTPZEf9Sx1hQzvrA1QAGaHH": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "64DaD1dTDomNZqcmj4KWPpn5aoyGXak1kEWwXGf7Wtoe": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "66cxXqzCpFttLCdMBXYykjfCEVQKag8Cv1oB5KEacd5b": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "69ZvRfF9K7c9DsRTouisoeKc7G5Lm1Gz4moKgRjGhsJV": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6DUzAj8Umcgehr2fvByZxQS2wmPNsTsX9D2UdJAhnt89": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6H9LwRBATqsFTXtsiMmZhwncpXTezk1KLSJ4BC7jz1NU": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6JcmCD9Aav4Gpxgo3mLabUFThpDP6yWvjAMP1RUvViDj": {
+  "amm_config": "LNmHRmMvk9kmtepfTSr98kqGLThd61kH1DPWf2cVRaC",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "6Unyzi5atCUn7p75kumRvDqdh6WAEVDwCq5ozBGrh5xt": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6cA7TDG3sG58D9RuZxC4PbqcsLAnkx8mEgXqphxUT7rM": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6cfctDpSCqUW73ziHVrcdTJkkV8et53c1Ho3e1TJQpPi": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6dXzBt8HiTNTwvMNWuv992pBKVCYBAnZSeCcNG4NefGC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6fAdWHX4Sg6PctbPfxYP41qYqB3ezGHPwUrKBDhscy7o": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6gSTyAQ2oY7yQEMJKSUVm666BJbAhPuqEcbQEKXwu1X6": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6iKimE6iqZddJR44jqqQbctpjBtwAvEFtprN6YjTtE4n": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6oSigCEyuQgsyvRS151PePSrnS2FWgmsgh2B6RtogPaM": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "6qZAEkq1bc96vxvrHWDoNMAVBWtvDPoAQvkEk9suFe3b": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "72ALiKFanx3TaMAsDWF8RfaApjp32MSvt7e9m9bQwmo5": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "79LauSbgoxT2gepcusQQV2heAofaTonqZNAwbqe459Nx": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "7BpUUz4dcWztXzdCvHAeqqquazQgaxbnuzHz2JC7zGMR": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7GcLtCLmDMoZbJkJLu9pbb6Lby5rMVbMhhauK8N65Hva": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7M8d1TxydTADm3QRUEJjpDELj3djKp6qQ4pHtyU9Lv1T": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7Pu2ytSzMwg5qhMxXV4qb4ie7gCGhy3kYjbgwFdfmMPB": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7VjJ2iBFZBttvkhKLibvhxKVd8JFDkcLB7QPMmT1cCmh": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "7ZRtFcgfxKcUfdACiWf9abqBs9mVy569VeDLdLxb7Ztx": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7bxym8hEVawN6utspk26GTttPx4kHbVSqLZvwcrmbYEz": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7en84HC1oVNxAkq6FZzE8QLJKfAuai6Z8L8bAQh66cKS": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7h8hGwfWHzgYbYT1wawPDm1HkuDx8uMLvqSEEVS3oi5Q": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7mjzZMB3iHNy4AQ7hLsXsixwWpg7R2A3rUMyRFcSViDy": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7oiVxKjWwwEP345fsaGjJSpULVYmNP4PWhZRyL2D5fmS": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7qAVrzrbULwg1B13YseqA95Uapf8EVp9jQE5uipqFMoP": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "7v9UFTTbXGk9MRAYPWqff1dJ4yAK4SU6yKdVuUUNbCZp": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "7z9zJRTVnzxEyNhRyB2o6xKGdQk7AL58BBwfgJFPMvW8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "81rNn9btcg2B7NNgJWCddUjo3TvLEonSz4ZjdYU6dJR2": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "88XGa38CzeTzWHpHYs98SZHiiQG2sj5S6aLUbRFDy8DJ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8A7r3ZT7nXjtghKKnmVhrwnApJHG4tpvBF9BDCBmHWqr": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8BELgBQ5vSDvBnUAyQ79qqijZ8Hcp6MGjEAD93dKC7GX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "8HZdEbzBX7sZ7eQMod29fdVg3AzQgaQpWMcMyotA9gzY": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8KAmjrDzvitKi4cLxEYa19rC5TkD3juPB43KyHX2Ru6C": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8WUqvLzydzyVmhtV2pq3tzYKcUaj1zoPuosw2xWiZ4mj": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8fXPx6bqCne9Tg7apLBGJ3XJFjwkMU6se5NaFAenBkoF": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8p6MQpuvwxVe1RWwxy1VcLjuWxuZjgVFRP3pKpiR4L2t": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8r1kwRhj36FwLaYnx1Qt5YP3ysCihjppAWS7H9b8TzE7": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8uKsktSAPesyARZqcwyaErfLrdGPSaurWRmV3qfhRtwg": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "8ujpQXxnnWvRohU2oCe3eaSzoL7paU2uj3fEn4Zp72US": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "8wnCxqULrafrhweC1by52tyEWtaW7h1to5QBKsGY7Xga": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "94niJsj3SyWRmCTKH5jcZ5toousBJ7QZwj3p2FoueDzs": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "95evQ5n7Sxzeubej8CX2k6YhLV1zF3GUekruRUC5kSKe": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9MUPm3gpptBNqiBGyhwWnJdfekei2anpaUyTfzsB193P": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "9N82SeWs9cFrThpNyU8dngUjRHe9vzVjDnQrgQ115tEy": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9SxEcmwzHtSZu2jJSpSxuyxweYECvvtykoP3qtEprkvj": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9bdRZRLBaFdp7SBQmLjqEAjfPprHvkcCQJxw8Wq9RfmN": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9cw2DJkk8ZZcpUQaS7QSqjBKEoNrAhywZaVcaySEW5eZ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9grDkuZggLTSapbdcmSFBpqGZb3iP4ZiSDAiQeeW9D3R": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9gxnp9fgVJMjTjvkeAA1jicHxJ8jgqjpSrk2Kb2dsGHZ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9nxAnMD7K78a9RMd2L3w8kQT5u9i7gsvV5aHiZ78sCC2": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "9u7XfTZnCUjQ2NLExE4LZ93Z8dBuzWaRJvPAaeezEbpK": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "A5uJ6VHdd64Ho44tzjjK8TbSP8tGZJozV6qLQ5wBEH6f": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 2,
+  "enable_creator_fee": 1
+ },
+ "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AF5jJRbAEAcEzTHzpkcDF6ij8YgTeM6765CHfN4pk5z7": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AHQrKNMPVQ1r6Z9mSjWrtkrSegkeY2Spqa1byXmJpY7h": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AJ3TN5CYZsSEZ5mrhrACctuwKhUXQeXDbBimL5Ypb6Ak": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AVp673JcMJcX7XMZ64s1tW4SUdy8zuvbqBqiQHeGMwUT": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AeGBjqTeXiEgdAxU1ZhBEqmkXk6RuQNCXJWvdo4N4CBg": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Ao1migDA7XqMooBjfwzZMvwZNdsfwAD4ZvSjeSoFqwtC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "ApG8RTWHjypiKrgiipziJkZJ7bvN3VGmfbHpABPQCuT5": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AqR4fPaEDJc2Gjs9mCVXp5kb7QUyh18sX8QFEjnJFee1": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Aqz3LGcEMA9BXGTzDYgGyXjZUxLEsTKsHS1x5QG3p9CC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AsVSzvh75VV5MqcQsxr3X4rqzVoUHfzdvpahpw61v2du": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "AtFcAdmTqYEWQubeVG26UvJ1KE9xDn5iZwkSGSwXbvm": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AuQtgm4tzdJSsZNGxrM1F69hxbyvMpNM95496pUuSBQg": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AwenQA1iPVqB6BUTufbJDmh3ebCYwH1eJz4iTrE32PRr": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "AxPuePyTfJx3eMDtmtCMi3X3pAto2V74VeSJ9SCKgmY3": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "B34Pu6w8eecYRXLEDxBCPy5JoFLy3iycLAPJpYiwbKMK": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BGLHv9FMJsdBTQPtMdNoVeX5DpndQpeUfxepZoEgaBWA": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BHaLjeCL96UjsKoP2DMwgGUHw2LFcb3fUeYibPvqBeVX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BJGbPyDARmcgJ7CRwm623nrjF2gpLkpsSwWNsjxubTpG": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BMQAsWYd6zW6xPyyqUoeowpHfhtoEQ1bsyBeBZXWT6gj": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BNGeZ3h2ZBMEzRaAseQY819GtJ4EaTEYhzyTUEXyqZhB": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BScfGKZf9YDfpL11hZQnCQPskPrdeyFcvCjSA5qupEH5": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BWh1zxKAUQpP3dKqbuBDkhVPrMTNJqc3uZnQfnTNVg2J": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BYf1nrU14WEhQcrvB6nXwUGo1wg3E2oMWNGR5GmE26te": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Bej9jdjegb1XsdpBzL7CyNvCmYDe5aKh7BxNxruXsbtp": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BiArBTEqCmtJnzG8K3Xd2iWtgNR2Av24821zc2gveSb1": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BnspHXwVeSGFDidGKZxeuKRmvRrr8vA731bEHvXV39bw": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BpYXmPYGy27cj1fJzj2fgPfDxXzQ8LzDbDjSmQ5dQo15": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "BsfyP5Jqo5BzzATen4pL11AeMFYHjWmWFCZA95LbtiSk": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "C2UU8mLFZkucv3W87Q4ub9oaa1NFWWpZmXKkNFwYQGFA": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "C2X32F4o277msGn7KxpY7thAYmEPDAPqVc5STVxqoCTz": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "C5UBqyEWGKNpt8mDvMYv1w9drPiBh4y18RvYFWrV5Hbp": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "C7EUe5HAoerJU2dxnnLr7Mf1zF6YW3LWepUxphfYGLy1": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "C7saQrX3feJRESyC3ggSkCDPAKLPYrwcFuFNRcPk9wUo": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "CB7CeSUwCHFptDg18MeN8NQiP3KRV5HN6L45BPCpv2cp": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CJphSjREFHy8XHefBjMb7UGTU7fiAqpXrT4y7J95ZULt": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CMuiwets2rDkWMbhSoFyekzq1wxms9KVamXDBqRhiCE2": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CPiboUUPigk3MigyydkVLTYL385i7SLzzS2Ztnqo1e5V": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CS94dE2znqTYxcFtfdfpsEjkphBdsVZeVKhLoykMX7Ge": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CTfUbSE9Pw3J2vnX839SHKAjkndWRNqMtVkKyJqvqHeX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CVoWPTHjhq9Y4xPFuEGk6qJX4xG6kNvqr7YgPXhGsQCX": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CarfxhLXWi9angiBAWKhcWESXpHrg73LppwunbiaZ5rB": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CjatczypBXKbwV2XnPznMfh4qCSToUQpZmjqCnUkTZSL": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CpoYFgaNA6MJRuJSGeXu9mPdghmtwd5RvYesgej4Zofj": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Cqt7WcSv8uuDrfvT7bCsZfY6yhqaw2vmPVAEthQs2QPH": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CqvMZmWDvEufa5rzkubidyR4zMDqDPoLjAtsW6wGsPMu": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "CuxLbyaZAC6X89me2unfuKRpy1H775rpVCE3i5L9Ztbi": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "CyDJZXSuv3da1RmZkapWemWNCooW3yiBs8Se1EdNdAE9": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "D38Lc7BmhmdmZfH4Fx9SyYtEwMqyKi2zFv2BHcsHRGuG": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "D69cQWFRfaLmi7UzDyBdXeD3RvAn8ahBzjYb33UCCVox": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DDPNGS9UkdgNbdT2v6X1NwyWwhF4CdtVzuKVKXHSWCdY": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DTJQKotXwZSk7MZ7FKW9hPtTrwYSTCgxCdYuEeHhFiNR": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DazumoDdMJB1Geeef9uMnM6zyU7Wtr3FnHbjyMJPso3D": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DjqPTVNCsx31Ag2N3wEo1WMWTBZM2ZARo9dirsWfsvoC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DpawppCceYB99WnNcoQSMGexauhnMQfxE79MnNvVtpHC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Duz92ts5rmKU74VwnshAUDusnDkoP95wceuyRAUpWyqU": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "DzTh6yDQ4JFBva4iourVroAtMkKeYkjoGmvw89rie3Ri": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "E1wnaH2ZQvcB5hDWZe4JpivpjByLGP4uwFcMZb25FH3Y": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "E2GGBmN3Q1RHzLmL9SaSvwcbNL2Y4VLdoU2sejY6cLra": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "E6apHnZwJKQH889TkbR7aXZQUKoG6y3HdVkTr55AUvdi": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "E9oGC72mZWYqmzR5ggB9DAoGyRssR3uhFWHG1L75RZve": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "E9rKoRAd4SbP8aR9JK3geeSDd5G9heDH6da4dfMwhyQn": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EJUWjjFF9RcDM6NdRH84aWhzFBCybYtcKZVSbspLtWh9": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EPVwQEJCnenVSNYECMA2955BGTqJk2ptXuggrvtiFFG2": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EXihVUDp7AsZsHZbekPka8JNBxnctHXUbrmjgxSieX61": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EYJcUeFBzQz8qTcrC9PZrdFcXDVpB9WQqS7XnBd8uqou": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EaWioqvxHSf4cZm2Y4x2xstbx1ywkax9cvwCBt4F3Z3P": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EekjuLbDZmmKvPqHL6u6p439ynJZim3yJKfL1CosREwk": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EhHpzdLuAxcjQBoSD4UxMtetgD85ARCwooYo1dt93AQc": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EkFFJawnAg7Se3HXRLVkqAH6zY9FoBeoYynpSFVBxp3r": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FDm1awS2o3iRX38n3iK63HYXDqowwKVzFDLtKhftff6z": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FNEYuiXVVrmD4hHv4aqWB4cXmspRibdgJpVTnDXq9z4d": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "FQd8z3Dy6NRxZgx152SUmYL9AyyqAbYCPtSmy4spEgnH": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "FTvEjJSKyckm2LXWJrvEbNB6PjpL1FV8M3NJnH8qWdbu": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FYP5yMwo6Lam1fJQYquJWDZ2jFgewKFTSxgKagAkKQ9x": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FfCp4DCtcXiJ73qqEHFE9mGbsFratMBcQNq3KxAMiXU4": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Fu83z5KUmuP92h7MN8mvvxoz2St8kBmhCpNZjreu84rm": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "FvvCm6UNs2LzLzfn9oGa9vsWMfRrwgYCu65wJXHcm8hv": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "G48TEnqJ1hZeArCgu4xprrkdtviLqYoHZGEc94abaWEP": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "G7dLp3GZDucJZpkYYikJ7bamyv3AryJiqqMQog9M9L5F": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GBfnb75JYj7SenrwZGvp2XvrLjRhqsku7T7K31VsvqXD": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GCgn1NEtxZaNRVfZFno1W1Br5VdvUg7MYSxDCgSRFSM4": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GCkyQ4PiYJ8XrK3wf1pqMeMWiVojwp4CoFx62uKGR36L": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GFktaGWuMHKwpZLWJVyFpRBFktnrwJGjwfBMbxUeFdhh": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "GGh8qXJwSNqCZC8AGiatDLD7zEqP2HzhQwFQX5tCSRWQ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GRk5Zr5LbnwLsDa45PSKc81DmN9YcMGE5CirxUjTHkrL": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GSurLkbgsZAb6dLhxxJABiXqh3UJfCSccKag2YK3o2EQ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GaTHTwDmpJjRNytWn7yRWE2GJNnvASugBAiVTVChMzzd": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GcgJzPXmdAXZUQmLBTdV8VbuwZ9CEY224PY8dYsBvC4e": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GfjTLMr5M6cbgdqoHAtF6uKGHEJPqe9hZd8DYbKZ7vaZ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Gp7q1hMuD3XX1KyVe5qcpn83dv4CTLCTxqSkdgRtRFWR": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "GqjxbUgYrnDc4MrbXHEkpoDJFECSkXjHpia6hiTMowSk": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "H4sb6cH4bJ4G9vJG3cDA2h3gYAMgCfuzXu8h56RhkVnC": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "H8VEs2QCfwrtiBfrQEw9wBMyxfekAypaG6BSFYMTA8tZ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "H9hLtwwMVNs4rk4KHg8DWKe4opznRPuDSpikS2HGH6V8": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HTE5SdEwqPo1rbxnmLCxwtiGhNWPT62o3HiTWjBAGj5d": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HWsaQKHEQFdD2WAsaEYxTtZKVFD51RnenFpciK4oUXHe": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HXmC75KUUukxzi1D7yKDDJwr1pgSrG2tUTkbUe73m7CE": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Hd7KiNefNxgvKEe1k2S8EEPzNvUv1pJLjKkicqLJRFgy": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HndPW2ZkqvoQyZcjEdnP56scNG9SadoSiT9gdjZasgiy": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "HvGdRNTyoT1vbZAmZLYuAjQ6nFfX5pNouumTLmL1HQyY": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "J28smrHeDLYHPZCJLVHExsiMifEDswFHobHpEQrYHdjL": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "JBXaK3iTskLppMZtq3Z5ceAt7L8Xvh6BmVYUX9FntYTr": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "LY6BZES5vSpcjBCiiHfPKxFuWacfjfs13XPhbdeAG3q": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "LaT4mSXV2gPyjQsuCBZ7XmV1G7DEoToXVBf4pEvL6be": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Lrg6m24Ls4VEbnK5eNEiW6SbLmiWKdrh2QPmECAAFAy": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "M8zQny9nCp1abaEq7bs6CzLoQwy6iSaG8YTtS7ZeF5P": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "Q2sPHPdUWFMg7M7wwrQKLrn619cAucfRsmhVJffodSp": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "T4waG8bCUT4ZuZVzioUETtq7icWKUxyqdCjPkZ9N4Gs": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "UKSPrYDU4veB4cAfV9HkzNg9gNP1jsoch8oySMG9tcJ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "VmodoCeYgZmV7o9YJrsXswUQn8Cb4NFYTa525Uuia98": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "eTwiVMhQXBU8obe8VCKfkJ2d7MdW3oir2rMv1oCYDEE": {
+  "amm_config": "627Jx6eN61TrdgMFSQt1QxvAmYWHXmzVA8M9FsKFtdkX",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "nAfoN3a7p9spQxBVU8KMC3qgyYSzqCTbeqQMPDu3CzZ": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ },
+ "nEnhtdXrHocxDQnmfTWgaLodJP8jxFbY6958iv28GzV": {
+  "amm_config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+  "creator_fee_on": 1,
+  "enable_creator_fee": 1
+ },
+ "ybzE4HgVLVCdEUnXmgfkFXB7GMmBCiWxb4WT98ux1P4": {
+  "amm_config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+  "creator_fee_on": 0,
+  "enable_creator_fee": 0
+ }
+}
