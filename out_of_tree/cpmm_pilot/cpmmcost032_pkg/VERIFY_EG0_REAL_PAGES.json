@@ -1,0 +1,470 @@
+{
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "pools": {
+  "STEP1A2R_20261124T164909Z/2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [],
+   "g0_e_g0": [],
+   "skipped": 0,
+   "swaps": 1600,
+   "transactions": 1600,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 0,
+   "swaps": 5,
+   "transactions": 5,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions"
+   ],
+   "skipped": 1,
+   "swaps": 1,
+   "transactions": 2,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [],
+   "g0_e_g0": [],
+   "skipped": 0,
+   "swaps": 1,
+   "transactions": 1,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 1,
+   "swaps": 17,
+   "transactions": 18,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 53,
+   "swaps": 724,
+   "transactions": 1660,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 0,
+   "swaps": 2,
+   "transactions": 2,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 79,
+   "swaps": 37690,
+   "transactions": 13963,
+   "undecoded_tolerated": {
+    "breaks": 77,
+    "cause": "log_truncated",
+    "share": 0.005657809926233617,
+    "transactions": 13963,
+    "undecoded": 79
+   }
+  },
+  "STEP1A2R_20261124T164909Z/AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 7,
+   "swaps": 84,
+   "transactions": 332,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 20,
+   "swaps": 446,
+   "transactions": 1584,
+   "undecoded_tolerated": {
+    "breaks": 18,
+    "cause": "log_truncated",
+    "share": 0.012626262626262626,
+    "transactions": 1584,
+    "undecoded": 20
+   }
+  },
+  "STEP1A2R_20261124T164909Z/CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 4,
+   "swaps": 29,
+   "transactions": 34,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 50,
+   "swaps": 83,
+   "transactions": 140,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "no_swap"
+   ],
+   "g0_e_g0": [
+    "no_swap"
+   ],
+   "skipped": 0,
+   "swaps": 0,
+   "transactions": 0,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 1282,
+   "swaps": 37396,
+   "transactions": 105364,
+   "undecoded_tolerated": {
+    "breaks": 1142,
+    "cause": "log_truncated",
+    "share": 0.012167343684750009,
+    "transactions": 105364,
+    "undecoded": 1282
+   }
+  },
+  "STEP1A2R_20261124T164909Z/GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 24,
+   "swaps": 8157,
+   "transactions": 3375,
+   "undecoded_tolerated": {
+    "breaks": 20,
+    "cause": "log_truncated",
+    "share": 0.0071111111111111115,
+    "transactions": 3375,
+    "undecoded": 24
+   }
+  },
+  "STEP1A2R_20261124T164909Z/GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 20,
+   "swaps": 202,
+   "transactions": 276,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 0,
+   "swaps": 804,
+   "transactions": 805,
+   "undecoded_tolerated": null
+  },
+  "STEP1A2R_20261124T164909Z/HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [],
+   "g0_e_g0": [],
+   "skipped": 0,
+   "swaps": 8,
+   "transactions": 8,
+   "undecoded_tolerated": null
+  },
+  "collect/4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 55,
+   "swaps": 2796,
+   "transactions": 3102,
+   "undecoded_tolerated": {
+    "breaks": 50,
+    "cause": "log_truncated",
+    "share": 0.01773049645390071,
+    "transactions": 3102,
+    "undecoded": 55
+   }
+  },
+  "collect/5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 39,
+   "swaps": 4186,
+   "transactions": 46747,
+   "undecoded_tolerated": {
+    "breaks": 35,
+    "cause": "log_truncated",
+    "share": 0.0008342781354953259,
+    "transactions": 46747,
+    "undecoded": 39
+   }
+  },
+  "collect/6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 1,
+   "swaps": 5785,
+   "transactions": 5789,
+   "undecoded_tolerated": {
+    "breaks": 1,
+    "cause": "log_truncated",
+    "share": 0.00017274140611504577,
+    "transactions": 5789,
+    "undecoded": 1
+   }
+  },
+  "collect/7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [],
+   "skipped": 103,
+   "swaps": 857,
+   "transactions": 11745,
+   "undecoded_tolerated": {
+    "breaks": 82,
+    "cause": "log_truncated",
+    "share": 0.008769689229459345,
+    "transactions": 11745,
+    "undecoded": 103
+   }
+  },
+  "collect/A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "token_transfer_fee"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 0,
+   "swaps": 1534,
+   "transactions": 4217,
+   "undecoded_tolerated": null
+  },
+  "collect/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "token_transfer_fee"
+   ],
+   "skipped": 19,
+   "swaps": 445,
+   "transactions": 1737,
+   "undecoded_tolerated": {
+    "breaks": 17,
+    "cause": "log_truncated",
+    "share": 0.010938399539435808,
+    "transactions": 1737,
+    "undecoded": 19
+   }
+  },
+  "collect/FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+   "admitted_e_g0": false,
+   "g0_0_3_1": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_e_g0": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "skipped": 156,
+   "swaps": 3472,
+   "transactions": 6915,
+   "undecoded_tolerated": null
+  },
+  "collect/GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "admitted_e_g0": true,
+   "g0_0_3_1": [],
+   "g0_e_g0": [],
+   "skipped": 0,
+   "swaps": 19198,
+   "transactions": 19199,
+   "undecoded_tolerated": null
+  }
+ }
+}
