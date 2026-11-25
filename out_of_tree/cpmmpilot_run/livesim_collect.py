@@ -172,6 +172,7 @@ def main(argv=None, now=None):
     for k in ('--pkg', '--universe', '--list-l', '--out', '--authorization'):
         p.add_argument(k, type=Path, required=True)
     p.add_argument('--eligible', type=Path)
+    p.add_argument('--eligible-sha')                   # sha of R01's audited eligibility output, anchored by R02
     p.add_argument('--t-start', type=int, required=True)
     p.add_argument('--cap', type=int, required=True)
     a = p.parse_args(argv)
@@ -199,6 +200,8 @@ def main(argv=None, now=None):
         if a.phase == 'poll':
             if a.eligible is None:
                 raise LiveSimStop('poll_needs_eligible')
+            if a.eligible_sha is None or sha_of(a.eligible) != a.eligible_sha:
+                raise LiveSimStop('eligible_not_anchored')
             el = _read(a.eligible)['pools']
             if not set(el) <= set(pools) or len(set(el)) != len(el):
                 raise LiveSimStop('eligible_not_a_subset_of_qualified')

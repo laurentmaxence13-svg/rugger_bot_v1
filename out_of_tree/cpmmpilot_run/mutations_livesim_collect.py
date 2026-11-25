@@ -29,6 +29,7 @@ M = [
     ('eligible_subset_unchecked', D, "            if not set(el) <= set(pools) or len(set(el)) != len(el):", "            if False:"),
     ('eligible_not_frozen', D, "            if el_cfg.exists() and _read(el_cfg) != dict(pools=el, sha256=list_sha(el)):", "            if False:"),
     ('eligible_not_required', D, "            if a.eligible is None:\n                raise LiveSimStop('poll_needs_eligible')", "            if a.eligible is None:\n                el = pools"),
+    ('eligible_sha_unchecked', D, "            if a.eligible_sha is None or sha_of(a.eligible) != a.eligible_sha:", "            if False:"),
     ('history_order_unchecked', D, "        if a.phase == 'poll' and not (a.out / 'HISTORY_DONE.json').exists():", "        if False:"),
     ('history_twice', D, "        if a.phase == 'history' and (a.out / 'HISTORY_DONE.json').exists():", "        if False:"),
     ('qualify_twice', D, "    if (out / 'QUALIFIED.json').exists():\n        raise LiveSimStop('already_qualified')", "    if False:\n        raise LiveSimStop('already_qualified')"),

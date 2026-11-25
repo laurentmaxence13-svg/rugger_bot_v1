@@ -93,7 +93,7 @@ def _setup(tmp_path, monkeypatch, chain, cap=15_000):
                 q = json.loads((out / 'QUALIFIED.json').read_text())['pools']
                 eligible = tmp_path / 'ELIGIBLE.json'
                 eligible.write_text(json.dumps(dict(pools=q)))
-            a += ['--eligible', str(eligible)]
+            a += ['--eligible', str(eligible), '--eligible-sha', hashlib.sha256(Path(eligible).read_bytes()).hexdigest()]
         return a
     return argv, out
 
@@ -347,3 +347,21 @@ def test_eligible_rules(tmp_path, monkeypatch):
     e.write_text(json.dumps(dict(pools=q[:4])))
     with pytest.raises(SystemExit, match='eligible_differs_from_first_poll'):
         L.main(argv('poll', eligible=e), now=T_START + 14_520)
+
+
+def test_eligible_must_match_anchored_sha(tmp_path, monkeypatch):
+    chain = Chain()
+    argv, out = _setup(tmp_path, monkeypatch, chain)
+    L.main(argv('qualify'), now=NOW)
+    L.main(argv('history'), now=NOW)
+    a = argv('poll')
+    n = chain.n
+    a[a.index('--eligible-sha') + 1] = '0' * 64
+    with pytest.raises(SystemExit, match='eligible_not_anchored'):
+        L.main(a, now=T_START + 7_320)
+    a = argv('poll')
+    i = a.index('--eligible-sha')
+    del a[i:i + 2]
+    with pytest.raises(SystemExit, match='eligible_not_anchored'):
+        L.main(a, now=T_START + 7_320)
+    assert chain.n == n
