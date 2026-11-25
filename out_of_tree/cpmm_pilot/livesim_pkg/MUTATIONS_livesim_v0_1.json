@@ -1,0 +1,100 @@
+{
+ "schema": "livesim-mutations-v0.1",
+ "mutants": 23,
+ "detected": 23,
+ "total": 23,
+ "results": [
+  {
+   "mutant": "pilot_pools_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "duplicates_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "future_data_seen",
+   "detected": true
+  },
+  {
+   "mutant": "signals_before_start",
+   "detected": true
+  },
+  {
+   "mutant": "open_positions_valued",
+   "detected": true
+  },
+  {
+   "mutant": "open_threshold_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "costs_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "refusal_costs_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "curve_not_by_exit_time",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_on_initial_capital",
+   "detected": true
+  },
+  {
+   "mutant": "peak_never_updated",
+   "detected": true
+  },
+  {
+   "mutant": "zero_counted_as_win",
+   "detected": true
+  },
+  {
+   "mutant": "refusals_are_entries",
+   "detected": true
+  },
+  {
+   "mutant": "capital_1_sol",
+   "detected": true
+  },
+  {
+   "mutant": "n1_one_day_only",
+   "detected": true
+  },
+  {
+   "mutant": "n1_sees_the_future",
+   "detected": true
+  },
+  {
+   "mutant": "n1_mark_at_start",
+   "detected": true
+  },
+  {
+   "mutant": "gate_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "now_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "zero_message_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "n1_without_pre_state",
+   "detected": true
+  },
+  {
+   "mutant": "out_overwritten",
+   "detected": true
+  }
+ ]
+}
