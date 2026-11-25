@@ -1,0 +1,9 @@
+pre_pages_bad=0 n1rot_result=6b9b02a949c2dc5859332ac2fae814c17f491a21c3fa173682a8122dc26171c3 u2=3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livesim_0639332/out_of_tree/cpmm_pilot/livesim_pkg/livesim/sim.py", line 44, in <module>
+    from cpmmcost import model as CC
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livesim_0639332/out_of_tree/cpmm_pilot/cpmmcost_pkg/cpmmcost/model.py", line 40, in <module>
+    from closedacct import model as CA
+ModuleNotFoundError: No module named 'closedacct'
