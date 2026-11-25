@@ -1,0 +1,392 @@
+{
+ "package": "livesim",
+ "version": "0.3.1",
+ "mutants": [
+  {
+   "mutant": "duplicates_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "future_data_seen",
+   "detected": true
+  },
+  {
+   "mutant": "signals_before_start",
+   "detected": true
+  },
+  {
+   "mutant": "open_positions_valued",
+   "detected": true
+  },
+  {
+   "mutant": "open_threshold_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "costs_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "refusal_costs_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "curve_not_by_exit_time",
+   "detected": true
+  },
+  {
+   "mutant": "capital_not_from_zero",
+   "detected": true
+  },
+  {
+   "mutant": "peak_never_updated",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_from_zero_only",
+   "detected": true
+  },
+  {
+   "mutant": "zero_counted_as_win",
+   "detected": true
+  },
+  {
+   "mutant": "win_rate_on_entered_only",
+   "detected": true
+  },
+  {
+   "mutant": "refusals_are_entries",
+   "detected": true
+  },
+  {
+   "mutant": "return_on_10_sol",
+   "detected": true
+  },
+  {
+   "mutant": "drawdown_stakes_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "by_hour_strict",
+   "detected": true
+  },
+  {
+   "mutant": "by_hour_first_not_last",
+   "detected": true
+  },
+  {
+   "mutant": "n1_one_day_only",
+   "detected": true
+  },
+  {
+   "mutant": "n1_sees_the_future",
+   "detected": true
+  },
+  {
+   "mutant": "n1_mark_at_start",
+   "detected": true
+  },
+  {
+   "mutant": "now_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "zero_message_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "n1_without_pre_state",
+   "detected": true
+  },
+  {
+   "mutant": "n1_threshold_strict",
+   "detected": true
+  },
+  {
+   "mutant": "n1_threshold_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "n1_history_shifted",
+   "detected": true
+  },
+  {
+   "mutant": "min_pools_always_met",
+   "detected": true
+  },
+  {
+   "mutant": "manifest_missing_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "manifest_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "listed_files_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "missing_file_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "loaded_files_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "tree_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "pycache_hashed",
+   "detected": true
+  },
+  {
+   "mutant": "mode_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "check_after_reading",
+   "detected": true
+  },
+  {
+   "mutant": "no_check_after",
+   "detected": true
+  },
+  {
+   "mutant": "cpmmpilot_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "stake_ppm_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "n1_days_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "out_overwritten",
+   "detected": true
+  },
+  {
+   "mutant": "forbidden_2ylfom_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "pilot_pools_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "gate_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "b3_zero_eligible",
+   "detected": true
+  },
+  {
+   "mutant": "two_eligible_enough",
+   "detected": true
+  },
+  {
+   "mutant": "non_evaluable_keeps_figures",
+   "detected": true
+  },
+  {
+   "mutant": "configs_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "g23_first_pool_config",
+   "detected": true
+  },
+  {
+   "mutant": "gate_first_pool_config",
+   "detected": true
+  },
+  {
+   "mutant": "n1_first_pool_config",
+   "detected": true
+  },
+  {
+   "mutant": "n1_ignores_its_universe",
+   "detected": true
+  },
+  {
+   "mutant": "n1_ignores_eligibility",
+   "detected": true
+  },
+  {
+   "mutant": "n1_floor_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "n1_other_threshold",
+   "detected": true
+  },
+  {
+   "mutant": "n1_12_days_given",
+   "detected": true
+  },
+  {
+   "mutant": "a_limit_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "limits_not_rendered",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked_non_evaluable",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_redraw_not_declared",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_note_not_rendered",
+   "detected": true
+  },
+  {
+   "mutant": "pre_window_6_days",
+   "detected": true
+  },
+  {
+   "mutant": "list_l_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "config_of_the_first_row",
+   "detected": true
+  },
+  {
+   "mutant": "duplicate_list_l_row",
+   "detected": true
+  },
+  {
+   "mutant": "qualified_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "chunks_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "undone_chunk_used",
+   "detected": true
+  },
+  {
+   "mutant": "now_between_chunks",
+   "detected": true
+  },
+  {
+   "mutant": "beyond_24h",
+   "detected": true
+  },
+  {
+   "mutant": "chunk_window_loose",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_without_gate",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_with_b3_zero",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_gate_config",
+   "detected": true
+  },
+  {
+   "mutant": "evaluable_always",
+   "detected": true
+  },
+  {
+   "mutant": "qualified_sha_not_compared",
+   "detected": true
+  },
+  {
+   "mutant": "t_start_not_compared",
+   "detected": true
+  },
+  {
+   "mutant": "order_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "bilan_below_3",
+   "detected": true
+  },
+  {
+   "mutant": "pre_pages_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "b3_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "b3_not_recomputed",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_sha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "identity_result_unanchored",
+   "detected": true
+  },
+  {
+   "mutant": "identity_kept_not_compared",
+   "detected": true
+  },
+  {
+   "mutant": "identity_threshold_not_compared",
+   "detected": true
+  },
+  {
+   "mutant": "identity_always",
+   "detected": true
+  },
+  {
+   "mutant": "identity_order",
+   "detected": true
+  },
+  {
+   "mutant": "n_min_29",
+   "detected": true
+  },
+  {
+   "mutant": "n_insufficient_at_30",
+   "detected": true
+  },
+  {
+   "mutant": "n_insufficient_not_rendered",
+   "detected": true
+  },
+  {
+   "mutant": "n1_pool_days_unmarked_counted",
+   "detected": true
+  },
+  {
+   "mutant": "n1_n_insufficient_never",
+   "detected": true
+  },
+  {
+   "mutant": "limit_text_altered",
+   "detected": true
+  }
+ ],
+ "detected": 96,
+ "total": 96
+}

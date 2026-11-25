@@ -1,7 +1,7 @@
 """livesim 0.3 on synthetic CPMM pools only, written in R03's collection layout (CONFIG, QUALIFIED, POLLS, pages
 collect/pre and collect/live_NNN) with a synthetic LIST_L; no collected page.
-The local cpmmpilot is 0.1.6 (f934bd2), not 0.2.8: its MANIFEST check is exercised (refusal) and dropped from the CLI
-tests only (declared); every other frozen package is checked as it is."""
+The Python path carries cpmmpilot 0.2.8 extracted from R03's commit 8c4a022 (R02 erratum 09:53:41Z, option (ii)): every
+frozen check runs as it is, cpmmpilot included."""
 import hashlib
 import importlib
 import json
@@ -29,9 +29,9 @@ IDS = [bytes(range(k, k + 32)) for k in (1, 41, 81, 121)]
 NAMES = [events.b58encode(p) for p in IDS]
 CFG_A = dict(trade_fee_rate=2_500, creator_fee_rate=0, protocol_fee_rate=120_000, fund_fee_rate=40_000,
              raw_sha256='ab' * 32)
-CFG_B = dict(CFG_A, creator_fee_rate=10_000, raw_sha256='cd' * 32)           # as CRRS5i: creator fee 1 %
-FEES_B = curve.Fees(2_500, 10_000, 120_000, 40_000)
-OK_FROZEN = {k: v for k, v in L.FROZEN.items() if k != 'cpmmpilot'}             # local cpmmpilot is 0.1.6
+CFG_B = dict(CFG_A, creator_fee_rate=10_000, raw_sha256='cd' * 32)           # as CRRS5i: creator fee 1 % declared
+FEES_B = curve.Fees(2_500, 0, 120_000, 40_000)   # ... but not charged: enable_creator_fee = 0 (cpmmcost 0.3.1, E-CF)
+OK_FROZEN = dict(L.FROZEN)                                                       # nothing dropped
 
 
 def raw_txs(pid, rows, fees):
@@ -91,7 +91,7 @@ def collection(tmp_path, now, specs, *, done_until=None, monkeypatch=None):
 
 
 def three(tmp_path, now, monkeypatch, **kw):
-    """Three pools: two on config A, one on config B (creator fee 1 %), all with hourly bursts."""
+    """Three pools: two on config A, one on config B (creator fee 1 % declared, not charged), all with hourly bursts."""
     specs = [(IDS[0], FEES_A, CFG_A, market_rows(now)), (IDS[1], FEES_A, CFG_A, market_rows(now)),
              (IDS[2], FEES_B, CFG_B, market_rows(now))]
     return collection(tmp_path, now, specs, monkeypatch=monkeypatch, **kw)
@@ -139,8 +139,8 @@ def test_six_hour_bilan_end_to_end(tmp_path, monkeypatch):
     assert g['exits'] < 30 and g['n_insufficient'] is True
     assert '| G2-3 (n insuffisant : %d < 30) |' % g['exits'] in md and '| témoin apparié (n insuffisant' in md
     assert 'Résultat 12 jours : NON MESURÉ.' in md
-    assert doc['n1']['status'] == 'NON ÉVALUABLE' and doc['n1']['pool_days'] == 0     # 2 kept pools only
-    assert doc['n1']['n_insufficient'] is True and 'Pool-jours marqués : 0 — n insuffisant (< 30).' in md
+    assert doc['n1']['status'] == 'marques intermédiaires' and doc['n1']['pool_days'] == 3   # 3 kept pools x 1 day
+    assert doc['n1']['n_insufficient'] is True and 'Pool-jours marqués : 3 — n insuffisant (< 30).' in md
     assert 'jamais additionné' in md and '| %d | %.6f |' % (START + 6 * HOUR, g['capital_end_sol']) in md
     assert 'retiré à chaque « now »' in md                                                # F5 declared
 
@@ -158,8 +158,8 @@ def test_one_config_per_pool(tmp_path, monkeypatch):
     pre = L.pre_pair(out, NAMES[2], BASE_B58, START)
     chunks = L.chunks_until(out, START, now)
     sim, sim_txs, _ = L.live_pair(out, NAMES[2], BASE_B58, chunks)
-    assert CC.pool_gate(L.truncated(sim, now), cfg_b)['admitted']
-    assert not CC.pool_gate(L.truncated(sim, now), L.pool_config(ll, NAMES[0]))['admitted']   # A is wrong for B
+    assert CC.pool_gate(L.truncated(sim, now), cfg_b)['admitted']                         # 0.3.1: rate not charged
+    assert not CC.pool_gate(L.truncated(sim, now), dict(cfg_b, pool_creator_fee_enabled=True))['admitted']  # 0.3
     b3 = G2.baseline_b3(pre[0], pre[1], START)
     direct = L.g23_rows(sim, sim_txs, cfg_b, b3, doc['placebo_seed_sha256'], start=START, now=now)
     assert doc['journal'][NAMES[2]] == direct
@@ -387,7 +387,9 @@ def test_manifest_check_detects_every_change(tmp_path):
     got = L.check_frozen(OK_FROZEN)
     assert set(got) == set(OK_FROZEN) and all(v['files_checked'] > 0 for v in got.values())
     assert set(L.FROZEN) == {'cpmmcost', 'cpmmgen2', 'cpmmprereg', 'g1ind', 'g23run', 'lpcost', 'n1rot', 'cpmmpilot'}
-    assert L.FROZEN['cpmmpilot'][1].startswith('7251d4fe') and L.FROZEN['g23run'][1].startswith('3e3cb105')
+    assert L.FROZEN['cpmmpilot'] == ('MANIFEST_cpmmpilot_v0_2_8.txt',
+                                     '7251d4fe27355d066d33e08f0c9e42dffa04f890646cc50de07e2a0acc442058')
+    assert L.FROZEN['g23run'][1].startswith('3e3cb105') and L.check_frozen()['cpmmpilot']['files_checked'] == 18
     assert L.FROZEN['n1rot'][1].startswith('2a17791d') and L.FROZEN['lpcost'][1].startswith('ee9c144c')
     name, (manifest, sha) = 'lpcost', OK_FROZEN['lpcost']
     one = {name: (manifest, sha)}
@@ -467,12 +469,17 @@ def test_n1_universe_is_n1rot_rule_on_another_list(tmp_path, monkeypatch):
 
 def test_n1_needs_three_kept_and_eligible_pools(tmp_path, monkeypatch):
     now = START + 2 * HOUR
-    out, list_l = three(tmp_path, now, monkeypatch)              # the creator fee raises pool B's threshold
+    out, list_l = three(tmp_path, now, monkeypatch)
+    real = N1R.break_even_rotation_r04_6
+    monkeypatch.setattr(N1R, 'break_even_rotation_r04_6', lambda line, cfg, t0: real(line, cfg, t0) * (
+        1000 if line.pool == NAMES[2] else 1))                            # pool B below n1rot's threshold
     doc = run_bilan(out, list_l, now)
     u = doc['n1']['universe']
     assert u['kept'] == NAMES[:2] and doc['n1']['pools'] == NAMES[:2] and doc['eligible'] == NAMES[:3]
     assert u['pools'][2]['threshold_value'] > u['pools'][0]['threshold_value']
+    monkeypatch.setattr(N1R, 'break_even_rotation_r04_6', real)
     assert doc['n1']['status'] == 'NON ÉVALUABLE' and doc['n1']['observations'] == {}
+    assert doc['n1']['pool_days'] == 0 and doc['n1']['n_insufficient'] is True     # 2 kept pools: nothing marked
     assert doc['n1']['result_12_days'] == 'NON MESURÉ' and NAMES[2] in doc['journal']   # G2-3 still runs there
     md = L.render(doc)
     assert 'Résultat 12 jours : NON MESURÉ.' in md and '| non | — | non retenu |' in md
@@ -525,7 +532,8 @@ def test_eligible_command(tmp_path, monkeypatch, capsys):
     read = []
     real = GR.window_line
     monkeypatch.setattr(GR, 'window_line', lambda *a, **kw: read.append(1) or real(*a, **kw))
-    with pytest.raises(L.SimError, match='manifest_missing:cpmmpilot'):                   # the full list, as anchored
+    monkeypatch.setattr(L, 'FROZEN', dict(OK_FROZEN, cpmmpilot=(OK_FROZEN['cpmmpilot'][0], '0' * 64)))
+    with pytest.raises(L.SimError, match='manifest_sha_differs:cpmmpilot'):              # refused before any read
         L.main(args)
     assert read == [] and not (tmp_path / 'ELIGIBLE.json').exists()
     monkeypatch.setattr(L, 'FROZEN', OK_FROZEN)

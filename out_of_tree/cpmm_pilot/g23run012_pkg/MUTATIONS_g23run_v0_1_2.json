@@ -1,0 +1,264 @@
+{
+ "schema": "g23run-mutations-v0.1.2",
+ "mutants": 64,
+ "detected": 64,
+ "total": 64,
+ "results": [
+  {
+   "mutant": "window_end_included",
+   "detected": true
+  },
+  {
+   "mutant": "window_start_excluded",
+   "detected": true
+  },
+  {
+   "mutant": "empty_window_allowed",
+   "detected": true
+  },
+  {
+   "mutant": "block_time_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "k01_ignores_failures",
+   "detected": true
+  },
+  {
+   "mutant": "exit_point_error_stops",
+   "detected": true
+  },
+  {
+   "mutant": "variants_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_count_off",
+   "detected": true
+  },
+  {
+   "mutant": "c5_at_4_slots",
+   "detected": true
+  },
+  {
+   "mutant": "a1_without_failure",
+   "detected": true
+  },
+  {
+   "mutant": "sigma_population",
+   "detected": true
+  },
+  {
+   "mutant": "r_counts_refusals",
+   "detected": true
+  },
+  {
+   "mutant": "n_c_alpha_not_holm",
+   "detected": true
+  },
+  {
+   "mutant": "d_c_floor",
+   "detected": true
+  },
+  {
+   "mutant": "d_c_no_minimum",
+   "detected": true
+  },
+  {
+   "mutant": "sigma_floor_2",
+   "detected": true
+  },
+  {
+   "mutant": "c1_zero_ok",
+   "detected": true
+  },
+  {
+   "mutant": "c2_sign_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "c3_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "c5_guard_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "a1_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "floors_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "holm_uses_failed_p",
+   "detected": true
+  },
+  {
+   "mutant": "holm_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "confirmation_without_go",
+   "detected": true
+  },
+  {
+   "mutant": "pilot_alpha_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "confirmation_alpha_005",
+   "detected": true
+  },
+  {
+   "mutant": "version_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "list_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "b3_swapped",
+   "detected": true
+  },
+  {
+   "mutant": "t0_c_off",
+   "detected": true
+  },
+  {
+   "mutant": "confirmation_on_pilot_window",
+   "detected": true
+  },
+  {
+   "mutant": "c5_on_primary",
+   "detected": true
+  },
+  {
+   "mutant": "a1_on_primary",
+   "detected": true
+  },
+  {
+   "mutant": "main_at_0_05",
+   "detected": true
+  },
+  {
+   "mutant": "out_overwritten",
+   "detected": true
+  },
+  {
+   "mutant": "u2_t0_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "printed_sha_wrong",
+   "detected": true
+  },
+  {
+   "mutant": "integrity_failure_not_stop",
+   "detected": true
+  },
+  {
+   "mutant": "non_admitted_pool_kept",
+   "detected": true
+  },
+  {
+   "mutant": "l_fin_boundary",
+   "detected": true
+  },
+  {
+   "mutant": "l_fin_counts_all_clock_exits",
+   "detected": true
+  },
+  {
+   "mutant": "p_without_margin",
+   "detected": true
+  },
+  {
+   "mutant": "p_rounded",
+   "detected": true
+  },
+  {
+   "mutant": "d_c33_not_capped_by_d_c_star",
+   "detected": true
+  },
+  {
+   "mutant": "d_c33_ceil",
+   "detected": true
+  },
+  {
+   "mutant": "c_j_wrong_days",
+   "detected": true
+  },
+  {
+   "mutant": "cap_33000",
+   "detected": true
+  },
+  {
+   "mutant": "credits_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "d_c_free",
+   "detected": true
+  },
+  {
+   "mutant": "d_c_minimum_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "erratum_k_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "recon_rebuilt_line_dropped",
+   "detected": true
+  },
+  {
+   "mutant": "recon_report_not_published",
+   "detected": true
+  },
+  {
+   "mutant": "recon_kept_not_counted",
+   "detected": true
+  },
+  {
+   "mutant": "recon_rebuilt_swaps_total",
+   "detected": true
+  },
+  {
+   "mutant": "recon_creator_side_error_raises",
+   "detected": true
+  },
+  {
+   "mutant": "recon_not_tried_unreported",
+   "detected": true
+  },
+  {
+   "mutant": "recon_clean_lines_rebuilt",
+   "detected": true
+  },
+  {
+   "mutant": "recon_creator_side_flipped",
+   "detected": true
+  },
+  {
+   "mutant": "recon_fees_altered",
+   "detected": true
+  },
+  {
+   "mutant": "recon_rebuilt_counts_kept",
+   "detected": true
+  },
+  {
+   "mutant": "recon_gates_on_raw_lines",
+   "detected": true
+  },
+  {
+   "mutant": "recon_file_empty",
+   "detected": true
+  }
+ ]
+}

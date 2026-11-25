@@ -1,4 +1,4 @@
-"""livesim 0.3 -- REAL-TIME PAPER SIMULATION of G2-3 and N1 on a universe DISTINCT from the pilots (owner's directive of
+"""livesim 0.3.1 -- REAL-TIME PAPER SIMULATION of G2-3 and N1 on a universe DISTINCT from the pilots (owner's directive of
 25/11 ~08:39Z relayed by R04 at 08:41Z; R02 RECEVABLE 08:42:17Z; decision R04-10 at 08:46Z: K = 8 non-pilot pools,
 list produced by R03). DESCRIPTIVE DEMONSTRATION: no trial, no hypothesis test, no verdict word; never an operational
 Master trade, never counted for 50 / 20.
@@ -11,8 +11,10 @@ fewer than 3 N1 pools -> N1 NON ÉVALUABLE (n1rot's own floor); command `identit
 anchored n1rot output 6b9b02a9 on the A2r pre-T0 pages (run by R03, offline); the placebo redraw at each `now` is
 declared (F5).
 
+0.3.1 (R02 12:16Z): cpmmcost 0.3.1 (erratum E-CF, MANIFEST f635684c) in FROZEN; tests independent of the local
+cpmmpilot copy (0.2.8 extraction 8c4a022 on the path). Nothing else changes.
 FROZEN CODE IS CALLED, NEVER MODIFIED, AND ITS MANIFESTS ARE CHECKED before any page is read and again after the run
-(`check_frozen`): cpmmcost 0.3, cpmmgen2 0.2, cpmmprereg 0.2, g1ind 0.6.1, g23run 0.1 (anchored), lpcost 0.2, n1rot 0.2,
+(`check_frozen`): cpmmcost 0.3.1, cpmmgen2 0.2, cpmmprereg 0.2, g1ind 0.6.1, g23run 0.1 (anchored), lpcost 0.2, n1rot 0.2,
 cpmmpilot 0.2.8 (MANIFEST sha of the sheets G2-3 v0.6 / N1 v0.7), and cpmmx by its git tree (sheet N1 v0.7). Every file
 of these packages that is LOADED must be listed in its MANIFEST.
   G2-3: b3 = cpmmgen2.baseline_b3 recomputed by the frozen rule on the 7 days [start - 7 d ; start) of EACH new pool;
@@ -50,7 +52,7 @@ from g23run import run as GR
 from lpcost import continuous as K, model as LP
 from n1rot import rotation as N1R
 
-SCHEMA = 'livesim-v0.3'
+SCHEMA = 'livesim-v0.3.1'
 LABELS = ('PAPER_SIMULATION', 'DESCRIPTIVE_DEMONSTRATION', 'NOT_A_TRIAL')
 PILOT_POOLS = frozenset(GR.POOLS)                       # the four G2-3 pools (N1's three are among them)
 FORBIDDEN_POOLS = PILOT_POOLS | {'2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2'}   # as R03's collector (198b3262)
@@ -69,7 +71,7 @@ N1_UNPRICED = (CC.CostError, LP.LpCostError, TL.TimelineError)
 #   start refused; n1rot 0.2 break_even_rotation_r04_6: the last state before start (time limit start - 1).
 PRE_DAYS = 7
 FROZEN = {                                  # package -> (MANIFEST file, sha256 of that file), from the anchored sheets
-    'cpmmcost': ('MANIFEST_cpmmcost_v0_3.txt', 'a0bd2adbfaeaa5b14b79c200b066f9a14bb1408c57469e319d6e1db9b92de547'),
+    'cpmmcost': ('MANIFEST_cpmmcost_v0_3_1.txt', 'f635684cb7ad652a44ceeae898fa61cc4d8a0bbdf3d9b3030ca74582d19c8832'),
     'cpmmgen2': ('MANIFEST_cpmmgen2_v0_2.txt', '70ef9a9b46145436b160ce2907c433df9532f39942124a81ce11a7a3e314fcf5'),
     'cpmmprereg': ('MANIFEST_cpmmprereg_v0_2.txt', '9d8ebde62b4a05ce64a86f526d5f729d97f49bcdfee0589a0b5a46899089e5bf'),
     'g1ind': ('MANIFEST_g1ind_v0_6_1.txt', '12a2e66170918aee1bb859ec4c6639c263ad3587f491c9143d024bb816ae117a'),
