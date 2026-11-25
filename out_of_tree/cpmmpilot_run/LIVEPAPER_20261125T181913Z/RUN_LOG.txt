@@ -1,2 +1,6 @@
 launcher 2026-11-25T18:25:09Z
 run_start 2026-11-25T18:40:00Z 1795632000 resume=no
+planned_end_of_process
+rc=0 end 2026-11-25T20:30:02Z
+launcher 2026-11-25T18:25:09Z
+run_start 2026-11-25T20:30:32Z 1795638632 resume=yes
