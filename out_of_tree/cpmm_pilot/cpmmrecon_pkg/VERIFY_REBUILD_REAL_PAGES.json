@@ -1,0 +1,307 @@
+{
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "pools": {
+  "STEP1A2R_20261124T164909Z/4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "breaks_after": 0,
+   "breaks_before": 0,
+   "exact_after": "1/1",
+   "g0_after": [
+    "undecoded_transactions"
+   ],
+   "g0_before": [
+    "undecoded_transactions"
+   ],
+   "outcomes": {
+    "kept:no_state_before": 1
+   },
+   "rebuilt_swaps": 0,
+   "skipped": 1,
+   "still_skipped": 1
+  },
+  "STEP1A2R_20261124T164909Z/5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "breaks_after": 0,
+   "breaks_before": 1,
+   "exact_after": "18/18",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 1
+   },
+   "rebuilt_swaps": 1,
+   "skipped": 1,
+   "still_skipped": 0
+  },
+  "STEP1A2R_20261124T164909Z/68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "breaks_after": 0,
+   "breaks_before": 46,
+   "exact_after": "778/778",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 53
+   },
+   "rebuilt_swaps": 54,
+   "skipped": 53,
+   "still_skipped": 0
+  },
+  "STEP1A2R_20261124T164909Z/AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "breaks_after": 0,
+   "breaks_before": 77,
+   "exact_after": "37769/37769",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 79
+   },
+   "rebuilt_swaps": 79,
+   "skipped": 79,
+   "still_skipped": 0
+  },
+  "STEP1A2R_20261124T164909Z/B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "breaks_after": 6,
+   "breaks_before": 6,
+   "exact_after": "84/84",
+   "g0_after": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:base_vault_not_identified": 7
+   },
+   "rebuilt_swaps": 0,
+   "skipped": 7,
+   "still_skipped": 7
+  },
+  "STEP1A2R_20261124T164909Z/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "breaks_after": 11,
+   "breaks_before": 18,
+   "exact_after": "454/454",
+   "g0_after": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:base_vault_not_identified": 12,
+    "rebuilt": 8
+   },
+   "rebuilt_swaps": 8,
+   "skipped": 20,
+   "still_skipped": 12
+  },
+  "STEP1A2R_20261124T164909Z/EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "breaks_after": 2,
+   "breaks_before": 2,
+   "exact_after": "29/29",
+   "g0_after": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:base_vault_not_identified": 4
+   },
+   "rebuilt_swaps": 0,
+   "skipped": 4,
+   "still_skipped": 4
+  },
+  "STEP1A2R_20261124T164909Z/FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "breaks_after": 13,
+   "breaks_before": 18,
+   "exact_after": "97/97",
+   "g0_after": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:amounts_not_reproduced": 7,
+    "kept:base_vault_not_identified": 24,
+    "kept:no_state_before": 5,
+    "rebuilt": 14
+   },
+   "rebuilt_swaps": 14,
+   "skipped": 50,
+   "still_skipped": 36
+  },
+  "STEP1A2R_20261124T164909Z/G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "breaks_after": 0,
+   "breaks_before": 1142,
+   "exact_after": "38681/38681",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 1282
+   },
+   "rebuilt_swaps": 1285,
+   "skipped": 1282,
+   "still_skipped": 0
+  },
+  "STEP1A2R_20261124T164909Z/GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "breaks_after": 0,
+   "breaks_before": 20,
+   "exact_after": "8181/8181",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 24
+   },
+   "rebuilt_swaps": 24,
+   "skipped": 24,
+   "still_skipped": 0
+  },
+  "STEP1A2R_20261124T164909Z/GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "breaks_after": 0,
+   "breaks_before": 19,
+   "exact_after": "222/222",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 20
+   },
+   "rebuilt_swaps": 20,
+   "skipped": 20,
+   "still_skipped": 0
+  },
+  "collect/4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+   "breaks_after": 32,
+   "breaks_before": 50,
+   "exact_after": "2818/2818",
+   "g0_after": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:amounts_not_reproduced": 1,
+    "kept:base_vault_not_identified": 32,
+    "rebuilt": 22
+   },
+   "rebuilt_swaps": 22,
+   "skipped": 55,
+   "still_skipped": 33
+  },
+  "collect/5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "breaks_after": 0,
+   "breaks_before": 35,
+   "exact_after": "4225/4225",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 39
+   },
+   "rebuilt_swaps": 39,
+   "skipped": 39,
+   "still_skipped": 0
+  },
+  "collect/6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "breaks_after": 0,
+   "breaks_before": 1,
+   "exact_after": "5786/5786",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 1
+   },
+   "rebuilt_swaps": 1,
+   "skipped": 1,
+   "still_skipped": 0
+  },
+  "collect/7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+   "breaks_after": 0,
+   "breaks_before": 82,
+   "exact_after": "960/960",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 103
+   },
+   "rebuilt_swaps": 103,
+   "skipped": 103,
+   "still_skipped": 0
+  },
+  "collect/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "breaks_after": 11,
+   "breaks_before": 17,
+   "exact_after": "452/452",
+   "g0_after": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "g0_before": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "kept:base_vault_not_identified": 12,
+    "rebuilt": 7
+   },
+   "rebuilt_swaps": 7,
+   "skipped": 19,
+   "still_skipped": 12
+  },
+  "collect/FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+   "breaks_after": 0,
+   "breaks_before": 136,
+   "exact_after": "3628/3628",
+   "g0_after": [],
+   "g0_before": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ],
+   "outcomes": {
+    "rebuilt": 156
+   },
+   "rebuilt_swaps": 156,
+   "skipped": 156,
+   "still_skipped": 0
+  }
+ }
+}

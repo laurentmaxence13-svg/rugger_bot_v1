@@ -1,0 +1,104 @@
+{
+ "package": "cpmmrecon",
+ "version": "0.1",
+ "mutants": [
+  {
+   "mutant": "any_cause_rebuilt",
+   "detected": true
+  },
+  {
+   "mutant": "failed_tx_rebuilt",
+   "detected": true
+  },
+  {
+   "mutant": "other_cpmm_ix_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "children_not_bounded",
+   "detected": true
+  },
+  {
+   "mutant": "grandchildren_counted",
+   "detected": true
+  },
+  {
+   "mutant": "checked_wrong_destination",
+   "detected": true
+  },
+  {
+   "mutant": "transfer_count_loose",
+   "detected": true
+  },
+  {
+   "mutant": "balances_not_cross_checked",
+   "detected": true
+  },
+  {
+   "mutant": "no_swap_accepted",
+   "detected": true
+  },
+  {
+   "mutant": "amounts_not_checked",
+   "detected": true
+  },
+  {
+   "mutant": "mode_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "side_inverted",
+   "detected": true
+  },
+  {
+   "mutant": "reserves_inverted",
+   "detected": true
+  },
+  {
+   "mutant": "skim_ignored",
+   "detected": true
+  },
+  {
+   "mutant": "lp_state_kept",
+   "detected": true
+  },
+  {
+   "mutant": "no_state_guard_removed",
+   "detected": true
+  },
+  {
+   "mutant": "state_kept_after_failure",
+   "detected": true
+  },
+  {
+   "mutant": "plan_misordered",
+   "detected": true
+  },
+  {
+   "mutant": "owner_not_of_the_vault",
+   "detected": true
+  },
+  {
+   "mutant": "base_owner_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "stack_height_unchecked",
+   "detected": true
+  },
+  {
+   "mutant": "order_lost",
+   "detected": true
+  },
+  {
+   "mutant": "depth_lost",
+   "detected": true
+  },
+  {
+   "mutant": "b58_leading_zeros_lost",
+   "detected": true
+  }
+ ],
+ "detected": 24,
+ "total": 24
+}
