@@ -1240,3 +1240,9 @@
 {"credits_after":1241,"method":"getTransaction","params_sha256":"137ad567f372eced10007cd80061ecc77038ee2022b5fdb01dbd50b0aece2c6e","result_sha256":"2df8a64661ca654f64c160a88e7ea5f9b64f468239319bbb90e3ed312a687134"}
 {"credits_after":1242,"method":"getSignaturesForAddress","params_sha256":"b462810b916f099f120f05ec4dbc931c088c47e91025f205ea25f63af37f4298","result_sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}
 {"credits_after":1243,"method":"getSignaturesForAddress","params_sha256":"254c23ccb0824d1ec198a82aaec4be4763a119afcafb648cdcd630f6fc0257a2","result_sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}
+{"credits_after":1244,"method":"getSlot","params_sha256":"3fe8326019a39be3caa25e12c5e00eeb55af2f0f25a0e70c3d094e01c620bd5e","result_sha256":"baceea71a9b241ac0c080bbfa49cf8f36580f20120c6cd6ffb549668b9c47fc9"}
+{"credits_after":1245,"method":"getSignaturesForAddress","params_sha256":"e49ad0b332351893167085df4853ae7a91a37c549ba468e50351c22b67927dbe","result_sha256":"ce1a50b7a422cbc70ce43e8b7db48e37c02ae8d6b896f0662b4a8447e4745b3f"}
+{"credits_after":1246,"method":"getTransaction","params_sha256":"c67599412f9574396f9fe6ac24fd40c3d2d4bedee199f06c8b49f4ddb2d9f1ab","result_sha256":"e9082dd5ecdf182c2f47f031965055a3e76688344f56a57e6df398d3e832792f"}
+{"credits_after":1247,"method":"getSignaturesForAddress","params_sha256":"b462810b916f099f120f05ec4dbc931c088c47e91025f205ea25f63af37f4298","result_sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}
+{"credits_after":1248,"method":"getSignaturesForAddress","params_sha256":"254c23ccb0824d1ec198a82aaec4be4763a119afcafb648cdcd630f6fc0257a2","result_sha256":"4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"}
+{"credits_after":1249,"method":"getSlot","params_sha256":"3fe8326019a39be3caa25e12c5e00eeb55af2f0f25a0e70c3d094e01c620bd5e","result_sha256":"17c6a7e242872d3c56fbd81245825fddff224572ef9caaf2b9ad8bb470f8c725"}
