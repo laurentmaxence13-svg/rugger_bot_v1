@@ -1,0 +1,366 @@
+{
+ "package": "livepaper",
+ "version": "0.1",
+ "mutants": [
+  {
+   "mutant": "exit_land_ignores_buy_failures",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "clock_deadline_shifted",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "tp_strict",
+   "file": "fill.py",
+   "detected": false
+  },
+  {
+   "mutant": "buy_lands_after_the_trigger",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "guard_on_another_state",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "exit_time_check_loose",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "net_without_wsol_close",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "receipt_time_wrong",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "best_sale_state",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "anchor_index_off",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "best_buy_state",
+   "file": "fill.py",
+   "detected": true
+  },
+  {
+   "mutant": "chain_not_linked",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "sha_not_verified",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "wall_not_volatile",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "stop_not_skipped",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "existing_journal_appended",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "replay_not_compared",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "nothing_settled",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "decisions_without_eligibility",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "pre_start_decided",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "decided_twice",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "anchor_on_the_first_swap",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_seed_ignored",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_without_eligibility",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "gap_backlog_not_flagged",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "exit_slot_not_settled",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "exit_time_not_settled",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "landing_not_settled",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "stored_sha_not_checked",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "trailing_records_accepted",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "variant_b_not_rebuilt",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "g0_every_step",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "future_transaction_accepted",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "received_step_not_recorded",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "pilot_pools_accepted",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "hard_stop_25000",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "hard_stop_overrun",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gtfa_polled_every_30_s",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "b_verdict_keeps_gsfa_rank",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gsfa_collect_stops_early",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gtfa_probe_ignored",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gtfa_probe_never_armed",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gtfa_duplicates",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "rank_not_incremented",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gsfa_pre_start_kept",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "gap_factor_3",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "stop_after_2_errors",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "transport_any_method",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "authorization_unchecked",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "key_check_disabled",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "signing_check_disabled",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "ordercheck_unanchored_accepted",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_sha_unchecked",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "eligible_variant_unchecked",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "start_before_history_accepted",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "config_sha_unchecked",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "b3_not_from_eligible",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "gsfa_window_short",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "compare_double_counts",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "process_above_115_accepted",
+   "file": "cli.py",
+   "detected": true
+  },
+  {
+   "mutant": "gsfa_order_reversed",
+   "file": "ordercheck.py",
+   "detected": true
+  },
+  {
+   "mutant": "a_ok_without_pairs",
+   "file": "ordercheck.py",
+   "detected": true
+  },
+  {
+   "mutant": "slot_mismatch_ignored",
+   "file": "ordercheck.py",
+   "detected": true
+  },
+  {
+   "mutant": "slot_mismatch_not_found",
+   "file": "ordercheck.py",
+   "detected": true
+  },
+  {
+   "mutant": "gsfa_position_inverted",
+   "file": "ordercheck.py",
+   "detected": true
+  },
+  {
+   "mutant": "wait_not_recorded",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "wait_without_b3_reason",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "marks_never",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "mark_before_landing",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "mark_time_off",
+   "file": "engine.py",
+   "detected": true
+  },
+  {
+   "mutant": "way_not_in_start",
+   "file": "engine.py",
+   "detected": true
+  }
+ ],
+ "detected": 70,
+ "total": 71,
+ "equivalent": {
+  "tp_strict": "ne change le résultat que si la valeur de vente vaut EXACTEMENT 102 000 000 lamports (rapport de 2 %), cas que l'arithmétique entière de la courbe ne produit pas dans les données de test ; déclaré équivalent en pratique, non tué"
+ }
+}
