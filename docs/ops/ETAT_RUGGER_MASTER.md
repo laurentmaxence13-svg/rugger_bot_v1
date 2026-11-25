@@ -300,6 +300,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 24/11 23:18Z | Décision R04-9 (plafond de la confirmation = 1,25 × crédits projetés au coût mesuré, ≤ 60 000 Free, sinon NON ÉVALUABLE) jugée conforme et intégrée par R02 (erratum C-169 08b14a6b) ; réserve : remise à zéro du quota le 07/12 à confirmer par le propriétaire à la signature. Note R01 T-R01-11 « où chercher après le 06/12 » (85f3bd8) : classement PumpSwap, Raydium AMM v4 (même mathématique x·y = k, décodeur à écrire), CLMM/Whirlpool ≤ 0,05 % (barre la plus basse, modèle de liquidité concentrée à écrire), Meteora ; activités NON MESURÉES ; toute hypothèse nouvelle exige un essai au-delà de 170, donc une décision explicite. | registre R02 ; branche R01 85f3bd8 | déclaré |
 
+| 25/11 00:43Z | **Tout est prêt jusqu'aux verdicts** (déclaré) : lanceur pilote G2-3/N1 gelé et enregistré par R02 (empreinte 70d503a0), seul admis ; g23run 0.1.1, n1verdict 0.2.2 et 0.3 ancrés ; cpmmpilot 0.2.8.1 (MANIFEST ba38eba3) et driver de confirmation livrés (R03 842135e). Aucun travail restant avant la clôture de la fenêtre le 06/12 10:21:26Z. Contrôle R04 espacé à toutes les 3 h ; rappel programmé le 06/12 à 10:35Z pour lancer la collecte. | sessions R01-R03 | déclaré |
+
 ## 5. Incidents
 
 - 24/11 18:24Z : T2 arrêté sur une réponse HTTP tronquée au 186e appel ; driver sans enregistrement intermédiaire, 186 crédits sans résultat. Défaut de conception relevé ni par R03 ni par l'audit R02.
