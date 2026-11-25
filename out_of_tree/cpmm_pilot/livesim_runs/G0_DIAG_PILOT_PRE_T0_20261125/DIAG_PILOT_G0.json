@@ -1,0 +1,88 @@
+{
+ "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+  "breaks_creator_0": 77,
+  "config_sha": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "exact_anchored": 0,
+  "exact_creator_0": 37690,
+  "gate_anchored": [
+   "undecoded_transactions",
+   "swaps_not_reproduced_with_the_amm_config",
+   "reserves_chain_broken"
+  ],
+  "gate_creator_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "skipped": 79,
+  "skipped_kinds": {
+   "('21cQefmDHZogJ98FBhSydonHbySJHDQgiomCMa": 1,
+   "('267xoKi6JJMkgi8PEvHLqn4aCtUceSjbwtWXk3": 1,
+   "('2APTpjr3xcokke7eTF3epoihBj6DGRyUhmgn6F": 1
+  },
+  "swaps": 37690,
+  "swaps_logging_creator_fee": 0
+ },
+ "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+  "breaks_creator_0": 1142,
+  "config_sha": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "exact_anchored": 130,
+  "exact_creator_0": 37396,
+  "gate_anchored": [
+   "undecoded_transactions",
+   "swaps_not_reproduced_with_the_amm_config",
+   "reserves_chain_broken"
+  ],
+  "gate_creator_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "skipped": 1282,
+  "skipped_kinds": {
+   "('148SWArSGKgEUEKw6QNu6u4Sc9UpAhHyJCdtF9": 1,
+   "('1A6WDoyHrGmieNiKoDDRqDtQUqFtenVPTkiRmA": 1,
+   "('1GhHNuuckukGz1dQMrYsCq1jWqD25vKJyuUz7s": 1
+  },
+  "swaps": 37396,
+  "swaps_logging_creator_fee": 0
+ },
+ "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+  "breaks_creator_0": 20,
+  "config_sha": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "exact_anchored": 0,
+  "exact_creator_0": 8157,
+  "gate_anchored": [
+   "undecoded_transactions",
+   "swaps_not_reproduced_with_the_amm_config",
+   "reserves_chain_broken"
+  ],
+  "gate_creator_0": [
+   "undecoded_transactions",
+   "reserves_chain_broken"
+  ],
+  "skipped": 24,
+  "skipped_kinds": {
+   "('2FGVQkbpjvkvmk6S5QpbT34pup2xVpoYaSANBV": 1,
+   "('2NFmsNAua1N6vucBCozhGx6NwnHVFFPCVQWHBF": 1,
+   "('2QsCDze7hG9GEoM95rFNpDNmM6ixz6zwCiHSGN": 1
+  },
+  "swaps": 8157,
+  "swaps_logging_creator_fee": 0
+ },
+ "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+  "breaks_creator_0": 0,
+  "config_sha": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "exact_anchored": 0,
+  "exact_creator_0": 804,
+  "gate_anchored": [
+   "token_transfer_fee",
+   "swaps_not_reproduced_with_the_amm_config"
+  ],
+  "gate_creator_0": [
+   "token_transfer_fee"
+  ],
+  "skipped": 0,
+  "skipped_kinds": {},
+  "swaps": 804,
+  "swaps_logging_creator_fee": 0
+ }
+}
