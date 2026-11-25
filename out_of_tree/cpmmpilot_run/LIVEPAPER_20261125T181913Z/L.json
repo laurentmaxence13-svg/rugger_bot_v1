@@ -1,8 +1,8 @@
 {
  "by_method": {
-  "getSignaturesForAddress": 744,
-  "getSlot": 223,
-  "getTransaction": 282
+  "getSignaturesForAddress": 747,
+  "getSlot": 224,
+  "getTransaction": 284
  },
  "ceiling": 25000,
  "costs": {
@@ -13,8 +13,8 @@
   "getTransaction": 1,
   "getTransactionsForAddress": 10
  },
- "credits": 1249,
+ "credits": 1255,
  "hard_stop": 24500,
- "requests": 1249,
+ "requests": 1255,
  "schema": "livepaper-spend-v0.1"
 }
