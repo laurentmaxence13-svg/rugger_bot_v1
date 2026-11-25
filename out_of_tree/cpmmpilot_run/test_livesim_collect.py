@@ -365,3 +365,34 @@ def test_eligible_must_match_anchored_sha(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match='eligible_not_anchored'):
         L.main(a, now=T_START + 7_320)
     assert chain.n == n
+
+
+def test_reordered_list_refused_even_if_file_sha_accepted(tmp_path, monkeypatch):
+    chain = Chain()
+    argv, out = _setup(tmp_path, monkeypatch, chain)
+    doc = json.loads(UNI.read_bytes())
+    r0, r1 = [r for r in doc['ordered'] if r['rank'] in (1, 2)]
+    r0['rank'], r1['rank'] = 2, 1
+    bad = tmp_path / 'U.json'
+    bad.write_text(json.dumps(doc))
+    monkeypatch.setattr(L, 'UNIVERSE_FILE_SHA256', hashlib.sha256(bad.read_bytes()).hexdigest())
+    with pytest.raises(SystemExit, match='universe_not_anchored'):
+        L.main(argv('qualify', universe=bad), now=NOW)
+    assert chain.n == 0
+
+
+def test_bad_tx_format_in_a_poll_stops(tmp_path, monkeypatch):
+    class BadLive(Chain):
+        def __call__(self, body):
+            r = Chain.__call__(self, body)
+            opts = body['params'][1]
+            if isinstance(r, dict) and 'filters' in opts and opts['filters']['blockTime']['gte'] >= T_START:
+                del r['data'][0]['slot']
+            return r
+    chain = BadLive()
+    argv, out = _setup(tmp_path, monkeypatch, chain)
+    L.main(argv('qualify'), now=NOW)
+    L.main(argv('history'), now=NOW)
+    r = L.main(argv('poll'), now=T_START + 7_320)
+    assert r['verdict_run'] == 'STOP' and r['tag'] == 'STOP_TX_FORMAT:slot'
+    assert not json.loads((out / 'POLLS.json').read_text())[0]['done']
