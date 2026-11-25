@@ -314,6 +314,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 25/11 13:51Z | **Tout le code est audité (PASS R02)** : pour les pilotes, g23run 0.1.2, g23run011 0.1.2, n1verdict 0.2.3 (branchement de cpmmrecon) ; pour la démonstration, livesim 0.3.1 (variante A, cpmmcost 0.3.1 seul) et 0.3.2 (variante B, avec cpmmrecon, en attente). Le code des pilotes ne devient la chaîne de verdict qu'après la signature du texte cda64700 par le propriétaire et sa vérification à la source par R02. **Seul blocage : cette signature** (échéance 06/12 10:21:26Z). Contrôle R04 espacé à 3 h. | registre R02 | déclaré |
 
+| 25/11 14:10Z | **Variante A contre variante B, mesuré à 0 crédit** (pages pré-départ et pré-T0, aucun rendement ; R03 d24f2d2 pour A ; R01 de4889c pour le diagnostic A/B). Démonstration (8 pools) : A → 1 pool admis par G-0 et éligible (GaPTvX), NON ÉVALUABLE ; B → 5 pools admis, 3 éligibles (GaPTvX b₃ 4, 6CQSpR 1, 5zk4vh 1), exactement le plancher. cpmmrecon refuse correctement ce qu'il ne sait pas refermer : CXgcuE 7/19 et 4D17GN 22/55 reconstituées, ruptures restantes, pools toujours refusés. Pilotes : A → 0 pool admis ; B → 3 (AEZjoU 79/79, G8kgi7 1 282/1 282, GdxFyc 24/24, 0 rupture). Chiffres non ancrés : l'ELIGIBLE officiel suit la signature de cda64700. | R03 d24f2d2 ; R01 de4889c | déclaré |
+
 ## 5. Incidents
 
 - 25/11 11:51Z : défaut du code gelé cpmmcost 0.3 (frais créateur de 500 ppm appliqué alors que les pools prélèvent 0) ; non détecté par les audits ni par les tests synthétiques ; il aurait rendu le pilote du 06/12 non évaluable. Corrigé par 0.3.1 avant toute lecture de la fenêtre.
