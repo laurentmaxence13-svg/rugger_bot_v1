@@ -5,11 +5,14 @@ resuming from files on disk (STATE per pool and chunk, cumulative ledger, CONFIG
                     not already 'valid' (GTFA asc limit 1) is checked by the FROZEN u2.creation_check (age >= 7 d at
                     T_start, no LaunchLab, Initialize at depth 1); the first K valid in order are kept (QUALIFIED.json).
   --phase history : raw GTFA pages of the qualified pools over [T_start - 7 d ; T_start)            (phase 'pre')
-  --phase poll    : raw GTFA pages over [edge ; min(now - 120 s, T_start + 24 h)), one chunk per pass ('live_NNN');
-                    an unfinished chunk is resumed first, never re-cut.
+  --phase poll    : only with --eligible (the qualified pools with b3 > 0 on the history, computed by R01's audited code,
+                    at least 3, else NON EVALUABLE and no 24 h phase; R02 08:45:46Z). Fixed 2 h chunks ('live_NNN') over
+                    [T_start ; T_start + 24 h): every chunk whose end <= now - 120 s is collected in order; an
+                    unfinished chunk is resumed first, never re-cut.
 A truncated response may be re-read ONCE (audited RetryOnceClient); any other incident = STOP marker, no later pass.
 Forbidden pools (the 4 pilot pools, 2yLFom) are refused before any call. No decision, position or return is computed.
-Usage: python -B livesim_collect.py --phase qualify|history|poll --universe <LIVESIM_UNIVERSE.json>
+Usage: python -B livesim_collect.py --phase qualify|history|poll --universe <LIVESIM_UNIVERSE.json> --list-l <LIST_L>
+       [--eligible <ELIGIBLE.json>]
        --out <DIR> --t-start <unix> --cap <P> --authorization <file>"""
 import argparse
 import hashlib
@@ -23,6 +26,8 @@ from cpmmpilot import rpc, step1, u2
 from cpmmpilot.store import write_gz_page
 
 ENDPOINT = 'https://beta.helius-rpc.com/'
+UNIVERSE_FILE_SHA256 = '82d3d5cd47236af12883b2cc0399c4a24aa43cc84e0729c32103a0c7cbeab2f5'   # R02 anchor 08:45:05Z
+LIST_L_SHA256 = 'c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3'
 UNIVERSE_LIST_SHA256 = '5c4fefb670cf747b2af90d50bceb0ea4e50cd9573927f92fcd246056a5b7ea68'
 FORBIDDEN = frozenset({'AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca', 'Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr',
                        'G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh', 'GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A',
@@ -30,6 +35,8 @@ FORBIDDEN = frozenset({'AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca', 'Gms3MaNa
 K = 8
 HISTORY_S = 7 * 86_400
 LIVE_S = 24 * 3_600
+POLL_S = 2 * 3_600                                   # R02 08:45:46Z: passes every 2 h
+MIN_ELIGIBLE = 3
 MARGIN_S = 120
 CAP_MAX = 20_000
 HARD_STOP_PCT = 98
@@ -71,6 +78,8 @@ def _write(path, doc):
 
 
 def universe_rows(path):
+    if sha_of(path) != UNIVERSE_FILE_SHA256:
+        raise LiveSimStop('universe_not_anchored')
     doc = _read(path)
     rows = sorted(doc['ordered'], key=lambda r: r['rank'])
     pools = [r['pool'] for r in rows]
@@ -135,29 +144,34 @@ def phase_history(client, out, pools, t_start, sel):
 def phase_poll(client, out, pools, t_start, now, sel):
     polls_path = out / 'POLLS.json'
     polls = _read(polls_path) if polls_path.exists() else []
-    if polls and not polls[-1]['done']:
-        chunk = polls[-1]                              # resume the unfinished chunk, never re-cut its window
-    else:
-        edge = polls[-1]['window'][1] if polls else t_start
-        stop_at = min(now - MARGIN_S, t_start + LIVE_S)
-        if stop_at <= edge:
-            return dict(nothing_to_collect=True, edge=edge)
-        chunk = dict(name='live_%03d' % len(polls), window=[edge, stop_at], done=False)
-        polls.append(chunk)
+    done_now = []
+    while True:
+        if polls and not polls[-1]['done']:
+            chunk = polls[-1]                          # resume the unfinished chunk, never re-cut its window
+        else:
+            i = len(polls)
+            start, end = t_start + i * POLL_S, t_start + (i + 1) * POLL_S
+            if start >= t_start + LIVE_S or end > now - MARGIN_S:
+                break
+            chunk = dict(name='live_%03d' % i, window=[start, end], done=False)
+            polls.append(chunk)
+            _write(polls_path, polls)
+        step1.collect(client, out, pools, start_time=chunk['window'][0], end_time=chunk['window'][1],
+                      phase=chunk['name'])
+        step1.require_tx_format(out, chunk['name'], sel)
+        chunk['done'] = True
         _write(polls_path, polls)
-    step1.collect(client, out, pools, start_time=chunk['window'][0], end_time=chunk['window'][1], phase=chunk['name'])
-    fmt = step1.require_tx_format(out, chunk['name'], sel)
-    chunk['done'] = True
-    _write(polls_path, polls)
-    return dict(chunk=chunk['name'], window=chunk['window'], tx_format=fmt,
-                live_complete=chunk['window'][1] >= t_start + LIVE_S)
+        done_now.append(chunk['name'])
+    return dict(chunks_done_this_pass=done_now, chunks_total=len(polls),
+                live_complete=len(polls) * POLL_S >= LIVE_S and all(c['done'] for c in polls))
 
 
 def main(argv=None, now=None):
     p = argparse.ArgumentParser()
     p.add_argument('--phase', choices=('qualify', 'history', 'poll'), required=True)
-    for k in ('--pkg', '--universe', '--out', '--authorization'):
+    for k in ('--pkg', '--universe', '--list-l', '--out', '--authorization'):
         p.add_argument(k, type=Path, required=True)
+    p.add_argument('--eligible', type=Path)
     p.add_argument('--t-start', type=int, required=True)
     p.add_argument('--cap', type=int, required=True)
     a = p.parse_args(argv)
@@ -174,13 +188,29 @@ def main(argv=None, now=None):
     if (a.out / 'STOP.json').exists():
         raise LiveSimStop('stopped_earlier_no_further_pass')
     rows = universe_rows(a.universe)
+    if sha_of(a.list_l) != LIST_L_SHA256:
+        raise LiveSimStop('list_l_not_anchored')
+    mint = {r['pool']: r['base_mint'] for r in _read(a.list_l)['list']}
     _check_config(a.out, a.t_start, a.cap)
     pools = sel = None
     if a.phase != 'qualify':
         q = _qualified(a.out)
         pools = q['pools']
-        by = {r['pool']: r for r in rows}
-        sel = [dict(pool=x, base_mint=by[x]['base_mint']) for x in pools]
+        if a.phase == 'poll':
+            if a.eligible is None:
+                raise LiveSimStop('poll_needs_eligible')
+            el = _read(a.eligible)['pools']
+            if not set(el) <= set(pools) or len(set(el)) != len(el):
+                raise LiveSimStop('eligible_not_a_subset_of_qualified')
+            if len(el) < MIN_ELIGIBLE:
+                raise LiveSimStop('non_evaluable_fewer_than_3_eligible')
+            el_cfg = a.out / 'ELIGIBLE_FROZEN.json'
+            if el_cfg.exists() and _read(el_cfg) != dict(pools=el, sha256=list_sha(el)):
+                raise LiveSimStop('eligible_differs_from_first_poll')
+            if not el_cfg.exists():
+                _write(el_cfg, dict(pools=el, sha256=list_sha(el)))
+            pools = el
+        sel = [dict(pool=x, base_mint=mint[x]) for x in pools]
         if a.phase == 'history' and (a.out / 'HISTORY_DONE.json').exists():
             raise LiveSimStop('history_already_done')
         if a.phase == 'poll' and not (a.out / 'HISTORY_DONE.json').exists():

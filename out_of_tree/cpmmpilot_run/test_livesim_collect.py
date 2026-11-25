@@ -15,6 +15,7 @@ spec = importlib.util.spec_from_file_location('livesim_collect', HERE / 'livesim
 L = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(L)
 UNI = HERE / 'LIVESIM_UNIVERSE.json'
+LISTL = HERE / 'TIME1R_20261124T102126Z' / 'LIST_L.json'
 ROWS = sorted(json.loads(UNI.read_bytes())['ordered'], key=lambda r: r['rank'])
 NOW = 1_800_000_000
 T_START = NOW - 600
@@ -83,9 +84,17 @@ def _setup(tmp_path, monkeypatch, chain, cap=15_000):
     monkeypatch.setattr(rpc.LiveRpc, '__init__', init)
     out = tmp_path / 'out'
 
-    def argv(phase, t_start=T_START, cap_=cap, universe=UNI, authorization=auth):
-        return ['--phase', phase, '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--universe', str(universe),
-                '--out', str(out), '--t-start', str(t_start), '--cap', str(cap_), '--authorization', str(authorization)]
+    def argv(phase, t_start=T_START, cap_=cap, universe=UNI, authorization=auth, eligible='auto'):
+        a = ['--phase', phase, '--pkg', str(HERE.parent / 'cpmmpilot_pkg'), '--universe', str(universe),
+             '--list-l', str(LISTL), '--out', str(out), '--t-start', str(t_start), '--cap', str(cap_),
+             '--authorization', str(authorization)]
+        if phase == 'poll' and eligible is not None:
+            if eligible == 'auto':
+                q = json.loads((out / 'QUALIFIED.json').read_text())['pools']
+                eligible = tmp_path / 'ELIGIBLE.json'
+                eligible.write_text(json.dumps(dict(pools=q)))
+            a += ['--eligible', str(eligible)]
+        return a
     return argv, out
 
 
@@ -109,19 +118,21 @@ def test_full_cycle_qualify_history_polls(tmp_path, monkeypatch):
     hist = [b for b in chain.seen[7:]]
     assert len(hist) == 8 and {tuple(b['params'][1]['filters']['blockTime'].values()) for b in hist} == \
         {(T_START - 7 * 86_400, T_START)}
-    L.main(argv('poll'), now=NOW + 3_600)
-    L.main(argv('poll'), now=NOW + 7_200)
+    r = L.main(argv('poll'), now=T_START + 7_200 + 119)
+    assert r['result']['chunks_done_this_pass'] == []                 # first 2 h block not yet closed + margin
+    r = L.main(argv('poll'), now=T_START + 7_200 + 120)
+    assert r['result']['chunks_done_this_pass'] == ['live_000']
+    r = L.main(argv('poll'), now=T_START + 6 * 3_600 + 500)          # late wake-up: catches up two blocks
+    assert r['result']['chunks_done_this_pass'] == ['live_001', 'live_002']
+    L.main(argv('poll'), now=T_START + 40 * 3_600)
     polls = json.loads((out / 'POLLS.json').read_text())
-    assert [p['window'] for p in polls] == [[T_START, NOW + 3_600 - 120], [NOW + 3_600 - 120, NOW + 7_200 - 120]]
+    assert [p['window'] for p in polls] == [[T_START + i * 7_200, T_START + (i + 1) * 7_200] for i in range(12)]
     assert all(p['done'] for p in polls)
-    L.main(argv('poll'), now=T_START + 30 * 3_600)
-    polls = json.loads((out / 'POLLS.json').read_text())
-    assert polls[-1]['window'][1] == T_START + 86_400
-    r = L.main(argv('poll'), now=T_START + 31 * 3_600)
-    assert r['result'] == dict(nothing_to_collect=True, edge=T_START + 86_400)
+    r = L.main(argv('poll'), now=T_START + 41 * 3_600)
+    assert r['result']['chunks_done_this_pass'] == [] and r['result']['live_complete']
     ledger = json.loads((out / 'ledger_livesim.json').read_text())
     assert ledger['stage'] == 'livesim' and ledger['max_credits'] == 14_700
-    assert len((out / 'PASSES.jsonl').read_text().splitlines()) == 6
+    assert len((out / 'PASSES.jsonl').read_text().splitlines()) == 7
 
 
 def test_replacements_taken_in_order(tmp_path, monkeypatch):
@@ -215,6 +226,7 @@ def test_forbidden_or_unanchored_universe_refused(tmp_path, monkeypatch):
     pools = [r['pool'] for r in sorted(doc['ordered'], key=lambda r: r['rank'])]
     monkeypatch.setattr(L, 'UNIVERSE_LIST_SHA256', L.list_sha(pools))
     doc['ordered_list_sha256'] = L.list_sha(pools)
+    monkeypatch.setattr(L, 'UNIVERSE_FILE_SHA256', hashlib.sha256(json.dumps(doc).encode()).hexdigest())
     bad.write_text(json.dumps(doc))
     with pytest.raises(SystemExit, match='forbidden_or_duplicate_pool'):
         L.main(argv('qualify', universe=bad), now=NOW)
@@ -276,7 +288,7 @@ def test_unfinished_chunk_is_resumed_not_recut(tmp_path, monkeypatch):
     L.main(argv('qualify'), now=NOW)
     L.main(argv('history'), now=NOW)
     (out / 'POLLS.json').write_text(json.dumps([dict(name='live_000', window=[T_START, T_START + 500], done=False)]))
-    L.main(argv('poll'), now=NOW + 3_600)
+    L.main(argv('poll'), now=T_START + 7_000)
     polls = json.loads((out / 'POLLS.json').read_text())
     assert polls == [dict(name='live_000', window=[T_START, T_START + 500], done=True)]
 
@@ -288,7 +300,50 @@ def test_cap_reached_stops(tmp_path, monkeypatch):
     r = L.main(argv('history'), now=NOW)
     assert r['verdict_run'] == 'DONE'
     for h in range(1, 200):
-        r = L.main(argv('poll'), now=NOW + h * 600)
+        r = L.main(argv('poll'), now=T_START + h * 7_200 + 120)
         if r['verdict_run'] == 'STOP':
             break
     assert r['tag'].startswith('credit_cap_reached') and r['budget']['credits'] <= 980
+
+
+def test_universe_file_and_list_l_pinned(tmp_path, monkeypatch):
+    chain = Chain()
+    argv, out = _setup(tmp_path, monkeypatch, chain)
+    copy = tmp_path / 'U.json'
+    copy.write_bytes(UNI.read_bytes() + b' ')
+    with pytest.raises(SystemExit, match='universe_not_anchored'):
+        L.main(argv('qualify', universe=copy), now=NOW)
+    a = argv('qualify')
+    bad = tmp_path / 'L.json'
+    bad.write_bytes(LISTL.read_bytes() + b' ')
+    a[a.index('--list-l') + 1] = str(bad)
+    with pytest.raises(SystemExit, match='list_l_not_anchored'):
+        L.main(a, now=NOW)
+    assert chain.n == 0
+    assert L.UNIVERSE_FILE_SHA256 == hashlib.sha256(UNI.read_bytes()).hexdigest()
+
+
+def test_eligible_rules(tmp_path, monkeypatch):
+    chain = Chain()
+    argv, out = _setup(tmp_path, monkeypatch, chain)
+    L.main(argv('qualify'), now=NOW)
+    L.main(argv('history'), now=NOW)
+    q = json.loads((out / 'QUALIFIED.json').read_text())['pools']
+    n = chain.n
+    with pytest.raises(SystemExit, match='poll_needs_eligible'):
+        L.main(argv('poll', eligible=None), now=T_START + 7_320)
+    e = tmp_path / 'E.json'
+    e.write_text(json.dumps(dict(pools=q[:2])))
+    with pytest.raises(SystemExit, match='non_evaluable_fewer_than_3_eligible'):
+        L.main(argv('poll', eligible=e), now=T_START + 7_320)
+    e.write_text(json.dumps(dict(pools=q[:2] + ['GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV_X'])))
+    with pytest.raises(SystemExit, match='eligible_not_a_subset'):
+        L.main(argv('poll', eligible=e), now=T_START + 7_320)
+    assert chain.n == n
+    e.write_text(json.dumps(dict(pools=q[:3])))
+    r = L.main(argv('poll', eligible=e), now=T_START + 7_320)
+    assert r['verdict_run'] == 'DONE' and chain.n == n + 3
+    assert {b['params'][0] for b in chain.seen[n:]} == set(q[:3])
+    e.write_text(json.dumps(dict(pools=q[:4])))
+    with pytest.raises(SystemExit, match='eligible_differs_from_first_poll'):
+        L.main(argv('poll', eligible=e), now=T_START + 14_520)
