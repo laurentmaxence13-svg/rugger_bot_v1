@@ -1,0 +1,104 @@
+{
+ "b3_zero_exclusion": "NOT APPLIED here: needs the 7-day pre-start history (R01 code), after collection",
+ "k": 8,
+ "ordered": [
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+   "rank": 1,
+   "reserve_lamports": 182151895744,
+   "role": "titulaire",
+   "sig24": 3973
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "CqvMZmWDvEufa5rzkubidyR4zMDqDPoLjAtsW6wGsPMu",
+   "rank": 2,
+   "reserve_lamports": 255221849424,
+   "role": "titulaire",
+   "sig24": 3955
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "rank": 3,
+   "reserve_lamports": 379409091921,
+   "role": "titulaire",
+   "sig24": 1503
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
+   "rank": 4,
+   "reserve_lamports": 4118241627844,
+   "role": "titulaire",
+   "sig24": 1277
+  },
+  {
+   "config": "CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ",
+   "group": "untested",
+   "pool": "AsVSzvh75VV5MqcQsxr3X4rqzVoUHfzdvpahpw61v2du",
+   "rank": 5,
+   "reserve_lamports": 266340321564,
+   "role": "titulaire",
+   "sig24": 1189
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "rank": 6,
+   "reserve_lamports": 200533810282,
+   "role": "titulaire",
+   "sig24": 1150
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "valid",
+   "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+   "rank": 7,
+   "reserve_lamports": 559847920234,
+   "role": "titulaire",
+   "sig24": 974
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
+   "rank": 8,
+   "reserve_lamports": 3594734595923,
+   "role": "titulaire",
+   "sig24": 731
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
+   "rank": 9,
+   "reserve_lamports": 1111380694189,
+   "role": "remplacant",
+   "sig24": 625
+  },
+  {
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "group": "untested",
+   "pool": "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o",
+   "rank": 10,
+   "reserve_lamports": 723699229947,
+   "role": "remplacant",
+   "sig24": 367
+  }
+ ],
+ "ordered_list_sha256": "5c4fefb670cf747b2af90d50bceb0ea4e50cd9573927f92fcd246056a5b7ea68",
+ "rule": "R02 08:42:17Z (R04-10)",
+ "schema": "livesim-universe-v1",
+ "source": {
+  "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+  "t2bis_result_sha256": "fadb1a2f4a1a5ba74f010fd234ab4bf1aa3781374ab97415912c5f330bb52b6d"
+ },
+ "u2_qualification": "NOT APPLIED here: untested pools need U-2 creation check (network), replacements taken in order"
+}
