@@ -1,0 +1,308 @@
+{
+ "demo/4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o": {
+  "A": {
+   "admitted": false,
+   "breaks": 50,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": false,
+   "breaks": 32,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "kept": {
+   "kept:amounts_not_reproduced": 1,
+   "kept:base_vault_not_identified": 32
+  },
+  "pool": "4D17GNQvJPMsMAiyiYvSK1GxAtduMLvyMMHVzRUniV8o",
+  "rebuilt": 22,
+  "still_undecoded": 33,
+  "swaps": 2796,
+  "transactions": 3102,
+  "undecoded": 55,
+  "undecoded_reasons": {
+   "log_truncated": 55
+  }
+ },
+ "demo/5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+  "A": {
+   "admitted": false,
+   "breaks": 35,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+  "rebuilt": 39,
+  "still_undecoded": 0,
+  "swaps": 4186,
+  "transactions": 46747,
+  "undecoded": 39,
+  "undecoded_reasons": {
+   "log_truncated": 39
+  }
+ },
+ "demo/6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+  "A": {
+   "admitted": false,
+   "breaks": 1,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "rebuilt": 1,
+  "still_undecoded": 0,
+  "swaps": 5785,
+  "transactions": 5789,
+  "undecoded": 1,
+  "undecoded_reasons": {
+   "log_truncated": 1
+  }
+ },
+ "demo/7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc": {
+  "A": {
+   "admitted": false,
+   "breaks": 82,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "7SJ5UKJoqBUGjt1PT7AeSF7FKPgpnxeYMHHcejTiGQzc",
+  "rebuilt": 103,
+  "still_undecoded": 0,
+  "swaps": 857,
+  "transactions": 11745,
+  "undecoded": 103,
+  "undecoded_reasons": {
+   "log_truncated": 103
+  }
+ },
+ "demo/A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud": {
+  "A": {
+   "admitted": false,
+   "breaks": 0,
+   "reasons": [
+    "token_transfer_fee"
+   ]
+  },
+  "B": {
+   "admitted": false,
+   "breaks": 0,
+   "reasons": [
+    "token_transfer_fee"
+   ]
+  },
+  "kept": {},
+  "pool": "A3URwhZE2YyVNKL9CmSvU9VG1oJoZS78kX4AdK5faDud",
+  "rebuilt": 0,
+  "still_undecoded": 0,
+  "swaps": 1534,
+  "transactions": 4217,
+  "undecoded": 0,
+  "undecoded_reasons": {}
+ },
+ "demo/CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+  "A": {
+   "admitted": false,
+   "breaks": 17,
+   "reasons": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": false,
+   "breaks": 11,
+   "reasons": [
+    "undecoded_transactions",
+    "token_transfer_fee",
+    "reserves_chain_broken"
+   ]
+  },
+  "kept": {
+   "kept:base_vault_not_identified": 12
+  },
+  "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+  "rebuilt": 7,
+  "still_undecoded": 12,
+  "swaps": 445,
+  "transactions": 1737,
+  "undecoded": 19,
+  "undecoded_reasons": {
+   "log_truncated": 19
+  }
+ },
+ "demo/FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9": {
+  "A": {
+   "admitted": false,
+   "breaks": 136,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "FAn5gzoJMYriKeCoJzLTCepE9Y36oN3CidoF4dmgFNh9",
+  "rebuilt": 156,
+  "still_undecoded": 0,
+  "swaps": 3472,
+  "transactions": 6915,
+  "undecoded": 156,
+  "undecoded_reasons": {
+   "log_truncated": 156
+  }
+ },
+ "demo/GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+  "A": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "rebuilt": 0,
+  "still_undecoded": 0,
+  "swaps": 19198,
+  "transactions": 19199,
+  "undecoded": 0,
+  "undecoded_reasons": {}
+ },
+ "pilot/AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+  "A": {
+   "admitted": false,
+   "breaks": 77,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+  "rebuilt": 79,
+  "still_undecoded": 0,
+  "swaps": 37690,
+  "transactions": 13963,
+  "undecoded": 79,
+  "undecoded_reasons": {
+   "log_truncated": 79
+  }
+ },
+ "pilot/G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+  "A": {
+   "admitted": false,
+   "breaks": 1142,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+  "rebuilt": 1282,
+  "still_undecoded": 0,
+  "swaps": 37396,
+  "transactions": 105364,
+  "undecoded": 1282,
+  "undecoded_reasons": {
+   "log_truncated": 1282
+  }
+ },
+ "pilot/GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+  "A": {
+   "admitted": false,
+   "breaks": 20,
+   "reasons": [
+    "undecoded_transactions",
+    "reserves_chain_broken"
+   ]
+  },
+  "B": {
+   "admitted": true,
+   "breaks": 0,
+   "reasons": []
+  },
+  "kept": {},
+  "pool": "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+  "rebuilt": 24,
+  "still_undecoded": 0,
+  "swaps": 8157,
+  "transactions": 3375,
+  "undecoded": 24,
+  "undecoded_reasons": {
+   "log_truncated": 24
+  }
+ },
+ "pilot/Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+  "A": {
+   "admitted": false,
+   "breaks": 0,
+   "reasons": [
+    "token_transfer_fee"
+   ]
+  },
+  "B": {
+   "admitted": false,
+   "breaks": 0,
+   "reasons": [
+    "token_transfer_fee"
+   ]
+  },
+  "kept": {},
+  "pool": "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr",
+  "rebuilt": 0,
+  "still_undecoded": 0,
+  "swaps": 804,
+  "transactions": 805,
+  "undecoded": 0,
+  "undecoded_reasons": {}
+ }
+}
