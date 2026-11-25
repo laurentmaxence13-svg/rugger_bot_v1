@@ -1,0 +1,18 @@
+{
+ "by_method": {
+  "getSignaturesForAddress": 73
+ },
+ "ceiling": 25000,
+ "costs": {
+  "getMultipleAccounts": 1,
+  "getProgramAccounts": 10,
+  "getSignaturesForAddress": 1,
+  "getSlot": 1,
+  "getTransaction": 1,
+  "getTransactionsForAddress": 10
+ },
+ "credits": 73,
+ "hard_stop": 24500,
+ "requests": 73,
+ "schema": "livepaper-spend-v0.1"
+}
