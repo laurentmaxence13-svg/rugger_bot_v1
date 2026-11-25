@@ -318,6 +318,8 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 25/11 14:33Z | **Texte cda64700 signé par le propriétaire** (collé dans la session R04 à 14:33:57Z ; 962 octets, sha256 cda64700… recalculé par R04, identique au projet ancré par R02) : correction du frais créateur, module de reconstitution exacte des transactions à journal tronqué, G-0 de N1 = G-0 de G2-3, position N1 touchée = perte totale. Transmis à R02 (vérification à la source, ancrage de la chaîne de verdict des pilotes et de livesim 0.3.2) et à R03 (ELIGIBLE officiel puis 24 h de relevés). | journal de session R04 | vérifié (source, sha) |
 
+| 25/11 14:40Z | **Directive du propriétaire : test PAPER EN DIRECT** (robot autonome) en complément de la simulation de 24 h : surveillance continue, signaux sur la seule information disponible à la décision, ordres fictifs immédiats avec latence/frais/slippage/échecs, gestion autonome, journal vérifiable, comparaison avec l'a posteriori ; G2-3 et N1 gelés intacts ; aucun trading réel ni dépense ; besoins soumis à R02 et au propriétaire. Lancé : R01 (dossier T-R01-12 : architecture, source temps réel et coût Helius par option, hôte, preuve d'autonomie, ce qui est gratuit), R03 (capacités réelles du conteneur, coût mesuré du sondage). Base existante : PAPER_LIVE v0.2, plbench 0.2, DX_VALEURS v0.2. | messages R04 | vérifié (envoi) |
+
 ## 5. Incidents
 
 - 25/11 11:51Z : défaut du code gelé cpmmcost 0.3 (frais créateur de 500 ppm appliqué alors que les pools prélèvent 0) ; non détecté par les audits ni par les tests synthétiques ; il aurait rendu le pilote du 06/12 non évaluable. Corrigé par 0.3.1 avant toute lecture de la fenêtre.
