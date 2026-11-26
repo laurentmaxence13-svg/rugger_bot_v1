@@ -1,0 +1,40 @@
+Exécution à blanc P1/P2 (pré-mortem du 06/12) de la chaîne G2-3, sur le dossier FICTIF de R03. AUCUN RÉSULTAT : rien
+ici ne sert à une décision, et aucun chiffre de rendement n'est publié.
+Dossier : R03 6e27bf5, G23_DRYRUN_FICTIVE_20261126T133705Z.
+  - SHA256SUMS_DRYRUN 03a9f780 vérifié sur les 1 245 pages depuis window/ : 0 écart.
+  - Fenêtre fictive [1794910886 ; 1795515686) : les 7 jours avant le vrai T0.
+U2 : TIME2_20261124T102839Z/U2.json, sha 3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963, t0_slot 473309024.
+Fiche : e2f8411d2b7911f05cbbf3b38657ca88d5afa85023d58ceb4b26ea6a8ba46819 (celle de launch_g23.sh).
+Code (hors ligne, unshare -rn, 0 crédit), en tête du chemin :
+  - g23run 0.1.2 : MANIFEST_g23run_v0_1_2.txt 8528b66f, sha256sum -c OK ;
+  - g23five 0.1.1 : MANIFEST 06a27862, OK ;
+  - puis la chaîne livesim 0.3.2 : cpmmcost 0.3.1, cpmmrecon 0.1, cpmmpilot 0.2.8, g1ind.
+Enveloppe : dry_g23.py, sha dceafaf6e5e99f59f880e716693f950a28c6cd37a9b5d1b7770cb354318679f2.
+  - G.T0 et G.D_PILOT sont remplacés en mémoire seulement ; aucun fichier gelé n'est modifié.
+  - g23run.run.run('pilot') est ensuite appelé tel quel.
+  - Les fichiers sont écrits avec la sérialisation de main().
+Commande :
+  env -i PYTHONPATH=<g23run012>:<g23five 0.1.1>:<chaîne> python -B dry_g23.py U2.json <dossier>/window/collect/window OUT <fiche>
+Sorties R01, en 2 min, rc 0 :
+  - ROWS.json e3e1fdbc4ee1cf7163df1aec142533e5dadcac10e3a0b474943910946ebef519
+  - RESULT.json d08da83d96de43c3c5e1e94cb7ea02de077eee858a39bfda2c4d9157ec0bc6d4
+  - RECONSTRUCTION.json 4658068d1d3aceaba520769794741fcf6339a1b5f3fe295fcd8915eaedfb86ae
+Script B (g23b 0.1, MANIFEST 109a7db0) sur ces sorties :
+  - B.json e1171b01710134b167a66ee39707e95476f28531479f0a6056400d912b0237b5 ;
+  - contrôle : le net retrouve exactement les bornes du verdict (reproduced = true).
+Constats techniques (P1) :
+  - aucun STOP ; g0_passed = true ;
+  - G-0 admet AEZjoU, G8kgi7 et GdxFyc, et refuse Gms3Ma (token_transfer_fee), comme R03 ;
+  - cpmmrecon a reconstitué toutes les transactions tronquées : AEZjoU 79/79, G8kgi7 1 282/1 282, GdxFyc 24/24 ;
+    aucune n'est conservée non décodée ;
+  - décisions G2-3 en 7 jours : AEZjoU 128, G8kgi7 99, GdxFyc 23 ; 250 primaires, toutes entrées ; 247 témoins ;
+    0 sortie horloge au-delà de la fin ;
+  - mot : INCONCLUSIF, par les planchers.
+Planchers sur 7 jours, au rythme pré-T0 (pour P5) :
+  - pool-jours < 30 sur 7 j, sans objet pour 12 j ;
+  - Kish 250² / (128² + 99² + 23²) = 2,34 < 2,5 ;
+  - part du premier pool 128 / 250 = 51,2 % > 50 %.
+  Si ce rythme se maintient sur la fenêtre, les planchers Kish et part maximale peuvent échouer quel que soit le
+  rendement : c'est le cas R1, « non décidable ». Il s'agit d'activité, pas de rendement.
+Pour P2 : R02 lance la même enveloppe, avec les mêmes entrées, dans un environnement neuf, puis compare les sha à
+l'octet.
