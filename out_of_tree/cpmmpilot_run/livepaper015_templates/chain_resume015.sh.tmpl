@@ -1,0 +1,24 @@
+#!/bin/bash
+# TEMPLATE (NOT frozen, NOT armed): chained resume for livepaper 0.1.5. Guards DOUBLE those of 0.1.5, never replace them.
+# (1) one process: flock + wait + re-check no livepaper run / launcher alive; (2) last record = STOP planned_end_of_process;
+# (3) no STOP incident:* / credit_hard_stop_* anywhere; (4) refuse at or after start + 86 400 s; STOP_R03_v015.txt blocks.
+set -u
+OUT=@@OUT_DIR@@; START=@@START@@
+[ -e $OUT/STOP_R03_v015.txt ] && { echo "chain: STOP_R03_v015 present: NO resume"; exit 11; }
+exec 9>$OUT/.chain_resume.lock; flock -n 9 || { echo "chain: lock held: NO resume"; exit 7; }
+while pgrep -f "livepaper.cli run" > /dev/null; do sleep 1; done; sleep 1
+if pgrep -f "livepaper.cli run" > /dev/null || pgrep -f "launch_livepaper015_run.sh" > /dev/null; then echo "chain: process alive: NO resume"; exit 8; fi
+[ $(date -u +%s) -ge $((START+86400)) ] && { echo "chain: past start + 24 h: NO resume"; exit 12; }
+BAD=$(python3 -c "
+import json,sys
+n=0
+for l in open(sys.argv[1]):
+    r=json.loads(l)
+    if r.get('kind')=='STOP' and str(r.get('reason','')).startswith(('incident:','credit_hard_stop_')): n+=1
+print(n)" $OUT/J.jsonl) || { echo "chain: journal unreadable: NO resume"; exit 9; }
+[ "$BAD" != 0 ] && { echo "chain: $BAD incident/credit-stop STOP: NO resume"; exit 10; }
+case "$(tail -1 $OUT/J.jsonl)" in
+  *'"kind":"STOP"'*'"reason":"planned_end_of_process"'*) echo "chain: planned STOP, resuming $(date -u +%FT%TZ)";;
+  *) echo "chain: last record is not a planned STOP: NO resume"; exit 6;;
+esac
+bash $OUT/launch_livepaper015_run.sh; echo "chain: launcher rc=$? $(date -u +%FT%TZ)"
