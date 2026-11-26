@@ -418,6 +418,13 @@ def test_commands(tmp_path, monkeypatch, capsys):
     with pytest.raises(S.SourceError, match='test_window_over'):
         C.main(base + ['--max-minutes', '5'], transport=rec2,
                clocks=dict(wall=late.wall, mono_ns=late.mono_ns, sleep=late.sleep))
+    # ... (b) a journal killed without STOP (it ends on a STEP) ...
+    lines = (tmp_path / 'J.jsonl').read_text().splitlines(keepends=True)
+    assert json.loads(lines[-1])['reason'] == 'planned_end_of_process' and json.loads(lines[-2])['kind'] == 'STEP'
+    (tmp_path / 'K.jsonl').write_text(''.join(lines[:-1]))
+    with pytest.raises(S.SourceError, match='journal_ended_without_planned_stop:STEP'):
+        C.main([a if a != str(tmp_path / 'J.jsonl') else str(tmp_path / 'K.jsonl') for a in base] + ['--max-minutes', '5'],
+               transport=rec2, clocks=dict(wall=clock.wall, mono_ns=clock.mono_ns, sleep=clock.sleep))
     # ... and (b) a journal stopped by an incident
     j = J.Journal(tmp_path / 'J.jsonl', replay=True)
     j.cursor = len(j.records)
@@ -631,7 +638,7 @@ def test_one_failed_poll_stops_and_the_journal_is_never_resumed(tmp_path):
     src2 = S.Source(S.RetryOnce(timed, tmp_path / 'calls.jsonl'), NAMES[:3], mode='gsfa_rank', start=START)
     src2.restore(again.journal.records)
     calls = (tmp_path / 'calls.jsonl').read_text()
-    with pytest.raises(S.SourceError, match='journal_stopped_for_good:incident:RpcError'):
+    with pytest.raises(S.SourceError, match='journal_stopped_for_good:ERROR'):     # its ERROR comes before its STOP
         S.Runner(again, src2, poll_s=30, max_s=900, head_file=tmp_path / 'HEAD.json', wall=clock.wall,
                  mono_ns=clock.mono_ns, sleep=clock.sleep).run()
     assert (tmp_path / 'calls.jsonl').read_text() == calls and fail.fired == 1        # nothing was called
@@ -640,30 +647,78 @@ def test_one_failed_poll_stops_and_the_journal_is_never_resumed(tmp_path):
 
 # -- 0.1.5 (b) and (c) ---------------------------------------------------------------------------------------------------
 def test_only_a_planned_stop_can_be_resumed(tmp_path):
+    """0.1.5 (b), ONE rule (R04 04:32Z): the last record read from disk must be STOP planned_end_of_process."""
+    start, step = dict(kind='START'), dict(kind='STEP')
     def rec(reason):
-        return [dict(kind='START'), dict(kind='STEP'), dict(kind='STOP', reason=reason)]
-    for ok in ('planned_end_of_process', 'end_of_test_86400'):
-        S.check_resumable(rec(ok))
-    for bad in ('incident:RpcError', 'incident:SourceError', 'credit_hard_stop_24500'):
+        return [start, step, dict(kind='STOP', reason=reason)]
+    S.check_resumable(rec('planned_end_of_process'))
+    S.check_resumable([])                                                     # no journal yet
+    for bad in ('incident:RpcError', 'incident:SourceError', 'credit_hard_stop_24500', 'end_of_test_86400'):
         with pytest.raises(S.SourceError, match='journal_stopped_for_good:' + bad):
             S.check_resumable(rec(bad))
-    with pytest.raises(S.SourceError, match='incident'):                       # anywhere in the journal, not only last
-        S.check_resumable(rec('incident:RpcError') + [dict(kind='STOP', reason='planned_end_of_process')])
-    S.check_resumable([dict(kind='ERROR', error_type='x', message='incident:y')])  # only STOP reasons count
-    # the credit hard stop: a second run on the same journal is refused before any call
+    with pytest.raises(S.SourceError, match='journal_ended_without_planned_stop:manual_stop'):
+        S.check_resumable(rec('manual_stop'))                                 # an unknown reason: a white list
+    for records, kind in (([start], 'START'), ([start, step], 'STEP')):
+        with pytest.raises(S.SourceError, match='journal_ended_without_planned_stop:' + kind):
+            S.check_resumable(records)                                        # a process killed without STOP
+    error = dict(kind='ERROR', error_type='RpcError', message='m')
+    with pytest.raises(S.SourceError, match='journal_stopped_for_good:ERROR'):
+        S.check_resumable([start, step, error])                               # killed between ERROR and STOP
+    S.check_resumable([start], loaded=0)                                      # this process wrote START: a new run
+    with pytest.raises(S.SourceError, match='journal_ended_without_planned_stop:START'):
+        S.check_resumable([start, step], loaded=1)                            # START read from disk: killed after it
+    # R04 04:39Z: a final record ANYWHERE refuses, even followed by a planned stop (a case livepaper cannot write)
+    for final in (error, dict(kind='STOP', reason='incident:RpcError'), dict(kind='STOP', reason='credit_hard_stop_24500'),
+                  dict(kind='STOP', reason='end_of_test_86400')):
+        with pytest.raises(S.SourceError, match='journal_stopped_for_good:' + final.get('reason', 'ERROR')):
+            S.check_resumable([start, step, final, step, dict(kind='STOP', reason='planned_end_of_process')])
+    S.check_resumable([start, step, dict(kind='STOP', reason='planned_end_of_process'), step,
+                       dict(kind='STOP', reason='planned_end_of_process')])   # planned stops in the middle are fine
+    # the credit hard stop: the next process, resuming the journal from disk, is refused before any call
     txs = feed(START + HOUR)
     fake = chain(txs, slot=2 * (START + HOUR))
     clock = Clock(START + 300)
     eng = E.Engine(pools(), start=START, seed_sha=SEED, variant='A', journal=J.Journal(tmp_path / 'k'), store=tmp_path / 't')
+    assert eng.journal.loaded == 0 and J.Journal(tmp_path / 'k', replay=True).loaded == 1
+    src = S.Source(client(tmp_path / 'c', fake, spent=24_460), NAMES[:3], mode='gtfa', start=START)
+    assert S.Runner(eng, src, poll_s=30, max_s=900, head_file=tmp_path / 'H.json', wall=clock.wall,
+                    mono_ns=clock.mono_ns, sleep=clock.sleep).run() == 'credit_hard_stop_24500'
+    again = E.resume(pools(), start=START, seed_sha=SEED, variant='A', journal_path=tmp_path / 'k', store=tmp_path / 't')
     rec2 = Record(fake)
-    src = S.Source(client(tmp_path / 'c', rec2, spent=24_460), NAMES[:3], mode='gtfa', start=START)
-    runner = S.Runner(eng, src, poll_s=30, max_s=900, head_file=tmp_path / 'H.json', wall=clock.wall,
-                      mono_ns=clock.mono_ns, sleep=clock.sleep)
-    assert runner.run() == 'credit_hard_stop_24500'
-    n = len(rec2.methods)
     with pytest.raises(S.SourceError, match='journal_stopped_for_good:credit_hard_stop_24500'):
-        runner.run()
-    assert len(rec2.methods) == n
+        S.Runner(again, S.Source(client(tmp_path / 'd', rec2), NAMES[:3], mode='gtfa', start=START), poll_s=30,
+                 max_s=900, head_file=tmp_path / 'H.json', wall=clock.wall, mono_ns=clock.mono_ns,
+                 sleep=clock.sleep).run()
+    assert rec2.methods == []
+
+
+def test_a_process_killed_without_stop_is_never_resumed(tmp_path):
+    """0.1.5 (b): SIGKILL / lost container -- the journal ends on a STEP; replay identical, the Runner refuses, the same
+    journal with its planned STOP resumes."""
+    txs = feed(START + HOUR)
+    fake = chain(txs, slot=2 * (START + HOUR))
+    clock = Clock(START + 300)
+    eng = E.Engine(pools(), start=START, seed_sha=SEED, variant='A', journal=J.Journal(tmp_path / 'j'), store=tmp_path / 's')
+    S.Runner(eng, S.Source(client(tmp_path / 'a', fake), NAMES[:3], mode='gtfa', start=START), poll_s=30, max_s=120,
+             head_file=tmp_path / 'H.json', wall=clock.wall, mono_ns=clock.mono_ns, sleep=clock.sleep).run()
+    lines = (tmp_path / 'j').read_text().splitlines(keepends=True)
+    assert json.loads(lines[-1])['reason'] == 'planned_end_of_process'
+    (tmp_path / 'j').write_text(''.join(lines[:-1]))                          # the STOP was never written
+    again = E.resume(pools(), start=START, seed_sha=SEED, variant='A', journal_path=tmp_path / 'j', store=tmp_path / 's')
+    assert again.journal.loaded == len(lines) - 1 and again.journal.records[-1]['kind'] == 'STEP'
+    rec2 = Record(fake)
+    src = S.Source(client(tmp_path / 'b', rec2), NAMES[:3], mode='gtfa', start=START)
+    src.restore(again.journal.records)
+    with pytest.raises(S.SourceError, match='journal_ended_without_planned_stop:STEP'):
+        S.Runner(again, src, poll_s=30, max_s=120, head_file=tmp_path / 'H.json', wall=clock.wall,
+                 mono_ns=clock.mono_ns, sleep=clock.sleep).run()
+    assert rec2.methods == [] and (tmp_path / 'j').read_text() == ''.join(lines[:-1])
+    (tmp_path / 'k').write_text(''.join(lines))
+    k = E.resume(pools(), start=START, seed_sha=SEED, variant='A', journal_path=tmp_path / 'k', store=tmp_path / 's')
+    src3 = S.Source(client(tmp_path / 'c', fake), NAMES[:3], mode='gtfa', start=START)
+    src3.restore(k.journal.records)
+    assert S.Runner(k, src3, poll_s=30, max_s=60, head_file=tmp_path / 'H2.json', wall=clock.wall,
+                    mono_ns=clock.mono_ns, sleep=clock.sleep).run() == 'planned_end_of_process'
 
 
 def test_the_test_lasts_at_most_24_hours_from_start(tmp_path):

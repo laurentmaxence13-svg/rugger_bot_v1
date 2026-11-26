@@ -61,6 +61,7 @@ class Journal:
         self.path = Path(path)
         self.records = read(self.path) if self.path.exists() else []
         verify_records(self.records)
+        self.loaded = len(self.records)                 # 0.1.5 (b): the records read from disk (0 for a new journal)
         if self.records and not replay:
             raise JournalError('existing_journal_needs_replay_mode')
         self.cursor = 0 if replay else len(self.records)

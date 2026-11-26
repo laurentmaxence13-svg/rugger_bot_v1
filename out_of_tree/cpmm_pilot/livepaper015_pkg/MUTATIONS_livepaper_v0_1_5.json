@@ -1,6 +1,6 @@
 {
  "package": "livepaper",
- "version": "0.1.5 (draft, signed-text sha PENDING)",
+ "version": "0.1.5 (revised: one rule (b); signed-text sha PENDING)",
  "mutants": [
   {
    "mutant": "exit_land_ignores_buy_failures",
@@ -608,26 +608,6 @@
    "detected": true
   },
   {
-   "mutant": "credit_stop_resumable",
-   "file": "source.py",
-   "detected": true
-  },
-  {
-   "mutant": "incident_resumable",
-   "file": "source.py",
-   "detected": true
-  },
-  {
-   "mutant": "only_last_stop_checked",
-   "file": "source.py",
-   "detected": true
-  },
-  {
-   "mutant": "error_message_counted",
-   "file": "source.py",
-   "detected": true
-  },
-  {
    "mutant": "collect_window_unchecked",
    "file": "cli.py",
    "detected": true
@@ -636,11 +616,66 @@
    "mutant": "ordercheck_window_unchecked",
    "file": "cli.py",
    "detected": true
+  },
+  {
+   "mutant": "rule_removed",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "rule_any_stop_accepted",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "rule_killed_journal_accepted",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "rule_only_error_refused",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "runner_loaded_ignored",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "runner_disk_unchecked",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "loaded_always_zero",
+   "file": "journal.py",
+   "detected": true
+  },
+  {
+   "mutant": "nowhere_condition_removed",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "nowhere_error_ignored",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "nowhere_end_of_test_ignored",
+   "file": "source.py",
+   "detected": true
+  },
+  {
+   "mutant": "nowhere_credit_stop_ignored",
+   "file": "source.py",
+   "detected": true
   }
  ],
- "detected": 127,
- "total": 127,
+ "detected": 134,
+ "total": 134,
  "path": "livesim 0.3.2 + cpmmrecon 0.1 on the path",
  "deselected": "test_the_authorized_text_is_inscribed (fails on purpose until the signed text sha is inscribed)",
- "note": "first pass 126/127: end_of_test_strict survived -> test added (a poll exactly at start + 86 400 s)"
+ "note": "earlier passes: 126/127 end_of_test_strict; 133/134 rule_any_stop_accepted -> tests added each time"
 }

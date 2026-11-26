@@ -1,6 +1,9 @@
 """Polling source and runner of livepaper 0.1.5 (dossier T-R01-12 v0.3, option (i)).
-0.1.5 (R02 03:01Z, minimal scope; R04: no other change): (b) a journal whose STOP is an incident or the credit hard
-stop is NEVER resumed (check_resumable, in cli.run before any transport or ledger, and in Runner.run); (c) the test
+0.1.5 (R02 03:01Z, minimal scope; R04: no other change; owner text v6: "two stop guards"): (b) ONE rule -- a journal
+is resumed ONLY if its last record read from disk is STOP planned_end_of_process AND the journal holds nowhere an
+ERROR or a STOP incident:*, credit_hard_stop_* or end_of_test_86400 (R04 04:32Z / 04:39Z; this also refuses a journal
+ending on START, STEP or ERROR: a process killed without STOP); checked in cli.run before any transport, ledger or
+replay, and in Runner.run; (c) the test
 lasts at most TEST_S = 86 400 s from START: no run at or after start + 86 400 s, and a running process STOPS there
 ('end_of_test_86400'). (a) 1366025b is withdrawn; AUTHORIZED_TEXT_SHA256 is EMPTY (pending) until the owner's signed
 text sha is inscribed, after the signature, by an audited release.
@@ -62,7 +65,8 @@ GAP_FACTOR = 2
 RETRY_ON_TRUNCATED = 1                      # 0.1.4: as livesim_collect (R02 01:31Z (a))
 CATCHUP_GSFA_LIMIT, CATCHUP_MAX_TX = 100, 10    # 0.1.4: bounded catch-up, at most 1 + 10 credits per pool and step
 TEST_S = 86_400                             # 0.1.5 (c): the test lasts at most 24 h from START
-FINAL_STOPS = ('incident:', 'credit_hard_stop')  # 0.1.5 (b): a journal stopped by these is never resumed
+PLANNED_STOP = 'planned_end_of_process'          # 0.1.5 (b): the only end of journal that can be resumed
+FINAL_STOPS = ('incident:', 'credit_hard_stop', 'end_of_test_86400')   # 0.1.5 (b): nowhere in a resumable journal
 
 
 class SourceError(RuntimeError):
@@ -278,11 +282,18 @@ class Source:
         return out
 
 
-def check_resumable(records):
-    """0.1.5 (b): refuses a journal that stopped for an incident or at the credit hard stop."""
+def check_resumable(records, loaded=None):
+    """0.1.5 (b), ONE rule with two conditions: (1) the journal holds NOWHERE an ERROR or a STOP incident:*,
+    credit_hard_stop_* or end_of_test_86400; (2) its last record read from disk (the first `loaded` records; all of them
+    by default) is STOP planned_end_of_process. A new journal (nothing read from disk) is accepted."""
     for r in records:
-        if r['kind'] == 'STOP' and r['reason'].startswith(FINAL_STOPS):
-            raise SourceError('journal_stopped_for_good:%s' % r['reason'])
+        if r['kind'] == 'ERROR' or (r['kind'] == 'STOP' and r['reason'].startswith(FINAL_STOPS)):
+            raise SourceError('journal_stopped_for_good:%s' % r.get('reason', r['kind']))
+    disk = records if loaded is None else records[:loaded]
+    if disk:
+        last = disk[-1]
+        if last['kind'] != 'STOP' or last['reason'] != PLANNED_STOP:
+            raise SourceError('journal_ended_without_planned_stop:%s' % last.get('reason', last['kind']))
 
 
 def check_window(start, wall):
@@ -340,7 +351,7 @@ class Runner:
         return None
 
     def run(self):
-        check_resumable(self.engine.journal.records)
+        check_resumable(self.engine.journal.records, loaded=self.engine.journal.loaded)
         check_window(self.engine.start, self.wall())
         end_ns = self.mono_ns() + int(self.max_s * 1e9)
         while self.mono_ns() < end_ns:
@@ -364,7 +375,7 @@ class Runner:
             rest = self.poll_s - (self.mono_ns() - began) / 1e9
             if rest > 0:
                 self.sleep(rest)
-        return self._stop('planned_end_of_process')
+        return self._stop(PLANNED_STOP)
 
 
 def check_no_signing_modules(modules):

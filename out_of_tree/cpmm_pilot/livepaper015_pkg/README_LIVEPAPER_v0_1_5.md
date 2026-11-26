@@ -15,10 +15,21 @@ Texte candidat : v6 b02c8b8e4007dbeb4b049bbb63d550d9ba6fcc2d5fd781b33cb7b60e3612
     qu'il passe avec une empreinte valide.
   - L'empreinte sera inscrite par une version auditée, seulement après la signature du propriétaire et sa vérification
     à la source par R02. À ce moment, la désélection nominative du runner de mutants (`PENDING_TEST`) sera retirée.
-- **(b) Pas de reprise après un arrêt définitif.** Un journal qui contient un STOP `incident:*` ou `credit_hard_stop_*`
-  n'est jamais repris.
-  - `check_resumable` est appelé dans `cli.run`, avant le transport, le grand livre et le rejeu, puis dans `Runner.run`.
-  - Tout STOP du journal compte. Seule sa raison compte, pas le message d'un ERROR.
+- **(b) Une seule règle de reprise** (R04, 04:32Z, pour s'en tenir aux « deux gardes d'arrêt » du texte v6 ; la
+  version reste la 0.1.5, il n'y a pas de 0.1.6). Un journal n'est repris que si deux conditions sont réunies :
+  1. il ne contient **nulle part** un ERROR, ni un STOP `incident:*`, `credit_hard_stop_*` ou `end_of_test_86400`,
+     sinon `journal_stopped_for_good:<raison ou ERROR>` (R04, 04:39Z) ;
+  2. **son dernier enregistrement lu sur le disque est `STOP planned_end_of_process`**, sinon
+     `journal_ended_without_planned_stop:<raison ou type>`.
+  - Elle refuse aussi un journal qui finit sur START, STEP ou ERROR : processus tué sans STOP (SIGKILL, conteneur
+    perdu), sur la réserve de R02 à 04:25Z et la décision de R04 à 04:26Z. Conséquence acceptée : le test s'arrête
+    alors définitivement.
+  - Elle est contrôlée dans `cli.run`, sur le fichier, avant le transport, le grand livre et le rejeu, puis dans
+    `Runner.run` sur `Journal.loaded`, c'est-à-dire les enregistrements lus sur le disque. Le START écrit par le
+    processus dans un journal neuf n'est donc pas pris pour une fin de journal.
+  - Un enregistrement définitif suivi d'un arrêt prévu, cas que livepaper ne peut pas écrire, est refusé au lieu
+    d'être supposé impossible.
+  - Le commit 83a4d8d (garde (b) « tout STOP définitif ») reste un état intermédiaire non exécutable.
 - **(c) Durée limitée à 24 h.** Le test dure au plus `TEST_S = 86 400 s` depuis START.
   - `check_window` refuse toute commande à start + 86 400 s ou après (`test_window_over`), avant toute requête réseau
     et avant le grand livre :
@@ -36,13 +47,21 @@ Texte candidat : v6 b02c8b8e4007dbeb4b049bbb63d550d9ba6fcc2d5fd781b33cb7b60e3612
   - l'ancien texte 1366025b n'ouvre plus le transport, même quand une autre empreinte est inscrite ;
   - un texte inscrit l'ouvre ; un octet de plus le refuse ; une clé dans l'URL est refusée.
 - (b) :
-  - reprenables : `planned_end_of_process`, `end_of_test_86400` ;
-  - non reprenables : `incident:RpcError`, `incident:SourceError`, `credit_hard_stop_24500`, et un incident ancien
-    suivi d'un arrêt prévu ;
-  - un ERROR dont le message contient « incident: » ne compte pas ;
+  - seul `STOP planned_end_of_process` se reprend ; un journal neuf (aucun enregistrement) est accepté ;
+  - refusés : les STOP `incident:RpcError`, `incident:SourceError`, `credit_hard_stop_24500` et
+    `end_of_test_86400` ; un journal qui finit sur START, sur STEP ou sur ERROR ;
+  - `loaded=0` : le START écrit par le processus est accepté ; `loaded=1` : un START lu sur le disque est refusé ;
+  - un STOP de raison inconnue (par exemple `manual_stop`) est refusé : la condition 2 est une liste blanche. Ce test a
+    été ajouté après la survie du mutant `rule_any_stop_accepted` au premier passage (133/134) ;
+  - un ERROR, ou un STOP `incident:*`, `credit_hard_stop_*` ou `end_of_test_86400`, suivi d'un pas puis d'un arrêt
+    prévu, est refusé ; des arrêts prévus au milieu du journal sont acceptés ;
+  - un journal tué entre son ERROR et son STOP est refusé (`ERROR`) ;
+  - après l'arrêt dur des crédits, le processus suivant (rejeu depuis le disque) est refusé sans appel ;
   - après un incident : rejeu identique, puis refus du Runner sans appel ni écriture ;
-  - après l'arrêt dur des crédits : un 2e `run` est refusé sans appel ;
-  - en ligne de commande, le refus intervient avant le rejeu (piège) et sans toucher au grand livre.
+  - processus tué (STOP final retiré) : rejeu identique, puis refus sans appel ; le même journal avec son STOP prévu
+    reprend ;
+  - en ligne de commande : refus d'un journal tué, puis d'un journal arrêté sur incident, avant le rejeu (piège) et
+    sans toucher au grand livre.
 - (c) :
   - frontière start + 86 399 s acceptée, start + 86 400 s refusée ;
   - un processus lancé 70 s avant la fin fait 3 pas, puis STOP `end_of_test_86400` ;
@@ -51,7 +70,7 @@ Texte candidat : v6 b02c8b8e4007dbeb4b049bbb63d550d9ba6fcc2d5fd781b33cb7b60e3612
   - `run`, `collect-gsfa` et `ordercheck` tardifs sont refusés sans appel, sans grand livre et sans sortie.
 - Refus de schéma étendu à `livepaper-v0.1.4`.
 - Le test 0.1.4 « la reprise après incident ne perd rien » devient « le journal n'est jamais repris ».
-- Tests : 45 réussis et 1 échec voulu (`test_the_authorized_text_is_inscribed`), avec `-W error`, livesim 0.3.1 et
+- Tests : 46 réussis et 1 échec voulu (`test_the_authorized_text_is_inscribed`), avec `-W error`, livesim 0.3.1 et
   0.3.2.
-- Mutants : 127/127 détectés, dont 14 nouveaux (le runner désélectionne le test en attente, par son nom). Résultat dans
-  `MUTATIONS_livepaper_v0_1_5.json`.
+- Mutants : 134/134 détectés, dont 21 nouveaux par rapport à la 0.1.4 (le runner désélectionne le test en attente, par son nom).
+  Résultat dans `MUTATIONS_livepaper_v0_1_5.json`.
