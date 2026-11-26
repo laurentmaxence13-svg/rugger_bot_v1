@@ -1,0 +1,122 @@
+{
+ "package": "g23b 0.1",
+ "detected": 23,
+ "total": 23,
+ "mutants": [
+  {
+   "mutant": "gross_for_every_status",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "gross_includes_impact",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "no_gross_is_net",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "unknown_status_tolerated",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "missing_price_move_tolerated",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "stop_tolerated",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "seed_unchecked",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "row_count_unchecked",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "control_dropped",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "b_other_seed",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "b_on_net",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "k01_unchecked",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_no_resampling",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_by_pool_day",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_tail_index",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_b_on_net",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_other_seed",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "cost_is_gross",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "cost_sign",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "zero_sale_as_entered",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "out_overwritten",
+   "file": "b.py",
+   "detected": true
+  },
+  {
+   "mutant": "p4_empty_zero",
+   "file": "b.py",
+   "detected": true
+  }
+ ]
+}

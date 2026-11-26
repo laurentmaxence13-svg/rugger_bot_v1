@@ -1,0 +1,364 @@
+{
+ "package": "lpcompare 0.1",
+ "round_1": {
+  "detected": 57,
+  "total": 58,
+  "survivor": "row_exit_time_ignored"
+ },
+ "closure": {
+  "test": "test_outcome_of_open_guard_and_priced_rows (ligne publiée TP/SL : exit_time conservé)",
+  "survivor_detected_after": true
+ },
+ "round_2": "interrompu sur décision de R04 (13:31:52Z) : une comparaison descriptive ne justifie pas un deuxième tour",
+ "note": "sortie brute du 1er tour écrasée par le lancement du 2e tour ; liste reconstruite d'après le résultat affiché (57/58, seul row_exit_time_ignored non détecté) ; le survivant a été rejoué seul après le test de bord et il est détecté",
+ "mutants": [
+  {
+   "mutant": "segment_inclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "late_exit_strict",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "open_not_apart",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "apart_merged_into_conforming",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "apart_for_any_entry",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "missing_low_inclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "missing_high_exclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "prior_inclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "inside_open_start",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "admission_strict",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "ever_admitted_strict",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "exclusion_branch_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "d13_tag_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "d13_pool_ignored",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "a_posteriori_branch_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "gap_flag_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "resumption_flag_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_absence_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_eligibility_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "b3_zero_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "live_without_p_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "truncation_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "latency_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "rule_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "status_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "pairing_inclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "pairing_first_not_nearest",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "pairing_cross_pool",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "pairing_reuses_a_row",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "both_without_livesim",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_before_the_live_start",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_after_now",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_gate_ignored",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "resumption_end_overwritten",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "no_cut_at_the_last_step",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "now_first_step",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "b3_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "variant_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "pool_order_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "latency_sign",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "latency_slots_in_seconds",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "witness_pool_ignored",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "open_counted_closed",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "t24_outcome_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "t24_missing_tolerated",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "header_d15_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "out_of_protocol_mention_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "placebo_note_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "render_vocabulary_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "doc_vocabulary_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "d13_on_both_sides",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "annex_start_excluded",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "before_start_inclusive",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "row_exit_time_ignored",
+   "file": "compare.py",
+   "detected": false,
+   "round": 1
+  },
+  {
+   "mutant": "gaps_dropped",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "shifted_rows_halved",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "a_posteriori_only_reason",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  },
+  {
+   "mutant": "livesim_json_unchecked",
+   "file": "compare.py",
+   "detected": true,
+   "round": 1
+  }
+ ]
+}
