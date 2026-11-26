@@ -57,6 +57,25 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 | Message vide « placeholder » envoyé par R01 à la mauvaise session (R03, 25/11 ≈ 20:50Z), sans effet | appel d'envoi lancé avant que le texte et l'identifiant du destinataire soient vérifiés | R03 prévenu de l'ignorer | destinataire vérifié dans le journal et texte rédigé avant tout envoi |
 | Tests dépendant de l'environnement (livesim 0.3, livepaper 0.1) | présence ou version d'un paquet local supposée | corrigés en 0.1.1 | un test ne dépend ni de la présence ni de la version d'un paquet local |
 
+## Directive du propriétaire du 26/11 (≈ 12:45Z) — exigence économique
+
+Extraits mot pour mot : « Notre objectif n'est pas d'accumuler des tests réussis, des versions ou des audits. Il est de déterminer si nos stratégies disposent d'un avantage économique réel après tous les coûts et risques. » ; « Je veux que vous puissiez me recommander franchement de poursuivre, de modifier lors d'une nouvelle expérience ou d'abandonner une stratégie. » ; « Aucune modification rétroactive des protocoles, aucun trading réel, aucune dépense supplémentaire et aucune reprise nécessitant une signature sans mon accord explicite. » ; « Je souhaite moins de complexité inutile et davantage de preuves permettant de décider. »
+
+Rôles : R01, compréhension économique des stratégies ; R02, regard indépendant et recherche active des failles ; R03, qualité des observations et preuves d'exécution PAPER ; R04, coordination, absence de dépenses inutiles, préparation des décisions stratégiques. **R05** est un programme indépendant du propriétaire, qui mène cinq études de nouvelles stratégies : nous ne les prenons pas en charge, mais R05 peut nous consulter.
+
+### Règle de recommandation au 06/12, déclarée AVANT toute lecture des données de la fenêtre (R04, 26/11)
+
+Elle ne modifie aucun critère gelé : elle dit seulement ce que R04 recommandera au propriétaire selon le verdict gelé.
+
+| Verdict gelé (g23run 0.1.2 / n1verdict 0.2.3) | Recommandation R04 |
+|---|---|
+| GO_PILOTE | **Poursuivre** : demander au propriétaire le texte de la collecte de confirmation [06/12 ; 18/12) (plafond R04-9) ; aucune rentabilité annoncée avant la confirmation α₂ = 0,025 (Holm). |
+| NO-GO avec un net médian ≤ 0 (borne haute de l'IC < seuil de coûts) | **Abandonner** la stratégie dans sa forme actuelle ; une variante n'est envisageable que comme nouvelle expérience pré-enregistrée, avec un mécanisme économique nouveau (et non un réglage), et compte un essai. |
+| NO-GO avec un brut > 0 mais un net ≤ 0 (signal présent, coûts dominants) | **Modifier lors d'une nouvelle expérience** : seulement si un levier de coût chiffré (taille, pool à frais réduits, sortie) rend plausible un net > 0 sur des données DÉJÀ publiques, avant tout pré-enregistrement ; sinon, abandonner. |
+| NON ÉVALUABLE (n, pools, Kish) | Ne rien conclure ; proposer au propriétaire, ou non, une collecte plus longue, seulement si le coût en crédits est justifié par la probabilité d'un verdict. |
+
+Tout chiffre présenté au propriétaire distingue le brut, les coûts et le net, avec l'incertitude ; le témoin est toujours affiché à côté.
+
 ## Jalons fixés par le propriétaire (24/11, après 18:00Z)
 
 | Jalon | Définition (propriétaire) | État au 24/11 | Prochaine action, responsable |
