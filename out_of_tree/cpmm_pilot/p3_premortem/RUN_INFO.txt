@@ -1,0 +1,24 @@
+P3 du pré-mortem du 06/12 (R01). Coûts modélisés contre swaps réels, sur les pages PRÉ-T0 des 4 pools nommés.
+Déclaré à R02 avant toute lecture ; aucune objection.
+- Données : dossier R03 6e27bf5 (SHA256SUMS_DRYRUN 03a9f780, 0 écart), fenêtre [1794910886 ; 1795515686).
+  Aucune donnée de la fenêtre du pilote, 0 crédit, aucun rendement.
+- Code : p3_check.py, calcul direct par les fonctions gelées :
+  - cpmmx.curve.swap_base_input / swap_base_output ;
+  - frais : cpmmcost.fees_from_amm_config sur la config U2 ;
+  - lignes : g23run 0.1.2 window_line.
+- Sortie : p3_r01.json, sha 19053868f22098432e1c35bd9e7f4580ba97d4219d05b7b83862ef4fecb2d288.
+- Résultats, swaps réels dont le montant côté WSOL est entre 0,05 et 0,2 SOL :
+  - sortie modélisée = sortie journalisée, exacte à l'unité, sur 100 % des swaps : AEZjoU 18 980, G8kgi7 7 534,
+    GdxFyc 3 178, plus Gms3Ma 440 publié à part (frais de transfert de jeton, refusé par G-0) ;
+  - trade_fee journalisé = celui du modèle sur 100 % des swaps (2 500 ppm, arrondi au-dessus) ;
+  - frais créateur effectivement prélevé : 0. La config en déclare 500 ppm, mais il n'est pas activé (E-CF, cohérent) ;
+  - impact modélisé d'un achat de 0,1 SOL (médiane) : AEZjoU 0,0052 %, G8kgi7 0,0037 %, GdxFyc 0,031 % ;
+  - impact réalisé des achats réels de la tranche (médiane / p90) : AEZjoU 0,0058 % / 0,0091 %,
+    G8kgi7 0,0039 % / 0,0064 %, GdxFyc 0,035 % / 0,056 %. Il est égal au modèle au même montant.
+- Hors du champ de P3 :
+  - latence d'atterrissage (4 slots) ;
+  - MEV et sandwich ;
+  - échecs de transaction ;
+  - niveau réel des frais de priorité (105 000 supposés) ;
+  - coûts fixes de fermeture WSOL et de nettoyage.
+  Ce sont eux, et non l'impact, qui dominent le coût à 0,1 SOL.

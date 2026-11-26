@@ -1,0 +1,215 @@
+{
+ "band_lamports": [
+  50000000,
+  200000000
+ ],
+ "config": {
+  "creator_fee_rate_charged": 0,
+  "creator_fee_rate_declared": 500,
+  "fund_fee_rate": 40000,
+  "protocol_fee_rate": 120000,
+  "trade_fee_rate": 2500
+ },
+ "pools": {
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "effective_creator_fee_ppm": {
+    "max": 0.0,
+    "n": 18980,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "effective_trade_fee_ppm": {
+    "max": 2500.019740086017,
+    "n": 18980,
+    "p10": 2500.0000000268174,
+    "p50": 2500.000000200535,
+    "p90": 2500.0073655606807
+   },
+   "errors": {},
+   "modeled_impact_share_at_0_1_SOL": {
+    "max": 5.250118584343433e-05,
+    "n": 18980,
+    "p10": 5.055145814114592e-05,
+    "p50": 5.1557426482329305e-05,
+    "p90": 5.199912916875604e-05
+   },
+   "modeled_impact_share_same_amount": {
+    "max": 0.00010432367025170475,
+    "n": 18980,
+    "p10": 3.247152415497556e-05,
+    "p50": 5.62840172247947e-05,
+    "p90": 9.087974329591297e-05
+   },
+   "output_exact_share": 1.0,
+   "realized_impact_share_real_buys": {
+    "max": 0.00010432367025170475,
+    "n": 8905,
+    "p10": 3.2738943135712795e-05,
+    "p50": 5.785220182652484e-05,
+    "p90": 9.087772222071688e-05
+   },
+   "relative_deviation": {
+    "max": 0.0,
+    "n": 18980,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "swaps_in_band": 18980,
+   "trade_fee_exact_share": 1.0,
+   "with_transfer_fee": 0
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "effective_creator_fee_ppm": {
+    "max": 0.0,
+    "n": 7534,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "effective_trade_fee_ppm": {
+    "max": 2500.019339862074,
+    "n": 7534,
+    "p10": 2500.0,
+    "p50": 2500.000000286651,
+    "p90": 2500.007658995881
+   },
+   "errors": {},
+   "modeled_impact_share_at_0_1_SOL": {
+    "max": 4.813739505160619e-05,
+    "n": 7534,
+    "p10": 3.2403309505046884e-05,
+    "p50": 3.7356114373721105e-05,
+    "p90": 4.410810068411486e-05
+   },
+   "modeled_impact_share_same_amount": {
+    "max": 9.427858076438422e-05,
+    "n": 7534,
+    "p10": 2.240132880526602e-05,
+    "p50": 3.832211198417923e-05,
+    "p90": 6.47903522534854e-05
+   },
+   "output_exact_share": 1.0,
+   "realized_impact_share_real_buys": {
+    "max": 9.427858076438422e-05,
+    "n": 4268,
+    "p10": 2.229631361050366e-05,
+    "p50": 3.860164889424311e-05,
+    "p90": 6.427445596857151e-05
+   },
+   "relative_deviation": {
+    "max": 0.0,
+    "n": 7534,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "swaps_in_band": 7534,
+   "trade_fee_exact_share": 1.0,
+   "with_transfer_fee": 0
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "effective_creator_fee_ppm": {
+    "max": 0.0,
+    "n": 3178,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "effective_trade_fee_ppm": {
+    "max": 2500.018714295284,
+    "n": 3178,
+    "p10": 2500.000000005574,
+    "p50": 2500.0000000460195,
+    "p90": 2500.007340497402
+   },
+   "errors": {},
+   "modeled_impact_share_at_0_1_SOL": {
+    "max": 0.00031447846449517147,
+    "n": 3178,
+    "p10": 0.00030716950962383915,
+    "p50": 0.0003131213021967394,
+    "p90": 0.00031383483427804837
+   },
+   "modeled_impact_share_same_amount": {
+    "max": 0.0006256470804424374,
+    "n": 3178,
+    "p10": 0.00019368665834129661,
+    "p50": 0.00034960294465824493,
+    "p90": 0.0005593368348955075
+   },
+   "output_exact_share": 1.0,
+   "realized_impact_share_real_buys": {
+    "max": 0.0006223955002510051,
+    "n": 1513,
+    "p10": 0.00019486083353781325,
+    "p50": 0.00034658331968928646,
+    "p90": 0.0005624427732379145
+   },
+   "relative_deviation": {
+    "max": 0.0,
+    "n": 3178,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "swaps_in_band": 3178,
+   "trade_fee_exact_share": 1.0,
+   "with_transfer_fee": 0
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "effective_creator_fee_ppm": {
+    "max": 0.0,
+    "n": 440,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "effective_trade_fee_ppm": {
+    "max": 2500.0196442587453,
+    "n": 440,
+    "p10": 2500.0007619888534,
+    "p50": 2500.004649580497,
+    "p90": 2500.012203979104
+   },
+   "errors": {},
+   "modeled_impact_share_at_0_1_SOL": {
+    "max": 4.080129491779161e-05,
+    "n": 440,
+    "p10": 3.9951933868076495e-05,
+    "p50": 4.03482912387787e-05,
+    "p90": 4.0723320130608975e-05
+   },
+   "modeled_impact_share_same_amount": {
+    "max": 8.14490304834603e-05,
+    "n": 440,
+    "p10": 2.285939699497863e-05,
+    "p50": 3.7993519492629524e-05,
+    "p90": 6.813614398626378e-05
+   },
+   "output_exact_share": 1.0,
+   "realized_impact_share_real_buys": {
+    "max": 8.14490304834603e-05,
+    "n": 440,
+    "p10": 2.285939699497863e-05,
+    "p50": 3.7993519492629524e-05,
+    "p90": 6.813614398626378e-05
+   },
+   "relative_deviation": {
+    "max": 0.0,
+    "n": 440,
+    "p10": 0.0,
+    "p50": 0.0,
+    "p90": 0.0
+   },
+   "swaps_in_band": 440,
+   "trade_fee_exact_share": 1.0,
+   "with_transfer_fee": 440
+  }
+ },
+ "window": [
+  1794910886,
+  1795515686
+ ]
+}
