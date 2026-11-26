@@ -57,22 +57,36 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 | Message vide « placeholder » envoyé par R01 à la mauvaise session (R03, 25/11 ≈ 20:50Z), sans effet | appel d'envoi lancé avant que le texte et l'identifiant du destinataire soient vérifiés | R03 prévenu de l'ignorer | destinataire vérifié dans le journal et texte rédigé avant tout envoi |
 | Tests dépendant de l'environnement (livesim 0.3, livepaper 0.1) | présence ou version d'un paquet local supposée | corrigés en 0.1.1 | un test ne dépend ni de la présence ni de la version d'un paquet local |
 
-## Directive du propriétaire du 26/11 (≈ 12:45Z) — exigence économique
+## Directive du propriétaire du 26/11, 13:30:24Z (événement 145b547c, vérifié à la source par R02) — exigence économique
 
 Extraits mot pour mot : « Notre objectif n'est pas d'accumuler des tests réussis, des versions ou des audits. Il est de déterminer si nos stratégies disposent d'un avantage économique réel après tous les coûts et risques. » ; « Je veux que vous puissiez me recommander franchement de poursuivre, de modifier lors d'une nouvelle expérience ou d'abandonner une stratégie. » ; « Aucune modification rétroactive des protocoles, aucun trading réel, aucune dépense supplémentaire et aucune reprise nécessitant une signature sans mon accord explicite. » ; « Je souhaite moins de complexité inutile et davantage de preuves permettant de décider. »
 
 Rôles : R01, compréhension économique des stratégies ; R02, regard indépendant et recherche active des failles ; R03, qualité des observations et preuves d'exécution PAPER ; R04, coordination, absence de dépenses inutiles, préparation des décisions stratégiques. **R05** est un programme indépendant du propriétaire, qui mène cinq études de nouvelles stratégies : nous ne les prenons pas en charge, mais R05 peut nous consulter.
 
-### Règle de recommandation au 06/12, déclarée AVANT toute lecture des données de la fenêtre (R04, 26/11)
+### Règle de recommandation au 06/12, déclarée AVANT toute lecture des données de la fenêtre (version R02, note 9ed6de75, adoptée par R04 le 26/11 ≈ 13:40Z ; elle remplace la première version de R04, fausse sur 7 points T1 à T7)
 
-Elle ne modifie aucun critère gelé : elle dit seulement ce que R04 recommandera au propriétaire selon le verdict gelé.
+Elle ne modifie aucun critère gelé : elle dit seulement ce que R04 recommandera au propriétaire selon la sortie de la chaîne gelée (g23five 0.1.1, verdict.py l.175-185 ; n1verdict 0.2.3). On applique le premier cas vérifié, dans l'ordre :
 
-| Verdict gelé (g23run 0.1.2 / n1verdict 0.2.3) | Recommandation R04 |
-|---|---|
-| GO_PILOTE | **Poursuivre** : demander au propriétaire le texte de la collecte de confirmation [06/12 ; 18/12) (plafond R04-9) ; aucune rentabilité annoncée avant la confirmation α₂ = 0,025 (Holm). |
-| NO-GO avec un net médian ≤ 0 (borne haute de l'IC < seuil de coûts) | **Abandonner** la stratégie dans sa forme actuelle ; une variante n'est envisageable que comme nouvelle expérience pré-enregistrée, avec un mécanisme économique nouveau (et non un réglage), et compte un essai. |
-| NO-GO avec un brut > 0 mais un net ≤ 0 (signal présent, coûts dominants) | **Modifier lors d'une nouvelle expérience** : seulement si un levier de coût chiffré (taille, pool à frais réduits, sortie) rend plausible un net > 0 sur des données DÉJÀ publiques, avant tout pré-enregistrement ; sinon, abandonner. |
-| NON ÉVALUABLE (n, pools, Kish) | Ne rien conclure ; proposer au propriétaire, ou non, une collecte plus longue, seulement si le coût en crédits est justifié par la probabilité d'un verdict. |
+| Cas | Condition | Recommandation |
+|---|---|---|
+| R0 | STOP (intégrité) | rien à recommander ; diagnostic d'intégrité |
+| R1 | planchers non atteints | « non décidable » ; cause publiée ; pas de confirmation |
+| R2 | GO_PILOTE | **poursuivre** (texte de confirmation au propriétaire) ; si la borne basse de l'écart au témoin est ≤ 0, l'écrire en tête |
+| R3 | NO-GO, ou INCONCLUSIF avec borne haute < δ = 0,005 (futilité, δ gelé dans cpmmprereg) | si la borne basse du brut B est > 0 ET qu'un levier de coût chiffré sur données publiques ramène le coût moyen sous cette borne → **modifier lors d'une nouvelle expérience** ; sinon → **abandonner** |
+| R4 | INCONCLUSIF, planchers atteints, borne haute ≥ δ | « indéterminé », pas de confirmation ; publier n_c (σ observé) et son coût ; le propriétaire tranche |
+
+B = moyenne de price_move calculée avec la même fonction stratified_bounds et la même graine (script court, audité avant le 06/12) ; pour N1, B = écart à la détention avant coûts. Une « collecte plus longue » est impossible : la fenêtre est fixe ; la seule suite possible est une nouvelle expérience. Issue la plus probable selon R02 : INCONCLUSIF avec planchers atteints (environ 48 pool-jours, contre n_required ≈ 155).
+
+### Pré-mortem du 06/12 (R02), vérifications sans crédit avant le 06/12, sans lecture de la fenêtre
+
+| Risque | Vérification | Responsable |
+|---|---|---|
+| P1 données incomplètes (exclusion G-0, perte totale de N1) | exécution à blanc de toute la chaîne sur les pages PRÉ-T0, fenêtre fictive de 7 jours ; contrôle de continuité des pages | R03 (données) + R01 (chaîne) |
+| P2 chaîne non reproductible | même exécution à blanc, en double R01/R02, en environnement neuf ; RESULT.json identiques à l'octet | R01 + R02 |
+| P3 coûts mal modélisés | impact modélisé à 0,1 SOL contre les swaps réels de 0,05 à 0,2 SOL des pages pré-T0 ; frais effectifs contre config | R01 |
+| P4 dépendance entre pools | corrélation entre pools sur pré-T0 (R02) ; sensibilité descriptive déclarée MAINTENANT, bootstrap par jour calendaire commun, sans effet sur le mot (R01) | R02 + R01 |
+| P5 mauvaise lecture, puissance faible | simulation, avec le code gelé et le σ et le rythme pré-T0, de la probabilité de chaque mot sous un effet nul et sous un effet de 0,5 % | R02 |
+| P6 plafond de crédits de la collecte (R03 : ≈ 21 290 pour 32 340, marge ×1,52 ; G8kgi7 = 85 %) et redémarrage du conteneur en pleine collecte | questions posées à R02 (13:35Z) ; texte éventuel au propriétaire AVANT les données | R02 → R04 |
 
 Tout chiffre présenté au propriétaire distingue le brut, les coûts et le net, avec l'incertitude ; le témoin est toujours affiché à côté.
 
