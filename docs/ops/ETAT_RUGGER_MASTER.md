@@ -85,6 +85,14 @@ B = moyenne de price_move calculée avec la même fonction stratified_bounds et 
 
 **P8 chiffré (R02, P5, 400 simulations)** : mot G2-3 INCONCLUSIF dans 100 % des cas (planchers de concentration) ; sous R1bis, abandon recommandé dans 100 % des cas à −0,87 %, 72,5 % sous un effet nul, 3,25 % sous un effet de +0,5 %. Option A (aucun changement de critère, R1bis) présentée au propriétaire et appliquée par défaut ; option B (abaisser les planchers) déconseillée.
 
+### Note « seuil d'équilibre » G2-3 / N1 (R01 v0.1, 8cca1eb, sha 9bf23a09 vérifié par R04 ; données déjà publiques, 0 crédit ; recoupement R02 en cours)
+
+- Coût d'un aller-retour à 0,1 SOL et 0,25 % de frais : ≈ 0,92 à 0,97 % (fixe 0,42 % + frais du pool 0,50 % ; impact négligeable, modèle exact à l'unité sur 29 692 swaps réels).
+- Mouvement d'équilibre : au moins 0,51 % quelle que soit la mise, 0,92 % à 0,1 SOL ; taux de base au-dessus du seuil de 0,4 à 2,0 % ; signaux G2-3 9,5 % (2 sur 21, sur un seul pool, médiane négative).
+- **G2-3 : avantage improbable à ces coûts**. Sur les pools du pilote pré-T0, la borne haute du brut (+0,28 %) est sous les seuls frais du pool (0,50 %) : aucun levier sur le fixe ne comble l'écart.
+- **N1 : improbable, n insuffisant** (marge mince, environ +0,08 à +0,10 % sur 12 jours, qu'un écart de prix d'environ ± 9 % efface ; écart à la détention sur 12 jours non mesuré).
+- Levier chiffré pour une nouvelle expérience seulement : un aller-retour en 2 transactions ramènerait le fixe de 0,42 % à 0,21 %.
+
 ### Pré-mortem du 06/12 (R02), vérifications sans crédit avant le 06/12, sans lecture de la fenêtre
 
 | Risque | Vérification | Responsable |
