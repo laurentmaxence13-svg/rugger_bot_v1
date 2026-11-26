@@ -1,0 +1,1522 @@
+{
+ "annex": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "live_before_start": 0,
+   "live_in_window": 131,
+   "livesim_in_window": 131,
+   "rows": []
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "live_before_start": 0,
+   "live_in_window": 101,
+   "livesim_in_window": 101,
+   "rows": []
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "live_before_start": 0,
+   "live_in_window": 922,
+   "livesim_in_window": 923,
+   "rows": [
+    {
+     "block_time": 1795637419,
+     "d13": true,
+     "segment": "hors_protocole",
+     "side": "absent_live",
+     "sig": "5fP94raR8gL74hNtBdQx3dWDWXaKcRmQVC98Fvvt8D1M6XvSs1C82Ej1xk2o53BCk1gd1zHcoqnYFeszRgA15b6Q",
+     "slot": 473875242
+    }
+   ]
+  }
+ },
+ "conform_end": 1795637403,
+ "counts_for_operational_master": false,
+ "d13": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  473875242
+ ],
+ "economic_conclusion": null,
+ "gaps": [
+  [
+   1795637403.1710408,
+   1795637463.4408236
+  ],
+  [
+   1795638573.4583292,
+   1795638637.335043
+  ],
+  [
+   1795651826.8103378,
+   1795651921.0041625
+  ]
+ ],
+ "inputs": {
+  "chunks": [
+   "live_000",
+   "live_001",
+   "live_002",
+   "live_003",
+   "live_004",
+   "live_005",
+   "live_006"
+  ],
+  "eligible_sha256": "184576ea0358e8b619d1cb1d107eb82a93a94e67d5d87d204a8831c2b45b34a9",
+  "journal_sha256": "17fa9372ee9c1ca4fb3949313deb96802e8f70b27c8a476054e5df6829c51304",
+  "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+  "livesim_json_sha256": "ea3d4c952d0c0c21a7d8b87a48bf20606f5703001913c3207fce8c0ea0530270",
+  "pools_run_sha256": "683da83626b201fa91bfcf38f220b6b5601dee18648bcf67afff9d6b4801a9f0"
+ },
+ "journal_head": "3ea13757f2b7f0e4033d323e53cc44a074d3836736b33b8d049f81574a98a97c",
+ "journal_records": 2056,
+ "journal_records_total": 2056,
+ "labels": [
+  "PAPER_LIVE_DEMO",
+  "PAPER_SIMULATION",
+  "DESCRIPTIVE_COMPARISON"
+ ],
+ "live_start": 1795632000,
+ "livesim_gate": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "eligible": true,
+   "reasons": []
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "eligible": true,
+   "reasons": []
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "eligible": true,
+   "reasons": []
+  }
+ },
+ "livesim_start": 1795606731,
+ "notes": {
+  "cut": "≤ now des deux côtés : enregistrement live retenu si receipt_time ≤ now, transaction livesim si blockTime ≤ now",
+  "header_d15": "getSlot, hors du texte 1366025b, a été utilisé (écart D15) ; usage ratifié a posteriori par le propriétaire le 26/11 à 07:14:54Z (événement e383a010), l'écart restant documenté.",
+  "limit_l4": "Limite L4 : livesim est rétrospectif par blocs de 2 h, le live interroge toutes les 30 s ; l'écart de latence est structurel. Aucune somme nette ne se compare comme preuve d'un côté sur l'autre.",
+  "out_of_protocol": "Écarts de ce segment : D13 (transaction manquée de GaPTvX, slot 473875242 ; exclusion G-0 à partir de 20:11:03Z) ; D14 (erreurs tolérées).",
+  "placebo": "tirage au now de la comparaison, non comparable au T+24 h",
+  "t24": "contrôle T+24 h pour les primaires seulement"
+ },
+ "now": 1795656750,
+ "pair_s": 3600,
+ "placebo": [
+  {
+   "category": "live_only",
+   "entry_segment": "conforme",
+   "entry_time": 1795633623,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473857459,
+     0,
+     0
+    ],
+    "entry_slot": 473857570,
+    "entry_time": 1795633623,
+    "id": 1,
+    "outcome": {
+     "declared": 1795635424,
+     "exit_time": 1795635424,
+     "landing": 473857574,
+     "net": -801425,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510948404
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+    "primary": 0
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "conforme"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "conforme",
+   "entry_time": 1795634056,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 140,
+    "entry_key": [
+     473859591,
+     386,
+     0
+    ],
+    "entry_slot": 473859591,
+    "entry_time": 1795634056,
+    "outcome": {
+     "declared": 1795635857,
+     "exit_time": 1795635857,
+     "landing": 473859595,
+     "net": -1312147,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 509428408
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "conforme"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "conforme",
+   "entry_time": 1795635862,
+   "exit_after_conform_end": true,
+   "live": null,
+   "livesim": {
+    "decision_index": 8,
+    "entry_key": [
+     473867991,
+     97,
+     0
+    ],
+    "entry_slot": 473867991,
+    "entry_time": 1795635862,
+    "outcome": {
+     "declared": 1795637663,
+     "exit_time": 1795637663,
+     "landing": 473867995,
+     "net": -998792,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 1196340144
+    },
+    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+   },
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "conforme_sortie_hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795637643,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473876179,
+     0,
+     0
+    ],
+    "entry_slot": 473876286,
+    "entry_time": 1795637643,
+    "id": 3,
+    "outcome": {
+     "declared": 1795639444,
+     "exit_time": 1795639444,
+     "landing": 473876290,
+     "net": -1158966,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510370468
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+    "primary": 2
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795639068,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 166,
+    "entry_key": [
+     473882947,
+     245,
+     0
+    ],
+    "entry_slot": 473882947,
+    "entry_time": 1795639068,
+    "outcome": {
+     "declared": 1795640869,
+     "exit_time": 1795640869,
+     "landing": 473882951,
+     "net": -904720,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510802157
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795639508,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 19,
+    "entry_key": [
+     473884988,
+     608,
+     0
+    ],
+    "entry_slot": 473884988,
+    "entry_time": 1795639508,
+    "outcome": {
+     "declared": 473885116,
+     "exit_time": 1795639541,
+     "landing": 473884992,
+     "net": 6660068,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1289512008
+    },
+    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+   },
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795639866,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473886044,
+     0,
+     0
+    ],
+    "entry_slot": 473886656,
+    "entry_time": 1795639866,
+    "id": 5,
+    "outcome": {
+     "declared": 1795641667,
+     "exit_time": 1795641667,
+     "landing": 473886660,
+     "net": -1057978,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 1204298441
+    },
+    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+    "primary": 4
+   },
+   "livesim": null,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795641607,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473892740,
+     0,
+     0
+    ],
+    "entry_slot": 473894747,
+    "entry_time": 1795641607,
+    "id": 7,
+    "outcome": {
+     "declared": 1795643408,
+     "exit_time": 1795643408,
+     "landing": 473894751,
+     "net": -599438,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510904555
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+    "primary": 6
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795642725,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 189,
+    "entry_key": [
+     473899965,
+     304,
+     0
+    ],
+    "entry_slot": 473899965,
+    "entry_time": 1795642725,
+    "outcome": {
+     "declared": 1795644526,
+     "exit_time": 1795644526,
+     "landing": 473899969,
+     "net": -1263160,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510175293
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795645206,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473909697,
+     0,
+     0
+    ],
+    "entry_slot": 473911488,
+    "entry_time": 1795645206,
+    "id": 9,
+    "outcome": {
+     "declared": 1795647007,
+     "exit_time": 1795647007,
+     "landing": 473911492,
+     "net": -1373221,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 509130040
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+    "primary": 8
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795646976,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 212,
+    "entry_key": [
+     473919653,
+     98,
+     0
+    ],
+    "entry_slot": 473919653,
+    "entry_time": 1795646976,
+    "outcome": {
+     "declared": 1795648777,
+     "exit_time": 1795648777,
+     "landing": 473919657,
+     "net": -983004,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 509643384
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795648136,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473924527,
+     0,
+     0
+    ],
+    "entry_slot": 473925017,
+    "entry_time": 1795648136,
+    "id": 11,
+    "outcome": {
+     "declared": 1795649937,
+     "exit_time": 1795649937,
+     "landing": 473925021,
+     "net": -1042913,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510665542
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+    "primary": 10
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795649903,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 39,
+    "entry_key": [
+     473933238,
+     5,
+     0
+    ],
+    "entry_slot": 473933238,
+    "entry_time": 1795649903,
+    "outcome": {
+     "declared": 1795651704,
+     "exit_time": 1795651704,
+     "landing": 473933242,
+     "net": -1090514,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 1196489767
+    },
+    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+   },
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "live_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795650026,
+   "exit_after_conform_end": false,
+   "live": {
+    "entry_key": [
+     473933513,
+     0,
+     0
+    ],
+    "entry_slot": 473933812,
+    "entry_time": 1795650026,
+    "id": 13,
+    "outcome": {
+     "declared": 1795651827,
+     "exit_time": 1795651827,
+     "landing": 473933816,
+     "net": -1018085,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 1197362659
+    },
+    "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+    "primary": 12
+   },
+   "livesim": null,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795652198,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 225,
+    "entry_key": [
+     473943896,
+     865,
+     0
+    ],
+    "entry_slot": 473943896,
+    "entry_time": 1795652198,
+    "outcome": {
+     "declared": 1795653999,
+     "exit_time": 1795653999,
+     "landing": 473943900,
+     "net": -780059,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510637726
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  },
+  {
+   "category": "livesim_only",
+   "entry_segment": "hors_protocole",
+   "entry_time": 1795655861,
+   "exit_after_conform_end": false,
+   "live": null,
+   "livesim": {
+    "decision_index": 232,
+    "entry_key": [
+     473960932,
+     140,
+     0
+    ],
+    "entry_slot": 473960932,
+    "entry_time": 1795655861,
+    "outcome": {
+     "declared": null,
+     "exit_time": null,
+     "landing": null,
+     "net": null,
+     "rule": null,
+     "status": "open",
+     "tokens": null
+    },
+    "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo"
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "mécanismes de témoin différents par construction"
+   ],
+   "segment": "hors_protocole"
+  }
+ ],
+ "pools": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "primary": [
+  {
+   "a_posteriori": {
+    "decision_index": 1,
+    "outcome": {
+     "declared": 1795634270,
+     "exit_time": 1795634270,
+     "landing": 473852225,
+     "net": -994172,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510097727
+    },
+    "trigger_key": [
+     473852221,
+     0,
+     0
+    ],
+    "trigger_slot": 473852221,
+    "trigger_time": 1795632469
+   },
+   "category": "live_only",
+   "entry_segment": "conforme",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 1,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 1,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [
+     [
+      1795630721,
+      "5E1uZHMdZZWUUSayTZFZKdLZLvdN6rmu1bR6Mmkhn7QrSCR65suBC7LzFNanZdw2cHUkPf5WsSioZhe7Soo8hhE3"
+     ]
+    ],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": false,
+   "live": {
+    "decided_after_gap": false,
+    "id": 0,
+    "latency_s": 14,
+    "latency_slots": 64,
+    "outcome": {
+     "declared": 1795634284,
+     "exit_time": 1795634284,
+     "landing": 473852289,
+     "net": -994172,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510097727
+    },
+    "receipt_slot": 473852285,
+    "receipt_time": 1795632483,
+    "trigger_key": [
+     473852221,
+     0,
+     0
+    ],
+    "trigger_slot": 473852221,
+    "trigger_time": 1795632469
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "chaîne de signaux différente"
+   ],
+   "segment": "conforme",
+   "shift": {
+    "seconds": -2778,
+    "slots": -12914
+   },
+   "shifted_with": "4XwDKzU45zATYN5k79QVu7knyohEx9qDK8X8EfWRDXt9nmjMaoN1Ldv3xgJV6T5BQGvrSEcXmP3Jc9BtiDa4WFQ5",
+   "sig": "3cBj5SbG5vfGdyibgMVXCjS4UKy1zSLkGjPuLuraNRJuEA1Zeb1MAPUXDsRsYpKdmx5t7zRoJgAD1xCMG7sfJvB1",
+   "trigger_time": 1795632469
+  },
+  {
+   "a_posteriori": null,
+   "category": "livesim_only",
+   "entry_segment": "conforme",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 2,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [
+     [
+      1795632469,
+      "3cBj5SbG5vfGdyibgMVXCjS4UKy1zSLkGjPuLuraNRJuEA1Zeb1MAPUXDsRsYpKdmx5t7zRoJgAD1xCMG7sfJvB1"
+     ]
+    ],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": false,
+   "in_live": false,
+   "in_livesim": true,
+   "live": null,
+   "livesim": {
+    "decision_index": 145,
+    "outcome": {
+     "declared": 1795637048,
+     "exit_time": 1795637048,
+     "landing": 473865139,
+     "net": -868454,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510075478
+    },
+    "trigger_key": [
+     473865135,
+     424,
+     0
+    ],
+    "trigger_slot": 473865135,
+    "trigger_time": 1795635247
+   },
+   "livesim_t24": {
+    "declared": 1795637048,
+    "exit_time": 1795637048,
+    "landing": 473865139,
+    "net": -868454,
+    "rule": "clock",
+    "status": "entered",
+    "tokens": 510075478
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "chaîne de signaux différente"
+   ],
+   "segment": "conforme",
+   "shift": {
+    "seconds": -2778,
+    "slots": -12914
+   },
+   "shifted_with": "3cBj5SbG5vfGdyibgMVXCjS4UKy1zSLkGjPuLuraNRJuEA1Zeb1MAPUXDsRsYpKdmx5t7zRoJgAD1xCMG7sfJvB1",
+   "sig": "4XwDKzU45zATYN5k79QVu7knyohEx9qDK8X8EfWRDXt9nmjMaoN1Ldv3xgJV6T5BQGvrSEcXmP3Jc9BtiDa4WFQ5",
+   "trigger_time": 1795635247
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 20,
+    "outcome": {
+     "declared": 1795637946,
+     "exit_time": 1795637946,
+     "landing": 473869314,
+     "net": -754983,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510770301
+    },
+    "trigger_key": [
+     473869310,
+     0,
+     0
+    ],
+    "trigger_slot": 473869310,
+    "trigger_time": 1795636145
+   },
+   "category": "live_only",
+   "entry_segment": "conforme",
+   "exit_after_conform_end": true,
+   "facts": {
+    "buyers_live": 7,
+    "buyers_livesim": 6,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [
+     [
+      1795635247,
+      "4XwDKzU45zATYN5k79QVu7knyohEx9qDK8X8EfWRDXt9nmjMaoN1Ldv3xgJV6T5BQGvrSEcXmP3Jc9BtiDa4WFQ5"
+     ]
+    ],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": false,
+   "live": {
+    "decided_after_gap": false,
+    "id": 2,
+    "latency_s": 28,
+    "latency_slots": 128,
+    "outcome": {
+     "declared": 1795637974,
+     "exit_time": 1795637974,
+     "landing": 473869442,
+     "net": -754983,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510770301
+    },
+    "receipt_slot": 473869438,
+    "receipt_time": 1795636173,
+    "trigger_key": [
+     473869310,
+     0,
+     0
+    ],
+    "trigger_slot": 473869310,
+    "trigger_time": 1795636145
+   },
+   "livesim": null,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "chaîne de signaux différente"
+   ],
+   "segment": "conforme_sortie_hors_protocole",
+   "sig": "2qeYyEUDS8qvJLVaUthUsw4wS1SCCLe6rZSXecU6cM94DQDS9Gq7u1CGWn7c8LtQQRK3uHrz9nuBgyc8nDM8ryTq",
+   "trigger_time": 1795636145
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 7,
+    "outcome": {
+     "declared": 473885116,
+     "exit_time": 1795639541,
+     "landing": 473884857,
+     "net": 6928989,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1292752228
+    },
+    "trigger_key": [
+     473884853,
+     1,
+     0
+    ],
+    "trigger_slot": 473884853,
+    "trigger_time": 1795639479
+   },
+   "category": "both",
+   "entry_segment": "hors_protocole",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 1,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": true,
+   "live": {
+    "decided_after_gap": false,
+    "id": 4,
+    "latency_s": 31,
+    "latency_slots": 143,
+    "outcome": {
+     "declared": 473885116,
+     "exit_time": 1795639541,
+     "landing": 473885000,
+     "net": 6660068,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1289512008
+    },
+    "receipt_slot": 473884996,
+    "receipt_time": 1795639510,
+    "trigger_key": [
+     473884853,
+     1,
+     0
+    ],
+    "trigger_slot": 473884853,
+    "trigger_time": 1795639479
+   },
+   "livesim": {
+    "decision_index": 15,
+    "outcome": {
+     "declared": 473885116,
+     "exit_time": 1795639541,
+     "landing": 473884857,
+     "net": 6928989,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1292752228
+    },
+    "trigger_key": [
+     473884853,
+     413,
+     0
+    ],
+    "trigger_slot": 473884853,
+    "trigger_time": 1795639479
+   },
+   "livesim_t24": {
+    "declared": 473885116,
+    "exit_time": 1795639541,
+    "landing": 473884857,
+    "net": 6928989,
+    "rule": "slot",
+    "status": "entered",
+    "tokens": 1292752228
+   },
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "latence du live (ancre à la réception)"
+   ],
+   "segment": "hors_protocole",
+   "shift": {
+    "seconds": 0,
+    "slots": 0
+   },
+   "sig": "2yKqFr61wXmmzNE8SEEXsKe9Z1Q2kE7ANnvjf2ENcX9VKr5K36P5PSLUWEc2s3juSQ7LiGHADg1zqp8VHnYVMzC3",
+   "trigger_time": 1795639479
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 37,
+    "outcome": {
+     "declared": 1795641953,
+     "exit_time": 1795641953,
+     "landing": 473887983,
+     "net": -1106833,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510860603
+    },
+    "trigger_key": [
+     473887979,
+     0,
+     0
+    ],
+    "trigger_slot": 473887979,
+    "trigger_time": 1795640152
+   },
+   "category": "both",
+   "entry_segment": "hors_protocole",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 1,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": true,
+   "live": {
+    "decided_after_gap": false,
+    "id": 6,
+    "latency_s": 15,
+    "latency_slots": 68,
+    "outcome": {
+     "declared": 1795641968,
+     "exit_time": 1795641968,
+     "landing": 473888051,
+     "net": -1106833,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510860603
+    },
+    "receipt_slot": 473888047,
+    "receipt_time": 1795640167,
+    "trigger_key": [
+     473887979,
+     0,
+     0
+    ],
+    "trigger_slot": 473887979,
+    "trigger_time": 1795640152
+   },
+   "livesim": {
+    "decision_index": 171,
+    "outcome": {
+     "declared": 1795641953,
+     "exit_time": 1795641953,
+     "landing": 473887983,
+     "net": -1106833,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510860603
+    },
+    "trigger_key": [
+     473887979,
+     223,
+     0
+    ],
+    "trigger_slot": 473887979,
+    "trigger_time": 1795640152
+   },
+   "livesim_t24": {
+    "declared": 1795641953,
+    "exit_time": 1795641953,
+    "landing": 473887983,
+    "net": -1106833,
+    "rule": "clock",
+    "status": "entered",
+    "tokens": 510860603
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "latence du live (ancre à la réception)",
+    "point de sortie différent, même règle"
+   ],
+   "segment": "hors_protocole",
+   "shift": {
+    "seconds": 0,
+    "slots": 0
+   },
+   "sig": "4uToSa1rcYAUvv9rGjL6UaMudnqpqQTCfC4QriSdyqAmexMk5gwNMnETaX1B7La5Z3GByc523iib29oSSeKEeAvj",
+   "trigger_time": 1795640152
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 60,
+    "outcome": {
+     "declared": 1795645582,
+     "exit_time": 1795645582,
+     "landing": 473904874,
+     "net": -1142680,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510309696
+    },
+    "trigger_key": [
+     473904870,
+     0,
+     0
+    ],
+    "trigger_slot": 473904870,
+    "trigger_time": 1795643781
+   },
+   "category": "both",
+   "entry_segment": "hors_protocole",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 2,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": true,
+   "live": {
+    "decided_after_gap": false,
+    "id": 8,
+    "latency_s": 16,
+    "latency_slots": 73,
+    "outcome": {
+     "declared": 1795645598,
+     "exit_time": 1795645598,
+     "landing": 473904947,
+     "net": -1142680,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510309696
+    },
+    "receipt_slot": 473904943,
+    "receipt_time": 1795643797,
+    "trigger_key": [
+     473904870,
+     0,
+     0
+    ],
+    "trigger_slot": 473904870,
+    "trigger_time": 1795643781
+   },
+   "livesim": {
+    "decision_index": 194,
+    "outcome": {
+     "declared": 1795645582,
+     "exit_time": 1795645582,
+     "landing": 473904874,
+     "net": -1142680,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510309696
+    },
+    "trigger_key": [
+     473904870,
+     20,
+     0
+    ],
+    "trigger_slot": 473904870,
+    "trigger_time": 1795643781
+   },
+   "livesim_t24": {
+    "declared": 1795645582,
+    "exit_time": 1795645582,
+    "landing": 473904874,
+    "net": -1142680,
+    "rule": "clock",
+    "status": "entered",
+    "tokens": 510309696
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "latence du live (ancre à la réception)",
+    "point de sortie différent, même règle"
+   ],
+   "segment": "hors_protocole",
+   "shift": {
+    "seconds": 0,
+    "slots": 0
+   },
+   "sig": "21e9Lnwss1C7MzamtDixFf9BLe2G48E5oo4wZ91MBE5cSqxtKWXAVzairLbBxjwtFYgowYwf9fkPkhgJRCnVeZmb",
+   "trigger_time": 1795643781
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 81,
+    "outcome": {
+     "declared": 1795649345,
+     "exit_time": 1795649345,
+     "landing": 473922291,
+     "net": -1015259,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510673478
+    },
+    "trigger_key": [
+     473922287,
+     0,
+     0
+    ],
+    "trigger_slot": 473922287,
+    "trigger_time": 1795647544
+   },
+   "category": "both",
+   "entry_segment": "hors_protocole",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 1,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": true,
+   "live": {
+    "decided_after_gap": false,
+    "id": 10,
+    "latency_s": 23,
+    "latency_slots": 103,
+    "outcome": {
+     "declared": 1795649368,
+     "exit_time": 1795649368,
+     "landing": 473922394,
+     "net": -1015259,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510673478
+    },
+    "receipt_slot": 473922390,
+    "receipt_time": 1795647567,
+    "trigger_key": [
+     473922287,
+     0,
+     0
+    ],
+    "trigger_slot": 473922287,
+    "trigger_time": 1795647544
+   },
+   "livesim": {
+    "decision_index": 215,
+    "outcome": {
+     "declared": 1795649345,
+     "exit_time": 1795649345,
+     "landing": 473922291,
+     "net": -1015259,
+     "rule": "clock",
+     "status": "entered",
+     "tokens": 510673478
+    },
+    "trigger_key": [
+     473922287,
+     121,
+     0
+    ],
+    "trigger_slot": 473922287,
+    "trigger_time": 1795647544
+   },
+   "livesim_t24": {
+    "declared": 1795649345,
+    "exit_time": 1795649345,
+    "landing": 473922291,
+    "net": -1015259,
+    "rule": "clock",
+    "status": "entered",
+    "tokens": 510673478
+   },
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [
+    "latence du live (ancre à la réception)",
+    "point de sortie différent, même règle"
+   ],
+   "segment": "hors_protocole",
+   "shift": {
+    "seconds": 0,
+    "slots": 0
+   },
+   "sig": "7S5zRNRxoxqBM4Uo4UBGJsKMGneWMToTRMn1igenftUkgf3A8Nv4jcHnyU3gSvuDCcjuUuhw38Y6aibpMt5tPs5",
+   "trigger_time": 1795647544
+  },
+  {
+   "a_posteriori": {
+    "decision_index": 29,
+    "outcome": {
+     "declared": 473933241,
+     "exit_time": 1795649933,
+     "landing": 473932613,
+     "net": 3435677,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1250126501
+    },
+    "trigger_key": [
+     473932609,
+     0,
+     0
+    ],
+    "trigger_slot": 473932609,
+    "trigger_time": 1795649767
+   },
+   "category": "both",
+   "entry_segment": "hors_protocole",
+   "exit_after_conform_end": false,
+   "facts": {
+    "buyers_live": 2,
+    "buyers_livesim": 1,
+    "d13_in_600": false,
+    "gap": [],
+    "missing_in_live_600": 0,
+    "missing_in_livesim_600": 0,
+    "prior_live_signal": [],
+    "prior_livesim_signal": [],
+    "resumption": [],
+    "threshold": 2.0
+   },
+   "in_a_posteriori": true,
+   "in_live": true,
+   "in_livesim": true,
+   "live": {
+    "decided_after_gap": false,
+    "id": 12,
+    "latency_s": 20,
+    "latency_slots": 96,
+    "outcome": {
+     "declared": 473933241,
+     "exit_time": 1795649933,
+     "landing": 473932709,
+     "net": 3435677,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1250126501
+    },
+    "receipt_slot": 473932705,
+    "receipt_time": 1795649787,
+    "trigger_key": [
+     473932609,
+     0,
+     0
+    ],
+    "trigger_slot": 473932609,
+    "trigger_time": 1795649767
+   },
+   "livesim": {
+    "decision_index": 37,
+    "outcome": {
+     "declared": 473933241,
+     "exit_time": 1795649933,
+     "landing": 473932613,
+     "net": 3435677,
+     "rule": "slot",
+     "status": "entered",
+     "tokens": 1250126501
+    },
+    "trigger_key": [
+     473932609,
+     97,
+     0
+    ],
+    "trigger_slot": 473932609,
+    "trigger_time": 1795649767
+   },
+   "livesim_t24": {
+    "declared": 473933241,
+    "exit_time": 1795649933,
+    "landing": 473932613,
+    "net": 3435677,
+    "rule": "slot",
+    "status": "entered",
+    "tokens": 1250126501
+   },
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [
+    "latence du live (ancre à la réception)"
+   ],
+   "segment": "hors_protocole",
+   "shift": {
+    "seconds": 0,
+    "slots": 0
+   },
+   "sig": "2Xqxk5PsRqFMQqYRAyNMRrEigSTQjYQt1awZCg5xiQsuMCmk4QLmFJ3ZKQScwzzGS4jvnHTEMjeRiNSsF3FhCCJd",
+   "trigger_time": 1795649767
+  }
+ ],
+ "resumptions": [
+  [
+   1795638573,
+   1795638637
+  ],
+  [
+   1795645206,
+   1795645257
+  ],
+  [
+   1795651826,
+   1795651921
+  ]
+ ],
+ "schema": "lpcompare-v0.1",
+ "summary": {
+  "conforme": {
+   "descriptive": true,
+   "placebo": {
+    "live": {
+     "closed": 1,
+     "net_lamports_closed_sum": -801425,
+     "open": 0,
+     "positions": 1
+    },
+    "livesim": {
+     "closed": 1,
+     "net_lamports_closed_sum": -1312147,
+     "open": 0,
+     "positions": 1
+    },
+    "rows": 2,
+    "strict_key_categories": {
+     "both": 0,
+     "live_only": 1,
+     "livesim_only": 1
+    }
+   },
+   "primary": {
+    "live": {
+     "closed": 1,
+     "net_lamports_closed_sum": -994172,
+     "open": 0,
+     "positions": 1
+    },
+    "livesim": {
+     "closed": 1,
+     "net_lamports_closed_sum": -868454,
+     "open": 0,
+     "positions": 1
+    },
+    "reasons": {
+     "chaîne de signaux différente": 2
+    },
+    "rows": 2,
+    "shifted_rows": 2,
+    "strict_key_categories": {
+     "live_only": 1,
+     "livesim_only": 1
+    }
+   }
+  },
+  "conforme_sortie_hors_protocole": {
+   "descriptive": true,
+   "placebo": {
+    "live": {
+     "closed": 0,
+     "net_lamports_closed_sum": 0,
+     "open": 0,
+     "positions": 0
+    },
+    "livesim": {
+     "closed": 1,
+     "net_lamports_closed_sum": -998792,
+     "open": 0,
+     "positions": 1
+    },
+    "rows": 1,
+    "strict_key_categories": {
+     "both": 0,
+     "live_only": 0,
+     "livesim_only": 1
+    }
+   },
+   "primary": {
+    "live": {
+     "closed": 1,
+     "net_lamports_closed_sum": -754983,
+     "open": 0,
+     "positions": 1
+    },
+    "livesim": {
+     "closed": 0,
+     "net_lamports_closed_sum": 0,
+     "open": 0,
+     "positions": 0
+    },
+    "reasons": {
+     "chaîne de signaux différente": 1
+    },
+    "rows": 1,
+    "shifted_rows": 0,
+    "strict_key_categories": {
+     "live_only": 1
+    }
+   }
+  },
+  "hors_protocole": {
+   "descriptive": true,
+   "placebo": {
+    "live": {
+     "closed": 6,
+     "net_lamports_closed_sum": -6250601,
+     "open": 0,
+     "positions": 6
+    },
+    "livesim": {
+     "closed": 6,
+     "net_lamports_closed_sum": 1638611,
+     "open": 1,
+     "positions": 7
+    },
+    "rows": 13,
+    "strict_key_categories": {
+     "both": 0,
+     "live_only": 6,
+     "livesim_only": 7
+    }
+   },
+   "primary": {
+    "live": {
+     "closed": 5,
+     "net_lamports_closed_sum": 6830973,
+     "open": 0,
+     "positions": 5
+    },
+    "livesim": {
+     "closed": 5,
+     "net_lamports_closed_sum": 7099894,
+     "open": 0,
+     "positions": 5
+    },
+    "reasons": {
+     "latence du live (ancre à la réception)": 5,
+     "point de sortie différent, même règle": 3
+    },
+    "rows": 5,
+    "shifted_rows": 0,
+    "strict_key_categories": {
+     "both": 5
+    }
+   }
+  }
+ },
+ "verdict": null
+}

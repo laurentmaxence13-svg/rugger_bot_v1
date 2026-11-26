@@ -1,0 +1,16 @@
+lpcompare 0.1 (commit 78715de, MANIFEST_lpcompare_v0_1.txt 4e403367), UNE SEULE exécution (décision de R04, 13:31Z) que
+R02 recoupe par son propre calcul sur les décisions concernées. Hors ligne (unshare -rn), 0 crédit. Conventions déclarées à
+R02 avant lecture ; accord sous C-1 à C-7.
+Chemin : lpcompare + livepaper 0.1.2 (le code qui a tourné) + chaîne livesim 0.3.2 (cpmmcost 0.3.1, cpmmrecon 0.1).
+Entrées :
+  - live 73aef7c LIVEPAPER_20261125T181913Z : J.jsonl 17fa9372ee9c1ca4fb3949313deb96802e8f70b27c8a476054e5df6829c51304, PAGES, POOLS_RUN ;
+  - livesim d4933e7 LIVESIM_20261125T113851Z, avec LIST_L c96353b9, ELIGIBLE 184576ea0358e8b619d1cb1d107eb82a93a94e67d5d87d204a8831c2b45b34a9 et
+    LIVESIM.json ea3d4c952d0c0c21a7d8b87a48bf20606f5703001913c3207fce8c0ea0530270.
+Sorties :
+  - COMPARE.json 2263414a61b4f15d08cbfebe02a2acfbb8210cd57562c561c80011461a36ade7
+  - COMPARE.md   9e4d46a9e57a8bbf0a0060505b6d3ee165b6f84b3b2ad7ef98847eb7750a43e7
+Limite déclarée après lecture, qui ne touche aucune catégorie ni aucune raison : le fait « buyers_livesim » se borne par
+la CLÉ du déclencheur live. En mode gsfa_rank, transactionIndex est un rang et non l'indice réel de la chaîne ; l'ordre à
+l'intérieur d'un slot peut donc différer d'un côté à l'autre. Exemple : à 18:47:49Z, 2 acheteurs côté live contre 1 côté
+livesim. C'est un fait descriptif seulement ; l'arbre des raisons ne l'utilise pas.
+Descriptif, aucune conclusion économique ; jamais une transaction du Master ; jamais compté pour 50/20.
