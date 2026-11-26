@@ -1,0 +1,121 @@
+{
+ "AEZjoU": {
+  "cost_a_mean": 2434,
+  "cost_b_max_day": 4440,
+  "cost_c_2x_max_day": 8880,
+  "max_over_mean": 1.82,
+  "pages_max": 37,
+  "pages_mean": 20.3,
+  "pages_min": 12,
+  "pages_per_day": [
+   18,
+   14,
+   25,
+   37,
+   14,
+   12,
+   22
+  ],
+  "pages_sd": 8.1,
+  "tx_per_day": [
+   1737,
+   1381,
+   2497,
+   3678,
+   1314,
+   1174,
+   2182
+  ]
+ },
+ "G8kgi7": {
+  "cost_a_mean": 18120,
+  "cost_b_max_day": 33000,
+  "cost_c_2x_max_day": 66000,
+  "max_over_mean": 1.82,
+  "pages_max": 275,
+  "pages_mean": 151,
+  "pages_min": 38,
+  "pages_per_day": [
+   69,
+   133,
+   242,
+   246,
+   38,
+   54,
+   275
+  ],
+  "pages_sd": 94.0,
+  "tx_per_day": [
+   6823,
+   13246,
+   24195,
+   24522,
+   3712,
+   5376,
+   27490
+  ]
+ },
+ "GdxFyc": {
+  "cost_a_mean": 651,
+  "cost_b_max_day": 1320,
+  "cost_c_2x_max_day": 2640,
+  "max_over_mean": 2.03,
+  "pages_max": 11,
+  "pages_mean": 5.4,
+  "pages_min": 3,
+  "pages_per_day": [
+   4,
+   5,
+   11,
+   9,
+   3,
+   3,
+   3
+  ],
+  "pages_sd": 3.0,
+  "tx_per_day": [
+   362,
+   413,
+   1023,
+   853,
+   209,
+   235,
+   280
+  ]
+ },
+ "Gms3Ma": {
+  "cost_a_mean": 240,
+  "cost_b_max_day": 240,
+  "cost_c_2x_max_day": 480,
+  "max_over_mean": 1.0,
+  "pages_max": 2,
+  "pages_mean": 2,
+  "pages_min": 2,
+  "pages_per_day": [
+   2,
+   2,
+   2,
+   2,
+   2,
+   2,
+   2
+  ],
+  "pages_sd": 0.0,
+  "tx_per_day": [
+   119,
+   114,
+   112,
+   117,
+   119,
+   114,
+   110
+  ]
+ },
+ "TOTAL": {
+  "cap_hard_stop": 32340,
+  "cost_a": 21445,
+  "cost_b": 39000,
+  "cost_c": 78000,
+  "note": "GTFA 10 credits/page, 12-day window; pages per day = ceil(tx/100); days aligned on T0 (k=0 is T0-7d)"
+ }
+}
