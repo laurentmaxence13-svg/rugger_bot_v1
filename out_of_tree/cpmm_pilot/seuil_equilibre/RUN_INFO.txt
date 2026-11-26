@@ -1,0 +1,13 @@
+Note « seuil d'équilibre » G2-3 et N1 (R01, directive du propriétaire relayée par R04 le 26/11 à 13:31Z).
+Méthodes M1–M5 et P3bis déclarées à R02 avant lecture ; corrections (a)–(e) de R02 appliquées.
+Hors ligne (unshare -rn), 0 crédit, calcul direct par les fonctions gelées, sans nouveau paquet.
+- be_calc.py : sur livesim d4933e7 (LIVESIM_20261125T113851Z, 24 h).
+  Entrées : LIST_L c96353b9, ELIGIBLE 184576ea, LIVESIM.json ea3d4c95.
+  Sortie : be_r01.json 61f7a661671e537eb44f6520cf2e663d5124d7746c452e3c3a97d8ba36359451.
+  Contrôle : 21/21 positions publiées retrouvées à l'unité (jeton acheté, et net = reçu − mise − fixe 420 000).
+- il24.py : divergence sur 24 h, mêmes données, sortie console reprise dans la note.
+- p3bis.py : pages pré-T0 6e27bf5, U2 3ca0260a ; sortie p3bis_r01.json 24eaa1f23849f949fd28062b279936e42cc9c0424b0de3a043c71239ea65a084.
+- P3 : commit 3e03f8a (p3_premortem/).
+- Chiffres de la ligne « pools du pilote, pré-T0 » : g23b de R02 sur l'exécution à blanc (RESULT d08da83d, B.json e1171b01).
+Chemin : lpcompare + livepaper 0.1.2 + chaîne livesim 0.3.2 (pp_lpcompare) pour be_calc et il24 ; g23run 0.1.2 +
+g23five 0.1.1 + chaîne (pp_dry) pour p3bis.

@@ -1,0 +1,237 @@
+{
+ "band": [
+  50000000,
+  200000000
+ ],
+ "frozen_tx_fee": 105000,
+ "pools": {
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "close_account": {
+    "sell": {
+     "at_least_1": 0.1287980126122683,
+     "at_least_2": 0.06210586661570801,
+     "n": 5233
+    },
+    "sell_band": {
+     "at_least_1": 0.15012722646310434,
+     "at_least_2": 0.07697201017811704,
+     "n": 3144
+    }
+   },
+   "fee": {
+    "buy": {
+     "mean": 69886.50237395432,
+     "n": 4423,
+     "p10": 5000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9880171829075288
+    },
+    "buy_band": {
+     "mean": 37834.098089171974,
+     "n": 2355,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9978768577494692
+    },
+    "failed": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    },
+    "sell": {
+     "mean": 66389.68048920314,
+     "n": 5233,
+     "p10": 5000,
+     "p50": 5257,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9896808713930824
+    },
+    "sell_band": {
+     "mean": 32804.05756997455,
+     "n": 3144,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9968193384223919
+    }
+   }
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "close_account": {
+    "sell": {
+     "at_least_1": 0.6598901740857577,
+     "at_least_2": 0.14972543521439421,
+     "n": 17118
+    },
+    "sell_band": {
+     "at_least_1": 0.6801470588235294,
+     "at_least_2": 0.1488970588235294,
+     "n": 3264
+    }
+   },
+   "fee": {
+    "buy": {
+     "mean": 439297.6022794553,
+     "n": 20268,
+     "p10": 5000,
+     "p50": 25765,
+     "p90": 410000,
+     "share_at_most_frozen": 0.7676139727649497
+    },
+    "buy_band": {
+     "mean": 118942.93019442493,
+     "n": 4269,
+     "p10": 5347,
+     "p50": 39300,
+     "p90": 410000,
+     "share_at_most_frozen": 0.7449051300070274
+    },
+    "failed": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    },
+    "sell": {
+     "mean": 195860.11268839816,
+     "n": 17118,
+     "p10": 5000,
+     "p50": 18634,
+     "p90": 410000,
+     "share_at_most_frozen": 0.817093118354948
+    },
+    "sell_band": {
+     "mean": 134706.73223039217,
+     "n": 3264,
+     "p10": 5399,
+     "p50": 55000,
+     "p90": 410000,
+     "share_at_most_frozen": 0.7493872549019608
+    }
+   }
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "close_account": {
+    "sell": {
+     "at_least_1": 0.01995305164319249,
+     "at_least_2": 0.01056338028169014,
+     "n": 852
+    },
+    "sell_band": {
+     "at_least_1": 0.0,
+     "at_least_2": 0.0,
+     "n": 177
+    }
+   },
+   "fee": {
+    "buy": {
+     "mean": 100510.3526734926,
+     "n": 879,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    },
+    "buy_band": {
+     "mean": 105000.0,
+     "n": 186,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    },
+    "failed": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    },
+    "sell": {
+     "mean": 102603.98122065728,
+     "n": 852,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9988262910798122
+    },
+    "sell_band": {
+     "mean": 102966.12429378531,
+     "n": 177,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    }
+   }
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "close_account": {
+    "sell": {
+     "at_least_1": 0.0,
+     "at_least_2": 0.0,
+     "n": 2
+    },
+    "sell_band": {
+     "at_least_1": null,
+     "at_least_2": null,
+     "n": 0
+    }
+   },
+   "fee": {
+    "buy": {
+     "mean": 5498.753117206982,
+     "n": 802,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 5000,
+     "share_at_most_frozen": 0.9987531172069826
+    },
+    "buy_band": {
+     "mean": 5909.090909090909,
+     "n": 440,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 5000,
+     "share_at_most_frozen": 0.9977272727272727
+    },
+    "failed": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    },
+    "sell": {
+     "mean": 58794.5,
+     "n": 2,
+     "p10": 15001,
+     "p50": 102588,
+     "p90": 102588,
+     "share_at_most_frozen": 1.0
+    },
+    "sell_band": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    }
+   }
+  }
+ },
+ "window": [
+  1794910886,
+  1795515686
+ ]
+}
