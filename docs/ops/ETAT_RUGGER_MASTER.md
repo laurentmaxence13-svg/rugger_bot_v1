@@ -86,6 +86,7 @@ B = moyenne de price_move calculée avec la même fonction stratified_bounds et 
 | P3 coûts mal modélisés | impact modélisé à 0,1 SOL contre les swaps réels de 0,05 à 0,2 SOL des pages pré-T0 ; frais effectifs contre config | R01 |
 | P4 dépendance entre pools | corrélation entre pools sur pré-T0 (R02) ; sensibilité descriptive déclarée MAINTENANT, bootstrap par jour calendaire commun, sans effet sur le mot (R01) | R02 + R01 |
 | P5 mauvaise lecture, puissance faible | simulation, avec le code gelé et le σ et le rythme pré-T0, de la probabilité de chaque mot sous un effet nul et sous un effet de 0,5 % | R02 |
+| P7 verdict calculé EN SILENCE sur une collecte partielle (R02, lu dans 7ce025c : ordre AEZjoU → Gms3Ma → G8kgi7 → GdxFyc ; un arrêt pendant GdxFyc donnerait un verdict biaisé, g23run et n1verdict ne vérifiant pas la complétude) | **règle de procédure ADOPTÉE le 26/11 (≈ 13:45Z)** : aucun g23run ni n1verdict si G23_COLLECT_RESULT.verdict_run ≠ DONE ou si un STATE a done ≠ true ; le partiel est définitif, sans relance ni verdict, avec les comptes publiés | R02 l'applique |
 | P6 plafond de crédits de la collecte (R03 : ≈ 21 290 pour 32 340, marge ×1,52 ; G8kgi7 = 85 %) et redémarrage du conteneur en pleine collecte | questions posées à R02 (13:35Z) ; texte éventuel au propriétaire AVANT les données | R02 → R04 |
 
 Tout chiffre présenté au propriétaire distingue le brut, les coûts et le net, avec l'incertitude ; le témoin est toujours affiché à côté.
