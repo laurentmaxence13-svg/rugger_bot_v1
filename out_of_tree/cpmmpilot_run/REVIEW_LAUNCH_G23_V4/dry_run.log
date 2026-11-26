@@ -1,0 +1,13 @@
+start 2026-11-26T14:26:36Z out=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/wt_d4b_dry/out_of_tree/cpmm_pilot/plafond_v2/cpmmpilot_run/G23_20261126T142636Z
+manifest_rc=0 manifest=7d810749cc908fdc13daa3bb6fb9921b22ccd0bbf7eb8d3144b66bc75e916113 driver=40d036ca3ab7ca7028742d49ce436a2204da5a5b9bd76444079dd11ada37860d complete=f66c8e32e1f42bb4b1ed8b184e1b6e07ec536f8254c00772fac2bf82024957a5 retry=9b2c0487e8156609af434a19128e20f4871892bfe62755ae9a4535409fe1a952 u2=3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963 base=3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b addendum=ad35b7eb4375c0b3e994a5a9941154ccfa4a3a3db70fdd46205e9a3a7d29efb7 out_exists=no
+deps: pythonpath=3cfa5e0dca3a0c2cc53683d02e94d02a2b709965b2f37fafa17f5d884d237d22 cpmmcost_v0_3=a0bd2adbfaeaa5b14b79c200b066f9a14bb1408c57469e319d6e1db9b92de547 cpmmcost_check_bad=0 cpmmx_tree=9e64445e764a592841457b790f31f2c74bc9dcc28d0d1c65c661856111ed6205 (no cpmmx MANIFEST exists)
+window_not_closed
+rc=1 end 2026-11-26T14:26:37Z
+Traceback (most recent call last):
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/wt_d4b_dry/out_of_tree/cpmm_pilot/plafond_v2/cpmmpilot_run/g23_complete.py", line 33, in <module>
+    spec.loader.exec_module(mod)
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/wt_d4b_dry/out_of_tree/cpmm_pilot/plafond_v2/cpmmpilot_run/g23_collect_v0_2.py", line 25, in <module>
+    from cpmmpilot import budget as B
+ModuleNotFoundError: No module named 'cpmmpilot'
