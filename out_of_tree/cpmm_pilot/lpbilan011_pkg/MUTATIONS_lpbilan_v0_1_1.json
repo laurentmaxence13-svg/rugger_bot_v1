@@ -1,0 +1,179 @@
+{
+ "package": "lpbilan",
+ "version": "0.1.1",
+ "mutants": [
+  {
+   "mutant": "cut_strict",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "cover_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "decreasing_steps_allowed",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "label_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "stop_after_cut_kept",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "chain_unverified",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "exit_time_is_decision",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "positions_look_past_the_cut",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "placebo_merged",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "unlanded_open_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "decomposition_tolerance_2",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "exit_row_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "latency_slots_primary_only",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "interval_strict",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "credits_at_cut_from_snapshot",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "fetch_ignored",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "hours_end_before_cut",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "first_mark_kept",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "vocabulary_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "fixed_partial",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "pool_fees_swapped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "gross_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "series_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "missing_decomposition_tolerated",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "decomposition_keys_unchecked",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "g0_first_record",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "g0_since_last_record",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "notes_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "blank_notes_kept",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "pool_without_g0_refused",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "trailing_error_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "errors_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "catchups_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "caught_up_wrong_source",
+   "file": "bilan.py",
+   "detected": true
+  }
+ ],
+ "detected": 34,
+ "total": 34,
+ "path": "livepaper 0.1.4 + livesim 0.3.2 + cpmmrecon 0.1 on the path"
+}
