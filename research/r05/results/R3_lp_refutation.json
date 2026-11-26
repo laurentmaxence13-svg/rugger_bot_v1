@@ -1102,5 +1102,47 @@
     "first": "2026-05-28"
    }
   ]
+ },
+ "R3.1b": {
+  "file": "raydium_20261126T140929Z.jsonl.gz",
+  "samples": 17,
+  "window_minutes": 15.997638966666667,
+  "lp_supply_change": 0.0,
+  "sqrtk_per_lp_growth": 5.027480363573034e-06,
+  "gt_volume_usd_window": 26185.73523714032,
+  "implied_growth": {
+   "fee_0.25": 4.5450752959292195e-06,
+   "fee_0.22": 3.9996662604177135e-06
+  },
+  "ratio_measured_over_0.22": 1.2569749664683219,
+  "note": "fen\u00eatre courte : ordre de grandeur et part LP, pas une estimation de rendement"
+ },
+ "R3.5_post_hoc_scale": {
+  "assumed_fixed_cost_usd_per_transfer": 2.0,
+  "years": 1.7697488584474885,
+  "daily_transfers": {
+   "transfers": 645,
+   "liquidation_hours": 0,
+   "excess_before_fixed_costs": 0.1401656377023025,
+   "excess_after_fixed_1100usd": -0.5224861657609567,
+   "excess_after_fixed_10000usd": 0.06727393932134397,
+   "excess_after_fixed_100000usd": 0.13287646786420665
+  },
+  "band_0.5_2.0": {
+   "transfers": 12,
+   "liquidation_hours": 0,
+   "excess_before_fixed_costs": 0.14212850719135262,
+   "excess_after_fixed_1100usd": 0.12980010154552454,
+   "excess_after_fixed_10000usd": 0.14077238257031152,
+   "excess_after_fixed_100000usd": 0.1419928947292485
+  },
+  "band_0.25_4.0": {
+   "transfers": 0,
+   "liquidation_hours": 0,
+   "excess_before_fixed_costs": 0.10748965646206864,
+   "excess_after_fixed_1100usd": 0.10748965646206864,
+   "excess_after_fixed_10000usd": 0.10748965646206864,
+   "excess_after_fixed_100000usd": 0.10748965646206864
+  }
  }
 }

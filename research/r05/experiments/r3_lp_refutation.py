@@ -80,7 +80,9 @@ def load_market():
 
 
 def simulate_hedged_lp(idx, spot, perp, perp_hi, fund, fee_daily: pd.Series, rebal_h: int = 24,
-                       cost_mult: float = 1.0, fee_mult: float = 1.0) -> dict:
+                       cost_mult: float = 1.0, fee_mult: float = 1.0, band: tuple | None = None) -> dict:
+    """band=(lo, hi): move capital between LP and margin only when margin/target leaves [lo, hi]
+    (hedge size is still reset at every rebalancing time). Counts capital transfers."""
     c_swap, c_tr, c_perp = (COSTS["swap"] * cost_mult, COSTS["transfer"] * cost_mult, COSTS["perp"] * cost_mult)
     f = fee_daily.reindex(idx.floor("D")).fillna(0.0).to_numpy() * fee_mult
     g = (1.0 + f) ** (1.0 / 24.0) - 1.0
@@ -96,6 +98,7 @@ def simulate_hedged_lp(idx, spot, perp, perp_hi, fund, fee_daily: pd.Series, reb
     W = np.empty(len(idx))
     comp = {"fees": 0.0, "lp_price": 0.0, "hedge_price": 0.0, "funding": 0.0, "costs": cost_acc}
     liq = 0
+    transfers = 0
     for t in range(len(idx)):
         if t > 0:
             v_before = V
@@ -115,11 +118,15 @@ def simulate_hedged_lp(idx, spot, perp, perp_hi, fund, fee_daily: pd.Series, reb
             comp["funding"] += fd
             if t % rebal_h == 0:
                 Wt = V + margin
-                v_target = Wt / K
-                dv = v_target - V
-                c = abs(dv) * (c_swap / 2 + c_tr)
-                V = v_target
-                margin = Wt - V - c
+                c = 0.0
+                target_margin = Wt - Wt / K
+                if band is None or not (band[0] * target_margin <= margin <= band[1] * target_margin):
+                    v_target = Wt / K
+                    dv = v_target - V
+                    c = abs(dv) * (c_swap / 2 + c_tr)
+                    V = v_target
+                    margin = Wt - V - c
+                    transfers += 1
                 h_new = V / (2 * S[t])
                 c += abs(h_new - h) * Pp[t] * c_perp
                 margin -= abs(h_new - h) * Pp[t] * c_perp
@@ -133,6 +140,7 @@ def simulate_hedged_lp(idx, spot, perp, perp_hi, fund, fee_daily: pd.Series, reb
     daily = w.resample("1D").last()
     ret = daily.pct_change().fillna(daily.iloc[0] / K - 1.0)
     return {"ret": ret, "components_per_capital": {k: v / K for k, v in comp.items()}, "liquidation_hours": liq,
+            "capital_transfers": transfers,
             "final_wealth_per_capital": float(W[-1] / K)}
 
 
@@ -174,6 +182,25 @@ def r32(f_gt: pd.Series) -> dict:
             "d_recent_half_excess_gt0": p["recent_half"]["ann_excess"] > 0,
             "e_maxdd_lt_15pct": p["full"]["max_dd"] < 0.15}
     return {"runs": runs, "criteria": crit, "verdict": "SURVIT" if all(crit.values()) else "ELIMINE"}
+
+
+# ----------------------------------------------------------------------------- R3.5 (post hoc, descriptive)
+def r35_scale() -> dict:
+    """Fixed transfer fees vs capital size. Post hoc sensitivity, not part of the v2 battery."""
+    idx, spot, perp, perp_hi, fund = load_market()
+    rf = rf_daily()
+    f_dl = llama(LLAMA_SOLUSDC)["apyBase"] * LP_SHARE / 100 / 365
+    years = (idx[-1] - idx[0]).total_seconds() / (365 * 86400)
+    out = {"assumed_fixed_cost_usd_per_transfer": 2.0, "years": years}
+    for name, band in {"daily_transfers": None, "band_0.5_2.0": (0.5, 2.0), "band_0.25_4.0": (0.25, 4.0)}.items():
+        sim = simulate_hedged_lp(idx, spot, perp, perp_hi, fund, f_dl, band=band)
+        ex = excess_stats(sim["ret"], rf, START, END)["ann_excess"]
+        row = {"transfers": sim["capital_transfers"], "liquidation_hours": sim["liquidation_hours"],
+               "excess_before_fixed_costs": ex}
+        for cap in (1_100, 10_000, 100_000):
+            row[f"excess_after_fixed_{cap}usd"] = ex - sim["capital_transfers"] * 2.0 / cap / years
+        out[name] = row
+    return out
 
 
 # ----------------------------------------------------------------------------- R3.3
@@ -301,6 +328,12 @@ def r31b() -> dict:
 
 def main():
     m = Manifest("raydium_gecko")
+    if len(sys.argv) > 1 and sys.argv[1] == "r35":
+        out = json.loads((RESULTS_DIR / "R3_lp_refutation.json").read_text())
+        out["R3.5_post_hoc_scale"] = r35_scale()
+        (RESULTS_DIR / "R3_lp_refutation.json").write_text(json.dumps(out, indent=1, default=str))
+        print(json.dumps(out["R3.5_post_hoc_scale"], indent=1))
+        return
     if len(sys.argv) > 1 and sys.argv[1] == "r31b":
         out = json.loads((RESULTS_DIR / "R3_lp_refutation.json").read_text())
         out["R3.1b"] = r31b()

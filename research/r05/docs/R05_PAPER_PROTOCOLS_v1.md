@@ -46,3 +46,17 @@ chercheur ?
 - **C0** : carry Binance permanent (réouverture si le funding moyen 90 j > taux de référence + 10 %/an).
 - **S1-B′** : écart de funding permanent Hyperliquid − Binance.
 Toutes se jugent avec les mêmes sources, sur la même fenêtre, sans infrastructure.
+
+## Amendement v1.1 — 2026-11-26 ≈ 14:27Z, avant le début de la fenêtre (aucune donnée de la fenêtre n'existe)
+
+**Cause** : défaut R05-D8. Le modèle de coûts de PAPER-1 ne comptait que des coûts proportionnels. Or un
+transfert quotidien de capital entre la chaîne et la plateforme de couverture paie aussi un **frais fixe**.
+Hypothèse retenue : 2 $ par transfert. Test post hoc R3.5 : à ~1 100 $ de capital, l'excès historique tombe à
+**−52 %/an** avec un transfert par jour.
+
+**Modification** : la règle primaire devient **à bande**. Le short est toujours rééquilibré chaque jour, mais le
+capital n'est déplacé que si la marge sort de [50 % ; 200 %] de sa cible. Historique : 12 transferts en 21 mois,
+aucune liquidation, excès +14,2 %/an avant frais fixes, +13,0 % après frais fixes à 1 100 $. Les critères
+de succès et d'arrêt sont inchangés. Ils s'appliquent à la règle à bande, frais fixes déduits au capital de
+référence de 10 000 $, avec le résultat à 1 100 $ (≈ 1 000 €) publié à côté. La règle quotidienne reste
+publiée comme variante secondaire.

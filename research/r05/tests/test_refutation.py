@@ -55,3 +55,19 @@ def test_short_hedge_receives_positive_funding():
     idx, s, p, hi, f = _market(np.full(48, 100.0), funding=0.0001)
     sim = simulate_hedged_lp(idx, s, p, hi, f, pd.Series(0.0, index=idx.floor("D").unique()), cost_mult=0.0)
     assert sim["components_per_capital"]["funding"] > 0
+
+
+def test_hl_markouts_detect_adverse_selection():
+    from experiments.r4_hl_markouts import analyse
+    # mid rises 1 bp every 5 s; buyers lift the ask -> our sells lose, sellers hit the bid -> our buys win
+    books, trades = [], {}
+    for k in range(200):
+        t = k * 5000
+        mid = 100.0 * (1 + 1e-4 * k)
+        books.append((t, mid - 0.01, mid + 0.01))
+        if k < 190:
+            trades[2 * k] = (t + 1000, mid + 0.02, 1.0, "B")   # through the ask
+    res = analyse(books, trades)
+    assert res["h10s_pes"]["n"] > 100
+    assert res["h10s_pes"]["mean_bps"] < 0  # selling into a rising market
+    assert res["reopen"] is False

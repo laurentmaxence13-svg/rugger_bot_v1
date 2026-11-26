@@ -50,11 +50,18 @@ def paper1_lp(start: str, end: str, refresh_llama: bool) -> dict:
     f_dl = llama(r3.LLAMA_SOLUSDC)["apyBase"] * r3.LP_SHARE / 100 / 365
     rf = rf_daily()
     out = {}
-    for name, kw in {"primary_24h": {}, "costs_x2": {"cost_mult": 2.0}}.items():
+    years = (idx[-1] - idx[0]).total_seconds() / (365 * 86400)
+    # v1.1 (amendment of 2026-11-26, before the window): primary = band rule, fixed 2 USD per transfer
+    for name, kw in {"primary_band_0.5_2.0": {"band": (0.5, 2.0)},
+                     "band_costs_x2": {"band": (0.5, 2.0), "cost_mult": 2.0},
+                     "secondary_daily_transfers": {}}.items():
         sim = r3.simulate_hedged_lp(idx, spot, perp, hi, fund, f_dl, **kw)
-        out[name] = {"window": r3.excess_stats(sim["ret"], rf, start, end),
-                     "components_per_capital": sim["components_per_capital"],
-                     "liquidation_hours": sim["liquidation_hours"]}
+        ex = r3.excess_stats(sim["ret"], rf, start, end)
+        fixed = 2.0 * (2.0 if "x2" in name else 1.0)
+        out[name] = {"window": ex, "components_per_capital": sim["components_per_capital"],
+                     "liquidation_hours": sim["liquidation_hours"], "capital_transfers": sim["capital_transfers"],
+                     "excess_after_fixed_costs": {str(c): ex["ann_excess"] - sim["capital_transfers"] * fixed / c / years
+                                                  for c in (1_100, 10_000)}}
     lr = np.log(spot).diff()
     rv = (lr ** 2).groupby(lr.index.floor("D")).sum()
     fee = f_dl.reindex(rv.index).fillna(0.0)

@@ -168,7 +168,7 @@ Détail : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `res
 | R3.2 (c) frais GeckoTerminal (depuis 2026-05-27) | excès +30,2 %/an | passe |
 | R3.2 (d) moitié récente (2025-12 → 2026-10) | excès +16,0 %/an | passe |
 | R3.2 (e) drawdown max | 0,7 % ; aucune liquidation | passe |
-| R3.2 (D) frais × 0,5 | excès +1,9 %/an, IC mensuel [−0,29 % ; +0,65 %] | **marge de sécurité ≈ 45 % de baisse des frais** |
+| R3.2 (D) frais × 0,5 | excès +1,9 %/an, IC mensuel [−0,29 % ; +0,65 %] | **l'excès s'annule vers −58 % de frais (interpolation linéaire) et n'est plus significatif dès −50 %** |
 | R3.3 généralité (51 pools évalués sur 67) | médiane −2,3 %/an [IC −4,4 % ; +0,04 %], 39 % positifs ; SOL-USDC +41 %/an, RAY-USDC −1,7 %, memecoins autour de zéro ou négatifs | **thèse générale éliminée** |
 | R3.4 concentration | 41,6 % de l'avantage vient des 5 % de jours aux frais les plus élevés ; sans eux +13,1 %/an ; minimum glissant 90 j +4,7 %/an ; tous les trimestres positifs | robuste dans le temps |
 

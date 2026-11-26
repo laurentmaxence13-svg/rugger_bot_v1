@@ -1563,6 +1563,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 102212,
+   "cache": "gt_ohlcv_min_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_1795703130.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:25:54Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/minute#gt_ohlcv_min_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_1795703130.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "usd",
+    "limit": "1000"
+   },
+   "sha256": "e2a2263be1fe8bfaf17083b13e5fffa78c1bb5d2f34c80033db18ad78631255b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/minute?aggregate=1&limit=1000&currency=usd"
+  },
+  {
    "bytes": 5101,
    "cache": "gt_ohlcv_day_5EgCcjkuE42YyTZY4QG8qTioUwNh6agTvJuNRyEqcqV1_20261126.json",
    "checksum": "none_published",
@@ -3603,6 +3618,6 @@
  ],
  "manifest": "raydium_gecko",
  "n_checksum_verified": 0,
- "n_files": 236,
+ "n_files": 237,
  "n_missing": 0
 }
