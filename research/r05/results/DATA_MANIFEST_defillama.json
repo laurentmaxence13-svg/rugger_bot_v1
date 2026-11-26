@@ -1,0 +1,19 @@
+{
+ "files": [
+  {
+   "bytes": 10186614,
+   "cache": "defillama_pools_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T13:44:11Z",
+   "key": "https://yields.llama.fi/pools#defillama_pools_20261126.json",
+   "request": null,
+   "sha256": "5120715288fc13c156a7641369b32af64211ffc904eb1b7739705906c1e9540c",
+   "status": "ok",
+   "url": "https://yields.llama.fi/pools"
+  }
+ ],
+ "manifest": "defillama",
+ "n_checksum_verified": 0,
+ "n_files": 1,
+ "n_missing": 0
+}

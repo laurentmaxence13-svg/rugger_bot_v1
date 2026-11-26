@@ -44,3 +44,15 @@ python -m experiments.s2_systematic                    # E-S2 (hors ligne une fo
 ```
 
 Dépendances : Python ≥ 3.11, numpy, pandas, requests. Rien d'autre.
+
+## Résultats du 2026-11-26 (dossier n° 1)
+
+Synthèse et recommandation : [`docs/R05_DOSSIER.md`](docs/R05_DOSSIER.md).
+
+| Direction | Fichier | Verdict pré-enregistré |
+|---|---|---|
+| S1 carry / funding / arbitrage spatial | `results/S1_carry.md`, `results/S4_S1C_micro.md` | REJETÉE (carry ≈ taux sans risque ; arbitrage jamais net positif) |
+| S2 systématique BTC/ETH/SOL | `results/S2_systematic.md` | F1 momentum 30 j NON CONCLUANTE ; F2–F4 REJETÉES |
+| S3 fourniture de liquidité | `results/S3_lp.md` | H3b SOUTENUE (SOL-USDC AMM v4, à vérifier) ; H3a NON CONCLUANTE |
+| S4 market making | `results/S4_S1C_micro.md` | ABANDON (CEX majeures, palier accessible) |
+| S5 laboratoire | ce dossier | infrastructure, aucun rendement attribué |

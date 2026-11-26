@@ -1,0 +1,767 @@
+{
+ "protocol": "R05_PREREGISTRATION_v1 \u00a73 S1-C, \u00a75",
+ "maker_fees_bps": {
+  "okx": 8.0,
+  "okx_swap": 2.0,
+  "coinbase": 60.0,
+  "kraken": 25.0,
+  "hyperliquid": 1.5,
+  "binance_spot": 10.0,
+  "binance_spot_bnb": 7.5,
+  "binance_perp": 2.0
+ },
+ "taker_fees_bps": {
+  "okx": 10.0,
+  "coinbase": 120.0,
+  "kraken": 40.0,
+  "hyperliquid": 4.5
+ },
+ "S4A": {
+  "by_day": {
+   "BTCUSDT_2025-02-18": {
+    "n_trades": 1342537,
+    "hours": 23.99957,
+    "half_spread_bps_median": 0.0763107370951323,
+    "half_spread_bps_mean": 0.2554939555909937,
+    "h1s": {
+     "opt_n": 1342508,
+     "opt_mean_bps": -0.6124166258677959,
+     "opt_se_bps": 0.001066667086014908,
+     "pes_n": 828606,
+     "pes_mean_bps": -0.8087340990933874,
+     "pes_se_bps": 0.001377249010988163
+    },
+    "h10s": {
+     "opt_n": 1342274,
+     "opt_mean_bps": -0.9066673874931772,
+     "opt_se_bps": 0.0027221862446235937,
+     "pes_n": 828434,
+     "pes_mean_bps": -1.1838003937378765,
+     "pes_se_bps": 0.0035590739749889644
+    },
+    "h60s": {
+     "opt_n": 1340970,
+     "opt_mean_bps": -1.009116275246818,
+     "opt_se_bps": 0.006325211002373554,
+     "pes_n": 827704,
+     "pes_mean_bps": -1.300139326084835,
+     "pes_se_bps": 0.008288413442655941
+    },
+    "h300s": {
+     "opt_n": 1339252,
+     "opt_mean_bps": -0.7738876226183287,
+     "opt_se_bps": 0.013291317709634853,
+     "pes_n": 826715,
+     "pes_mean_bps": -1.0587717020323486,
+     "pes_se_bps": 0.017562212394562994
+    },
+    "notional_usd_day": 2223994802.892005
+   },
+   "BTCUSDT_2025-05-24": {
+    "n_trades": 887342,
+    "hours": 23.99982111111111,
+    "half_spread_bps_median": 0.03466041916462382,
+    "half_spread_bps_mean": 0.21391424797026798,
+    "h1s": {
+     "opt_n": 887339,
+     "opt_mean_bps": -0.5207458516211574,
+     "opt_se_bps": 0.0011143371282455463,
+     "pes_n": 448215,
+     "pes_mean_bps": -0.8524875412295444,
+     "pes_se_bps": 0.001740481399951914
+    },
+    "h10s": {
+     "opt_n": 887317,
+     "opt_mean_bps": -0.856588938985842,
+     "opt_se_bps": 0.0027921187601096607,
+     "pes_n": 448215,
+     "pes_mean_bps": -1.3641505972691057,
+     "pes_se_bps": 0.004230143148106597
+    },
+    "h60s": {
+     "opt_n": 886968,
+     "opt_mean_bps": -0.8539350438281995,
+     "opt_se_bps": 0.006024456701434982,
+     "pes_n": 448011,
+     "pes_mean_bps": -1.3068111872198147,
+     "pes_se_bps": 0.009006529920238752
+    },
+    "h300s": {
+     "opt_n": 882941,
+     "opt_mean_bps": -0.8998077815791662,
+     "opt_se_bps": 0.011962903659064746,
+     "pes_n": 445500,
+     "pes_mean_bps": -1.3156711416297338,
+     "pes_se_bps": 0.017649290915441325
+    },
+    "notional_usd_day": 1819958819.7748587
+   },
+   "BTCUSDT_2026-08-23": {
+    "n_trades": 889970,
+    "hours": 23.999834444444446,
+    "half_spread_bps_median": 0.11616116330307243,
+    "half_spread_bps_mean": 0.2943068540263405,
+    "h1s": {
+     "opt_n": 889946,
+     "opt_mean_bps": -0.5434414240961362,
+     "opt_se_bps": 0.00183047778354953,
+     "pes_n": 486750,
+     "pes_mean_bps": -0.7729603971670075,
+     "pes_se_bps": 0.0027416615705182635
+    },
+    "h10s": {
+     "opt_n": 889897,
+     "opt_mean_bps": -0.9884164072795281,
+     "opt_se_bps": 0.004334111179925121,
+     "pes_n": 486714,
+     "pes_mean_bps": -1.3153728535000007,
+     "pes_se_bps": 0.006317380753649859
+    },
+    "h60s": {
+     "opt_n": 889635,
+     "opt_mean_bps": -0.9968601858967698,
+     "opt_se_bps": 0.00910707959489067,
+     "pes_n": 486544,
+     "pes_mean_bps": -1.2596092127547758,
+     "pes_se_bps": 0.012959685731366207
+    },
+    "h300s": {
+     "opt_n": 886335,
+     "opt_mean_bps": -0.8104156060233347,
+     "opt_se_bps": 0.016116680336064653,
+     "pes_n": 484231,
+     "pes_mean_bps": -0.9067816530854724,
+     "pes_se_bps": 0.022594144483640364
+    },
+    "notional_usd_day": 1182628276.059433
+   },
+   "SOLUSDT_2025-02-18": {
+    "n_trades": 681913,
+    "hours": 23.99935333333333,
+    "half_spread_bps_median": 0.3053341882687828,
+    "half_spread_bps_mean": 0.762607763570101,
+    "h1s": {
+     "opt_n": 681909,
+     "opt_mean_bps": -0.6274794923392066,
+     "opt_se_bps": 0.003657441221689057,
+     "pes_n": 193412,
+     "pes_mean_bps": -1.4210765187458112,
+     "pes_se_bps": 0.006761851322139256
+    },
+    "h10s": {
+     "opt_n": 681882,
+     "opt_mean_bps": -0.9228449397551057,
+     "opt_se_bps": 0.011884227411284795,
+     "pes_n": 193397,
+     "pes_mean_bps": -1.811440674559631,
+     "pes_se_bps": 0.022044001052090215
+    },
+    "h60s": {
+     "opt_n": 681659,
+     "opt_mean_bps": -1.2475731332121105,
+     "opt_se_bps": 0.026818301042304673,
+     "pes_n": 193358,
+     "pes_mean_bps": -1.9951199888966176,
+     "pes_se_bps": 0.051549281295109585
+    },
+    "h300s": {
+     "opt_n": 680565,
+     "opt_mean_bps": -1.4703977534943704,
+     "opt_se_bps": 0.05494129896468264,
+     "pes_n": 193259,
+     "pes_mean_bps": -1.8171259613496247,
+     "pes_se_bps": 0.10231080780490888
+    },
+    "notional_usd_day": 1061518548.68995
+   },
+   "SOLUSDT_2025-05-24": {
+    "n_trades": 246174,
+    "hours": 23.999915277777777,
+    "half_spread_bps_median": 0.2861475949300176,
+    "half_spread_bps_mean": 0.6039304898039377,
+    "h1s": {
+     "opt_n": 246173,
+     "opt_mean_bps": -0.1465354233468405,
+     "opt_se_bps": 0.002615872057070234,
+     "pes_n": 53605,
+     "pes_mean_bps": -0.7681238608601016,
+     "pes_se_bps": 0.0062040148174054704
+    },
+    "h10s": {
+     "opt_n": 246167,
+     "opt_mean_bps": -0.5906708502024169,
+     "opt_se_bps": 0.007199719204247608,
+     "pes_n": 53604,
+     "pes_mean_bps": -1.4646446427605275,
+     "pes_se_bps": 0.015699257587956275
+    },
+    "h60s": {
+     "opt_n": 246079,
+     "opt_mean_bps": -0.5861646640655114,
+     "opt_se_bps": 0.016930202718223666,
+     "pes_n": 53584,
+     "pes_mean_bps": -1.4971816447453197,
+     "pes_se_bps": 0.037487283628268586
+    },
+    "h300s": {
+     "opt_n": 245612,
+     "opt_mean_bps": -0.36586257122477034,
+     "opt_se_bps": 0.0377163295013549,
+     "pes_n": 53482,
+     "pes_mean_bps": -1.5172578061193858,
+     "pes_se_bps": 0.0852196978635589
+    },
+    "notional_usd_day": 407150995.30293
+   },
+   "SOLUSDT_2026-08-23": {
+    "n_trades": 265066,
+    "hours": 23.99939861111111,
+    "half_spread_bps_median": 0.5343878587073642,
+    "half_spread_bps_mean": 0.9928162183299064,
+    "h1s": {
+     "opt_n": 265059,
+     "opt_mean_bps": -0.055232125961917095,
+     "opt_se_bps": 0.015083636904384955,
+     "pes_n": 62144,
+     "pes_mean_bps": -1.2538771872100372,
+     "pes_se_bps": 0.04276559061501717
+    },
+    "h10s": {
+     "opt_n": 265046,
+     "opt_mean_bps": -0.4560584286781777,
+     "opt_se_bps": 0.0304483779125321,
+     "pes_n": 62144,
+     "pes_mean_bps": -1.4135742565004732,
+     "pes_se_bps": 0.08680834822021818
+    },
+    "h60s": {
+     "opt_n": 264991,
+     "opt_mean_bps": -0.3602480475274398,
+     "opt_se_bps": 0.045906025153059964,
+     "pes_n": 62137,
+     "pes_mean_bps": -1.3762495724801813,
+     "pes_se_bps": 0.11673079025312695
+    },
+    "h300s": {
+     "opt_n": 264647,
+     "opt_mean_bps": -0.5517789088761008,
+     "opt_se_bps": 0.07403357761964581,
+     "pes_n": 62024,
+     "pes_mean_bps": -0.7438775672712898,
+     "pes_se_bps": 0.17833671085147232
+    },
+    "notional_usd_day": 357542958.83416
+   },
+   "WIFUSDT_2025-02-18": {
+    "n_trades": 54010,
+    "hours": 23.999626944444444,
+    "half_spread_bps_median": 7.980845969672791,
+    "half_spread_bps_mean": 5.745815673461611,
+    "h1s": {
+     "opt_n": 54009,
+     "opt_mean_bps": 3.760887414594762,
+     "opt_se_bps": 0.02574201826006056,
+     "pes_n": 3742,
+     "pes_mean_bps": -6.692170716601128,
+     "pes_se_bps": 0.07879841929804442
+    },
+    "h10s": {
+     "opt_n": 54008,
+     "opt_mean_bps": 2.2919382222756783,
+     "opt_se_bps": 0.046463010588386255,
+     "pes_n": 3742,
+     "pes_mean_bps": -6.73158839811172,
+     "pes_se_bps": 0.16669968942301966
+    },
+    "h60s": {
+     "opt_n": 54004,
+     "opt_mean_bps": 1.9346959021700008,
+     "opt_se_bps": 0.09646007853234327,
+     "pes_n": 3741,
+     "pes_mean_bps": -6.204786222683471,
+     "pes_se_bps": 0.36457360906821235
+    },
+    "h300s": {
+     "opt_n": 53959,
+     "opt_mean_bps": 1.7462306926464914,
+     "opt_se_bps": 0.18382086434941702,
+     "pes_n": 3738,
+     "pes_mean_bps": -5.319489818034707,
+     "pes_se_bps": 0.710035180811269
+    },
+    "notional_usd_day": 59482456.495900005
+   },
+   "WIFUSDT_2025-05-24": {
+    "n_trades": 99001,
+    "hours": 23.998528055555557,
+    "half_spread_bps_median": 4.387889425186002,
+    "half_spread_bps_mean": 3.2143471028470096,
+    "h1s": {
+     "opt_n": 98998,
+     "opt_mean_bps": 2.0323164756787087,
+     "opt_se_bps": 0.011984008443929313,
+     "pes_n": 8311,
+     "pes_mean_bps": -4.057889403605372,
+     "pes_se_bps": 0.04282459900318708
+    },
+    "h10s": {
+     "opt_n": 98998,
+     "opt_mean_bps": 0.346573453107696,
+     "opt_se_bps": 0.02713580355703729,
+     "pes_n": 8311,
+     "pes_mean_bps": -5.65989375397891,
+     "pes_se_bps": 0.09750361610677404
+    },
+    "h60s": {
+     "opt_n": 98953,
+     "opt_mean_bps": -0.2384407115279233,
+     "opt_se_bps": 0.064637465066606,
+     "pes_n": 8308,
+     "pes_mean_bps": -5.921750155409063,
+     "pes_se_bps": 0.2298567664847377
+    },
+    "h300s": {
+     "opt_n": 98679,
+     "opt_mean_bps": 1.2326293455305295,
+     "opt_se_bps": 0.14211916471373431,
+     "pes_n": 8284,
+     "pes_mean_bps": -6.100954113655049,
+     "pes_se_bps": 0.5126862201825408
+    },
+    "notional_usd_day": 79843216.73615
+   },
+   "WIFUSDT_2026-08-23": {
+    "n_trades": 26958,
+    "hours": 23.991785,
+    "half_spread_bps_median": 2.626740215393137,
+    "half_spread_bps_mean": 4.561146493705709,
+    "h1s": {
+     "opt_n": 26957,
+     "opt_mean_bps": 2.443134514205255,
+     "opt_se_bps": 0.04070623479825766,
+     "pes_n": 7915,
+     "pes_mean_bps": -0.8458630168939262,
+     "pes_se_bps": 0.0864099074271853
+    },
+    "h10s": {
+     "opt_n": 26957,
+     "opt_mean_bps": -0.20595811793101582,
+     "opt_se_bps": 0.07180154414272329,
+     "pes_n": 7915,
+     "pes_mean_bps": -4.179177668700092,
+     "pes_se_bps": 0.14155250945487047
+    },
+    "h60s": {
+     "opt_n": 26947,
+     "opt_mean_bps": -2.4727414072224057,
+     "opt_se_bps": 0.15137235975081362,
+     "pes_n": 7911,
+     "pes_mean_bps": -6.656273470163752,
+     "pes_se_bps": 0.29035301259113094
+    },
+    "h300s": {
+     "opt_n": 26847,
+     "opt_mean_bps": -1.8648668533744621,
+     "opt_se_bps": 0.2824327261684869,
+     "pes_n": 7889,
+     "pes_mean_bps": -5.197837580901033,
+     "pes_se_bps": 0.5255623169341634
+    },
+    "notional_usd_day": 2767707.409004
+   }
+  },
+  "summary": {
+   "BTCUSDT": {
+    "days": 3,
+    "half_spread_bps_median": 0.0763107370951323,
+    "h1s_opt_bps": -0.5588679671950297,
+    "h1s_pes_bps": -0.8113940124966464,
+    "h10s_opt_bps": -0.9172242445861825,
+    "h10s_pes_bps": -1.287774614835661,
+    "h60s_opt_bps": -0.9533038349905958,
+    "h60s_pes_bps": -1.2888532420198084,
+    "h300s_opt_bps": -0.8280370034069433,
+    "h300s_pes_bps": -1.0937414989158516,
+    "net_pes_10s_vip0_bps": -11.28777461483566,
+    "net_pes_10s_perp_maker_bps": -3.2877746148356612,
+    "breakeven_maker_fee_bps": -1.287774614835661,
+    "verdict": "ABANDON (palier VIP0)"
+   },
+   "SOLUSDT": {
+    "days": 3,
+    "half_spread_bps_median": 0.3053341882687828,
+    "h1s_opt_bps": -0.2764156805493214,
+    "h1s_pes_bps": -1.1476925222719834,
+    "h10s_opt_bps": -0.6565247395452335,
+    "h10s_pes_bps": -1.5632198579402106,
+    "h60s_opt_bps": -0.7313286149350205,
+    "h60s_pes_bps": -1.6228504020407062,
+    "h300s_opt_bps": -0.7960130778650805,
+    "h300s_pes_bps": -1.3594204449134335,
+    "net_pes_10s_vip0_bps": -11.563219857940211,
+    "net_pes_10s_perp_maker_bps": -3.5632198579402106,
+    "breakeven_maker_fee_bps": -1.5632198579402106,
+    "verdict": "ABANDON (palier VIP0)"
+   },
+   "WIFUSDT": {
+    "days": 3,
+    "half_spread_bps_median": 4.387889425186002,
+    "h1s_opt_bps": 2.745446134826242,
+    "h1s_pes_bps": -3.8653077123668083,
+    "h10s_opt_bps": 0.8108511858174529,
+    "h10s_pes_bps": -5.5235532735969075,
+    "h60s_opt_bps": -0.2588287388601094,
+    "h60s_pes_bps": -6.260936616085428,
+    "h300s_opt_bps": 0.3713310616008529,
+    "h300s_pes_bps": -5.539427170863597,
+    "net_pes_10s_vip0_bps": -15.523553273596907,
+    "net_pes_10s_perp_maker_bps": -7.5235532735969075,
+    "breakeven_maker_fee_bps": -5.5235532735969075,
+    "verdict": "ABANDON (palier VIP0)"
+   }
+  }
+ },
+ "snapshot": {
+  "file": "snap_20261126T133835Z.jsonl.gz",
+  "rounds": 240,
+  "requests": 7920,
+  "failed_requests": 0,
+  "round_sync_s_median": 0.39890778064727783,
+  "round_sync_s_p95": 0.5996888637542723,
+  "S4B_spreads": [
+   {
+    "venue": "coinbase",
+    "sym": "BONK-USD",
+    "n": 240,
+    "spread_bps_median": 45.76659038901751,
+    "spread_bps_p90": 45.76659038901751,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -37.116704805491246
+   },
+   {
+    "venue": "coinbase",
+    "sym": "BTC-USD",
+    "n": 240,
+    "spread_bps_median": 0.0016443410376527409,
+    "spread_bps_p90": 0.0016456824603022125,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -59.99917782948118
+   },
+   {
+    "venue": "coinbase",
+    "sym": "ETH-USD",
+    "n": 240,
+    "spread_bps_median": 0.5879413234770448,
+    "spread_bps_p90": 0.9983755868034742,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -59.70602933826148
+   },
+   {
+    "venue": "coinbase",
+    "sym": "JTO-USD",
+    "n": 240,
+    "spread_bps_median": 8.485362749257773,
+    "spread_bps_p90": 12.70378996400688,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -55.75731862537111
+   },
+   {
+    "venue": "coinbase",
+    "sym": "SOL-USD",
+    "n": 240,
+    "spread_bps_median": 1.4097413124678797,
+    "spread_bps_p90": 2.82063585212615,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -59.29512934376606
+   },
+   {
+    "venue": "coinbase",
+    "sym": "WIF-USD",
+    "n": 240,
+    "spread_bps_median": 10.518012466757614,
+    "spread_bps_p90": 12.025283457527392,
+    "depth_10bp_quote_median": NaN,
+    "maker_fee_bps": 60.0,
+    "half_spread_minus_maker_bps": -54.740993766621195
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "BTC",
+    "n": 240,
+    "spread_bps_median": 0.1643128845948455,
+    "spread_bps_p90": 0.16445069357080014,
+    "depth_10bp_quote_median": 5506400.173825,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": -1.4178435577025772
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "ETH",
+    "n": 240,
+    "spread_bps_median": 0.5870267102204823,
+    "spread_bps_p90": 0.5874922891645061,
+    "depth_10bp_quote_median": 9547013.412655,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": -1.2064866448897589
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "HYPE",
+    "n": 240,
+    "spread_bps_median": 0.163295965772785,
+    "spread_bps_p90": 0.3264528056102761,
+    "depth_10bp_quote_median": 145103.61825250002,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": -1.4183520171136075
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "JUP",
+    "n": 240,
+    "spread_bps_median": 1.2798088824560174,
+    "spread_bps_p90": 2.9799155459725806,
+    "depth_10bp_quote_median": 12444.8937625,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": -0.8600955587719913
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "SOL",
+    "n": 240,
+    "spread_bps_median": 0.14074892503075714,
+    "spread_bps_p90": 0.14109048838339422,
+    "depth_10bp_quote_median": 413839.9248575,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": -1.4296255374846214
+   },
+   {
+    "venue": "hyperliquid",
+    "sym": "WIF",
+    "n": 240,
+    "spread_bps_median": 4.498425551057466,
+    "spread_bps_p90": 6.117839423176131,
+    "depth_10bp_quote_median": 13298.171292500001,
+    "maker_fee_bps": 1.5,
+    "half_spread_minus_maker_bps": 0.7492127755287332
+   },
+   {
+    "venue": "kraken",
+    "sym": "SOLUSD",
+    "n": 240,
+    "spread_bps_median": 1.408549897880853,
+    "spread_bps_p90": 1.4119308153907686,
+    "depth_10bp_quote_median": 598496.3705325,
+    "maker_fee_bps": 25.0,
+    "half_spread_minus_maker_bps": -24.295725051059573
+   },
+   {
+    "venue": "kraken",
+    "sym": "XBTUSD",
+    "n": 240,
+    "spread_bps_median": 0.016443054823371963,
+    "spread_bps_p90": 0.016456449241077076,
+    "depth_10bp_quote_median": 546675.1444999999,
+    "maker_fee_bps": 25.0,
+    "half_spread_minus_maker_bps": -24.991778472588315
+   },
+   {
+    "venue": "okx",
+    "sym": "BONK-USDT",
+    "n": 240,
+    "spread_bps_median": 9.144947416553041,
+    "spread_bps_p90": 9.153318077801952,
+    "depth_10bp_quote_median": 2741.66892041725,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -3.4275262917234794
+   },
+   {
+    "venue": "okx",
+    "sym": "BTC-USDT",
+    "n": 240,
+    "spread_bps_median": 0.01642241067960913,
+    "spread_bps_p90": 0.016435947060771217,
+    "depth_10bp_quote_median": 114295.60183905125,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -7.991788794660195
+   },
+   {
+    "venue": "okx",
+    "sym": "BTC-USDT-SWAP",
+    "n": 240,
+    "spread_bps_median": 0.016430357056065277,
+    "spread_bps_p90": 0.016443595589259504,
+    "depth_10bp_quote_median": 524144.8307575,
+    "maker_fee_bps": 2.0,
+    "half_spread_minus_maker_bps": -1.9917848214719673
+   },
+   {
+    "venue": "okx",
+    "sym": "ETH-USDT",
+    "n": 240,
+    "spread_bps_median": 0.05867632087727499,
+    "spread_bps_p90": 0.0587235267000661,
+    "depth_10bp_quote_median": 135513.8333393675,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -7.970661839561362
+   },
+   {
+    "venue": "okx",
+    "sym": "JTO-USDT",
+    "n": 240,
+    "spread_bps_median": 8.453085376162543,
+    "spread_bps_p90": 8.460236886631893,
+    "depth_10bp_quote_median": 433.55817184,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -3.7734573119187287
+   },
+   {
+    "venue": "okx",
+    "sym": "SOL-USDC",
+    "n": 240,
+    "spread_bps_median": 1.4107356986675768,
+    "spread_bps_p90": 2.8212723938510695,
+    "depth_10bp_quote_median": 37699.032831874996,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -7.294632150666212
+   },
+   {
+    "venue": "okx",
+    "sym": "SOL-USDT",
+    "n": 240,
+    "spread_bps_median": 1.4067665470922295,
+    "spread_bps_p90": 1.4101388986822416,
+    "depth_10bp_quote_median": 309802.38980508747,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -7.296616726453886
+   },
+   {
+    "venue": "okx",
+    "sym": "SOL-USDT-SWAP",
+    "n": 240,
+    "spread_bps_median": 1.4073604953916143,
+    "spread_bps_p90": 1.4109347442667943,
+    "depth_10bp_quote_median": 1235061.83755,
+    "maker_fee_bps": 2.0,
+    "half_spread_minus_maker_bps": -1.2963197523041927
+   },
+   {
+    "venue": "okx",
+    "sym": "WIF-USDT",
+    "n": 240,
+    "spread_bps_median": 7.521624670930179,
+    "spread_bps_p90": 15.015015015015447,
+    "depth_10bp_quote_median": 746.0617447500001,
+    "maker_fee_bps": 8.0,
+    "half_spread_minus_maker_bps": -4.23918766453491
+   }
+  ],
+  "S1C_cross_venue": {
+   "BTC": {
+    "n": 240,
+    "gross_bps_median": 0.7468966298401587,
+    "gross_bps_max": 6.377158038676326,
+    "share_gross_pos": 1.0,
+    "share_net_pos_base_tier": 0.0,
+    "share_net_pos_best_tier": 0.0,
+    "net_best_tier_bps_max": -0.3036639633501217
+   },
+   "ETH": {
+    "n": 240,
+    "gross_bps_median": 0.1215910776659683,
+    "gross_bps_max": 4.8641027359255276,
+    "share_gross_pos": 0.5791666666666667,
+    "share_net_pos_base_tier": 0.0,
+    "share_net_pos_best_tier": 0.0,
+    "net_best_tier_bps_max": -1.6358972640744724
+   },
+   "SOL": {
+    "n": 240,
+    "gross_bps_median": -0.15218902654134173,
+    "gross_bps_max": 4.313103340190134,
+    "share_gross_pos": 0.3958333333333333,
+    "share_net_pos_base_tier": 0.0,
+    "share_net_pos_best_tier": 0.0,
+    "net_best_tier_bps_max": -0.800479176942229
+   }
+  },
+  "S1C_dex_vs_cex": [
+   {
+    "side": "SOL->USDC",
+    "size": "1",
+    "n": 60,
+    "cost_bps_median": -0.19710283777686988,
+    "cost_bps_min": -1.930535048864217,
+    "share_better_than_cex_mid": 0.6,
+    "top_route": "BisonFi"
+   },
+   {
+    "side": "SOL->USDC",
+    "size": "10",
+    "n": 60,
+    "cost_bps_median": -0.0009967260140293869,
+    "cost_bps_min": -1.720255923502444,
+    "share_better_than_cex_mid": 0.5,
+    "top_route": "BisonFi"
+   },
+   {
+    "side": "SOL->USDC",
+    "size": "100",
+    "n": 60,
+    "cost_bps_median": 0.279618738671449,
+    "cost_bps_min": -1.5086099978883727,
+    "share_better_than_cex_mid": 0.45,
+    "top_route": "Manifest+BisonFi"
+   },
+   {
+    "side": "SOL->USDC",
+    "size": "1000",
+    "n": 60,
+    "cost_bps_median": 0.800430974632211,
+    "cost_bps_min": -1.0130648948870649,
+    "share_better_than_cex_mid": 0.26666666666666666,
+    "top_route": "BisonFi+BisonFi+Deriverse"
+   },
+   {
+    "side": "USDC->SOL",
+    "size": "100",
+    "n": 60,
+    "cost_bps_median": 1.1635315035582408,
+    "cost_bps_min": -1.4480447297799866,
+    "share_better_than_cex_mid": 0.08333333333333333,
+    "top_route": "BisonFi"
+   },
+   {
+    "side": "USDC->SOL",
+    "size": "1000",
+    "n": 60,
+    "cost_bps_median": 1.5493450656285963,
+    "cost_bps_min": -1.2334216886785323,
+    "share_better_than_cex_mid": 0.08333333333333333,
+    "top_route": "BisonFi"
+   },
+   {
+    "side": "USDC->SOL",
+    "size": "10000",
+    "n": 60,
+    "cost_bps_median": 1.785809715812351,
+    "cost_bps_min": -1.0575974416452663,
+    "share_better_than_cex_mid": 0.06666666666666667,
+    "top_route": "BisonFi+Manifest"
+   },
+   {
+    "side": "USDC->SOL",
+    "size": "100000",
+    "n": 60,
+    "cost_bps_median": 2.935277426442492,
+    "cost_bps_min": 0.09961534087568762,
+    "share_better_than_cex_mid": 0.0,
+    "top_route": "Deriverse+BisonFi+Raydium CLMM+Scorch+BisonFi"
+   }
+  ]
+ }
+}
