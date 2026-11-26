@@ -37,3 +37,14 @@ R03 a fait un essai à blanc hors ligne : tous les contrôles d'intégrité pass
 4. Les journaux prennent des noms propres à la v4 : launch_g23_v4.log et manifest_check_g23_v4.txt.
 Le code Python et le paquet ne changent pas : MANIFEST 0.2.8.2 7d810749, driver 40d036ca et complete f66c8e32 sont
 inchangés.
+
+## PASS de code R02 (26/11, 14:29Z, sur d4baeb0), toujours NON EXÉCUTABLE — réserves pour la publication d'inscription
+
+- **(a) Fait ici.** `test_the_three_addendum_constants_and_the_file_agree` vérifie que trois valeurs et le fichier
+  canonique concordent : la constante du driver, celle de rpc, `ADD_SHA` du lanceur et le sha256 de
+  `AUTORISATION_G23_ADDENDUM.txt`. Deux états sont acceptés : tout EN ATTENTE, ou le même sha partout, différent de
+  3d6999ec. Un second test montre qu'une inscription partielle est détectée. Driver : 32/32.
+- **(b)** Depuis la relecture de R03 (28e6613), le checkout du 06/12 est UNE extraction du commit d'inscription ; 7ce025c
+  n'est plus nécessaire. R03 refait l'essai à blanc du lanceur v4 depuis ce commit (garde de date neutralisée dans une
+  copie, sans réseau) et livre la sortie à R02.
+- **(c)** R02 ancre l'erratum après la signature, avec le sha du lanceur v4 inscrit.

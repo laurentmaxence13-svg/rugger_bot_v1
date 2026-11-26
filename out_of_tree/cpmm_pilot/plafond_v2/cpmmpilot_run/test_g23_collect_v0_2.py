@@ -395,3 +395,29 @@ def test_complete_false_when_the_run_stops_after_every_state_is_done(tmp_path, m
     res = _result(out)
     assert res['verdict_run'] == 'STOP' and all(s['done'] for s in res['states'].values())
     assert C.complete(out, G.POOLS) is False
+
+
+# -- R02 reserve (a), 26/11 14:29Z: the three constants and the canonical file must agree ------------------------------
+def _launcher_add_sha():
+    import re
+    lines = [ln for ln in (HERE / 'launch_g23_v4.sh').read_text().splitlines() if re.match(r'ADD_SHA=', ln)]
+    assert len(lines) == 1
+    return lines[0].split('=', 1)[1].split()[0]
+
+
+def test_the_three_addendum_constants_and_the_file_agree():
+    """Both PENDING everywhere (None, None, 'PENDING', no file), or the SAME 64-hex sha everywhere, equal to the sha256 of
+    AUTORISATION_G23_ADDENDUM.txt and different from the base text. One incoherent inscription would block the 06/12."""
+    driver, lib, launcher = G.ADDENDUM_TEXT_SHA256, rpc.ADDENDUM_TEXT_SHA256, _launcher_add_sha()
+    f = HERE / 'AUTORISATION_G23_ADDENDUM.txt'
+    if launcher == 'PENDING':
+        assert driver is None and lib is None and not f.exists()
+    else:
+        assert driver == lib == launcher == hashlib.sha256(f.read_bytes()).hexdigest()
+        assert len(launcher) == 64 and launcher != G.G23_TEXT_SHA256 and launcher not in G.NOT_COVERING
+
+
+def test_the_agreement_check_catches_a_partial_inscription(monkeypatch):
+    monkeypatch.setattr(G, 'ADDENDUM_TEXT_SHA256', 'ab' * 32)                 # driver inscribed, launcher still PENDING
+    with pytest.raises(AssertionError):
+        test_the_three_addendum_constants_and_the_file_agree()
