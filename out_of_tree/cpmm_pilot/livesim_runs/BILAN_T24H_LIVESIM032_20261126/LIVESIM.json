@@ -1,0 +1,2731 @@
+{
+ "amm_config_sha256": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1"
+ },
+ "b3_by_pool": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": 1.0,
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": 1.0,
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": 4.0
+ },
+ "chunks": [
+  "live_000",
+  "live_001",
+  "live_002",
+  "live_003",
+  "live_004",
+  "live_005",
+  "live_006",
+  "live_007",
+  "live_008",
+  "live_009",
+  "live_010",
+  "live_011"
+ ],
+ "counts_for_operational_master": false,
+ "eligible": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "frozen_code": {
+  "manifests": {
+   "cpmmcost": {
+    "files_checked": 22,
+    "manifest": "MANIFEST_cpmmcost_v0_3_1.txt",
+    "manifest_sha256": "f635684cb7ad652a44ceeae898fa61cc4d8a0bbdf3d9b3030ca74582d19c8832"
+   },
+   "cpmmgen2": {
+    "files_checked": 15,
+    "manifest": "MANIFEST_cpmmgen2_v0_2.txt",
+    "manifest_sha256": "70ef9a9b46145436b160ce2907c433df9532f39942124a81ce11a7a3e314fcf5"
+   },
+   "cpmmpilot": {
+    "files_checked": 18,
+    "manifest": "MANIFEST_cpmmpilot_v0_2_8.txt",
+    "manifest_sha256": "7251d4fe27355d066d33e08f0c9e42dffa04f890646cc50de07e2a0acc442058"
+   },
+   "cpmmprereg": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_cpmmprereg_v0_2.txt",
+    "manifest_sha256": "9d8ebde62b4a05ce64a86f526d5f729d97f49bcdfee0589a0b5a46899089e5bf"
+   },
+   "cpmmrecon": {
+    "files_checked": 13,
+    "manifest": "MANIFEST_cpmmrecon_v0_1.txt",
+    "manifest_sha256": "bfeae9a3259ab62993eff4b522444f1246f6444a2f58782e69848ddd9e1e6164"
+   },
+   "g1ind": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g1ind_v0_6_1.txt",
+    "manifest_sha256": "12a2e66170918aee1bb859ec4c6639c263ad3587f491c9143d024bb816ae117a"
+   },
+   "g23run": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g23run_v0_1.txt",
+    "manifest_sha256": "3e3cb1053b0b7a792e480460e53b14f771e1d9fdd13be81e17daf02b4054747a"
+   },
+   "lpcost": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_lpcost_v0_2.txt",
+    "manifest_sha256": "ee9c144ca85f3de9489c60e0c74edf8ee685ed1e851d8d74aa392863313849eb"
+   },
+   "n1rot": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_n1rot_v0_2.txt",
+    "manifest_sha256": "2a17791d1098c6a4b1ec155cb5dd8dcfcf067bd445e4467e2ce3a0020cc53fba"
+   }
+  },
+  "trees": {
+   "cpmmx": {
+    "git_tree": "e103437142c74830e6ddc293d84529501f6b1162"
+   }
+  }
+ },
+ "g23": {
+  "capital_rule": "somme cumulée des P&L nets des positions fermées, par heure de sortie, depuis 0",
+  "placebo": {
+   "capital_by_hour": [
+    {
+     "capital_sol": 0.0,
+     "time": 1795610331
+    },
+    {
+     "capital_sol": -0.001482297,
+     "time": 1795613931
+    },
+    {
+     "capital_sol": -0.002588338,
+     "time": 1795617531
+    },
+    {
+     "capital_sol": -0.004022828,
+     "time": 1795621131
+    },
+    {
+     "capital_sol": -0.00512322,
+     "time": 1795624731
+    },
+    {
+     "capital_sol": -0.00645722,
+     "time": 1795628331
+    },
+    {
+     "capital_sol": -0.00645722,
+     "time": 1795631931
+    },
+    {
+     "capital_sol": -0.007451392,
+     "time": 1795635531
+    },
+    {
+     "capital_sol": -0.008450184,
+     "time": 1795639131
+    },
+    {
+     "capital_sol": -0.002322345,
+     "time": 1795642731
+    },
+    {
+     "capital_sol": -0.003395979,
+     "time": 1795646331
+    },
+    {
+     "capital_sol": -0.003395979,
+     "time": 1795649931
+    },
+    {
+     "capital_sol": -0.004631962,
+     "time": 1795653531
+    },
+    {
+     "capital_sol": -0.006278341,
+     "time": 1795657131
+    },
+    {
+     "capital_sol": -0.006278341,
+     "time": 1795660731
+    },
+    {
+     "capital_sol": -0.007216823,
+     "time": 1795664331
+    },
+    {
+     "capital_sol": -0.007216823,
+     "time": 1795667931
+    },
+    {
+     "capital_sol": -0.008119722,
+     "time": 1795671531
+    },
+    {
+     "capital_sol": -0.009092679,
+     "time": 1795675131
+    },
+    {
+     "capital_sol": -0.009092679,
+     "time": 1795678731
+    },
+    {
+     "capital_sol": -0.009166672,
+     "time": 1795682331
+    },
+    {
+     "capital_sol": -0.009953532,
+     "time": 1795685931
+    },
+    {
+     "capital_sol": -0.009953532,
+     "time": 1795689531
+    },
+    {
+     "capital_sol": -0.010777567,
+     "time": 1795693131
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.001482297,
+     "time": 1795612035
+    },
+    {
+     "capital_sol": -0.002588338,
+     "time": 1795615835
+    },
+    {
+     "capital_sol": -0.004022828,
+     "time": 1795619651
+    },
+    {
+     "capital_sol": -0.00512322,
+     "time": 1795623615
+    },
+    {
+     "capital_sol": -0.00645722,
+     "time": 1795627728
+    },
+    {
+     "capital_sol": -0.007451392,
+     "time": 1795634270
+    },
+    {
+     "capital_sol": -0.008450184,
+     "time": 1795637663
+    },
+    {
+     "capital_sol": -0.001521195,
+     "time": 1795639541
+    },
+    {
+     "capital_sol": -0.002322345,
+     "time": 1795640986
+    },
+    {
+     "capital_sol": -0.003395979,
+     "time": 1795646014
+    },
+    {
+     "capital_sol": -0.004631962,
+     "time": 1795653007
+    },
+    {
+     "capital_sol": -0.005649738,
+     "time": 1795654584
+    },
+    {
+     "capital_sol": -0.006278341,
+     "time": 1795656690
+    },
+    {
+     "capital_sol": -0.007216823,
+     "time": 1795664163
+    },
+    {
+     "capital_sol": -0.008119722,
+     "time": 1795668973
+    },
+    {
+     "capital_sol": -0.009092679,
+     "time": 1795674728
+    },
+    {
+     "capital_sol": -0.009166672,
+     "time": 1795679539
+    },
+    {
+     "capital_sol": -0.009953532,
+     "time": 1795685183
+    },
+    {
+     "capital_sol": -0.010777567,
+     "time": 1795690407
+    }
+   ],
+   "capital_end_sol": -0.010777567,
+   "costs_sol": 0.01862877638553919,
+   "entries": 19,
+   "exits": 19,
+   "gross_pnl_sol": 0.007851209385539185,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.010777567,
+   "max_drawdown_stakes": 0.10777567,
+   "n_insufficient": true,
+   "net_pnl_sol": -0.010777567,
+   "net_return_per_position": -0.005672403684210526,
+   "open_positions": 1,
+   "signals": 20,
+   "win_rate": 0.05263157894736842,
+   "wins": 1
+  },
+  "placebo_merged": false,
+  "primary": {
+   "capital_by_hour": [
+    {
+     "capital_sol": -0.001065659,
+     "time": 1795610331
+    },
+    {
+     "capital_sol": -0.002623888,
+     "time": 1795613931
+    },
+    {
+     "capital_sol": -0.003721561,
+     "time": 1795617531
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795621131
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795624731
+    },
+    {
+     "capital_sol": -0.006841598,
+     "time": 1795628331
+    },
+    {
+     "capital_sol": -0.00808988,
+     "time": 1795631931
+    },
+    {
+     "capital_sol": -0.008826757,
+     "time": 1795635531
+    },
+    {
+     "capital_sol": -0.009695211,
+     "time": 1795639131
+    },
+    {
+     "capital_sol": -0.003873055,
+     "time": 1795642731
+    },
+    {
+     "capital_sol": -0.005015735,
+     "time": 1795646331
+    },
+    {
+     "capital_sol": -0.006030994,
+     "time": 1795649931
+    },
+    {
+     "capital_sol": -0.002595317,
+     "time": 1795653531
+    },
+    {
+     "capital_sol": -0.002595317,
+     "time": 1795657131
+    },
+    {
+     "capital_sol": -0.00326419,
+     "time": 1795660731
+    },
+    {
+     "capital_sol": -0.004211779,
+     "time": 1795664331
+    },
+    {
+     "capital_sol": -0.004211779,
+     "time": 1795667931
+    },
+    {
+     "capital_sol": -0.004211779,
+     "time": 1795671531
+    },
+    {
+     "capital_sol": -0.005175897,
+     "time": 1795675131
+    },
+    {
+     "capital_sol": -0.005175897,
+     "time": 1795678731
+    },
+    {
+     "capital_sol": -0.00562138,
+     "time": 1795682331
+    },
+    {
+     "capital_sol": -0.006815359,
+     "time": 1795685931
+    },
+    {
+     "capital_sol": -0.008452636,
+     "time": 1795689531
+    },
+    {
+     "capital_sol": -0.009762476,
+     "time": 1795693131
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.001065659,
+     "time": 1795609089
+    },
+    {
+     "capital_sol": -0.002623888,
+     "time": 1795613106
+    },
+    {
+     "capital_sol": -0.003721561,
+     "time": 1795616992
+    },
+    {
+     "capital_sol": -0.004193413,
+     "time": 1795619168
+    },
+    {
+     "capital_sol": -0.005417252,
+     "time": 1795620923
+    },
+    {
+     "capital_sol": -0.006841598,
+     "time": 1795624909
+    },
+    {
+     "capital_sol": -0.00808988,
+     "time": 1795628812
+    },
+    {
+     "capital_sol": -0.008826757,
+     "time": 1795632522
+    },
+    {
+     "capital_sol": -0.009695211,
+     "time": 1795637048
+    },
+    {
+     "capital_sol": -0.002766222,
+     "time": 1795639541
+    },
+    {
+     "capital_sol": -0.003873055,
+     "time": 1795641953
+    },
+    {
+     "capital_sol": -0.005015735,
+     "time": 1795645582
+    },
+    {
+     "capital_sol": -0.006030994,
+     "time": 1795649345
+    },
+    {
+     "capital_sol": -0.002595317,
+     "time": 1795649933
+    },
+    {
+     "capital_sol": -0.00326419,
+     "time": 1795658723
+    },
+    {
+     "capital_sol": -0.004211779,
+     "time": 1795664178
+    },
+    {
+     "capital_sol": -0.005175897,
+     "time": 1795674718
+    },
+    {
+     "capital_sol": -0.00562138,
+     "time": 1795679579
+    },
+    {
+     "capital_sol": -0.006815359,
+     "time": 1795683777
+    },
+    {
+     "capital_sol": -0.008452636,
+     "time": 1795688193
+    },
+    {
+     "capital_sol": -0.009762476,
+     "time": 1795692044
+    }
+   ],
+   "capital_end_sol": -0.009762476,
+   "costs_sol": 0.020582819103943883,
+   "entries": 21,
+   "exits": 21,
+   "gross_pnl_sol": 0.010820343103943884,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.009762476,
+   "max_drawdown_stakes": 0.09762476,
+   "n_insufficient": true,
+   "net_pnl_sol": -0.009762476,
+   "net_return_per_position": -0.004648798095238095,
+   "open_positions": 0,
+   "signals": 21,
+   "win_rate": 0.09523809523809523,
+   "wins": 2
+  },
+  "stake_sol": 0.1
+ },
+ "hours": 24.0,
+ "journal": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "placebo": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473867995,
+      "counts_for_operational_master": false,
+      "decision_index": 8,
+      "decision_slot": 473867991,
+      "decision_time": 1795635862,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000988349889647455,
+       "price_move": 0.00019342503350553165,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049929951438580766,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795637663,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795637662
+       }
+      },
+      "exit_time": 1795637663,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -998792,
+      "net_return": -0.00998792,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 99421208,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1196340144,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473884857,
+      "counts_for_operational_master": false,
+      "decision_index": 15,
+      "decision_slot": 473884853,
+      "decision_time": 1795639479,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0010897257200642692,
+       "price_move": 0.07977150710453501,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0051918913844707405,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 473885116,
+       "rule": "slot",
+       "state_kept": {
+        "slot_limit": 473885115
+       }
+      },
+      "exit_time": 1795639541,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": 6928989,
+      "net_return": 0.06928989,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 107348989,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1292752228,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473946624,
+      "counts_for_operational_master": false,
+      "decision_index": 42,
+      "decision_slot": 473946620,
+      "decision_time": 1795652783,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000985244614533651,
+       "price_move": 4.8812074204144193e-11,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049925154342784234,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795654584,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795654583
+       }
+      },
+      "exit_time": 1795654584,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1017776,
+      "net_return": -0.01017776,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 99402224,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1189883676,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 3
+   },
+   "primary": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473782038,
+      "counts_for_operational_master": false,
+      "decision_index": 5,
+      "decision_slot": 473782034,
+      "decision_time": 1795617367,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0009761360194996365,
+       "price_move": 0.00546380681020534,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005006190790705704,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795619168,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795619167
+       }
+      },
+      "exit_time": 1795619168,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -471852,
+      "net_return": -0.00471852,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 99948148,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1157715956,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473884857,
+      "counts_for_operational_master": false,
+      "decision_index": 15,
+      "decision_slot": 473884853,
+      "decision_time": 1795639479,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0010897257200642692,
+       "price_move": 0.07977150710453501,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0051918913844707405,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 473885116,
+       "rule": "slot",
+       "state_kept": {
+        "slot_limit": 473885115
+       }
+      },
+      "exit_time": 1795639541,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": 6928989,
+      "net_return": 0.06928989,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 107348989,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1292752228,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473932613,
+      "counts_for_operational_master": false,
+      "decision_index": 37,
+      "decision_slot": 473932609,
+      "decision_time": 1795649767,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0010441042273409663,
+       "price_move": 0.04470512149966118,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005104247272320217,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 473933241,
+       "rule": "slot",
+       "state_kept": {
+        "slot_limit": 473933240
+       }
+      },
+      "exit_time": 1795649933,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": 3435677,
+      "net_return": 0.03435677,
+      "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+      "received": 103855677,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 1250126501,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 3
+   }
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "placebo": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473748887,
+      "counts_for_operational_master": false,
+      "decision_index": 20,
+      "decision_slot": 473748883,
+      "decision_time": 1795610234,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005201010106668394,
+       "price_move": -0.005122579859057861,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049802891302753,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795612035,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795612034
+       }
+      },
+      "exit_time": 1795612035,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1482297,
+      "net_return": -0.01482297,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98937703,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508954798,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473766531,
+      "counts_for_operational_master": false,
+      "decision_index": 35,
+      "decision_slot": 473766527,
+      "decision_time": 1795614034,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000522550204706113,
+       "price_move": -0.0013481357815281268,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.00498972401376576,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795615835,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795615834
+       }
+      },
+      "exit_time": 1795615835,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1106041,
+      "net_return": -0.01106041,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99313959,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510883998,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473784272,
+      "counts_for_operational_master": false,
+      "decision_index": 57,
+      "decision_slot": 473784268,
+      "decision_time": 1795617850,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005202985646637221,
+       "price_move": -0.004643111723384536,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004981489711951741,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795619651,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795619650
+       }
+      },
+      "exit_time": 1795619651,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1434490,
+      "net_return": -0.0143449,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98985510,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 509012402,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473802714,
+      "counts_for_operational_master": false,
+      "decision_index": 79,
+      "decision_slot": 473802710,
+      "decision_time": 1795621814,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000521249517682895,
+       "price_move": -0.0012928055244411762,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004989864957875929,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795623615,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795623614
+       }
+      },
+      "exit_time": 1795623615,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1100392,
+      "net_return": -0.01100392,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99319608,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508327802,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473821866,
+      "counts_for_operational_master": false,
+      "decision_index": 102,
+      "decision_slot": 473821862,
+      "decision_time": 1795625927,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005209089031258383,
+       "price_move": -0.0036350818905985854,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004984009206275577,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795627728,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795627727
+       }
+      },
+      "exit_time": 1795627728,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1334000,
+      "net_return": -0.01334,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99086000,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 509453667,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473852225,
+      "counts_for_operational_master": false,
+      "decision_index": 135,
+      "decision_slot": 473852221,
+      "decision_time": 1795632469,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005225564325937073,
+       "price_move": -0.00022663393505401147,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049925296323522815,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795634270,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795634269
+       }
+      },
+      "exit_time": 1795634270,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -994172,
+      "net_return": -0.00994172,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99425828,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510097727,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473883492,
+      "counts_for_operational_master": false,
+      "decision_index": 167,
+      "decision_slot": 473883488,
+      "decision_time": 1795639185,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005239387095419712,
+       "price_move": 0.0017098077731273645,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004997369063585394,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795640986,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795640985
+       }
+      },
+      "exit_time": 1795640986,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -801150,
+      "net_return": -0.0080115,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99618850,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 511333910,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473906881,
+      "counts_for_operational_master": false,
+      "decision_index": 195,
+      "decision_slot": 473906877,
+      "decision_time": 1795644213,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005226755415633699,
+       "price_move": -0.0010231279258411535,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004990536532595477,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795646014,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795646013
+       }
+      },
+      "exit_time": 1795646014,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1073634,
+      "net_return": -0.01073634,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99346366,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510966400,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473939309,
+      "counts_for_operational_master": false,
+      "decision_index": 223,
+      "decision_slot": 473939305,
+      "decision_time": 1795651206,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005207277916974459,
+       "price_move": -0.0026526376669385033,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004986464541364051,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795653007,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795653006
+       }
+      },
+      "exit_time": 1795653007,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1235983,
+      "net_return": -0.01235983,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99184017,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508422772,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473956412,
+      "counts_for_operational_master": false,
+      "decision_index": 230,
+      "decision_slot": 473956408,
+      "decision_time": 1795654889,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000524382562675816,
+       "price_move": 0.0034400473436146206,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005001694780938804,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795656690,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795656689
+       }
+      },
+      "exit_time": 1795656690,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -628603,
+      "net_return": -0.00628603,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99791397,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510906748,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473991191,
+      "counts_for_operational_master": false,
+      "decision_index": 251,
+      "decision_slot": 473991187,
+      "decision_time": 1795662362,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005228050474365104,
+       "price_move": 0.00033191137703915137,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004993926329602641,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795664163,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795664162
+       }
+      },
+      "exit_time": 1795664163,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -938482,
+      "net_return": -0.00938482,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99481518,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510243652,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474013611,
+      "counts_for_operational_master": false,
+      "decision_index": 267,
+      "decision_slot": 474013607,
+      "decision_time": 1795667172,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005220991524077617,
+       "price_move": 0.0006879261025783367,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004994816950170575,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795668973,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795668972
+       }
+      },
+      "exit_time": 1795668973,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -902899,
+      "net_return": -0.00902899,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99517101,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508594552,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474040373,
+      "counts_for_operational_master": false,
+      "decision_index": 281,
+      "decision_slot": 474040369,
+      "decision_time": 1795672927,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005229308794290026,
+       "price_move": -1.3577543266711198e-05,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004993061577304286,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795674728,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795674727
+       }
+      },
+      "exit_time": 1795674728,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -972957,
+      "net_return": -0.00972957,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99447043,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510764597,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474062744,
+      "counts_for_operational_master": false,
+      "decision_index": 297,
+      "decision_slot": 474062740,
+      "decision_time": 1795677738,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005264997058655056,
+       "price_move": 0.009002170236886752,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005015600531021246,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795679539,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795679538
+       }
+      },
+      "exit_time": 1795679539,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -73993,
+      "net_return": -0.00073993,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 100346007,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510839876,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474088996,
+      "counts_for_operational_master": false,
+      "decision_index": 331,
+      "decision_slot": 474088992,
+      "decision_time": 1795683382,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005240451199307863,
+       "price_move": 0.001853173790102531,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004997728670171744,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795685183,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795685182
+       }
+      },
+      "exit_time": 1795685183,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -786860,
+      "net_return": -0.0078686,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99633140,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 511567654,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474113365,
+      "counts_for_operational_master": false,
+      "decision_index": 367,
+      "decision_slot": 474113361,
+      "decision_time": 1795688606,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005233715934808711,
+       "price_move": 0.0014798168953011558,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004996795301820285,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795690407,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795690406
+       }
+      },
+      "exit_time": 1795690407,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -824035,
+      "net_return": -0.00824035,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99595965,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510579784,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [
+     {
+      "decision_index": 392,
+      "decision_time": 1795692776,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "status": "open"
+     }
+    ],
+    "signals": 17
+   },
+   "primary": {
+    "closed": [
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473735198,
+      "counts_for_operational_master": false,
+      "decision_index": 1,
+      "decision_slot": 473735194,
+      "decision_time": 1795607288,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005223527016873617,
+       "price_move": -0.0009435010375414748,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004990736260771163,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795609089,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795609088
+       }
+      },
+      "exit_time": 1795609089,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1065659,
+      "net_return": -0.01065659,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99354341,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510144356,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473753863,
+      "counts_for_operational_master": false,
+      "decision_index": 24,
+      "decision_slot": 473753859,
+      "decision_time": 1795611305,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005195694655491232,
+       "price_move": -0.005884335347210237,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004978385187240639,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795613106,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795613105
+       }
+      },
+      "exit_time": 1795613106,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1558229,
+      "net_return": -0.01558229,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98861771,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508504367,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473771912,
+      "counts_for_operational_master": false,
+      "decision_index": 47,
+      "decision_slot": 473771908,
+      "decision_time": 1795615191,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005224147474460948,
+       "price_move": -0.001264379756818124,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049899354957357814,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795616992,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795616991
+       }
+      },
+      "exit_time": 1795616992,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1097673,
+      "net_return": -0.01097673,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99322327,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510544014,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473790188,
+      "counts_for_operational_master": false,
+      "decision_index": 62,
+      "decision_slot": 473790184,
+      "decision_time": 1795619122,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005215872943908629,
+       "price_move": -0.00253003269400605,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004986770011603087,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795620923,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795620922
+       }
+      },
+      "exit_time": 1795620923,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1223839,
+      "net_return": -0.01223839,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99196161,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 509906376,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473808743,
+      "counts_for_operational_master": false,
+      "decision_index": 84,
+      "decision_slot": 473808739,
+      "decision_time": 1795623108,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005200813281634025,
+       "price_move": -0.004541635810290449,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004981742861546149,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795624909,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795624908
+       }
+      },
+      "exit_time": 1795624909,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1424346,
+      "net_return": -0.01424346,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98995654,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508525380,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473826917,
+      "counts_for_operational_master": false,
+      "decision_index": 107,
+      "decision_slot": 473826913,
+      "decision_time": 1795627011,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005212295554089577,
+       "price_move": -0.0027754323134062714,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049861581311847715,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795628812,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795628811
+       }
+      },
+      "exit_time": 1795628812,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1248282,
+      "net_return": -0.01248282,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99171718,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 509434511,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473844119,
+      "counts_for_operational_master": false,
+      "decision_index": 127,
+      "decision_slot": 473844115,
+      "decision_time": 1795630721,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000524189737100418,
+       "price_move": 0.0023544004862832836,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004998980749182866,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795632522,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795632521
+       }
+      },
+      "exit_time": 1795632522,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -736877,
+      "net_return": -0.00736877,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99683123,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 511301869,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473865139,
+      "counts_for_operational_master": false,
+      "decision_index": 145,
+      "decision_slot": 473865135,
+      "decision_time": 1795635247,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005230390916416618,
+       "price_move": 0.0010341800442126453,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004995680952570984,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795637048,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795637047
+       }
+      },
+      "exit_time": 1795637048,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -868454,
+      "net_return": -0.00868454,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99551546,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510075478,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473887983,
+      "counts_for_operational_master": false,
+      "decision_index": 171,
+      "decision_slot": 473887979,
+      "decision_time": 1795640152,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005224974678479307,
+       "price_move": -0.0013561274785061008,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004989705053645968,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795641953,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795641952
+       }
+      },
+      "exit_time": 1795641953,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1106833,
+      "net_return": -0.01106833,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99313167,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510860603,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473904874,
+      "counts_for_operational_master": false,
+      "decision_index": 194,
+      "decision_slot": 473904870,
+      "decision_time": 1795643781,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005220666750899533,
+       "price_move": -0.0017159268850118873,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.00498880643989816,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795645582,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795645581
+       }
+      },
+      "exit_time": 1795645582,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1142680,
+      "net_return": -0.0114268,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99277320,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510309696,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473922291,
+      "counts_for_operational_master": false,
+      "decision_index": 215,
+      "decision_slot": 473922287,
+      "decision_time": 1795647544,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005227470763203286,
+       "price_move": -0.000437842382694962,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004992000540984709,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795649345,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795649344
+       }
+      },
+      "exit_time": 1795649345,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1015259,
+      "net_return": -0.01015259,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99404741,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510673478,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473965883,
+      "counts_for_operational_master": false,
+      "decision_index": 235,
+      "decision_slot": 473965879,
+      "decision_time": 1795656922,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000523962119974019,
+       "price_move": 0.0030359185116342418,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.005000686391660223,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795658723,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795658722
+       }
+      },
+      "exit_time": 1795658723,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -668873,
+      "net_return": -0.00668873,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99751127,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510400021,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 473991262,
+      "counts_for_operational_master": false,
+      "decision_index": 252,
+      "decision_slot": 473991258,
+      "decision_time": 1795662377,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005227470838619813,
+       "price_move": 0.0002405546684872675,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004993697584625287,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795664178,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795664177
+       }
+      },
+      "exit_time": 1795664178,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -947589,
+      "net_return": -0.00947589,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99472411,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510196930,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474040325,
+      "counts_for_operational_master": false,
+      "decision_index": 279,
+      "decision_slot": 474040321,
+      "decision_time": 1795672917,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.000522981576772498,
+       "price_move": 7.508572933632657e-05,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049932841525638285,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795674718,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795674717
+       }
+      },
+      "exit_time": 1795674718,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -964118,
+      "net_return": -0.00964118,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99455882,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 510810003,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474062928,
+      "counts_for_operational_master": false,
+      "decision_index": 298,
+      "decision_slot": 474062924,
+      "decision_time": 1795677778,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005240594251360953,
+       "price_move": 0.005275514886929247,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0050062854617931515,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795679579,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795679578
+       }
+      },
+      "exit_time": 1795679579,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -445483,
+      "net_return": -0.00445483,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99974517,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508948204,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474082446,
+      "counts_for_operational_master": false,
+      "decision_index": 314,
+      "decision_slot": 474082442,
+      "decision_time": 1795681976,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005210384143475474,
+       "price_move": -0.0022312331342489826,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.00498751845140347,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795683777,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795683776
+       }
+      },
+      "exit_time": 1795683777,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1193979,
+      "net_return": -0.01193979,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99226021,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508821451,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474103042,
+      "counts_for_operational_master": false,
+      "decision_index": 347,
+      "decision_slot": 474103038,
+      "decision_time": 1795686392,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005177360840010972,
+       "price_move": -0.00667863135535703,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.004976402560641873,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795688193,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795688192
+       }
+      },
+      "exit_time": 1795688193,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1637277,
+      "net_return": -0.01637277,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 98782723,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 505787322,
+      "wsol_separate_close": true
+     },
+     {
+      "amm_config_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+      "buy_landing_slot": 474120972,
+      "counts_for_operational_master": false,
+      "decision_index": 380,
+      "decision_slot": 474120968,
+      "decision_time": 1795690243,
+      "decomposition_share_of_stake": {
+       "cleanup": -0.00105,
+       "price_impact": -0.0005202062707977918,
+       "price_move": -0.0033935805067541536,
+       "rent_lost": 0.0,
+       "trade_and_creator_fees": -0.0049846132224480545,
+       "transactions": -0.0021,
+       "wsol_close": -0.00105
+      },
+      "entered": true,
+      "exit": {
+       "declared": 1795692044,
+       "rule": "clock",
+       "state_kept": {
+        "time_limit": 1795692043
+       }
+      },
+      "exit_time": 1795692044,
+      "failures": {
+       "buy": 0,
+       "cleanup": 0,
+       "sell": 0
+      },
+      "guard_ppm": 20000,
+      "labels": [
+       "MASTER_RESEARCH_PAPER",
+       "HISTORICAL_REPLAY"
+      ],
+      "latency_slots": 4,
+      "net_lamports": -1309840,
+      "net_return": -0.0130984,
+      "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+      "received": 99110160,
+      "sale_state": "real_reserves",
+      "status": "entered",
+      "tokens": 508118619,
+      "wsol_separate_close": true
+     }
+    ],
+    "open": [],
+    "signals": 18
+   }
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "placebo": {
+    "closed": [],
+    "open": [],
+    "signals": 0
+   },
+   "primary": {
+    "closed": [],
+    "open": [],
+    "signals": 0
+   }
+  }
+ },
+ "labels": [
+  "PAPER_SIMULATION",
+  "DESCRIPTIVE_DEMONSTRATION",
+  "NOT_A_TRIAL"
+ ],
+ "limits": [
+  "L1 : démonstration descriptive. Aucun essai, aucun test ni verdict, jamais un trade du Master. Le résultat ne peut servir ni à choisir ni à modifier une stratégie.",
+  "L2 : pools différents de ceux des pilotes, choisis par la règle ancrée par R02 avant toute lecture (registre 08:42:17Z et 08:45:05Z ; liste 5c4fefb6…). Aucune généralisation.",
+  "L3 : horizon de 6 h et de 24 h, au lieu des 12 jours. Le n est faible ; « n insuffisant » est publié quand il le faut.",
+  "L4 : collecte rétrospective par blocs de 2 h, donc une latence de 2 h au plus. Données tronquées à now. L-FIN. Seules les positions fermées sont valorisées.",
+  "L5 : même période de marché que la fenêtre pilote, donc une corrélation possible. Cela ne dit rien des verdicts du 6 décembre.",
+  "L6 : au départ, l'historique des acheteurs sur 600 s est tronqué et le délai de 3 600 s repart à zéro. Le témoin est retiré à chaque bilan. La config de chaque pool est celle lue à U-1, à un slot antérieur.",
+  "L7 : N1 en marques intermédiaires seulement ; le résultat à 12 jours est NON MESURÉ. Coûts du modèle gelé : pas de MEV, latence gelée. PAPER seulement."
+ ],
+ "min_eligible": 3,
+ "n1": {
+  "n_insufficient": true,
+  "note": "marques intermédiaires seulement : valeur liquidative si retrait à la marque ; le résultat 12 jours est NON MESURÉ",
+  "observations": {},
+  "pool_days": 0,
+  "pools": [
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+  ],
+  "result_12_days": "NON MESURÉ",
+  "stake_ppm": 5000,
+  "status": "NON ÉVALUABLE",
+  "universe": {
+   "kept": [
+    "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+   ],
+   "list_sha256": "d008e0c4d816c0d08d6829436c6b424c1e7af3b16e7b8d9467a41ccff1e99002",
+   "min_pools": 3,
+   "min_pools_met": false,
+   "pools": [
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.03588599527791796,
+       "swaps": 2273,
+       "tvl_lamports": 365384976826,
+       "volume_lamports": 13112203553
+      },
+      {
+       "day": -6,
+       "rotation": 0.04112868726562278,
+       "swaps": 2703,
+       "tvl_lamports": 365553137106,
+       "volume_lamports": 15034720655
+      },
+      {
+       "day": -5,
+       "rotation": 0.03866657674082081,
+       "swaps": 2531,
+       "tvl_lamports": 365244226368,
+       "volume_lamports": 14122743908
+      },
+      {
+       "day": -4,
+       "rotation": 0.04137518686389199,
+       "swaps": 2702,
+       "tvl_lamports": 364843873930,
+       "volume_lamports": 15095483460
+      },
+      {
+       "day": -3,
+       "rotation": 0.042445003477149156,
+       "swaps": 2652,
+       "tvl_lamports": 365187598850,
+       "volume_lamports": 15500388903
+      },
+      {
+       "day": -2,
+       "rotation": 0.05651606380637298,
+       "swaps": 3441,
+       "tvl_lamports": 364117290024,
+       "volume_lamports": 20578475996
+      },
+      {
+       "day": -1,
+       "rotation": 0.06121592464837279,
+       "swaps": 2896,
+       "tvl_lamports": 363975973768,
+       "volume_lamports": 22281125784
+      }
+     ],
+     "kept": false,
+     "median_rotation": 0.04137518686389199,
+     "median_rotation_exact": "1509548346/36484387393",
+     "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+     "threshold_exact": "4288465000/19110086961",
+     "threshold_value": 0.22440845029914985
+    },
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.2241492898951354,
+       "swaps": 641,
+       "tvl_lamports": 762470361338,
+       "volume_lamports": 170907190060
+      },
+      {
+       "day": -6,
+       "rotation": 0.2233338018427386,
+       "swaps": 579,
+       "tvl_lamports": 763730793846,
+       "volume_lamports": 170566901774
+      },
+      {
+       "day": -5,
+       "rotation": 0.20622994193701724,
+       "swaps": 575,
+       "tvl_lamports": 755283683824,
+       "volume_lamports": 155762110261
+      },
+      {
+       "day": -4,
+       "rotation": 0.21970133723584098,
+       "swaps": 556,
+       "tvl_lamports": 756046255434,
+       "volume_lamports": 166104373331
+      },
+      {
+       "day": -3,
+       "rotation": 0.19111561532313354,
+       "swaps": 458,
+       "tvl_lamports": 755347325952,
+       "volume_lamports": 144358668982
+      },
+      {
+       "day": -2,
+       "rotation": 0.1839891294044526,
+       "swaps": 1468,
+       "tvl_lamports": 758093184138,
+       "volume_lamports": 139480904957
+      },
+      {
+       "day": -1,
+       "rotation": 0.1666797793919317,
+       "swaps": 1509,
+       "tvl_lamports": 759416175158,
+       "volume_lamports": 126579320542
+      }
+     ],
+     "kept": false,
+     "median_rotation": 0.20622994193701724,
+     "median_rotation_exact": "155762110261/755283683824",
+     "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+     "threshold_exact": "25085642500/119382137721",
+     "threshold_value": 0.21012894373382704
+    },
+    {
+     "days": [
+      {
+       "day": -7,
+       "rotation": 0.5369569166850421,
+       "swaps": 988,
+       "tvl_lamports": 353796129218,
+       "volume_lamports": 189973278680
+      },
+      {
+       "day": -6,
+       "rotation": 1.632850782513046,
+       "swaps": 1442,
+       "tvl_lamports": 453245526906,
+       "volume_lamports": 740082313279
+      },
+      {
+       "day": -5,
+       "rotation": 0.6396257110449258,
+       "swaps": 1017,
+       "tvl_lamports": 384365175220,
+       "volume_lamports": 245849848501
+      },
+      {
+       "day": -4,
+       "rotation": 0.3399335297304476,
+       "swaps": 447,
+       "tvl_lamports": 443134251724,
+       "volume_lamports": 150636190333
+      },
+      {
+       "day": -3,
+       "rotation": 0.09881017691143573,
+       "swaps": 89,
+       "tvl_lamports": 398259171262,
+       "volume_lamports": 39352059169
+      },
+      {
+       "day": -2,
+       "rotation": 0.07770085931141099,
+       "swaps": 23,
+       "tvl_lamports": 421183945622,
+       "volume_lamports": 32726354503
+      },
+      {
+       "day": -1,
+       "rotation": 0.21580753868896924,
+       "swaps": 219,
+       "tvl_lamports": 395377980252,
+       "volume_lamports": 85325548770
+      }
+     ],
+     "kept": true,
+     "median_rotation": 0.3399335297304476,
+     "median_rotation_exact": "150636190333/443134251724",
+     "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+     "threshold_exact": "396897500/1793209173",
+     "threshold_value": 0.22133363244846618
+    }
+   ],
+   "rule": "n1rot 0.2, seuil r04_6_break_even",
+   "window": [
+    1795001931,
+    1795606731
+   ]
+  }
+ },
+ "now": 1795693131,
+ "pages_sha256": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "live": {
+    "live_000": "acdab35f3c037134dd36b2eb9ce864fc2bc542b6c32288a6fed1f27546a3daaf",
+    "live_001": "dd4f58f9a255d452548d3901307ed48a485ae1d4567309b35d3a7b31b5f66b0a",
+    "live_002": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf",
+    "live_003": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf",
+    "live_004": "c3a52874f700a269c4197143c57aabd2903f39682efbf705dc65b37d5a3b4248",
+    "live_005": "9786ee0bb2c90c39a4677d3b2559e1e82d77c1d24249e08cb4905e6ebbd62f42",
+    "live_006": "d49d4766bdce68312b8d813eae60688f98e01c4a85073664a0a51d457dbaa813",
+    "live_007": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf",
+    "live_008": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf",
+    "live_009": "24456154b2885b47fea6c82bbf07e0e3afe7cadd2369fb78b814f193ff021faf",
+    "live_010": "c63589a6ca6435576bb6a3fa9e75d350ac8074ebe4cbf7ef002e05450fe41b21",
+    "live_011": "67d9109bc8af18a35b25f988bd3ad1beb835495fa5a4c539630e6d514740a4fe"
+   },
+   "pre": "04a7bd0eb13b08442471fb5017a5e1b16b6e6f5d1f15b29675df2be9e9cbf789"
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "live": {
+    "live_000": "a3004c44ae1b1c7580c850e65143975a196a6e6287fc05bd986b88a8677fd227",
+    "live_001": "abce18d1ab4734f385a967f06d869e60ae49c1718cad446ee44d69cc1bdc2e22",
+    "live_002": "4b576b4f0005909ec09456ea3038ad6428c0deef5ecb68119a5811a3e1027ae1",
+    "live_003": "e8dd2238e69ca0fa7129d0731d59fe1013ab7ab439f74a2713161e3c64324ccd",
+    "live_004": "a1c577a66507bb4639c86ba12573d414669bcd8a5ab6fd3a2dc024943660ef71",
+    "live_005": "f64d233570585953f6fdaa3b5217b415c7b2c1e42ba61d0783d39c3b286ce10f",
+    "live_006": "f154c22fff87139fa449b885e65059ecf2a2662386ff38ed6254dfca67f26ef2",
+    "live_007": "43be890c8422bc8e6e3cb95211f1996f291d376a2ffb5fe28782e9104bd07968",
+    "live_008": "9a2787392c6d0fc6bd58aca7777e4b4eae271cd877259243016c4cdcaac79ca2",
+    "live_009": "5b20ffd49e47f0c59c95da14b4914bcbacdd85d743937d7dd1e5b2bf8e56ae56",
+    "live_010": "25c6ef2ef8c19fd3992eace62a6ad7d4a29b5dcf80c9da966076c1c6290d402f",
+    "live_011": "3c39ad63129c4cd9362c177c659ae5f0ed901d12317d935b3ab72eb072801e72"
+   },
+   "pre": "8f13f7fcf68201bdecce365020b4683dafb27095abb6d113e3ffc776bc2afb4a"
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "live": {
+    "live_000": "421709d9a884fb473fd91fa9595327132fa75bf4e0073d2ffd3330b68cdfec43",
+    "live_001": "c41e14d6bd95f969deb9065848ba6a22682f096735aed384d80d5a5c1a583601",
+    "live_002": "bb3d16ccecfffc65ee8aa9071365786b70904d1d78cff377cae22a6dedf5d0fe",
+    "live_003": "05193f481418b805281363a5b1fe8a77162d61f13e2512b1b3bbd7476894125f",
+    "live_004": "5357d74995b468c39dbd0b74f35b28de7bdee6724e7873df3b9d5a931814889f",
+    "live_005": "2bb43c6a519c97eb0f1143ae5d90c5ef5d946b9e6c3f8037ba4fc6b082b8d337",
+    "live_006": "290f2ec051e3192e4d180e86a24df220c2e1a5e661660c400e869add9bfcfb12",
+    "live_007": "05c85423dd30d37e66d7f14f07ec2a7384cffe370cbac01ca25c49a2ca4e8f12",
+    "live_008": "9ac11ba330d74b100299f871de042094b2d8d8bf607a28e6a7253b76ea28a825",
+    "live_009": "5180d4887ddba6b549c3db9e9130b5dbd7c05b96969bedd153a8474c8087a295",
+    "live_010": "8e3322c5ad7210ac4ff682ca1f37060a4cad0328f778d7ea4ec753f49343ce7d",
+    "live_011": "91aa7e44d5436b1e29ba65a7bbda0c0e0f501359f2e633a3fb74dca8fc143181"
+   },
+   "pre": "b151925bd38eca1cf350bc0252e65cd84dd58ac21e50baa80b7105295070a453"
+  }
+ },
+ "placebo_note": "témoin retiré à chaque « now », autant que de signaux connus ; ses positions peuvent changer entre deux bilans",
+ "placebo_seed_sha256": "7741262633519404e3b602c149e07b4e8b99d62fe79d976444b0c1b190abe046",
+ "pool_gate": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "admitted": true,
+   "reasons": []
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "admitted": true,
+   "reasons": []
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "admitted": true,
+   "reasons": []
+  }
+ },
+ "pools": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "reconstruction": {
+  "live": {
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   },
+   "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   },
+   "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   }
+  },
+  "pre": {
+   "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+    "kept": {},
+    "rebuilt": 39,
+    "rebuilt_swaps": 39,
+    "skipped": 39,
+    "transactions": {
+     "26EVbYeTXRQEJcp5ZeiG5LEYdFQTznzQjhfwTEB64tqYYqDc9PQMbEu73UjB854WjUAcUgcXa3xuVCjERHuhvSAs": "rebuilt:1",
+     "27pgh2W4JVLg6arUpDDu8onj5Hi2x743MM48YL9abgQ23DjM7N3zyButFGuzXry5jdKwe7YjGzKQhFX14Pm8neXQ": "rebuilt:1",
+     "2KsNavjDzeTZdtKTAUUYKDvMBHwxM7nHi5U5h9y8zdEJqZi2stwwVnd6wXxGhD2Mcbwt9L3RhJGakNejQZXGh2Va": "rebuilt:1",
+     "2U46PnWgPG1RRhrAQJ1KLKEiAfPW23CLXtbfrjNynaGRwkVJ6CUP2RLwKFKJwaaX5ncouFCHcpxnKDDR4XSHxQGt": "rebuilt:1",
+     "2UVKoYDimMkNgeLMjgJodmr3H81SqGDosjNRzNciEEKMD7BxmjFm2n6gMHq1LbTBJJcEZjyNB4mifXmuuBhuz2Ay": "rebuilt:1",
+     "2erZjaC9gAvqC8FgtrkfbdC7dY6u1DwvQkQQ4ktm9D1aWRUXVihjuP88fbD5jLhA29LAM2WLKBRvF3Qz121M7fKq": "rebuilt:1",
+     "2yhkMujUYuvaZHxVW29mtRrDhUBTm7RxaZseuJRnb1C1P58wwVEw13AqtCtiyu5Cg1iNtAeyyyFpNW8VJnmmzvCh": "rebuilt:1",
+     "36DMZmQ7CNXGPJ5sxt9UZNfs89D4QGT61JgVezcqW9yXpxWtqJ32yNoamAmEV9oA6VJqgtUijgr1fHvBtShDsFDA": "rebuilt:1",
+     "3718w4nSUZ2jc92RhuJaQyPF2QUhCftCR7KMAsdq9X6tV2qJcRM2daW6x8C4hpdyDAhvS5XJBBWxRUKLH9tLLaLK": "rebuilt:1",
+     "3Q4sLSFJrpfXSJxxy9oyNtziZr21SLMwVde1s1ZHwbo6N1W7bdCdVgmX5SixNafyFB9eaM6Tdsd8mcVJU1BM1Ura": "rebuilt:1",
+     "3VP9QUfcjYoMtzEJpzdUwx6AT6XtHpa2RhXPbsUkRdWA3Kr7YAbfBraUDJbd98pG89DViiV5WUgdv3Xetp4NMo5P": "rebuilt:1",
+     "3keWKdwsQ7C6CcNiceE7y4Mvod3838p6M7B4DBNPGnyZ4PSmB4F1mTD8tsCz35zH4xWKRkMPT1LeqGSTyJBzZY3f": "rebuilt:1",
+     "41vSqH2vFaFdu3pKYw2Q6kn2biqHTramcksPFfgUgC5Pz9JE7jF6SZiDVxThGgeKLHzqf26KwA6kscdtMZkMYCRS": "rebuilt:1",
+     "4BQsygkYVqbbf6AghdD3C57TbwD21dTd1g4heudgJWwPmdXX43U1c1aEnBW4LP213p4hbySX4QRnzokeyEbUUUuK": "rebuilt:1",
+     "4CQg4TXNSxm2ybsn3DKWNB62y3jGtw3f7hXHNZVScKJUByqxmB1u6mSZYhpQoxQvE1QLhFHiSw3BciGs3fv4d9a2": "rebuilt:1",
+     "4Pqq42rXduide2HzJih5g76WrW4jHWqmHzkoZFPb6nshzCARBPJsW6RMnd8AuL89by81kpvcDNXx8vLzZMsbPNZ7": "rebuilt:1",
+     "4SqjsvAqkDJNgjFJuimq6duiPcVoBvhPUsMtvmea6hN8a5Sfw9KhkwnYARLbqYZmryEHtHK1btmn6UnPQyEx8vZf": "rebuilt:1",
+     "4XwHvjaBD5GPfz4zvDQAt4pzEVuTd7Cdq1DhX8sjKUt7KCR297QcM3rzA1PPQZb9Qke4BRWpjxWrsBo7kncsP7EF": "rebuilt:1",
+     "4i7HwfWFwh4sKg8pNpKyQqiiJew3iTJzfB5BRjFyfC5X9Vd6HCF1zKiQya5DiMHEhkXBeDGpkGPUoJZ1fwtcmKYA": "rebuilt:1",
+     "4xBrqk7J3yMH2eB3JPptbSQNC4mCAXKtn21FCLDHz6J8Apemcw7wB4cz8y4wkkiuMc6RW3oUb8e6MK6bNY5djmB4": "rebuilt:1",
+     "56uQqC3GzCngcrE8hNUrLsx6y6x5yjYcxbiREaFhuhfHEMsexv9jm3drp4tHiyxgF8DY4dNhs3WkBuW64s8hHPVz": "rebuilt:1",
+     "574VNSKi9y7cw2P4AXwnpxaKEBGRdBZVWCzFqVf4JAWQ3K2ouJkNG3Vma31qTwu4XgNLHUkWKt9mzcocuQM7fk7H": "rebuilt:1",
+     "58jTBo3CUvS8C7dieF7E31QYs6LzQLHL9WyU9rxsryyCpA66QF6D4V2F2Svj4DUR5yiytyY8b4JnLYMbusv2fYJq": "rebuilt:1",
+     "5CyjbKDsMgApUVz9Q2GnbvW56HuE7ApeWUpTFzuJgoY432TqeGyH68CpqSWU7scEzrH8vxDpA4XNooYx3y92TjP8": "rebuilt:1",
+     "5YrCHkGBGSMzS1tBKaeNv5xFDZ2zUfrxCzta969h23w5fm6ZKhMkMwnX84qNEaM7EJRptEEVddF24fymnyPw7erp": "rebuilt:1",
+     "5hVnngZvDtiCoPjTm9afnf9958g17Dhu2T3zwFEaiU9sEzXXTQhVKU2M6hbSateTcR9iiHkvWoc7GW9Zjy3AG7gm": "rebuilt:1",
+     "5n8Zb4JrMkV2gm3CLbyx1iecEhRg6qQzHo3YNzmZqhr4Kw2zuuUCjqLfwPEdWznGZSTET5HCdk7TyUmsTYsaAb4N": "rebuilt:1",
+     "5saDexGWBUbcvYfFAJTp1PwrT47Tdi1tRAAtNVDFEfeKrkvhjTFAhpQbqYnq2NGgshpqA4Av6i3JSGmhMdcQ8zRd": "rebuilt:1",
+     "5wzPH9UiZmJKe4jKHsdVBrvVxacRpLJ5x8XaCEZRk2gjsUaKGrc5pxSwZ995vSkybRjc7565ceWVMdoxPswE6LRK": "rebuilt:1",
+     "7B8r1YFgoZnDjHLhxKqJEsTYi4eVcuZodaoWH26jDP23ZSX2PueKA3ztwcbMX8hrFVjHF5uPSvSuXWca9sk6DEs": "rebuilt:1",
+     "7cHJDoaEawSB1KjusihhFXpou8WewRwQt7zXZXZh3zQnaGu96rhiAJ1qfNufa2vQkvgwL3J3mMUGPgrC5QWpcYM": "rebuilt:1",
+     "GETibWadjQVEovgQrmSJ9UjxGVM3PaSreWJba5nmTFrM5d8LoUuWgGs94EbjAx5SM4hWiCdvWW212ctk3ETgcQH": "rebuilt:1",
+     "KhcWhF688bup4VCt3HwEzqjwppqpUK7c1BhsHwu9AQNTQVPQuRnwuKG9Gnqe1s7FCSkEtgVciYcPdr622rTcvYH": "rebuilt:1",
+     "XK8pv1Kc3TxK5qnRkohN74M9k2gAEu6FeAdduP8RVAb3BiPgz5Ck6dF81SMj1Kn5SCWSfNmALkdFqJ7WzmpdgyA": "rebuilt:1",
+     "ZXCxYYmHpFy2cXtforyQczB7s6ppRaCMLhwqUQ6BHK8EdLzbQgAL8GU3bpbe8tyMWiWcKWSFFeh1FnUqEivCe9P": "rebuilt:1",
+     "e5qWEA7UeQKuoHjf2NGf61PU5YoSkqHDX8GiPnqRFkDUP5pEdcH3YrjXRziwBUsBXyBvifg3nzuobWWAaP9QozM": "rebuilt:1",
+     "efxubWAyrMZ2ap48xZdsGL6isgAkQMBweKkUrrYfGnNeZhNyYLpDnpf7T1eKkLBeeQxsAELKdZ9vFb6fTUjQSyy": "rebuilt:1",
+     "j65GbEcqhCcHTQodsC8srf5zzKKEzVrqb6MeMuB3waJtHSf8E3CopooGiCjcGEYHuHR3wpdg2MhyGzYBk6YDrLZ": "rebuilt:1",
+     "jsUTNVg36vYrDzwghzW71j9A19QLw7Q1ShkGYmdej283jxtqVjUFGpU1uATh1qKM46uDL3S76ikvafoTBENFdNV": "rebuilt:1"
+    }
+   },
+   "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+    "kept": {},
+    "rebuilt": 1,
+    "rebuilt_swaps": 1,
+    "skipped": 1,
+    "transactions": {
+     "2XHNZVrQ26g9p6SqPZ26JtmbQGaRxVu6r2mzdDKJLt14bu5bjAEZMEfRC2HE29TpcdEVCUpE4G7L6N5cv98tyZyC": "rebuilt:1"
+    }
+   },
+   "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0,
+    "skipped": 0,
+    "transactions": {}
+   }
+  }
+ },
+ "schema": "livesim-v0.3.2",
+ "start": 1795606731,
+ "status": "ÉVALUABLE (démonstration descriptive)",
+ "trial": null
+}
