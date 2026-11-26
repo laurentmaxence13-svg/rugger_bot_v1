@@ -14,6 +14,10 @@ FROZEN_TX = 105_000
 TOKEN_PROGRAMS = {'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'}
 ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz'
 CLOSE_ACCOUNT = 9
+JITO_TIP = {'96gYZGLnJYVFmbjzopPSU6QiEV5fGqZNyN9nmNhvrZU5', 'HFqU5x63VTqvQss8hp11i4wVV8bD44PvwucfZ2bU7gRe',
+            'Cw8CFyM9FkoMi7K7Crf6HNQqf4uEMzpKw6QNghXLvLkY', 'ADaUMid9yfUytqMBgopwjb2DTLSokTSzL1zt6iGPaS49',
+            'DfXygSm4jCyNCybVYYK6DwvWqjKee8pbDmJGcLWNDXjh', 'ADuUkR4vqLUMWXxW9gh6D6L8pMSawimctcNZ5pGwDcEt',
+            'DttWaMuVvTiduZRnguLF7jNxTgiMBZ1hyAumKUiL2KRL', '3AVi9Tg9Uo68tJfuvoKvqKNWKkC5wPdSSdeBnizKZ6jT'}
 
 
 def first_byte(data):
@@ -24,6 +28,18 @@ def first_byte(data):
     pad = len(data) - len(data.lstrip('1'))
     raw = b'\0' * pad + raw
     return raw[0] if raw else None
+
+
+def keys_of(tx):
+    m = tx['transaction']['message']
+    la = tx['meta'].get('loadedAddresses') or {}
+    return list(m['accountKeys']) + list(la.get('writable', [])) + list(la.get('readonly', []))
+
+
+def tip(tx):
+    """Lamports received by the 8 public Jito tip accounts in this transaction (post - pre balance), or 0."""
+    keys, pre, post = keys_of(tx), tx['meta']['preBalances'], tx['meta']['postBalances']
+    return sum(post[i] - pre[i] for i, k in enumerate(keys) if k in JITO_TIP and post[i] > pre[i])
 
 
 def closes(tx):
@@ -58,6 +74,7 @@ def main(u2_path, root, out):
             amt = s.event.input_amount if s.side == 'buy' else s.event.output_amount
             side.setdefault(s.signature, (s.side, LOW <= amt <= HIGH))
         fees = {k: [] for k in ('buy', 'sell', 'buy_band', 'sell_band', 'failed')}
+        tips = {k: [] for k in ('buy', 'sell', 'buy_band', 'sell_band')}
         close = dict(sell=[], sell_band=[])
         for sig, (sd, band) in side.items():
             tx = txs[sig]
@@ -66,8 +83,11 @@ def main(u2_path, root, out):
                 fees['failed'].append(fee)
                 continue
             fees[sd].append(fee)
+            t = tip(tx)
+            tips[sd].append(t)
             if band:
                 fees[sd + '_band'].append(fee)
+                tips[sd + '_band'].append(t)
             if sd == 'sell':
                 n = closes(tx)
                 close['sell'].append(n)
@@ -75,6 +95,9 @@ def main(u2_path, root, out):
                     close['sell_band'].append(n)
         res['pools'][pool] = dict(
             fee={k: summ(v) for k, v in fees.items()},
+            jito_tip={k: dict(n=len(v), share_with_tip=(sum(x > 0 for x in v) / len(v)) if v else None,
+                              tip_when_paid=summ([x for x in v if x > 0])) for k, v in tips.items()},
+            fee_plus_tip={k: summ([f + t for f, t in zip(fees[k], tips[k])]) for k in tips},
             close_account={k: dict(n=len(v), at_least_1=(sum(x >= 1 for x in v) / len(v)) if v else None,
                                    at_least_2=(sum(x >= 2 for x in v) / len(v)) if v else None)
                            for k, v in close.items()})

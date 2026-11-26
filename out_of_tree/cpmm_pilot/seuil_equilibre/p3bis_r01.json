@@ -59,6 +59,90 @@
      "p90": 105000,
      "share_at_most_frozen": 0.9968193384223919
     }
+   },
+   "fee_plus_tip": {
+    "buy": {
+     "mean": 79110.15532444042,
+     "n": 4423,
+     "p10": 6100,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.981234456251413
+    },
+    "buy_band": {
+     "mean": 41681.174097664545,
+     "n": 2355,
+     "p10": 6001,
+     "p50": 12858,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9966029723991507
+    },
+    "sell": {
+     "mean": 72291.11542136442,
+     "n": 5233,
+     "p10": 6003,
+     "p50": 19222,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9820370724249953
+    },
+    "sell_band": {
+     "mean": 36459.76972010178,
+     "n": 3144,
+     "p10": 6000,
+     "p50": 10735,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9958651399491094
+    }
+   },
+   "jito_tip": {
+    "buy": {
+     "n": 4423,
+     "share_with_tip": 0.38164141985078004,
+     "tip_when_paid": {
+      "mean": 24168.375,
+      "n": 1688,
+      "p10": 1000,
+      "p50": 3381,
+      "p90": 20717,
+      "share_at_most_frozen": 0.9845971563981043
+     }
+    },
+    "buy_band": {
+     "n": 2355,
+     "share_with_tip": 0.5970276008492569,
+     "tip_when_paid": {
+      "mean": 6443.7155049786625,
+      "n": 1406,
+      "p10": 1000,
+      "p50": 3373,
+      "p90": 15510,
+      "share_at_most_frozen": 0.9985775248933144
+     }
+    },
+    "sell": {
+     "n": 5233,
+     "share_with_tip": 0.47391553602140263,
+     "tip_when_paid": {
+      "mean": 12452.503629032259,
+      "n": 2480,
+      "p10": 1000,
+      "p50": 3088,
+      "p90": 16459,
+      "share_at_most_frozen": 0.9866935483870968
+     }
+    },
+    "sell_band": {
+     "n": 3144,
+     "share_with_tip": 0.6358142493638677,
+     "tip_when_paid": {
+      "mean": 5749.654327163582,
+      "n": 1999,
+      "p10": 1000,
+      "p50": 3214,
+      "p90": 12177,
+      "share_at_most_frozen": 0.9989994997498749
+     }
+    }
    }
   },
   "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
@@ -114,6 +198,90 @@
      "p50": 55000,
      "p90": 410000,
      "share_at_most_frozen": 0.7493872549019608
+    }
+   },
+   "fee_plus_tip": {
+    "buy": {
+     "mean": 451893.7104795737,
+     "n": 20268,
+     "p10": 5551,
+     "p50": 27340,
+     "p90": 410000,
+     "share_at_most_frozen": 0.761101243339254
+    },
+    "buy_band": {
+     "mean": 123784.37502928087,
+     "n": 4269,
+     "p10": 5424,
+     "p50": 43018,
+     "p90": 410000,
+     "share_at_most_frozen": 0.739517451393769
+    },
+    "sell": {
+     "mean": 209010.64014487673,
+     "n": 17118,
+     "p10": 5133,
+     "p50": 20173,
+     "p90": 410000,
+     "share_at_most_frozen": 0.8101997896950578
+    },
+    "sell_band": {
+     "mean": 141469.20955882352,
+     "n": 3264,
+     "p10": 5580,
+     "p50": 55777,
+     "p90": 410000,
+     "share_at_most_frozen": 0.7405024509803921
+    }
+   },
+   "jito_tip": {
+    "buy": {
+     "n": 20268,
+     "share_with_tip": 0.11777185711466351,
+     "tip_when_paid": {
+      "mean": 106953.46501885212,
+      "n": 2387,
+      "p10": 1000,
+      "p50": 2127,
+      "p90": 37574,
+      "share_at_most_frozen": 0.951403435274403
+     }
+    },
+    "buy_band": {
+     "n": 4269,
+     "share_with_tip": 0.024595924104005622,
+     "tip_when_paid": {
+      "mean": 196839.3142857143,
+      "n": 105,
+      "p10": 2136,
+      "p50": 10000,
+      "p90": 529143,
+      "share_at_most_frozen": 0.7904761904761904
+     }
+    },
+    "sell": {
+     "n": 17118,
+     "share_with_tip": 0.14715504147680805,
+     "tip_when_paid": {
+      "mean": 89365.11671298134,
+      "n": 2519,
+      "p10": 1000,
+      "p50": 1911,
+      "p90": 22824,
+      "share_at_most_frozen": 0.9575228265184597
+     }
+    },
+    "sell_band": {
+     "n": 3264,
+     "share_with_tip": 0.02389705882352941,
+     "tip_when_paid": {
+      "mean": 282983.6666666667,
+      "n": 78,
+      "p10": 2065,
+      "p50": 63229,
+      "p90": 1000000,
+      "share_at_most_frozen": 0.6538461538461539
+     }
     }
    }
   },
@@ -171,6 +339,90 @@
      "p90": 105000,
      "share_at_most_frozen": 1.0
     }
+   },
+   "fee_plus_tip": {
+    "buy": {
+     "mean": 100541.28555176337,
+     "n": 879,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    },
+    "buy_band": {
+     "mean": 105000.0,
+     "n": 186,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    },
+    "sell": {
+     "mean": 102670.91666666667,
+     "n": 852,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 0.9988262910798122
+    },
+    "sell_band": {
+     "mean": 102966.12429378531,
+     "n": 177,
+     "p10": 105000,
+     "p50": 105000,
+     "p90": 105000,
+     "share_at_most_frozen": 1.0
+    }
+   },
+   "jito_tip": {
+    "buy": {
+     "n": 879,
+     "share_with_tip": 0.02161547212741752,
+     "tip_when_paid": {
+      "mean": 1431.0526315789473,
+      "n": 19,
+      "p10": 1000,
+      "p50": 1000,
+      "p90": 4113,
+      "share_at_most_frozen": 1.0
+     }
+    },
+    "buy_band": {
+     "n": 186,
+     "share_with_tip": 0.0,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
+    },
+    "sell": {
+     "n": 852,
+     "share_with_tip": 0.04342723004694836,
+     "tip_when_paid": {
+      "mean": 1541.3243243243244,
+      "n": 37,
+      "p10": 1000,
+      "p50": 1000,
+      "p90": 1691,
+      "share_at_most_frozen": 1.0
+     }
+    },
+    "sell_band": {
+     "n": 177,
+     "share_with_tip": 0.0,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
+    }
    }
   },
   "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
@@ -226,6 +478,90 @@
      "p50": null,
      "p90": null,
      "share_at_most_frozen": null
+    }
+   },
+   "fee_plus_tip": {
+    "buy": {
+     "mean": 5498.753117206982,
+     "n": 802,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 5000,
+     "share_at_most_frozen": 0.9987531172069826
+    },
+    "buy_band": {
+     "mean": 5909.090909090909,
+     "n": 440,
+     "p10": 5000,
+     "p50": 5000,
+     "p90": 5000,
+     "share_at_most_frozen": 0.9977272727272727
+    },
+    "sell": {
+     "mean": 58794.5,
+     "n": 2,
+     "p10": 15001,
+     "p50": 102588,
+     "p90": 102588,
+     "share_at_most_frozen": 1.0
+    },
+    "sell_band": {
+     "mean": null,
+     "n": 0,
+     "p10": null,
+     "p50": null,
+     "p90": null,
+     "share_at_most_frozen": null
+    }
+   },
+   "jito_tip": {
+    "buy": {
+     "n": 802,
+     "share_with_tip": 0.0,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
+    },
+    "buy_band": {
+     "n": 440,
+     "share_with_tip": 0.0,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
+    },
+    "sell": {
+     "n": 2,
+     "share_with_tip": 0.0,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
+    },
+    "sell_band": {
+     "n": 0,
+     "share_with_tip": null,
+     "tip_when_paid": {
+      "mean": null,
+      "n": 0,
+      "p10": null,
+      "p50": null,
+      "p90": null,
+      "share_at_most_frozen": null
+     }
     }
    }
   }
