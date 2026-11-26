@@ -1,0 +1,497 @@
+{
+ "anchored_sha_l": "110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd",
+ "budget": {
+  "by_method": {
+   "getMultipleAccounts": 1522,
+   "getProgramAccounts": 130,
+   "getSlot": 1,
+   "getTransactionsForAddress": 440
+  },
+  "credits": 2093,
+  "max_credits": 4713,
+  "requests": 1580,
+  "stage": "u2"
+ },
+ "counts": {
+  "below_100_sol": 151847,
+  "configs_seen": 6,
+  "configs_u1": 6,
+  "excluded_anchored_lists": 0,
+  "excluded_lp_zero": 0,
+  "excluded_status": 0,
+  "excluded_vault_pda": 0,
+  "list_l": 259,
+  "pools_seen": 152106
+ },
+ "creation_reasons": {
+  "initialize_not_at_depth_1": 3,
+  "launchlab_in_creation_transaction": 16,
+  "ok": 24,
+  "younger_than_7_days": 1
+ },
+ "permutation_seed": 286108641,
+ "schema": "cpmmpilot-u2-v0.1",
+ "selected": [
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "6JZwQ7PCgQcHWZ7aKrYGEy3khqCcWaDiKCxuvuvpSN5K",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv",
+   "reserve_lamports": 144850539472,
+   "wsol_vault": "8YyXt7DeE81tLdWhCj2fKdhXYmRv44Q2d79ZFBsPLRnG"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "Cf2LnRpmcUxY8qkAyiaaPpgAtUHgzkH3tPhMAevE9zLg",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5",
+   "reserve_lamports": 196024772751,
+   "wsol_vault": "53oRTsq5VNnZUMKrVvFZo6yVts7f4F3ppS4ox3Ec9PQi"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "ApZuxdpzMrbEYTGEzeY9afh5pj9d6qPRJCTgQYiipbKg",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+   "reserve_lamports": 2274853760660,
+   "wsol_vault": "6iZNEKMsSDHG42UpDXgGd2FRNZosEDe7RbLwjNPAtaKU"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "88PnD7uyWFPsax5MeVQKCRVx6mLyBVYMrFKe3DobDSR1",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX",
+   "reserve_lamports": 383815537591,
+   "wsol_vault": "AfkJxikBsNWuP6b33WjANnYy91dkWCf6xVNCFEDB4Agx"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "4Ns28dKBkukHehChxuFzdYQD1bMVENXYSYHexDZAibjK",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM",
+   "reserve_lamports": 401531819605,
+   "wsol_vault": "5R36VBVWXFkHYAQKpF8DJeJkKxiL2Rv9egQjKxc5xvpR"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "AUdUEc98MGfEHJiJfCgMaW8gKdcfNDio8BFzGKBwjztC",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53",
+   "reserve_lamports": 595944882558,
+   "wsol_vault": "5ARKk4drxuMzzFsaTCkKZQtKMwADSFfp1nCHJG9yPxWe"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "HX1yDPunYkyhFVLjG6FodzZyJixACnVnrDCSCwTmcYmC",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs",
+   "reserve_lamports": 236692028663,
+   "wsol_vault": "4AyP9uBbHmEg5ufkCqjUb8JaefXDsFDRJKVmqDpqnpht"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "F9AdpcpdwV9Kgffc5qGwLDxMCxyv9wrLFijVfdcH9wf3",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz",
+   "reserve_lamports": 151368918561,
+   "wsol_vault": "GF4s17euH8fbxfEU7XUWuLkL7Q9qxu5BB9q23zjp4AVE"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "3xhezws6Lk7cMqoVEfZFXu3ry9GKymFz1vbWyQ4f99uX",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq",
+   "reserve_lamports": 153781466809,
+   "wsol_vault": "24zMVHvYrXad6TMmmnr1EHLqR9CU7sGCqNLViLnGD7jL"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "Cy7rUZ5rK2ukitsAVVfK5Kn8t35TR417RRuURPWoRBAF",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2",
+   "reserve_lamports": 329705218683,
+   "wsol_vault": "9CiDWMJcC7gDz7fYvC3tKdXnePX8rWbC4fiasEnJ6bWL"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "9CaQUthsVMugZzMvskrrvcHXyjFqHGdNtGkPT8QSRACE",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k",
+   "reserve_lamports": 114700616381,
+   "wsol_vault": "44Asj3WW9uLh6fQ2KbVUQbCjZaFSmHhZhFHHYaJwvVnB"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "8XBLvrhz2mnFSq7koFdkgRSeATb3cJ38GofTQmhf2QRi",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+   "reserve_lamports": 324545688491,
+   "wsol_vault": "35fAn3ua76mtE9649DHDJHbMEJLwrnaKVUj74W1p1wSK"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "BjcRmwm8e25RgjkyaFE56fc7bxRgGPw96JUkXRJFEroT",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+   "reserve_lamports": 1943041631934,
+   "wsol_vault": "8sEyfkybWUScHPNzrtvr3G2oA7DnbyHacxdnbfZtNER5"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "CotWkXoBD3edLb6opEGHV9tb3pyKmeoWBLwdMJ8ZDimW",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi",
+   "reserve_lamports": 443113401403,
+   "wsol_vault": "8hL9421gbBRgrFnCaMBS7cEmaTJLfcYC2TR6rd7BAovm"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "cADryHKCbFJD2Jny2uu4RSQm2yjwnjaK5f9VpP6FUrp",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN",
+   "reserve_lamports": 632604838678,
+   "wsol_vault": "59LaZAq8Wr5Di42ztcw1PQXYvnSX5APrKYDEBBea6c3s"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "DA2hWDYUaBxfhkvC3m3Gf65FYuGSojZw4DsYUDUxpump",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB",
+   "reserve_lamports": 151905799303,
+   "wsol_vault": "8VJYvu3WfyfAbqLQKMqjeRgQ3zc5sx3cDDKCsQdMeoFJ"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "ByyMCyATC6j92DFYGCC45qnCinpbHpHVEPPQZf2ezST6",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf",
+   "reserve_lamports": 151377475499,
+   "wsol_vault": "Gmbj7wKMtufaZc6nUb9a6NhriKat5ZEvzjRKuXnVCjrT"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "AY2sSqL3wWTfuevCoRBqkvMoawArCunRfpnPzVmuxXoi",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr",
+   "reserve_lamports": 2512909665999,
+   "wsol_vault": "4fB23m6jLUhhNjBw63dNwnhLCAh3MgTKDzHxfzbyZfRo"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "866Sh46xjH7cW7aW18tBUmGm3xh6EzGTk1Li7YbbmqJr",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj",
+   "reserve_lamports": 609048639312,
+   "wsol_vault": "DvPZP2ZXpAP1CCoJk4LmTet97YWJ8nkjNSSFyo4dzAvF"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "92zh8CkBj78ZzVAXHbTZe9mYxksDzVMfvkMoox5aNUr8",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL",
+   "reserve_lamports": 137511087351,
+   "wsol_vault": "EfVPSCXHaByaU6xJbHNMYoctv2oj4NyoZ6tq5JW2r7b6"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "rAzzC8PCPQbeRsY1z3XLtjWhGy7HYyaKqkXU1pUpkTJ",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa",
+   "reserve_lamports": 136478588094,
+   "wsol_vault": "3U1JirgJJcps1vS3VbbTpXqHouN8sSLFPEBA1ZoaV5Qd"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "znv3FZt2HFAvzYf5LxzVyryh3mBXWuTRRng25gEZAjh",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+   "reserve_lamports": 559847920234,
+   "wsol_vault": "5exwzc4fcPvd1hrEEdNKMWqadaMLjNRtNDqg4Rj8Vvco"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "dinard4iaai7ayL1spd2P6SRsxijqwwJtg8CCz2uPRX",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S",
+   "reserve_lamports": 121626824665,
+   "wsol_vault": "9g9smDKDBhRvgatzeKfEjg8tV6hPii6zqK2QVWWzsqLm"
+  },
+  {
+   "amm_config": {
+    "address": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "trade_fee_rate": 2500
+   },
+   "base_mint": "6sud9BMgwu7ghFMZGT2Pbbhpx7gPpydhk8yuz9YpWpcb",
+   "config": "D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2",
+   "pool": "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn",
+   "reserve_lamports": 156930842924,
+   "wsol_vault": "77L7iQGkTUpvuL85UJNyhfjnbY3keZ2Nn58vKdktQwog"
+  }
+ ],
+ "sha_l": "110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd",
+ "t0_slot": 473309024,
+ "t0_time": 1795515686,
+ "tested": 44,
+ "verdict": "U2_OK"
+}

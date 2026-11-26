@@ -1,0 +1,99 @@
+{
+ "detected": 18,
+ "total": 18,
+ "equivalent_not_listed": [
+  "driver: dropping 'ADDENDUM_TEXT_SHA256 is None or' (auth != None is always true)"
+ ],
+ "mutants": [
+  {
+   "mutant": "cap_88210",
+   "file": "cpmmpilot0282_pkg/cpmmpilot/budget.py",
+   "detected": true
+  },
+  {
+   "mutant": "cap_old",
+   "file": "cpmmpilot0282_pkg/cpmmpilot/budget.py",
+   "detected": true
+  },
+  {
+   "mutant": "charge_after_the_call",
+   "file": "cpmmpilot0282_pkg/cpmmpilot/budget.py",
+   "detected": true
+  },
+  {
+   "mutant": "cap_exclusive",
+   "file": "cpmmpilot0282_pkg/cpmmpilot/budget.py",
+   "detected": true
+  },
+  {
+   "mutant": "authorized_gets_another_sha",
+   "file": "cpmmpilot0282_pkg/cpmmpilot/rpc.py",
+   "detected": true
+  },
+  {
+   "mutant": "driver_cap_old",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "package_cap_unchecked",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "base_text_unchecked",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "base_accepted_as_addendum",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "any_addendum_accepted",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "not_covering_dropped",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "base_text_optional",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "base_sha_not_recorded",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "schema_v1",
+   "file": "cpmmpilot_run/g23_collect_v0_2.py",
+   "detected": true
+  },
+  {
+   "mutant": "complete_ignores_stop",
+   "file": "cpmmpilot_run/g23_complete.py",
+   "detected": true
+  },
+  {
+   "mutant": "complete_ignores_states",
+   "file": "cpmmpilot_run/g23_complete.py",
+   "detected": true
+  },
+  {
+   "mutant": "complete_ignores_pools",
+   "file": "cpmmpilot_run/g23_complete.py",
+   "detected": true
+  },
+  {
+   "mutant": "complete_true_without_result",
+   "file": "cpmmpilot_run/g23_complete.py",
+   "detected": true
+  }
+ ]
+}

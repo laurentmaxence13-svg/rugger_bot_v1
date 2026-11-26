@@ -1,0 +1,15 @@
+RUGGER MASTER — DÉCISIONS T1 ET T2
+
+J'autorise T1 : la clôture de R-CP1 et B1 sur la liste U-2 du 24 novembre 2026, avec le verdict INFaisable pour insuffisance de pools déclencheurs, sans résultat économique et sans consommation des essais 169 et 170.
+
+J'autorise T2 : une unique mesure de l'activité des 259 pools de la liste L sur 24 heures, avec un plafond de 1 500 crédits Helius exclusivement sur mon offre Free, sans dépense, sans trading réel et sans lecture des transactions individuelles.
+
+R02 devra valider la méthode et les contrôles avant exécution. Au premier incident, l'opération s'arrête sans nouvelle tentative.
+
+R03 publiera le nombre brut de pools actifs N50, puis l'estimation corrigée des exclusions, avec ses incertitudes.
+
+R04 devra utiliser ce résultat pour décider de la suite scientifique, sans présenter une absence de déclenchements comme une preuve de non-rentabilité.
+
+Je veux que les agents privilégient désormais les expériences réalisables, capables de produire rapidement des résultats économiques indépendants.
+
+Aucune nouvelle collecte importante ou modification des hypothèses gelées n'est autorisée par ce texte.

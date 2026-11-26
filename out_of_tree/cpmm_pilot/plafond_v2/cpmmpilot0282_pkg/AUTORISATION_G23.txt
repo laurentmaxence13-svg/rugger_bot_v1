@@ -1,0 +1,11 @@
+J'autorise le pilote G2-3 sur les 4 pools CPMM nommés dans la fiche R02 (AEZjoU…, Gms3Ma…, G8kgi7…, GdxFyc…), choisis par la règle fixée (au moins 3 déclenchements G2-3 dans les 7 jours avant T0), sans aucun rendement.
+
+Le design est celui de l'avis R02 23f02580 : conclusion restreinte à ces pools ; bootstrap par blocs pool-jour ; au moins 30 pool-jours, au moins 3 pools, N de Kish ≥ 2,5, aucun pool au-dessus de 50 % des entrées ; GO seulement si la borne reste positive sans le pool qui a le plus d'entrées.
+
+L'essai 169, non consommé par R-CP1, est réaffecté à G2-3. α pilote 0,05 ; mot maximal GO_PILOTE. Une confirmation éventuelle se fera plus tard, sur les mêmes pools et dans une fenêtre neuve, à α 0,025.
+
+Fenêtre : T0 = 24/11/2026 10:21:26Z (fenêtre jamais lue), D = 12 jours, jusqu'au 06/12/2026 10:21:26Z.
+
+J'autorise R03 à collecter cette fenêtre, après l'ancrage par R02 de la fiche et du code de verdict audité, avec au plus 33 000 crédits Helius de mon offre Free actuelle, sans dépense, arrêt dur à 98 %.
+
+Aucune lecture de la fenêtre avant cet ancrage. Une réponse tronquée peut être relue une seule fois ; tout autre incident ou dépassement entraîne l'ARRÊT, sans repli. Aucun trading réel.
