@@ -6,8 +6,9 @@
 set -u
 S=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad
 PKG=/home/user/rugger_bot_v1/out_of_tree/cpmm_pilot/plafond_v2/cpmmpilot0282_pkg
-RUNREPO=/home/user/rugger_bot_v1/out_of_tree/cpmmpilot_run
 V2RUN=/home/user/rugger_bot_v1/out_of_tree/cpmm_pilot/plafond_v2/cpmmpilot_run
+RUNREPO=$V2RUN                                                # R03 review (1)(2): ONE checkout of the audited commit holds
+                                                              # U2, base text, activity_l2 (loaded by the driver), ADD and OUT
 DRV=$V2RUN/g23_collect_v0_2.py
 COMPLETE=$V2RUN/g23_complete.py
 U2=$RUNREPO/TIME2_20261124T102839Z/U2.json
@@ -17,14 +18,14 @@ ADD_SHA=PENDING                                               # inscription rele
 SHEET=e2f8411d2b7911f05cbbf3b38657ca88d5afa85023d58ceb4b26ea6a8ba46819
 VCODE=3e3cb1053b0b7a792e480460e53b14f771e1d9fdd13be81e17daf02b4054747a
 OUT=$RUNREPO/G23_$(date -u +%Y%m%dT%H%M%SZ)
-LOG=$S/pilot_run/launch_g23.log
+LOG=$S/pilot_run/launch_g23_v4.log                            # R03 review (4)
 PY=/tmp/claude-0/-home-user-rugger-bot-v1/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/venv312/bin/python
 DEPS=$(sed "s#:$S/cpmmpilot_pkg##" $S/cpmmpilot_pythonpath_016_final.txt)
 h(){ sha256sum "$1" | cut -d' ' -f1; }
 {
   echo "start $(date -u +%FT%TZ) out=$OUT"
   if [ "$(date -u +%s)" -lt 1796552486 ]; then echo "TOO_EARLY: no call"; exit 4; fi
-  ( cd $PKG && sha256sum -c MANIFEST_cpmmpilot_v0_2_8_2.txt ) > $S/pilot_run/manifest_check_g23.txt 2>&1; M=$?
+  ( cd $PKG && sha256sum -c MANIFEST_cpmmpilot_v0_2_8_2.txt ) > $S/pilot_run/manifest_check_g23_v4.txt 2>&1; M=$?
   echo "manifest_rc=$M manifest=$(h $PKG/MANIFEST_cpmmpilot_v0_2_8_2.txt) driver=$(h $DRV) complete=$(h $COMPLETE) retry=$(h $RUNREPO/activity_l2.py) u2=$(h $U2) base=$(h $BASE) addendum=$([ -e $ADD ] && h $ADD || echo missing) out_exists=$([ -e $OUT ] && echo yes || echo no)"
   if [ "$ADD_SHA" = PENDING ] || [ ! -e $ADD ] || [ $M -ne 0 ] || [ "$(h $PKG/MANIFEST_cpmmpilot_v0_2_8_2.txt)" != 7d810749cc908fdc13daa3bb6fb9921b22ccd0bbf7eb8d3144b66bc75e916113 ] \
      || [ "$(h $DRV)" != 40d036ca3ab7ca7028742d49ce436a2204da5a5b9bd76444079dd11ada37860d ] || [ "$(h $COMPLETE)" != f66c8e32e1f42bb4b1ed8b184e1b6e07ec536f8254c00772fac2bf82024957a5 ] \
@@ -43,5 +44,5 @@ h(){ sha256sum "$1" | cut -d' ' -f1; }
   cd $S/w1frz/tree && env -i PATH=/usr/bin:/bin RUGGER_NO_DOTENV=1 HTTPS_PROXY="$HTTPS_PROXY" SSL_CERT_FILE=/root/.ccr/ca-bundle.crt \
      PYTHONPATH=$DEPS:$PKG $PY -B $DRV --pkg $PKG --u2 $U2 --out $OUT --sheet-sha $SHEET --verdict-code-sha $VCODE --authorization $ADD --base-text $BASE
   echo "rc=$? end $(date -u +%FT%TZ)"
-  env -i PATH=/usr/bin:/bin $PY -B $COMPLETE $OUT          # informative only; « no verdict on a partial » stays with R02
+  env -i PATH=/usr/bin:/bin PYTHONPATH=$DEPS:$PKG $PY -B $COMPLETE $OUT          # R03 review (3); informative only; « no verdict on a partial » stays with R02
 } 2>&1 | tee -a $LOG

@@ -25,3 +25,15 @@ Fichiers copiés à l'identique depuis 7ce025c, pour que les tests s'exécutent 
 - U2.json 3ca0260a ;
 - AUTORISATION_G23.txt 3d6999ec ;
 - AUTORISATION_T1_T2.txt et AUTORISATION_T2_BIS.txt.
+
+## Relecture opérationnelle de R03 (26/11, 14:27Z) — 4 corrections du lanceur, appliquées
+
+R03 a fait un essai à blanc hors ligne : tous les contrôles d'intégrité passent, puis le driver refuse avec
+« window_not_closed », sans appel. Corrections appliquées au lanceur :
+1. `RUNREPO=$V2RUN` : une seule extraction du commit audité contient U2, le texte de base, activity_l2, ADD et OUT.
+   Déploiement : `git checkout --detach <commit d'inscription>`, puis R03 pose ADD dans plafond_v2/cpmmpilot_run.
+2. Le sha d'activity_l2 est contrôlé sur le fichier que le driver charge réellement, celui de $V2RUN.
+3. La ligne COMPLETE reçoit `PYTHONPATH=$DEPS:$PKG`. Sans lui, g23_complete échoue sur l'import de cpmmpilot.
+4. Les journaux prennent des noms propres à la v4 : launch_g23_v4.log et manifest_check_g23_v4.txt.
+Le code Python et le paquet ne changent pas : MANIFEST 0.2.8.2 7d810749, driver 40d036ca et complete f66c8e32 sont
+inchangés.
