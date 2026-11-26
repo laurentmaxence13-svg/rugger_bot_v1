@@ -48,3 +48,9 @@ inchangés.
   n'est plus nécessaire. R03 refait l'essai à blanc du lanceur v4 depuis ce commit (garde de date neutralisée dans une
   copie, sans réseau) et livre la sortie à R02.
 - **(c)** R02 ancre l'erratum après la signature, avec le sha du lanceur v4 inscrit.
+
+## VCODE (R02, 14:31Z)
+
+`VCODE` passe de 3e3cb105 (MANIFEST de g23run 0.1) à 8528b66f (MANIFEST de g23run 0.1.2), le code de verdict
+réellement utilisé depuis cda64700 et cité par l'erratum. C'est la seule exception que R02 accorde à « rien d'autre ne
+change ». La valeur est seulement enregistrée dans G23_COLLECT_RESULT.
