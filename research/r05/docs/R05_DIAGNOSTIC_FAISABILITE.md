@@ -174,13 +174,18 @@ Détail : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `res
 
 - **Décomposition sur 21 mois, en % du capital** : frais +49,4 % ; LVR réalisée −11,8 % (prix LP −33,3 %,
   couverture +21,5 %) ; funding ≈ 0 ; coûts −1,0 %.
-- Rééquilibrer plus souvent n'aide pas : 4 h donne +13,5 %, 1 h donne +12,5 %. Les coûts montent et la LVR
+- Rééquilibrer plus souvent n'aide pas : 4 h donne +13,4 %, 1 h donne +12,5 %. Les coûts montent et la LVR
   attendue ne dépend pas de la fréquence.
 - Un Sharpe de 7,8 n'est **pas** une qualité : il signifie que les risques restants sont absents du modèle
   (contrat, dépeg, accès à la couverture, événements extrêmes).
 - **Origine du profit identifiée** : le pool hérité à 0,25 % de la paire la plus échangée de Solana reçoit un
   volume routé élevé (rotation ≈ 20 %/j) pour une volatilité modérée. Ses frais valent 4 à 8 fois sa LVR.
 - **Fragilité** : un seul pool, et une dépendance au routage des agrégateurs.
+- **R3.5 taille du capital (post hoc, défaut R05-D8)** : avec un transfert de capital par jour et 2 $ de frais
+  fixes par transfert (hypothèse), l'excès devient **−52 %/an à 1 100 $**. Il reste +6,7 % à 10 000 $ et +13,3 % à
+  100 000 $. Avec la règle à bande [50 % ; 200 %], il suffit de 12 transferts en 21 mois, sans liquidation, et
+  l'excès vaut +13,0 % à 1 100 $. **À petite taille, la stratégie n'est viable qu'avec des transferts rares.**
+  PAPER-1 a été amendé en ce sens **avant** le début de sa fenêtre.
 
 ### 7.2 Momentum 30 j long/plat (S2-F1) — survit aux 3 tests éliminatoires, preuve statistique faible
 
@@ -203,3 +208,29 @@ Ce n'est pas un alpha neutre au marché.
   +0,9 % (2025-07 → 2026-10). Funding BTC : 21,0 % → 14,2 % → 7,6 %. La prime se comprime aussi vers le taux sans
   risque. **Aucune place PAPER** ; observation P-HL1.
 - **R4.1 market making Hyperliquid** : voir ci-dessous.
+
+## 8. Décision : deux pistes PAPER, aucune démontrée rentable
+
+| Stratégie | Origine du profit | Preuve après réfutation | Décision |
+|---|---|---|---|
+| Fourniture de liquidité couverte, SOL-USDC AMM v4 | volume routé non informé ≫ LVR sur ce pool précis | 5/5 tests éliminatoires passés ; excès simulé +14 %/an ; **un seul pool**, la généralité est éliminée ; excès nul vers −58 % de frais, non significatif dès −50 % | **PAPER-1, priorité 1** |
+| Momentum 30 j long/plat | persistance des tendances, réduction d'exposition en baisse | 3/3 tests passés ; p = 0,042 brut, ≈ 0,34 ajusté ; alpha non significatif | **PAPER-2, priorité 2, preuve faible** : il réduit les drawdowns, sans alpha prouvé |
+| Carry spot/perp (Binance, Hyperliquid) | prime de levier payée par les acheteurs | rejet confirmé avec marge de portefeuille ; la prime converge vers le taux sans risque | aucune place ; observation prospective |
+| Arbitrage spatial CEX–CEX / DEX–CEX | vitesse et inventaire pré-positionné | jamais net positif, même aux meilleurs paliers | abandon |
+| Market making (Binance, Hyperliquid petites capitalisations) | spread payé par les preneurs | __R4__ | abandon |
+
+**Jugement de R05.** La seule piste qui possède à la fois un mécanisme économique identifié, un résultat net
+simulé intégralement et une survie aux tests adverses est la LP couverte sur **un** pool. C'est une base
+mince : un seul pool, 21 mois, des sources qui lisent les mêmes swaps, et des risques non modélisés (contrat,
+dépeg, accès à la couverture). Elle mérite un PAPER approfondi parce qu'il est gratuit et peut la réfuter
+vite (contrôle d'arrêt au 2027-02-28). Elle ne mérite **pas encore** de développement d'exécution.
+Le momentum mérite seulement un suivi léger : 12 mois ne prouveront pas un alpha, mais peuvent réfuter
+la promesse « drawdown réduit ».
+
+Si l'on exige un avantage **démontré** avant tout développement, **aucune piste ne le satisfait aujourd'hui.**
+
+**Consultation des autres Ruggers (proposée, non envoyée, pour ne pas perturber les protocoles en cours
+jusqu'au 06/12)** :
+- à R01 : relecture de nos hypothèses de coût de dépôt et de retrait LP au regard de `lpcost` et `cpmmcost` ;
+- à R02 : audit indépendant de `simulate_hedged_lp` et du placebo R2.1.
+L'envoi se fera avec l'accord du propriétaire, après les verdicts du 06/12.
