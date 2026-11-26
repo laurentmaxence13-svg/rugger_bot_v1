@@ -360,6 +360,18 @@ Plafond d'essais : N = 168 sur 170, hors HW1. HW1 ajoute +5, publié à part, so
 
 | 25/11 18:24Z | **Test PAPER EN DIRECT : GO de R02** (registre). Confirmation du propriétaire vérifiée à la source (17:40:23Z) ; livepaper 0.1.2 audité ; vérification d'ordre réussie (rang getSignaturesForAddress = transactionIndex sur l'historique des 3 pools ; 73 crédits) → voie (i-a), sondage toutes les 30 s. Départ 25/11 18:40:00Z, 24 h au plus, pools GaPTvX, 6CQSpR, 5zk4vh ; plafond 25 000 (arrêt à 24 500) ; reprises toutes les ≈ 110 min avec rejeu octet pour octet ; trous publiés ; têtes de journal, bilans T+6 h et T+24 h ancrés par R02, comparaison au livesim. Démonstration descriptive, aucun essai ni ordre réel. Rappels R04 programmés : 26/11 01:10Z et 12:15Z. | registre R02 | déclaré |
 
+
+### Démonstration livesim — bilan T+24 h (26/11, vérifié par R04 : LIVESIM.json ea3d4c95, LIVESIM.md 27b21b72, R01 f7fac0f identique à la référence R02)
+
+Descriptif, sans essai, jamais un trade du Master ; univers distinct des pilotes ; 12 blocs sur 12 (R03 d4933e7) ; 11 030 crédits sur 16 170 ; conforme au texte eba73e3f (contrôle R02, 01:44Z).
+
+| Série | Positions fermées | Net > 0 | Brut (SOL) | Coûts (SOL) | Net (SOL) | Net moyen | Drawdown max |
+|---|---|---|---|---|---|---|---|
+| G2-3 | 21 | 2 (9,52 %) | +0,010820 | 0,020583 | −0,009762 | −0,46 % | 0,009762 |
+| Témoin apparié | 19 (+1 ouverte) | 1 (5,26 %) | +0,007851 | 0,018629 | −0,010778 | −0,57 % | 0,010778 |
+
+N1 : NON ÉVALUABLE (1 pool sur 3 retenu par la règle de rotation). n insuffisant (< 30) dans les deux séries.
+
 ## 5. Incidents
 
 - 25/11 11:51Z : défaut du code gelé cpmmcost 0.3 (frais créateur de 500 ppm appliqué alors que les pools prélèvent 0) ; non détecté par les audits ni par les tests synthétiques ; il aurait rendu le pilote du 06/12 non évaluable. Corrigé par 0.3.1 avant toute lecture de la fenêtre.
