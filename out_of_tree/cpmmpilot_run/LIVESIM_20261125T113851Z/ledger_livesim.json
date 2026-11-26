@@ -1,6 +1,6 @@
 {
  "by_method": {
-  "getTransactionsForAddress": 10760
+  "getTransactionsForAddress": 10830
  },
  "costs": {
   "getMultipleAccounts": 1,
@@ -10,9 +10,9 @@
   "getTransaction": 1,
   "getTransactionsForAddress": 10
  },
- "credits": 10760,
+ "credits": 10830,
  "max_credits": 16170,
- "requests": 1076,
+ "requests": 1083,
  "schema": "cpmmpilot-spend-v1",
  "stage": "livesim"
 }
