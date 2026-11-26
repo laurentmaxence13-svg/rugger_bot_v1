@@ -422,6 +422,12 @@ Descriptif, sans essai, jamais un trade du Master ; univers distinct des pilotes
 
 N1 : NON ÉVALUABLE (1 pool sur 3 retenu par la règle de rotation). n insuffisant (< 30) dans les deux séries.
 
+### Comparaison décision par décision du test en direct arrêté et de livesim (R01, lpcompare, 44c54a0 ; recoupement R02 ; descriptif)
+
+- Mêmes données des deux côtés, à une transaction près : celle de D13 (GaPTvX, 20:10:19Z), absente du live, sans effet sur G2-3 (GaPTvX ne produit aucun signal G2-3).
+- Hors protocole (après 20:10:03Z) : 5 signaux identiques ; latence du live de +15 à +31 s ; nets égaux sur 4 positions, −0,000269 SOL sur la sortie TP de 5zk4vh.
+- Segment conforme : un signal de chaque côté, décalés de 46 min, parce que la chaîne de cooldown (3 600 s) a démarré avant le départ du live ; ni la latence, ni D13. Un signal live seul à 19:49:05Z, de même cause.
+
 ## 5. Incidents
 
 - 25/11 11:51Z : défaut du code gelé cpmmcost 0.3 (frais créateur de 500 ppm appliqué alors que les pools prélèvent 0) ; non détecté par les audits ni par les tests synthétiques ; il aurait rendu le pilote du 06/12 non évaluable. Corrigé par 0.3.1 avant toute lecture de la fenêtre.
