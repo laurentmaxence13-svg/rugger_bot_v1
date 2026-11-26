@@ -21,3 +21,13 @@ Pour comparaison, le modèle gelé compte 105 000 par transaction. La conclusion
 - le levier (2 transactions au lieu de 4) reste chiffré à 0,42 % → 0,21 % à 0,1 SOL et à 105 000 par transaction,
   pour une nouvelle expérience seulement ;
 - pour G2-3, il ne comble pas l'écart entre les frais du pool (0,50 %) et le brut observé.
+
+**Réserve R02 (14:04Z), à lire avec la note.** Ces frais sont ceux qu'ont payés D'AUTRES acteurs, en médiane. Notre
+latence gelée de 4 slots peut exiger une priorité plus haute, plutôt de l'ordre du p90 : 410 000 de meta.fee sur G8kgi7.
+D'où la formulation retenue : « fixe gelé prudent par rapport à la médiane observée ; non démontré pour une exécution à
+4 slots ». Tout levier tiré de là reste réservé à une nouvelle expérience.
+
+**Liste pour le recoupement de R02 (14:02Z)** : DECISIONS_21_G23_v0_1.json, produite par decisions21.py.
+- Contenu : les 21 décisions primaires triées par (pool, indice de swap), avec pour chacune l'état d'achat (base,
+  quote), on_input, le mouvement réalisé, et les seuils en conventions A et B à 0,1 SOL et à 5 SOL (frais 0,25 %).
+- Tirage de R02 : random.Random(0x9bf23a09).sample(range(21), 5).
