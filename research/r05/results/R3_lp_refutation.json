@@ -1105,16 +1105,16 @@
  },
  "R3.1b": {
   "file": "raydium_20261126T140929Z.jsonl.gz",
-  "samples": 17,
-  "window_minutes": 15.997638966666667,
+  "samples": 26,
+  "window_minutes": 24.99762763333333,
   "lp_supply_change": 0.0,
-  "sqrtk_per_lp_growth": 5.027480363573034e-06,
-  "gt_volume_usd_window": 26185.73523714032,
+  "sqrtk_per_lp_growth": 6.250317730938093e-06,
+  "gt_volume_usd_window": 33624.14962257033,
   "implied_growth": {
-   "fee_0.25": 4.5450752959292195e-06,
-   "fee_0.22": 3.9996662604177135e-06
+   "fee_0.25": 5.833823180164162e-06,
+   "fee_0.22": 5.133764398544462e-06
   },
-  "ratio_measured_over_0.22": 1.2569749664683219,
+  "ratio_measured_over_0.22": 1.2174921257995788,
   "note": "fen\u00eatre courte : ordre de grandeur et part LP, pas une estimation de rendement"
  },
  "R3.5_post_hoc_scale": {

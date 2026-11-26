@@ -170,6 +170,7 @@ Détail : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `res
 | R3.2 (e) drawdown max | 0,7 % ; aucune liquidation | passe |
 | R3.2 (D) frais × 0,5 | excès +1,9 %/an, IC mensuel [−0,29 % ; +0,65 %] | **l'excès s'annule vers −58 % de frais (interpolation linéaire) et n'est plus significatif dès −50 %** |
 | R3.3 généralité (51 pools évalués sur 67) | médiane −2,3 %/an [IC −4,4 % ; +0,04 %], 39 % positifs ; SOL-USDC +41 %/an, RAY-USDC −1,7 %, memecoins autour de zéro ou négatifs | **thèse générale éliminée** |
+| R3.1b mesure directe (25 min, API Raydium) | √(x·y)/offre LP : +6,25·10⁻⁶ (≈ 13 %/an), soit 1,22 × les frais impliqués par le volume GeckoTerminal à 0,22 % (1,07 × à 0,25 %) | aucun signe de surestimation des sources (indicatif) |
 | R3.4 concentration | 41,6 % de l'avantage vient des 5 % de jours aux frais les plus élevés ; sans eux +13,1 %/an ; minimum glissant 90 j +4,7 %/an ; tous les trimestres positifs | robuste dans le temps |
 
 - **Décomposition sur 21 mois, en % du capital** : frais +49,4 % ; LVR réalisée −11,8 % (prix LP −33,3 %,
@@ -207,7 +208,10 @@ Ce n'est pas un alpha neutre au marché.
 - **R1.2 carry Hyperliquid** (post hoc, descriptif) : excès +10,5 % (2023-05 → 2024-06), +4,0 % (2024-07 → 2025-06),
   +0,9 % (2025-07 → 2026-10). Funding BTC : 21,0 % → 14,2 % → 7,6 %. La prime se comprime aussi vers le taux sans
   risque. **Aucune place PAPER** ; observation P-HL1.
-- **R4.1 market making Hyperliquid** : voir ci-dessous.
+- **R4.1 market making Hyperliquid** (photographie de 25 min, 300 carnets à 5 s, frais maker 1,5 pb) : markout net
+  pessimiste à 10 s de WIF −9,0 pb (n 94), JUP −6,8 (n 93), POPCAT −2,5 (n 14), kPEPE −3,9 (n 96). Aucun actif
+  n'est positif. Le seuil de 200 remplissages n'est jamais atteint : l'échantillon est trop court pour affirmer
+  un résultat positif, mais il suffit à montrer l'absence d'avantage visible. **Rejet confirmé.**
 
 ## 8. Décision : deux pistes PAPER, aucune démontrée rentable
 
@@ -217,7 +221,7 @@ Ce n'est pas un alpha neutre au marché.
 | Momentum 30 j long/plat | persistance des tendances, réduction d'exposition en baisse | 3/3 tests passés ; p = 0,042 brut, ≈ 0,34 ajusté ; alpha non significatif | **PAPER-2, priorité 2, preuve faible** : il réduit les drawdowns, sans alpha prouvé |
 | Carry spot/perp (Binance, Hyperliquid) | prime de levier payée par les acheteurs | rejet confirmé avec marge de portefeuille ; la prime converge vers le taux sans risque | aucune place ; observation prospective |
 | Arbitrage spatial CEX–CEX / DEX–CEX | vitesse et inventaire pré-positionné | jamais net positif, même aux meilleurs paliers | abandon |
-| Market making (Binance, Hyperliquid petites capitalisations) | spread payé par les preneurs | __R4__ | abandon |
+| Market making (Binance, Hyperliquid petites capitalisations) | spread payé par les preneurs | la sélection adverse dépasse le spread avant frais sur Binance (BTC, SOL, WIF) et sur Hyperliquid (4 petites capitalisations) | abandon |
 
 **Jugement de R05.** La seule piste qui possède à la fois un mécanisme économique identifié, un résultat net
 simulé intégralement et une survie aux tests adverses est la LP couverte sur **un** pool. C'est une base
