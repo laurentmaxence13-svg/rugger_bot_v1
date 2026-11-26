@@ -1,0 +1,6 @@
+livepaper STOPPED by R02 blocking decision D14 (25/11 01:31Z UTC 26/11), supported by R04: livepaper 0.1.2 tolerated a failed
+getSignaturesForAddress (charged, not journaled) contrary to owner text 1366025b ("tout autre incident arrête le test").
+Process interrupted by R03 with SIGINT at 2026-11-26T01:32:42Z (rc=130, KeyboardInterrupt in source.run sleep).
+No resume: chain_resume not armed (trigger disabled), backup resume trigger disabled. The launcher refuses while this file exists.
+Last complete record: seq 2055 STEP 3ea13757f2b7f0e4033d323e53cc44a074d3836736b33b8d049f81574a98a97c (verify: 2056 records).
+Ledger: 4514 requests = 4514 credits; C.jsonl 4513 lines (1 unjournaled = the D14 failure).
