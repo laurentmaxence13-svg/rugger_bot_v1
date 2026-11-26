@@ -1,0 +1,1 @@
+D13 : GaPTvX est exclu par G-0 depuis 20:11:03Z à la suite d'une transaction manquée (slot 473875242, blockTime 1795637419) ; la comparaison avec livesim est reportée au bilan final.

@@ -1,0 +1,15 @@
+livepaper live PAPER test (PAPER_LIVE_DEMO, livepaper 0.1.2 run by R03) -- official bilan at T+6 h (R04 01:12Z).
+Tool: lpbilan 0.1, commit 3afa3b2de4ba27c8809749caf3f2e3ef4d17ed6e, MANIFEST_lpbilan_v0_1.txt sha256 5826be28123968204f1bba47518ccab35569b44af79ade82aed7a5faba761693 (PASS R02 01:28Z).
+Conventions C1-C9 declared to R02 before any datum was read; C1 precision and C9 by R02 (01:17Z).
+Data: R03 commit 1e86638d4e7e7986586aaf1908cce9a986d2704e (branch claude/admiring-curie-r2gl1p), anchored by R02:
+  J.jsonl 734c15bd4a9b6c83f572b49e10d45feae9c6b0ddc0e85f9a45e633a189c6fed2, L.json 1502470feae92ada026c8fc525dc75ff92717e1a90f4f7c0eb5668ec1390f496,
+  C.jsonl d9f11e85eb313180c236139b56c613d2f97c2c30b1911608ba1cabd06f496317.
+NOTES.txt sha256 afc3c2f40d6332569f447bc909e4e5b1d88113ffeca9006efc27f0a5aaba3964 (accepted by R02).
+Command (offline, unshare -rn, 0 credit; paths: lpbilan from git archive 3afa3b2, livepaper 0.1.2 1a626c8, livesim 0.3.2 + cpmmrecon 0.1):
+  python -B -m lpbilan.bilan --journal J.jsonl --cut 1795653600 --ledger L.json --calls C.jsonl --notes NOTES.txt --out DIR
+Cut: seq 1827, head f12b303d714dd00971b003cb5d9bf47bbce0baaddb7879c0f6119966d1ab7ea0.
+Outputs, identical byte for byte to R02's reference:
+  BILAN.json 72083867a41165a8ef758d519bd6e21bb2a12982f2afb7dcc5d4b05791d58952
+  BILAN.md 8cb216521425207e742ae840b188752779c8f4324c7931748ef0916a446bc81d
+  DECOMPOSITION.md 8101355afe975cca6085f17227e13809a376234d9a33f308901b7cbe0da46ad7
+Never an operational Master trade; never counted for 50/20; no verdict; n insufficient (7 < 30).

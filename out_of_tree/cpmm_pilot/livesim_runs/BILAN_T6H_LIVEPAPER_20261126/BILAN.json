@@ -1,0 +1,713 @@
+{
+ "counts_for_operational_master": false,
+ "credits": {
+  "at_cut": "NON MESURÉ",
+  "at_snapshot": {
+   "by_method": {
+    "getSignaturesForAddress": 2427,
+    "getSlot": 784,
+    "getTransaction": 1112
+   },
+   "ceiling": 25000,
+   "credits": 4323,
+   "hard_stop": 24500,
+   "requests": 4323
+  },
+  "calls_log_last_credits_after": 4323,
+  "calls_log_lines": 4322,
+  "why": "ni le grand livre ni le journal d'appels ne sont horodatés"
+ },
+ "cut": 1795653600,
+ "declared_defects": [
+  "D13 : GaPTvX est exclu par G-0 depuis 20:11:03Z à la suite d'une transaction manquée (slot 473875242, blockTime 1795637419) ; la comparaison avec livesim est reportée au bilan final."
+ ],
+ "g0_at_cut": [
+  {
+   "admitted": false,
+   "changes": 3,
+   "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+   "reasons": [
+    "reserves_chain_broken"
+   ],
+   "since": 1795637463
+  },
+  {
+   "admitted": true,
+   "changes": 2,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "reasons": [],
+   "since": null
+  },
+  {
+   "admitted": true,
+   "changes": 2,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "reasons": [],
+   "since": null
+  }
+ ],
+ "hours": 6.0,
+ "interruptions": {
+  "first_step": 1795632002,
+  "gaps": [
+   {
+    "end": 1795637463.4408236,
+    "seconds": 60.26978278160095,
+    "start": 1795637403.1710408
+   },
+   {
+    "end": 1795638637.335043,
+    "seconds": 63.87671375274658,
+    "start": 1795638573.4583292
+   },
+   {
+    "end": 1795651921.0041625,
+    "seconds": 94.1938247680664,
+    "start": 1795651826.8103378
+   }
+  ],
+  "intervals_at_least_2_polls": 3,
+  "last_step": 1795653600,
+  "max_interval_s": 95,
+  "steps": 716,
+  "stops": [
+   {
+    "reason": "planned_end_of_process",
+    "wall": 1795638602.4123576
+   },
+   {
+    "reason": "planned_end_of_process",
+    "wall": 1795645235.91401
+   },
+   {
+    "reason": "planned_end_of_process",
+    "wall": 1795651855.905377
+   }
+  ]
+ },
+ "journal": {
+  "code_sha256": "ead81c3a44aba473467d67817720a5cf999945f9cc2d4a245f3818a8d8cba669",
+  "head_at_cut": "f12b303d714dd00971b003cb5d9bf47bbce0baaddb7879c0f6119966d1ab7ea0",
+  "head_total": "fbd913deba2e3931ac2046e1aa1e796ee0ce94d67dfbbed8e67de8109b06d53c",
+  "mode": "gsfa_rank",
+  "poll_s": 30,
+  "records_at_cut": 1828,
+  "records_total": 1976,
+  "seed_sha": "acc592961e19a8acd31e30699585db669dd7f7baceb930f9778b6a4c9370f00c",
+  "seq_at_cut": 1827,
+  "start_schema": "livepaper-v0.1.1",
+  "variant": "B"
+ },
+ "label": "PAPER_LIVE_DEMO",
+ "latency": {
+  "decided_after_gap": 0,
+  "delay_s": {
+   "max": 31,
+   "mean": 21,
+   "n": 7,
+   "p50": 20,
+   "p95": 31,
+   "p99": 31
+  },
+  "fetch_ms": "NON MESURÉ",
+  "latency_slots": {
+   "max": 4,
+   "mean": 4,
+   "n": 14,
+   "p50": 4,
+   "p95": 4,
+   "p99": 4
+  },
+  "processing_ms": {
+   "max": 79.195749,
+   "mean": 26.571273409217877,
+   "n": 716,
+   "p50": 25.403131,
+   "p95": 55.355816,
+   "p99": 64.577495
+  },
+  "trigger_to_landing_slots": {
+   "max": 147,
+   "mean": 100.42857142857143,
+   "n": 7,
+   "p50": 100,
+   "p95": 147,
+   "p99": 147
+  }
+ },
+ "placebo_merged": false,
+ "placebo_not_entered": 0,
+ "pools": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "positions": [
+  {
+   "buy_landing_slot": 473852289,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473852285,
+   "decision_time": 1795632483,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.00022663393505401147,
+    "impact": -0.0005225564325937073,
+    "pool_fees": -0.0049925296323522815
+   },
+   "delay_s": 14,
+   "exit": {
+    "declared": 1795634284,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795634283
+    }
+   },
+   "exit_time": 1795634372,
+   "id": 0,
+   "net_lamports": -994172,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473852221
+  },
+  {
+   "buy_landing_slot": 473857574,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473857570,
+   "decision_time": 1795633623,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.0017068661544174138,
+    "impact": -0.0005237527146614249,
+    "pool_fees": -0.004997363439755989
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795635424,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795635423
+    }
+   },
+   "exit_time": 1795635513,
+   "id": 1,
+   "net_lamports": -801425,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": 0,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473869442,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473869438,
+   "decision_time": 1795636173,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.002172537868444254,
+    "impact": -0.0005238415782120938,
+    "pool_fees": -0.00499852629023216
+   },
+   "delay_s": 28,
+   "exit": {
+    "declared": 1795637974,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795637973
+    }
+   },
+   "exit_time": 1795638063,
+   "id": 2,
+   "net_lamports": -754983,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473869310
+  },
+  {
+   "buy_landing_slot": 473876290,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473876286,
+   "decision_time": 1795637643,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.0018792152360410357,
+    "impact": -0.0005220464634532228,
+    "pool_fees": -0.004988398300505742
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795639444,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795639443
+    }
+   },
+   "exit_time": 1795639510,
+   "id": 3,
+   "net_lamports": -1158966,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": 2,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473885000,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473884996,
+   "decision_time": 1795639510,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.07707202392579256,
+    "impact": -0.0010861991759331196,
+    "pool_fees": -0.005185144749859438
+   },
+   "delay_s": 31,
+   "exit": {
+    "declared": 473885116,
+    "rule": "slot",
+    "state_kept": {
+     "slot_limit": 473885115
+    }
+   },
+   "exit_time": 1795639596,
+   "id": 4,
+   "net_lamports": 6660068,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473884853
+  },
+  {
+   "buy_landing_slot": 473886660,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473886656,
+   "decision_time": 1795639866,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.00039731937311177925,
+    "impact": -0.0009909459465306733,
+    "pool_fees": -0.004991514680357547
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795641667,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795641666
+    }
+   },
+   "exit_time": 1795641727,
+   "id": 5,
+   "net_lamports": -1057978,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "primary": 4,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473888051,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473888047,
+   "decision_time": 1795640167,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.0013561274785061008,
+    "impact": -0.0005224974678479307,
+    "pool_fees": -0.004989705053645968
+   },
+   "delay_s": 15,
+   "exit": {
+    "declared": 1795641968,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795641967
+    }
+   },
+   "exit_time": 1795642057,
+   "id": 6,
+   "net_lamports": -1106833,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473887979
+  },
+  {
+   "buy_landing_slot": 473894751,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473894747,
+   "decision_time": 1795641607,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.0037325626255195017,
+    "impact": -0.000524515631911306,
+    "pool_fees": -0.005002426993608196
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795643408,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795643407
+    }
+   },
+   "exit_time": 1795643497,
+   "id": 7,
+   "net_lamports": -599438,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": 6,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473904947,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473904943,
+   "decision_time": 1795643797,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.0017159268850118873,
+    "impact": -0.0005220666750899533,
+    "pool_fees": -0.00498880643989816
+   },
+   "delay_s": 16,
+   "exit": {
+    "declared": 1795645598,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795645597
+    }
+   },
+   "exit_time": 1795645677,
+   "id": 8,
+   "net_lamports": -1142680,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473904870
+  },
+  {
+   "buy_landing_slot": 473911492,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473911488,
+   "decision_time": 1795645206,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.0040286292438689,
+    "impact": -0.0005205550407239123,
+    "pool_fees": -0.004983025715407189
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795647007,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795647006
+    }
+   },
+   "exit_time": 1795647087,
+   "id": 9,
+   "net_lamports": -1373221,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": 8,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473922394,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473922390,
+   "decision_time": 1795647567,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.000437842382694962,
+    "impact": -0.0005227470763203286,
+    "pool_fees": -0.004992000540984709
+   },
+   "delay_s": 23,
+   "exit": {
+    "declared": 1795649368,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795649367
+    }
+   },
+   "exit_time": 1795649456,
+   "id": 10,
+   "net_lamports": -1015259,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473922287
+  },
+  {
+   "buy_landing_slot": 473925021,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473925017,
+   "decision_time": 1795648136,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": -0.0007151933548453061,
+    "impact": -0.0005226297872723388,
+    "pool_fees": -0.0049913068578823555
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795649937,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795649936
+    }
+   },
+   "exit_time": 1795649998,
+   "id": 11,
+   "net_lamports": -1042913,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "primary": 10,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  },
+  {
+   "buy_landing_slot": 473932709,
+   "closed": true,
+   "decided_after_gap": false,
+   "decision_slot": 473932705,
+   "decision_time": 1795649787,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.04470512149966118,
+    "impact": -0.0010441042273409663,
+    "pool_fees": -0.005104247272320217
+   },
+   "delay_s": 20,
+   "exit": {
+    "declared": 473933241,
+    "rule": "slot",
+    "state_kept": {
+     "slot_limit": 473933240
+    }
+   },
+   "exit_time": 1795649968,
+   "id": 12,
+   "net_lamports": 3435677,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "primary": null,
+   "series": "primary",
+   "status": "entered",
+   "trigger_slot": 473932609
+  },
+  {
+   "buy_landing_slot": 473933816,
+   "closed": true,
+   "decided_after_gap": null,
+   "decision_slot": 473933812,
+   "decision_time": 1795650026,
+   "decomposition": {
+    "fixed": -0.0042,
+    "gross": 0.0,
+    "impact": -0.0009883388289966025,
+    "pool_fees": -0.004992511171003398
+   },
+   "delay_s": null,
+   "exit": {
+    "declared": 1795651827,
+    "rule": "clock",
+    "state_kept": {
+     "time_limit": 1795651826
+    }
+   },
+   "exit_time": 1795651921,
+   "id": 13,
+   "net_lamports": -1018085,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "primary": 12,
+   "series": "placebo",
+   "status": "entered",
+   "trigger_slot": null
+  }
+ ],
+ "schema": "lpbilan-v0.1",
+ "series": {
+  "placebo": {
+   "capital_by_hour": [
+    {
+     "capital_sol": -0.000801425,
+     "time": 1795635600
+    },
+    {
+     "capital_sol": -0.000801425,
+     "time": 1795639200
+    },
+    {
+     "capital_sol": -0.003018369,
+     "time": 1795642800
+    },
+    {
+     "capital_sol": -0.003617807,
+     "time": 1795646400
+    },
+    {
+     "capital_sol": -0.006033941,
+     "time": 1795650000
+    },
+    {
+     "capital_sol": -0.007052026,
+     "time": 1795653600
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.000801425,
+     "time": 1795635513
+    },
+    {
+     "capital_sol": -0.001960391,
+     "time": 1795639510
+    },
+    {
+     "capital_sol": -0.003018369,
+     "time": 1795641727
+    },
+    {
+     "capital_sol": -0.003617807,
+     "time": 1795643497
+    },
+    {
+     "capital_sol": -0.004991028,
+     "time": 1795647087
+    },
+    {
+     "capital_sol": -0.006033941,
+     "time": 1795649998
+    },
+    {
+     "capital_sol": -0.007052026,
+     "time": 1795651921
+    }
+   ],
+   "capital_end_sol": -0.007052026,
+   "costs_sol": 0.00689393315720699,
+   "entries": 7,
+   "exits": 7,
+   "gross_pnl_sol": -0.00015809284279301051,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.007052026,
+   "max_drawdown_stakes": 0.07052026,
+   "n_insufficient": true,
+   "net_pnl_sol": -0.007052026,
+   "net_return_per_position": -0.010074322857142857,
+   "open_positions": 0,
+   "signals": 7,
+   "win_rate": 0.0,
+   "wins": 0
+  },
+  "primary": {
+   "capital_by_hour": [
+    {
+     "capital_sol": -0.000994172,
+     "time": 1795635600
+    },
+    {
+     "capital_sol": -0.001749155,
+     "time": 1795639200
+    },
+    {
+     "capital_sol": 0.00380408,
+     "time": 1795642800
+    },
+    {
+     "capital_sol": 0.0026614,
+     "time": 1795646400
+    },
+    {
+     "capital_sol": 0.005081818,
+     "time": 1795650000
+    },
+    {
+     "capital_sol": 0.005081818,
+     "time": 1795653600
+    }
+   ],
+   "capital_curve": [
+    {
+     "capital_sol": 0.0,
+     "time": null
+    },
+    {
+     "capital_sol": -0.000994172,
+     "time": 1795634372
+    },
+    {
+     "capital_sol": -0.001749155,
+     "time": 1795638063
+    },
+    {
+     "capital_sol": 0.004910913,
+     "time": 1795639596
+    },
+    {
+     "capital_sol": 0.00380408,
+     "time": 1795642057
+    },
+    {
+     "capital_sol": 0.0026614,
+     "time": 1795645677
+    },
+    {
+     "capital_sol": 0.001646141,
+     "time": 1795649456
+    },
+    {
+     "capital_sol": 0.005081818,
+     "time": 1795649968
+    }
+   ],
+   "capital_end_sol": 0.005081818,
+   "costs_sol": 0.006939497261263103,
+   "entries": 7,
+   "exits": 7,
+   "gross_pnl_sol": 0.012021315261263103,
+   "guard_refusals": 0,
+   "max_drawdown_sol": 0.003264772,
+   "max_drawdown_stakes": 0.03264772,
+   "n_insufficient": true,
+   "net_pnl_sol": 0.005081818,
+   "net_return_per_position": 0.00725974,
+   "open_positions": 0,
+   "signals": 7,
+   "win_rate": 0.2857142857142857,
+   "wins": 2
+  }
+ },
+ "stake_sol": 0.1,
+ "start": 1795632000,
+ "verdict": null
+}
