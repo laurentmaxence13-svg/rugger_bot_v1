@@ -36,6 +36,12 @@ MUT = [
  ('bilan.py', "        raise BilanError('entered_row_without_decomposition:%s' % row.get('pool'))", "        return None",
   'missing_decomposition_tolerated'),
  ('bilan.py', "    if set(d) != set(PARTS):", "    if False:", 'decomposition_keys_unchecked'),
+ ('bilan.py', "        last = rs[-1]", "        last = rs[0]", 'g0_first_record'),
+ ('bilan.py', "            while k > 0 and not rs[k - 1]['admitted']:", "            while False:", 'g0_since_last_record'),
+ ('bilan.py', "declared_defects=list(notes))", "declared_defects=[])", 'notes_dropped'),
+ ('bilan.py', "split('\\n') if x.strip()]", "split('\\n')]", 'blank_notes_kept'),
+ ('bilan.py', "            out.append(dict(pool=pool, admitted=NM,", "            out.append(dict(pool=pool, admitted=False,",
+  'pool_without_g0_refused'),
 ]
 
 

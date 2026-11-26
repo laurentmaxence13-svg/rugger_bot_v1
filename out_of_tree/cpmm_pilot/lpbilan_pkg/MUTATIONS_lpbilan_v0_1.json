@@ -126,9 +126,34 @@
    "mutant": "decomposition_keys_unchecked",
    "file": "bilan.py",
    "detected": true
+  },
+  {
+   "mutant": "g0_first_record",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "g0_since_last_record",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "notes_dropped",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "blank_notes_kept",
+   "file": "bilan.py",
+   "detected": true
+  },
+  {
+   "mutant": "pool_without_g0_refused",
+   "file": "bilan.py",
+   "detected": true
   }
  ],
- "detected": 25,
- "total": 25,
+ "detected": 30,
+ "total": 30,
  "path": "livepaper 0.1.2 + livesim 0.3.2 + cpmmrecon 0.1 on the path"
 }

@@ -20,6 +20,9 @@ C6 credits: the ledger total AT THE SNAPSHOT, labelled so; at the cut: NON MESUR
 C7 per position: the frozen decomposition_share_of_stake; brut + pool fees + impact + fixed = net within 1 lamport,
    otherwise an error.
 C8 the closed vocabulary (cpmmpilot.step1.assert_closed_vocabulary) on every rendered document.
+C9 (R02 01:17Z): the G-0 state of every pool AT THE CUT, from its G0 records (written on change): admitted or not, the
+   reasons, and since when it is continuously not admitted (first record of the trailing run of refusals); declared
+   defects (e.g. D13) are published verbatim from a notes file, under the closed vocabulary.
 LABEL PAPER_LIVE_DEMO: never an operational Master trade, never counted for 50/20; no verdict."""
 import argparse
 import json
@@ -133,7 +136,30 @@ def _metric_rows(ps, series):
     return closed, opened
 
 
-def bilan(records, cut, *, ledger=None, calls_lines=None):
+def g0_at_cut(pre):
+    """C9: per pool of START, its last G0 record and, when not admitted, the start of the trailing run of refusals."""
+    runs = {p['pool']: [] for p in pre[0]['pools']}
+    for r in pre:
+        if r['kind'] == 'G0':
+            runs.setdefault(r['pool'], []).append(r)
+    out = []
+    for pool, rs in runs.items():
+        if not rs:
+            out.append(dict(pool=pool, admitted=NM, reasons=[], since=None))
+            continue
+        last = rs[-1]
+        since = None
+        if not last['admitted']:
+            k = len(rs) - 1
+            while k > 0 and not rs[k - 1]['admitted']:
+                k -= 1
+            since = rs[k]['receipt_time']
+        out.append(dict(pool=pool, admitted=last['admitted'], reasons=list(last['reasons']), since=since,
+                        changes=len(rs)))
+    return out
+
+
+def bilan(records, cut, *, ledger=None, calls_lines=None, notes=()):
     pre = cut_prefix(records, cut)
     start = pre[0]
     ps = positions(pre)
@@ -183,7 +209,7 @@ def bilan(records, cut, *, ledger=None, calls_lines=None):
             steps=len(steps), first_step=times[0], last_step=times[-1],
             max_interval_s=max(intervals) if intervals else NM,
             intervals_at_least_2_polls=sum(1 for x in intervals if x >= 2 * start['poll_s'])),
-        credits=credits)
+        credits=credits, g0_at_cut=g0_at_cut(pre), declared_defects=list(notes))
 
 
 # -- rendering --------------------------------------------------------------------------------------------------------
@@ -259,6 +285,14 @@ def render(doc):
         lines.append('- GAP : %s → %s (%s s).' % (_hm(int(g['start'])), _hm(int(g['end'])), _num(g['seconds'], '%.1f')))
     for s in it['stops']:
         lines.append('- STOP : %s%s.' % (s['reason'], '' if s['wall'] is None else ' à %s' % _hm(int(s['wall']))))
+    lines += ['', '## G-0 au cut (C9)', '', '| Pool | Admis | Raisons | Non admis depuis | Changements |',
+              '|---|---|---|---|---|']
+    for g in doc['g0_at_cut']:
+        lines.append('| %s | %s | %s | %s | %s |' % (
+            g['pool'][:8], g['admitted'] if g['admitted'] == NM else ('oui' if g['admitted'] else 'non'),
+            ', '.join(g['reasons']) or '—', '—' if g['since'] is None else _hm(g['since']), g.get('changes', 0)))
+    lines += ['', '## Défauts déclarés (C9)', '']
+    lines += ['- %s' % x for x in doc['declared_defects']] or ['Aucun.']
     c = doc['credits']
     lines += ['', '## Crédits', '', '- Au cut : %s (%s).' % (c['at_cut'], c['why'])]
     if 'at_snapshot' in c:
@@ -324,13 +358,15 @@ def main(argv=None):
     a.add_argument('--cut', type=int, required=True)
     a.add_argument('--ledger', type=Path)
     a.add_argument('--calls', type=Path)
+    a.add_argument('--notes', type=Path, help='declared defects, one per line (C9)')
     a.add_argument('--out', type=Path, required=True)
     args = a.parse_args(argv)
     ledger = json.loads(args.ledger.read_text()) if args.ledger else None
     calls = None
     if args.calls:
         calls = [json.loads(x) for x in args.calls.read_text().split('\n') if x]
-    doc = bilan(J.read(args.journal), args.cut, ledger=ledger, calls_lines=calls)
+    notes = [x for x in args.notes.read_text().split('\n') if x.strip()] if args.notes else ()
+    doc = bilan(J.read(args.journal), args.cut, ledger=ledger, calls_lines=calls, notes=notes)
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / 'BILAN.json').write_text(json.dumps(doc, indent=1, sort_keys=True, ensure_ascii=False) + '\n')
     (args.out / 'BILAN.md').write_text(render(doc))

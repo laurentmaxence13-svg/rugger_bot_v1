@@ -44,6 +44,10 @@ def land(i, pool, series, slot):
     return [('LANDING', dict(id=i, pool=pool, series=series, buy_landing_slot=slot, settled_slot=slot + 1))]
 
 
+def g0(pool, t, admitted, reasons=()):
+    return [('G0', dict(pool=pool, receipt_time=t, admitted=admitted, reasons=list(reasons)))]
+
+
 def journal(path, steps, *, label='PAPER_LIVE_DEMO', stops=()):
     j = J.Journal(path)
     j.append('START', schema='livepaper-v0.1.1', label=label, counts_for_operational_master=False, start=T0,
@@ -70,14 +74,15 @@ A, Bp = 'PoolAAAAAAAA', 'PoolBBBBBBBB'
 
 def scenario(tmp_path, **kw):
     steps = [
-        (T0 + 30, dec(0, A, 'primary', delay=5, trigger_slot=990, slot=1_000, t=T0 + 30)),
-        (T0 + 90, land(0, A, 'primary', 1_004)),
-        (T0 + 1_900, ext(0, A, 'primary', entered(A, 600_000, declared=T0 + 1_830))
+        (T0 + 30, g0(A, T0 + 30, True) + g0(Bp, T0 + 30, True)
+         + dec(0, A, 'primary', delay=5, trigger_slot=990, slot=1_000, t=T0 + 30)),
+        (T0 + 90, g0(A, T0 + 90, False, ['no_live_swap']) + land(0, A, 'primary', 1_004)),
+        (T0 + 1_900, g0(A, T0 + 1_900, True) + ext(0, A, 'primary', entered(A, 600_000, declared=T0 + 1_830))
          + dec(1, A, 'placebo', slot=1_200, t=T0 + 1_900) + land(1, A, 'placebo', 1_204)),
         (T0 + 3_700, ext(1, A, 'placebo', entered(A, 1_500_000, rule='slot', declared=1_250))
-         + [('GAP', dict(gap_start=T0 + 1_900.25, gap_end=T0 + 3_700.25))]
+         + [('GAP', dict(gap_start=T0 + 1_900.25, gap_end=T0 + 3_700.25))] + g0(Bp, T0 + 3_700, False, ['reserves_chain_broken'])
          + dec(2, Bp, 'primary', delay=7, trigger_slot=1_290, slot=1_300, t=T0 + 3_700)),
-        (T0 + 7_300, land(2, Bp, 'primary', 1_304) + ext(2, Bp, 'primary', guard(Bp))
+        (T0 + 7_300, g0(Bp, T0 + 7_300, False, ['reserves_chain_broken', 'b3_zero']) + land(2, Bp, 'primary', 1_304) + ext(2, Bp, 'primary', guard(Bp))
          + dec(3, A, 'primary', delay=3, trigger_slot=1_395, slot=1_400, t=T0 + 7_300) + land(3, A, 'primary', 1_408)
          + [('MARK', dict(id=3, pool=A, series='primary', mark_time=T0 + 7_200, value_lamports=99_000_000,
                           stake_lamports=100_000_000, unpriced=None, descriptive=True))]),
@@ -256,3 +261,39 @@ def test_a_forbidden_word_stops_the_rendering_and_an_unknown_series_is_refused(t
     recs = journal(tmp_path / 'K.jsonl', [(T0 + 30, odd), (CUT + 1, [])])
     with pytest.raises(B.BilanError, match='unknown_series'):
         B.bilan(recs, CUT)
+
+
+# -- C9 ---------------------------------------------------------------------------------------------------------------
+def test_g0_at_the_cut_reports_the_trailing_run_of_refusals_and_a_readmission(tmp_path):
+    doc = B.bilan(scenario(tmp_path), CUT, notes=['D13 : GaPTvX exclu par G-0 depuis 20:11:03Z (transaction manquée).'])
+    g = {x['pool']: x for x in doc['g0_at_cut']}
+    assert g[A] == dict(pool=A, admitted=True, reasons=[], since=None, changes=3)       # refused at +90, readmitted
+    assert g[Bp] == dict(pool=Bp, admitted=False, reasons=['reserves_chain_broken', 'b3_zero'], since=T0 + 3_700,
+                         changes=3)                                                     # since the FIRST refusal of the run
+    md = B.render(doc)
+    assert '| PoolBBBB | non | reserves_chain_broken, b3_zero | 19:41:40Z | 3 |' in md
+    assert '- D13 : GaPTvX exclu par G-0 depuis 20:11:03Z (transaction manquée).' in md
+    assert B.cut_prefix(scenario(tmp_path / 'z'), CUT)[0]['kind'] == 'START'
+
+
+def test_a_pool_without_g0_record_is_not_measured_and_no_note_reads_none(tmp_path):
+    recs = journal(tmp_path / 'J.jsonl', [(T0 + 30, []), (CUT + 1, [])])
+    doc = B.bilan(recs, CUT)
+    assert [x['admitted'] for x in doc['g0_at_cut']] == [B.NM, B.NM] and doc['declared_defects'] == []
+    md = B.render(doc)
+    assert '| PoolAAAA | NON MESURÉ | — | — | 0 |' in md and '## Défauts déclarés (C9)\n\nAucun.' in md
+
+
+def test_a_note_with_a_forbidden_word_is_refused(tmp_path):
+    doc = B.bilan(journal(tmp_path / 'J.jsonl', [(T0 + 30, []), (CUT + 1, [])]), CUT, notes=['position ' + 'gagn' + 'ante'])
+    with pytest.raises(PILOT.Step1Stop):
+        B.render(doc)
+
+
+def test_the_command_reads_the_notes_file(tmp_path):
+    scenario(tmp_path)
+    (tmp_path / 'notes.txt').write_text('D13 : premier défaut.\n\n  \nD14 : second.\n')
+    B.main(['--journal', str(tmp_path / 'J.jsonl'), '--cut', str(CUT), '--notes', str(tmp_path / 'notes.txt'),
+            '--out', str(tmp_path / 'o')])
+    doc = json.loads((tmp_path / 'o' / 'BILAN.json').read_text())
+    assert doc['declared_defects'] == ['D13 : premier défaut.', 'D14 : second.']
