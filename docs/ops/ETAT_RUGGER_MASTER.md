@@ -90,10 +90,10 @@ B = moyenne de price_move calculée avec la même fonction stratified_bounds et 
 | Risque | Vérification | Responsable |
 |---|---|---|
 | P1 données incomplètes (exclusion G-0, perte totale de N1) | exécution à blanc de toute la chaîne sur les pages PRÉ-T0, fenêtre fictive de 7 jours ; contrôle de continuité des pages | R03 (données) + R01 (chaîne) |
-| P2 chaîne non reproductible | même exécution à blanc, en double R01/R02, en environnement neuf ; RESULT.json identiques à l'octet | R01 + R02 |
+| P2 chaîne non reproductible — **LEVÉ (26/11 ≈ 13:52Z)** : R01 et R02, avec deux scripts indépendants, obtiennent ROWS e3e1fdbc et RESULT d08da83d identiques à l'octet | même exécution à blanc, en double R01/R02, en environnement neuf ; RESULT.json identiques à l'octet | R01 + R02 |
 | P3 coûts mal modélisés | impact modélisé à 0,1 SOL contre les swaps réels de 0,05 à 0,2 SOL des pages pré-T0 ; frais effectifs contre config | R01 |
-| P4 dépendance entre pools | corrélation entre pools sur pré-T0 (R02) ; sensibilité descriptive déclarée MAINTENANT, bootstrap par jour calendaire commun, sans effet sur le mot (R01) | R02 + R01 |
-| P5 mauvaise lecture, puissance faible | simulation, avec le code gelé et le σ et le rythme pré-T0, de la probabilité de chaque mot sous un effet nul et sous un effet de 0,5 % | R02 |
+| P4 dépendance entre pools — **fait, n faible** : corrélations des nets journaliers −0,21, −0,02 et −0,44, sans dépendance positive ; bornes g23b proches du stratifié | corrélation entre pools sur pré-T0 (R02) ; sensibilité descriptive déclarée MAINTENANT, bootstrap par jour calendaire commun, sans effet sur le mot (R01) | R02 + R01 |
+| P5 mauvaise lecture, puissance faible — **fait** (P8) ; constat descriptif pré-T0 : sur AEZjoU et GdxFyc, le net journalier vaut presque toujours −coût (mouvement ≈ 0) ; seul G8kgi7 bouge | simulation, avec le code gelé et le σ et le rythme pré-T0, de la probabilité de chaque mot sous un effet nul et sous un effet de 0,5 % | R02 |
 | P7 verdict calculé EN SILENCE sur une collecte partielle (R02, lu dans 7ce025c : ordre AEZjoU → Gms3Ma → G8kgi7 → GdxFyc ; un arrêt pendant GdxFyc donnerait un verdict biaisé, g23run et n1verdict ne vérifiant pas la complétude) | **règle de procédure ADOPTÉE le 26/11 (≈ 13:45Z)** : aucun g23run ni n1verdict si G23_COLLECT_RESULT.verdict_run ≠ DONE ou si un STATE a done ≠ true ; le partiel est définitif, sans relance ni verdict, avec les comptes publiés | R02 l'applique |
 | P6 plafond de crédits de la collecte (R03 : ≈ 21 290 pour 32 340, marge ×1,52 ; G8kgi7 = 85 %) et redémarrage du conteneur en pleine collecte | questions posées à R02 (13:35Z) ; texte éventuel au propriétaire AVANT les données | R02 → R04 |
 
