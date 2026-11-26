@@ -1,0 +1,4 @@
+getSignaturesForAddress
+getSlot
+getTransaction
+getTransactionsForAddress
