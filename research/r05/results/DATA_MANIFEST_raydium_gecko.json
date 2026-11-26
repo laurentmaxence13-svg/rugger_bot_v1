@@ -35,6 +35,1309 @@
    "url": "https://api-v3.raydium.io/pools/info/list?poolType=all&poolSortField=liquidity&sortType=desc&pageSize=100&page=2"
   },
   {
+   "bytes": 1989,
+   "cache": "raydium_mint_06d1c9af-d202-55d3-b7fd-60f3bcdd3ef1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:23Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_06d1c9af-d202-55d3-b7fd-60f3bcdd3ef1_20261126.json",
+   "request": {
+    "mint1": "XptdvMzYQmDqxGr8cneyy7sxSPecNrG6w9d6av6t1Fg",
+    "mint2": "usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "8f6e232eb8f81a7616c21a47ee1621da851547475fe9b86e9191ce0b23a347f1",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=XptdvMzYQmDqxGr8cneyy7sxSPecNrG6w9d6av6t1Fg&mint2=usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 9162,
+   "cache": "raydium_mint_06faada9-ad40-4027-9380-db05f0f3fd53_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:34Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_06faada9-ad40-4027-9380-db05f0f3fd53_20261126.json",
+   "request": {
+    "mint1": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "147bbd34c536f9fe3525b9901f981e6c65f630426bbb23df315a980349ad8f18",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2042,
+   "cache": "raydium_mint_0923e191-0ca5-5240-83ae-51dc3276a394_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:23Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_0923e191-0ca5-5240-83ae-51dc3276a394_20261126.json",
+   "request": {
+    "mint1": "XYLshjkCk15dWNYrmA8zUUEugejrGMhm69jXzXacYej",
+    "mint2": "usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "e7afff44dce957aae3baf754bac3bb1d8f6514a6e8bdb448616c16c36182f022",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=XYLshjkCk15dWNYrmA8zUUEugejrGMhm69jXzXacYej&mint2=usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4783,
+   "cache": "raydium_mint_0bd02d7a-7bf4-4f3b-b1e9-bd8439482418_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:54Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_0bd02d7a-7bf4-4f3b-b1e9-bd8439482418_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "4Cnk9EPnW5ixfLZatCPJjDB1PUtcRpVVgTQukm9epump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "c7ba658fd731ee062202cbbffc8eb5695e93cb5922306b16eb48ff4452a3d11d",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=4Cnk9EPnW5ixfLZatCPJjDB1PUtcRpVVgTQukm9epump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 21975,
+   "cache": "raydium_mint_0fc97fda-dd12-4f83-afeb-88e6d60f0e4b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:12Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_0fc97fda-dd12-4f83-afeb-88e6d60f0e4b_20261126.json",
+   "request": {
+    "mint1": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "161fbf04d58e5cbcd7c37a9ec02ced508a0423d506178fe64fe0f90f802a8e0d",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 5083,
+   "cache": "raydium_mint_10a72779-843e-4491-a9f6-7bc81e452193_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:34Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_10a72779-843e-4491-a9f6-7bc81e452193_20261126.json",
+   "request": {
+    "mint1": "63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "156f2fd39a9688e6660a442110325eff7ed102a3e120ed8cb61e7c02d9394c43",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=63LfDmNb3MQ8mw9MtZ2To9bEA2M71kZUUGq5tiJxcqj9&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 21290,
+   "cache": "raydium_mint_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:25Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "839e9274b9e8f367dc42497e159dd63d1f5f3039d5248b9fb9d9af72ce5dc481",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2276,
+   "cache": "raydium_mint_163d0261-de66-5ad5-885f-3157d7e3e0e3_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:30Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_163d0261-de66-5ad5-885f-3157d7e3e0e3_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "ApZuxdpzMrbEYTGEzeY9afh5pj9d6qPRJCTgQYiipbKg",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3297224b1fb2d9d9a4961479bf84fe177f94dfd47d61bfe1dba382c9aa66d7a1",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=ApZuxdpzMrbEYTGEzeY9afh5pj9d6qPRJCTgQYiipbKg&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2187,
+   "cache": "raydium_mint_185ce02a-06db-4051-a6d8-25f86b32d77f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:47Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_185ce02a-06db-4051-a6d8-25f86b32d77f_20261126.json",
+   "request": {
+    "mint1": "CJMihkPYswa3k6az9SUbepjKnkJQ6KWpGG5p9qW9n7NV",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "511528b6ec80a10fdce4df7b3a0a425b93aa00349d51f81fc0b69798f76078c4",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=CJMihkPYswa3k6az9SUbepjKnkJQ6KWpGG5p9qW9n7NV&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2958,
+   "cache": "raydium_mint_1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:40Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9_20261126.json",
+   "request": {
+    "mint1": "69kdRLyP5DTRkpHraaSZAQbWmAwzF9guKjZfzMXzcbAs",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "d8fd4136d8b2e137608835bdc766a4ee888fb94b26415d6912e5b01f9b17c088",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=69kdRLyP5DTRkpHraaSZAQbWmAwzF9guKjZfzMXzcbAs&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 10392,
+   "cache": "raydium_mint_1e958818-9a22-46b0-8567-12cb34fb4eb1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:21Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_1e958818-9a22-46b0-8567-12cb34fb4eb1_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "65826df9ddc8452453f04c9d3f6ca39f1fc7f4cede993559699f9f1ed2469e64",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=Df6yfrKC8kZE3KNkrHERKzAetSxbrWeniQfyJY4Jpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 8520,
+   "cache": "raydium_mint_20d99514-4d6b-4ff3-bbec-0732971885a0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:21Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_20d99514-4d6b-4ff3-bbec-0732971885a0_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "Dfh5DzRgSvvCFDoYc2ciTkMrbDfRKybA4SoFbPmApump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "04a68fd88d3c8ec4afedbadeb1aa6d0605dd8219d0ed0e44615a569c34fb3c75",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=Dfh5DzRgSvvCFDoYc2ciTkMrbDfRKybA4SoFbPmApump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4040,
+   "cache": "raydium_mint_2379db72-7001-5d03-bf88-c4953ea2ab01_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:24Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_2379db72-7001-5d03-bf88-c4953ea2ab01_20261126.json",
+   "request": {
+    "mint1": "usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7",
+    "mint2": "xrHsg8SwxrD4opmLjdgBqXE2kEsbjeQdH3fSksHd6CG",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "985fe5036213d62f7a638cec2f53d0f71af1b357e0c5628407a9385ace208f3a",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=usdnk5FJUhovHCok7F5XpoPzWpmVufsqvasWNLjjrG7&mint2=xrHsg8SwxrD4opmLjdgBqXE2kEsbjeQdH3fSksHd6CG&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 6529,
+   "cache": "raydium_mint_25cb3610-4aae-43dc-8773-fe13bdec9eb2_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:54Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_25cb3610-4aae-43dc-8773-fe13bdec9eb2_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "9a897951d3ecea5f29cf254c412c81c484e15ffec3835f3d2fa8fb88b553c777",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=74SBV4zDXxTRgv1pEMoECskKBkZHc2yGPnc7GYVepump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 7746,
+   "cache": "raydium_mint_2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:45Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "AxriehR6Xw3adzHopnvMn7GcpRFcD41ddpiTWMg6pump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "e477c78b25e4c4dacdf7de8ad1dc7311fff829b2740bf094738fcdce492e7cfb",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=AxriehR6Xw3adzHopnvMn7GcpRFcD41ddpiTWMg6pump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4438,
+   "cache": "raydium_mint_3fe5a196-8a15-4f74-ba76-6625f7985773_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:21Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_3fe5a196-8a15-4f74-ba76-6625f7985773_20261126.json",
+   "request": {
+    "mint1": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "mint2": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "2e244067befb9a6ce9475c7c97566b63b3d8259321000cfc89654476d80c5f4f",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R&mint2=Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4660,
+   "cache": "raydium_mint_46f5eec1-26f1-4911-8d91-d627ff756dcd_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:12Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_46f5eec1-26f1-4911-8d91-d627ff756dcd_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "6b45a53d2f1ae296af3ff5bdd931a659757beec948cfb67b16dbecf8b3cdead5",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=ED5nyyWEzpPPiWimP8vYm7sD7TD3LAt3Q3gRTWHzPJBY&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 10949,
+   "cache": "raydium_mint_470dd76d-850f-49db-861a-0f675735ec57_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:11Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_470dd76d-850f-49db-861a-0f675735ec57_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "34c730e0e4ac56c6da3606555a5bfbb5e066eb305abf032bb6522f3710b46cd0",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=6AJcP7wuLwmRYLBNbi825wgguaPsWzPBEHcHndpRpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 1976,
+   "cache": "raydium_mint_48ba714d-29e6-5720-834a-229ddd7aafa3_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:22Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_48ba714d-29e6-5720-834a-229ddd7aafa3_20261126.json",
+   "request": {
+    "mint1": "XYLshjkCk15dWNYrmA8zUUEugejrGMhm69jXzXacYej",
+    "mint2": "XptdvMzYQmDqxGr8cneyy7sxSPecNrG6w9d6av6t1Fg",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "87e4e44c78aea6b2a94388fdf0f385b75d0f2cadc84aa3406d38fc4077724611",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=XYLshjkCk15dWNYrmA8zUUEugejrGMhm69jXzXacYej&mint2=XptdvMzYQmDqxGr8cneyy7sxSPecNrG6w9d6av6t1Fg&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2116,
+   "cache": "raydium_mint_4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:31Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "DKu9kykSfbN5LBfFXtNNDPaX35o4Fv6vJ9FKk7pZpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "37cec51d02bc28d58386867b07731520db0a1d0a5e1af959028599591f72a20c",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=DKu9kykSfbN5LBfFXtNNDPaX35o4Fv6vJ9FKk7pZpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2253,
+   "cache": "raydium_mint_4f11cf50-aa7c-43b4-9282-c79e5655d8f8_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:53Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_4f11cf50-aa7c-43b4-9282-c79e5655d8f8_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "3vgopg7xm3EWkXfxmWPUpcf7g939hecfqg18sLuXDzVt",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "e775d22b42a8ea2c24d3220e8e86075bc2cc89125a48d4718b763adc0982a39a",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=3vgopg7xm3EWkXfxmWPUpcf7g939hecfqg18sLuXDzVt&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2098,
+   "cache": "raydium_mint_5002328b-b428-446c-ac12-9846c560219f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:03Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_5002328b-b428-446c-ac12-9846c560219f_20261126.json",
+   "request": {
+    "mint1": "B9u8h65uM1oifqmP82VyUDb68iG2fKfZiyubmNMtu3h7",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "86371a15d29170b697cd03e26467f039514dc5f5ab86b738b9217209b672aab1",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=B9u8h65uM1oifqmP82VyUDb68iG2fKfZiyubmNMtu3h7&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4277,
+   "cache": "raydium_mint_56f5337d-13a2-4757-ad4c-8175c03a4052_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:49Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_56f5337d-13a2-4757-ad4c-8175c03a4052_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "HgBRWfYxEfvPhtqkaeymCQtHCrKE46qQ43pKe8HCpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "d3ea57062369ae90441e98d32f531bd0a36bf21d0b4b3d78aadd933a3f5f6aa5",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=HgBRWfYxEfvPhtqkaeymCQtHCrKE46qQ43pKe8HCpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2515,
+   "cache": "raydium_mint_61d3125a-9bc7-4562-9d73-316da2dcd15a_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:55Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_61d3125a-9bc7-4562-9d73-316da2dcd15a_20261126.json",
+   "request": {
+    "mint1": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "mint2": "2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "62cb1be39b33a2473acb69a4b752ed64530256a4bef95f0c503d021518c6713b",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R&mint2=2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4874,
+   "cache": "raydium_mint_661d9b85-3750-43c9-a109-154daf11dab3_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:26Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_661d9b85-3750-43c9-a109-154daf11dab3_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "8XtRWb4uAAJFMP4QQhoYYCWR6XXb7ybcCdiqPwz9s5WS",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "755dada5d5b292f16ab84eee57c3e22b324aa48743165a121bda2247ad138e7d",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=8XtRWb4uAAJFMP4QQhoYYCWR6XXb7ybcCdiqPwz9s5WS&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2683,
+   "cache": "raydium_mint_6920d26e-1f5e-44cd-a925-cd09c73e5bba_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:30Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_6920d26e-1f5e-44cd-a925-cd09c73e5bba_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "HtTYHz1Kf3rrQo6AqDLmss7gq5WrkWAaXn3tupUZbonk",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3eed63ed97968ab3870db7fe9ca0c4125f32cf5c33ee82a10716256203b403ad",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=HtTYHz1Kf3rrQo6AqDLmss7gq5WrkWAaXn3tupUZbonk&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2123,
+   "cache": "raydium_mint_6cd9f06a-5abc-482d-9116-26f381fd8917_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:39Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_6cd9f06a-5abc-482d-9116-26f381fd8917_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "GMzuntWYJLpNuCizrSR7ZXggiMdDzTNiEmSNHHunpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "bf7c98511c32105402d98beea2363416d54420f687855b88b7469e7baec8a4e4",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=GMzuntWYJLpNuCizrSR7ZXggiMdDzTNiEmSNHHunpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4083,
+   "cache": "raydium_mint_70926954-4cfb-41e2-8aff-cbc81532bd7c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:35Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_70926954-4cfb-41e2-8aff-cbc81532bd7c_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "zGh48JtNHVBb5evgoZLXwgPD2Qu4MhkWdJLGDAupump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "7910d896ba6768463e323b2293dde26bf9edbf0862695ff5d79a9b9fc2d69430",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=zGh48JtNHVBb5evgoZLXwgPD2Qu4MhkWdJLGDAupump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 6392,
+   "cache": "raydium_mint_71b80fb4-50bc-4e0a-b01f-f60cb59fb859_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:45Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_71b80fb4-50bc-4e0a-b01f-f60cb59fb859_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "J1Wpmugrooj1yMyQKrdZ2vwRXG5rhfx3vTnYE39gpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "c654f32cec25a1a855f1891a6f7e55e42940253198b09e14d7add8c1ae2e5161",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=J1Wpmugrooj1yMyQKrdZ2vwRXG5rhfx3vTnYE39gpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2269,
+   "cache": "raydium_mint_71dc090b-7c1c-4481-85cf-9184fb7fb950_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:45Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_71dc090b-7c1c-4481-85cf-9184fb7fb950_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "BjcRmwm8e25RgjkyaFE56fc7bxRgGPw96JUkXRJFEroT",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "f6ff326150117dd3924b1dcdb07e1e67770a7e78c413ae1d87e8d55b9966ef5c",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=BjcRmwm8e25RgjkyaFE56fc7bxRgGPw96JUkXRJFEroT&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2174,
+   "cache": "raydium_mint_75f2465b-aae7-4e6d-a075-59312f639394_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:17Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_75f2465b-aae7-4e6d-a075-59312f639394_20261126.json",
+   "request": {
+    "mint1": "25hAyBQfoDhfWx9ay6rarbgvWGwDdNqcHsXS3jQ3mTDJ",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3968e78f40d6cedc659ff3416d728e0daf4ba2e09a391922788c010fae110475",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=25hAyBQfoDhfWx9ay6rarbgvWGwDdNqcHsXS3jQ3mTDJ&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2827,
+   "cache": "raydium_mint_7a82f91e-2f28-4b3a-af08-4d553721dd51_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:35Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_7a82f91e-2f28-4b3a-af08-4d553721dd51_20261126.json",
+   "request": {
+    "mint1": "7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "9bf61df5ef3c9b91ad7eef7df86405135e57c551ea90e5e54f04dc7b2ec80f36",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2264,
+   "cache": "raydium_mint_7d53f6d4-b6b3-4164-9fc1-dc1a657d22ae_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:44Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_7d53f6d4-b6b3-4164-9fc1-dc1a657d22ae_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "7kN5FQMD8ja4bzysEgc5FXmryKd6gCgjiWnhksjHCFb3",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "ec2e41ef828ebad4d0a16a4b38fec7c4202bb1c5eeded9fc13951edd2d914254",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=7kN5FQMD8ja4bzysEgc5FXmryKd6gCgjiWnhksjHCFb3&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 5403,
+   "cache": "raydium_mint_80074ed7-393e-4416-b5c6-e761cf285169_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:40Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_80074ed7-393e-4416-b5c6-e761cf285169_20261126.json",
+   "request": {
+    "mint1": "8wXtPeU6557ETkp9WHFY1n1EcU6NxDvbAggHGsMYiHsB",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "e2c306493d6d5ca9c67b1e2dfe9b29141cb6e6351a117ed8eb8d44f575ab1345",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=8wXtPeU6557ETkp9WHFY1n1EcU6NxDvbAggHGsMYiHsB&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2534,
+   "cache": "raydium_mint_804a0c7b-7eb7-4b75-b066-4c568704fefe_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:30Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_804a0c7b-7eb7-4b75-b066-4c568704fefe_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "1ce63fa32370f6a545f58998e8a871691ef0c156d9479d1ef0e37ff18accebc8",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=GJAFwWjJ3vnTsrQVabjBVK2TYB1YtRCQXRDfDgUnpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 10278,
+   "cache": "raydium_mint_83e9a75a-881a-4e5a-9aaa-82e2140fa57d_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:25Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_83e9a75a-881a-4e5a-9aaa-82e2140fa57d_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "4f35505458625930156c2a149861d0a54d404b1f95d22eddb754c85d971a2b6b",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=61V8vBaqAGMpgDQi4JcAwo1dmBGHsyhzodcPqnEVpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 6543,
+   "cache": "raydium_mint_8be07d6f-99a3-4643-9256-6f8a0b881508_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:03Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_8be07d6f-99a3-4643-9256-6f8a0b881508_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "c0622b9fbe39f1bc4602af2ebdbf35e21b521684fd47fcf2fa78606a3f6a3f92",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=2qEHjDLDLbuBgRYvsxhc5D6uDWAivNFZGan56P1tpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 20874,
+   "cache": "raydium_mint_8d1c0b44-a5ce-421c-b899-bf489159aa0f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:38Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_8d1c0b44-a5ce-421c-b899-bf489159aa0f_20261126.json",
+   "request": {
+    "mint1": "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "533b8e20fe42306bf949e8a6e8825d8d6ec5d864db49126b33997e82757a1faf",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2601,
+   "cache": "raydium_mint_919f83c6-1a2d-4c67-985f-99e8b8423f62_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:34Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_919f83c6-1a2d-4c67-985f-99e8b8423f62_20261126.json",
+   "request": {
+    "mint1": "MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "4b1605ec7b98c4373427b8a2c186d821866c04aa3fa40067c253ca7e938fb524",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=MEW1gQWJ3nEXg2qgERiKu7FAFj79PHvQVREQUzScPP5&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2132,
+   "cache": "raydium_mint_9299b1ab-2c25-4032-bc90-f6f620373e0b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:25Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_9299b1ab-2c25-4032-bc90-f6f620373e0b_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "KENJSUYLASHUMfHyy5o4Hp2FdNqZg1AsUPhfH2kYvEP",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "67b722b1212228a985a77fa3cfcd22cc6e54f60d511431a527203a2d3966e99c",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=KENJSUYLASHUMfHyy5o4Hp2FdNqZg1AsUPhfH2kYvEP&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2293,
+   "cache": "raydium_mint_935f6496-6d11-42fd-9151-72b8603f412a_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:07Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_935f6496-6d11-42fd-9151-72b8603f412a_20261126.json",
+   "request": {
+    "mint1": "DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "21464de22649a05cac945e2d821c5ffbbd9e633c225cc288c99d0c764b97b9a0",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=DvjbEsdca43oQcw2h3HW1CT7N3x5vRcr3QrvTUHnXvgV&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 8989,
+   "cache": "raydium_mint_99d4b1c8-9e7b-45d7-8603-260d9846866c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:30Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_99d4b1c8-9e7b-45d7-8603-260d9846866c_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "00ebb07ccf6248547898eefe500e894427e127b9abf5af1cd462c08365dac27c",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=Dz9mQ9NzkBcCsuGPFJ3r1bS4wgqKMHBPiVuniW8Mbonk&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2259,
+   "cache": "raydium_mint_a0fc91a4-0e29-4db4-9477-72039afe4267_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:25Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_a0fc91a4-0e29-4db4-9477-72039afe4267_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "DCHLn5uLCDjPcmyxqeV3EFA1hAT518RR3u7gQe8iUiYQ",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "2512a2e1b41cac131ded545744a31ebf56c058ac1e54ec8492a97bd952672ad1",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=DCHLn5uLCDjPcmyxqeV3EFA1hAT518RR3u7gQe8iUiYQ&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2124,
+   "cache": "raydium_mint_a24db72d-5c6a-4028-b81e-de1480fa0f81_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:08Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_a24db72d-5c6a-4028-b81e-de1480fa0f81_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "9PR7nCP9DpcUotnDPVLUBUZKu5WAYkwrCUx9wDnSpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "2da3b35587c06b6590c874eee23b27ec397178ed63e7b4d01fff9203d90c2897",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=9PR7nCP9DpcUotnDPVLUBUZKu5WAYkwrCUx9wDnSpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2153,
+   "cache": "raydium_mint_a7e20f23-98ca-45b7-b2c2-fcc93de05b94_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:30Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_a7e20f23-98ca-45b7-b2c2-fcc93de05b94_20261126.json",
+   "request": {
+    "mint1": "CeK6k4BMmiqkxkzYAbQuUp3hrVFSHxuQ1LJXmNybc3vz",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "ae8eecb07d12975d4f8c2bd8fdc3c94626ee2031dee58d0823c74239b58d42cc",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=CeK6k4BMmiqkxkzYAbQuUp3hrVFSHxuQ1LJXmNybc3vz&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2676,
+   "cache": "raydium_mint_ab8f45b7-c0eb-53db-aa01-825f15fb77e0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:44Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ab8f45b7-c0eb-53db-aa01-825f15fb77e0_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "AY2sSqL3wWTfuevCoRBqkvMoawArCunRfpnPzVmuxXoi",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "2f6ac12e0ffd7101295116918a5e5cf10f157daaa2de3ff7f6c0f1efd95d5f9f",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=AY2sSqL3wWTfuevCoRBqkvMoawArCunRfpnPzVmuxXoi&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2087,
+   "cache": "raydium_mint_ac66514d-8133-45a3-b317-2a2ae2ecd82e_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:12Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ac66514d-8133-45a3-b317-2a2ae2ecd82e_20261126.json",
+   "request": {
+    "mint1": "5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3f64b69c798572cb7fdfdf1ef0a8937365c307722290ed91d22803e172bba48b",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=5z3EqYQo9HiCEs3R84RCDMu2n7anpDMxRhdK8PSWmrRC&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 10253,
+   "cache": "raydium_mint_b079d173-6ed9-4dc5-845d-96d6301f2a00_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:21Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_b079d173-6ed9-4dc5-845d-96d6301f2a00_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "CniPCE4b3s8gSUPhUiyMjXnytrEqUrMfSsnbBjLCpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3ad9c67c0affbac5d9037af6d6f825612606baf65e80d617fdceabdaa487fe4a",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=CniPCE4b3s8gSUPhUiyMjXnytrEqUrMfSsnbBjLCpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4402,
+   "cache": "raydium_mint_b09355f3-286d-472e-a1dd-4d0170dfb4aa_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:39Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_b09355f3-286d-472e-a1dd-4d0170dfb4aa_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "HNg5PYJmtqcmzXrv6S9zP1CDKk5BgDuyFBxbvNApump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3bb2f5365df2d3b1a2b174eacabf1bea75c8fda74bdeb1929318ac8f04d64e49",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=HNg5PYJmtqcmzXrv6S9zP1CDKk5BgDuyFBxbvNApump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4684,
+   "cache": "raydium_mint_b7c5a111-447f-4af6-9f18-581591249a76_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:58Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_b7c5a111-447f-4af6-9f18-581591249a76_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "0dfe2673f07c87ab0ffa8cd0f8766e06edf05db9f2a0e6e59c22e1265bc93bb8",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=8x5VqbHA8D7NkD52uNuS5nnt3PwA8pLD34ymskeSo2Wn&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4184,
+   "cache": "raydium_mint_bb095f7e-b901-4bf2-afb3-45a9c0182ef1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:58Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_bb095f7e-b901-4bf2-afb3-45a9c0182ef1_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "BeGY8KqKxboEwRbJd1q9H2K829jS4Rc5dEyNMYXCbV5p",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "0d672820a2cbf1ac7103d9fadefd0c43acb3dfb135c5a1a51ea0f844fa599d62",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=BeGY8KqKxboEwRbJd1q9H2K829jS4Rc5dEyNMYXCbV5p&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2526,
+   "cache": "raydium_mint_c2f18cd1-e4e6-4ecd-aec5-e078505c69e7_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:35Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_c2f18cd1-e4e6-4ecd-aec5-e078505c69e7_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "9203ba6aa4d15f1274d1f1a87af061f1739c1e0cc9a10c14f539e6b4f10fca1a",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=DtR4D9FtVoTX2569gaL837ZgrB6wNjj6tkmnX9Rdk9B2&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 19004,
+   "cache": "raydium_mint_c66d7944-6582-4638-881a-360e5918e4b4_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:43Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_c66d7944-6582-4638-881a-360e5918e4b4_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "df81f7628c4611ce30f19eb4f3dfe7f26c0da8a62a049c9c67e4a0078ae49662",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=9BB6NFEcjBCtnNLFko2FqVQBq8HHM13kCyYcdQbgpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 8864,
+   "cache": "raydium_mint_caca758f-7a8f-4242-8d9c-cd44d98c5ee0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:07Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_caca758f-7a8f-4242-8d9c-cd44d98c5ee0_20261126.json",
+   "request": {
+    "mint1": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3af2c4f0226e5d398d3fc50158bb8bd35810d048d9981d93d9aeaf1a712ccb62",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 22334,
+   "cache": "raydium_mint_cdd04383-21ea-45d1-94d6-295e58100559_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:17Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_cdd04383-21ea-45d1-94d6-295e58100559_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "cebbe5e76698df74d9203472f4b926e87a36625cee7aa570db403be597d2581c",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4417,
+   "cache": "raydium_mint_ce002fb5-1b0e-4a72-af43-a800228e83e8_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:44Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ce002fb5-1b0e-4a72-af43-a800228e83e8_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "eL5fUxj2J4CiQsmW85k5FG9DvuQjjUoBHoQBi2Kpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "5bcf8a7f4ef2961732b400dbd854b6da57dc83e48af9fa477212a0e3d7a31f32",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=eL5fUxj2J4CiQsmW85k5FG9DvuQjjUoBHoQBi2Kpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 12647,
+   "cache": "raydium_mint_d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:16Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "2348c19bb7bc8c822ec1d3a989302419ec7dacc46e56e1ec4c29afcb21289a75",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=FeR8VBqNRSUD5NtXAj2n3j1dAHkZHfyDktKuLXD4pump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2564,
+   "cache": "raydium_mint_db3fb94d-dff9-42ce-8ba8-c5ec524e234e_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:17Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_db3fb94d-dff9-42ce-8ba8-c5ec524e234e_20261126.json",
+   "request": {
+    "mint1": "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "d8389f50b0eabb80d6d3519d793755f05cae0868c74cdd86f26cb7243757b38f",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2093,
+   "cache": "raydium_mint_dda3a666-b9ea-4aa6-84b1-63ca7293bd8b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:12Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_dda3a666-b9ea-4aa6-84b1-63ca7293bd8b_20261126.json",
+   "request": {
+    "mint1": "9mV4WUukVsva5wYcYW4veo34CNDiF44sh3Ji65JNdvh5",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "cb29dbad6106b1a69a16527b0e9f039fc6381dfdb35a7afd3115b1137ef239b3",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=9mV4WUukVsva5wYcYW4veo34CNDiF44sh3Ji65JNdvh5&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2111,
+   "cache": "raydium_mint_df090a01-2c9e-46a5-8588-bce979765dff_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:31Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_df090a01-2c9e-46a5-8588-bce979765dff_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "4NBTf8PfLH4oLFnwf3knv46FY9i5oXjDxffCetXRpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "9bd786fc0e8177cd0a3e8edb657c9018de5b60a351b26d7d8db2c1ba4124f383",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=4NBTf8PfLH4oLFnwf3knv46FY9i5oXjDxffCetXRpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 6017,
+   "cache": "raydium_mint_e7187b64-b5f9-43cb-a2be-c101b72873bc_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:36Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_e7187b64-b5f9-43cb-a2be-c101b72873bc_20261126.json",
+   "request": {
+    "mint1": "J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "4df899634d97ced8932251ed35e0c614af7301a0e0032df3c1e8b7df8306c178",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=J3NKxxXZcnNiMjKw9hYb2K4LUxgwB6t1FtPtQVsv3KFr&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 12517,
+   "cache": "raydium_mint_ebbdda8f-7746-4af9-9d82-1d2f5022b21c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:29Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ebbdda8f-7746-4af9-9d82-1d2f5022b21c_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "HBoNJ5v8g71s2boRivrHnfSB5MVPLDHHyVjruPfhGkvL",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "230a5f1059c8fc37a63c02f230d56e9ca314f8c79641634e41f4cda7e5dd9496",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=HBoNJ5v8g71s2boRivrHnfSB5MVPLDHHyVjruPfhGkvL&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 4641,
+   "cache": "raydium_mint_efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:29Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1_20261126.json",
+   "request": {
+    "mint1": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "40144eb403626d21465895d7e59239d904c27fffd41e6f3a3ac371ced05336b6",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 6750,
+   "cache": "raydium_mint_f4b95102-0632-4d7f-899c-65b9b941590c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:08Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_f4b95102-0632-4d7f-899c-65b9b941590c_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "20ad41afdae689983b7136e8d825a6c2d6455d1a571c73b9e3d142170fc1ab73",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=A8C3xuqscfmyLrte3VmTqrAq8kgMASius9AFNANwpump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 8642,
+   "cache": "raydium_mint_f840ec7e-3d8c-40ea-b761-66515f8f17b9_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:58Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_f840ec7e-3d8c-40ea-b761-66515f8f17b9_20261126.json",
+   "request": {
+    "mint1": "So11111111111111111111111111111111111111112",
+    "mint2": "CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "5f22e786efbbce732bb37bd72ccf02598fe528dc9e07c9161d0e84d9fcb85ea1",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=So11111111111111111111111111111111111111112&mint2=CzLSujWBLFsSjncfkh59rUFqvafWcY5tzedWJSuypump&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2159,
+   "cache": "raydium_mint_ff7c7fa9-5d22-4502-862a-57c3e38cb018_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:08Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ff7c7fa9-5d22-4502-862a-57c3e38cb018_20261126.json",
+   "request": {
+    "mint1": "y1AZt42vceCmStjW4zetK3VoNarC1VxJ5iDjpiupump",
+    "mint2": "So11111111111111111111111111111111111111112",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "3138d298fa23be2c240bbe23081b97c950660261c7dcd0e2c1a619cf0ae25a09",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=y1AZt42vceCmStjW4zetK3VoNarC1VxJ5iDjpiupump&mint2=So11111111111111111111111111111111111111112&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 2262,
+   "cache": "raydium_mint_ff85a528-d8f4-4955-b678-8a870579932d_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:54Z",
+   "key": "https://api-v3.raydium.io/pools/info/mint#raydium_mint_ff85a528-d8f4-4955-b678-8a870579932d_20261126.json",
+   "request": {
+    "mint1": "3ZLekZYq2qkZiSpnSvabjit34tUkjSwD1JFuW9as9wBG",
+    "mint2": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    "page": "1",
+    "pageSize": "10",
+    "poolSortField": "liquidity",
+    "poolType": "standard",
+    "sortType": "desc"
+   },
+   "sha256": "6f2b4dbdbcdad9287ceea91baacc6e68dd45d68d9cecdf9fd6ffdd4774da5bb0",
+   "status": "ok",
+   "url": "https://api-v3.raydium.io/pools/info/mint?mint1=3ZLekZYq2qkZiSpnSvabjit34tUkjSwD1JFuW9as9wBG&mint2=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v&poolType=standard&poolSortField=liquidity&sortType=desc&pageSize=10&page=1"
+  },
+  {
+   "bytes": 21883,
+   "cache": "gt_ohlcv_day1000_22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:13Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd/ohlcv/day#gt_ohlcv_day1000_22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "04b5b427dd8b6750f2392bdacdb666139e46de528a8deea952d48c007850353b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21618,
+   "cache": "gt_ohlcv_day1000_2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:33Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR/ohlcv/day#gt_ohlcv_day1000_2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "f085dba4d944bc71e7c2cf427d7e7ab4ce54da396cf19352ccf6396d6f74a5ec",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 612,
    "cache": "gt_ohlcv_day_2iTs6bfPRoz2cBjqWzk1hXHFaEpD2sq35LkTkdF11rpu_20261126.json",
    "checksum": "none_published",
@@ -65,6 +1368,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/2vWQ8gNC6LDNh8pTtRPEjufYcnrCFKcPoiEBZ1GoRFHB/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21808,
+   "cache": "gt_ohlcv_day1000_3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:17Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq/ohlcv/day#gt_ohlcv_day1000_3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "26b31ab51b8efdeccc3c4c42805537ca8b0d4f6553a05cf47b37a4fc0d129d44",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 5097,
    "cache": "gt_ohlcv_day_3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq_20261126.json",
    "checksum": "none_published",
@@ -78,6 +1396,21 @@
    "sha256": "53de1495db2386d6e09f7be96a8b40fb5c1a5a782a81c058eb2060594603f464",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21964,
+   "cache": "gt_ohlcv_day1000_3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:59Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp/ohlcv/day#gt_ohlcv_day1000_3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "0dc264628e26febd8b6f6ecae11a756b35954be311d5a8f8df4c555aa9f0b495",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 4425,
@@ -110,6 +1443,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/49iMatQtoyabsYAQc8GafVq6aeBFVDxSRH44oiatyyw6/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21827,
+   "cache": "gt_ohlcv_day1000_4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:04Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i/ohlcv/day#gt_ohlcv_day1000_4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "68414f755d86697af481d0077f554223359e0a98636d277263a3eaab20cc5ac9",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 702,
    "cache": "gt_ohlcv_day_4TLT8PV9bnGM2ftFthG3fBxjjC5zcz6bNLgAmxZ3AJkH_20261126.json",
    "checksum": "none_published",
@@ -138,6 +1486,66 @@
    "sha256": "63a7e756fb48258d6915c12782ec27807b1a1f3e7a0aeb682ace7456e30ee8aa",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/4v6geaGFiFfQP9HbrxSLdwFKsda8V7jr99ADYq9NtJV1/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21835,
+   "cache": "gt_ohlcv_day1000_4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:50Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar/ohlcv/day#gt_ohlcv_day1000_4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "5e44ad5ef57a3ff2dd7262151ccc1b8c699b78b2d9c1cf355b9bd9a511c3a7cc",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21768,
+   "cache": "gt_ohlcv_day1000_58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:17Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9/ohlcv/day#gt_ohlcv_day1000_58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "e65ef8082e26ad7b29a09e8d5d580fae30f51185e93af3455aba6c66050a5258",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 18439,
+   "cache": "gt_ohlcv_day1000_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:26Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/day#gt_ohlcv_day1000_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "12ed0530635bad5dacfccc7db3ef4fa62a98b7a910f0e9177dbfda289f9bc628",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 19163,
+   "cache": "gt_ohlcv_day1000usd_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:20Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/day#gt_ohlcv_day1000usd_58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "usd",
+    "limit": "1000"
+   },
+   "sha256": "afe398a2d94355fb376ca1f88a973bb35b5890d5521ef34e85988615343a33e8",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2/ohlcv/day?aggregate=1&limit=1000&currency=usd"
   },
   {
    "bytes": 4349,
@@ -170,6 +1578,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/5EgCcjkuE42YyTZY4QG8qTioUwNh6agTvJuNRyEqcqV1/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21973,
+   "cache": "gt_ohlcv_day1000_5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:13Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE/ohlcv/day#gt_ohlcv_day1000_5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "ddd8beeaa5a5b225ecbcce721362255a15656d761efce014e683e8a056d3cd8b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 513,
    "cache": "gt_ohlcv_day_6A5JjKZk42XQYXbF48F6c5v7wT1kmJJWxeSsKb6PfqCH_20261126.json",
    "checksum": "none_published",
@@ -185,6 +1608,36 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6A5JjKZk42XQYXbF48F6c5v7wT1kmJJWxeSsKb6PfqCH/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21929,
+   "cache": "gt_ohlcv_day1000_6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:35Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw/ohlcv/day#gt_ohlcv_day1000_6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "21226ccd1087b82fdb2287e03ed7663bb77fdf17838318821719d64850fe038a",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 19118,
+   "cache": "gt_ohlcv_day1000_6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:39Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg/ohlcv/day#gt_ohlcv_day1000_6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "3e794cadbd29818029659e6f45ab392d58051a405d3c65a53cc80d515f65497c",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 4420,
    "cache": "gt_ohlcv_day_6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg_20261126.json",
    "checksum": "none_published",
@@ -198,6 +1651,21 @@
    "sha256": "aba78f7ed41b690f673e0f3b8c40d31130035ede2b7690956f5c6d740e4c6d63",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 18696,
+   "cache": "gt_ohlcv_day1000_6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:36Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj/ohlcv/day#gt_ohlcv_day1000_6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "4eb1c88459491d3a1b7a13d3475495a44cb6b3680499b19171729d9a31327c1c",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 957,
@@ -245,6 +1713,36 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/6tgpinsu1Mj5tr6c3HE8BXCGa1jfTtX86jGWYouKwrtV/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21904,
+   "cache": "gt_ohlcv_day1000_78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:45Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z/ohlcv/day#gt_ohlcv_day1000_78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "6c5dbac3fe59dd6796e9804a1bf08da7bb0722f7b124b0a21ef4c0d9b56fc154",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 18418,
+   "cache": "gt_ohlcv_day1000_7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:17Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX/ohlcv/day#gt_ohlcv_day1000_7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "fe8cbaf6965e608f3e2a42354747d0c976a125572c01296f8aec0779d3746e37",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 4366,
    "cache": "gt_ohlcv_day_7riviMqVTj8qUgY6WuGsUcKveMtzVxiJNesPP9ycNeAP_20261126.json",
    "checksum": "none_published",
@@ -273,6 +1771,21 @@
    "sha256": "c4768c11566c82904e2fe1f3db814dc94b343a1e7b6ffe3c2238a5a488ba147f",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/7yEXWTjLyXwBEjMhNwP9dWVJp8G68JvY9KXGT83sDCaM/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21681,
+   "cache": "gt_ohlcv_day1000_879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:34Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce/ohlcv/day#gt_ohlcv_day1000_879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "6347c12236b042f1ae5f931b61caa7a41eff0197099783562ae2e51192fc5ccf",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 5038,
@@ -305,6 +1818,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8MUw4csFLjRBrYWse3tdyj2JGmYK6oivcsYdpJowHrkd/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 22026,
+   "cache": "gt_ohlcv_day1000_8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:21Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt/ohlcv/day#gt_ohlcv_day1000_8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "328f336b2f12360415f040410c2ab97a16adb57c8909ac1625aab3ec35419016",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 5027,
    "cache": "gt_ohlcv_day_8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt_20261126.json",
    "checksum": "none_published",
@@ -335,6 +1863,171 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8aDaBQkTrS6HVMjyc6EZebgdiaXhLYGriDWKWWp1NpFF/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 20688,
+   "cache": "gt_ohlcv_day1000_8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:25Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK/ohlcv/day#gt_ohlcv_day1000_8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "2a315a5dba049369750b9b7b3289dae8c65029a673eb62d2836f995019aa0d80",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21907,
+   "cache": "gt_ohlcv_day1000_93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:27Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu/ohlcv/day#gt_ohlcv_day1000_93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "6107224b34a1cd481772d2579282b449fcef458da557d1f325057c4f3166692b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21726,
+   "cache": "gt_ohlcv_day1000_969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:32Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe/ohlcv/day#gt_ohlcv_day1000_969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "c377f81444cf32cbf8e1b1ff7c8edb68dbfcc34d659e809fe048889f8dd4ee56",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21550,
+   "cache": "gt_ohlcv_day1000_9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:31Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM/ohlcv/day#gt_ohlcv_day1000_9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "e36db47898782fcd8a843d51ba0e5c95f652c3a6dfbfc864f224f87fc6f5c025",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21916,
+   "cache": "gt_ohlcv_day1000_9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:04Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW/ohlcv/day#gt_ohlcv_day1000_9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "b54f4ea7223c85f7d40dfa2819882e98abe3a7ac4536348b037574c625fa5b73",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21816,
+   "cache": "gt_ohlcv_day1000_9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:36Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN/ohlcv/day#gt_ohlcv_day1000_9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "320a8ebc892ed4dc0a241c9cf22779a5794c3edd423c4238cd92769ea3ff13b6",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21956,
+   "cache": "gt_ohlcv_day1000_9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:21Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7/ohlcv/day#gt_ohlcv_day1000_9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "93b3d40735b3f4109fa88ba42a11ae1f4cdca56a37b994a5f289af8994eb14d6",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21081,
+   "cache": "gt_ohlcv_day1000_9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:07Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR/ohlcv/day#gt_ohlcv_day1000_9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "5eebf7ddc5c815e34b7cc61bff947ed3e8858bf079a714e2015f2a0d8caac334",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21651,
+   "cache": "gt_ohlcv_day1000_9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:40Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte/ohlcv/day#gt_ohlcv_day1000_9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "41f5f5a759b4dc6c73ca7a3d49f73e9cefab737b85fd56ddfe9322f942501527",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21718,
+   "cache": "gt_ohlcv_day1000_9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:59Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU/ohlcv/day#gt_ohlcv_day1000_9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "5d396bab2c1259550a8be79bcbbec0742fc374c3d325f9e477f3e28ef8f9a32a",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21834,
+   "cache": "gt_ohlcv_day1000_AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:08Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt/ohlcv/day#gt_ohlcv_day1000_AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "2265cd1abb30fba88eb960def124cf9c49f02426bca99231bb4cdb60f774afa2",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 604,
    "cache": "gt_ohlcv_day_AM3zQfYd8RTShjhzMmB7zUxgQm38BMy47hmBXgvL75tL_20261126.json",
    "checksum": "none_published",
@@ -363,6 +2056,21 @@
    "sha256": "f513bdfda097a29dbc551e4da732eae4d9c3e1e3d0b10ce26adba1d1f3419b15",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AQAGYQsdU853WAKhXM79CgNdoyhrRwXvYHX6qrDyC1FS/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 20583,
+   "cache": "gt_ohlcv_day1000_AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:12Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA/ohlcv/day#gt_ohlcv_day1000_AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "04a4b3aa1de5430cd6590c30fa95ed3074317c2c6cf7a603e9e21b2132ff5530",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 4745,
@@ -410,6 +2118,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/AyRZissKP8u1o5gYgfyjry5As3RVzyDfVZHDXvBr35yL/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21973,
+   "cache": "gt_ohlcv_day1000_B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:30Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX/ohlcv/day#gt_ohlcv_day1000_B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "0b486c2a8bdaa702e8872139f9775c1b6468e0cf7bce3275d8dd3bcac556c738",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 4593,
    "cache": "gt_ohlcv_day_BCDdHonby65iduz3Ev3c9v5XjNkzyu5e56KRFHpBM4T9_20261126.json",
    "checksum": "none_published",
@@ -438,6 +2161,36 @@
    "sha256": "463a9d976e8e2ee26fc2927f70f9fa3eb42077e209f89f973edb146699a22e61",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/BZ17TofoBpB5ucB9gth26Z1krSZhfRX6skdtfzyDjp2y/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 22003,
+   "cache": "gt_ohlcv_day1000_BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:49Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY/ohlcv/day#gt_ohlcv_day1000_BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "27a4bc8e0596aacd32bc1e16be8ce4245fa9c3d0c0b467442a6463ec1a90b006",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21338,
+   "cache": "gt_ohlcv_day1000_Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:44Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw/ohlcv/day#gt_ohlcv_day1000_Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "b23efad609b1947c6178adae61a6b550e68e69d34452d137804e1144a3f44f46",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 4878,
@@ -515,6 +2268,36 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/CprW3HanBc7LFXD5g8pV3YbcqyeMueSGZs1T7NAHdShu/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 22005,
+   "cache": "gt_ohlcv_day1000_CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:26Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g/ohlcv/day#gt_ohlcv_day1000_CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "330db678a1bf73666d45d603ceaff3246ba68e36592faa79c8325065cd35b871",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21720,
+   "cache": "gt_ohlcv_day1000_DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:30Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt/ohlcv/day#gt_ohlcv_day1000_DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "3a57fcbd6b21176261e02deec131f51a79aedebc9e2edccb9e9040be45a455be",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 5086,
    "cache": "gt_ohlcv_day_DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt_20261126.json",
    "checksum": "none_published",
@@ -528,6 +2311,21 @@
    "sha256": "5cd2ce7f8d671f4ef7c8ed81f5695f05e20b438a7bfcc62e8a789f3249190e73",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 19105,
+   "cache": "gt_ohlcv_day1000_DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:21Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut/ohlcv/day#gt_ohlcv_day1000_DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "af2aa1c25ba9c928b3e4295426d0beeb4eb52b3aefa5642dee42caf40101675b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 2362,
@@ -575,6 +2373,51 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Dgrkdw53i6iFb3MngvDDxX8uYDzz1FKzvGRfuqUbmugd/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21928,
+   "cache": "gt_ohlcv_day1000_DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:09Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F/ohlcv/day#gt_ohlcv_day1000_DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "837b307724e83df986e631bf26405da9ae116cf5fe0840a6c3f96fe99cd2ff94",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21534,
+   "cache": "gt_ohlcv_day1000_DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:08Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha/ohlcv/day#gt_ohlcv_day1000_DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "dd51a597a72d2cc9882ff3221c516799a5c03c532fa215e5adc0acd1c8a2a978",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21854,
+   "cache": "gt_ohlcv_day1000_E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:04Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ/ohlcv/day#gt_ohlcv_day1000_E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "e9a1f5ac90d3f391391436be9795fb05ea98fa2f72ce3b509c7d65329ecb9733",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 5085,
    "cache": "gt_ohlcv_day_E8TRsCYBVaB4GD4Nx3F8SGpH3KMYTADR1EkdQC2EJFGK_20261126.json",
    "checksum": "none_published",
@@ -603,6 +2446,21 @@
    "sha256": "0c8e5d6cc2b3d8c3b259d606ad649dbe628cafb5400a197a779387d244e25a96",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EGtWij7MvGVRUrBgVt8LEVuktBYWV8yUMAGkjvNnb7Ta/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21271,
+   "cache": "gt_ohlcv_day1000_EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:08Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx/ohlcv/day#gt_ohlcv_day1000_EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "ee896bf012d29e7c555344df412b23946a3cf960fa6d18550f2b87104452b5c5",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 4982,
@@ -650,6 +2508,36 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EYJkpMH4KJy8XDQyK59DM2xBUodvPkerDxKMCwyL1ber/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21815,
+   "cache": "gt_ohlcv_day1000_Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:26Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej/ohlcv/day#gt_ohlcv_day1000_Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "1c57c193d32817bece342595412e21cb444b25f17f811fe8385220487c9e556b",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21946,
+   "cache": "gt_ohlcv_day1000_EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:51Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72/ohlcv/day#gt_ohlcv_day1000_EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "08046f0de546fd3c44ee26bc174cb43a6f667cd7fd32b7d6b21e8c11d195e5b1",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 2990,
    "cache": "gt_ohlcv_day_EzarYVbqVLMf2WM3HUpXQmjJVvCKytCLG9qM1QHD8D72_20261126.json",
    "checksum": "none_published",
@@ -678,6 +2566,21 @@
    "sha256": "adbce453c74307a568620d63654f7c817c28c1cbaca976c556a93bb04f0cb63a",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FQed3Ay883zUcGcLaubkV56JJbweiYjxPSTC84yUxqNd/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21836,
+   "cache": "gt_ohlcv_day1000_FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:35Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo/ohlcv/day#gt_ohlcv_day1000_FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "31d9f076b8ccb537fceec6ac753ee19a403287c1d7856478f52811459c7cfd96",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 5083,
@@ -710,6 +2613,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FWMS1h5rMArXxfzoiXQViHQPyLyPUmAE4uMYZRF8Xdyn/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 20005,
+   "cache": "gt_ohlcv_day1000_FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:13Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er/ohlcv/day#gt_ohlcv_day1000_FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "739cdb6b6941fc44d1e1ba977866f6b0c878a61b3c1dabe5a016e2a37c24813a",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 4426,
    "cache": "gt_ohlcv_day_FjuBy7jjf9DXj9d3R7cHpvcnoFW2iQxf7F7P3vqx4Jza_20261126.json",
    "checksum": "none_published",
@@ -725,6 +2643,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FjuBy7jjf9DXj9d3R7cHpvcnoFW2iQxf7F7P3vqx4Jza/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21804,
+   "cache": "gt_ohlcv_day1000_FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:03Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF/ohlcv/day#gt_ohlcv_day1000_FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "bfcb5b8103531d81859b4829c02e6d3daab10686f5affbf268797e1249c83f05",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 5064,
    "cache": "gt_ohlcv_day_FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF_20261126.json",
    "checksum": "none_published",
@@ -738,6 +2671,21 @@
    "sha256": "62597367f717e64aa7d95a80798b9b7d0c6c57501ee7f2d0fe1fbf73788064af",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21896,
+   "cache": "gt_ohlcv_day1000_FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:54Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd/ohlcv/day#gt_ohlcv_day1000_FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "cf208acb5d889a9328ad76a05b89de9445557e8e8cea5fdb077229677c3a7699",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 1474,
@@ -785,6 +2733,21 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/GYqHjuDzTiw7i52Xv1qohDE6eJr6eSZpsrBVikGZyaFV/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21704,
+   "cache": "gt_ohlcv_day1000_GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:32Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k/ohlcv/day#gt_ohlcv_day1000_GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "57c1d392eaeb1ccf0ce045d177c50233d48123adf93a3db9aab136f02f91911c",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 1882,
    "cache": "gt_ohlcv_day_Gk1gJk4oNezBynAzYTzchsrKy3iixFU35CHRWeTM3ouE_20261126.json",
    "checksum": "none_published",
@@ -800,6 +2763,81 @@
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Gk1gJk4oNezBynAzYTzchsrKy3iixFU35CHRWeTM3ouE/ohlcv/day?aggregate=1&limit=40&currency=token"
   },
   {
+   "bytes": 21120,
+   "cache": "gt_ohlcv_day1000_GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:31Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y/ohlcv/day#gt_ohlcv_day1000_GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "4ee13df57b28138c1b3d850f67847244e851c1c1efb70486f2dd5619fa01bd11",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 20306,
+   "cache": "gt_ohlcv_day1000_HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:17Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS/ohlcv/day#gt_ohlcv_day1000_HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "cb96752bd07bce77ae5178f8fd5d13a0eecb67bc8985af21909c3429eec3be0e",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21819,
+   "cache": "gt_ohlcv_day1000_HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:41Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b/ohlcv/day#gt_ohlcv_day1000_HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "b7058f87e60a8e24edf2c96a1c4cb91895dd2a62cec2dfa99c12215ea1c9940c",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21704,
+   "cache": "gt_ohlcv_day1000_HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:54Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ/ohlcv/day#gt_ohlcv_day1000_HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "1cef6c0410f48ecc045e8b6a772bbff8b9f86d32223b42f9bcae4dd436dd58bf",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 21919,
+   "cache": "gt_ohlcv_day1000_HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:40Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ/ohlcv/day#gt_ohlcv_day1000_HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "b9e5fe906d484ab83b23d5ad4e636b895f80a1c7e198f082e9d244806aa8fce7",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
    "bytes": 508,
    "cache": "gt_ohlcv_day_HbYMpjY2W4wmMWpQZfHjtxVj6GtHn3W4GAjmbHzo8Da6_20261126.json",
    "checksum": "none_published",
@@ -813,6 +2851,21 @@
    "sha256": "24cd439f920723e81533a5f1a4bf30818adaa64bd93898988361eba8461f1331",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HbYMpjY2W4wmMWpQZfHjtxVj6GtHn3W4GAjmbHzo8Da6/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21472,
+   "cache": "gt_ohlcv_day1000_Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:51Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro/ohlcv/day#gt_ohlcv_day1000_Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "679e6087f434ffa027857772f3e87196dc5e2a2943f032626dec158d61f4525d",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 4597,
@@ -843,6 +2896,21 @@
    "sha256": "9026d9ef0ffab5128678f72d806ee0b13da80a6ef4a0767d445729b371c52391",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/HpgV2jnzgrGfrZjeZGkHgTnEgRFAhtzCVuk3BRFTFJwk/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21692,
+   "cache": "gt_ohlcv_day1000_J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:26Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7/ohlcv/day#gt_ohlcv_day1000_J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "112fa421e1e8939add58c2702559c8902d3aa1974eed9b5d7e18e4d04879c59c",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7/ohlcv/day?aggregate=1&limit=1000&currency=token"
   },
   {
    "bytes": 5106,
@@ -933,10 +3001,608 @@
    "sha256": "2afef3eef0f74a927443fd70b866a53dd2a578b9b925f14a757952e0802ef533",
    "status": "ok",
    "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/q4aTd3HBmMwVeaYUUnWQgAowwDZ9CHGRsruibJjv2Z7/ohlcv/day?aggregate=1&limit=40&currency=token"
+  },
+  {
+   "bytes": 21819,
+   "cache": "gt_ohlcv_day1000_zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:55Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz/ohlcv/day#gt_ohlcv_day1000_zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz_20261126.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "token",
+    "limit": "1000"
+   },
+   "sha256": "a3d994ca17284901c8d25fea61b55dc081e965cc58771f4f673f08b9f4173080",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz/ohlcv/day?aggregate=1&limit=1000&currency=token"
+  },
+  {
+   "bytes": 101227,
+   "cache": "llama_chart_u_06faada9-ad40-4027-9380-db05f0f3fd53_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:38Z",
+   "key": "https://yields.llama.fi/chart/06faada9-ad40-4027-9380-db05f0f3fd53#llama_chart_u_06faada9-ad40-4027-9380-db05f0f3fd53_20261126.json",
+   "request": null,
+   "sha256": "413ceb8b03283c3af5faa5fca291a96f10fc355f7117138739931924421ef01e",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/06faada9-ad40-4027-9380-db05f0f3fd53"
+  },
+  {
+   "bytes": 99543,
+   "cache": "llama_chart_u_0bd02d7a-7bf4-4f3b-b1e9-bd8439482418_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:58Z",
+   "key": "https://yields.llama.fi/chart/0bd02d7a-7bf4-4f3b-b1e9-bd8439482418#llama_chart_u_0bd02d7a-7bf4-4f3b-b1e9-bd8439482418_20261126.json",
+   "request": null,
+   "sha256": "37dc0640e808a211c9ad9a784edc0a7f120e86c69d05f923c97aab988d9a7c9d",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/0bd02d7a-7bf4-4f3b-b1e9-bd8439482418"
+  },
+  {
+   "bytes": 100158,
+   "cache": "llama_chart_u_0fc97fda-dd12-4f83-afeb-88e6d60f0e4b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:15Z",
+   "key": "https://yields.llama.fi/chart/0fc97fda-dd12-4f83-afeb-88e6d60f0e4b#llama_chart_u_0fc97fda-dd12-4f83-afeb-88e6d60f0e4b_20261126.json",
+   "request": null,
+   "sha256": "2cb5954289e90a3fca5c3c186514b7b0e0ed1d2479a72f5156f2744daed29907",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/0fc97fda-dd12-4f83-afeb-88e6d60f0e4b"
+  },
+  {
+   "bytes": 100785,
+   "cache": "llama_chart_u_10a72779-843e-4491-a9f6-7bc81e452193_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:53Z",
+   "key": "https://yields.llama.fi/chart/10a72779-843e-4491-a9f6-7bc81e452193#llama_chart_u_10a72779-843e-4491-a9f6-7bc81e452193_20261126.json",
+   "request": null,
+   "sha256": "7abe1c1964177b6695504fbed2f4604cdcce29059aa2cf52557ffa2578b3dfb3",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/10a72779-843e-4491-a9f6-7bc81e452193"
+  },
+  {
+   "bytes": 103979,
+   "cache": "llama_chart_u_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:28Z",
+   "key": "https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574#llama_chart_u_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261126.json",
+   "request": null,
+   "sha256": "fd8f5d454ccf3e64392c135f28dad73eed867bd7c99a0a7e005195eea69bb447",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574"
+  },
+  {
+   "bytes": 24426,
+   "cache": "llama_chart_u_185ce02a-06db-4051-a6d8-25f86b32d77f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:06Z",
+   "key": "https://yields.llama.fi/chart/185ce02a-06db-4051-a6d8-25f86b32d77f#llama_chart_u_185ce02a-06db-4051-a6d8-25f86b32d77f_20261126.json",
+   "request": null,
+   "sha256": "df15811638f16fef23c884e28c0d451f4ffd504b14604f4d5e369bdbfc271a54",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/185ce02a-06db-4051-a6d8-25f86b32d77f"
+  },
+  {
+   "bytes": 98239,
+   "cache": "llama_chart_u_1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:44Z",
+   "key": "https://yields.llama.fi/chart/1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9#llama_chart_u_1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9_20261126.json",
+   "request": null,
+   "sha256": "250a4cab0fe2e884d89c9c22209c2738bd0850a8d9f9e3aedb090b748cd0d460",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9"
+  },
+  {
+   "bytes": 100875,
+   "cache": "llama_chart_u_1e958818-9a22-46b0-8567-12cb34fb4eb1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:30Z",
+   "key": "https://yields.llama.fi/chart/1e958818-9a22-46b0-8567-12cb34fb4eb1#llama_chart_u_1e958818-9a22-46b0-8567-12cb34fb4eb1_20261126.json",
+   "request": null,
+   "sha256": "f33fd77eae70d84a4b9088c13e96e837869a1efd2bc347241b3c3eb7ea64d80d",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/1e958818-9a22-46b0-8567-12cb34fb4eb1"
+  },
+  {
+   "bytes": 101272,
+   "cache": "llama_chart_u_20d99514-4d6b-4ff3-bbec-0732971885a0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:24Z",
+   "key": "https://yields.llama.fi/chart/20d99514-4d6b-4ff3-bbec-0732971885a0#llama_chart_u_20d99514-4d6b-4ff3-bbec-0732971885a0_20261126.json",
+   "request": null,
+   "sha256": "e503a09f1ed31824e28b81484f77d18391ebaa7a420870bfd465877f6319a352",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/20d99514-4d6b-4ff3-bbec-0732971885a0"
+  },
+  {
+   "bytes": 101035,
+   "cache": "llama_chart_u_25cb3610-4aae-43dc-8773-fe13bdec9eb2_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:57Z",
+   "key": "https://yields.llama.fi/chart/25cb3610-4aae-43dc-8773-fe13bdec9eb2#llama_chart_u_25cb3610-4aae-43dc-8773-fe13bdec9eb2_20261126.json",
+   "request": null,
+   "sha256": "d1e2804cac4b80ead1157577fd3c951235f2d10b01da454882ad150d896f7d13",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/25cb3610-4aae-43dc-8773-fe13bdec9eb2"
+  },
+  {
+   "bytes": 82158,
+   "cache": "llama_chart_u_2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:54Z",
+   "key": "https://yields.llama.fi/chart/2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a#llama_chart_u_2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a_20261126.json",
+   "request": null,
+   "sha256": "249c9ac64726f347ea7e50ae21c82622e7c34f71c1ccfb11f5c9ddd0c8d6b2ac",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a"
+  },
+  {
+   "bytes": 100124,
+   "cache": "llama_chart_u_3fe5a196-8a15-4f74-ba76-6625f7985773_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:25Z",
+   "key": "https://yields.llama.fi/chart/3fe5a196-8a15-4f74-ba76-6625f7985773#llama_chart_u_3fe5a196-8a15-4f74-ba76-6625f7985773_20261126.json",
+   "request": null,
+   "sha256": "10b50b71ef96747e23d5a6eae688717ce4c1c54f539805f0dfa3cb8d4b20122a",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/3fe5a196-8a15-4f74-ba76-6625f7985773"
+  },
+  {
+   "bytes": 100309,
+   "cache": "llama_chart_u_46f5eec1-26f1-4911-8d91-d627ff756dcd_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:16Z",
+   "key": "https://yields.llama.fi/chart/46f5eec1-26f1-4911-8d91-d627ff756dcd#llama_chart_u_46f5eec1-26f1-4911-8d91-d627ff756dcd_20261126.json",
+   "request": null,
+   "sha256": "5a22713f8c7919057d27a7483b7e8056b1a4a2e58a1b474b1e7f9637ad61a108",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/46f5eec1-26f1-4911-8d91-d627ff756dcd"
+  },
+  {
+   "bytes": 100867,
+   "cache": "llama_chart_u_470dd76d-850f-49db-861a-0f675735ec57_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:20Z",
+   "key": "https://yields.llama.fi/chart/470dd76d-850f-49db-861a-0f675735ec57#llama_chart_u_470dd76d-850f-49db-861a-0f675735ec57_20261126.json",
+   "request": null,
+   "sha256": "d432d1458147e29838c1b037217110708cea4de518c8984d58303aa3c188729f",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/470dd76d-850f-49db-861a-0f675735ec57"
+  },
+  {
+   "bytes": 100891,
+   "cache": "llama_chart_u_4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:35Z",
+   "key": "https://yields.llama.fi/chart/4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0#llama_chart_u_4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0_20261126.json",
+   "request": null,
+   "sha256": "4b9e2d638a010542b4c47670c03164e79475bdfb79f6a2a8a0db6376ab1a9afa",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0"
+  },
+  {
+   "bytes": 74340,
+   "cache": "llama_chart_u_5002328b-b428-446c-ac12-9846c560219f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:07Z",
+   "key": "https://yields.llama.fi/chart/5002328b-b428-446c-ac12-9846c560219f#llama_chart_u_5002328b-b428-446c-ac12-9846c560219f_20261126.json",
+   "request": null,
+   "sha256": "3d9992790deb0ec07cb6d4f4686ff38d9bb49d7637b007e25ade166e5245a8e6",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/5002328b-b428-446c-ac12-9846c560219f"
+  },
+  {
+   "bytes": 100388,
+   "cache": "llama_chart_u_56f5337d-13a2-4757-ad4c-8175c03a4052_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:53Z",
+   "key": "https://yields.llama.fi/chart/56f5337d-13a2-4757-ad4c-8175c03a4052#llama_chart_u_56f5337d-13a2-4757-ad4c-8175c03a4052_20261126.json",
+   "request": null,
+   "sha256": "abb9bd3f316688be8ce7bf34ad52cc11586d8506c2c8df8372915996d0622ba1",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/56f5337d-13a2-4757-ad4c-8175c03a4052"
+  },
+  {
+   "bytes": 62294,
+   "cache": "llama_chart_u_61d3125a-9bc7-4562-9d73-316da2dcd15a_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:29Z",
+   "key": "https://yields.llama.fi/chart/61d3125a-9bc7-4562-9d73-316da2dcd15a#llama_chart_u_61d3125a-9bc7-4562-9d73-316da2dcd15a_20261126.json",
+   "request": null,
+   "sha256": "2fdfaae9b761214905c9a85537fac013c83a4d3d844ba4a3a0844f7b03913d3e",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/61d3125a-9bc7-4562-9d73-316da2dcd15a"
+  },
+  {
+   "bytes": 99810,
+   "cache": "llama_chart_u_661d9b85-3750-43c9-a109-154daf11dab3_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:30Z",
+   "key": "https://yields.llama.fi/chart/661d9b85-3750-43c9-a109-154daf11dab3#llama_chart_u_661d9b85-3750-43c9-a109-154daf11dab3_20261126.json",
+   "request": null,
+   "sha256": "fa4ce90fb5bde6a01e6fb5caca78fd57911e81c26f948d735047100b6fbae598",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/661d9b85-3750-43c9-a109-154daf11dab3"
+  },
+  {
+   "bytes": 95840,
+   "cache": "llama_chart_u_6cd9f06a-5abc-482d-9116-26f381fd8917_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:43Z",
+   "key": "https://yields.llama.fi/chart/6cd9f06a-5abc-482d-9116-26f381fd8917#llama_chart_u_6cd9f06a-5abc-482d-9116-26f381fd8917_20261126.json",
+   "request": null,
+   "sha256": "40735db91eef12bb5da1e2858b7d45e84ba5d5ea2f7bfcdd9b38649054b65fd6",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/6cd9f06a-5abc-482d-9116-26f381fd8917"
+  },
+  {
+   "bytes": 99951,
+   "cache": "llama_chart_u_70926954-4cfb-41e2-8aff-cbc81532bd7c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:39Z",
+   "key": "https://yields.llama.fi/chart/70926954-4cfb-41e2-8aff-cbc81532bd7c#llama_chart_u_70926954-4cfb-41e2-8aff-cbc81532bd7c_20261126.json",
+   "request": null,
+   "sha256": "cdcf6b8cd403930b789af6a125d8891de7901dfe32ce462c9e8c0f1a157cf8b4",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/70926954-4cfb-41e2-8aff-cbc81532bd7c"
+  },
+  {
+   "bytes": 98944,
+   "cache": "llama_chart_u_71b80fb4-50bc-4e0a-b01f-f60cb59fb859_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:54Z",
+   "key": "https://yields.llama.fi/chart/71b80fb4-50bc-4e0a-b01f-f60cb59fb859#llama_chart_u_71b80fb4-50bc-4e0a-b01f-f60cb59fb859_20261126.json",
+   "request": null,
+   "sha256": "37f65d3811207c4c179821ac7b9e4aa7970dc91ad0d8480943c6073ea6bd688e",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/71b80fb4-50bc-4e0a-b01f-f60cb59fb859"
+  },
+  {
+   "bytes": 90671,
+   "cache": "llama_chart_u_75f2465b-aae7-4e6d-a075-59312f639394_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:36Z",
+   "key": "https://yields.llama.fi/chart/75f2465b-aae7-4e6d-a075-59312f639394#llama_chart_u_75f2465b-aae7-4e6d-a075-59312f639394_20261126.json",
+   "request": null,
+   "sha256": "0739c42688af44496a5e1b0bbaab70e1eae26287c5e8db47408ea8abeaeb76fd",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/75f2465b-aae7-4e6d-a075-59312f639394"
+  },
+  {
+   "bytes": 90126,
+   "cache": "llama_chart_u_7a82f91e-2f28-4b3a-af08-4d553721dd51_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:39Z",
+   "key": "https://yields.llama.fi/chart/7a82f91e-2f28-4b3a-af08-4d553721dd51#llama_chart_u_7a82f91e-2f28-4b3a-af08-4d553721dd51_20261126.json",
+   "request": null,
+   "sha256": "19cf41c78a09bbc7c2cccb00e91792f303df460d25c492b1934548e972012705",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/7a82f91e-2f28-4b3a-af08-4d553721dd51"
+  },
+  {
+   "bytes": 99615,
+   "cache": "llama_chart_u_80074ed7-393e-4416-b5c6-e761cf285169_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:44Z",
+   "key": "https://yields.llama.fi/chart/80074ed7-393e-4416-b5c6-e761cf285169#llama_chart_u_80074ed7-393e-4416-b5c6-e761cf285169_20261126.json",
+   "request": null,
+   "sha256": "3900f561ae6404265daf20e54e9eb2bbf1537b48becaf602a8080946df439ffc",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/80074ed7-393e-4416-b5c6-e761cf285169"
+  },
+  {
+   "bytes": 100151,
+   "cache": "llama_chart_u_804a0c7b-7eb7-4b75-b066-4c568704fefe_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:34Z",
+   "key": "https://yields.llama.fi/chart/804a0c7b-7eb7-4b75-b066-4c568704fefe#llama_chart_u_804a0c7b-7eb7-4b75-b066-4c568704fefe_20261126.json",
+   "request": null,
+   "sha256": "5dc77619e962fef3da8c47ca85468c0f4f4db26b5bf6b68eabee18615e7a08a4",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/804a0c7b-7eb7-4b75-b066-4c568704fefe"
+  },
+  {
+   "bytes": 101156,
+   "cache": "llama_chart_u_83e9a75a-881a-4e5a-9aaa-82e2140fa57d_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:29Z",
+   "key": "https://yields.llama.fi/chart/83e9a75a-881a-4e5a-9aaa-82e2140fa57d#llama_chart_u_83e9a75a-881a-4e5a-9aaa-82e2140fa57d_20261126.json",
+   "request": null,
+   "sha256": "b4ac56145c7f4ce1d94758d82b657e97413a406ec857b20d3931abeec60f9e1b",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/83e9a75a-881a-4e5a-9aaa-82e2140fa57d"
+  },
+  {
+   "bytes": 100174,
+   "cache": "llama_chart_u_8be07d6f-99a3-4643-9256-6f8a0b881508_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:07Z",
+   "key": "https://yields.llama.fi/chart/8be07d6f-99a3-4643-9256-6f8a0b881508#llama_chart_u_8be07d6f-99a3-4643-9256-6f8a0b881508_20261126.json",
+   "request": null,
+   "sha256": "925e6fdc1961f14dd2f994a1262f7bf41006e99a00dc340c8f89121e18510506",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/8be07d6f-99a3-4643-9256-6f8a0b881508"
+  },
+  {
+   "bytes": 101237,
+   "cache": "llama_chart_u_8d1c0b44-a5ce-421c-b899-bf489159aa0f_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:42Z",
+   "key": "https://yields.llama.fi/chart/8d1c0b44-a5ce-421c-b899-bf489159aa0f#llama_chart_u_8d1c0b44-a5ce-421c-b899-bf489159aa0f_20261126.json",
+   "request": null,
+   "sha256": "ca798bb8623df66196497e942da6a6472c4f97c22f740721be25d335542b4ae0",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/8d1c0b44-a5ce-421c-b899-bf489159aa0f"
+  },
+  {
+   "bytes": 100933,
+   "cache": "llama_chart_u_919f83c6-1a2d-4c67-985f-99e8b8423f62_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:38Z",
+   "key": "https://yields.llama.fi/chart/919f83c6-1a2d-4c67-985f-99e8b8423f62#llama_chart_u_919f83c6-1a2d-4c67-985f-99e8b8423f62_20261126.json",
+   "request": null,
+   "sha256": "231e7b1872b7cfa19661dd706ebdba0889dea3b0497a388998f3542c0e272018",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/919f83c6-1a2d-4c67-985f-99e8b8423f62"
+  },
+  {
+   "bytes": 100908,
+   "cache": "llama_chart_u_9299b1ab-2c25-4032-bc90-f6f620373e0b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:29Z",
+   "key": "https://yields.llama.fi/chart/9299b1ab-2c25-4032-bc90-f6f620373e0b#llama_chart_u_9299b1ab-2c25-4032-bc90-f6f620373e0b_20261126.json",
+   "request": null,
+   "sha256": "577a87a7a24b5297448523f7fb950f9ab764ae72c8400f8296cbcbbdec735872",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/9299b1ab-2c25-4032-bc90-f6f620373e0b"
+  },
+  {
+   "bytes": 85530,
+   "cache": "llama_chart_u_99d4b1c8-9e7b-45d7-8603-260d9846866c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:34Z",
+   "key": "https://yields.llama.fi/chart/99d4b1c8-9e7b-45d7-8603-260d9846866c#llama_chart_u_99d4b1c8-9e7b-45d7-8603-260d9846866c_20261126.json",
+   "request": null,
+   "sha256": "cbe93d9527275852814a3684ffd2f9ac6c28c59dffe791dd56526bed5fceddcb",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/99d4b1c8-9e7b-45d7-8603-260d9846866c"
+  },
+  {
+   "bytes": 100265,
+   "cache": "llama_chart_u_a24db72d-5c6a-4028-b81e-de1480fa0f81_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:12Z",
+   "key": "https://yields.llama.fi/chart/a24db72d-5c6a-4028-b81e-de1480fa0f81#llama_chart_u_a24db72d-5c6a-4028-b81e-de1480fa0f81_20261126.json",
+   "request": null,
+   "sha256": "bc21898c8906dd207c5df35664a9ba9978d1c212d6e4efd128a60007b1a82f53",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/a24db72d-5c6a-4028-b81e-de1480fa0f81"
+  },
+  {
+   "bytes": 2974,
+   "cache": "llama_chart_u_a7e20f23-98ca-45b7-b2c2-fcc93de05b94_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:34Z",
+   "key": "https://yields.llama.fi/chart/a7e20f23-98ca-45b7-b2c2-fcc93de05b94#llama_chart_u_a7e20f23-98ca-45b7-b2c2-fcc93de05b94_20261126.json",
+   "request": null,
+   "sha256": "30d67400b9f7ca48f58d1002c9cfe5952bc938a1a669c73193891e10772c449d",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/a7e20f23-98ca-45b7-b2c2-fcc93de05b94"
+  },
+  {
+   "bytes": 100135,
+   "cache": "llama_chart_u_ac66514d-8133-45a3-b317-2a2ae2ecd82e_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:16Z",
+   "key": "https://yields.llama.fi/chart/ac66514d-8133-45a3-b317-2a2ae2ecd82e#llama_chart_u_ac66514d-8133-45a3-b317-2a2ae2ecd82e_20261126.json",
+   "request": null,
+   "sha256": "241f19c3a33ce744fad4cf77728314e9b311665f7358cd8ec241401dbeaa4d05",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/ac66514d-8133-45a3-b317-2a2ae2ecd82e"
+  },
+  {
+   "bytes": 94177,
+   "cache": "llama_chart_u_b079d173-6ed9-4dc5-845d-96d6301f2a00_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:25Z",
+   "key": "https://yields.llama.fi/chart/b079d173-6ed9-4dc5-845d-96d6301f2a00#llama_chart_u_b079d173-6ed9-4dc5-845d-96d6301f2a00_20261126.json",
+   "request": null,
+   "sha256": "ec908542b3d4bbc142915f7462f53e0e07f737b3aa950594f3872cffc533b0cb",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/b079d173-6ed9-4dc5-845d-96d6301f2a00"
+  },
+  {
+   "bytes": 100736,
+   "cache": "llama_chart_u_b09355f3-286d-472e-a1dd-4d0170dfb4aa_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:58Z",
+   "key": "https://yields.llama.fi/chart/b09355f3-286d-472e-a1dd-4d0170dfb4aa#llama_chart_u_b09355f3-286d-472e-a1dd-4d0170dfb4aa_20261126.json",
+   "request": null,
+   "sha256": "10737b8aaecedc31ec68d9c9f02d7aa8548b480d4aac6128c0bfc76232a79208",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/b09355f3-286d-472e-a1dd-4d0170dfb4aa"
+  },
+  {
+   "bytes": 101034,
+   "cache": "llama_chart_u_b7c5a111-447f-4af6-9f18-581591249a76_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:13:02Z",
+   "key": "https://yields.llama.fi/chart/b7c5a111-447f-4af6-9f18-581591249a76#llama_chart_u_b7c5a111-447f-4af6-9f18-581591249a76_20261126.json",
+   "request": null,
+   "sha256": "79ec6e0ab58943bd8ffd0bf2ee1df9d6b5ed875418f862082e958c16b3d8069c",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/b7c5a111-447f-4af6-9f18-581591249a76"
+  },
+  {
+   "bytes": 95657,
+   "cache": "llama_chart_u_bb095f7e-b901-4bf2-afb3-45a9c0182ef1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:02Z",
+   "key": "https://yields.llama.fi/chart/bb095f7e-b901-4bf2-afb3-45a9c0182ef1#llama_chart_u_bb095f7e-b901-4bf2-afb3-45a9c0182ef1_20261126.json",
+   "request": null,
+   "sha256": "d91fb3a5d1cb972883e37f154b35d93100f3f0c06fc6e637936664cee438b5cd",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/bb095f7e-b901-4bf2-afb3-45a9c0182ef1"
+  },
+  {
+   "bytes": 97198,
+   "cache": "llama_chart_u_c2f18cd1-e4e6-4ecd-aec5-e078505c69e7_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:39Z",
+   "key": "https://yields.llama.fi/chart/c2f18cd1-e4e6-4ecd-aec5-e078505c69e7#llama_chart_u_c2f18cd1-e4e6-4ecd-aec5-e078505c69e7_20261126.json",
+   "request": null,
+   "sha256": "6d073f62dc87a18e806b295d53671bc93b401d76c8a939dbffaa0295bf5154fd",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/c2f18cd1-e4e6-4ecd-aec5-e078505c69e7"
+  },
+  {
+   "bytes": 101825,
+   "cache": "llama_chart_u_c66d7944-6582-4638-881a-360e5918e4b4_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:47Z",
+   "key": "https://yields.llama.fi/chart/c66d7944-6582-4638-881a-360e5918e4b4#llama_chart_u_c66d7944-6582-4638-881a-360e5918e4b4_20261126.json",
+   "request": null,
+   "sha256": "25b141ae71e25a5dc31d67bcd1cb262abcb6677f82be97b6de1124ff1e860dd7",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/c66d7944-6582-4638-881a-360e5918e4b4"
+  },
+  {
+   "bytes": 101358,
+   "cache": "llama_chart_u_caca758f-7a8f-4242-8d9c-cd44d98c5ee0_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:11Z",
+   "key": "https://yields.llama.fi/chart/caca758f-7a8f-4242-8d9c-cd44d98c5ee0#llama_chart_u_caca758f-7a8f-4242-8d9c-cd44d98c5ee0_20261126.json",
+   "request": null,
+   "sha256": "98f1c9e503cac8890e08a695eb046ee876781c73bfa77c032c1d0c574776379b",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/caca758f-7a8f-4242-8d9c-cd44d98c5ee0"
+  },
+  {
+   "bytes": 99841,
+   "cache": "llama_chart_u_cdd04383-21ea-45d1-94d6-295e58100559_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:21Z",
+   "key": "https://yields.llama.fi/chart/cdd04383-21ea-45d1-94d6-295e58100559#llama_chart_u_cdd04383-21ea-45d1-94d6-295e58100559_20261126.json",
+   "request": null,
+   "sha256": "d95048fef4e3c6118a64c67586303d6b17a612974d4dc5e5e4b63474c5c7a37b",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/cdd04383-21ea-45d1-94d6-295e58100559"
+  },
+  {
+   "bytes": 100141,
+   "cache": "llama_chart_u_ce002fb5-1b0e-4a72-af43-a800228e83e8_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:48Z",
+   "key": "https://yields.llama.fi/chart/ce002fb5-1b0e-4a72-af43-a800228e83e8#llama_chart_u_ce002fb5-1b0e-4a72-af43-a800228e83e8_20261126.json",
+   "request": null,
+   "sha256": "0e6cd609ba243d4c58321fb20300fa19a39fa553f36a74733e03741611c99f61",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/ce002fb5-1b0e-4a72-af43-a800228e83e8"
+  },
+  {
+   "bytes": 99930,
+   "cache": "llama_chart_u_d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:12:20Z",
+   "key": "https://yields.llama.fi/chart/d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66#llama_chart_u_d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66_20261126.json",
+   "request": null,
+   "sha256": "2e8b5901ecc470da8de0b0368b108bfcae4b6255fbc6090396cf47b37149f9cc",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66"
+  },
+  {
+   "bytes": 100164,
+   "cache": "llama_chart_u_db3fb94d-dff9-42ce-8ba8-c5ec524e234e_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:20Z",
+   "key": "https://yields.llama.fi/chart/db3fb94d-dff9-42ce-8ba8-c5ec524e234e#llama_chart_u_db3fb94d-dff9-42ce-8ba8-c5ec524e234e_20261126.json",
+   "request": null,
+   "sha256": "7ce094938772239a919bdd597cce91c0ac4deb3a1cd5825a8252fcc54fd38c12",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/db3fb94d-dff9-42ce-8ba8-c5ec524e234e"
+  },
+  {
+   "bytes": 5596,
+   "cache": "llama_chart_u_dda3a666-b9ea-4aa6-84b1-63ca7293bd8b_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:16Z",
+   "key": "https://yields.llama.fi/chart/dda3a666-b9ea-4aa6-84b1-63ca7293bd8b#llama_chart_u_dda3a666-b9ea-4aa6-84b1-63ca7293bd8b_20261126.json",
+   "request": null,
+   "sha256": "ac8f66361354dd3deaaf2f3106d88e9d5720d415cfff81fa23ac7bfc1898a285",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/dda3a666-b9ea-4aa6-84b1-63ca7293bd8b"
+  },
+  {
+   "bytes": 93148,
+   "cache": "llama_chart_u_df090a01-2c9e-46a5-8588-bce979765dff_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:17:35Z",
+   "key": "https://yields.llama.fi/chart/df090a01-2c9e-46a5-8588-bce979765dff#llama_chart_u_df090a01-2c9e-46a5-8588-bce979765dff_20261126.json",
+   "request": null,
+   "sha256": "d49071dcf99b7ab56599333e98e286c6ade6a0482ff5869a504f08e472724a99",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/df090a01-2c9e-46a5-8588-bce979765dff"
+  },
+  {
+   "bytes": 100916,
+   "cache": "llama_chart_u_e7187b64-b5f9-43cb-a2be-c101b72873bc_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:14:11Z",
+   "key": "https://yields.llama.fi/chart/e7187b64-b5f9-43cb-a2be-c101b72873bc#llama_chart_u_e7187b64-b5f9-43cb-a2be-c101b72873bc_20261126.json",
+   "request": null,
+   "sha256": "4f4cc2cb825044ed69f456d6dfd85a3e61b5f6605481bb39d4d403a8213f16b7",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/e7187b64-b5f9-43cb-a2be-c101b72873bc"
+  },
+  {
+   "bytes": 101208,
+   "cache": "llama_chart_u_efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:11:33Z",
+   "key": "https://yields.llama.fi/chart/efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1#llama_chart_u_efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1_20261126.json",
+   "request": null,
+   "sha256": "18949a837cd515665a9d2c1c3dba0ae97e61b1157adcd7ecec012a8e3f5b9b38",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1"
+  },
+  {
+   "bytes": 100538,
+   "cache": "llama_chart_u_f4b95102-0632-4d7f-899c-65b9b941590c_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:12Z",
+   "key": "https://yields.llama.fi/chart/f4b95102-0632-4d7f-899c-65b9b941590c#llama_chart_u_f4b95102-0632-4d7f-899c-65b9b941590c_20261126.json",
+   "request": null,
+   "sha256": "5280e809e0ff37e0eccc4a143c9e4a1bf1fa07bb7928f0b99c23dc69c32d5dc0",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/f4b95102-0632-4d7f-899c-65b9b941590c"
+  },
+  {
+   "bytes": 100291,
+   "cache": "llama_chart_u_f840ec7e-3d8c-40ea-b761-66515f8f17b9_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:15:07Z",
+   "key": "https://yields.llama.fi/chart/f840ec7e-3d8c-40ea-b761-66515f8f17b9#llama_chart_u_f840ec7e-3d8c-40ea-b761-66515f8f17b9_20261126.json",
+   "request": null,
+   "sha256": "4e3a168af682047378e60b4b2142d035669621419de2664f12e574de6f5a4100",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/f840ec7e-3d8c-40ea-b761-66515f8f17b9"
+  },
+  {
+   "bytes": 100165,
+   "cache": "llama_chart_u_ff7c7fa9-5d22-4502-862a-57c3e38cb018_20261126.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-26T14:16:12Z",
+   "key": "https://yields.llama.fi/chart/ff7c7fa9-5d22-4502-862a-57c3e38cb018#llama_chart_u_ff7c7fa9-5d22-4502-862a-57c3e38cb018_20261126.json",
+   "request": null,
+   "sha256": "e85ccd1e73744ed181146c1b53f4db360486f50bb80e599d6e6034f53c031445",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/ff7c7fa9-5d22-4502-862a-57c3e38cb018"
   }
  ],
  "manifest": "raydium_gecko",
  "n_checksum_verified": 0,
- "n_files": 62,
+ "n_files": 236,
  "n_missing": 0
 }

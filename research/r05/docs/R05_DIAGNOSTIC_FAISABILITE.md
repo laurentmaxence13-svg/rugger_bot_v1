@@ -150,3 +150,56 @@ aucun profit ne lui est attribué.
 | — | Carry, arbitrage spatial, market making | aucune place, sauf réouverture par R1.1 ou R4.1 |
 
 Si une piste échoue, **sa place n'est pas attribuée d'office** à une autre.
+
+---
+
+## 7. Résultats de la batterie de réfutation
+
+Ajouté après exécution du protocole v2 (`7cdf3a9`). Les sections 1 à 6 ci-dessus n'ont pas été modifiées.
+Détail : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `results/R4_hl_markouts.json`.
+
+### 7.1 LP couverte SOL-USDC (S3) — survit aux 5 tests éliminatoires, mais **n'est pas générale**
+
+| Test | Résultat | Statut |
+|---|---|---|
+| R3.1 source indépendante | frais GeckoTerminal / DefiLlama corrigé = 0,95 sur 158 jours, corrélation 0,997 | passe (indépendance partielle : les deux sources lisent les mêmes swaps on-chain) |
+| R3.2 (a) simulation complète, rééquilibrage 24 h | 19,3 %/an sur capital ; taux de référence 3,6 % ; **excès +14,0 %/an**, IC mensuel [+0,37 % ; +2,01 %] | passe |
+| R3.2 (b) coûts × 2 | excès +13,5 %/an | passe |
+| R3.2 (c) frais GeckoTerminal (depuis 2026-05-27) | excès +30,2 %/an | passe |
+| R3.2 (d) moitié récente (2025-12 → 2026-10) | excès +16,0 %/an | passe |
+| R3.2 (e) drawdown max | 0,7 % ; aucune liquidation | passe |
+| R3.2 (D) frais × 0,5 | excès +1,9 %/an, IC mensuel [−0,29 % ; +0,65 %] | **marge de sécurité ≈ 45 % de baisse des frais** |
+| R3.3 généralité (51 pools évalués sur 67) | médiane −2,3 %/an [IC −4,4 % ; +0,04 %], 39 % positifs ; SOL-USDC +41 %/an, RAY-USDC −1,7 %, memecoins autour de zéro ou négatifs | **thèse générale éliminée** |
+| R3.4 concentration | 41,6 % de l'avantage vient des 5 % de jours aux frais les plus élevés ; sans eux +13,1 %/an ; minimum glissant 90 j +4,7 %/an ; tous les trimestres positifs | robuste dans le temps |
+
+- **Décomposition sur 21 mois, en % du capital** : frais +49,4 % ; LVR réalisée −11,8 % (prix LP −33,3 %,
+  couverture +21,5 %) ; funding ≈ 0 ; coûts −1,0 %.
+- Rééquilibrer plus souvent n'aide pas : 4 h donne +13,5 %, 1 h donne +12,5 %. Les coûts montent et la LVR
+  attendue ne dépend pas de la fréquence.
+- Un Sharpe de 7,8 n'est **pas** une qualité : il signifie que les risques restants sont absents du modèle
+  (contrat, dépeg, accès à la couverture, événements extrêmes).
+- **Origine du profit identifiée** : le pool hérité à 0,25 % de la paire la plus échangée de Solana reçoit un
+  volume routé élevé (rotation ≈ 20 %/j) pour une volatilité modérée. Ses frais valent 4 à 8 fois sa LVR.
+- **Fragilité** : un seul pool, et une dépendance au routage des agrégateurs.
+
+### 7.2 Momentum 30 j long/plat (S2-F1) — survit aux 3 tests éliminatoires, preuve statistique faible
+
+| Test | Résultat | Statut |
+|---|---|---|
+| R2.1 placebo (2 000 permutations à exposition et nombre de transactions identiques) | Sharpe 1,24 contre médiane placebo 0,76 (95ᵉ centile 1,22) ; **p = 0,042** ; ajusté de la sélection parmi 8 : ≈ 0,34 | passe à la lettre, **non significatif après ajustement** |
+| R2.2 exécution 1 h plus tard | Sharpe 1,22 (contre 1,24) | passe |
+| R2.3 retrait d'un actif | 1,18 / 1,24 / 1,11 | passe |
+| R2.4 par année (Sharpe F1 / passif ; drawdown F1 / passif) | 2023 : 2,70 / 2,72 ; 2024 : 0,92 / 1,36 ; 2025 : 0,75 / 0,07, DD 19 % / 49 % ; 2026 (10 mois) : 0,03 / −0,20, DD 31 % / 50 % | descriptif |
+| R2.5 voisinage 20–60 j (post hoc) | Sharpe OOS de 0,97 à 1,26 | pas un hasard de paramètre |
+
+F1 apporte une **réduction des pertes en marché baissier**, au prix d'un retard en forte hausse (2024).
+Ce n'est pas un alpha neutre au marché.
+
+### 7.3 Rejets contre-vérifiés
+
+- **R1.1 carry avec marge de portefeuille** (capital 1,10) : excès +0,86 %/an, IC mensuel [−0,09 % ; +0,27 %].
+  **Rejet confirmé.**
+- **R1.2 carry Hyperliquid** (post hoc, descriptif) : excès +10,5 % (2023-05 → 2024-06), +4,0 % (2024-07 → 2025-06),
+  +0,9 % (2025-07 → 2026-10). Funding BTC : 21,0 % → 14,2 % → 7,6 %. La prime se comprime aussi vers le taux sans
+  risque. **Aucune place PAPER** ; observation P-HL1.
+- **R4.1 market making Hyperliquid** : voir ci-dessous.

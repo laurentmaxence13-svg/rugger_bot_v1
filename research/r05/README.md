@@ -56,3 +56,10 @@ Synthèse et recommandation : [`docs/R05_DOSSIER.md`](docs/R05_DOSSIER.md).
 | S3 fourniture de liquidité | `results/S3_lp.md` | H3b SOUTENUE (SOL-USDC AMM v4, à vérifier) ; H3a NON CONCLUANTE |
 | S4 market making | `results/S4_S1C_micro.md` | ABANDON (CEX majeures, palier accessible) |
 | S5 laboratoire | ce dossier | infrastructure, aucun rendement attribué |
+
+## Diagnostic de faisabilité et réfutation (2026-11-26, suite)
+
+- Diagnostic : [`docs/R05_DIAGNOSTIC_FAISABILITE.md`](docs/R05_DIAGNOSTIC_FAISABILITE.md) — sections 1 à 6 écrites avant les tests, 7 et 8 après.
+- Batterie de réfutation figée avant exécution : [`docs/R05_PREREGISTRATION_v2_REFUTATION.md`](docs/R05_PREREGISTRATION_v2_REFUTATION.md).
+- Protocoles PAPER prospectifs figés : [`docs/R05_PAPER_PROTOCOLS_v1.md`](docs/R05_PAPER_PROTOCOLS_v1.md), évaluateur `experiments/prospective_eval.py`.
+- Résultats : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `results/R4_hl_markouts.json`.

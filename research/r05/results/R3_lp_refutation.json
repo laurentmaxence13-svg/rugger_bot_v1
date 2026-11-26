@@ -1,0 +1,1106 @@
+{
+ "protocol": "R05_PREREGISTRATION_v2 \u00a7R3",
+ "R3.1": {
+  "gt_first_day": "2026-05-27",
+  "common_days": 158,
+  "first_common": "2026-05-27",
+  "last_common": "2026-10-31",
+  "fees_gt_over_dl_ratio": 0.9480918290681667,
+  "corr_daily": 0.9974165147771934,
+  "mean_abs_rel_diff_daily": 0.08015698042930336,
+  "verdict": "PASSE"
+ },
+ "R3.2": {
+  "runs": {
+   "primary_24h": {
+    "full": {
+     "n": 646,
+     "ann_return": 0.1926093166349907,
+     "ann_vol": 0.022682932687315364,
+     "sharpe": 7.778611537806028,
+     "max_dd": 0.007048795880280623,
+     "cvar95": -0.0009592839045254563,
+     "skew": 5.625932243117084,
+     "kurt": 54.41746095934005,
+     "psr0": 1.0,
+     "ann_excess": 0.1401656377023025,
+     "rf_ann": 0.03627608421052632,
+     "monthly_excess_mean": 0.011468773313889331,
+     "monthly_excess_ci95": [
+      0.0036670683967820646,
+      0.020133311086031707
+     ],
+     "months": 22
+    },
+    "recent_half": {
+     "n": 335,
+     "ann_return": 0.21335117328892195,
+     "ann_vol": 0.01717211421922293,
+     "sharpe": 11.273161693617668,
+     "max_dd": 0.004501001075475464,
+     "cvar95": -0.0005921956247311247,
+     "skew": 2.7188469911711737,
+     "kurt": 14.385772968095827,
+     "psr0": 1.0,
+     "ann_excess": 0.15968774797576524,
+     "rf_ann": 0.03389627223880597,
+     "monthly_excess_mean": 0.013604441026808134,
+     "monthly_excess_ci95": [
+      0.001679463210477799,
+      0.026894648203411385
+     ],
+     "months": 11
+    },
+    "components_per_capital": {
+     "fees": 0.493980563017495,
+     "lp_price": -0.33278953778683085,
+     "hedge_price": 0.21451327525416086,
+     "funding": 0.00028617224930103284,
+     "costs": 0.010177193835215252
+    },
+    "liquidation_hours": 0,
+    "final_wealth": 1.3658132788989188
+   },
+   "rebal_4h": {
+    "full": {
+     "n": 646,
+     "ann_return": 0.18583379805196998,
+     "ann_vol": 0.022296647822002278,
+     "sharpe": 7.657332586450703,
+     "max_dd": 0.005655345745516849,
+     "cvar95": -0.0005960146408525054,
+     "skew": 6.166074575694994,
+     "kurt": 58.08423847340848,
+     "psr0": 1.0,
+     "ann_excess": 0.13445676372550683,
+     "rf_ann": 0.03627608421052632,
+     "monthly_excess_mean": 0.011004259537445523,
+     "monthly_excess_ci95": [
+      0.0032870991702816984,
+      0.019663389310791674
+     ],
+     "months": 22
+    },
+    "recent_half": {
+     "n": 335,
+     "ann_return": 0.20628844368849042,
+     "ann_vol": 0.016826889175199693,
+     "sharpe": 11.15697942354448,
+     "max_dd": 0.0011474778785893758,
+     "cvar95": -0.00036266393000762565,
+     "skew": 3.1123171048732727,
+     "kurt": 15.005357392412744,
+     "psr0": 1.0,
+     "ann_excess": 0.15384098405116034,
+     "rf_ann": 0.03389627223880597,
+     "monthly_excess_mean": 0.013113697236931576,
+     "monthly_excess_ci95": [
+      0.0013461189570755825,
+      0.02642561857767044
+     ],
+     "months": 11
+    },
+    "components_per_capital": {
+     "fees": 0.4904570885048914,
+     "lp_price": -0.3334235882097438,
+     "hedge_price": 0.21759358061948866,
+     "funding": -0.0004635749500131304,
+     "costs": 0.02205349393357816
+    },
+    "liquidation_hours": 0,
+    "final_wealth": 1.3521100120310456
+   },
+   "rebal_1h": {
+    "full": {
+     "n": 646,
+     "ann_return": 0.17425592600153217,
+     "ann_vol": 0.02214607790543102,
+     "sharpe": 7.266008998171755,
+     "max_dd": 0.005742906995826247,
+     "cvar95": -0.0004984657835347787,
+     "skew": 6.300026228843639,
+     "kurt": 59.13875428600002,
+     "psr0": 1.0,
+     "ann_excess": 0.12463751712454818,
+     "rf_ann": 0.03627608421052632,
+     "monthly_excess_mean": 0.010205960040963065,
+     "monthly_excess_ci95": [
+      0.0025580209746747626,
+      0.018808919749889744
+     ],
+     "months": 22
+    },
+    "recent_half": {
+     "n": 335,
+     "ann_return": 0.19808919863276353,
+     "ann_vol": 0.01669211180388719,
+     "sharpe": 10.838130192884352,
+     "max_dd": 0.001187170484181821,
+     "cvar95": -0.00030645732075121335,
+     "skew": 3.126573399590998,
+     "kurt": 14.700694045692977,
+     "psr0": 1.0,
+     "ann_excess": 0.1470150086859051,
+     "rf_ann": 0.03389627223880597,
+     "monthly_excess_mean": 0.012535311286077605,
+     "monthly_excess_ci95": [
+      0.0008489706298737376,
+      0.025837948122818092
+     ],
+     "months": 11
+    },
+    "components_per_capital": {
+     "fees": 0.48483641338291916,
+     "lp_price": -0.3331849071908367,
+     "hedge_price": 0.21965333626929942,
+     "funding": -0.0006098990234160118,
+     "costs": 0.04186156127081141
+    },
+    "liquidation_hours": 0,
+    "final_wealth": 1.328833382167164
+   },
+   "costs_x2": {
+    "full": {
+     "n": 646,
+     "ann_return": 0.18656120024991263,
+     "ann_vol": 0.022701563824899237,
+     "sharpe": 7.548180307640239,
+     "max_dd": 0.007212777261506043,
+     "cvar95": -0.0009971773024547992,
+     "skew": 5.6020742598114595,
+     "kurt": 54.19726676199944,
+     "psr0": 1.0,
+     "ann_excess": 0.13507941280521615,
+     "rf_ann": 0.03627608421052632,
+     "monthly_excess_mean": 0.011055709908728652,
+     "monthly_excess_ci95": [
+      0.0032377752035167473,
+      0.019684271510036
+     ],
+     "months": 22
+    },
+    "recent_half": {
+     "n": 335,
+     "ann_return": 0.20808187778456233,
+     "ann_vol": 0.017204319942916563,
+     "sharpe": 10.998986034424368,
+     "max_dd": 0.004742532466579297,
+     "cvar95": -0.0006373184242087285,
+     "skew": 2.6916612878413613,
+     "kurt": 14.366363186688508,
+     "psr0": 1.0,
+     "ann_excess": 0.15533380254510196,
+     "rf_ann": 0.03389627223880597,
+     "monthly_excess_mean": 0.013236765011220538,
+     "monthly_excess_ci95": [
+      0.0013127251227016815,
+      0.02646910667317556
+     ],
+     "months": 11
+    },
+    "components_per_capital": {
+     "fees": 0.4913401384335721,
+     "lp_price": -0.3318795903589317,
+     "hedge_price": 0.21409969584894903,
+     "funding": 0.0002774210161569783,
+     "costs": 0.02025938605050835
+    },
+    "liquidation_hours": 0,
+    "final_wealth": 1.353578278889235
+   },
+   "fees_x0.5": {
+    "full": {
+     "n": 646,
+     "ann_return": 0.057020672578032894,
+     "ann_vol": 0.013523497145228233,
+     "sharpe": 4.107641516647943,
+     "max_dd": 0.017116222664734115,
+     "cvar95": -0.0012762625450904348,
+     "skew": 2.0157178930947595,
+     "kurt": 34.38501790489335,
+     "psr0": 0.999999988976142,
+     "ann_excess": 0.019273594113483124,
+     "rf_ann": 0.03627608421052632,
+     "monthly_excess_mean": 0.0015912134570715477,
+     "monthly_excess_ci95": [
+      -0.0028517108208598635,
+      0.006485048764155838
+     ],
+     "months": 22
+    },
+    "recent_half": {
+     "n": 335,
+     "ann_return": 0.07521704586656908,
+     "ann_vol": 0.01025390380605396,
+     "sharpe": 7.078489112106114,
+     "max_dd": 0.011544121556971154,
+     "cvar95": -0.000871581807801336,
+     "skew": 0.3858868284313858,
+     "kurt": 16.36809192827056,
+     "psr0": 0.9999999956629702,
+     "ann_excess": 0.038685874208930424,
+     "rf_ann": 0.03389627223880597,
+     "monthly_excess_mean": 0.003286069351954998,
+     "monthly_excess_ci95": [
+      -0.003269483708907445,
+      0.01047684445673296
+     ],
+     "months": 11
+    },
+    "components_per_capital": {
+     "fees": 0.22132474771838415,
+     "lp_price": -0.31674450546799543,
+     "hedge_price": 0.20785004298541898,
+     "funding": -4.512318347822623e-05,
+     "costs": 0.009260834387429792
+    },
+    "liquidation_hours": 0,
+    "final_wealth": 1.1031243276648979
+   },
+   "fee_source_gt": {
+    "coverage_start": "2026-05-27",
+    "window": {
+     "n": 158,
+     "ann_return": 0.4001887836988225,
+     "ann_vol": 0.021046786537922007,
+     "sharpe": 16.01108210580051,
+     "max_dd": 0.0002393886579623583,
+     "cvar95": -0.00012873776973436929,
+     "skew": 2.3927361430467267,
+     "kurt": 9.321867212227215,
+     "psr0": 1.0,
+     "ann_excess": 0.3023357083345844,
+     "rf_ann": 0.034646118987341774,
+     "monthly_excess_mean": 0.02229347877172272,
+     "monthly_excess_ci95": [
+      0.007543983106163814,
+      0.03803257958630494
+     ],
+     "months": 6
+    },
+    "same_window_dl": {
+     "n": 158,
+     "ann_return": 0.4286574504933971,
+     "ann_vol": 0.020829486607557596,
+     "sharpe": 17.145143630784204,
+     "max_dd": 0.00022517274052480385,
+     "cvar95": -0.00010054286720690657,
+     "skew": 2.2739258485415252,
+     "kurt": 8.660825169358553,
+     "psr0": 1.0,
+     "ann_excess": 0.32247842065472926,
+     "rf_ann": 0.034646118987341774,
+     "monthly_excess_mean": 0.023775204471959133,
+     "monthly_excess_ci95": [
+      0.00904940986621187,
+      0.03917108802324509
+     ],
+     "months": 6
+    }
+   }
+  },
+  "criteria": {
+   "a_excess_gt0_ci_gt0": true,
+   "b_costs_x2_excess_gt0": true,
+   "c_gt_fee_source_excess_gt0": true,
+   "d_recent_half_excess_gt0": true,
+   "e_maxdd_lt_15pct": true
+  },
+  "verdict": "SURVIT"
+ },
+ "R3.4": {
+  "days": 647,
+  "edge_ann": 0.21355999855695207,
+  "share_of_edge_from_top5pct_fee_days": 0.4157482798817386,
+  "edge_ann_excluding_top5pct": 0.13147882628495636,
+  "rolling_90d_edge_ann_min": 0.046889670396926895,
+  "rolling_90d_edge_ann_last": 0.5405514285373895,
+  "by_quarter_edge_ann": {
+   "2025Q1": 0.09178695789822287,
+   "2025Q2": 0.2469948134264131,
+   "2025Q3": 0.28376622623096875,
+   "2025Q4": 0.06370424462426201,
+   "2026Q1": 0.08277925674977264,
+   "2026Q2": 0.1723516804077569,
+   "2026Q3": 0.553037056176547,
+   "2026Q4": 0.11207901277278383
+  }
+ },
+ "R3.3": {
+  "universe_size": 67,
+  "evaluated": 51,
+  "median_edge_ann": -0.022777611665262362,
+  "median_ci95": [
+   -0.04434339313884045,
+   0.00039361634308074936
+  ],
+  "share_positive": 0.39215686274509803,
+  "tvl_weighted_edge_ann": 0.013234653865720907,
+  "verdict": "LIMITEE (pas de g\u00e9n\u00e9ralit\u00e9 d\u00e9montr\u00e9e)",
+  "pools": [
+   {
+    "symbol": "XYL-XPTY",
+    "llama_pool": "48ba714d-29e6-5720-834a-229ddd7aafa3",
+    "tvl_now": 30067947,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "XYL-USDY",
+    "llama_pool": "0923e191-0ca5-5240-83ae-51dc3276a394",
+    "tvl_now": 29500501,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "XPTY-USDY",
+    "llama_pool": "06d1c9af-d202-55d3-b7fd-60f3bcdd3ef1",
+    "tvl_now": 24229929,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "USDY-XRHY",
+    "llama_pool": "2379db72-7001-5d03-bf88-c4953ea2ab01",
+    "tvl_now": 23376937,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-USDC",
+    "llama_pool": "12edc6f3-4926-4b4f-b97c-38ef6a458574",
+    "tvl_now": 14348299,
+    "address": "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.45539047133757965,
+    "lvr_ann": 0.040967308600393174,
+    "edge_ann": 0.41442316273718643,
+    "sigma_d": 0.030047271979587547,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "BOME-WSOL",
+    "llama_pool": "efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1",
+    "tvl_now": 9576798,
+    "address": "DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.08902461146496815,
+    "lvr_ann": 0.1303817878303908,
+    "edge_ann": -0.041357176365422646,
+    "sigma_d": 0.05362746315558356,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "MEW-WSOL",
+    "llama_pool": "919f83c6-1a2d-4c67-985f-99e8b8423f62",
+    "tvl_now": 6197637,
+    "address": "879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.035499872611464964,
+    "lvr_ann": 0.030886282747145444,
+    "edge_ann": 0.004613589864319521,
+    "sigma_d": 0.026001828883608448,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "RAY-USDC",
+    "llama_pool": "8d1c0b44-a5ce-421c-b899-bf489159aa0f",
+    "tvl_now": 5576629,
+    "address": "6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.1271975541401274,
+    "lvr_ann": 0.14458480201618065,
+    "edge_ann": -0.01738724787605324,
+    "sigma_d": 0.056230594870154485,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-FARTCOIN",
+    "llama_pool": "c66d7944-6582-4638-881a-360e5918e4b4",
+    "tvl_now": 4668552,
+    "address": "Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.10872876433121019,
+    "lvr_ann": 0.07190496901430916,
+    "edge_ann": 0.036823795316901005,
+    "sigma_d": 0.03971017829730557,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "LIKE-WSOL",
+    "llama_pool": "185ce02a-06db-4051-a6d8-25f86b32d77f",
+    "tvl_now": 4288342,
+    "address": "FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF",
+    "days": 138,
+    "status": "ok",
+    "fee_ann": 0.025836927536231888,
+    "lvr_ann": 0.6187868705094464,
+    "edge_ann": -0.5929499429732144,
+    "sigma_d": 0.11684680572029063,
+    "first": "2026-06-10"
+   },
+   {
+    "symbol": "$WIF-WSOL",
+    "llama_pool": "caca758f-7a8f-4242-8d9c-cd44d98c5ee0",
+    "tvl_now": 3877582,
+    "address": "EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.07130073885350317,
+    "lvr_ann": 0.0458949769804526,
+    "edge_ann": 0.025405761873050603,
+    "sigma_d": 0.03179202375858125,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "RAY-WSOL",
+    "llama_pool": "0fc97fda-dd12-4f83-afeb-88e6d60f0e4b",
+    "tvl_now": 3490153,
+    "address": "AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.08971011464968152,
+    "lvr_ann": 0.09350085320688599,
+    "edge_ann": -0.0037907385572044875,
+    "sigma_d": 0.04520551607536163,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-JELLYJELLY",
+    "llama_pool": "d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66",
+    "tvl_now": 3485736,
+    "address": "3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.07552025477707007,
+    "lvr_ann": 0.09016028215505859,
+    "edge_ann": -0.014640027377988531,
+    "sigma_d": 0.04449867352084141,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-PIPPIN",
+    "llama_pool": "20d99514-4d6b-4ff3-bbec-0732971885a0",
+    "tvl_now": 3348024,
+    "address": "8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.1470328662420382,
+    "lvr_ann": 0.14018730692703188,
+    "edge_ann": 0.006845559315006348,
+    "sigma_d": 0.05548886776683318,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-ARC",
+    "llama_pool": "83e9a75a-881a-4e5a-9aaa-82e2140fa57d",
+    "tvl_now": 2438021,
+    "address": "J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.18654430573248407,
+    "lvr_ann": 0.33522657767445674,
+    "edge_ann": -0.14868227194197267,
+    "sigma_d": 0.08591387831461429,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-USELESS",
+    "llama_pool": "99d4b1c8-9e7b-45d7-8603-260d9846866c",
+    "tvl_now": 2336565,
+    "address": "GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.3939703949044586,
+    "lvr_ann": 0.40152587976470633,
+    "edge_ann": -0.007555484860247688,
+    "sigma_d": 0.09407049104150428,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "POPCAT-WSOL",
+    "llama_pool": "06faada9-ad40-4027-9380-db05f0f3fd53",
+    "tvl_now": 2283918,
+    "address": "FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.07749885350318472,
+    "lvr_ann": 0.056465303648043225,
+    "edge_ann": 0.021033549855141474,
+    "sigma_d": 0.03520013635232301,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-ALCH",
+    "llama_pool": "b09355f3-286d-472e-a1dd-4d0170dfb4aa",
+    "tvl_now": 2092563,
+    "address": "FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.10132219108280258,
+    "lvr_ann": 0.2127379746242031,
+    "edge_ann": -0.11141578354140055,
+    "sigma_d": 0.06830901959441008,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-ZEREBRO",
+    "llama_pool": "b7c5a111-447f-4af6-9f18-581591249a76",
+    "tvl_now": 2059789,
+    "address": "3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.24412096815286627,
+    "lvr_ann": 0.38752409236749863,
+    "edge_ann": -0.14340312421463244,
+    "sigma_d": 0.0924557681880229,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-PNUT",
+    "llama_pool": "8be07d6f-99a3-4643-9256-6f8a0b881508",
+    "tvl_now": 2025939,
+    "address": "4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.053416000000000005,
+    "lvr_ann": 0.03389556516870136,
+    "edge_ann": 0.01952043483129864,
+    "sigma_d": 0.027194970407488327,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-BAN",
+    "llama_pool": "a24db72d-5c6a-4028-b81e-de1480fa0f81",
+    "tvl_now": 1903646,
+    "address": "DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.08346099363057324,
+    "lvr_ann": 0.0853016549017203,
+    "edge_ann": -0.0018406612711470555,
+    "sigma_d": 0.043170045124422234,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-MOODENG",
+    "llama_pool": "46f5eec1-26f1-4911-8d91-d627ff756dcd",
+    "tvl_now": 1881764,
+    "address": "22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.06934792356687898,
+    "lvr_ann": 0.036716201413453414,
+    "edge_ann": 0.032631722153425566,
+    "sigma_d": 0.028302727788806218,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "MANEKI-WSOL",
+    "llama_pool": "75f2465b-aae7-4e6d-a075-59312f639394",
+    "tvl_now": 1686211,
+    "address": "2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR",
+    "days": 110,
+    "status": "ok",
+    "fee_ann": 0.0018527999999999993,
+    "lvr_ann": 0.0015326527151035137,
+    "edge_ann": 0.00032014728489648635,
+    "sigma_d": 0.005649944573175544,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "SPX-WSOL",
+    "llama_pool": "e7187b64-b5f9-43cb-a2be-c101b72873bc",
+    "tvl_now": 1510463,
+    "address": "9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.1716224203821656,
+    "lvr_ann": 0.08823199497644979,
+    "edge_ann": 0.08339042540571583,
+    "sigma_d": 0.04411158716876195,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-VINE",
+    "llama_pool": "470dd76d-850f-49db-861a-0f675735ec57",
+    "tvl_now": 1456216,
+    "address": "58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.12348585987261149,
+    "lvr_ann": 0.1087531057142388,
+    "edge_ann": 0.014732754158372684,
+    "sigma_d": 0.04858932799483827,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "RAY-USDT",
+    "llama_pool": "3fe5a196-8a15-4f74-ba76-6625f7985773",
+    "tvl_now": 1368839,
+    "address": "DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.11452779617834397,
+    "lvr_ann": 0.1464745202828051,
+    "edge_ann": -0.03194672410446115,
+    "sigma_d": 0.05660007843971775,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-GRIFFAIN",
+    "llama_pool": "9299b1ab-2c25-4032-bc90-f6f620373e0b",
+    "tvl_now": 1324997,
+    "address": "CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.16255898089171972,
+    "lvr_ann": 0.20690237403056017,
+    "edge_ann": -0.04434339313884045,
+    "sigma_d": 0.06755676191908606,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-ACT",
+    "llama_pool": "804a0c7b-7eb7-4b75-b066-4c568704fefe",
+    "tvl_now": 1130683,
+    "address": "B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.14314461146496815,
+    "lvr_ann": 0.12464271571741119,
+    "edge_ann": 0.018501895747556975,
+    "sigma_d": 0.05232023578587474,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "GIGA-WSOL",
+    "llama_pool": "10a72779-843e-4491-a9f6-7bc81e452193",
+    "tvl_now": 1089253,
+    "address": "4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.10364045859872612,
+    "lvr_ann": 0.048600381403216535,
+    "edge_ann": 0.05504007719550959,
+    "sigma_d": 0.03234732237397336,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-SWARMS",
+    "llama_pool": "25cb3610-4aae-43dc-8773-fe13bdec9eb2",
+    "tvl_now": 1062183,
+    "address": "HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.16447256050955414,
+    "lvr_ann": 0.1285599590424374,
+    "edge_ann": 0.03591260146711674,
+    "sigma_d": 0.05312384880389389,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-GOAT",
+    "llama_pool": "f840ec7e-3d8c-40ea-b761-66515f8f17b9",
+    "tvl_now": 1060324,
+    "address": "9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.09645024203821657,
+    "lvr_ann": 0.041074485280447964,
+    "edge_ann": 0.0553757567577686,
+    "sigma_d": 0.03003933240741516,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-FWOG",
+    "llama_pool": "f4b95102-0632-4d7f-899c-65b9b941590c",
+    "tvl_now": 965262,
+    "address": "AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.04102929936305732,
+    "lvr_ann": 0.13173559186859624,
+    "edge_ann": -0.09070629250553891,
+    "sigma_d": 0.0538410168692505,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "PONKE-WSOL",
+    "llama_pool": "ac66514d-8133-45a3-b317-2a2ae2ecd82e",
+    "tvl_now": 934631,
+    "address": "5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.04437554140127389,
+    "lvr_ann": 0.08866454819885958,
+    "edge_ann": -0.044289006797585684,
+    "sigma_d": 0.043916257603273896,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-USDT",
+    "llama_pool": "cdd04383-21ea-45d1-94d6-295e58100559",
+    "tvl_now": 927636,
+    "address": "7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.31578155414012743,
+    "lvr_ann": 0.041362989685533535,
+    "edge_ann": 0.2744185644545939,
+    "sigma_d": 0.030190999518170548,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-CHILLGUY",
+    "llama_pool": "1e958818-9a22-46b0-8567-12cb34fb4eb1",
+    "tvl_now": 919534,
+    "address": "93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.1629126624203822,
+    "lvr_ann": 0.10700032724867682,
+    "edge_ann": 0.05591233517170535,
+    "sigma_d": 0.04852686402449048,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-AVA",
+    "llama_pool": "4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0",
+    "tvl_now": 890121,
+    "address": "GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.240827974522293,
+    "lvr_ann": 0.3961163140191818,
+    "edge_ann": -0.15528833949688872,
+    "sigma_d": 0.09347474003312962,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-AURA",
+    "llama_pool": "c2f18cd1-e4e6-4ecd-aec5-e078505c69e7",
+    "tvl_now": 820939,
+    "address": "9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.11852535031847132,
+    "lvr_ann": 0.30703358043593043,
+    "edge_ann": -0.18850823011745904,
+    "sigma_d": 0.08209310205372754,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "GME-WSOL",
+    "llama_pool": "80074ed7-393e-4416-b5c6-e761cf285169",
+    "tvl_now": 801745,
+    "address": "9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.039988433121019115,
+    "lvr_ann": 0.07605726525507617,
+    "edge_ann": -0.03606883213405703,
+    "sigma_d": 0.04088068547357218,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-UFD",
+    "llama_pool": "ce002fb5-1b0e-4a72-af43-a800228e83e8",
+    "tvl_now": 738518,
+    "address": "78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.03528631847133758,
+    "lvr_ann": 0.12375812983287031,
+    "edge_ann": -0.0884718113615327,
+    "sigma_d": 0.051701080255416774,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-BERT",
+    "llama_pool": "56f5337d-13a2-4757-ad4c-8175c03a4052",
+    "tvl_now": 665595,
+    "address": "BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.09589870063694267,
+    "lvr_ann": 0.1331425513108889,
+    "edge_ann": -0.037243850673946206,
+    "sigma_d": 0.05415050869774003,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-HAROLD",
+    "llama_pool": "4f11cf50-aa7c-43b4-9282-c79e5655d8f8",
+    "tvl_now": 577729,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "NEAR-USDC",
+    "llama_pool": "ff85a528-d8f4-4955-b678-8a870579932d",
+    "tvl_now": 546456,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-DADDY",
+    "llama_pool": "0bd02d7a-7bf4-4f3b-b1e9-bd8439482418",
+    "tvl_now": 528165,
+    "address": "zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.07456850955414013,
+    "lvr_ann": 0.30964022681105974,
+    "edge_ann": -0.2350717172569196,
+    "sigma_d": 0.08257712310331194,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-NPC",
+    "llama_pool": "bb095f7e-b901-4bf2-afb3-45a9c0182ef1",
+    "tvl_now": 522694,
+    "address": "9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.06994430573248407,
+    "lvr_ann": 0.13092470892253924,
+    "edge_ann": -0.060980403190055155,
+    "sigma_d": 0.053465068640468356,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "DOG-USDC",
+    "llama_pool": "5002328b-b428-446c-ac12-9846c560219f",
+    "tvl_now": 504278,
+    "address": "E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ",
+    "days": 123,
+    "status": "ok",
+    "fee_ann": 0.007167349593495935,
+    "lvr_ann": 0.029944961258758295,
+    "edge_ann": -0.022777611665262362,
+    "sigma_d": 0.02567471378646027,
+    "first": "2026-05-25"
+   },
+   {
+    "symbol": "DOOD-USDC",
+    "llama_pool": "935f6496-6d11-42fd-9151-72b8603f412a",
+    "tvl_now": 492151,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "FARTBOY-WSOL",
+    "llama_pool": "ff7c7fa9-5d22-4502-862a-57c3e38cb018",
+    "tvl_now": 467366,
+    "address": "DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.09276657324840763,
+    "lvr_ann": 0.12452459608865243,
+    "edge_ann": -0.031758022840244794,
+    "sigma_d": 0.052409689236874446,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "TRUNK-USDC",
+    "llama_pool": "dda3a666-b9ea-4aa6-84b1-63ca7293bd8b",
+    "tvl_now": 466176,
+    "address": "FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er",
+    "days": 23,
+    "status": "historique_<60j"
+   },
+   {
+    "symbol": "POPCAT-USDC",
+    "llama_pool": "db3fb94d-dff9-42ce-8ba8-c5ec524e234e",
+    "tvl_now": 463887,
+    "address": "HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.11657421656050952,
+    "lvr_ann": 0.09306187123023697,
+    "edge_ann": 0.023512345330272563,
+    "sigma_d": 0.045278767446725335,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-PWEASE",
+    "llama_pool": "b079d173-6ed9-4dc5-845d-96d6301f2a00",
+    "tvl_now": 452905,
+    "address": "9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.038964942675159236,
+    "lvr_ann": 0.2149742321152088,
+    "edge_ann": -0.1760092894400496,
+    "sigma_d": 0.06869729316207421,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-DHC",
+    "llama_pool": "a0fc91a4-0e29-4db4-9477-72039afe4267",
+    "tvl_now": 421702,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-ALON",
+    "llama_pool": "661d9b85-3750-43c9-a109-154daf11dab3",
+    "tvl_now": 395726,
+    "address": "Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.3201098089171975,
+    "lvr_ann": 1.614232144366384,
+    "edge_ann": -1.2941223354491864,
+    "sigma_d": 0.1885597786436672,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "BINK-WSOL",
+    "llama_pool": "a7e20f23-98ca-45b7-b2c2-fcc93de05b94",
+    "tvl_now": 390453,
+    "address": "9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM",
+    "days": 3,
+    "status": "historique_<60j"
+   },
+   {
+    "symbol": "WSOL-RETIRE",
+    "llama_pool": "70926954-4cfb-41e2-8aff-cbc81532bd7c",
+    "tvl_now": 384219,
+    "address": "6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.06920723566878981,
+    "lvr_ann": 0.1618612277047998,
+    "edge_ann": -0.09265399203601,
+    "sigma_d": 0.05962312779048323,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-DREAMS",
+    "llama_pool": "6cd9f06a-5abc-482d-9116-26f381fd8917",
+    "tvl_now": 357922,
+    "address": "HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ",
+    "days": 157,
+    "status": "ok",
+    "fee_ann": 0.07004800000000001,
+    "lvr_ann": 0.3024895359327591,
+    "edge_ann": -0.232441535932759,
+    "sigma_d": 0.08149828467533918,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-SOLADAO",
+    "llama_pool": "ab8f45b7-c0eb-53db-aa01-825f15fb77e0",
+    "tvl_now": 342175,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-JAILSTOOL",
+    "llama_pool": "2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a",
+    "tvl_now": 327647,
+    "address": "EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72",
+    "days": 108,
+    "status": "ok",
+    "fee_ann": 0.017028,
+    "lvr_ann": 0.09924342165776362,
+    "edge_ann": -0.08221542165776363,
+    "sigma_d": 0.04685233670495451,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "RAY-ETH",
+    "llama_pool": "61d3125a-9bc7-4562-9d73-316da2dcd15a",
+    "tvl_now": 307707,
+    "address": "8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK",
+    "days": 135,
+    "status": "ok",
+    "fee_ann": 0.015531674074074074,
+    "lvr_ann": 0.015138057730993321,
+    "edge_ann": 0.00039361634308074936,
+    "sigma_d": 0.018178640378335404,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-PURPE",
+    "llama_pool": "ebbdda8f-7746-4af9-9d82-1d2f5022b21c",
+    "tvl_now": 306979,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-CYBERLEEK",
+    "llama_pool": "163d0261-de66-5ad5-885f-3157d7e3e0e3",
+    "tvl_now": 297512,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-KORI",
+    "llama_pool": "6920d26e-1f5e-44cd-a925-cd09c73e5bba",
+    "tvl_now": 293204,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-YZY",
+    "llama_pool": "df090a01-2c9e-46a5-8588-bce979765dff",
+    "tvl_now": 289063,
+    "address": "969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe",
+    "days": 151,
+    "status": "ok",
+    "fee_ann": 0.06208487417218543,
+    "lvr_ann": 0.35083130790607187,
+    "edge_ann": -0.2887464337338865,
+    "sigma_d": 0.08797567196741818,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "STSOL-USDC",
+    "llama_pool": "7a82f91e-2f28-4b3a-af08-4d553721dd51",
+    "tvl_now": 280146,
+    "address": "6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj",
+    "days": 155,
+    "status": "ok",
+    "fee_ann": 0.03691230967741935,
+    "lvr_ann": 0.03633040443418004,
+    "edge_ann": 0.0005819052432393094,
+    "sigma_d": 0.028304530691775985,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "USA-WSOL",
+    "llama_pool": "1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9",
+    "tvl_now": 280008,
+    "address": "HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b",
+    "days": 147,
+    "status": "ok",
+    "fee_ann": 0.029777523809523806,
+    "lvr_ann": 0.12445075365087109,
+    "edge_ann": -0.09467322984134728,
+    "sigma_d": 0.05200998248234455,
+    "first": "2026-05-28"
+   },
+   {
+    "symbol": "WSOL-LION",
+    "llama_pool": "7d53f6d4-b6b3-4164-9fc1-dc1a657d22ae",
+    "tvl_now": 276599,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-IDLE",
+    "llama_pool": "71dc090b-7c1c-4481-85cf-9184fb7fb950",
+    "tvl_now": 276202,
+    "status": "pas_de_pool_amm_v4"
+   },
+   {
+    "symbol": "WSOL-WOULD",
+    "llama_pool": "71b80fb4-50bc-4e0a-b01f-f60cb59fb859",
+    "tvl_now": 274024,
+    "address": "Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro",
+    "days": 155,
+    "status": "ok",
+    "fee_ann": 0.033429780645161285,
+    "lvr_ann": 0.16787059703433294,
+    "edge_ann": -0.13444081638917166,
+    "sigma_d": 0.05924669000627702,
+    "first": "2026-05-28"
+   }
+  ]
+ }
+}
