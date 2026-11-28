@@ -71,7 +71,7 @@ MUT = [
  ('cli.py', "        if args.max_minutes > 115:", "        if args.max_minutes > 125:", 'process_above_115_accepted'),
  # 0.1.1: reserve 3, the replay module outside the MANIFESTs
  ('source.py', "    if got != (HRR_SHA256 if expected is None else expected):", "    if False:", 'hrr_sha_unchecked'),
- ('source.py', "AUTHORIZED_TEXT_SHA256 = frozenset()   ", "AUTHORIZED_TEXT_SHA256 = frozenset({'1366025b6290c0a748c2190eebc5e3ee078a25868ef005591710b23658ebface'})   ", 'withdrawn_text_back'),
+ ('source.py', "AUTHORIZED_TEXT_SHA256 = frozenset({'31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050'})", "AUTHORIZED_TEXT_SHA256 = frozenset({'31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050', '1366025b6290c0a748c2190eebc5e3ee078a25868ef005591710b23658ebface'})", 'withdrawn_text_back'),
  # 0.1.3: timed calls, fetch_ms, GAP >=
  ('source.py', "                       duration_ms=(self.mono_ns() - start_ns) / 1e6, ok=error is None, error=error)", "                       duration_ms=(self.mono_ns() - start_ns) / 1e6, ok=True, error=error)", 'timing_ok_always'),
  ('source.py', "                       duration_ms=(self.mono_ns() - start_ns) / 1e6, ok=error is None, error=error)", "                       duration_ms=(self.mono_ns() - start_ns) / 1e9, ok=error is None, error=error)", 'timing_duration_seconds'),
@@ -147,13 +147,10 @@ MUT = [
  ('source.py', "FINAL_STOPS = ('incident:', 'credit_hard_stop', 'end_of_test_86400')", "FINAL_STOPS = ('incident:', 'credit_hard_stop')", 'nowhere_end_of_test_ignored'),
  ('source.py', "FINAL_STOPS = ('incident:', 'credit_hard_stop', 'end_of_test_86400')", "FINAL_STOPS = ('incident:', 'end_of_test_86400')", 'nowhere_credit_stop_ignored'),
 ]
-PENDING_TEST = 'test_the_authorized_text_is_inscribed'   # 0.1.5: fails ON PURPOSE until the owner's
-# signed text sha is inscribed (R04 03:08Z); deselected here BY NAME ONLY -- remove this line with the inscription.
 
 
 def run(work):
-    return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'livepaper' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error',
-                           '-k', 'not ' + PENDING_TEST],
+    return subprocess.run([V, '-B', '-m', 'pytest', str(work / 'livepaper' / 'tests'), '-p', 'no:cacheprovider', '-q', '-x', '-W', 'error'],
                           cwd=W, env={'PYTHONPATH': f'{PP}:{work}', 'PATH': '/usr/bin:/bin', 'RUGGER_NO_DOTENV': '1'}, capture_output=True, text=True)
 PUBLISHED = 'METHODS_livepaper_v0_1_4.txt'          # 0.1.4 (D15): the published list, read by the tests
 

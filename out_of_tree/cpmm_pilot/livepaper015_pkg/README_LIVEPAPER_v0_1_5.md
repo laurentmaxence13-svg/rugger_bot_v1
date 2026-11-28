@@ -74,3 +74,15 @@ Texte candidat : v6 b02c8b8e4007dbeb4b049bbb63d550d9ba6fcc2d5fd781b33cb7b60e3612
   0.3.2.
 - Mutants : 134/134 détectés, dont 21 nouveaux par rapport à la 0.1.4 (le runner désélectionne le test en attente, par son nom).
   Résultat dans `MUTATIONS_livepaper_v0_1_5.json`.
+
+## Publication d'inscription (R02, 28/11, 11:06Z ; signature vérifiée à la source, GO 09e874e3)
+
+- `AUTHORIZED_TEXT_SHA256 = frozenset({'31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050'})`, le texte
+  v7 signé. 1366025b reste dans `WITHDRAWN_TEXT_SHA256`.
+- La ligne PENDING_TEST est retirée du runner de mutants : `test_the_authorized_text_is_inscribed` passe maintenant.
+- Seule addition autorisée par R02 (11:22Z) : `test_the_inscribed_sha_is_the_signed_v7_text`. Il vérifie la valeur
+  exacte et l'égalité avec le sha256 du fichier canonique `livepaper/tests/data/AUTORISATION_LIVEPAPER_V7.txt`
+  (2 071 octets, sans saut de ligne final), copié depuis R03 6c79a5c.
+- Le mutant `withdrawn_text_back` est reciblé sur la ligne inscrite : il ajoute 1366025b à côté de 31dfed47.
+- Tests : 48/48 avec `-W error`. Mutants : 134/134.
+- Rien ne s'exécute avant le GO de R02. R03 fait l'essai à blanc.

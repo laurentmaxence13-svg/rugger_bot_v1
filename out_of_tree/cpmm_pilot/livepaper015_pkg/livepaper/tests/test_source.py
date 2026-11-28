@@ -1,4 +1,5 @@
 """livepaper 0.1 source, budget, runner, transport and commands, offline (cpmmpilot.rpc.FakeChain or fakes)."""
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -495,6 +496,17 @@ def test_the_authorized_text_is_inscribed():
     assert len(S.AUTHORIZED_TEXT_SHA256) == 1, 'PENDING: the signed text sha is not inscribed yet'
     assert not (S.AUTHORIZED_TEXT_SHA256 & S.WITHDRAWN_TEXT_SHA256)
     assert all(len(x) == 64 and set(x) <= set('0123456789abcdef') for x in S.AUTHORIZED_TEXT_SHA256)
+
+
+def test_the_inscribed_sha_is_the_signed_v7_text():
+    """Inscription release (R02 28/11 11:22Z, the only addition): exactly the owner's signed v7 text, equal to the sha256 of
+    the canonical file shipped with the package (2 071 bytes, no final newline)."""
+    from pathlib import Path
+    v7 = Path(__file__).resolve().parent / 'data' / 'AUTORISATION_LIVEPAPER_V7.txt'
+    raw = v7.read_bytes()
+    assert S.AUTHORIZED_TEXT_SHA256 == frozenset({'31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050'})
+    assert hashlib.sha256(raw).hexdigest() == '31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050'
+    assert len(raw) == 2071 and not raw.endswith(b'\n')
 
 
 # -- 0.1.3 (R04 20:33Z): timed calls, fetch_ms, GAP at >= 2 x poll_s; edge cases written before the code ---------------

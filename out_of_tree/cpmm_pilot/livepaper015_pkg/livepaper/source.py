@@ -51,7 +51,7 @@ from livepaper import journal as J
 # nor the catch-up). PENDING: the sha of the signed text (candidate v6 b02c8b8e, NOT signed) is inscribed by an audited
 # release only after the owner's signature, verified by R02 at the source. Until then no transport can open and
 # tests/test_source.py::test_the_authorized_text_is_inscribed FAILS ON PURPOSE (the mutation runner deselects it by name).
-AUTHORIZED_TEXT_SHA256 = frozenset()          # PENDING -- the signed text's sha, and nothing else
+AUTHORIZED_TEXT_SHA256 = frozenset({'31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050'})   # signed (GO 09e874e3, R02 verified)
 WITHDRAWN_TEXT_SHA256 = frozenset({'1366025b6290c0a748c2190eebc5e3ee078a25868ef005591710b23658ebface'})   # 0.1.2-0.1.4 text
 HRR_SHA256 = '372385bd72ee0fda02d80d5be1e20d2925d4be54361f30570877d02dfdc2e8a0'   # bot/p4/historical_research_replay.py
 CEILING, HARD_STOP = 25_000, 24_500         # owner text 1366025b: one ledger, order check + test
