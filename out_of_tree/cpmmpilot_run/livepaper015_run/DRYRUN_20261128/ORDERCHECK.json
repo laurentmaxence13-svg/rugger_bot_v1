@@ -1,0 +1,36 @@
+{
+ "discrepancies": 0,
+ "pairs": 609617,
+ "pools": {
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv": {
+   "discrepancies": 0,
+   "examples": [],
+   "pairs": 609261,
+   "signatures_both": 46747,
+   "slot_mismatch_examples": [],
+   "slot_mismatches": 0,
+   "slots_compared": 5020
+  },
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo": {
+   "discrepancies": 0,
+   "examples": [],
+   "pairs": 348,
+   "signatures_both": 5789,
+   "slot_mismatch_examples": [],
+   "slot_mismatches": 0,
+   "slots_compared": 284
+  },
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV": {
+   "discrepancies": 0,
+   "examples": [],
+   "pairs": 8,
+   "signatures_both": 19199,
+   "slot_mismatch_examples": [],
+   "slot_mismatches": 0,
+   "slots_compared": 8
+  }
+ },
+ "rule": "a-ok iff at least one same-slot pair is compared, with zero discrepancy and zero slot mismatch",
+ "schema": "livepaper-ordercheck-v0.1",
+ "verdict": "a-ok"
+}

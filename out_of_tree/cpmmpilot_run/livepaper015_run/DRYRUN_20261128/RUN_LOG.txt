@@ -1,0 +1,22 @@
+launcher 2026-11-28T12:20:02Z
+run_start 2026-11-28T12:24:37Z 1795868677 resume=no
+incident:RpcError
+rc=0 end 2026-11-28T12:24:38Z
+launcher 2026-11-28T12:24:54Z
+run_start 2026-11-28T12:24:54Z 1795868694 resume=yes
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/cli.py", line 254, in <module>
+    main()
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/cli.py", line 240, in main
+    print(run(args, json.loads(args.pools.read_text()), **kw))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/cli.py", line 96, in run
+    S.check_resumable(J.read(args.journal))
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/source.py", line 291, in check_resumable
+    raise SourceError('journal_stopped_for_good:%s' % r.get('reason', r['kind']))
+livepaper.source.SourceError: journal_stopped_for_good:ERROR
+rc=1 end 2026-11-28T12:24:55Z
+launcher 2026-11-28T12:24:55Z
+STOP_R03_v015 present: no call

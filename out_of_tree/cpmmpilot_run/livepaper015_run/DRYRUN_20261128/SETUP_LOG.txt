@@ -1,0 +1,34 @@
+setup 2026-11-28T12:19:07Z out=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/lp015_dry/OUT start=1795868677
+integrity OK manifest=9ac7089c8ee97ec49cf67896c666fa0ec57b248c619c0ecb38f11a0557c649f9 auth=31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050 pythonpath=488b87735e688bd02e15da2d8d22af7398c554d6a6701d2ecde6902f9eda0a28 eligible=184576ea0358e8b619d1cb1d107eb82a93a94e67d5d87d204a8831c2b45b34a9 list_l=c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3 pre_sums=951b84798db5b4a433389b7b3c01c3a3e0a367168d443f6c3b5507497bbf61c0
+069e545664ab9cd243071c92c5896b556857f354fcb66d08f6c1cb38f0c1e49d /tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/lp015_dry/OUT/POOLS_RUN.json
+pools_run=069e545664ab9cd243071c92c5896b556857f354fcb66d08f6c1cb38f0c1e49d seed=0d4a3ee823f50c4f0c99c0828de895c11e75bb7fa01a05fdd124f9737955fb20
+gsfa_start 2026-11-28T12:19:14Z
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/cli.py", line 254, in <module>
+    main()
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/cli.py", line 230, in main
+    print(json.dumps(S.collect_gsfa(client, doc['eligible'], args.out, window_start=window)))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/source.py", line 410, in collect_gsfa
+    page = client.call('getSignaturesForAddress', [pool, opts])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/source.py", line 452, in call
+    return self.client.call(method, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/source.py", line 482, in call
+    return self.client.call(method, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/cpmmpilot_8c4a022/out_of_tree/cpmmpilot_pkg/cpmmpilot/rpc.py", line 168, in call
+    result = self.transport.request(method, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_9800986/out_of_tree/cpmm_pilot/livepaper015_pkg/livepaper/source.py", line 100, in request
+    return RPC.LiveRpc.request(self, method, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/cpmmpilot_8c4a022/out_of_tree/cpmmpilot_pkg/cpmmpilot/rpc.py", line 135, in request
+    raise RpcError('network_error') from None                         # no detail: it may name the host
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+cpmmpilot.rpc.RpcError: network_error
+gsfa_rc=1 end 2026-11-28T12:19:15Z
+GSFA_FAIL: STOP, no ordercheck, no run
