@@ -1,0 +1,292 @@
+{
+ "protocol": "R05_PREREGISTRATION_v3 \u00a7H3d",
+ "window": [
+  "2023-01-01",
+  "2026-10-31"
+ ],
+ "evaluated": 9,
+ "n_ci_positive_lp_share": 6,
+ "n_ci_positive_upper_bound": 7,
+ "verdict": "GENERAL",
+ "pools": [
+  {
+   "chain": "Ethereum",
+   "project": "uniswap-v2",
+   "pair": "USDC-WETH",
+   "pool": "702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6",
+   "lp_share": {
+    "fee_ann": 0.07845525026138908,
+    "lvr_ann": 0.04663236854089754,
+    "edge_ann": 0.03182288172049156,
+    "ci95_ann": [
+     0.02529882989732114,
+     0.03909782689944651
+    ],
+    "share_days_pos": 0.8371919342793129
+   },
+   "days": 1339,
+   "upper_bound": {
+    "fee_ann": 0.07845525026138908,
+    "lvr_ann": 0.04663236854089754,
+    "edge_ann": 0.03182288172049156,
+    "ci95_ann": [
+     0.02529882989732114,
+     0.03909782689944651
+    ],
+    "share_days_pos": 0.8371919342793129
+   },
+   "status": "ok",
+   "first": "2023-01-01",
+   "tvl_median_musd": 53.240306,
+   "rotation_per_day_median": 0.0514572602739726
+  },
+  {
+   "chain": "Ethereum",
+   "project": "uniswap-v2",
+   "pair": "WETH-USDT",
+   "pool": "196aa543-1881-4515-9928-577693d4fa72",
+   "lp_share": {
+    "fee_ann": 0.08244787557879014,
+    "lvr_ann": 0.04663236854089754,
+    "edge_ann": 0.0358155070378926,
+    "ci95_ann": [
+     0.027737476443104595,
+     0.04433364118270179
+    ],
+    "share_days_pos": 0.847647498132935
+   },
+   "days": 1339,
+   "upper_bound": {
+    "fee_ann": 0.08244787557879014,
+    "lvr_ann": 0.04663236854089754,
+    "edge_ann": 0.0358155070378926,
+    "ci95_ann": [
+     0.027737476443104595,
+     0.04433364118270179
+    ],
+    "share_days_pos": 0.847647498132935
+   },
+   "status": "ok",
+   "first": "2023-01-01",
+   "tvl_median_musd": 58.250125,
+   "rotation_per_day_median": 0.05602155251141552
+  },
+  {
+   "chain": "Ethereum",
+   "project": "sushiswap",
+   "pair": "WETH-USDT",
+   "pool": "b1ff3e89-14a0-42a1-b760-716304387201",
+   "lp_share": {
+    "fee_ann": 0.049085397624164286,
+    "lvr_ann": 0.046016703294902955,
+    "edge_ann": 0.003068694329261325,
+    "ci95_ann": [
+     -0.0062541894253108216,
+     0.011926943128846441
+    ],
+    "share_days_pos": 0.6095988538681948
+   },
+   "days": 1396,
+   "upper_bound": {
+    "fee_ann": 0.05890247714899714,
+    "lvr_ann": 0.046016703294902955,
+    "edge_ann": 0.012885773854094179,
+    "ci95_ann": [
+     0.0019641742694694138,
+     0.023172607236791137
+    ],
+    "share_days_pos": 0.6898280802292264
+   },
+   "status": "ok",
+   "first": "2023-01-01",
+   "tvl_median_musd": 1.9533685,
+   "rotation_per_day_median": 0.03831607305936073
+  },
+  {
+   "chain": "Ethereum",
+   "project": "pancakeswap-amm",
+   "pair": "WETH-USDT",
+   "pool": "d77a4965-de74-48d4-afc5-1a73e3ce9d65",
+   "lp_share": {
+    "fee_ann": 0.03151152615568863,
+    "lvr_ann": 0.04499911580980339,
+    "edge_ann": -0.013487589654114762,
+    "ci95_ann": [
+     -0.017055394368158536,
+     -0.010309776687770741
+    ],
+    "share_days_pos": 0.25948103792415167
+   },
+   "days": 501,
+   "upper_bound": {
+    "fee_ann": 0.04634047964071855,
+    "lvr_ann": 0.04499911580980339,
+    "edge_ann": 0.0013413638309151762,
+    "ci95_ann": [
+     -0.0024241799282448168,
+     0.005179439855583079
+    ],
+    "share_days_pos": 0.5828343313373253
+   },
+   "status": "ok",
+   "first": "2025-06-16",
+   "tvl_median_musd": 0.303587,
+   "rotation_per_day_median": 0.03731704109589041
+  },
+  {
+   "chain": "Base",
+   "project": "uniswap-v2",
+   "pair": "WETH-USDC",
+   "pool": "dfe517bb-4beb-45ae-b847-5d4067fc7ef9",
+   "lp_share": {
+    "fee_ann": 0.1708622228522337,
+    "lvr_ann": 0.05103993993158209,
+    "edge_ann": 0.1198222829206516,
+    "ci95_ann": [
+     0.08095636281238192,
+     0.15818891390823492
+    ],
+    "share_days_pos": 0.8608247422680413
+   },
+   "days": 582,
+   "upper_bound": {
+    "fee_ann": 0.1708622228522337,
+    "lvr_ann": 0.05103993993158209,
+    "edge_ann": 0.1198222829206516,
+    "ci95_ann": [
+     0.08095636281238192,
+     0.15818891390823492
+    ],
+    "share_days_pos": 0.8608247422680413
+   },
+   "status": "ok",
+   "first": "2025-01-04",
+   "tvl_median_musd": 4.5719095,
+   "rotation_per_day_median": 0.08433835616438357
+  },
+  {
+   "chain": "BSC",
+   "project": "pancakeswap-amm",
+   "pair": "USDT-WBNB",
+   "pool": "a3878e88-0c9f-49ef-adbc-da5fe048192d",
+   "lp_share": {
+    "fee_ann": 0.09320950161659515,
+    "lvr_ann": 0.03520245081566665,
+    "edge_ann": 0.05800705080092851,
+    "ci95_ann": [
+     0.043204304785259065,
+     0.07531463063582113
+    ],
+    "share_days_pos": 0.8934191702432046
+   },
+   "days": 1398,
+   "upper_bound": {
+    "fee_ann": 0.13707279649499285,
+    "lvr_ann": 0.03520245081566665,
+    "edge_ann": 0.10187034567932621,
+    "ci95_ann": [
+     0.08035935417198573,
+     0.127091075111778
+    ],
+    "share_days_pos": 0.9313304721030042
+   },
+   "status": "ok",
+   "first": "2023-01-01",
+   "tvl_median_musd": 7.2998535,
+   "rotation_per_day_median": 0.11689884931506848
+  },
+  {
+   "chain": "Polygon",
+   "project": "quickswap-dex",
+   "pair": "WMATIC-USDC",
+   "pool": "81a51af8-4a0e-409b-9688-264323afc1fe",
+   "lp_share": {
+    "fee_ann": 0.08951252667329358,
+    "lvr_ann": 0.08316858737016498,
+    "edge_ann": 0.006343939303128586,
+    "ci95_ann": [
+     -0.020118787303360895,
+     0.027859338517453477
+    ],
+    "share_days_pos": 0.6679920477137177
+   },
+   "days": 1006,
+   "upper_bound": {
+    "fee_ann": 0.1074150320079523,
+    "lvr_ann": 0.08316858737016498,
+    "edge_ann": 0.024246444637787294,
+    "ci95_ann": [
+     -0.005103091767398547,
+     0.04863800210335824
+    ],
+    "share_days_pos": 0.7534791252485089
+   },
+   "status": "ok",
+   "first": "2023-01-01",
+   "tvl_median_musd": 1.3995785,
+   "rotation_per_day_median": 0.06623013698630137
+  },
+  {
+   "chain": "Solana",
+   "project": "raydium-amm",
+   "pair": "WSOL-USDC",
+   "pool": "12edc6f3-4926-4b4f-b97c-38ef6a458574",
+   "lp_share": {
+    "fee_ann": 0.2821142627511592,
+    "lvr_ann": 0.06855426419420708,
+    "edge_ann": 0.21355999855695207,
+    "ci95_ann": [
+     0.12148588354105425,
+     0.32766989725278967
+    ],
+    "share_days_pos": 0.9505409582689336
+   },
+   "days": 647,
+   "upper_bound": {
+    "fee_ann": 0.32058438948995366,
+    "lvr_ann": 0.06855426419420708,
+    "edge_ann": 0.2520301252957466,
+    "ci95_ann": [
+     0.14820092172613783,
+     0.38243811604005623
+    ],
+    "share_days_pos": 0.9783616692426584
+   },
+   "status": "ok",
+   "first": "2025-01-23",
+   "tvl_median_musd": 10.023006,
+   "rotation_per_day_median": 0.19791780821917807
+  },
+  {
+   "chain": "Solana",
+   "project": "raydium-amm",
+   "pair": "WSOL-USDT",
+   "pool": "cdd04383-21ea-45d1-94d6-295e58100559",
+   "lp_share": {
+    "fee_ann": 0.19908296111975118,
+    "lvr_ann": 0.06864411777534273,
+    "edge_ann": 0.13043884334440844,
+    "ci95_ann": [
+     0.08453826295325295,
+     0.1827142947850305
+    ],
+    "share_days_pos": 0.8833592534992224
+   },
+   "days": 643,
+   "upper_bound": {
+    "fee_ann": 0.22623063763608084,
+    "lvr_ann": 0.06864411777534273,
+    "edge_ann": 0.15758651986073816,
+    "ci95_ann": [
+     0.10564348611523694,
+     0.2165470690012556
+    ],
+    "share_days_pos": 0.9284603421461898
+   },
+   "status": "ok",
+   "first": "2025-01-23",
+   "tvl_median_musd": 1.005318,
+   "rotation_per_day_median": 0.1884931506849315
+  }
+ ]
+}

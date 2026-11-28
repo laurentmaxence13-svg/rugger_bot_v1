@@ -2938,6 +2938,17 @@
    "url": "https://api.hyperliquid.xyz/info"
   },
   {
+   "bytes": 104282,
+   "cache": "llama_chart_h3d_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:22Z",
+   "key": "https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574#llama_chart_h3d_12edc6f3-4926-4b4f-b97c-38ef6a458574_20261128.json",
+   "request": null,
+   "sha256": "a9b0ba7b72afd790818227bcb7f8cc15d4dc656191e05ee2665dce0f1f342453",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574"
+  },
+  {
    "bytes": 103979,
    "cache": "llama_chart_raydium_amm_v4_sol_usdc_025_20261126.json",
    "checksum": "none_published",
@@ -2949,6 +2960,28 @@
    "url": "https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574"
   },
   {
+   "bytes": 267396,
+   "cache": "llama_chart_h3d_196aa543-1881-4515-9928-577693d4fa72_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:16Z",
+   "key": "https://yields.llama.fi/chart/196aa543-1881-4515-9928-577693d4fa72#llama_chart_h3d_196aa543-1881-4515-9928-577693d4fa72_20261128.json",
+   "request": null,
+   "sha256": "e6f6ff81aba918979fea139cf0970fe456d37e9a89a2093113c34b062aa5f284",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/196aa543-1881-4515-9928-577693d4fa72"
+  },
+  {
+   "bytes": 267219,
+   "cache": "llama_chart_h3d_702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:15Z",
+   "key": "https://yields.llama.fi/chart/702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6#llama_chart_h3d_702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6_20261128.json",
+   "request": null,
+   "sha256": "940bc2e8d958feaf743a9d19a816f8d630b4c24af4893b0f9885b09c3b1eddee",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6"
+  },
+  {
    "bytes": 105354,
    "cache": "llama_chart_raydium_clmm_sol_usdc_004_20261126.json",
    "checksum": "none_published",
@@ -2958,6 +2991,28 @@
    "sha256": "90ca1b28edd6c5b20094ac41333ee07f8fe174d827e3e9dd8b50289de7a09651",
    "status": "ok",
    "url": "https://yields.llama.fi/chart/709f121d-d3b4-44da-b3d0-47bc16f5400b"
+  },
+  {
+   "bytes": 218234,
+   "cache": "llama_chart_h3d_81a51af8-4a0e-409b-9688-264323afc1fe_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:22Z",
+   "key": "https://yields.llama.fi/chart/81a51af8-4a0e-409b-9688-264323afc1fe#llama_chart_h3d_81a51af8-4a0e-409b-9688-264323afc1fe_20261128.json",
+   "request": null,
+   "sha256": "26f5b06e16b2ffbd8d2f81462ce33f063223a1a32ec4c1ee4b924098bec94adf",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/81a51af8-4a0e-409b-9688-264323afc1fe"
+  },
+  {
+   "bytes": 250583,
+   "cache": "llama_chart_h3d_a3878e88-0c9f-49ef-adbc-da5fe048192d_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:21Z",
+   "key": "https://yields.llama.fi/chart/a3878e88-0c9f-49ef-adbc-da5fe048192d#llama_chart_h3d_a3878e88-0c9f-49ef-adbc-da5fe048192d_20261128.json",
+   "request": null,
+   "sha256": "44b17707adf06c9d19f3bf4dc6686ceef28bde87a8b3c120c6fcfc49d543bd73",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/a3878e88-0c9f-49ef-adbc-da5fe048192d"
   },
   {
    "bytes": 190029,
@@ -2980,10 +3035,54 @@
    "sha256": "b7f7b4002aa47f53a966ce8b2096b92ee0e86025a2ec005dabc88d6717d3f2ac",
    "status": "ok",
    "url": "https://yields.llama.fi/chart/aa70268e-4b52-42bf-a116-608b370f9501"
+  },
+  {
+   "bytes": 277681,
+   "cache": "llama_chart_h3d_b1ff3e89-14a0-42a1-b760-716304387201_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:17Z",
+   "key": "https://yields.llama.fi/chart/b1ff3e89-14a0-42a1-b760-716304387201#llama_chart_h3d_b1ff3e89-14a0-42a1-b760-716304387201_20261128.json",
+   "request": null,
+   "sha256": "3eb45a8298c211ad5f6de225eb9045d1d44a357786ef84ac3f893ea929edc7dc",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/b1ff3e89-14a0-42a1-b760-716304387201"
+  },
+  {
+   "bytes": 100139,
+   "cache": "llama_chart_h3d_cdd04383-21ea-45d1-94d6-295e58100559_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:24Z",
+   "key": "https://yields.llama.fi/chart/cdd04383-21ea-45d1-94d6-295e58100559#llama_chart_h3d_cdd04383-21ea-45d1-94d6-295e58100559_20261128.json",
+   "request": null,
+   "sha256": "eb2faa09324b6a2ecfa7d7de6923736b743225e80c83037991da770bc2e67ef9",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/cdd04383-21ea-45d1-94d6-295e58100559"
+  },
+  {
+   "bytes": 84052,
+   "cache": "llama_chart_h3d_d77a4965-de74-48d4-afc5-1a73e3ce9d65_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:18Z",
+   "key": "https://yields.llama.fi/chart/d77a4965-de74-48d4-afc5-1a73e3ce9d65#llama_chart_h3d_d77a4965-de74-48d4-afc5-1a73e3ce9d65_20261128.json",
+   "request": null,
+   "sha256": "e538aef3c436086e59478b199da07bccc0a7d9290b5f49791600eb2ecf41046b",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/d77a4965-de74-48d4-afc5-1a73e3ce9d65"
+  },
+  {
+   "bytes": 97670,
+   "cache": "llama_chart_h3d_dfe517bb-4beb-45ae-b847-5d4067fc7ef9_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:18:19Z",
+   "key": "https://yields.llama.fi/chart/dfe517bb-4beb-45ae-b847-5d4067fc7ef9#llama_chart_h3d_dfe517bb-4beb-45ae-b847-5d4067fc7ef9_20261128.json",
+   "request": null,
+   "sha256": "79510c8e2b798952339ef4f6a72d329cabc940aed1113d8dfb6fbeeabcbdc56c",
+   "status": "ok",
+   "url": "https://yields.llama.fi/chart/dfe517bb-4beb-45ae-b847-5d4067fc7ef9"
   }
  ],
  "manifest": "public_json",
  "n_checksum_verified": 0,
- "n_files": 187,
+ "n_files": 196,
  "n_missing": 0
 }

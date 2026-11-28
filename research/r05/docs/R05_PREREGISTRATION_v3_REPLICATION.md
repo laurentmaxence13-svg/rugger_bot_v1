@@ -53,3 +53,18 @@ critères neutres (TVL, capitalisation), avant tout téléchargement de rendemen
   (clôtures GeckoTerminal). Critère pour PAPER-1 : frais directs SOL-USDC à ± 20 % des frais DefiLlama corrigés.
 - Automatisation : tâche planifiée quotidienne, commit des instantanés sur la branche R05. Une journée sans
   instantané reste un trou déclaré, jamais une interpolation silencieuse.
+
+## Addendum v3.1 — H3d-net (figé le 2026-11-28 après le verdict H3d « GÉNÉRAL », avant toute simulation nette)
+
+H3d mesure frais − LVR, pas un profit. **H3d-net** applique aux **9** pools de H3d (univers inchangé, pas de
+sélection sur le résultat) la simulation complète de PAPER-1 v1.1 :
+- couverture par le perp USDⓈ-M Binance de l'actif volatil (ETHUSDT, BNBUSDT, MATICUSDT puis POLUSDT, SOLUSDT),
+  funding réel ;
+- règle de transfert à bande [50 % ; 200 %] ;
+- coûts proportionnels de PAPER-1 ;
+- frais fixes par chaîne (**hypothèses**) : Ethereum 10 $ par opération LP + 5 $ par transfert ; Base, BSC,
+  Polygon 0,5 $ + 2 $ ; Solana 0,1 $ + 2 $ ; deux opérations LP (entrée, sortie) plus une par transfert ;
+- capital de 10 000 $ (référence) et 1 100 $ ; taux de référence Aave v3 USDC.
+
+**Candidat à une extension de PAPER-1** si l'excès est > 0 avec une borne basse d'IC mensuel > 0 à 10 000 $, et
+s'il reste > 0 à coûts proportionnels × 2.
