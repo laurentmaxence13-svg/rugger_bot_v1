@@ -57,6 +57,19 @@ Activité réelle des agents : voir § 3. Une session inactive n'est jamais comp
 | Message vide « placeholder » envoyé par R01 à la mauvaise session (R03, 25/11 ≈ 20:50Z), sans effet | appel d'envoi lancé avant que le texte et l'identifiant du destinataire soient vérifiés | R03 prévenu de l'ignorer | destinataire vérifié dans le journal et texte rédigé avant tout envoi |
 | Tests dépendant de l'environnement (livesim 0.3, livepaper 0.1) | présence ou version d'un paquet local supposée | corrigés en 0.1.1 | un test ne dépend ni de la présence ni de la version d'un paquet local |
 
+## Phase intensive (ordre du propriétaire, 28/11 ≈ 11:50Z) — pilotée par R04
+
+Objectif : savoir vite si G2-3, N1 ou une évolution de l'approche a un avantage économique exploitable ; mesures et découvertes plutôt que versions. Pilotes du 06/12 strictement préservés, recherche indépendante des pilotes ; aucune dépense, aucune collecte nouvelle hors autorisations (plafond v2, livepaper v7) ; R05 séparé.
+
+| Étude | Question qui change une décision | Données | Responsable | Contrôle |
+|---|---|---|---|---|
+| E1 plafond d'opportunité | existe-t-il un segment où \|mouvement\| > coût (0,5 / 0,95 / 1,5 %) assez souvent pour une stratégie à court terme ? | W1 (2 273 pools, descriptif) | R01 | R02 : solide, fragile ou faux |
+| E2 G2-3 attaquée | le signal prédit-il le brut futur mieux qu'un témoin apparié, à grand n ? | W1 | R01 | R02 |
+| E3 N1 sur données longues | frais LP − perte d'impermanence contre détention, fenêtres glissantes | W1 | R01 | R02 |
+| Opérationnel | GO plafond 06/12 ; test en direct v7 (preuve autonome 24 h) | autorisations signées | R02 → R03 | R02 |
+
+Livrables : bilan opérationnel le 29/11 vers 11:45Z ; synthèse économique le 30/11 vers 11:45Z. Tout résultat W1 est exploratoire : il génère des hypothèses, à tester ensuite sur des données neuves.
+
 ## Directive du propriétaire du 26/11, 13:30:24Z (événement 145b547c, vérifié à la source par R02) — exigence économique
 
 Extraits mot pour mot : « Notre objectif n'est pas d'accumuler des tests réussis, des versions ou des audits. Il est de déterminer si nos stratégies disposent d'un avantage économique réel après tous les coûts et risques. » ; « Je veux que vous puissiez me recommander franchement de poursuivre, de modifier lors d'une nouvelle expérience ou d'abandonner une stratégie. » ; « Aucune modification rétroactive des protocoles, aucun trading réel, aucune dépense supplémentaire et aucune reprise nécessitant une signature sans mon accord explicite. » ; « Je souhaite moins de complexité inutile et davantage de preuves permettant de décider. »
