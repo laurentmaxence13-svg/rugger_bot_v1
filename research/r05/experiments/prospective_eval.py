@@ -42,11 +42,16 @@ def paper1_lp(start: str, end: str, refresh_llama: bool) -> dict:
     spot, perp = sp["close"].reindex(idx).ffill(), pp["close"].reindex(idx).ffill()
     hi = pp["high"].reindex(idx).fillna(perp)
     fund = fu.groupby(fu.index.floor("h")).sum().reindex(idx).fillna(0.0)
-    if refresh_llama:
-        m = Manifest("prospective")
-        json_get("https://yields.llama.fi/chart/12edc6f3-4926-4b4f-b97c-38ef6a458574", m,
-                 f"llama_chart_raydium_amm_v4_sol_usdc_025_{r3.TAG}.json", refresh=True)
-        m.save()
+    # Self-sufficient in a fresh clone (data/ is not versioned): fetch the two DefiLlama series
+    # when asked to refresh or when the cache is missing.
+    from r05lab.data import DATA_DIR
+    m = Manifest("prospective")
+    for pid, name in (("12edc6f3-4926-4b4f-b97c-38ef6a458574", "raydium_amm_v4_sol_usdc_025"),
+                      ("aa70268e-4b52-42bf-a116-608b370f9501", "aave_v3_usdc_eth")):
+        cache = f"llama_chart_{name}_{r3.TAG}.json"
+        if refresh_llama or not (DATA_DIR / "json" / cache).exists():
+            json_get(f"https://yields.llama.fi/chart/{pid}", m, cache, refresh=True)
+    m.save()
     f_dl = llama(r3.LLAMA_SOLUSDC)["apyBase"] * r3.LP_SHARE / 100 / 365
     rf = rf_daily()
     out = {}
