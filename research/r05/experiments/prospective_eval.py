@@ -76,6 +76,43 @@ def paper1_lp(start: str, end: str, refresh_llama: bool) -> dict:
     return out
 
 
+PAPER1B = [  # (label, DefiLlama pool, LP share, hedge asset, fixed cost per LP op, per transfer) — frozen v1.2
+    ("raydium_sol_usdt", "cdd04383-21ea-45d1-94d6-295e58100559", 0.88, "SOL", 0.1, 2.0),
+    ("base_univ2_weth_usdc_OBSERVATION", "dfe517bb-4beb-45ae-b847-5d4067fc7ef9", 1.0, "ETH", 0.5, 2.0),
+    ("ethereum_univ2_usdc_weth_CONTROL", "702fff16-4bfa-4c1f-8c02-e0ea0f5ecde6", 1.0, "ETH", 10.0, 5.0),
+]
+
+
+def paper1b_lp(start: str, end: str) -> dict:
+    if pd.Timestamp(start) > pd.Timestamp(end):
+        return {"status": "fenêtre PAPER-1b pas encore commencée"}
+    mb, mj = Manifest("binance"), Manifest("prospective")
+    ms = month_range(pd.Timestamp(start).strftime("%Y-%m"), pd.Timestamp(end).strftime("%Y-%m"))
+    idx = pd.date_range(f"{start} 00:00", f"{end} 23:00", freq="h", tz="UTC")
+    rf = rf_daily()
+    years = (idx[-1] - idx[0]).total_seconds() / (365 * 86400)
+    out = {}
+    for label, pid, share, asset, lp_op, tr in PAPER1B:
+        d = json_get(f"https://yields.llama.fi/chart/{pid}", mj, f"llama_chart_p1b_{pid}_{r3.TAG}.json", refresh=True)["data"]
+        dl = pd.DataFrame(d)
+        dl.index = pd.to_datetime(dl["timestamp"]).dt.floor("D")
+        dl = dl[~dl.index.duplicated(keep="last")]
+        fee = dl["apyBase"].astype(float).fillna(0.0) * share / 100 / 365
+        sym = f"{asset}USDT"
+        sp = load_klines("spot", sym, "1h", ms, mb)["close"].reindex(idx).ffill()
+        pk = load_klines("futures/um", sym, "1h", ms, mb)
+        pp, hi = pk["close"].reindex(idx).ffill(), pk["high"].reindex(idx).ffill()
+        fu = load_funding(sym, ms, mb)["rate"]
+        fu = fu.groupby(fu.index.floor("h")).sum().reindex(idx).fillna(0.0)
+        sim = r3.simulate_hedged_lp(idx, sp, pp, hi, fu, fee, band=(0.5, 2.0))
+        ex = r3.excess_stats(sim["ret"], rf, start, end)
+        n_tr = sim["capital_transfers"]
+        out[label] = {"window": ex, "transfers": n_tr, "liquidation_hours": sim["liquidation_hours"],
+                      "excess_after_fixed_10000": ex["ann_excess"] - ((2 + n_tr) * lp_op + n_tr * tr) / 10_000 / years}
+    mj.save()
+    return out
+
+
 def paper2_f1(start: str, end: str) -> dict:
     mb = Manifest("binance")
     nets, bh = {}, {}
@@ -102,7 +139,9 @@ def main():
     ap.add_argument("--label", default="reading")
     a = ap.parse_args()
     res = {"window": [a.start, a.end], "label": a.label,
-           "PAPER1_lp_hedged": paper1_lp(a.start, a.end, a.refresh_llama), "PAPER2_f1": paper2_f1(a.start, a.end)}
+           "PAPER1_lp_hedged": paper1_lp(a.start, a.end, a.refresh_llama),
+           "PAPER1B_lp_hedged": paper1b_lp(max(a.start, "2026-11-29"), a.end),
+           "PAPER2_f1_OBSERVATION": paper2_f1(a.start, a.end)}
     (RESULTS_DIR / f"PROSPECTIVE_{a.label}_{a.start}_{a.end}.json").write_text(json.dumps(res, indent=1, default=str))
     print(json.dumps(res, indent=1, default=str)[:3000])
 

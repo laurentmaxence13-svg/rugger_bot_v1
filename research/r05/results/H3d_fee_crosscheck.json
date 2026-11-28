@@ -1,0 +1,20 @@
+{
+ "base": {
+  "address": "0x88a43bbdf9d098eec7bceda4e2494615dfd9bb9c",
+  "days": 156,
+  "first": "2026-05-29",
+  "ratio_gt_over_dl": 3.1850402170506085,
+  "corr": 0.9965866144033827,
+  "gt_fee_ann": 0.2738271685767797,
+  "dl_fee_ann": 0.0859729076923077
+ },
+ "solana": {
+  "address": "7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX",
+  "days": 156,
+  "first": "2026-05-29",
+  "ratio_gt_over_dl": 0.984333441144933,
+  "corr": 0.9973004738255273,
+  "gt_fee_ann": 0.31199452941985,
+  "dl_fee_ann": 0.3169602051282051
+ }
+}

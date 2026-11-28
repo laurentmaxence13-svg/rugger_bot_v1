@@ -63,3 +63,10 @@ Synthèse et recommandation : [`docs/R05_DOSSIER.md`](docs/R05_DOSSIER.md).
 - Batterie de réfutation figée avant exécution : [`docs/R05_PREREGISTRATION_v2_REFUTATION.md`](docs/R05_PREREGISTRATION_v2_REFUTATION.md).
 - Protocoles PAPER prospectifs figés : [`docs/R05_PAPER_PROTOCOLS_v1.md`](docs/R05_PAPER_PROTOCOLS_v1.md), évaluateur `experiments/prospective_eval.py`.
 - Résultats : `results/R3_lp_refutation.json`, `results/R2_R1_refutation.json`, `results/R4_hl_markouts.json`.
+
+## Réplications et automatisation (2026-11-28)
+
+- Pré-enregistrement v3 et addendum v3.1 : `docs/R05_PREREGISTRATION_v3_REPLICATION.md`.
+- Résultats : `results/H2b_replication.json`, `results/H3d_replication.json`, `results/H3d_net.json`, `results/H3d_fee_crosscheck.json`.
+- Mesure directe prospective : `prospective/` (instantanés quotidiens, `MANIFEST.csv`), `experiments/daily_collect.py`, `experiments/d1_report.py`.
+- Tâches planifiées : collecte quotidienne 00:37Z ; lecture mensuelle PAPER le 3 à 02:17Z (`experiments/prospective_eval.py`, code figé).

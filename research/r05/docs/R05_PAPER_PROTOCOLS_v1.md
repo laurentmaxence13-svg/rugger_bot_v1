@@ -60,3 +60,19 @@ aucune liquidation, excès +14,2 %/an avant frais fixes, +13,0 % après frais fi
 de succès et d'arrêt sont inchangés. Ils s'appliquent à la règle à bande, frais fixes déduits au capital de
 référence de 10 000 $, avec le résultat à 1 100 $ (≈ 1 000 €) publié à côté. La règle quotidienne reste
 publiée comme variante secondaire.
+
+## Révision v1.2 — 2026-11-28 ≈ 11:40Z (après les réplications v3, avant toute donnée des nouvelles fenêtres)
+
+- **PAPER-2 perd sa place** (règle pré-enregistrée H2b). La règle F1 n'est pas répliquée sur 18 autres
+  cryptomonnaies : placebo p = 0,30, drawdown 65 % contre 77 %. Elle reste calculée chaque mois à titre
+  d'**observation**, sans critère de décision.
+- **PAPER-1b — extension de PAPER-1** : règles de PAPER-1 v1.1, sans changement, appliquées à :
+  - Raydium AMM v4 **SOL-USDT** (pool `7Xawhb…EbEmX`) : H3d-net donne +6,8 %/an net à 10 000 $, IC > 0, et les
+    sources de frais concordent (rapport 0,98) ;
+  - Base Uniswap v2 WETH-USDC, en **observation seulement** : les sources de frais divergent d'un facteur 3,2
+    (DefiLlama contre GeckoTerminal), ce qui le rend non évaluable tant que ses réserves on-chain n'ont pas été lues ;
+  - Ethereum Uniswap v2 USDC-WETH, comme **témoin négatif** : H3d-net y donne −0,4 %/an net. S'il devenait
+    nettement positif en prospectif, il faudrait suspecter la méthode.
+- Fenêtre de PAPER-1b : 2026-11-29 → 2027-05-31 ; mêmes critères et mêmes dates de lecture que PAPER-1.
+- **Limite déclarée** : SOL-USDC et SOL-USDT partagent l'actif SOL, la chaîne et la période. PAPER-1b
+  diversifie le risque propre à un pool (routage), pas le risque de l'écosystème Solana.

@@ -1,6 +1,36 @@
 {
  "files": [
   {
+   "bytes": 16253,
+   "cache": "gt_xcheck_base_0x88a43bbdf9d098eec7bceda4e2494615dfd9bb9c_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:21:38Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/base/pools/0x88a43bbdf9d098eec7bceda4e2494615dfd9bb9c/ohlcv/day#gt_xcheck_base_0x88a43bbdf9d098eec7bceda4e2494615dfd9bb9c_20261128.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "usd",
+    "limit": "1000"
+   },
+   "sha256": "4b2a0f6fe0f4d47f3d181a1f2db049aec22f75447e82ecf82f77bec9a8ef18a9",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/base/pools/0x88a43bbdf9d098eec7bceda4e2494615dfd9bb9c/ohlcv/day?aggregate=1&limit=1000&currency=usd"
+  },
+  {
+   "bytes": 19261,
+   "cache": "gt_xcheck_solana_7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX_20261128.json",
+   "checksum": "none_published",
+   "fetched_utc": "2026-11-28T11:21:41Z",
+   "key": "https://api.geckoterminal.com/api/v2/networks/solana/pools/7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX/ohlcv/day#gt_xcheck_solana_7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX_20261128.json",
+   "request": {
+    "aggregate": "1",
+    "currency": "usd",
+    "limit": "1000"
+   },
+   "sha256": "2a355b931680296f6dae203ee021333f439635c96e6619e2677390f124edd71f",
+   "status": "ok",
+   "url": "https://api.geckoterminal.com/api/v2/networks/solana/pools/7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX/ohlcv/day?aggregate=1&limit=1000&currency=usd"
+  },
+  {
    "bytes": 244167,
    "cache": "hl_candles_1d_BTC_20261126.json",
    "checksum": "none_published",
@@ -3083,6 +3113,6 @@
  ],
  "manifest": "public_json",
  "n_checksum_verified": 0,
- "n_files": 196,
+ "n_files": 198,
  "n_missing": 0
 }

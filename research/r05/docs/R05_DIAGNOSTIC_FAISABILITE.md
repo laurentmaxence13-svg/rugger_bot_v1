@@ -238,3 +238,38 @@ jusqu'au 06/12)** :
 - à R01 : relecture de nos hypothèses de coût de dépôt et de retrait LP au regard de `lpcost` et `cpmmcost` ;
 - à R02 : audit indépendant de `simulate_hedged_lp` et du placebo R2.1.
 L'envoi se fera avec l'accord du propriétaire, après les verdicts du 06/12.
+
+---
+
+## 9. Mise à jour du 2026-11-28 — réplications (protocole v3, `5e96192`, addendum v3.1)
+
+| Test | Résultat | Conséquence |
+|---|---|---|
+| **H2b** momentum 30 j sur 18 autres cryptomonnaies (2023-01 → 2026-10) | rendement identique au passif (11,2 %/an) ; Sharpe 0,47 contre 0,49 ; drawdown 65 % contre 77 % (seuil 0,7 non atteint) ; placebo p = 0,30 ; 9 actifs sur 18 battent le passif | **NON RÉPLIQUÉ** : la baisse de volatilité vient de l'exposition partielle, pas du timing. PAPER-2 devient une observation |
+| **H3d** frais − LVR sur 9 pools plage complète natif/stable, 5 chaînes | 6/9 IC > 0 : Uniswap v2 ETH-USDC +3,2 % et ETH-USDT +3,6 % (Ethereum), Base +12,0 %, BSC +5,8 %, Raydium SOL-USDT +13,0 %, SOL-USDC +21,4 % | mécanisme **GÉNÉRAL** : les pools dominants des paires principales reçoivent plus de frais que leur LVR |
+| **H3d-net** simulation couverte complète, frais fixes par chaîne | positifs avec IC > 0 : Raydium SOL-USDC +14,1 %, SOL-USDT +6,8 %, Base Uniswap v2 +5,0 % (à 10 000 $) ; Ethereum ≈ 0 (gaz, taux sans risque) ; BSC −1,0 % ; Polygon −1,8 % (3 heures de liquidation) | le profit net n'existe que là où **l'avantage est grand et les coûts fixes faibles** |
+| Recoupement des sources | SOL-USDT : GeckoTerminal / DefiLlama 0,98 ; Base : **3,2** (corrélation 0,997) | Base **non évaluable** (biais de méthode d'une source) ; SOL-USDT confirmé |
+
+**Lecture critique.**
+- Le mécanisme LP est général, ce qui renforce PAPER-1.
+- Mais le **profit net** reste concentré sur Solana, c'est-à-dire sur le même actif, la même chaîne et la même
+  période : la diversification réelle est faible.
+- Sur Ethereum, l'avantage existe (+3 %/an), mais il est rendu nul par le coût du capital et le gaz.
+- Le seul candidat hors Solana (Base) est bloqué par une contradiction de sources que je ne peux pas trancher sans
+  lire ses réserves on-chain.
+
+**Portefeuille PAPER au 2026-11-28 :**
+
+| Piste | Statut |
+|---|---|
+| PAPER-1 (SOL-USDC) | priorité 1, maintenue |
+| PAPER-1b (SOL-USDT ; Base en observation ; Ethereum en témoin négatif) | extension |
+| PAPER-2 (momentum) | observation |
+
+Il n'y a donc **qu'une seule piste distincte** (la LP couverte sur pools dominants à coûts fixes faibles) ; je
+n'en invente pas une seconde.
+
+**Automatisation en place**, dans des sessions planifiées réelles et non en arrière-plan de celle-ci :
+- collecte quotidienne D-1 à 00:37Z : instantané de 53 pools Raydium, mesure directe des frais par
+  √(x·y)/offre LP ;
+- lecture mensuelle le 3 à 02:17Z : évaluateur figé, chiffres commités, aucune interprétation automatique.
