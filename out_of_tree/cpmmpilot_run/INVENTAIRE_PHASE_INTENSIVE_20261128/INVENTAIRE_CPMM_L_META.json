@@ -1,0 +1,213 @@
+{
+ "U2_path_used": "TIME2_20261124T102839Z/U2.json (the out_of_tree/cpmm_pilot/plafond_v2/... copy does not exist)",
+ "anchors": {
+  "CREATOR_FEE_FLAGS_20261125/FLAGS_LIST_L.json": {
+   "expected": "5c44f641",
+   "ok": true,
+   "sha256": "5c44f64135f9242bbfeaa625e8d8ead0ea185e16eea83be5f3228e26dc882033"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_PRE_PAGES.txt": {
+   "expected": "951b8479",
+   "ok": true,
+   "sha256": "951b84798db5b4a433389b7b3c01c3a3e0a367168d443f6c3b5507497bbf61c0"
+  },
+  "STEP1A2R_20261124T164909Z/SHA256SUMS_PRE_PAGES.txt": {
+   "expected": "8fb3cac4",
+   "ok": true,
+   "sha256": "8fb3cac418f118fc73195963c3d623d574b692a31ddb9256bc987bb069c3ec16"
+  },
+  "TIME1R_20261124T102126Z/LIST_L.json": {
+   "expected": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+   "ok": true,
+   "sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3"
+  },
+  "TIME2_20261124T102839Z/U2.json": {
+   "expected": "3ca0260a",
+   "ok": true,
+   "sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963"
+  }
+ },
+ "base_dir": "/home/user/rugger_bot_v1/out_of_tree/cpmmpilot_run",
+ "counts": {
+  "LIVESIM_live.n_failed": 68,
+  "LIVESIM_live.n_swaps": 3214,
+  "LIVESIM_live.n_transactions": 3309,
+  "LIVESIM_live.pools": 3,
+  "LIVESIM_live.pools_log_vs_ix_swap_differs": 0,
+  "LIVESIM_pre.n_failed": 11204,
+  "LIVESIM_pre.n_swaps": 38646,
+  "LIVESIM_pre.n_transactions": 99451,
+  "LIVESIM_pre.pools": 8,
+  "LIVESIM_pre.pools_log_vs_ix_swap_differs": 5,
+  "STEP1A2R_pre.n_failed": 1228,
+  "STEP1A2R_pre.n_swaps": 3359,
+  "STEP1A2R_pre.n_transactions": 5662,
+  "STEP1A2R_pre.pools": 20,
+  "STEP1A2R_pre.pools_log_vs_ix_swap_differs": 8,
+  "pools_with_creation": 0
+ },
+ "cross_checks": {
+  "LIST_L.sha256_field_eq_U2.sha_l": true,
+  "LIST_L.t0_slot_eq_U2.t0_slot": true,
+  "U2.anchored_sha_l_eq_U2.sha_l": true,
+  "U2_selected_in_L": true,
+  "flags_cover_all_L": true
+ },
+ "dataset": "CPMM list L (259 pools), inventory only",
+ "field_definitions": {
+  "creation": "CPMM initialize/initialize_with_permission instruction touching the pool in an allowed source; none found -> non disponible. U2.json holds only aggregate creation_reasons, no per-pool time; TIME2_20261124T102839Z/gtfa/creation_<pool>.json.gz (44 pools) exists but is not in the allowed source list and was not used",
+  "creator_fee_flag": "FLAGS_LIST_L.json enable_creator_fee / creator_fee_on",
+  "n_transactions": "unique signatures over all verified pages of the source (live chunks deduplicated)",
+  "requested_windows": "STATE.json window [start,end] unix of each chunk; first/last_blockTime are observed",
+  "reserves": "LIST_L reserve_lamports at t0_slot/t0_time (WSOL only; base not in LIST_L) + per source WSOL/base vault token balances pre first tx / post last tx. Base vault = token account of base_mint owned by CPMM authority GpMZbSM2GgvTKHJirzeGfMFoaZ8UR2X7F4v8vHTvxFbL",
+  "trade_fee_rate": "LIST_L configs[amm_config].trade_fee_rate (per 1e6)"
+ },
+ "files_not_covered_by_sums_not_used": [],
+ "flags_entry_fields": [
+  "amm_config",
+  "creator_fee_on",
+  "enable_creator_fee"
+ ],
+ "list_l": {
+  "excluded": [
+   {
+    "pool": "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+    "reason": "pilote G2-3"
+   },
+   {
+    "pool": "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+    "reason": "pilote G2-3"
+   },
+   {
+    "pool": "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+    "reason": "pilote G2-3"
+   },
+   {
+    "pool": "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr",
+    "reason": "pilote G2-3"
+   }
+  ],
+  "included": 255,
+  "t0_slot": 473309024,
+  "t0_time": 1795515686,
+  "total": 259
+ },
+ "list_l_config_fields": [
+  "bump",
+  "creator_fee_rate",
+  "creator_fee_share_rate",
+  "disabled",
+  "fund_fee_rate",
+  "index",
+  "protocol_fee_rate",
+  "raw_sha256",
+  "trade_fee_rate"
+ ],
+ "list_l_entry_fields": [
+  "base_mint",
+  "config",
+  "pool",
+  "reserve_lamports",
+  "wsol_vault"
+ ],
+ "page_record_schema": {
+  "data": [],
+  "paginationToken": "NoneType"
+ },
+ "pilot_pools_present_in_sources_ignored": {
+  "LIVESIM_live": [],
+  "LIVESIM_pre": [],
+  "STEP1A2R_pre": [
+   "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+   "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+   "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+   "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr"
+  ]
+ },
+ "pools_per_source": {
+  "LIVESIM_live": 3,
+  "LIVESIM_pre": 8,
+  "STEP1A2R_pre": 24
+ },
+ "pre_T0_pages_location": "STEP1A2R_20261124T164909Z/pre_pages/<pool>/ (in place, verified; scratchpad pilot_run copy not needed)",
+ "source_pools_not_in_L": {
+  "LIVESIM_live": [],
+  "LIVESIM_pre": [],
+  "STEP1A2R_pre": []
+ },
+ "sources_not_used": [
+  "TIME2_20261124T102839Z/gtfa/",
+  "TIME1R calls_u2.jsonl (hashes only)",
+  "LIVESIM raw/, PASSES/POLLS/QUALIFIED/ELIGIBLE_FROZEN",
+  "CREATOR_FEE_FLAGS raw_all/"
+ ],
+ "state_schema": {
+  "done": "bool",
+  "pages": "int",
+  "token": "NoneType",
+  "transactions": "int",
+  "window": [
+   "int"
+  ]
+ },
+ "sums_verification": {
+  "LIVESIM_20261125T113851Z/SHA256SUMS_LIVE_PAGES_T24H.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 87,
+   "relative_to": "LIVESIM_20261125T113851Z/collect",
+   "sha256": "68a94629cc98c21888edd064065d711cc27f373a3258752c4560d889a511ab91"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_LIVE_PAGES_T6H.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 22,
+   "relative_to": "LIVESIM_20261125T113851Z/collect",
+   "sha256": "fdaecb95890de109767488df9ee00822baf7fa54ff06c32c6d3d3c6988fcbb16"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_LIVE_STATES_T24H.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 36,
+   "relative_to": "LIVESIM_20261125T113851Z/collect",
+   "sha256": "d1c2898289841b4a989346da7ab9a7ba358470c27a91e22ca744e818e73775f1"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_LIVE_STATES_T6H.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 9,
+   "relative_to": "LIVESIM_20261125T113851Z/collect",
+   "sha256": "a33b193886d13274547d2e86d8ec4a51bd1a4688ba023c1e5c4ad9f0945e2728"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_PRE_PAGES.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 1007,
+   "relative_to": "LIVESIM_20261125T113851Z/collect/pre",
+   "sha256": "951b84798db5b4a433389b7b3c01c3a3e0a367168d443f6c3b5507497bbf61c0"
+  },
+  "LIVESIM_20261125T113851Z/SHA256SUMS_PRE_STATES.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 8,
+   "relative_to": "LIVESIM_20261125T113851Z/collect/pre",
+   "sha256": "80b7e27a5201b24a41bf43150bfe2ea5df0635c04e3ac0b42c3012f7250c8769"
+  },
+  "STEP1A2R_20261124T164909Z/SHA256SUMS_PRE_PAGES.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 1326,
+   "relative_to": "STEP1A2R_20261124T164909Z/pre_pages",
+   "sha256": "8fb3cac418f118fc73195963c3d623d574b692a31ddb9256bc987bb069c3ec16"
+  },
+  "STEP1A2R_20261124T164909Z/SHA256SUMS_PRE_STATES.txt": {
+   "mismatched": [],
+   "missing": [],
+   "ok": 24,
+   "relative_to": "STEP1A2R_20261124T164909Z/pre_pages",
+   "sha256": "31508f1e2f1a9e4e976f808a0d9413aae0cb4b5e5553011f36cfe468686e4bef"
+  }
+ },
+ "swap_count_anomaly": "log cross-check exceeds rule count in some pools (STEP1A2R_pre 3723 vs 3359; LIVESIM_pre 39234 vs 38646; live equal) - expected from multi-pool txs; never lower",
+ "swap_rule": "A swap = one Raydium CPMM (CPMMoo8L3F4NbTegBCKVNunggL7H1ZpdTHKxQB5qKP1C) instruction, top-level or inner, whose data discriminator is sha256(\"global:swap_base_input\")[:8] or sha256(\"global:swap_base_output\")[:8] and whose account #3 (pool_state) equals the pool, in a successful transaction (meta.err null). Cross-check field: \"Program log: Instruction: Swap*\" logged in a CPMM frame of a tx containing the pool (>= rule count: includes other CPMM pools in multi-hop txs)."
+}
