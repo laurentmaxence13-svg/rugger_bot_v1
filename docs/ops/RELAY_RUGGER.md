@@ -1,5 +1,7 @@
 # Relais automatique RUGGER 01–04 — procédure (NON ACTIVÉE) — issue #187
 
+Mise à jour #211 : diagnostic des déclenchements, correctifs P1 de #210 et circuit unique dans `docs/ops/RELAY_SINGLE_CIRCUIT.md`.
+
 Statut : **conception + prototype pur** (`tools/relay_planner.py`, 14 tests hors réseau). Aucun workflow, secret, permission ou boucle n'est ajouté.
 
 ## Ce qui est réel / pas réel
