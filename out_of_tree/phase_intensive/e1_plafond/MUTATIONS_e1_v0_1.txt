@@ -1,0 +1,76 @@
+0 []
+[
+ {
+  "mutant": "holdout_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "manifest_unchecked",
+  "detected": true
+ },
+ {
+  "mutant": "rent_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "convention_A_only",
+  "detected": true
+ },
+ {
+  "mutant": "tx_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "censoring_late",
+  "detected": true
+ },
+ {
+  "mutant": "migration_ignored",
+  "detected": true
+ },
+ {
+  "mutant": "open_without_share",
+  "detected": true
+ },
+ {
+  "mutant": "open_on_ci95",
+  "detected": true
+ },
+ {
+  "mutant": "min_pools_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "min_pools_costed_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "spacing_broken",
+  "detected": true
+ },
+ {
+  "mutant": "before_first_uses_after",
+  "detected": true
+ },
+ {
+  "mutant": "seed_prefix",
+  "detected": true
+ },
+ {
+  "mutant": "no_bonferroni",
+  "detected": true
+ },
+ {
+  "mutant": "age_unknown_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "excursion_dropped",
+  "detected": true
+ },
+ {
+  "mutant": "no_block_cap",
+  "detected": true
+ }
+]
+18 / 18
