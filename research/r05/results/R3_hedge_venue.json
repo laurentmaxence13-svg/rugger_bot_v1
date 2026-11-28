@@ -1,0 +1,39 @@
+{
+ "note": "post hoc, descriptif ; non \u00e9liminatoire",
+ "window": [
+  "2025-01-24",
+  "2026-10-31"
+ ],
+ "binance_daily_control": {
+  "ann_excess": 0.13887379662202565,
+  "ci_monthly": [
+   0.0036932669573900216,
+   0.02008171287586665
+  ],
+  "max_dd": 0.008160095427428238,
+  "liquidation_days": 0,
+  "transfers": 10,
+  "funding_per_capital": 0.0010139071717056533,
+  "hedge_price_per_capital": 0.22343958452688675,
+  "funding_ann_rate_mean": -0.0013226503869969027
+ },
+ "hyperliquid": {
+  "ann_excess": 0.15268319001208464,
+  "ci_monthly": [
+   0.004431916975772848,
+   0.021520239471925655
+  ],
+  "max_dd": 0.008238801876689683,
+  "liquidation_days": 0,
+  "transfers": 12,
+  "funding_per_capital": 0.027525637342628494,
+  "hedge_price_per_capital": 0.2134802967410198,
+  "funding_ann_rate_mean": 0.02881674050773994
+ },
+ "hl_perp_vs_binance_spot_basis_bp": {
+  "mean": -3.2009432251668475,
+  "std": 5.003400316042313,
+  "min": -47.76309504855969,
+  "max": 12.125411397887476
+ }
+}

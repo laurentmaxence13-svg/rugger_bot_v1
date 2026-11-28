@@ -273,3 +273,21 @@ n'en invente pas une seconde.
 - collecte quotidienne D-1 à 00:37Z : instantané de 53 pools Raydium, mesure directe des frais par
   √(x·y)/offre LP ;
 - lecture mensuelle le 3 à 02:17Z : évaluateur figé, chiffres commités, aucune interprétation automatique.
+
+### 9.1 Robustesse d'exécution et risques extrêmes de PAPER-1 (post hoc, descriptif)
+
+- **Plateforme de couverture (R3.6)** : couvert sur Hyperliquid au lieu de Binance, excès +15,3 %/an (IC mensuel
+  [+0,44 % ; +2,15 %]), drawdown 0,8 %, aucune liquidation. Le contrôle Binance en simulation quotidienne donne
+  +13,9 %, cohérent avec la simulation horaire (+14,0 %). Écart perp Hyperliquid / spot Binance : −3,2 pb en
+  moyenne, écart-type 5 pb, minimum −48 pb. **La piste ne dépend pas d'une plateforme de couverture.**
+- **Événements extrêmes** (scénarios calculés, pas des mesures) :
+  - l'avantage net (+14,1 %/an à 10 000 $) supporte une probabilité annuelle de **perte totale de la LP**
+    jusqu'à ≈ 16 %, ou de perte de 30 % jusqu'à ≈ 55 % ;
+  - un dépeg de l'USDC à 0,88 (type mars 2023), avec une sortie pendant le dépeg, coûte ≈ 5,1 % du capital,
+    soit ≈ 4,4 mois d'avantage ;
+  - un incident de sécurité Raydium sur les pools AMM en décembre 2022 est documenté historiquement (mémoire du
+    chercheur, **à vérifier**). Ce risque n'est pas diversifiable avec un seul protocole.
+- **Recherche de candidats hors Solana et hors H3d** : seuls 3 pools plage complète natif/stable ont une TVL ≥ 250 k$
+  (Cronos VVS CRO-USDC et CRO-USDT, AMM XRPL XRP-USDC). Leur part LP est incertaine, leur couverture perp n'est
+  pas vérifiée et leur TVL est faible. **Non testés** : un univers trop fragile produirait un résultat non
+  interprétable.
