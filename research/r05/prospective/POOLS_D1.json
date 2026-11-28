@@ -1,0 +1,271 @@
+{
+ "frozen_utc": "2026-11-28T11:07:00Z",
+ "source": "results/R3_lp_refutation.json R3.3 (universe DefiLlama raydium-amm Standard 0.25% TVL>=250k on 2026-11-26, mapped to AMM v4 addresses)",
+ "pools": [
+  {
+   "symbol": "WSOL-USDC",
+   "address": "58oQChx4yWmvKdwLLZzBi4ChoCc2fqCUWBkwMihLYQo2",
+   "llama_pool": "12edc6f3-4926-4b4f-b97c-38ef6a458574"
+  },
+  {
+   "symbol": "BOME-WSOL",
+   "address": "DSUvc5qf5LJHHV5e2tD184ixotSnCnwj7i4jJa4Xsrmt",
+   "llama_pool": "efa5ce76-dc4f-4d06-a9d4-0e09c4dcd0a1"
+  },
+  {
+   "symbol": "MEW-WSOL",
+   "address": "879F697iuDJGMevRkRcnW21fcXiAeLJK1ffsw2ATebce",
+   "llama_pool": "919f83c6-1a2d-4c67-985f-99e8b8423f62"
+  },
+  {
+   "symbol": "RAY-USDC",
+   "address": "6UmmUiYoBjSrhakAobJw8BvkmJtDVxaeBtbt7rxWo1mg",
+   "llama_pool": "8d1c0b44-a5ce-421c-b899-bf489159aa0f"
+  },
+  {
+   "symbol": "WSOL-FARTCOIN",
+   "address": "Bzc9NZfMqkXR6fz1DBph7BDf9BroyEf6pnzESP7v5iiw",
+   "llama_pool": "c66d7944-6582-4638-881a-360e5918e4b4"
+  },
+  {
+   "symbol": "LIKE-WSOL",
+   "address": "FuemMjepntbzthvSEVmDGnfq7YWr8UebZrAXJrP46VtF",
+   "llama_pool": "185ce02a-06db-4051-a6d8-25f86b32d77f"
+  },
+  {
+   "symbol": "$WIF-WSOL",
+   "address": "EP2ib6dYdEeqD8MfE2ezHCxX3kP3K2eLKkirfPm5eyMx",
+   "llama_pool": "caca758f-7a8f-4242-8d9c-cd44d98c5ee0"
+  },
+  {
+   "symbol": "RAY-WSOL",
+   "address": "AVs9TA4nWDzfPJE9gGVNJMVhcQy3V9PGazuz33BfG2RA",
+   "llama_pool": "0fc97fda-dd12-4f83-afeb-88e6d60f0e4b"
+  },
+  {
+   "symbol": "WSOL-JELLYJELLY",
+   "address": "3bC2e2RxcfvF9oP22LvbaNsVwoS2T98q6ErCRoayQYdq",
+   "llama_pool": "d3f1bb4f-6d3a-41f2-af1a-ae6baa4edd66"
+  },
+  {
+   "symbol": "WSOL-PIPPIN",
+   "address": "8WwcNqdZjCY5Pt7AkhupAFknV2txca9sq6YBkGzLbvdt",
+   "llama_pool": "20d99514-4d6b-4ff3-bbec-0732971885a0"
+  },
+  {
+   "symbol": "WSOL-ARC",
+   "address": "J3b6dvheS2Y1cbMtVz5TCWXNegSjJDbUKxdUVDPoqmS7",
+   "llama_pool": "83e9a75a-881a-4e5a-9aaa-82e2140fa57d"
+  },
+  {
+   "symbol": "WSOL-USELESS",
+   "address": "GxoRF3A1iMXhHTGvxAnT8b3Bk8Qqen41fmG5k2pT7K3Y",
+   "llama_pool": "99d4b1c8-9e7b-45d7-8603-260d9846866c"
+  },
+  {
+   "symbol": "POPCAT-WSOL",
+   "address": "FRhB8L7Y9Qq41qZXYLtC2nw8An1RJfLLxRF2x9RwLLMo",
+   "llama_pool": "06faada9-ad40-4027-9380-db05f0f3fd53"
+  },
+  {
+   "symbol": "WSOL-ALCH",
+   "address": "FyDF3vKQFbcvNTsBi7L7LremrFPmXKbQqgAgnPg1hXXd",
+   "llama_pool": "b09355f3-286d-472e-a1dd-4d0170dfb4aa"
+  },
+  {
+   "symbol": "WSOL-ZEREBRO",
+   "address": "3sjNoCnkkhWPVXYGDtem8rCciHSGc9jSFZuUAzKbvRVp",
+   "llama_pool": "b7c5a111-447f-4af6-9f18-581591249a76"
+  },
+  {
+   "symbol": "WSOL-PNUT",
+   "address": "4AZRPNEfCJ7iw28rJu5aUyeQhYcvdcNm8cswyL51AY9i",
+   "llama_pool": "8be07d6f-99a3-4643-9256-6f8a0b881508"
+  },
+  {
+   "symbol": "WSOL-BAN",
+   "address": "DmAsjXoceoL5vTKZbYpTpXPo7MKm16FMfNMm3PJFiUha",
+   "llama_pool": "a24db72d-5c6a-4028-b81e-de1480fa0f81"
+  },
+  {
+   "symbol": "WSOL-MOODENG",
+   "address": "22WrmyTj8x2TRVQen3fxxi2r4Rn6JDHWoMTpsSmn8RUd",
+   "llama_pool": "46f5eec1-26f1-4911-8d91-d627ff756dcd"
+  },
+  {
+   "symbol": "MANEKI-WSOL",
+   "address": "2aPsSVxFw6dGRqWWUKfwujN6WVoyxuhjJaPzYaJvGDDR",
+   "llama_pool": "75f2465b-aae7-4e6d-a075-59312f639394"
+  },
+  {
+   "symbol": "SPX-WSOL",
+   "address": "9t1H1uDJ558iMPNkEPSN1fqkpC4XSPQ6cqSf6uEsTfTR",
+   "llama_pool": "e7187b64-b5f9-43cb-a2be-c101b72873bc"
+  },
+  {
+   "symbol": "WSOL-VINE",
+   "address": "58fzJMbX5PatnfJPqWWsqkVFPRKptkbb5r2vCw4Qq3z9",
+   "llama_pool": "470dd76d-850f-49db-861a-0f675735ec57"
+  },
+  {
+   "symbol": "RAY-USDT",
+   "address": "DVa7Qmb5ct9RCpaU7UTpSaf3GVMYz17vNVU67XpdCRut",
+   "llama_pool": "3fe5a196-8a15-4f74-ba76-6625f7985773"
+  },
+  {
+   "symbol": "WSOL-GRIFFAIN",
+   "address": "CpsMssqi3P9VMvNqxrdWVbSBCwyUHbGgNcrw7MorBq3g",
+   "llama_pool": "9299b1ab-2c25-4032-bc90-f6f620373e0b"
+  },
+  {
+   "symbol": "WSOL-ACT",
+   "address": "B4PHSkL6CeZbxVqm1aUPQuVpc5ERFcaZj7u9dhtphmVX",
+   "llama_pool": "804a0c7b-7eb7-4b75-b066-4c568704fefe"
+  },
+  {
+   "symbol": "GIGA-WSOL",
+   "address": "4xxM4cdb6MEsCxM52xvYqkNbzvdeWWsPDZrBcTqVGUar",
+   "llama_pool": "10a72779-843e-4491-a9f6-7bc81e452193"
+  },
+  {
+   "symbol": "WSOL-SWARMS",
+   "address": "HL4KFTfhZZMm7NGefszQxzJ3M6CaDWE7TesyuRuQYmMJ",
+   "llama_pool": "25cb3610-4aae-43dc-8773-fe13bdec9eb2"
+  },
+  {
+   "symbol": "WSOL-GOAT",
+   "address": "9Tb2ohu5P16BpBarqd3N27WnkF51Ukfs8Z1GzzLDxVZW",
+   "llama_pool": "f840ec7e-3d8c-40ea-b761-66515f8f17b9"
+  },
+  {
+   "symbol": "WSOL-FWOG",
+   "address": "AB1eu2L1Jr3nfEft85AuD2zGksUbam1Kr8MR3uM2sjwt",
+   "llama_pool": "f4b95102-0632-4d7f-899c-65b9b941590c"
+  },
+  {
+   "symbol": "PONKE-WSOL",
+   "address": "5uTwG3y3F5cx4YkodgTjWEHDrX5HDKZ5bZZ72x8eQ6zE",
+   "llama_pool": "ac66514d-8133-45a3-b317-2a2ae2ecd82e"
+  },
+  {
+   "symbol": "WSOL-USDT",
+   "address": "7XawhbbxtsRcQA8KTkHT9f9nc6d69UwqCDh6U5EEbEmX",
+   "llama_pool": "cdd04383-21ea-45d1-94d6-295e58100559"
+  },
+  {
+   "symbol": "WSOL-CHILLGUY",
+   "address": "93tjgwff5Ac5ThyMi8C4WejVVQq4tuMeMuYW1LEYZ7bu",
+   "llama_pool": "1e958818-9a22-46b0-8567-12cb34fb4eb1"
+  },
+  {
+   "symbol": "WSOL-AVA",
+   "address": "GjvW8JQSpKG5ogjyD3zozfaeJSShTajS5ZFrexT8L12k",
+   "llama_pool": "4ad29d1d-ff76-48fb-ba0e-a88dfd71f3e0"
+  },
+  {
+   "symbol": "WSOL-AURA",
+   "address": "9ViX1VductEoC2wERTSp2TuDxXPwAf69aeET8ENPJpsN",
+   "llama_pool": "c2f18cd1-e4e6-4ecd-aec5-e078505c69e7"
+  },
+  {
+   "symbol": "GME-WSOL",
+   "address": "9tz6vYKiBDLYx2RnGWC5tESu4pyVE4jD6Tm56352UGte",
+   "llama_pool": "80074ed7-393e-4416-b5c6-e761cf285169"
+  },
+  {
+   "symbol": "WSOL-UFD",
+   "address": "78sBWyimVhLumzZg1bdMD6ogGig8QpmgYZqCXNyMxx4z",
+   "llama_pool": "ce002fb5-1b0e-4a72-af43-a800228e83e8"
+  },
+  {
+   "symbol": "WSOL-BERT",
+   "address": "BmsZE6TkZYskyS1PatPKRyyazGdxWFxdia4BuvLg9AgY",
+   "llama_pool": "56f5337d-13a2-4757-ad4c-8175c03a4052"
+  },
+  {
+   "symbol": "WSOL-DADDY",
+   "address": "zcdAw3jpcqEY8JYVxNVMqs2cU35cyDdy4ot7V8edNhz",
+   "llama_pool": "0bd02d7a-7bf4-4f3b-b1e9-bd8439482418"
+  },
+  {
+   "symbol": "WSOL-NPC",
+   "address": "9yNQyEX5sFG1H2mrBgcEuK3oZi2Wiv7cbaAUGWThCodU",
+   "llama_pool": "bb095f7e-b901-4bf2-afb3-45a9c0182ef1"
+  },
+  {
+   "symbol": "DOG-USDC",
+   "address": "E7AEy7w3pcTk4xWMwpAEx6Pgsmw9PBFe1EGeGSD5fHDQ",
+   "llama_pool": "5002328b-b428-446c-ac12-9846c560219f"
+  },
+  {
+   "symbol": "FARTBOY-WSOL",
+   "address": "DhHVd5s4hqBGnTkFztsK98WGPtYUJjpUCqNnWaNLWb4F",
+   "llama_pool": "ff7c7fa9-5d22-4502-862a-57c3e38cb018"
+  },
+  {
+   "symbol": "TRUNK-USDC",
+   "address": "FjpoqZYkcx9meLKPUTfU62bZonbJejBTbwVjmctzi7er",
+   "llama_pool": "dda3a666-b9ea-4aa6-84b1-63ca7293bd8b"
+  },
+  {
+   "symbol": "POPCAT-USDC",
+   "address": "HBS7a3br8GMMWuqVa7VB3SMFa7xVi1tSFdoF5w4ZZ3kS",
+   "llama_pool": "db3fb94d-dff9-42ce-8ba8-c5ec524e234e"
+  },
+  {
+   "symbol": "WSOL-PWEASE",
+   "address": "9fmdkQipJK2teeUv53BMDXi52uRLbrEvV38K8GBNkiM7",
+   "llama_pool": "b079d173-6ed9-4dc5-845d-96d6301f2a00"
+  },
+  {
+   "symbol": "WSOL-ALON",
+   "address": "Eb9qkfiSzKd185KdWLkZrMrejKEbA2ah2BK7spNmoPej",
+   "llama_pool": "661d9b85-3750-43c9-a109-154daf11dab3"
+  },
+  {
+   "symbol": "BINK-WSOL",
+   "address": "9Ah4ZpVRZdb2SeiLNbavAyLbAq3xXwKg6fmnLRSZ9FTM",
+   "llama_pool": "a7e20f23-98ca-45b7-b2c2-fcc93de05b94"
+  },
+  {
+   "symbol": "WSOL-RETIRE",
+   "address": "6HfaJiUuTXFZEfmdkQSNbvfe6i95Nh2wUVJ5dWMf7gtw",
+   "llama_pool": "70926954-4cfb-41e2-8aff-cbc81532bd7c"
+  },
+  {
+   "symbol": "WSOL-DREAMS",
+   "address": "HMqJNKrVf24mUVgdWC4LjuLxWgMBrGU7HAWLji6hLaJQ",
+   "llama_pool": "6cd9f06a-5abc-482d-9116-26f381fd8917"
+  },
+  {
+   "symbol": "WSOL-JAILSTOOL",
+   "address": "EtcwBb9fT7YYAgpkVz6AG1QZwPJxS79Tg2r7TszYuP72",
+   "llama_pool": "2a3fffb5-0c27-4e2a-9b6f-08bf1b51f26a"
+  },
+  {
+   "symbol": "RAY-ETH",
+   "address": "8iQFhWyceGREsWnLM8NkG9GC8DvZunGZyMzuyUScgkMK",
+   "llama_pool": "61d3125a-9bc7-4562-9d73-316da2dcd15a"
+  },
+  {
+   "symbol": "WSOL-YZY",
+   "address": "969wmqydp6mc8jEL2v7tmpv5PwzWBfqzkmiENne2JBfe",
+   "llama_pool": "df090a01-2c9e-46a5-8588-bce979765dff"
+  },
+  {
+   "symbol": "STSOL-USDC",
+   "address": "6a1CsrpeZubDjEJE9s1CMVheB6HWM5d7m1cj2jkhyXhj",
+   "llama_pool": "7a82f91e-2f28-4b3a-af08-4d553721dd51"
+  },
+  {
+   "symbol": "USA-WSOL",
+   "address": "HKprCtGbnh1j8xeQggzWhhVd3kwDUdphqPqDP8vMay8b",
+   "llama_pool": "1a3e39f9-0d00-4a1d-a63b-6c5b1b536fd9"
+  },
+  {
+   "symbol": "WSOL-WOULD",
+   "address": "Hga48QXtpCgLSTsfysDirPJzq8aoBPjvePUgmXhFGDro",
+   "llama_pool": "71b80fb4-50bc-4e0a-b01f-f60cb59fb859"
+  }
+ ]
+}

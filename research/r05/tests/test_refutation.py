@@ -71,3 +71,18 @@ def test_hl_markouts_detect_adverse_selection():
     assert res["h10s_pes"]["n"] > 100
     assert res["h10s_pes"]["mean_bps"] < 0  # selling into a rising market
     assert res["reopen"] is False
+
+
+def test_d1_report_direct_fee_growth(tmp_path):
+    import json as _json
+    from experiments.d1_report import report
+    d = tmp_path / "2026"
+    d.mkdir()
+    base = 1795800000.0
+    for i, k in enumerate([10.0, 10.0005, 10.0010]):  # +5e-5 per day
+        snap = {"pools": [{"id": "P", "pair": "A-B", "sqrtk_per_lp": k, "tvl": 1.0, "lpAmount": 1.0,
+                           "t_recv": base + i * 86400}]}
+        (d / f"state_{i}.json").write_text(_json.dumps(snap))
+    r = report(tmp_path)
+    assert r["intervals_usable"] == 2 and r["negative_growth_intervals"] == 0
+    assert r["pools"][0]["direct_fee_ann"] == pytest.approx(5e-5 * 365, rel=0.01)
