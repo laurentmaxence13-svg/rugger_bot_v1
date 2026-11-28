@@ -14,7 +14,7 @@
    - valeurs : OUT, START, POOLS_RUN, SEED, ORDERCHECK.
    Ensuite : commit, delta envoyé à R02 et ancrage d'ORDERCHECK.
 4. GO du run par R02, avant START.
-5. Processus 1 : `bash <OUT>/launch_livepaper015_run.sh`, en arrière-plan avec timeout 7 200 000. Le lanceur attend START lui-même et refuse s'il a plus de 60 s de retard.
+5. Processus 1 : `bash <OUT>/launch_livepaper015_run.sh`, en arrière-plan avec timeout 7 200 000. Le lanceur attend START lui-même et refuse s'il a plus de 60 s de retard. **C-1 (R02, 28/11 12:27Z) : le processus 1 est lancé au plus tôt à START − 300 s, jamais plus tôt. L'attente reste ainsi sous 5 min, et l'attente plus les 6 600 s du run restent sous le délai de 7 200 s de la tâche. Un lancement anticipé ferait tuer la tâche sans STOP, ce qui serait un incident et un arrêt définitif.**
 6. Enchaînement : voir le plan de réveils ci-dessous.
 7. Fin du test : STOP end_of_test_86400, ou tout STOP définitif. Puis désactivation du déclencheur, publication (J, L, C, timing, SHA256SUMS des PAGES, interruptions mesurées) et envoi des sha à R02.
 
