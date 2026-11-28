@@ -1,0 +1,4 @@
+plafond_v2  e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68 920 B  source: R02 send_message event 0147129a-7784-48ed-9a72-16a4a07a065d (2026-11-26T13:48:18Z)
+livepaper_v7 31dfed474aa18a6e463bae0bf1e16d465a8edc0da8ad15362d1019f51ba66050 2071 B source: R02 send_message event 9620eaac-bd54-44c2-be4d-78ffcbf54814 (2026-11-26T13:50:17Z)
+signed by reference: owner GO event 09e874e3-639e-433f-b8e8-3fc3fe3f4bc7 (2026-11-26T16:23:47Z, R03 session); R02 decision 2026-11-28T11:06Z
+UTF-8, no trailing newline, U+0027 apostrophes. Nothing inscribed, nothing armed.

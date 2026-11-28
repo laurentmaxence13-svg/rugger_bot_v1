@@ -1,0 +1,30 @@
+GaPTvX {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_200.json.gz'}
+6CQSpR {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+7SJ5UK {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+5zk4vh {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+CXgcuE {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+FAn5gz {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+A3URwh {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+4D17GN {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+CqvMZm {'config': 'D4FPEr', 'creator_fee_on': 1, 'enable_creator_fee': 1, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+AsVSzv {'config': 'CRRS5i', 'creator_fee_on': 1, 'enable_creator_fee': 1, 'status': 0, 'file': 'gpa_pools_CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ_168.json.gz'}
+AEZjoU {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+Gms3Ma {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+G8kgi7 {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+GdxFyc {'config': 'D4FPEr', 'creator_fee_on': 0, 'enable_creator_fee': 0, 'status': 0, 'file': 'gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz'}
+{
+"files": {
+"gpa_pools_627Jx6eN61TrdgMFSQt1QxvAmYWHXmzVA8M9FsKFtdkX_168.json.gz": "02ff331830f07656a71bfdedc1f2800101516b080406e83bb24b3de8cf49e571",
+"gpa_pools_627Jx6eN61TrdgMFSQt1QxvAmYWHXmzVA8M9FsKFtdkX_200.json.gz": "10df67fc3e69f47e5ca96291a0967a1c57c202e8db2933c98f2f8d30c18f5bc3",
+"gpa_pools_CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ_168.json.gz": "dc17b6403c90a5befb5b74d8db5b032eb9189f32879a36d304af99ba04a77136",
+"gpa_pools_CRRS5ieQmBrZjWhcj99JuGrT5tyuWDaGAXLXLFjbAtjQ_200.json.gz": "2ad6808b8f36427b4995d7ba577190c46f2ab96e30430b9f31b4e6e66e661957",
+"gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_168.json.gz": "adc5ceda8cf0035e1d04b11f0875274645f3cc667f571606bb8bcb6756cc339c",
+"gpa_pools_D4FPEruKEHrG5TenZ2mpDGEfu1iUvTiqBxvpU8HLBvC2_200.json.gz": "fb8805527491a241b94b466ba72a7be946c83d3cd894e695e8de0b9561b4d0ac",
+"gpa_pools_EUZHCdd8H7nueb2wLpxUqyuemdbe8TUxfCWcxVfARvgw_168.json.gz": "02e5e3a4cbe21cbc87e98b7b1e70f00a3e03975f0de6aabaf9d2791d79cee55a",
+"gpa_pools_EUZHCdd8H7nueb2wLpxUqyuemdbe8TUxfCWcxVfARvgw_200.json.gz": "21dd495abb5077098ad5d980b229b6978ccb2bdca14c5e1de66eddbfb425901c",
+"gpa_pools_J8i7womMuz77H2TayV9bQ1FoxnD7nSDkaBNf5vjoBHjU_168.json.gz": "7a4a8549bb86cd5fdee7e2307e9e6c19208160846c790d3a0aec845630b68e47",
+"gpa_pools_J8i7womMuz77H2TayV9bQ1FoxnD7nSDkaBNf5vjoBHjU_200.json.gz": "3edab813ef2f4370b6d9f0f02d8da55c716086114ef53b82383647e3d367b264",
+"gpa_pools_LNmHRmMvk9kmtepfTSr98kqGLThd61kH1DPWf2cVRaC_168.json.gz": "ab0b9e018dff0a7a53525b535f93919ab33565864d0261f439a67411248e05c0",
+"gpa_pools_LNmHRmMvk9kmtepfTSr98kqGLThd61kH1DPWf2cVRaC_200.json.gz": "46315c8890d74322d1bef8353f24d09dffc2a13a660ede0a67da17ec79de653a"
+}
+}

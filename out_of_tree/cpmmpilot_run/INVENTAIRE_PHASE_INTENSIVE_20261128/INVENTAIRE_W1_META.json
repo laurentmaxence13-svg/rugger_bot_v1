@@ -1,0 +1,862 @@
+{
+ "SHA256SUMS_PRELIMINAIRE.json": {
+  "expected_prefix": "7e9e7cdb",
+  "ok": true,
+  "sha256": "7e9e7cdb7d9b4c4a4f3c70f13b4542b9773f84694f99debadf3b92d0bf823777"
+ },
+ "anchor": {
+  "expected": "ebe1959dc57ca6b6a1442aafb808b5ac8cbf7281f3508ca08cd42cc40ba3c41e",
+  "file": "pools/MANIFEST.json",
+  "listed_in_SHA256SUMS_PRELIMINAIRE": true,
+  "ok": true,
+  "sha256": "ebe1959dc57ca6b6a1442aafb808b5ac8cbf7281f3508ca08cd42cc40ba3c41e"
+ },
+ "collection_end": {
+  "collection_end_slot": 469295857,
+  "collection_end_unix": 1794652423,
+  "per_pool_file": "INVENTAIRE_W1_COLLECTION_END.json",
+  "related_not_horizon": {
+   "entry_cutoff_gap_slots": 4513,
+   "entry_cutoff_slot": 469291344,
+   "note": "entry cutoff = slot_max - gap, a research entry cutoff, not the collection end"
+  },
+  "scope": "global (identical for all 2273 pools)",
+  "slot_source_fields": [
+   "pools/MANIFEST.json: source.window.slot_max",
+   "pools/MANIFEST.json: window_slot_max"
+  ],
+  "unix_derivation": "the export records no blockTime for slot_max; collection_end_unix = blockTime of the highest-slot signature present in the whole export (slot 469295813, pool 3fBheQVUiY8Za1RZX8pPBEGZbQod4VUsV5JZ9wG2j6Kg), i.e. 44 slots below slot_max: a lower bound of the true horizon, which lies at most ~44 slots (~18s at ~0.4 s/slot) later",
+  "why_global": "MANIFEST.contents: per-pool archives rebuilt from ONE LaunchLab program-window backfill (source.window.address=LaunchLab program, slot_min..slot_max); every pool file has signatures_complete=true; no per-pool cursor/until field exists in pool files (fields: account, pool, signatures, signatures_complete, transactions, version). Per-pool last_slot (MANIFEST) is the last event, not the horizon."
+ },
+ "counts": {
+  "manifest_count_disagree": 0,
+  "n_failed_bodies": 0,
+  "n_failed_signatures": 185861,
+  "n_signatures": 322146,
+  "n_swap_transactions": 125624,
+  "n_swaps_log_instructions": 126093,
+  "n_swaps_tradeevent": 126089,
+  "n_transaction_bodies": 136285,
+  "pools": 2273,
+  "pools_base_mint_nd": 0,
+  "pools_log_vs_event_swap_count_differs": 17,
+  "pools_signatures_complete_false": 0,
+  "pools_with_chain_breaks": 0,
+  "pools_with_creation": 2273,
+  "pools_with_migration": 23,
+  "pools_without_swaps": 157,
+  "success_signatures_without_body": 0
+ },
+ "dataset": "W1 LaunchLab exploratory export (PRELIMINAIRE, not the official verdict)",
+ "excluded_pools": {
+  "EXCLUSIONS.json": {
+   "excluded": 0,
+   "pools": 2273
+  },
+  "by_this_inventory": [],
+  "manifest_skipped_not_in_export": {
+   "by_reason": {
+    "creation_not_in_window": 34140,
+    "quote_not_sol": 740
+   },
+   "count": 34880
+  }
+ },
+ "field_definitions": {
+  "base_mint": "non-WSOL mint of token accounts owned by LaunchLab authority WLHv2UAZm6z4KyaaELi5pjdbJh6RESMva1Rnn8pJVVh in postTokenBalances (most frequent); pool account is null in the export",
+  "collection_end_unix": "see collection_end",
+  "coverage_gaps": "recorded: signatures_complete flag per pool file (only gap-related field in the data); derived: success signatures without body, bodies not in the signature list, breaks of the TradeEvent reserve chain (after != next before, ordered by slot,transactionIndex,event index); explicit gap intervals not recorded",
+  "creation": "first tx whose LaunchLab frame logs Initialize|InitializeV2|InitializeWithToken2022 and contains the pool",
+  "first/last_blockTime_signatures|bodies": "min/max blockTime over signatures[] / over transactions{}",
+  "migration_to_cpswap": "first tx with LaunchLab MigrateToCpswap instruction containing the pool",
+  "n_failed_signatures": "signatures[] entries with err != null; transaction bodies exist only for successful signatures",
+  "reserves_curve_tradeevent": "real_base/real_quote before first swap and after last swap + virtual_base/virtual_quote/total_base_sell from the TradeEvent payload (atomic units)",
+  "reserves_vault_token_balances": "pre/postTokenBalances of the pool vaults (authority-owned) at the first/last successful tx"
+ },
+ "file_layout": {
+  "dirs": {
+   "checkpoint": "29550 .pkl",
+   "lecture": 2,
+   "ledger": 2,
+   "ledger_resume": "2347 .pkl",
+   "quarantine": "3 dated subdirs",
+   "run/bundles": "10 files",
+   "selfcheck": 5
+  },
+  "pools/<pool>.json.gz": "one gzip JSON per pool (2273): {account(null by design), pool, signatures[], signatures_complete, transactions{signature: getTransaction result json}, version}",
+  "pools/MANIFEST.json": "manifest (schema rugger-backfill-pool-export-v1, version 2): fields listed in manifest_top_level_fields; pools[] entries listed in manifest_pool_entry_fields",
+  "top level": "EXCLUSIONS.json, EXPLORATORY_STATE.json, LEDGER_PARALLELE.json, SELFCHECK.json, SHA256SUMS_PRELIMINAIRE.json (outputs map of 2294 paths + digests), registry_sensitivity.jsonl, registry_w1.jsonl, sol_usd_series.json.gz(+decoding)"
+ },
+ "manifest_pool_entry_fields": [
+  "active_near_window_end",
+  "file",
+  "first_slot",
+  "last_slot",
+  "pool",
+  "quote_mint",
+  "sha256",
+  "signatures",
+  "transactions"
+ ],
+ "manifest_schema": "rugger-backfill-pool-export-v1",
+ "manifest_skipped_by_reason_prefix": {
+  "creation_not_in_window": 34140,
+  "quote_not_sol": 740
+ },
+ "manifest_skipped_pools": 34880,
+ "manifest_source_window": {
+  "address": "LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj",
+  "slot_max": 469295857,
+  "slot_min": 467275745
+ },
+ "manifest_top_level_fields": [
+  "collection_budget",
+  "collector_code",
+  "contents",
+  "entry_cutoff_gap_slots",
+  "entry_cutoff_slot",
+  "pools",
+  "schema",
+  "skipped",
+  "sol_usd_series",
+  "source",
+  "version",
+  "window_slot_max"
+ ],
+ "paperstream_and_reserve_reconstruction": {
+  "paperstream_found": false,
+  "reserve_reconstruction_code": {
+   "cli": "no dedicated CLI reconstructs/dumps reserves. tools/backfill_launchlab_window.py (bot/market/backfill_cli.py) has plan|run|verify|export|sample; \"export\" builds these per-pool archives (python -B tools/backfill_launchlab_window.py export --out <run> --pools-dir <dir>), \"verify --out <dir>\" checks an archive offline; neither outputs reserves. Not run.",
+   "decoder": "/home/user/rugger_bot_v1/.r03wt/bot/market/launchlab_events.py: extract_trade_events(tx) -> TradeEvent (real_base/quote before/after, virtual reserves), check_trade() exact curve check",
+   "note": "code lives in the .r03wt worktree (also listed in MANIFEST collector_code modules); main tree bot/ has no bot/market",
+   "timeline": "/home/user/rugger_bot_v1/.r03wt/bot/market/pool_timeline.py: build_timeline(pool, events) -> PoolTimeline (orders events by reserve chain, records Gap)",
+   "wrapper": "/home/user/rugger_bot_v1/.r03wt/bot/market/collector.py: summarize(archive) (PoolArchive -> timeline + quality summary); consumer bot/market/replay.py replay(timeline, ...)"
+  },
+  "search": "case-insensitive \"paperstream\" over 940 code files (*.py,*.sh,*.ps1,*.bat,*.js,*.ts,*.toml,*.cfg,*.ini,Makefile) under /home/user/rugger_bot_v1 (forbidden paths pruned), file contents and file names"
+ },
+ "pool_record_schema": {
+  "account": "NoneType",
+  "pool": "str",
+  "signatures": [
+   {
+    "blockTime": "int",
+    "confirmationStatus": "str",
+    "err": "NoneType",
+    "memo": "NoneType",
+    "signature": "str",
+    "slot": "int",
+    "transactionIndex": "int"
+   }
+  ],
+  "signatures_complete": "bool",
+  "transactions": {
+   "327JWqChVi4EZnjdvRTexCPgjbaAqLroaHgTuwf9QDW9E94gLNqHgt2MuoNrkSjYs1pHGS7f3hKNxcpwhystYnLb": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "addressTableLookups": [],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [
+         "int"
+        ],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "int"
+   },
+   "3d9rjm1H246QMzFDotXT4bzfnDzYDRxuCQu1MX5rNeMQKWmkyVHdLvJL7XgrG5LjyqGtU9YyahtFDRq6kiU4YtdJ": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "str"
+   },
+   "5TXWep9CJVUky9jeBzJWKS9C1Y1iyf53evt2r6z9Yj21SzKfHYyU9mpXt7PdpNwjUTBiMoT42YWHetMEiLBCVytC": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "str"
+   },
+   "5VnQrYsd69L9UbqyVVcGi7vm7YbkMjiyMZ1VkjNkDrVsGaWf1KApnkAREPZhDArsbjq34XFwkbrJUhqyWJGYomGn": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "addressTableLookups": [],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [
+         "int"
+        ],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "int"
+   },
+   "5nA8p3HciFLnmhPVAAydjz7zWHBcJ6nSYeUhd979scaTHya3R6cq6ZNfVggJNL9XD3wKBfK7vPcadeLCRUdB6MjJ": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "addressTableLookups": [],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [
+         "int"
+        ],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "int"
+   },
+   "66FmpB9PgRxEch3SByWFXW6Ft3NCBbw5uMUNBAjcAXKABFFjsRrsbuaC5Gdey527cgbJB4nREZesNJx1iKBM3ev3": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "addressTableLookups": [],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [
+         "int"
+        ],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "int"
+   },
+   "dKHtFkR7V8WuXyJoSYxNTMcyFhQUe7a63UCJKUjveT8rBeFjDED8gDZiK8NLe6fEjif2F4gV8AddgFzPhB47wcY": {
+    "blockTime": "int",
+    "meta": {
+     "computeUnitsConsumed": "int",
+     "costUnits": "int",
+     "err": "NoneType",
+     "fee": "int",
+     "innerInstructions": [
+      {
+       "index": "int",
+       "instructions": [
+        {
+         "accounts": [
+          "int"
+         ],
+         "data": "str",
+         "programIdIndex": "int",
+         "stackHeight": "int"
+        }
+       ]
+      }
+     ],
+     "loadedAddresses": {
+      "readonly": [],
+      "writable": []
+     },
+     "logMessages": [
+      "str"
+     ],
+     "postBalances": [
+      "int"
+     ],
+     "postTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "preBalances": [
+      "int"
+     ],
+     "preTokenBalances": [
+      {
+       "accountIndex": "int",
+       "mint": "str",
+       "owner": "str",
+       "programId": "str",
+       "uiTokenAmount": {
+        "amount": "str",
+        "decimals": "int",
+        "uiAmount": "float",
+        "uiAmountString": "str"
+       }
+      }
+     ],
+     "rewards": [],
+     "status": {
+      "Ok": "NoneType"
+     }
+    },
+    "slot": "int",
+    "transaction": {
+     "message": {
+      "accountKeys": [
+       "str"
+      ],
+      "addressTableLookups": [],
+      "header": {
+       "numReadonlySignedAccounts": "int",
+       "numReadonlyUnsignedAccounts": "int",
+       "numRequiredSignatures": "int"
+      },
+      "instructions": [
+       {
+        "accounts": [
+         "int"
+        ],
+        "data": "str",
+        "programIdIndex": "int",
+        "stackHeight": "int"
+       }
+      ],
+      "recentBlockhash": "str"
+     },
+     "signatures": [
+      "str"
+     ]
+    },
+    "transactionIndex": "int",
+    "version": "int"
+   }
+  },
+  "version": "int"
+ },
+ "root": "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/w1x_out/PRELIMINAIRE_PAS_LE_VERDICT_OFFICIEL_W1/",
+ "sources_not_opened": [
+  "lecture/, ledger/, ledger_resume/*.pkl, checkpoint/*.pkl, run/bundles/, quarantine/, selfcheck/, registry_*.jsonl, sol_usd_series.json.gz (results/price-bearing or pickles; not needed for inventory)"
+ ],
+ "sources_used": {
+  "SHA256SUMS_PRELIMINAIRE.json": "7e9e7cdb7d9b4c4a4f3c70f13b4542b9773f84694f99debadf3b92d0bf823777",
+  "pools/<pool>.json.gz (2273 files, sha per MANIFEST)": "see verification_manifest_files",
+  "pools/MANIFEST.json": "ebe1959dc57ca6b6a1442aafb808b5ac8cbf7281f3508ca08cd42cc40ba3c41e"
+ },
+ "swap_rule": "A swap = one Raydium LaunchLab TradeEvent emitted via Anchor emit_cpi: an inner instruction whose program is LanMV9sAd7wArD4vJFi2qDdfnVhFxYSUg6eADduJ3uj and whose base58 data starts with EVENT_IX_TAG e445a52e51cb9a1d followed by sha256(\"event:TradeEvent\")[:8], payload length 147, and whose pool field (bytes 8..40) equals the pool; only successful transaction bodies (meta.err null) containing the pool in accountKeys. Side from byte 144 (0=buy,1=sell). Cross-check n_swaps_log_instructions: count of \"Program log: Instruction: BuyExactIn|BuyExactOut|SellExactIn|SellExactOut\" emitted while LaunchLab is the current invoke-stack frame (may include other pools in the same tx).",
+ "verification_manifest_files": {
+  "SHA256SUMS_PRELIMINAIRE_cross_check_disagree": [],
+  "listed": 2273,
+  "mismatch_list": [],
+  "mismatched": 0,
+  "missing": 0,
+  "missing_list": [],
+  "ok": 2273
+ }
+}

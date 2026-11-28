@@ -1,0 +1,36 @@
+{
+ "authorization_sha256": "e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1",
+ "budget": {
+  "by_method": {
+   "getMultipleAccounts": 1522,
+   "getProgramAccounts": 130,
+   "getSlot": 1
+  },
+  "credits": 1653,
+  "max_credits": 4713,
+  "requests": 1536,
+  "stage": "u2"
+ },
+ "cap_this_run": 4713,
+ "counts": {
+  "below_100_sol": 151847,
+  "configs_seen": 6,
+  "configs_u1": 6,
+  "excluded_anchored_lists": 0,
+  "excluded_lp_zero": 0,
+  "excluded_status": 0,
+  "excluded_vault_pda": 0,
+  "list_l": 259,
+  "pools_seen": 152106
+ },
+ "exclude_n": 0,
+ "exclude_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+ "list_l_file_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "min_interval_s": 0.2,
+ "prior_credits": 287,
+ "schema": "cpmmpilot-u2-v0.1",
+ "sha_l": "110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd",
+ "t0_slot": 473309024,
+ "t0_time": 1795515686,
+ "verdict": "LIST_L_AWAITS_R02_ANCHOR"
+}

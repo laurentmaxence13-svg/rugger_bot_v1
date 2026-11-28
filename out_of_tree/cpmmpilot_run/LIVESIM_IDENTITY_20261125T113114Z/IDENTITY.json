@@ -1,0 +1,63 @@
+{
+ "check": "n1_universe == n1rot 0.2 output",
+ "differences": [],
+ "expected_list_sha256": "c72bd586c0de5c8441c321707a2df2019d8541bc1b0df9e24c4616ee3832a9da",
+ "frozen_code": {
+  "manifests": {
+   "cpmmcost": {
+    "files_checked": 9,
+    "manifest": "MANIFEST_cpmmcost_v0_3.txt",
+    "manifest_sha256": "a0bd2adbfaeaa5b14b79c200b066f9a14bb1408c57469e319d6e1db9b92de547"
+   },
+   "cpmmgen2": {
+    "files_checked": 15,
+    "manifest": "MANIFEST_cpmmgen2_v0_2.txt",
+    "manifest_sha256": "70ef9a9b46145436b160ce2907c433df9532f39942124a81ce11a7a3e314fcf5"
+   },
+   "cpmmpilot": {
+    "files_checked": 18,
+    "manifest": "MANIFEST_cpmmpilot_v0_2_8.txt",
+    "manifest_sha256": "7251d4fe27355d066d33e08f0c9e42dffa04f890646cc50de07e2a0acc442058"
+   },
+   "cpmmprereg": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_cpmmprereg_v0_2.txt",
+    "manifest_sha256": "9d8ebde62b4a05ce64a86f526d5f729d97f49bcdfee0589a0b5a46899089e5bf"
+   },
+   "g1ind": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g1ind_v0_6_1.txt",
+    "manifest_sha256": "12a2e66170918aee1bb859ec4c6639c263ad3587f491c9143d024bb816ae117a"
+   },
+   "g23run": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_g23run_v0_1.txt",
+    "manifest_sha256": "3e3cb1053b0b7a792e480460e53b14f771e1d9fdd13be81e17daf02b4054747a"
+   },
+   "lpcost": {
+    "files_checked": 12,
+    "manifest": "MANIFEST_lpcost_v0_2.txt",
+    "manifest_sha256": "ee9c144ca85f3de9489c60e0c74edf8ee685ed1e851d8d74aa392863313849eb"
+   },
+   "n1rot": {
+    "files_checked": 7,
+    "manifest": "MANIFEST_n1rot_v0_2.txt",
+    "manifest_sha256": "2a17791d1098c6a4b1ec155cb5dd8dcfcf067bd445e4467e2ce3a0020cc53fba"
+   }
+  },
+  "trees": {
+   "cpmmx": {
+    "git_tree": "e103437142c74830e6ddc293d84529501f6b1162"
+   }
+  }
+ },
+ "identical": true,
+ "kept": [
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A"
+ ],
+ "list_sha256": "c72bd586c0de5c8441c321707a2df2019d8541bc1b0df9e24c4616ee3832a9da",
+ "n1rot_result_sha256": "6b9b02a949c2dc5859332ac2fae814c17f491a21c3fa173682a8122dc26171c3",
+ "schema": "livesim-v0.3"
+}

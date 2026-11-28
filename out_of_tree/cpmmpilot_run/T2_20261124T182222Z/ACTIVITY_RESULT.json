@@ -1,0 +1,30 @@
+{
+ "budget": {
+  "by_method": {
+   "getSignaturesForAddress": 186
+  },
+  "credits": 186,
+  "max_credits": 1470,
+  "requests": 186,
+  "stage": "t2"
+ },
+ "driver_sha256": "6b51b6188f53569185a2cfbdd1c70081776b17603ee8eeaeeee58c1c5c5fb9e3",
+ "error": "IncompleteRead",
+ "error_text": null,
+ "groups": {
+  "invalid": 20,
+  "untested": 215,
+  "valid": 24
+ },
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "schema": "t2-activity-v1",
+ "sha_l": "110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd",
+ "t0_prime": 1795544543,
+ "tag": "IncompleteRead(226640 bytes read)",
+ "u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963",
+ "verdict_run": "STOP",
+ "window": [
+  1795458143,
+  1795544543
+ ]
+}

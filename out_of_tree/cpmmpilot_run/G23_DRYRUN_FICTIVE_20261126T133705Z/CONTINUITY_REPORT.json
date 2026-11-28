@@ -1,0 +1,112 @@
+{
+ "fictive_window": [
+  1794910886,
+  1795515686
+ ],
+ "note": "FICTIVE window before T0, A2r pre-T0 pages, NOT the 06/12 data",
+ "pools": {
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "breaks_after_recon": 0,
+   "breaks_before_recon": 77,
+   "duplicates": 0,
+   "g0_after_recon": {
+    "admitted": true,
+    "reasons": []
+   },
+   "ordered_by_slot": true,
+   "outside_window": 0,
+   "page_index_contiguous": true,
+   "pages": 141,
+   "pagination_chain_ok": true,
+   "recon": {
+    "kept": {},
+    "rebuilt": 79,
+    "rebuilt_swaps": 79
+   },
+   "state_done": true,
+   "state_pages": 141,
+   "state_tx": 13963,
+   "swaps": 37690,
+   "tx": 13963,
+   "undecoded": 79
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "breaks_after_recon": 0,
+   "breaks_before_recon": 1142,
+   "duplicates": 0,
+   "g0_after_recon": {
+    "admitted": true,
+    "reasons": []
+   },
+   "ordered_by_slot": true,
+   "outside_window": 0,
+   "page_index_contiguous": true,
+   "pages": 1055,
+   "pagination_chain_ok": true,
+   "recon": {
+    "kept": {},
+    "rebuilt": 1282,
+    "rebuilt_swaps": 1285
+   },
+   "state_done": true,
+   "state_pages": 1055,
+   "state_tx": 105364,
+   "swaps": 37396,
+   "tx": 105364,
+   "undecoded": 1282
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "breaks_after_recon": 0,
+   "breaks_before_recon": 20,
+   "duplicates": 0,
+   "g0_after_recon": {
+    "admitted": true,
+    "reasons": []
+   },
+   "ordered_by_slot": true,
+   "outside_window": 0,
+   "page_index_contiguous": true,
+   "pages": 35,
+   "pagination_chain_ok": true,
+   "recon": {
+    "kept": {},
+    "rebuilt": 24,
+    "rebuilt_swaps": 24
+   },
+   "state_done": true,
+   "state_pages": 35,
+   "state_tx": 3375,
+   "swaps": 8157,
+   "tx": 3375,
+   "undecoded": 24
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "breaks_after_recon": 0,
+   "breaks_before_recon": 0,
+   "duplicates": 0,
+   "g0_after_recon": {
+    "admitted": false,
+    "reasons": [
+     "token_transfer_fee"
+    ]
+   },
+   "ordered_by_slot": true,
+   "outside_window": 0,
+   "page_index_contiguous": true,
+   "pages": 10,
+   "pagination_chain_ok": true,
+   "recon": {
+    "kept": {},
+    "rebuilt": 0,
+    "rebuilt_swaps": 0
+   },
+   "state_done": true,
+   "state_pages": 10,
+   "state_tx": 805,
+   "swaps": 804,
+   "tx": 805,
+   "undecoded": 0
+  }
+ },
+ "schema": "g23-dryrun-continuity-v1"
+}

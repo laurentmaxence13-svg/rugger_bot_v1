@@ -1,0 +1,5 @@
+start 2026-11-24T10:33:56Z out=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/pilot_run/STEP1A_20261124T103356Z
+manifest_check_rc=0 bad=0 manifest_sha=7e57b7e2c8a6b7e3f11cf301ad7a9aeea65af85654dc8f3ae7018d2ba7f61ccc
+driver_sha=a602c550dce55496401c3b30932c07d738594a4f2847f2361238c02ec77a1a23 u2_sha=3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963
+{"u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963", "t0_time": 1795515686, "t0_slot": 473309024, "r_hat": 1310.375, "point2": {"r_hat": 1310.375, "need": 25559.2, "limit": 32900, "stop": false}, "d_max_days": 3.334191866196063, "count_file_sha256": "c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5", "verdict": "POINT2_PASSED_AWAIT_R02_ANCHOR", "budget": {"stage": "step1", "requests": 53, "credits": 53, "max_credits": 49000, "by_method": {"getSignaturesForAddress": 53}}}
+rc=0 end 2026-11-24T10:34:08Z

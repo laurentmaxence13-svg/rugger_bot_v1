@@ -1,0 +1,19 @@
+{
+ "budget": {
+  "by_method": {
+   "getSignaturesForAddress": 53,
+   "getTransactionsForAddress": 10
+  },
+  "credits": 63,
+  "max_credits": 49000,
+  "requests": 54,
+  "stage": "step1"
+ },
+ "count_sha256": "c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5",
+ "credits_before": 53,
+ "error": "MethodRefused",
+ "t0_time": 1795515686,
+ "tag": "method_refused:-32015:61294f25e789",
+ "u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963",
+ "verdict": "STOP"
+}

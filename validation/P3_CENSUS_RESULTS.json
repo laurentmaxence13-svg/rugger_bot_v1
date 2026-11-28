@@ -1,0 +1,93 @@
+{
+  "base_commit": "d9b950e",
+  "census_evidence_archive": null,
+  "census_measurements": null,
+  "economic_verdict": "not_part_of_census",
+  "freeze_commit": "766207547956059ea5a6b90cde24933f320bfa8e",
+  "market_network_requests": 0,
+  "modules_untouched": [
+    "decide",
+    "tp_sl",
+    "position_sizing",
+    "paper_ledger",
+    "thresholds",
+    "strategy"
+  ],
+  "owner_quota": "TO_BE_FILLED_template_refused",
+  "protocol_id": "launchlab-baseline-census-001",
+  "protocol_registered_at_ms": 1793732458773,
+  "protocol_sha256": "b7d1c842f3cae2cf8e6570e286eaa27a67a8bd38edab32a1d2ba9d90d31ff2bb",
+  "real_orders_enabled": false,
+  "run_report": null,
+  "run_status": "not_run_owner_quota_pending",
+  "schema": "p3-census-validation-v1",
+  "tests": {
+    "baseline_before_change": {
+      "python_3_12_3": {
+        "exit_code": 0,
+        "passed": 1358,
+        "skipped": 1,
+        "subtests_passed": 242
+      },
+      "python_3_13_18": {
+        "errors": 1,
+        "failed": 5,
+        "passed": 1352,
+        "skipped": 1,
+        "subtests_passed": 242
+      }
+    },
+    "command": "python -B tests/p16h_isolated_runner.py -q tests --ignore=tests/tests -p no:cacheprovider -rfEs -W error",
+    "dependencies": "scratch venv outside repo: requirements.txt, requirements-dashboard.txt, pytest; none added to project",
+    "new_census_tests": 40,
+    "python_3_12_3": {
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 1398,
+      "skipped": 1,
+      "stderr_empty": true,
+      "stdout_sha256": "accede8f6b6503ab1eb658e0ee371b7b5ab3cd0cc18dfb834f99fd1e8f822170",
+      "subtests_passed": 242,
+      "warnings_as_errors": true
+    },
+    "python_3_13_18": {
+      "exit_code": 1,
+      "failed": 6,
+      "failure_cause": "ResourceWarning unclosed sqlite3 connection raised at GC time",
+      "failures": [
+        "tests/test_legacy_validation_scope.py::test_profitable_legacy_routes_are_excluded_even_with_enough_test_trades[False-creator_backtest_v25-run_v25_decision_engine]",
+        "tests/test_multiple_launches.py::MultipleLaunchRecoveryTests::test_conflict_exhausts_budget_without_cache_candidates_or_done",
+        "tests/test_p3_qualification.py::test_future_capture_retains_selection_inputs_signature_page_and_quote_bodies",
+        "tests/test_paper_entry_price_guard.py::PaperEntryPriceGuardTests::test_existing_position_closes_at_zero_for_both_shapes",
+        "tests/test_paper_quote_consistency.py::ConsistencyTests::test_engine_conflict_never_builds_features_or_decides",
+        "tests/test_research_rpc.py::ResearchRPCTests::test_null_transaction_retries_next_round"
+      ],
+      "forced_gc_attribution": {
+        "all_tests_passed_otherwise": 1398,
+        "leaking_census_tests": 0,
+        "leaking_pre_existing_tests": [
+          "tests/test_dashboard_evidence.py::DashboardEvidenceTest::test_local_paper_engine_db_real_quote_history_readonly",
+          "tests/test_mint_audit.py::AuditTests::test_missing_price_creates_audited_safe_rejection",
+          "tests/test_mint_audit.py::AuditTests::test_real_quote_creates_full_score_audit",
+          "tests/test_p3_evidence.py::test_legacy_database_and_existing_destination_are_never_changed",
+          "tests/test_paper_engine.py::PaperEngineTests::test_collect_once_records_quotes_without_model",
+          "tests/test_paper_engine.py::PaperEngineTests::test_report_is_explicitly_paper_only",
+          "tests/test_paper_engine.py::PaperEngineTests::test_shadow_baseline_creates_only_diagnostic_paper_trade",
+          "tests/test_paper_pipeline.py::PaperPipelineTests::test_low_liquidity_reaches_decision_and_reject",
+          "tests/test_paper_pipeline.py::PaperPipelineTests::test_unindexed_mint_gets_explicit_status",
+          "tests/test_research_pipeline.py::PipelineTests::test_paper_dynamic_take_profit_and_stop_loss",
+          "tests/test_research_pipeline.py::PipelineTests::test_paper_entry_limits",
+          "tests/test_research_pipeline.py::PipelineTests::test_paper_no_model_and_idempotent_fill"
+        ],
+        "method": "scratch-only conftest gc.collect() after each test"
+      },
+      "passed": 1392,
+      "skipped": 1,
+      "stderr_empty": true,
+      "stdout_sha256": "5fd79730b5d9a8a268288119f5c234c4a72830d174092fe51f0268094b5a4790",
+      "subtests_passed": 242,
+      "warnings_as_errors": true
+    },
+    "source": "git archive of freeze_commit; no .git/.env/db; sockets and dotenv blocked by harness"
+  }
+}

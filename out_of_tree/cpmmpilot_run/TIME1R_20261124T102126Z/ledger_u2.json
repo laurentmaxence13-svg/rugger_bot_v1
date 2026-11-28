@@ -1,0 +1,20 @@
+{
+ "by_method": {
+  "getMultipleAccounts": 1522,
+  "getProgramAccounts": 130,
+  "getSlot": 1
+ },
+ "costs": {
+  "getMultipleAccounts": 1,
+  "getProgramAccounts": 10,
+  "getSignaturesForAddress": 1,
+  "getSlot": 1,
+  "getTransaction": 1,
+  "getTransactionsForAddress": 10
+ },
+ "credits": 1653,
+ "max_credits": 4713,
+ "requests": 1536,
+ "schema": "cpmmpilot-spend-v1",
+ "stage": "u2"
+}

@@ -1,0 +1,154 @@
+{
+ "per_pool": {
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 1600
+  },
+  "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 5
+  },
+  "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 1,
+   "swaps": 1
+  },
+  "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 1
+  },
+  "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 1,
+   "swaps": 17
+  },
+  "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53": {
+   "b1": 1,
+   "rcp1": 2,
+   "skipped": 53,
+   "swaps": 724
+  },
+  "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 2
+  },
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 79,
+   "swaps": 37690
+  },
+  "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 7,
+   "swaps": 84
+  },
+  "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 20,
+   "swaps": 446
+  },
+  "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 4,
+   "swaps": 29
+  },
+  "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 50,
+   "swaps": 83
+  },
+  "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 0
+  },
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh": {
+   "b1": 57,
+   "rcp1": 59,
+   "skipped": 1282,
+   "swaps": 37396
+  },
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A": {
+   "b1": 1,
+   "rcp1": 0,
+   "skipped": 24,
+   "swaps": 8157
+  },
+  "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 20,
+   "swaps": 202
+  },
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 804
+  },
+  "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn": {
+   "b1": 0,
+   "rcp1": 0,
+   "skipped": 0,
+   "swaps": 8
+  }
+ },
+ "total": {
+  "b1": 59,
+  "rcp1": 61,
+  "skipped": 1541,
+  "swaps": 87249
+ }
+}

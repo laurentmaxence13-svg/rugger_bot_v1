@@ -1,0 +1,49 @@
+{
+ "budget": {
+  "by_method": {
+   "getSignaturesForAddress": 53,
+   "getTransactionsForAddress": 13270
+  },
+  "credits": 13323,
+  "max_credits": 49000,
+  "requests": 1380,
+  "stage": "step1"
+ },
+ "count_sha256": "c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5",
+ "credits_before": 63,
+ "d_rule": {
+  "d_155": 18,
+  "d_days": 3,
+  "d_max_days": 3.334191866196063,
+  "expected_entries": 26,
+  "power_stop": "UNDERPOWERED_DECLARED_OWNER_DECIDES",
+  "rule": "R02 e294655a: D = min(max(D_155, 7), floor(D_max), 60)",
+  "t_rcp1": 61
+ },
+ "t0_time": 1795515686,
+ "triggers": {
+  "b1": 59,
+  "rcp1": 61,
+  "skipped": 1541
+ },
+ "tx_format": {
+  "skipped_by_version_and_reason": {
+   "0|log_truncated": 90,
+   "1|log_truncated": 1451
+  },
+  "transactions_by_version": {
+   "0": 34467,
+   "1": 84164,
+   "legacy": 10538
+  }
+ },
+ "u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963",
+ "verdict": "STOP_UNDERPOWERED_NO_TRIAL_OWNER_REFERRED",
+ "window_budget": {
+  "hard_stop": 49000,
+  "margin": 29994,
+  "pre_credits": 13260,
+  "projected_credits": 19006,
+  "stop": false
+ }
+}

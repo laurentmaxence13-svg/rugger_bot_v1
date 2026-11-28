@@ -1,0 +1,2 @@
+manifest=2a17791d u2=3ca0260a prepages_sums=8fb3cac4
+6b9b02a949c2dc5859332ac2fae814c17f491a21c3fa173682a8122dc26171c3 /home/user/rugger_bot_v1/out_of_tree/cpmmpilot_run/N1ROT_20261124T215521Z/N1ROT_RESULT.json

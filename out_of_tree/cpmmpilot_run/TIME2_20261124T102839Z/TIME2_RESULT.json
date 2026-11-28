@@ -1,0 +1,52 @@
+{
+ "budget": {
+  "by_method": {
+   "getMultipleAccounts": 1522,
+   "getProgramAccounts": 130,
+   "getSlot": 1,
+   "getTransactionsForAddress": 440
+  },
+  "credits": 2093,
+  "max_credits": 4713,
+  "requests": 1580,
+  "stage": "u2"
+ },
+ "cap_this_run": 4713,
+ "creation_reasons": {
+  "initialize_not_at_depth_1": 3,
+  "launchlab_in_creation_transaction": 16,
+  "ok": 24,
+  "younger_than_7_days": 1
+ },
+ "credits_time1": 1653,
+ "selected": [
+  "4NX5P7V8gEJydHias47cjUv173FA9pzfDfJNNo2AigJv",
+  "FBePpA9ZuAxQm6HqGi8ZvG7cj8utoRRmgSmpj5xnENN5",
+  "G8kgi7aUpeX8EVR8VMkrth9SKEv5BietWC33UjAiiMGh",
+  "5H1z2zaHnPELETrD4CzMkEJZQX5eDPgc2oQ5Lxt5w7MX",
+  "EJYg54KLqR8PjfRrdPtzR9rydo4UsYdX2BvYwh8AcgBM",
+  "68vHUSKj8LZSWnvvjtSmgNMoiNwR7vS8t8t1DTaA1f53",
+  "FL8dqwq3E8QsWeRyLTEzyjGzD2qmePkeafxiQugcHcMs",
+  "BGH7QTtgYbN2fMe5tpAncmfxe3wfumdCLfPB5Rksj7xz",
+  "8AdPiZ2u7SF2R19Ny5xxwfcuSnMNsk5DdSBEVrvFFjaq",
+  "2yLFomCTck19BqK7EzJqsUWXPWP3uWGNBSrfKvJzNzp2",
+  "5ML6Tkr2m3gtcTEoL9Ppkrqpv7Pj8bSrVwfu9ztNFT9k",
+  "GdxFycQMfy5g1m1Ax2ViF8ZPAv22i27GSza7m9d6Cq4A",
+  "AEZjoUACNSpmYHHRNbfknjL8oiBDw6GhtrMm7tZgBfca",
+  "B9jg8FvkHixwLr2LVyJVSQwfNP4kq7MyaqC1jFNkCxVi",
+  "AFeg9yCMPpkx6vrmoeSDgcWEggjjtVtXCT3tnFkmhQQN",
+  "BKZSLDDsoEt75RHeJzERsxqWvXiF9qi3bZBKvMm6yUAB",
+  "3oUDg6srSNM3Nf2kGz7W65E82HhGiw2EcfkQxbY26dnf",
+  "Gms3MaNaz9mFKWwh3dvrHTF7f6FWstcPis21YYNPq3Fr",
+  "EonJQhbCXqRDLgZSeVDj92Ra1wXVKVY3RNagcU9mTxMj",
+  "BDZZ2XU3PEqZ8Jp6NZS4yYqrz4YUBx6e9cRG1F5fQXXL",
+  "GfApkU62yAmUXc6FNsZrBLgcUn8vXdhW6WzSbA5ETtDa",
+  "CXgcuECqdaBpvJWH5cwEir9Y5FY9SKTjhGutMc95bGy3",
+  "CjZWsAU2pJMXnkPFcx1ZWkaWkqfjN1KDjTTHychxBi8S",
+  "HBrBDK5kfM2sYjBTrCMZXQt5yDEeD8Qvdbn7PeiYSCMn"
+ ],
+ "sha_l": "110dabe138a2bacc97e630db29ddc5c363f5e99a738172d73373af01fd076cbd",
+ "tested": 44,
+ "u2_file_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963",
+ "verdict": "U2_OK"
+}

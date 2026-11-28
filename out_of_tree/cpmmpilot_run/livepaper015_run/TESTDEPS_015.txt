@@ -1,0 +1,4 @@
+Test-only dependencies (NOT on the run PYTHONPATH), extracted from 9800986:
+out_of_tree/cpmm_pilot/cpmmgen3_pkg
+out_of_tree/rentabilite/barmap_pkg
+Tests: 48/48 with -W error, offline, 28/11.

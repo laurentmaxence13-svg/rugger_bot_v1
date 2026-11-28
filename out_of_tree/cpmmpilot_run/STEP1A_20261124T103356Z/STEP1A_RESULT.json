@@ -1,0 +1,24 @@
+{
+ "budget": {
+  "by_method": {
+   "getSignaturesForAddress": 53
+  },
+  "credits": 53,
+  "max_credits": 49000,
+  "requests": 53,
+  "stage": "step1"
+ },
+ "count_file_sha256": "c852ec12aaea3a5476f17dfb07403606d45d7c834f201f2f34d665ab97d660e5",
+ "d_max_days": 3.334191866196063,
+ "point2": {
+  "limit": 32900,
+  "need": 25559.2,
+  "r_hat": 1310.375,
+  "stop": false
+ },
+ "r_hat": 1310.375,
+ "t0_slot": 473309024,
+ "t0_time": 1795515686,
+ "u2_sha256": "3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963",
+ "verdict": "POINT2_PASSED_AWAIT_R02_ANCHOR"
+}

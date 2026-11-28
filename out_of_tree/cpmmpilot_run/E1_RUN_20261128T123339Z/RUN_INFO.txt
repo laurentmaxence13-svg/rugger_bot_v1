@@ -1,0 +1,8 @@
+command: cd <S>/w1tree_634d09b && unshare -rn env -i PATH=/usr/bin:/bin RUGGER_NO_DOTENV=1 PYTHONPATH=<S>/e1_d379402/out_of_tree/phase_intensive/e1_plafond:<S>/w1tree_634d09b /tmp/claude-0/-home-user-rugger-bot-v1/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/venv312/bin/python -B -m e1plafond.e1 --pools <S>/w1x_out/PRELIMINAIRE_PAS_LE_VERDICT_OFFICIEL_W1/pools --declaration <S>/e1_d379402/out_of_tree/phase_intensive/e1_plafond/E1_DECLARATION.md --coverage-end /home/user/rugger_bot_v1/out_of_tree/cpmmpilot_run/INVENTAIRE_PHASE_INTENSIVE_20261128/INVENTAIRE_W1_COLLECTION_END.json --workers 4 --out <S>/E1_RUN_20261128T123339Z
+coverage_end_sha256: 314087f819f4ccb306e14dc6954188dc826ba086eac9c6c87a203b88716d3944
+python: Python 3.12.3
+numpy: 2.3.4
+start: 2026-11-28T12:33:39Z
+rc: 0
+end: 2026-11-28T12:34:12Z
+duration_s: 25.7

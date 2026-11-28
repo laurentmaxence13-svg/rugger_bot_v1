@@ -1,0 +1,75 @@
+{
+ "eligible": [
+  "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+  "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+  "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv"
+ ],
+ "eligible_sha256": "184576ea0358e8b619d1cb1d107eb82a93a94e67d5d87d204a8831c2b45b34a9",
+ "eligible_t_start": 1795606731,
+ "list_l_sha256": "c96353b9f3c0bdb25fd1b7c8af85cf0c4efd66e84480d7850252b85d8a7d8ff3",
+ "rows": [
+  {
+   "b3": 4.0,
+   "base_mint": "9NiHcbT8EohKJid1RdU3232tATmM1CvYemTeCP5iwro",
+   "config": {
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "slot": 473309024,
+    "trade_fee_rate": 2500
+   },
+   "eligible": true,
+   "pool": "GaPTvXuog95vxJii7qwvfNVNdpgAcEmjFqYdZnxxgzLV",
+   "wsol_vault": "k9jPZksSk5sA5x8QnKAGSXyJ7RQwfH85CNY1WTmmRgN"
+  },
+  {
+   "b3": 1.0,
+   "base_mint": "BKzTtgn5th95fAF6m6XcDq211kzaUqwCnsqtWrE2gFWX",
+   "config": {
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "slot": 473309024,
+    "trade_fee_rate": 2500
+   },
+   "eligible": true,
+   "pool": "6CQSpRdGtNWEbLhKpx7DAw7FDAm3g7wvjtsvaTKWBwxo",
+   "wsol_vault": "JAC7GYsSierG89GjfXPSnCCur5zqUsmvocyRQHNoRV8s"
+  },
+  {
+   "b3": 1.0,
+   "base_mint": "D5KojYsUGd53bFiGVpKnGEyCLQcnPPVr4mgco44Mo6fk",
+   "config": {
+    "bump": 255,
+    "creator_fee_rate": 500,
+    "creator_fee_share_rate": 50000,
+    "disabled": 0,
+    "fund_fee_rate": 40000,
+    "index": 0,
+    "protocol_fee_rate": 120000,
+    "raw_sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "sha256": "be8d13d1a6def925af32187937fde9ef21d2d7ca5efb1c6e1fd6611b3f12cfe1",
+    "slot": 473309024,
+    "trade_fee_rate": 2500
+   },
+   "eligible": true,
+   "pool": "5zk4vhcPaFboRS16LQejvUDVbzsAjH3NCDrqvumGnTYv",
+   "wsol_vault": "3xtQLgPMRaTp1N5dRN1kRoeq4gpr4W8rDpu3uN5hqUVC"
+  }
+ ],
+ "schema": "livepaper-pools-v0.1",
+ "start": 1795606731,
+ "variant": "B"
+}

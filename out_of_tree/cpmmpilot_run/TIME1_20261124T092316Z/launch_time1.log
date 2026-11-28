@@ -1,0 +1,5 @@
+start 2026-11-24T09:23:16Z out=/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/pilot_run/TIME1_20261124T092316Z
+manifest_check_rc=0 bad=0 manifest_sha=746f7d94a77709181cb2fcdd22cdac370c149142df0d48e1f2a29c338c60b0e7
+driver_sha=45b7a94afd164879fbf677fb76b8b992b2b185f918c925bc2f40b3b05253d162 exclude_sha=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+{"verdict": "STOP", "sha_l": null, "list_l_file_sha256": null, "counts": null, "budget": {"stage": "u2", "requests": 170, "credits": 287, "max_credits": 5000, "by_method": {"getMultipleAccounts": 156, "getProgramAccounts": 130, "getSlot": 1}}, "error": "RpcError", "tag": "rate_limited_429", "exclude_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "exclude_n": 0, "t0_slot": null, "t0_time": null}
+rc=0 end 2026-11-24T09:24:21Z

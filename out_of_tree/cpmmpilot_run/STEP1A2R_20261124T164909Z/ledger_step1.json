@@ -1,0 +1,19 @@
+{
+ "by_method": {
+  "getSignaturesForAddress": 53,
+  "getTransactionsForAddress": 13270
+ },
+ "costs": {
+  "getMultipleAccounts": 1,
+  "getProgramAccounts": 10,
+  "getSignaturesForAddress": 1,
+  "getSlot": 1,
+  "getTransaction": 1,
+  "getTransactionsForAddress": 10
+ },
+ "credits": 13323,
+ "max_credits": 49000,
+ "requests": 1380,
+ "schema": "cpmmpilot-spend-v1",
+ "stage": "step1"
+}

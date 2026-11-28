@@ -1,0 +1,14 @@
+./MUTATIONS_livepaper_v0_1_2.json: OK
+./README_LIVEPAPER_v0_1_2.md: OK
+./livepaper/__init__.py: OK
+./livepaper/cli.py: OK
+./livepaper/engine.py: OK
+./livepaper/fill.py: OK
+./livepaper/journal.py: OK
+./livepaper/ordercheck.py: OK
+./livepaper/source.py: OK
+./livepaper/tests/__init__.py: OK
+./livepaper/tests/data/AUTORISATION_LIVEPAPER.txt: OK
+./livepaper/tests/test_livepaper.py: OK
+./livepaper/tests/test_source.py: OK
+./mutations_livepaper_runner.py: OK

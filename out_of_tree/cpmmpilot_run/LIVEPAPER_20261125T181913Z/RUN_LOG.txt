@@ -1,0 +1,29 @@
+launcher 2026-11-25T18:25:09Z
+run_start 2026-11-25T18:40:00Z 1795632000 resume=no
+planned_end_of_process
+rc=0 end 2026-11-25T20:30:02Z
+launcher 2026-11-25T18:25:09Z
+run_start 2026-11-25T20:30:32Z 1795638632 resume=yes
+planned_end_of_process
+rc=0 end 2026-11-25T22:20:35Z
+launcher 2026-11-25T18:25:09Z
+run_start 2026-11-25T22:20:48Z 1795645248 resume=yes
+planned_end_of_process
+rc=0 end 2026-11-26T00:10:55Z
+launcher 2026-11-25T18:25:09Z
+run_start 2026-11-26T00:11:44Z 1795651904 resume=yes
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_1a626c8/out_of_tree/cpmm_pilot/livepaper012_pkg/livepaper/cli.py", line 246, in <module>
+    main()
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_1a626c8/out_of_tree/cpmm_pilot/livepaper012_pkg/livepaper/cli.py", line 232, in main
+    print(run(args, json.loads(args.pools.read_text()), **kw))
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_1a626c8/out_of_tree/cpmm_pilot/livepaper012_pkg/livepaper/cli.py", line 103, in run
+    head_file=Path(args.journal).with_name('HEAD.json'), **(clocks or {})).run()
+                                                                           ^^^^^
+  File "/tmp/claude-0/-home-user/420f9b0d-d94a-50f0-ae37-b89b76d967d7/scratchpad/livepaper_1a626c8/out_of_tree/cpmm_pilot/livepaper012_pkg/livepaper/source.py", line 257, in run
+    self.sleep(rest)
+KeyboardInterrupt
+rc=130 end 2026-11-26T01:32:42Z
