@@ -286,9 +286,10 @@ def test_u2_without_one_of_the_pools_is_refused(tmp_path, monkeypatch):
 
 
 # -- 0.2: the two texts (R02 plan e886578c, points 2 and 4) -----------------------------------------------------------
-def test_the_addendum_is_pending_in_this_release():
-    """The addendum sha is None until R02 verified the signature: the release refuses every run (see the PENDING test)."""
-    assert G.ADDENDUM_TEXT_SHA256 is None and rpc.ADDENDUM_TEXT_SHA256 is None
+def test_the_addendum_is_inscribed_in_this_release():
+    """Inscription release (R02 28/11 11:06Z): the signed addendum's sha, the same in the driver and in rpc."""
+    assert G.ADDENDUM_TEXT_SHA256 == rpc.ADDENDUM_TEXT_SHA256 == \
+        'e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68'
 
 
 def test_pending_addendum_refuses_before_any_call(tmp_path, monkeypatch):

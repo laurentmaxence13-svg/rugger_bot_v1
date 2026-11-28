@@ -39,7 +39,7 @@ RESULT = 'G23_COLLECT_RESULT.json'
 # importante"). The run needs an owner text for G2-3, written in the R03 session, anchored by R02, whose sha is set here
 # AND added to rpc.AUTHORIZED_TEXT_SHA256 by an audited 0.2.8. None = no run possible (refused before any call).
 G23_TEXT_SHA256 = '3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b'   # owner 24/11 22:29:08Z, R02 a5e8f770
-ADDENDUM_TEXT_SHA256 = None                          # 0.2: PENDING until R02 verified the owner's signature (e886578c)
+ADDENDUM_TEXT_SHA256 = 'e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68'   # signed (GO 09e874e3, R02 verified 28/11)
 NOT_COVERING = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
                           'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',
                           'cae25a3c1f07c3daafef18131d6ace13c8604b6d847f00fbaed69fe451c0967d'})

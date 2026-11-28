@@ -54,3 +54,18 @@ inchangés.
 `VCODE` passe de 3e3cb105 (MANIFEST de g23run 0.1) à 8528b66f (MANIFEST de g23run 0.1.2), le code de verdict
 réellement utilisé depuis cda64700 et cité par l'erratum. C'est la seule exception que R02 accorde à « rien d'autre ne
 change ». La valeur est seulement enregistrée dans G23_COLLECT_RESULT.
+
+## Publication d'inscription (R02, 28/11, 11:06Z) — signature vérifiée à la source (GO 09e874e3)
+
+- L'empreinte e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68 est inscrite à trois endroits :
+  `rpc.ADDENDUM_TEXT_SHA256`, `g23_collect_v0_2.ADDENDUM_TEXT_SHA256` et `ADD_SHA` dans le lanceur.
+- `AUTORISATION_G23_ADDENDUM.txt` : 920 octets, sans saut de ligne final. Il est copié depuis R03 6c79a5c et son sha est
+  vérifié. Il figure dans cpmmpilot_run/, que lit le lanceur, et à la racine du paquet, que lit le test d'inscription.
+- La ligne PENDING du runner de mutants est retirée. Le test qui exigeait l'état « en attente » est remplacé par
+  `test_the_addendum_is_inscribed_in_this_release`.
+- Conséquences mécaniques dans le lanceur :
+  - nouveau MANIFEST 0.2.8.2 : il inclut le fichier de l'additif et le changement de rpc ;
+  - nouveau sha du driver.
+- Tests : 89/89, soit 57 pour cpmmpilot, échec volontaire compris, qui passe maintenant, et 32 pour le driver, dont la
+  concordance des trois constantes. Mutants : 18/18.
+- Rien ne s'exécute avant le GO de R02. R03 fait l'essai à blanc depuis ce commit.

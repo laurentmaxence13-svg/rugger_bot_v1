@@ -11,7 +11,6 @@ BUD = 'cpmmpilot0282_pkg/cpmmpilot/budget.py'
 RPC = 'cpmmpilot0282_pkg/cpmmpilot/rpc.py'
 DRV = 'cpmmpilot_run/g23_collect_v0_2.py'
 CMP = 'cpmmpilot_run/g23_complete.py'
-PENDING = 'test_the_addendum_is_inscribed'
 MUT = [
  (BUD, "G23_CAP = 88_200 ", "G23_CAP = 88_210 ", 'cap_88210'),
  (BUD, "G23_CAP = 88_200 ", "G23_CAP = 32_340 ", 'cap_old'),
@@ -45,7 +44,7 @@ def run(root, python, cwd, paths, f):
     if f in (BUD, RPC):
         tests.append(str(Path(root) / 'cpmmpilot0282_pkg' / 'cpmmpilot' / 'tests'))
     cmd = ['unshare', '-rn', 'env', '-i'] + ['%s=%s' % kv for kv in env.items()] + [
-        python, '-B', '-m', 'pytest', '-q', '-x', '-p', 'no:cacheprovider', '-k', 'not ' + PENDING] + tests
+        python, '-B', '-m', 'pytest', '-q', '-x', '-p', 'no:cacheprovider'] + tests
     return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True).returncode
 
 

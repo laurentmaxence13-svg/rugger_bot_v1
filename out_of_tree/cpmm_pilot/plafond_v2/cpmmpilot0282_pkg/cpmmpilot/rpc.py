@@ -49,7 +49,7 @@ def sha(obj):
 # UTF-8 bytes of message.content, no final newline, 2 175 bytes (AUTORISATION_B_C_v1_3.txt). Never modified at run time.
 # 0.2.8.2 (R02 plan e886578c, 26/11 13:48Z): the owner's ADDENDUM raising the G2-3 cap (base text 3d6999ec stays valid).
 # Its sha is inscribed ONLY after R02 verified the signature at the source; until then None: nothing new is authorized.
-ADDENDUM_TEXT_SHA256 = None                                                  # PENDING
+ADDENDUM_TEXT_SHA256 = 'e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68'   # signed (GO 09e874e3, R02 verified 28/11)
 AUTHORIZED_TEXT_SHA256 = frozenset({'e25389f014503e5fb98317bfc502ca4998b4d149453a0b10f95ec3d21aea26a1',
                                     # 0.2.6: owner's T1/T2 text (R03 session, 24/11 18:00:36Z, R02 anchor 077b4822)
                                     'b75e657a60a0de335906e091936c93ba707b639a3b9ca5fc56c7623142a063f9',

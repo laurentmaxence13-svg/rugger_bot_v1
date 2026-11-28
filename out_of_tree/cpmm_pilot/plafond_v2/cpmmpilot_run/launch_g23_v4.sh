@@ -14,7 +14,7 @@ COMPLETE=$V2RUN/g23_complete.py
 U2=$RUNREPO/TIME2_20261124T102839Z/U2.json
 BASE=$RUNREPO/AUTORISATION_G23.txt
 ADD=$RUNREPO/AUTORISATION_G23_ADDENDUM.txt                   # created by R03 from the owner's message, after R02
-ADD_SHA=PENDING                                               # inscription release: the signed addendum's sha, nothing else
+ADD_SHA=e886578ca327cc418e9e8816907232dea41469e03884a7de3180bf1042793d68   # signed (GO 09e874e3, R02 verified 28/11)
 SHEET=e2f8411d2b7911f05cbbf3b38657ca88d5afa85023d58ceb4b26ea6a8ba46819
 VCODE=8528b66f5add2a5c950b21e2121382a87fc8db5ab543ac60d25a0588ad765789   # R02 14:31Z: MANIFEST of g23run 0.1.2, the verdict code since cda64700
 OUT=$RUNREPO/G23_$(date -u +%Y%m%dT%H%M%SZ)
@@ -27,8 +27,8 @@ h(){ sha256sum "$1" | cut -d' ' -f1; }
   if [ "$(date -u +%s)" -lt 1796552486 ]; then echo "TOO_EARLY: no call"; exit 4; fi
   ( cd $PKG && sha256sum -c MANIFEST_cpmmpilot_v0_2_8_2.txt ) > $S/pilot_run/manifest_check_g23_v4.txt 2>&1; M=$?
   echo "manifest_rc=$M manifest=$(h $PKG/MANIFEST_cpmmpilot_v0_2_8_2.txt) driver=$(h $DRV) complete=$(h $COMPLETE) retry=$(h $RUNREPO/activity_l2.py) u2=$(h $U2) base=$(h $BASE) addendum=$([ -e $ADD ] && h $ADD || echo missing) out_exists=$([ -e $OUT ] && echo yes || echo no)"
-  if [ "$ADD_SHA" = PENDING ] || [ ! -e $ADD ] || [ $M -ne 0 ] || [ "$(h $PKG/MANIFEST_cpmmpilot_v0_2_8_2.txt)" != 7d810749cc908fdc13daa3bb6fb9921b22ccd0bbf7eb8d3144b66bc75e916113 ] \
-     || [ "$(h $DRV)" != 40d036ca3ab7ca7028742d49ce436a2204da5a5b9bd76444079dd11ada37860d ] || [ "$(h $COMPLETE)" != f66c8e32e1f42bb4b1ed8b184e1b6e07ec536f8254c00772fac2bf82024957a5 ] \
+  if [ "$ADD_SHA" = PENDING ] || [ ! -e $ADD ] || [ $M -ne 0 ] || [ "$(h $PKG/MANIFEST_cpmmpilot_v0_2_8_2.txt)" != 41caceb1460ff1a12fee7195ad5ab838d439b7bff2f47c277500d781a94b8f6d ] \
+     || [ "$(h $DRV)" != e21239d0ab9303d5278a90547814dfccecd885dae1e820f62c4fa99487e46c8e ] || [ "$(h $COMPLETE)" != f66c8e32e1f42bb4b1ed8b184e1b6e07ec536f8254c00772fac2bf82024957a5 ] \
      || [ "$(h $RUNREPO/activity_l2.py)" != 9b2c0487e8156609af434a19128e20f4871892bfe62755ae9a4535409fe1a952 ] \
      || [ "$(h $U2)" != 3ca0260aa187f8df99ab422fc74fbbb1da4404d6f6b175548270ade3e731a963 ] \
      || [ "$(h $BASE)" != 3d6999ecdb19d9e23b34810e208c507e85ec1ef5baca189a58924eb04ea4d66b ] || [ "$(h $ADD)" != "$ADD_SHA" ] \
