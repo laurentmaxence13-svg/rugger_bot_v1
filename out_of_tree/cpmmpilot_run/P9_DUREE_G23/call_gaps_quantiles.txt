@@ -1,0 +1,4 @@
+STEP1A_20261124T103356Z gaps 1341 p50 0.265 p95 0.318 p99 0.363 max 0.541 startup_to_first 5.39 s
+LIVESIM_20261125T113851Z gaps 1025 p50 0.213 p95 0.261 p99 0.326 max 1.069 startup_to_first 1.41 s
+pooled gaps 2366 p50 0.245 p95 0.309 max 1.069
+8820 x p95 = 45.4 min ; 8820 x max = 157.2 min
